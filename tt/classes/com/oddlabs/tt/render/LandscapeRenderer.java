@@ -142,7 +142,7 @@ public final strictfp class LandscapeRenderer implements Animated {
     private void doRenderAll() {
         for (int i = 0; i < render_list.size(); i++) {
             LandscapeLeaf patch = render_list.get(i);
-            RenderTools.draw(patch, Globals.BOUNDING_LANDSCAPE, 1f, 0f, 0f);
+            RenderTools.draw(patch, Globals.Bounding.LANDSCAPE, 1f, 0f, 0f);
             setupColormap(patch.getColorMapX(), patch.getColorMapY());
             if (Globals.draw_landscape)
                 renderPatch(patch);

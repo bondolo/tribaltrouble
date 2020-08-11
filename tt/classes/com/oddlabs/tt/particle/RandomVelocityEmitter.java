@@ -122,7 +122,7 @@ public final strictfp class RandomVelocityEmitter extends LinearEmitter {
 				manager);
 	}
 
-        @Override
+    @Override
 	protected int initParticle(Vector3f position, Vector3f velocity, Vector3f acceleration, Vector4f color, Vector4f delta_color, Vector3f particle_radius, Vector3f growth_rate, float energy) {
 		randomizeVelocity();
 

@@ -9,6 +9,7 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.procedural.Landscape;
@@ -35,37 +36,37 @@ public final strictfp class VikingIsland3 extends Island {
 		// gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
 		GameNetwork game_network = startNewGame(network, gui_root, 512, Landscape.TerrainType.NATIVE, .75f, 1f, .5f, 96443, 3, VikingCampaign.MAX_UNITS, ai_names);
 		game_network.getClient().getServerInterface().setPlayerSlot(0,
-				PlayerSlot.HUMAN,
+				PlayerSlot.PlayerType.HUMAN,
 				RacesResources.RACE_VIKINGS,
 				0,
 				true,
-				PlayerSlot.AI_NONE);
+				AIType.AI_NONE);
 		game_network.getClient().setUnitInfo(0,
 				new UnitInfo(false, false, 0, true,
 					getCampaign().getState().getNumPeons(),
 					getCampaign().getState().getNumRockWarriors(),
 					getCampaign().getState().getNumIronWarriors(),
 					getCampaign().getState().getNumRubberWarriors()));
-		int ai_difficulty;
+		AIType ai_difficulty;
 		int ai_peons;
 		switch (getCampaign().getState().getDifficulty()) {
 			case CampaignState.DIFFICULTY_EASY:
-				ai_difficulty = PlayerSlot.AI_NORMAL;
+				ai_difficulty = AIType.AI_NORMAL;
 				ai_peons = 2;
 				break;
 			case CampaignState.DIFFICULTY_NORMAL:
-				ai_difficulty = PlayerSlot.AI_HARD;
+				ai_difficulty = AIType.AI_HARD;
 				ai_peons = 5;
 				break;
 			case CampaignState.DIFFICULTY_HARD:
-				ai_difficulty = PlayerSlot.AI_HARD;
+				ai_difficulty = AIType.AI_HARD;
 				ai_peons = 15;
 				break;
 			default:
 				throw new RuntimeException();
 		}
 		game_network.getClient().getServerInterface().setPlayerSlot(2,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				1,
 				true,

@@ -21,7 +21,7 @@ public final strictfp class SecureConnection extends AbstractConnection implemen
 	private final AbstractConnection wrapped_connection;
 	private final SecureConnectionInterface secure_interface;
 	private final KeyAgreement key_agreement;
-	private final List event_backlog = new ArrayList();
+	private final List<ARMIEvent> event_backlog = new ArrayList<>();
 	private Cipher decrypt_cipher;
 	private Cipher encrypt_cipher;
 
@@ -30,18 +30,18 @@ public final strictfp class SecureConnection extends AbstractConnection implemen
 		setConnectionInterface(wrapped_conn.getConnectionInterface());
 		this.wrapped_connection = wrapped_conn;
 		wrapped_connection.setConnectionInterface(new ConnectionInterface() {
-                        @Override
+            @Override
 			public void error(AbstractConnection conn, IOException e) {
 				notifyError(e);
 			}
-                        @Override
+            @Override
 			public void connected(AbstractConnection conn) {
 			}
-                        @Override
+            @Override
 			public final void handle(Object sender, ARMIEvent event) {
 				processEvent(event);
 			}
-                        @Override
+            @Override
 			public final void writeBufferDrained(AbstractConnection conn) {
 				SecureConnection.this.writeBufferDrained();
 			}
@@ -75,7 +75,7 @@ public final strictfp class SecureConnection extends AbstractConnection implemen
 			KeyAgreement key_agreement = this.key_agreement;
 			PublicKey public_key = KeyManager.readPublicKey(public_key_encoded, KeyManager.AGREEMENT_ALGORITHM);
 			if (key_agreement == null) {
-				KeyPair key_pair = (KeyPair)deterministic.log(KeyManager.generateKeyPairFromKey(public_key));
+				KeyPair key_pair = deterministic.log(KeyManager.generateKeyPairFromKey(public_key));
 				key_agreement = KeyManager.generateAgreement(key_pair.getPrivate());
 				secure_interface.initAgreement(key_pair.getPublic().getEncoded());
 			}
@@ -83,7 +83,7 @@ public final strictfp class SecureConnection extends AbstractConnection implemen
 			encrypt_cipher = KeyManager.createCipher(Cipher.ENCRYPT_MODE, key_agreement, public_key);
 			notifyConnected();
 			for (int i = 0; i < event_backlog.size(); i++) {
-				ARMIEvent event = (ARMIEvent)event_backlog.get(i);
+				ARMIEvent event = event_backlog.get(i);
 				tunnel(event);
 			}
 		} catch (IOException e) {
@@ -111,7 +111,7 @@ public final strictfp class SecureConnection extends AbstractConnection implemen
 		wrapped_connection.setConnectionInterface(getConnectionInterface());
 		return wrapped_connection;
 	}
-	
+
         @Override
 	protected void doClose() {
 		wrapped_connection.close();
@@ -128,7 +128,7 @@ public final strictfp class SecureConnection extends AbstractConnection implemen
 			notifyError(new IOException(e.getMessage()));
 		}
 	}
-	
+
         @Override
 	public void handle(ARMIEvent event) {
 		if (encrypt_cipher == null)

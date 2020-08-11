@@ -132,7 +132,7 @@ public final strictfp class Optimizer {
 		return new SpriteInfo(textures, model_info.indices, model_info.vertices, model_info.normals, model_info.texcoords, model_info.skin_names, model_info.skin_weights, clear_color);
 	}
 
-	public final static AnimationInfo convertToAnimation(/*float[] skeleton_vertices,*/ Bone skeleton, Map initial_pose, Map[] anim_map, int type, float wpc) {
+	public final static AnimationInfo convertToAnimation(/*float[] skeleton_vertices,*/ Bone skeleton, Map initial_pose, Map[] anim_map, AnimationInfo.Type type, float wpc) {
 		// animations format: [frames] [bones] [matrix]
 		int num_frames = anim_map.length;
 		float[][] frames = new float[num_frames][];

@@ -74,7 +74,7 @@ public final strictfp class GatherController<S extends Supply> extends Controlle
 		}
 	}
 
-        @Override
+    @Override
 	public void decide() {
 		if (unit.getSupplyContainer().getNumSupplies() > 0 && unit.getSupplyContainer().getSupplyType() == supply_type) {
 			dropoff();

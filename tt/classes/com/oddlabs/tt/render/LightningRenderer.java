@@ -80,7 +80,7 @@ final strictfp class LightningRenderer {
     }
 
     private static void render(RenderQueues render_queues, Lightning lightning) {
-        if (Globals.isBoundsEnabled(Globals.BOUNDING_PLAYERS)) {
+        if (Globals.isBoundsEnabled(Globals.Bounding.PLAYERS)) {
             RenderTools.draw(lightning, 1f, 1f, 1f);
         }
 

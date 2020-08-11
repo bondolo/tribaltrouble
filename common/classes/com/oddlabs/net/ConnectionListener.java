@@ -16,8 +16,8 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 	private final NetworkSelector network;
 	private SelectionKey key;
 
-	private List incoming_connections = new LinkedList();
-	
+	private List<SocketChannel> incoming_connections = new LinkedList<>();
+
 	private static SelectionKey createServerSocket(NetworkSelector network, InetAddress ip, int port) throws IOException {
 		ServerSocketChannel server_channel = ServerSocketChannel.open();
 		server_channel.configureBlocking(false);
@@ -27,7 +27,7 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 		SelectionKey key = server_channel.register(network.getSelector(), SelectionKey.OP_ACCEPT);
 		return key;
 	}
-	
+
 	public ConnectionListener(NetworkSelector network, InetAddress ip, int port, ConnectionListenerInterface connection_listener_interface) {
 		super(connection_listener_interface);
 		this.network = network;
@@ -41,11 +41,11 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 			exception = e;
 		}
 		if (network.getDeterministic().log(exception != null))
-			error((IOException)network.getDeterministic().log(exception));
+			error(network.getDeterministic().log(exception));
 		else
 			network.attachToKey(key, this);
 	}
-	
+
 	public int getPort() {
 		return network.getDeterministic().log(key != null ? ((ServerSocketChannel)key.channel()).socket().getLocalPort() : -1);
 	}
@@ -69,7 +69,7 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 			}
 		}
 		if (network.getDeterministic().log(exception != null))
-			throw (IOException)network.getDeterministic().log(exception);
+			throw network.getDeterministic().log(exception);
 		incoming_connections.add(channel);
 		notifyIncomingConnection();
 	}
@@ -81,28 +81,28 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 	public void incoming(InetAddress remote_address) {
 		notifyIncomingConnection(remote_address);
 	}
-	
+
 	private void notifyIncomingConnection() {
 		InetAddress remote_inet_address = null;
 		if (!network.getDeterministic().isPlayback()) {
-			SocketChannel channel = (SocketChannel)incoming_connections.get(0);
+			SocketChannel channel = incoming_connections.get(0);
 			SocketAddress remote_address = channel.socket().getRemoteSocketAddress();
 			remote_inet_address = ((InetSocketAddress)remote_address).getAddress();
 		}
-		incoming((InetAddress)network.getDeterministic().log(remote_inet_address));
+		incoming(network.getDeterministic().log(remote_inet_address));
 	}
 
 	private SocketChannel removeNextChannel() {
-		return (SocketChannel)incoming_connections.remove(0);
+		return incoming_connections.remove(0);
 	}
-	
+
 	private SocketChannel getNextConnection() {
 		SocketChannel channel = removeNextChannel();
-		if (incoming_connections.size() > 0)
+		if (!incoming_connections.isEmpty())
 			notifyIncomingConnection();
 		return channel;
 	}
-	
+
 	private SelectionKey getNextConnectionKey() {
 		try {
 			SocketChannel channel = getNextConnection();
@@ -113,7 +113,7 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 		}
 	}
 
-        @Override
+    @Override
 	protected AbstractConnection doAcceptConnection(ConnectionInterface conn_interface) {
 		SelectionKey socket_key;
 		if (!network.getDeterministic().isPlayback())
@@ -123,7 +123,7 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 		return new Connection(network, socket_key, conn_interface);
 	}
 
-        @Override
+    @Override
 	public void rejectConnection() {
 		try {
 			SocketChannel channel = getNextConnection();
@@ -134,13 +134,14 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 		}
 	}
 
-        @Override
+    @Override
 	public void close() {
 		if (key != null && key.isValid()) {
 			try {
 				key.channel().close();
-				while (incoming_connections.size() > 0)
-					removeNextChannel().close();
+				while (!incoming_connections.isEmpty()) {
+                    removeNextChannel().close();
+                }
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -148,8 +149,8 @@ public final strictfp class ConnectionListener extends AbstractConnectionListene
 		if (network.getDeterministic().log(key != null))
 			network.cancelKey(key, this);
 	}
-	
-        @Override
+
+    @Override
 	public void handleError(IOException e) throws IOException {
 		error(e);
 	}

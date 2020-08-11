@@ -5,24 +5,30 @@ import java.io.Serializable;
 public final strictfp class AnimationInfo implements Serializable {
 	private final static long serialVersionUID = 1;
 
-	public final static int ANIM_LOOP = 1;
-	public final static int ANIM_PLAIN = 2;
+    /**
+     * Type of animation
+     */
+    public enum Type {
+        LOOP,
+        PLAIN
+    };
 
 	private final float[][] frames;
-	private final int type;
+	private final Type type;
 	private final float wpc;
 
-	public AnimationInfo(float[][] frames, int type, float wpc) {
+	public AnimationInfo(float[][] frames, Type type, float wpc) {
 		this.frames = frames;
 		this.type = type;
 		this.wpc = wpc;
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public float[][] getFrames() {
 		return frames;
 	}
 
-	public int getType() {
+	public Type getType() {
 		return type;
 	}
 

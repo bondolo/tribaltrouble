@@ -4,7 +4,7 @@ import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
 
 public final strictfp class BuildingTemplate extends Template {
-	private final int template_id;
+	private final Race.BuildingType template_id;
 	private final int placing_size;
 	private final float smoke_radius;
 	private final float smoke_height;
@@ -29,7 +29,7 @@ public final strictfp class BuildingTemplate extends Template {
 	private final float chimney_z;
 
 	public BuildingTemplate(
-			int template_id,
+			Race.BuildingType template_id,
 			int placing_size,
 			float smoke_radius,
 			float smoke_height,
@@ -85,7 +85,7 @@ public final strictfp class BuildingTemplate extends Template {
 		this.chimney_z = chimney_z;
 	}
 
-	public int getTemplateID() {
+	public Race.BuildingType getTemplateID() {
 		return template_id;
 	}
 
@@ -120,7 +120,7 @@ public final strictfp class BuildingTemplate extends Template {
 	public float getSmokeRadius() {
 		return smoke_radius;
 	}
-	
+
 	public float getSmokeHeight() {
 		return smoke_height;
 	}
@@ -128,7 +128,7 @@ public final strictfp class BuildingTemplate extends Template {
 	public int getNumFragments() {
 		return num_fragments;
 	}
-	
+
 	public SpriteKey getBuiltRenderer() {
 		return built_renderer;
 	}

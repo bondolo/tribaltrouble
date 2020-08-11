@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public final strictfp class Profile implements Serializable {
 	private final static long serialVersionUID = -3399364532017471737l;
-	
+
 	private final String nick;
 	private final int rating;
 	private final int wins;
@@ -21,11 +21,11 @@ public final strictfp class Profile implements Serializable {
 		this.revision = revision;
 	}
 
-        @Override
+    @Override
 	public String toString() {
 		return nick;
 	}
-	
+
 	public String getNick() {
 		return nick;
 	}

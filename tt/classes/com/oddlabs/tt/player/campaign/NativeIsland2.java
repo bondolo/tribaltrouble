@@ -10,6 +10,7 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
@@ -38,11 +39,11 @@ public final strictfp class NativeIsland2 extends Island {
 			Utils.getBundleString(bundle, "name5")};
 		GameNetwork game_network = startNewGame(network, gui_root, 256, Landscape.TerrainType.VIKING, .75f, 1f, 1f, 10, 2, NativeCampaign.MAX_UNITS, ai_names);
 		game_network.getClient().getServerInterface().setPlayerSlot(0,
-				PlayerSlot.HUMAN,
+				PlayerSlot.PlayerType.HUMAN,
 				RacesResources.RACE_NATIVES,
 				0,
 				true,
-				PlayerSlot.AI_NONE);
+				AIType.AI_NONE);
 		game_network.getClient().setUnitInfo(0,
 				new UnitInfo(false, false, 0, false,
 					0,//getCampaign().getState().getNumPeons(),
@@ -50,18 +51,18 @@ public final strictfp class NativeIsland2 extends Island {
 					0,//getCampaign().getState().getNumIronWarriors(),
 					0));//getCampaign().getState().getNumRubberWarriors()));
 		game_network.getClient().getServerInterface().setPlayerSlot(1,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				PlayerInfo.TEAM_NEUTRAL,
 				true,
-				PlayerSlot.AI_NEUTRAL_CAMPAIGN);
+				AIType.AI_NEUTRAL_CAMPAIGN);
 		game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 		game_network.getClient().getServerInterface().setPlayerSlot(2,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_VIKINGS,
 				1,
 				true,
-				PlayerSlot.AI_PASSIVE_CAMPAIGN);
+				AIType.AI_PASSIVE_CAMPAIGN);
 		game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, 0, 10, 5, 0));
 		game_network.getClient().getServerInterface().startServer();
 	}
@@ -107,20 +108,20 @@ public final strictfp class NativeIsland2 extends Island {
 		int start_x = 100*2;
 		int start_y = 73*2;
 		ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-		local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"), false));
+		local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"), false));
 		local_player.getChieftain().increaseMagicEnergy(0, 1000);
 		local_player.getChieftain().increaseMagicEnergy(1, 1000);
 		for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UnitType.PEON));
         }
 		for (int i = 0; i < getCampaign().getState().getNumRockWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
         }
 		for (int i = 0; i < getCampaign().getState().getNumIronWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UnitType.WARRIOR_IRON));
         }
 		for (int i = 0; i < getCampaign().getState().getNumRubberWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UnitType.WARRIOR_RUBBER));
         }
 
 		// Move start position (for the camera)
@@ -204,8 +205,8 @@ public final strictfp class NativeIsland2 extends Island {
 		new PlayerEleminatedTrigger(runnable, captives);
 
 		// Insert towers
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 42, 83);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 63, 89);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_IRON, 42, 83);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_IRON, 63, 89);
 	}
 
         @Override

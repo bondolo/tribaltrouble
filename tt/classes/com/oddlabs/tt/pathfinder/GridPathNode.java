@@ -13,7 +13,7 @@ public final strictfp class GridPathNode implements PathNode {
 		return dir;
 	}
 
-        @Override
+    @Override
 	public PathNode getParent() {
 		return parent;
 	}

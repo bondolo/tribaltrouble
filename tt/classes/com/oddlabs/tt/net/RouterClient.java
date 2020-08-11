@@ -32,8 +32,8 @@ public final strictfp class RouterClient implements ConnectionInterface {
 	public GameInterface getInterface() {
 		return game_interface;
 	}
-	
-        @Override
+
+    @Override
 	public void handle(Object sender, ARMIEvent armi_event) {
 		try {
 			armi_event.execute(interface_methods, router_handler);
@@ -43,15 +43,15 @@ public final strictfp class RouterClient implements ConnectionInterface {
 		}
 	}
 
-        @Override
+    @Override
 	public void writeBufferDrained(AbstractConnection conn) {
 	}
 
-        @Override
+    @Override
 	public void connected(AbstractConnection conn) {
 	}
 
-        @Override
+    @Override
 	public void error(AbstractConnection conn, IOException e) {
 		router_handler.routerFailed(e);
 	}

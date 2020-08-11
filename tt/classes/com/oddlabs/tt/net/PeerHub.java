@@ -20,6 +20,7 @@ import com.oddlabs.tt.player.PlayerInterface;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.NotificationManager;
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,7 +32,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public final strictfp class PeerHub implements Animated, RouterHandler {
+public final strictfp class PeerHub implements Closeable, Animated, RouterHandler {
 	public final static ResourceBundle bundle = ResourceBundle.getBundle(PeerHub.class.getName());
 	public final static String SYSTEM_NAME;
 
@@ -49,9 +50,9 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 	private final PlayerInterface player_interface;
 	private final int num_participants;
 	private final Peer[] peer_index_to_peer;
-	private final Map player_to_peer = new LinkedHashMap();
-	private final Map peer_to_player = new LinkedHashMap();
-	private final Set nonhuman_players = new HashSet();
+	private final Map<Player,Peer> player_to_peer = new LinkedHashMap<>();
+	private final Map<Peer,Player> peer_to_player = new LinkedHashMap<>();
+	private final Set<Player> nonhuman_players = new HashSet<>();
 	private final GUIRoot gui_root;
 	private final NetworkSelector network;
 	private final RouterClient router_client;
@@ -85,7 +86,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		this.manager = manager;
 
 		GameArgumentReader argument_reader = new GameArgumentReader(distributable_table);
-		List peer_index_to_peer_list = new ArrayList();
+		List<Peer> peer_index_to_peer_list = new ArrayList<>();
 		Player[] players = local_player.getWorld().getPlayers();
 		int local_peer_index = -1;
 		if (!is_multiplayer) {
@@ -100,7 +101,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		}
 		for (short i = 0; i < players.length; i++) {
 			Player player = players[i];
-			if (player_slots[i].getType() != PlayerSlot.HUMAN) {
+			if (player_slots[i].getType() != PlayerSlot.PlayerType.HUMAN) {
 				nonhuman_players.add(player);
 				continue;
 			}
@@ -130,14 +131,14 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		router_client.connect(session_id, new SessionInfo(num_participants, MILLISECONDS_PER_HEARTBEAT), local_peer_index);
 	}
 
-        @Override
+    @Override
 	public void routerFailed(Exception e) {
 		System.out.println("Router failed with exception: " + e);
 		closeNetwork();
 		stall_handler.peerhubFailed();
 	}
 
-        @Override
+    @Override
 	public void heartbeat(int millis) {
 		if (millis < server_millis) {
 			routerFailed(new IOException("Invalid time received: " + millis + " (tick currently at " + getTick() + ")"));
@@ -146,7 +147,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		server_millis = millis;
 	}
 
-        @Override
+    @Override
 	public void receiveEvent(int client_id, ARMIEvent event) {
 		Peer peer = getPeerFromClientID(client_id);
 		if (peer == null) {
@@ -160,7 +161,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		}
 	}
 
-        @Override
+    @Override
 	public void receiveGameStateEvent(int client_id, int millis, ARMIEvent event) {
 		if (millis < server_millis) {
 			routerFailed(new IOException("Invalid time received for event: " + millis + " (tick currently at " + getTick() + ")"));
@@ -175,7 +176,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		peer.addEvent(millisToTickCeil(millis), event);
 	}
 
-        @Override
+    @Override
 	public void playerDisconnected(int client_id, boolean checksum_error) {
 		Peer peer = getPeerFromClientID(client_id);
 		if (checksum_error)
@@ -207,7 +208,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 	}
 
 	private Peer locatePeerFromPlayer(Player player) {
-		return (Peer)player_to_peer.get(player);
+		return player_to_peer.get(player);
 	}
 
 	private boolean isDisconnected(Peer peer) {
@@ -215,7 +216,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 	}
 
 	private Player getPlayerFromPeer(Peer peer) {
-		return (Player)peer_to_player.get(peer);
+		return peer_to_player.get(peer);
 	}
 
 	public boolean isAlive(Player player) {
@@ -246,8 +247,9 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 				doTick(t);
 				int min_tick = millisToTick(server_millis - MILLISECONDS_PER_HEARTBEAT - CLIENT_MAX_DELAY_MILLIS);
 				//System.out.println("min_tick-getTick() = " + (min_tick-getTick()));
-				while (getTick() < min_tick)
-					doTick(t);
+				while (getTick() < min_tick) {
+                    doTick(t);
+                }
 			} else
 				pause_ticks++;
 		}
@@ -310,7 +312,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		Network.getMatchmakingClient().getInterface().updateGameStatus(getTick(), status);
 	}
 
-	private Iterator getPeerIterator()  {
+	private Iterator<Peer> getPeerIterator()  {
 		return peer_to_player.keySet().iterator();
 	}
 
@@ -349,10 +351,10 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 	}
 
 	public void sendChat(String text, boolean team_only) {
-		Iterator it = getPeerIterator();
+		Iterator<Peer> it = getPeerIterator();
 		int local_team = local_player.getPlayerInfo().getTeam();
 		while (it.hasNext()) {
-			Peer peer = (Peer)it.next();
+			Peer peer = it.next();
 			int peer_team = peer.getPlayerInfo().getTeam();
 			if (!team_only || local_team == peer_team)
 				peer.getPeerHubInterface().chat(text, team_only);
@@ -360,10 +362,10 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 	}
 
 	public void sendBeacon(float x, float y) {
-		Iterator it = getPeerIterator();
+		Iterator<Peer> it = getPeerIterator();
 		int local_team = local_player.getPlayerInfo().getTeam();
 		while (it.hasNext()) {
-			Peer peer = (Peer)it.next();
+			Peer peer = it.next();
 			int peer_team = peer.getPlayerInfo().getTeam();
 			if (local_team == peer_team)
 				peer.getPeerHubInterface().beacon(x, y);
@@ -397,6 +399,7 @@ public final strictfp class PeerHub implements Animated, RouterHandler {
 		leaveGame();
 	}
 
+    @Override
 	public void close() {
 		closeNetwork();
 		LocalEventQueue.getQueue().getManager().removeAnimation(this);

@@ -7,7 +7,6 @@ import com.oddlabs.tt.form.QuestionForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.KeyboardEvent;
 import com.oddlabs.tt.gui.MenuButton;
-import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.util.Utils;
 import org.lwjgl.input.Keyboard;
 
@@ -22,7 +21,11 @@ public final strictfp class CampaignMapMenu extends Menu {
 		String abort_text = Utils.getBundleString(bundle, "end_campaign");
 		MenuButton abort = new MenuButton(abort_text, COLOR_NORMAL, COLOR_ACTIVE);
 		addChild(abort);
-		abort.addMouseClickListener(new AbortListener());
+		abort.addMouseClickListener((int button, int x, int y, int clicks) -> {
+			setMenuCentered(new QuestionForm(Utils.getBundleString(bundle, "end_game_confirm"), (int buttonform, int xform, int yform, int clicksform) -> {
+			CampaignMapForm.closeCampaign(getNetwork(), getGUIRoot().getGUI());
+		}));
+		});
 	}
 
     @Override
@@ -52,26 +55,5 @@ public final strictfp class CampaignMapMenu extends Menu {
 	protected void renderGeometry() {
 		super.renderGeometry();
 		renderBackgroundAlpha();
-	}
-
-	private final strictfp class ResumeListener implements MouseClickListener {
-        @Override
-		public void mouseClicked(int button, int x, int y, int clicks) {
-			pop();
-		}
-	}
-
-	private final strictfp class AbortListener implements MouseClickListener {
-        @Override
-		public void mouseClicked(int button, int x, int y, int clicks) {
-			setMenuCentered(new QuestionForm(Utils.getBundleString(bundle, "end_game_confirm"), new ActionAbortListener()));
-		}
-	}
-
-	private final strictfp class ActionAbortListener implements MouseClickListener {
-        @Override
-		public void mouseClicked(int button, int x, int y, int clicks) {
-			CampaignMapForm.closeCampaign(getNetwork(), getGUIRoot().getGUI());
-		}
 	}
 }

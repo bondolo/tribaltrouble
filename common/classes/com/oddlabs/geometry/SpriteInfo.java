@@ -26,6 +26,7 @@ public final strictfp class SpriteInfo implements Serializable {
 		this.clear_color = clear_color;
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public short[] getIndices() {
 		return indices;
 	}
@@ -42,14 +43,17 @@ public final strictfp class SpriteInfo implements Serializable {
 		return texcoords.getFloatArray();
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public byte[][] getSkinNames() {
 		return skin_names;
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public float[][] getSkinWeights() {
 		return skin_weights;
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public String[][] getTextures() {
 		return textures;
 	}
@@ -58,6 +62,7 @@ public final strictfp class SpriteInfo implements Serializable {
 		return bounds;
 	}
 */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public float[] getClearColor() {
 		return clear_color;
 	}

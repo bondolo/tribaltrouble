@@ -17,14 +17,17 @@ public final strictfp class LowDetailModel implements Serializable {
 		this.poly_count = indices.length/3;
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public short[] getIndices() {
 		return indices;
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public float[] getVertices() {
 		return vertices;
 	}
 
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
 	public float[] getTexCoords() {
 		return tex_coords;
 	}

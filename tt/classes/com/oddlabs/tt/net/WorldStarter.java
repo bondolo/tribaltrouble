@@ -67,7 +67,7 @@ final strictfp class WorldStarter implements LoadCallback {
 		Player[] players = viewer.getWorld().getPlayers();
 		for (short i = 0; i < players.length; i++) {
 			Player player = players[i];
-			if (player_slots[i].getType() != PlayerSlot.HUMAN)
+			if (player_slots[i].getType() != PlayerSlot.PlayerType.HUMAN)
 				continue;
 			int host_id;
 			if (player_slots[i].getAddress() != null)

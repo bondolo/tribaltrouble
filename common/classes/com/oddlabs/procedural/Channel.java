@@ -649,12 +649,10 @@ public final strictfp class Channel {
 			return this;
 		}
 		Channel channel = new Channel(new_width, new_height);
-		int x_coord = 0;
-		int y_coord = 0;
 		for (int y = 0; y < new_height; y++) {
 			for (int x = 0; x < new_width; x++) {
-				x_coord = x*width/new_width;
-				y_coord = y*height/new_height;
+				int x_coord = x*width/new_width;
+				int y_coord = y*height/new_height;
 				channel.putPixel(x, y, getPixel(x_coord, y_coord));
 			}
 		}
@@ -978,11 +976,11 @@ public final strictfp class Channel {
 		float oldval = getPixel(init_x, init_y);
 		boolean[][] marked = new boolean[width][height];
 		marked[init_x][init_y] = true;
-		List list = new java.util.LinkedList();
+		List<int[]>list = new ArrayList<>();
 		list.add(new int[]{init_x, init_y});
 
-		while (list.size() > 0) {
-			int[] coords = (int[])list.remove(0);
+		while (!list.isEmpty()) {
+			int[] coords = list.remove(0);
 			int x = coords[0];
 			int y = coords[1];
 			putPixel(x, y, value);
@@ -1019,10 +1017,10 @@ public final strictfp class Channel {
 			// flood fill
 			boolean[][] marked = new boolean[width][height];
 			marked[init_x][init_y] = true;
-			List list = new java.util.LinkedList();
+			List<int[]> list = new java.util.ArrayList<>();
 			list.add(new int[]{init_x, init_y});
 			while (list.size() > 0) {
-				int[] coords = (int[])list.remove(0);
+				int[] coords = list.remove(0);
 				int x = coords[0];
 				int y = coords[1];
 				tmp.putPixel(x, y, -1f);
@@ -1067,10 +1065,10 @@ public final strictfp class Channel {
 			// flood fill
 			boolean[][] marked = new boolean[width][height];
 			marked[init_x][init_y] = true;
-			List list = new java.util.LinkedList();
+			List<int[]> list = new java.util.ArrayList<>();
 			list.add(new int[]{init_x, init_y});
 			while (list.size() > 0) {
-				int[] coords = (int[])list.remove(0);
+				int[] coords = list.remove(0);
 				int x = coords[0];
 				int y = coords[1];
 				tmp.putPixel(x, y, -1f);

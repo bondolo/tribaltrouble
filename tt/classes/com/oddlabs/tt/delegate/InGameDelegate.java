@@ -37,7 +37,7 @@ public abstract strictfp class InGameDelegate extends CameraDelegate {
                 // F1 creates a peon at the center of the view unless the player already has maximum units.
 				if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
 					new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
-							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_PEON));
+							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UnitType.PEON));
 					return true;
 				}
 				break;
@@ -45,7 +45,7 @@ public abstract strictfp class InGameDelegate extends CameraDelegate {
                 // F2 creates a rock warrior at the center of the view unless the player already has maximum units.
 				if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
 					new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
-							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
 					return true;
 				}
 				break;
@@ -53,7 +53,7 @@ public abstract strictfp class InGameDelegate extends CameraDelegate {
                 // F3 creates a iron warrior at the center of the view unless the player already has maximum units.
 				if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
 					new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
-							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UnitType.WARRIOR_IRON));
 					return true;
 				}
 				break;
@@ -61,7 +61,7 @@ public abstract strictfp class InGameDelegate extends CameraDelegate {
                 // F4 creates a chicken warrior at the center of the view unless the player already has maximum units.
 				if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
 					new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
-							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UnitType.WARRIOR_RUBBER));
 					return true;
 				}
 				break;
@@ -69,7 +69,7 @@ public abstract strictfp class InGameDelegate extends CameraDelegate {
                 // F5 creates a chieftan at the center of the view unless the player already has one or is training one
 				if (!viewer.getLocalPlayer().hasActiveChieftain() && !viewer.getLocalPlayer().isTrainingChieftain()) {
 					Unit chieftain = new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
-							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN));
+							viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN));
 					viewer.getLocalPlayer().setActiveChieftain(chieftain);
 					return true;
 				}

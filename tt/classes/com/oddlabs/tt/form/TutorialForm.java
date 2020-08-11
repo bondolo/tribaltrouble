@@ -11,6 +11,7 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.net.WorldInitAction;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
@@ -22,22 +23,17 @@ import com.oddlabs.tt.viewer.WorldViewer;
 import java.util.ResourceBundle;
 
 public final strictfp class TutorialForm extends Form {
-	public final static int TUTORIAL_CAMERA = 1;
-	public final static int TUTORIAL_QUARTERS = 2;
-	public final static int TUTORIAL_ARMORY = 3;
-	public final static int TUTORIAL_TOWER = 4;
-	public final static int TUTORIAL_CHIEFTAIN = 5;
-	public final static int TUTORIAL_BATTLE = 6;
-
-	public final static int NUM_TUTORIALS = 6;
+    public enum TutorialType {
+        TUTORIAL_CAMERA, TUTORIAL_QUARTERS,TUTORIAL_ARMORY,TUTORIAL_TOWER,TUTORIAL_CHIEFTAIN,TUTORIAL_BATTLE
+    }
 
 	private final static ResourceBundle bundle = ResourceBundle.getBundle(TutorialForm.class.getName());
 
 	private final GUIRoot gui_root;
 	private final NetworkSelector network;
 
-	private static String formatTutorial(int tutorial_number) {
-		return Utils.getBundleString(bundle, "tutorial", new Object[]{Integer.toString(tutorial_number)});
+	private static String formatTutorial(TutorialType tutorial) {
+		return Utils.getBundleString(bundle, "tutorial", new Object[]{Integer.toString(tutorial.ordinal() + 1)});
 	}
 
 	public TutorialForm(NetworkSelector network, GUIRoot gui_root) {
@@ -46,38 +42,38 @@ public final strictfp class TutorialForm extends Form {
 		Label headline = new Label(Utils.getBundleString(bundle, "tutorial_caption"), Skin.getSkin().getHeadlineFont());
 		addChild(headline);
 
-		HorizButton button_tutorial1 = new HorizButton(formatTutorial(TUTORIAL_CAMERA), 120);
-		button_tutorial1.addMouseClickListener(new TutorialListener(TUTORIAL_CAMERA));
+		HorizButton button_tutorial1 = new HorizButton(formatTutorial(TutorialType.TUTORIAL_CAMERA), 120);
+		button_tutorial1.addMouseClickListener(new TutorialListener(TutorialType.TUTORIAL_CAMERA));
 		addChild(button_tutorial1);
 		Label label_tutorial1 = new Label(Utils.getBundleString(bundle, "tutorial1_tip"), Skin.getSkin().getEditFont());
 		addChild(label_tutorial1);
 
-		HorizButton button_tutorial2 = new HorizButton(formatTutorial(TUTORIAL_QUARTERS), 120);
-		button_tutorial2.addMouseClickListener(new TutorialListener(TUTORIAL_QUARTERS));
+		HorizButton button_tutorial2 = new HorizButton(formatTutorial(TutorialType.TUTORIAL_QUARTERS), 120);
+		button_tutorial2.addMouseClickListener(new TutorialListener(TutorialType.TUTORIAL_QUARTERS));
 		addChild(button_tutorial2);
 		Label label_tutorial2 = new Label(Utils.getBundleString(bundle, "tutorial2_tip"), Skin.getSkin().getEditFont());
 		addChild(label_tutorial2);
 
-		HorizButton button_tutorial3 = new HorizButton(formatTutorial(TUTORIAL_ARMORY), 120);
-		button_tutorial3.addMouseClickListener(new TutorialListener(TUTORIAL_ARMORY));
+		HorizButton button_tutorial3 = new HorizButton(formatTutorial(TutorialType.TUTORIAL_ARMORY), 120);
+		button_tutorial3.addMouseClickListener(new TutorialListener(TutorialType.TUTORIAL_ARMORY));
 		addChild(button_tutorial3);
 		Label label_tutorial3 = new Label(Utils.getBundleString(bundle, "tutorial3_tip"), Skin.getSkin().getEditFont());
 		addChild(label_tutorial3);
 
-		HorizButton button_tutorial4 = new HorizButton(formatTutorial(TUTORIAL_TOWER), 120);
-		button_tutorial4.addMouseClickListener(new TutorialListener(TUTORIAL_TOWER));
+		HorizButton button_tutorial4 = new HorizButton(formatTutorial(TutorialType.TUTORIAL_TOWER), 120);
+		button_tutorial4.addMouseClickListener(new TutorialListener(TutorialType.TUTORIAL_TOWER));
 		addChild(button_tutorial4);
 		Label label_tutorial4 = new Label(Utils.getBundleString(bundle, "tutorial4_tip"), Skin.getSkin().getEditFont());
 		addChild(label_tutorial4);
 
-		HorizButton button_tutorial5 = new HorizButton(formatTutorial(TUTORIAL_CHIEFTAIN), 120);
-		button_tutorial5.addMouseClickListener(new TutorialListener(TUTORIAL_CHIEFTAIN));
+		HorizButton button_tutorial5 = new HorizButton(formatTutorial(TutorialType.TUTORIAL_CHIEFTAIN), 120);
+		button_tutorial5.addMouseClickListener(new TutorialListener(TutorialType.TUTORIAL_CHIEFTAIN));
 		addChild(button_tutorial5);
 		Label label_tutorial5 = new Label(Utils.getBundleString(bundle, "tutorial5_tip"), Skin.getSkin().getEditFont());
 		addChild(label_tutorial5);
 
-		HorizButton button_tutorial6 = new HorizButton(formatTutorial(TUTORIAL_BATTLE), 120);
-		button_tutorial6.addMouseClickListener(new TutorialListener(TUTORIAL_BATTLE));
+		HorizButton button_tutorial6 = new HorizButton(formatTutorial(TutorialType.TUTORIAL_BATTLE), 120);
+		button_tutorial6.addMouseClickListener(new TutorialListener(TutorialType.TUTORIAL_BATTLE));
 		addChild(button_tutorial6);
 		Label label_tutorial6 = new Label(Utils.getBundleString(bundle, "tutorial6_tip"), Skin.getSkin().getEditFont());
 		addChild(label_tutorial6);
@@ -131,7 +127,7 @@ public final strictfp class TutorialForm extends Form {
 	private static void startNewGame(NetworkSelector network, GUIRoot gui_root, TriggerFactory factory, int tutorial_num) {
 		TutorialInGameInfo ingame_info = new TutorialInGameInfo();
 		GameNetwork game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction(factory, ingame_info), Player.INITIAL_UNIT_COUNT, tutorial_num);
-		game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_NONE);
+		game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.PlayerType.HUMAN, RacesResources.RACE_NATIVES, 0, true, AIType.AI_NONE);
 		game_network.getClient().getServerInterface().startServer();
 	}
 
@@ -150,14 +146,14 @@ public final strictfp class TutorialForm extends Form {
 		return MainMenu.startNewGame(network, gui_root, null, new WorldParameters(Game.GAMESPEED_NORMAL, "Tutorial" + tutorial_num, initial_unit_count, Player.DEFAULT_MAX_UNIT_COUNT), ingame_info, compound_action, null, size, Landscape.TerrainType.NATIVE, hills, trees, 0f, seed, new String[]{ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"});
 	}
 
-	public static boolean checkTutorial(GUIRoot gui_root, int tutorial_number) {
+	public static boolean checkTutorial(GUIRoot gui_root, TutorialType tutorial_number) {
 		return true;
 	}
 
-	public static void startTutorial(NetworkSelector network, GUIRoot gui_root, int tutorial_number) {
+	public static void startTutorial(NetworkSelector network, GUIRoot gui_root, TutorialType tutorial) {
 		final TutorialInGameInfo ingame_info;
 		GameNetwork game_network;
-		switch (tutorial_number) {
+		switch (tutorial) {
 			case TUTORIAL_CAMERA:
 				startNewGame(network, gui_root, (WorldViewer viewer) -> new ScrollTrigger(viewer.getLocalPlayer()), 1);
 				break;
@@ -171,29 +167,29 @@ public final strictfp class TutorialForm extends Form {
 				ingame_info = new TutorialInGameInfo();
 				WorldInitAction action = (WorldViewer viewer) -> {
                                     Player player = viewer.getLocalPlayer();
-                                    new Unit(player, player.getStartX(), player.getStartY(), null, player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+                                    new Unit(player, player.getStartX(), player.getStartY(), null, player.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
                                     new Tutorial(viewer, ingame_info, new SelectTowerTrigger(viewer.getLocalPlayer()));
                 };
 				game_network = doStartNewGame(network, gui_root, ingame_info, action, 10, 4);
-				game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_TOWER_TUTORIAL);
+				game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.PlayerType.HUMAN, RacesResources.RACE_NATIVES, 0, true, AIType.AI_TOWER_TUTORIAL);
 				game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 10, 0, 0, 0));
-				game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI, RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_TOWER_TUTORIAL);
+				game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.PlayerType.AI, RacesResources.RACE_VIKINGS, 1, true, AIType.AI_TOWER_TUTORIAL);
 				game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 				game_network.getClient().getServerInterface().startServer();
 				break;
 			case TUTORIAL_CHIEFTAIN:
 				ingame_info = new TutorialInGameInfo();
 				game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction((WorldViewer viewer) -> new BuildingChieftainTrigger(viewer.getLocalPlayer()), ingame_info), Player.INITIAL_UNIT_COUNT, 5);
-				game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_NONE);
-				game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI, RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_CHIEFTAIN_TUTORIAL);
+				game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.PlayerType.HUMAN, RacesResources.RACE_NATIVES, 0, true, AIType.AI_NONE);
+				game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.PlayerType.AI, RacesResources.RACE_VIKINGS, 1, true, AIType.AI_CHIEFTAIN_TUTORIAL);
 				game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 				game_network.getClient().getServerInterface().startServer();
 				break;
 			case TUTORIAL_BATTLE:
 				ingame_info = new TutorialInGameInfo();
 				game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction((WorldViewer viewer) -> new TutorialOverTrigger(), ingame_info), Player.INITIAL_UNIT_COUNT, 6);
-				game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_NONE);
-				game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI, RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_BATTLE_TUTORIAL);
+				game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.PlayerType.HUMAN, RacesResources.RACE_NATIVES, 0, true, AIType.AI_NONE);
+				game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.PlayerType.AI, RacesResources.RACE_VIKINGS, 1, true, AIType.AI_BATTLE_TUTORIAL);
 				game_network.getClient().setUnitInfo(1, new UnitInfo(true, true, 0, false, 0, 15, 0, 0));
 				game_network.getClient().getServerInterface().startServer();
 				break;
@@ -203,16 +199,16 @@ public final strictfp class TutorialForm extends Form {
 	}
 
 	private final strictfp class TutorialListener implements MouseClickListener {
-		private final int number;
+		private final TutorialType tutorial;
 
-		public TutorialListener(int number) {
-			this.number = number;
+		public TutorialListener(TutorialType tutorial) {
+			this.tutorial = tutorial;
 		}
 
-                @Override
+        @Override
 		public void mouseClicked(int button, int x, int y, int clicks) {
-			if (checkTutorial(gui_root, number)) {
-				startTutorial(network, gui_root, number);
+			if (checkTutorial(gui_root, tutorial)) {
+				startTutorial(network, gui_root, tutorial);
 				TutorialForm.this.remove();
 			}
 		}

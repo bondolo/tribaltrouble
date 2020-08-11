@@ -191,32 +191,32 @@ public final strictfp class WorldViewer implements Animated {
     }
 
     private void initPlayer(ResourceBundle bundle, float[] starting_location, PlayerSlot slot, Player player, UnitInfo unit_info, int initial_gamespeed) {
-        if (slot.getType() == PlayerSlot.AI) {
+        if (slot.getType() == PlayerSlot.PlayerType.AI) {
             AI ai = null;
             switch (slot.getAIDifficulty()) {
-                case PlayerSlot.AI_NORMAL:
+                case AI_NORMAL:
                     ai = new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_NORMAL);
                     break;
-                case PlayerSlot.AI_HARD:
+                case AI_HARD:
                     ai = new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_HARD);
                     break;
-                case PlayerSlot.AI_EASY:
+                case AI_EASY:
                     ai = new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_EASY);
                     break;
-                case PlayerSlot.AI_BATTLE_TUTORIAL:
+                case AI_BATTLE_TUTORIAL:
                     ai = new PassiveAI(player, unit_info, true);
                     break;
-                case PlayerSlot.AI_TOWER_TUTORIAL:
+                case AI_TOWER_TUTORIAL:
                     break;
-                case PlayerSlot.AI_CHIEFTAIN_TUTORIAL:
-                    new Unit(player, 100, 100, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
-                    new Unit(player, 200, 100, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
-                    new Unit(player, 40, 200, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
+                case AI_CHIEFTAIN_TUTORIAL:
+                    new Unit(player, 100, 100, null, player.getRace().getUnitTemplate(Race.UnitType.PEON));
+                    new Unit(player, 200, 100, null, player.getRace().getUnitTemplate(Race.UnitType.PEON));
+                    new Unit(player, 40, 200, null, player.getRace().getUnitTemplate(Race.UnitType.PEON));
                     break;
-                case PlayerSlot.AI_PASSIVE_CAMPAIGN:
+                case AI_PASSIVE_CAMPAIGN:
                     ai = new PassiveAI(player, unit_info, true);
                     break;
-                case PlayerSlot.AI_NEUTRAL_CAMPAIGN:
+                case AI_NEUTRAL_CAMPAIGN:
                     ai = new PassiveAI(player, unit_info, false);
                     break;
                 default:
@@ -227,24 +227,24 @@ public final strictfp class WorldViewer implements Animated {
             player.setPreferredGamespeed(initial_gamespeed);
             int i = 0;
             for (int j = 0; j < unit_info.getNumPeons(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UnitType.PEON));
             }
             for (int j = 0; j < unit_info.getNumRockWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
             }
             for (int j = 0; j < unit_info.getNumIronWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UnitType.WARRIOR_IRON));
             }
             for (int j = 0; j < unit_info.getNumRubberWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UnitType.WARRIOR_RUBBER));
             }
             if (unit_info.hasChieftain()) {
                 Unit chieftain;
                 if (player.getRace().getChieftainAI() instanceof VikingChieftainAI)
-                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle, "chieftain_name"), false);
+                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN), Utils.getBundleString(bundle, "chieftain_name"), false);
                 else
                     if (player.getRace().getChieftainAI() instanceof NativeChieftainAI)
-                        chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle, "native_chieftain_name"), false);
+                        chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN), Utils.getBundleString(bundle, "native_chieftain_name"), false);
                     else
                         throw new RuntimeException();
                 chieftain.increaseMagicEnergy(0, 1000);

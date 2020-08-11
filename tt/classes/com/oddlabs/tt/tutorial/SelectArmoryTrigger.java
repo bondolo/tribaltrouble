@@ -10,8 +10,8 @@ public final strictfp class SelectArmoryTrigger extends TutorialTrigger {
 		super(.1f, 0f, "select_armory");
 		player.enableRepairing(false);
 		player.enableAttacking(false);
-		player.enableBuilding(Race.BUILDING_QUARTERS, false);
-		player.enableBuilding(Race.BUILDING_TOWER, false);
+		player.enableBuilding(Race.BuildingType.QUARTERS, false);
+		player.enableBuilding(Race.BuildingType.TOWER, false);
 		player.enableHarvesting(false);
 		player.enableWeapons(false);
 		player.enableArmies(false);
@@ -20,7 +20,7 @@ public final strictfp class SelectArmoryTrigger extends TutorialTrigger {
 		player.enableChieftains(false);
 	}
 
-        @Override
+    @Override
 	protected void run(Tutorial tutorial) {
 		Building building = tutorial.getViewer().getSelection().getCurrentSelection().getBuilding();
 		if (building != null && building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES))

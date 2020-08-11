@@ -4,46 +4,46 @@ import java.nio.*;
 import java.nio.file.Path;
 
 public final strictfp class NotDeterministic extends Deterministic {
-        @Override
+    @Override
 	public boolean isPlayback() {
 		return false;
 	}
 
-        @Override
+    @Override
 	public void endLog() {
 	}
 
-        @Override
+    @Override
 	protected byte log(byte b, byte def) {
 		return b;
 	}
 
-        @Override
+    @Override
 	protected char log(char c, char def) {
 		return c;
 	}
 
-        @Override
+    @Override
 	protected int log(int i, int def) {
 		return i;
 	}
 
-        @Override
+    @Override
 	protected long log(long l, long def) {
 		return l;
 	}
 
-        @Override
+    @Override
 	protected float log(float f, float def) {
 		return f;
 	}
 
-        @Override
-	protected Object logObject(Object o) {
+    @Override
+	protected <T> T logObject(T o) {
 		return o;
 	}
 
-        @Override
+    @Override
 	protected void logBuffer(ByteBuffer b) {
 		b.position(b.limit());
 	}

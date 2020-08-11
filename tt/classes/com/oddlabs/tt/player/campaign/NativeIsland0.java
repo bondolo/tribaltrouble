@@ -19,6 +19,7 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
@@ -49,18 +50,18 @@ public final strictfp class NativeIsland0 extends Island {
 		// gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
 		GameNetwork game_network = startNewGame(network, gui_root, 1024, Landscape.TerrainType.NATIVE, .75f, .65f, .85f, 25, 0, NativeCampaign.MAX_UNITS, ai_names);
 		game_network.getClient().getServerInterface().setPlayerSlot(0,
-				PlayerSlot.HUMAN,
+				PlayerSlot.PlayerType.HUMAN,
 				RacesResources.RACE_NATIVES,
 				0,
 				true,
-				PlayerSlot.AI_NONE);
+				AIType.AI_NONE);
 		game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 		game_network.getClient().getServerInterface().setPlayerSlot(1,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				PlayerInfo.TEAM_NEUTRAL,
 				true,
-				PlayerSlot.AI_NEUTRAL_CAMPAIGN);
+				AIType.AI_NEUTRAL_CAMPAIGN);
 		game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 		switch (getCampaign().getState().getDifficulty()) {
 			case CampaignState.DIFFICULTY_EASY:
@@ -73,18 +74,18 @@ public final strictfp class NativeIsland0 extends Island {
 				throw new RuntimeException();
 		}
 		game_network.getClient().getServerInterface().setPlayerSlot(2,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_VIKINGS,
 				1,
 				true,
-				PlayerSlot.AI_HARD);
+				AIType.AI_HARD);
 		game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 		game_network.getClient().getServerInterface().setPlayerSlot(3,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				0,
 				true,
-				PlayerSlot.AI_NEUTRAL_CAMPAIGN);
+				AIType.AI_NEUTRAL_CAMPAIGN);
 		game_network.getClient().setUnitInfo(3, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 		game_network.getClient().getServerInterface().startServer();
 	}
@@ -127,16 +128,16 @@ public final strictfp class NativeIsland0 extends Island {
 
 		// Insert initial natives
 		ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-		local_player.setActiveChieftain(new Unit(local_player, chief_start_x, chief_start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"), false));
+		local_player.setActiveChieftain(new Unit(local_player, chief_start_x, chief_start_y, null, local_player.getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"), false));
 //		local_player.getChieftain().increaseMagicEnergy(0, 1000);
 //		local_player.getChieftain().increaseMagicEnergy(1, 1000);
 
-		natives.buildBuilding(Race.BUILDING_QUARTERS, 135, 128);
-		natives.buildBuilding(Race.BUILDING_ARMORY, 143, 124);
-		new Unit(natives, 145*2, 127*2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-		new Unit(natives, 149*2, 122*2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-		new Unit(natives, 145*2, 119*2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-		new Unit(natives, 150*2, 125*2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+		natives.buildBuilding(Race.BuildingType.QUARTERS, 135, 128);
+		natives.buildBuilding(Race.BuildingType.ARMORY, 143, 124);
+		new Unit(natives, 145*2, 127*2, null, natives.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
+		new Unit(natives, 149*2, 122*2, null, natives.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
+		new Unit(natives, 145*2, 119*2, null, natives.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
+		new Unit(natives, 150*2, 125*2, null, natives.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
 
 		// Insert reinforcements
 		int num_reinforcements;
@@ -155,38 +156,38 @@ public final strictfp class NativeIsland0 extends Island {
 		}
 		final Unit[] reinforcement_peons = new Unit[num_reinforcements];
 
-		reinforcement_peons[0] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-		reinforcement_peons[1] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-		reinforcement_peons[2] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-		reinforcement_peons[3] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-		reinforcement_peons[4] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-		reinforcement_peons[5] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
+		reinforcement_peons[0] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+		reinforcement_peons[1] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+		reinforcement_peons[2] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+		reinforcement_peons[3] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+		reinforcement_peons[4] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+		reinforcement_peons[5] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
 		if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_EASY || getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_NORMAL) {
-			reinforcement_peons[6] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-			reinforcement_peons[7] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-			reinforcement_peons[8] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-			reinforcement_peons[9] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
+			reinforcement_peons[6] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+			reinforcement_peons[7] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+			reinforcement_peons[8] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+			reinforcement_peons[9] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
 		}
 		if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_EASY) {
-			reinforcement_peons[10] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-			reinforcement_peons[11] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-			reinforcement_peons[12] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-			reinforcement_peons[13] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
-			reinforcement_peons[14] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UNIT_PEON));
+			reinforcement_peons[10] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+			reinforcement_peons[11] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+			reinforcement_peons[12] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+			reinforcement_peons[13] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
+			reinforcement_peons[14] = new Unit(reinforcements, 230*2, 108*2, null, reinforcements.getRace().getUnitTemplate(Race.UnitType.PEON));
 		}
 
 		// Insert viking men
-		enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
+		enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
 		enemy.getChieftain().increaseMagicEnergy(0, 1000);
 		enemy.getChieftain().increaseMagicEnergy(1, 1000);
 
 		int num_iron = 45;
 		for (int i = 0; i < num_iron; i++) {
-			new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+			new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UnitType.WARRIOR_IRON));
 		}
 		int num_rubber = 15;
 		for (int i = 0; i < num_rubber; i++) {
-			new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+			new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UnitType.WARRIOR_RUBBER));
 		}
 		// Initiate attack
 		Building armory = natives.getArmory();
@@ -293,7 +294,7 @@ public final strictfp class NativeIsland0 extends Island {
                             throw new RuntimeException();
                     }
                     for (int i = 0; i < num_peons; i++) {
-                        new Unit(enemy, new_viking_start_x, new_viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UNIT_PEON));
+                        new Unit(enemy, new_viking_start_x, new_viking_start_y, null, enemy.getRace().getUnitTemplate(Race.UnitType.PEON));
                     }
                     // Remove natives
                     Selectable[] native_selectables = new Selectable[natives.getUnits().getSet().size()];

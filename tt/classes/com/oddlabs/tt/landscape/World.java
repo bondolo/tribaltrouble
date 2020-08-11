@@ -6,6 +6,7 @@ import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.gui.Icons;
 import com.oddlabs.tt.model.AbstractElementNode;
+import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.SupplyManager;
@@ -19,8 +20,11 @@ import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.resource.WorldInfo;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final strictfp class World {
 	public final static int GAMESPEED_DONTCARE = -2;
@@ -33,7 +37,7 @@ public final strictfp class World {
 			AnimationManager.ANIMATION_SECONDS_PER_TICK*4};
 
 	private final HeightMap world;
-	private final Random random;
+	private final Random random = new Random(42);
 	private final AnimationManager animation_manager_game_time;
 	private final AnimationManager animation_manager_real_time;
 	private final AudioImplementation audio_impl;
@@ -47,7 +51,7 @@ public final strictfp class World {
 	private final LandscapeTileIndices landscape_indices;
 	private final AbstractPatchGroup patch_root;
 	private final AbstractTreeGroup tree_root;
-	private final AbstractElementNode element_root;
+	private final AbstractElementNode<Model> element_root;
 	private final RacesResources races_resources;
 	private final LandscapeResources landscape_resources;
 
@@ -118,19 +122,19 @@ public final strictfp class World {
 	}
 
 	public void gamespeedChanged() {
-		int new_gamespeed = GAMESPEED_DONTCARE;
-            for (Player player : players) {
-                int gamespeed = player.getPreferredGamespeed();
-                if (gamespeed != GAMESPEED_DONTCARE) {
-                    if (new_gamespeed != GAMESPEED_DONTCARE && gamespeed != new_gamespeed)
-                        return;
-                    new_gamespeed = gamespeed;
-                }
-            }
-		if (new_gamespeed != GAMESPEED_DONTCARE && new_gamespeed != gamespeed) {
-			gamespeed = new_gamespeed;
-			getNotificationListener().gamespeedChanged(gamespeed);
-		}
+        Set<Integer> speeds = Arrays.stream(players)
+                .map(Player::getPreferredGamespeed)
+                .filter(World::isValidGamespeed)
+                .distinct()
+                .collect(Collectors.toSet());
+
+        if (1 != speeds.size()) {
+            // no stated preferences or no agreement
+            return;
+        }
+
+		gamespeed = speeds.iterator().next();
+    	getNotificationListener().gamespeedChanged(gamespeed);
 	}
 
 	public void tick(float t) {
@@ -152,12 +156,9 @@ public final strictfp class World {
 		this.gamespeed = world_params.getInitialGameSpeed();
 		long time_start = System.currentTimeMillis();
 
-		int num_players = player_infos.length;
-
 		world = new HeightMap(this, world_info.meters_per_world, world_info.sea_level_meters, world_info.texels_per_colormap, world_info.chunks_per_colormap, world_info.heightmap, world_info.trees, world_info.access_grid, world_info.build_grid);
 		animation_manager_game_time = new AnimationManager();
 		animation_manager_real_time = new AnimationManager();
-		random = new Random(42);
 
 		List<Player> player_list = new ArrayList<>();
 		for (short i = 0; i < player_infos.length; i++) {
@@ -181,7 +182,7 @@ public final strictfp class World {
 		AbstractElementNode.buildSupplies(this, world_info.iron, world_info.rocks, world_info.plants, terrain);
 	}
 
-	public AbstractElementNode getElementRoot() {
+	public AbstractElementNode<Model> getElementRoot() {
 		return element_root;
 	}
 

@@ -23,11 +23,11 @@ public strictfp class FirstPersonDelegate extends InGameDelegate {
 		done = true;
 	}
 
-        @Override
+    @Override
 	public void keyPressed(KeyboardEvent event) {
 	}
 
-        @Override
+    @Override
 	public void keyReleased(KeyboardEvent event) {
 		if (key_pressed && !done) {
 			switch (event.getKeyCode()) {
@@ -38,17 +38,17 @@ public strictfp class FirstPersonDelegate extends InGameDelegate {
 		}
 	}
 
-        @Override
+    @Override
 	public void mouseScrolled(int amount) {
 	}
 
-        @Override
+    @Override
 	public void mouseMoved(int x, int y) {
 		if (!done)
 			getCamera().mouseMoved(x, y);
 	}
 
-        @Override
+    @Override
 	public void mouseDragged(int button, int x, int y, int relative_x, int relative_y, int absolute_x, int absolute_y) {
 		if (created_tick == LocalEventQueue.getQueue().getManager().getTick())
 			return;
@@ -57,23 +57,23 @@ public strictfp class FirstPersonDelegate extends InGameDelegate {
 		}
 	}
 
-        @Override
+    @Override
 	public void mousePressed(int button, int x, int y) {
 	}
 
-        @Override
+    @Override
 	public void mouseReleased(int button, int x, int y) {
 		if (button == LocalInput.MIDDLE_BUTTON && !key_pressed && !done) {
 			pop();
 		}
 	}
 
-        @Override
+   @Override
 	protected int getCursorIndex() {
 		return GUIRoot.CURSOR_NULL;
 	}
 
-        @Override
+    @Override
 	public final void doRemove() {
 		super.doRemove();
 		if (!done) {

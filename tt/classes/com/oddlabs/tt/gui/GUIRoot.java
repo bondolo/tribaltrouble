@@ -351,7 +351,7 @@ System.out.println("Globals.run_ai = " + Globals.run_ai);
 				}
 				break;
 			case Keyboard.KEY_D:
-				Globals.switchBoundingMode();
+				Globals.rotateBoundingMode();
 				break;
 			case Keyboard.KEY_V:
 				Globals.frustum_freeze = !Globals.frustum_freeze;

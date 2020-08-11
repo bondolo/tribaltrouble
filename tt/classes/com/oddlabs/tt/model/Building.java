@@ -41,9 +41,9 @@ public final strictfp class Building extends Selectable implements Occupant {
 	private final static int PLACING_BORDER = 1;
 	private final static int MAX_SUPPLY_COUNT = 200;
 
-	public final static Cost COST_ROCK_WEAPON = new Cost(new Class<?>[]{TreeSupply.class, RockSupply.class}, new int[]{2, 1});
-	public final static Cost COST_IRON_WEAPON = new Cost(new Class<?>[]{TreeSupply.class, IronSupply.class}, new int[]{2, 1});
-	public final static Cost COST_RUBBER_WEAPON = new Cost(new Class<?>[]{TreeSupply.class, RockSupply.class, IronSupply.class, RubberSupply.class}, new int[]{2, 1, 1, 1});
+	public final static Cost COST_ROCK_WEAPON = new Cost((Class<? extends Supply>[])new Class[]{TreeSupply.class, RockSupply.class}, new int[]{2, 1});
+	public final static Cost COST_IRON_WEAPON = new Cost((Class<? extends Supply>[])new Class[]{TreeSupply.class, IronSupply.class}, new int[]{2, 1});
+	public final static Cost COST_RUBBER_WEAPON = new Cost((Class<? extends Supply>[])new Class[]{TreeSupply.class, RockSupply.class, IronSupply.class, RubberSupply.class}, new int[]{2, 1, 1, 1});
 
 	public final static int KEY_DEPLOY_ROCK_WARRIOR = 0;
 	public final static int KEY_DEPLOY_IRON_WARRIOR = 1;
@@ -62,7 +62,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 
 	private final Map<Class<?>, SupplyContainer> supply_containers = new HashMap<>();
 	private final Map<Class<?>, BuildProductionContainer> build_containers = new HashMap<>();
-	private final DeployContainer[] deploy_containers = new DeployContainer[12];
+	private final DeployContainer<?>[] deploy_containers = new DeployContainer<?>[12];
 	private final LinearEmitter damaged_emitter;
 	private final LinearEmitter production_emitter;
 
@@ -123,12 +123,12 @@ public final strictfp class Building extends Selectable implements Occupant {
 		production_emitter.stop();
 	}
 
-        @Override
+    @Override
 	public float getOffsetZ() {
 		return 0;
 	}
 
-        @Override
+    @Override
 	public void visit(ElementVisitor visitor) {
 		visitor.visitBuilding(this);
 	}
@@ -145,7 +145,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 		return rally_point;
 	}
 
-        @Override
+    @Override
 	protected void doAnimate(float t) {
 		if (!isDead()) {
 			UnitContainer unit_container = getUnitContainer();
@@ -155,18 +155,18 @@ public final strictfp class Building extends Selectable implements Occupant {
 				weapons_producer.animate(t);
 
 			int num_deploying = 0;
-                    for (DeployContainer deploy_container : deploy_containers) {
-                        if (deploy_container != null && deploy_container.getNumSupplies() > 0) {
-                            num_deploying++;
-                        }
-                    }
+            for (DeployContainer<?> deploy_container : deploy_containers) {
+                if (deploy_container != null && deploy_container.getNumSupplies() > 0) {
+                    num_deploying++;
+                }
+            }
 			if (num_deploying > 0) {
 				float amount = t/num_deploying;
-                        for (DeployContainer deploy_container : deploy_containers) {
-                            if (deploy_container != null && deploy_container.getNumSupplies() > 0) {
-                                deploy_container.deploy(amount);
-                            }
-                        }
+                for (DeployContainer<?> deploy_container : deploy_containers) {
+                    if (deploy_container != null && deploy_container.getNumSupplies() > 0) {
+                        deploy_container.deploy(amount);
+                    }
+                }
 			}
 		}
 
@@ -208,7 +208,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 		return (BuildSupplyContainer)build_containers.get(key);
 	}
 
-	public DeployContainer getDeployContainer(int key) {
+	public DeployContainer<?> getDeployContainer(int key) {
 		assert !isDead();
 		return deploy_containers[key];
 	}
@@ -266,7 +266,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 		for (int i = 0; i < amount; i++) {
 			getUnitContainer().prepareDeploy(-1);
 			getUnitContainer().exit();
-			Unit unit = createUnit(null, race.getUnitTemplate(Race.UNIT_PEON));
+			Unit unit = createUnit(null, race.getUnitTemplate(Race.UnitType.PEON));
 			unit.pushController(new GatherController<>(unit, null, supply_type));
 		}
 	}
@@ -304,7 +304,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 		chieftain_container.stopTraining();
 		getOwner().setTrainingChieftain(false);
 		is_training_chieftain = false;
-		Unit chieftain = createUnit( null, getOwner().getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN));
+		Unit chieftain = createUnit( null, getOwner().getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN));
 		getOwner().setActiveChieftain(chieftain);
 	}
 
@@ -314,13 +314,13 @@ public final strictfp class Building extends Selectable implements Occupant {
 
 	public void createArmy(int num_peon, int num_rock, int num_iron, int num_rubber) {
 		assert !isDead();
-		createArmy(num_peon, Race.UNIT_PEON);
-		createArmy(num_rock, Race.UNIT_WARRIOR_ROCK);
-		createArmy(num_iron, Race.UNIT_WARRIOR_IRON);
-		createArmy(num_rubber, Race.UNIT_WARRIOR_RUBBER);
+		createArmy(num_peon, Race.UnitType.PEON);
+		createArmy(num_rock, Race.UnitType.WARRIOR_ROCK);
+		createArmy(num_iron, Race.UnitType.WARRIOR_IRON);
+		createArmy(num_rubber, Race.UnitType.WARRIOR_RUBBER);
 	}
 
-	private void createArmy(int amount, int template) {
+	private void createArmy(int amount, Race.UnitType template) {
 		Race race = getOwner().getRace();
 		checkRallyPoint();
 		for (int i = 0; i < amount; i++) {
@@ -352,7 +352,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 		for (int i = 0; i < amount; i++) {
 			getUnitContainer().prepareDeploy(-1);
 			getUnitContainer().exit();
-			Unit unit = createUnit(hasRallyPoint() ? rally_point : null, race.getUnitTemplate(Race.UNIT_PEON));
+			Unit unit = createUnit(hasRallyPoint() ? rally_point : null, race.getUnitTemplate(Race.UnitType.PEON));
 			unit.getSupplyContainer().increaseSupply(unit.getSupplyContainer().getMaxSupplyCount(), supply);
 		//	getSupplyContainer(supply).increaseSupply(-unit.getSupplyContainer().getMaxSupplyCount());
 		//	getSupplyContainer(supply).prepareDeploy(-unit.getSupplyContainer().getMaxSupplyCount());
@@ -439,18 +439,18 @@ public final strictfp class Building extends Selectable implements Occupant {
 
 					weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer)getUnitContainer(), production_containers, production_emitter);
 
-					DeployContainer rock_warrior_container = new DeployContainer(this, 1f, KEY_DEPLOY_ROCK_WARRIOR, RockAxeWeapon.class);
-					DeployContainer iron_warrior_container = new DeployContainer(this, 1.5f, KEY_DEPLOY_IRON_WARRIOR, IronAxeWeapon.class);
-					DeployContainer rubber_warrior_container = new DeployContainer(this, 2f, KEY_DEPLOY_RUBBER_WARRIOR, RubberAxeWeapon.class);
-					DeployContainer peon_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON, null);
-					DeployContainer peon_harvest_tree_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_TREE, null);
-					DeployContainer peon_transport_tree_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_TREE, TreeSupply.class);
-					DeployContainer peon_harvest_rock_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_ROCK, null);
-					DeployContainer peon_transport_rock_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_ROCK, RockSupply.class);
-					DeployContainer peon_harvest_iron_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_IRON, null);
-					DeployContainer peon_transport_iron_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_IRON, IronSupply.class);
-					DeployContainer peon_harvest_rubber_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_RUBBER, null);
-					DeployContainer peon_transport_rubber_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_RUBBER, RubberSupply.class);
+					DeployContainer<?> rock_warrior_container = new DeployContainer(this, 1f, KEY_DEPLOY_ROCK_WARRIOR, RockAxeWeapon.class);
+					DeployContainer<?> iron_warrior_container = new DeployContainer(this, 1.5f, KEY_DEPLOY_IRON_WARRIOR, IronAxeWeapon.class);
+					DeployContainer<?> rubber_warrior_container = new DeployContainer(this, 2f, KEY_DEPLOY_RUBBER_WARRIOR, RubberAxeWeapon.class);
+					DeployContainer<?> peon_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON, null);
+					DeployContainer<?> peon_harvest_tree_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_TREE, null);
+					DeployContainer<?> peon_transport_tree_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_TREE, TreeSupply.class);
+					DeployContainer<?> peon_harvest_rock_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_ROCK, null);
+					DeployContainer<?> peon_transport_rock_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_ROCK, RockSupply.class);
+					DeployContainer<?> peon_harvest_iron_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_IRON, null);
+					DeployContainer<?> peon_transport_iron_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_IRON, IronSupply.class);
+					DeployContainer<?> peon_harvest_rubber_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_HARVEST_RUBBER, null);
+					DeployContainer<?> peon_transport_rubber_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON_TRANSPORT_RUBBER, RubberSupply.class);
 					deploy_containers[KEY_DEPLOY_ROCK_WARRIOR] = rock_warrior_container;
 					deploy_containers[KEY_DEPLOY_IRON_WARRIOR] = iron_warrior_container;
 					deploy_containers[KEY_DEPLOY_RUBBER_WARRIOR] = rubber_warrior_container;
@@ -466,7 +466,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 				}
 				else if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
 					chieftain_container = new ChieftainContainer(this);
-					DeployContainer peon_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON, null);
+					DeployContainer<?> peon_container = new DeployContainer(this, .5f, KEY_DEPLOY_PEON, null);
 					deploy_containers[KEY_DEPLOY_ROCK_WARRIOR] = null;
 					deploy_containers[KEY_DEPLOY_IRON_WARRIOR] = null;
 					deploy_containers[KEY_DEPLOY_RUBBER_WARRIOR] = null;
@@ -523,7 +523,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 		 return true;
 	}
 
-        @Override
+    @Override
 	public int getAttackPriority() {
 		if (getAbilities().hasAbilities(Abilities.ATTACK))
 			return AttackScanFilter.PRIORITY_TOWER;
@@ -533,7 +533,7 @@ public final strictfp class Building extends Selectable implements Occupant {
 			return AttackScanFilter.PRIORITY_QUARTERS;
 	}
 
-        @Override
+    @Override
 	protected void setTarget(Target target, int action, boolean aggressive) {
 		if (getAbilities().hasAbilities(Abilities.ATTACK)) {
 			if (target != this) {

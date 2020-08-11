@@ -84,7 +84,7 @@ public final strictfp class ConvertToBinary {
 				float wpc = Float.parseFloat(item.getAttributes().getNamedItem("wpc").getNodeValue());
 				assert wpc != 0f;
 				String type_str = item.getAttributes().getNamedItem("type").getNodeValue();
-				int type = getTypeFromString(type_str);
+				AnimationInfo.Type type = getTypeFromString(type_str);
 				object_infos.add(new AnimObjectInfo(new File(src_dir, getText(item)), wpc, type));
 			}
 		}
@@ -153,7 +153,7 @@ public final strictfp class ConvertToBinary {
 				}
 			} else {
 				float[][] identity_frame = {{1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0}};
-				animations = new AnimationInfo[]{new AnimationInfo(identity_frame, AnimationInfo.ANIM_LOOP, 1f)};
+				animations = new AnimationInfo[]{new AnimationInfo(identity_frame, AnimationInfo.Type.LOOP, 1f)};
 				name_to_bone_map = null;
 			}
 			SpriteInfo[] sprite_models = new SpriteInfo[model_object_infos.length];
@@ -208,12 +208,12 @@ public final strictfp class ConvertToBinary {
 		return Integer.parseInt(string);
 	}
 
-	private static int getTypeFromString(String str) {
+	private static AnimationInfo.Type getTypeFromString(String str) {
         switch (str) {
             case "loop":
-                return AnimationInfo.ANIM_LOOP;
+                return AnimationInfo.Type.LOOP;
             case "plain":
-                return AnimationInfo.ANIM_PLAIN;
+                return AnimationInfo.Type.PLAIN;
             default:
                 throw new RuntimeException("Unknown animation type: " + str);
         }

@@ -9,14 +9,14 @@ import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.util.LinkedList;
 import java.util.List;
 
-public abstract strictfp class AbstractElementNode extends BoundingBox {
-	private final LinkedList<?> models = new LinkedList<>();
+public abstract strictfp class AbstractElementNode<E> extends BoundingBox {
+	private final LinkedList<E> models = new LinkedList<>();
 
 	private int child_count = 0;
 
-	private final AbstractElementNode owner;
+	private final AbstractElementNode<E> owner;
 
-	protected AbstractElementNode(AbstractElementNode owner) {
+	protected AbstractElementNode(AbstractElementNode<E> owner) {
 		this.owner = owner;
 	}
 
@@ -24,15 +24,15 @@ public abstract strictfp class AbstractElementNode extends BoundingBox {
 		return child_count - models.size();
 	}
 
-	protected final AbstractElementNode insertElement(Element model) {
+	protected final AbstractElementNode<E> insertElement(Element<E> model) {
 		checkBoundsZ(model.bmin_z);
 		checkBoundsZ(model.bmax_z);
 		return doInsertElement(model);
 	}
 
-	protected abstract AbstractElementNode doInsertElement(Element model);
+	protected abstract AbstractElementNode<E> doInsertElement(Element<E> model);
 
-	public final void removeElement(Element model) {
+	public final void removeElement(Element<E> model) {
 		models.remove(model);
 	}
 
@@ -40,7 +40,7 @@ public abstract strictfp class AbstractElementNode extends BoundingBox {
 		child_count++;
 	}
 
-	protected final AbstractElementNode reinsertElement(Element model) {
+	protected final AbstractElementNode<E> reinsertElement(Element<E> model) {
 		child_count--;
 		assert child_count >= 0;
 		if (contains(model)) {
@@ -57,13 +57,13 @@ public abstract strictfp class AbstractElementNode extends BoundingBox {
 			return 0;
 	}
 
-	protected final AbstractElementNode addElement(Element model) {
+	protected final AbstractElementNode<E> addElement(Element<E> model) {
 		models.addLast(model);
 		return this;
 	}
 
-	public final static AbstractElementNode newRoot(HeightMap heightmap) {
-		AbstractElementNode root = new ElementNode(null, heightmap.getGridUnitsPerWorld(), 0, 0);
+	public final static AbstractElementNode<Model> newRoot(HeightMap heightmap) {
+		AbstractElementNode<Model> root = new ElementNode<>(null, heightmap.getGridUnitsPerWorld(), 0, 0);
 		root.setInfiniteBounds();
 		return root;
 	}

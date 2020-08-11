@@ -49,7 +49,7 @@ public final strictfp class AttackBehaviour implements Behaviour {
 				else
 					return Selectable.DONE;
 			default:
-				throw new RuntimeException("Invalid state: " + state);
+				throw new IllegalStateException("Invalid state: " + state);
 		}
 	}
 

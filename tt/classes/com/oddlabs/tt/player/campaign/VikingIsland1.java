@@ -9,6 +9,7 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
@@ -22,7 +23,7 @@ import java.util.ResourceBundle;
 
 public final strictfp class VikingIsland1 extends Island {
 	private final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland1.class.getName());
-	
+
 	public VikingIsland1(Campaign campaign) {
 		super(campaign);
 	}
@@ -37,11 +38,11 @@ public final strictfp class VikingIsland1 extends Island {
 			Utils.getBundleString(bundle, "name5")};
 		GameNetwork game_network = startNewGame(network, gui_root, 256, Landscape.TerrainType.NATIVE, .75f, 1f, .5f, 97455, 1, VikingCampaign.MAX_UNITS, ai_names);
 		game_network.getClient().getServerInterface().setPlayerSlot(0,
-				PlayerSlot.HUMAN,
+				PlayerSlot.PlayerType.HUMAN,
 				RacesResources.RACE_VIKINGS,
 				0,
 				true,
-				PlayerSlot.AI_NONE);
+				AIType.AI_NONE);
 		game_network.getClient().setUnitInfo(0,
 				new UnitInfo(false, false, 0, true,
 					getCampaign().getState().getNumPeons(),
@@ -49,18 +50,18 @@ public final strictfp class VikingIsland1 extends Island {
 					getCampaign().getState().getNumIronWarriors(),
 					getCampaign().getState().getNumRubberWarriors()));
 		game_network.getClient().getServerInterface().setPlayerSlot(1,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_VIKINGS,
 				PlayerInfo.TEAM_NEUTRAL,
 				true,
-				PlayerSlot.AI_NEUTRAL_CAMPAIGN);
+				AIType.AI_NEUTRAL_CAMPAIGN);
 		game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
 		game_network.getClient().getServerInterface().setPlayerSlot(2,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				1,
 				true,
-				PlayerSlot.AI_PASSIVE_CAMPAIGN);
+				AIType.AI_PASSIVE_CAMPAIGN);
 		game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, 0, 10, 5, 0));
 		game_network.getClient().getServerInterface().startServer();
 	}

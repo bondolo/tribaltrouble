@@ -26,7 +26,7 @@ public final strictfp class SaveDeterministic extends Deterministic {
 		}
 	}
 
-        @Override
+    @Override
 	public boolean isPlayback() {
 		return false;
 	}
@@ -39,11 +39,11 @@ public final strictfp class SaveDeterministic extends Deterministic {
 			}
 			buffer.compact();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 
-        @Override
+    @Override
 	public void endLog() {
 		startLog(0, false);
 		try {
@@ -51,7 +51,7 @@ public final strictfp class SaveDeterministic extends Deterministic {
 			channel.close();
 			System.out.println("Closed log file, bytes written: " + total_bytes_written);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 
@@ -71,51 +71,52 @@ public final strictfp class SaveDeterministic extends Deterministic {
 		return true;
 	}
 
-        @Override
+    @Override
 	protected byte log(byte b, byte def) {
 		if (startLog(1, b == def))
 			buffer.put(b);
 		return b;
 	}
 
-        @Override
+    @Override
 	protected char log(char c, char def) {
 		if (startLog(2, c == def))
 			buffer.putChar(c);
 		return c;
 	}
 
-        @Override
+    @Override
 	protected int log(int i, int def) {
 		if (startLog(4, i == def))
 			buffer.putInt(i);
 		return i;
 	}
 
-        @Override
+    @Override
 	protected long log(long l, long def) {
 		if (startLog(8, l == def))
 			buffer.putLong(l);
 		return l;
 	}
 
-        @Override
+    @Override
 	protected float log(float f, float def) {
 		if (startLog(4, f == def))
 			buffer.putFloat(f);
 		return f;
 	}
 
-        @Override
-	protected Object logObject(Object o) {
+    @Override
+	protected <T> T logObject(T o) {
 		try (ObjectOutputStream object_output_stream = new ObjectOutputStream(byte_buffer_output_stream)) {
 			object_output_stream.writeObject(o);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
-                return o;
+        return o;
 	}
 
+    @Override
     protected Path log(Path p, Path def) {
         try {
             // For bacwards compatibility we convert to Serializable File
@@ -126,7 +127,7 @@ public final strictfp class SaveDeterministic extends Deterministic {
         }
     }
 
-        @Override
+    @Override
 	protected void logBuffer(ByteBuffer b) {
 		if (startLog(0, false)) {
 			while (true) {
@@ -142,7 +143,7 @@ public final strictfp class SaveDeterministic extends Deterministic {
 	}
 
 	public final strictfp class ByteBufferOutputStream extends OutputStream {
-                @Override
+        @Override
 		public void write(int b) throws IOException {
 			log((byte)b);
 		}

@@ -5,6 +5,7 @@ import com.oddlabs.net.ARMIInterfaceMethods;
 import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import java.io.IOException;
 
 public final strictfp class ClientInfo implements GameServerInterface, ConnectionInterface {
@@ -17,7 +18,7 @@ public final strictfp class ClientInfo implements GameServerInterface, Connectio
 		this.server = server;
 	}
 
-        @Override
+    @Override
 	public void handle(Object sender, ARMIEvent armi_event) {
 		try {
 			armi_event.execute(interface_methods, this);
@@ -26,30 +27,30 @@ public final strictfp class ClientInfo implements GameServerInterface, Connectio
 		}
 	}
 
-        @Override
+    @Override
 	public void writeBufferDrained(AbstractConnection conn) {
 	}
 
-        @Override
+    @Override
 	public void error(AbstractConnection conn, IOException e) {
 		server.handleError(conn, e);
 	}
 
-        @Override
-	public void connected(AbstractConnection conn) { 
+    @Override
+	public void connected(AbstractConnection conn) {
 	}
 
 	public PlayerSlot getPlayerSlot() {
 		return player_slot;
 	}
 
-        @Override
+    @Override
 	public void resetSlotState(int slot, boolean open) {
 		server.resetSlotState(player_slot, slot, open);
 	}
 
-        @Override
-	public void setPlayerSlot(int slot, int type, int race, int team, boolean ready, int ai_difficulty) {
+    @Override
+	public void setPlayerSlot(int slot, PlayerSlot.PlayerType type, int race, int team, boolean ready, AIType ai_difficulty) {
 		server.setPlayerSlot(player_slot, slot, type, race, team, ready, ai_difficulty);
 	}
 

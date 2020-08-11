@@ -6,9 +6,9 @@ import com.oddlabs.tt.model.weapon.Magic;
 import com.oddlabs.tt.model.weapon.MagicFactory;
 
 public final strictfp class MagicBehaviour implements Behaviour {
-	private final static int PREPARING = 1;
-	private final static int CASTING = 2;
-	private final static int ENDING = 3;
+    private enum MagicState {
+        PREPARING, CASTING, ENDING
+    };
 
 	private final Unit unit;
 	private final MagicFactory magic_factory;
@@ -16,7 +16,7 @@ public final strictfp class MagicBehaviour implements Behaviour {
 	private Magic magic;
 
 	private float anim_time;
-	private int state;
+	private MagicState state;
 
 	public MagicBehaviour(Unit unit, MagicFactory magic_factory, MagicController controller) {
 		this.unit = unit;
@@ -36,14 +36,14 @@ public final strictfp class MagicBehaviour implements Behaviour {
 		switch (state) {
 			case PREPARING:
 				if (anim_time <= 0) {
-					state = CASTING;
+					state = MagicState.CASTING;
 					magic = magic_factory.execute(unit);
 					anim_time += magic_factory.getSecondsPerRelease() - magic_factory.getSecondsPerInit();
 				}
 				return Selectable.UNINTERRUPTIBLE;
 			case CASTING:
 				if (anim_time <= 0) {
-					state = ENDING;
+					state = MagicState.ENDING;
 					unit.getOwner().getWorld().getAnimationManagerGameTime().registerAnimation(magic);
 					anim_time += magic_factory.getSecondsPerAnim() - magic_factory.getSecondsPerRelease();
 				}
@@ -56,12 +56,12 @@ public final strictfp class MagicBehaviour implements Behaviour {
 					return Selectable.DONE;
 				}
 			default:
-				throw new RuntimeException("Invalid state: " + state);
+				throw new IllegalStateException("Invalid state: " + state);
 		}
 	}
 
 	private void init() {
-		state = PREPARING;
+		state = MagicState.PREPARING;
 		anim_time = magic_factory.getSecondsPerInit();
 		unit.switchAnimation(1f/magic_factory.getSecondsPerAnim(), Unit.ANIMATION_MAGIC);
 	}

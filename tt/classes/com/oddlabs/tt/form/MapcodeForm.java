@@ -9,8 +9,6 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.guievent.EnterListener;
-import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.util.Utils;
 import java.math.BigInteger;
 import java.util.Random;
@@ -28,16 +26,27 @@ public final strictfp class MapcodeForm extends Form {
 		ResourceBundle bundle = ResourceBundle.getBundle(MapcodeForm.class.getName());
 		Label label_seed = new Label(Utils.getBundleString(bundle, "map_code"), Skin.getSkin().getEditFont());
 		editline_seed = new EditLine(200, 12, RegistrationKey.CHAR_TO_WORD + RegistrationKey.LOWER_CASE_CHARS, EditLine.LEFT_ALIGNED);
-		editline_seed.addEnterListener(new CodeEnterListener());
+		editline_seed.addEnterListener((CharSequence text) -> {
+            done();
+        });
 
 		HorizButton button_ok = new OKButton(BUTTON_WIDTH);
-		button_ok.addMouseClickListener(new OKListener());
+		button_ok.addMouseClickListener((int button, int x, int y, int clicks) -> {
+            done();
+        });
 		HorizButton button_cancel = new CancelButton(BUTTON_WIDTH);
 		button_cancel.addMouseClickListener((int button, int x, int y, int clicks) -> {
 			this.cancel();
         });
 		HorizButton button_rand = new HorizButton(Utils.getBundleString(bundle, "randomize"), BUTTON_WIDTH);
-		button_rand.addMouseClickListener(new RandButtonListener());
+		button_rand.addMouseClickListener((int button, int x, int y, int clicks) -> {
+			Random random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick()*LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+			random.nextInt();
+			BigInteger rand_int = new BigInteger(60, random);
+			String rand_string = RegistrationKey.createString(rand_int);
+			editline_seed.clear();
+			editline_seed.append(rand_string);
+		});
 
 		addChild(label_seed);
 		addChild(editline_seed);
@@ -53,7 +62,7 @@ public final strictfp class MapcodeForm extends Form {
 		centerPos();
 	}
 
-        @Override
+    @Override
 	public void setFocus() {
 		editline_seed.setFocus();
 	}
@@ -63,31 +72,4 @@ public final strictfp class MapcodeForm extends Form {
 		menu.parseMapcode(editline_seed.getContents());
 		menu.setFocus();
 	}
-
-	private final strictfp class OKListener implements MouseClickListener {
-                @Override
-		public void mouseClicked(int button, int x, int y, int clicks) {
-			done();
-		}
-	}
-
-	private final strictfp class RandButtonListener implements MouseClickListener {
-                @Override
-		public void mouseClicked(int button, int x, int y, int clicks) {
-			Random random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick()*LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
-			random.nextInt();
-			BigInteger rand_int = new BigInteger(60, random);
-			String rand_string = RegistrationKey.createString(rand_int);
-			editline_seed.clear();
-			editline_seed.append(rand_string);
-		}
-	}
-
-	public final strictfp class CodeEnterListener implements EnterListener {
-                @Override
-		public void enterPressed(CharSequence text) {
-			done();
-		}
-	}
-
 }

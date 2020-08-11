@@ -32,6 +32,7 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.Renderer;
@@ -417,7 +418,7 @@ public final strictfp class TerrainMenu extends Group {
 				team_pulldown_menus[i].chooseItem(1);
 			}
 			if (i == 1) {
-				difficulty_pulldown_menus[i].chooseItem(PlayerSlot.AI_EASY);
+				difficulty_pulldown_menus[i].chooseItem(AIType.AI_EASY.ordinal());
 				race_pulldown_menus[i].chooseItem((race_pulldown_menus[0].getChosenItemIndex()+1)%2);
 			} else {
 				difficulty_pulldown_menus[i].chooseItem(0);
@@ -631,11 +632,11 @@ System.out.println("hills = " + hills/(float)SLIDER_MAX_VALUE + " | vegetation_a
 				supplies_amount/(float)SLIDER_MAX_VALUE,
 				seed*seed,
 				new String[]{ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"});
-		game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, race_pulldown_menus[0].getChosenItemIndex(), team_pulldown_menus[0].getChosenItemIndex(), !multiplayer, PlayerSlot.AI_NONE);
+		game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.PlayerType.HUMAN, race_pulldown_menus[0].getChosenItemIndex(), team_pulldown_menus[0].getChosenItemIndex(), !multiplayer, AIType.AI_NONE);
 		if (!multiplayer) {
 			for (int i = 1; i < race_pulldown_menus.length; i++) {
 				if (isChosen(difficulty_pulldown_menus[i]))
-					game_network.getClient().getServerInterface().setPlayerSlot(i, PlayerSlot.AI, race_pulldown_menus[i].getChosenItemIndex(), team_pulldown_menus[i].getChosenItemIndex(), true, difficulty_pulldown_menus[i].getChosenItemIndex());
+					game_network.getClient().getServerInterface().setPlayerSlot(i, PlayerSlot.PlayerType.AI, race_pulldown_menus[i].getChosenItemIndex(), team_pulldown_menus[i].getChosenItemIndex(), true, AIType.values()[difficulty_pulldown_menus[i].getChosenItemIndex()]);
 			}
 			game_network.getClient().getServerInterface().startServer();
 System.out.println("Start server");

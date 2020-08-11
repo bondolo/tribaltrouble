@@ -13,6 +13,7 @@ import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;
 import java.util.Random;
@@ -62,7 +63,7 @@ public final strictfp class ConnectingForm extends Form implements Configuration
 			int team = player_slot;
 			if (game.isRated())
 				team = player_slot%2;
-			client.getServerInterface().setPlayerSlot(player_slot, PlayerSlot.HUMAN, race, team, false, PlayerSlot.AI_NONE);
+			client.getServerInterface().setPlayerSlot(player_slot, PlayerSlot.PlayerType.HUMAN, race, team, false, AIType.AI_NONE);
 			remove();
 			owner.createGameMenu(game_network, game, generator, player_slot);
 //			GameMenu panel = new GameMenu(owner, game, generator, player_slot);
@@ -76,25 +77,25 @@ public final strictfp class ConnectingForm extends Form implements Configuration
 	public void chat(int player_slot, String chat) {
 	}
 
-        @Override
+    @Override
 	public void setPlayers(PlayerSlot[] players) {
 		assert !multiplayer;
 	}
 
-        @Override
+    @Override
 	public void connectionLost() {
 		remove();
 		gui_root.addModalForm(new MessageForm(Utils.getBundleString(bundle, "connection_lost")));
 	}
 
-        @Override
+    @Override
 	public void gameStarted() {
 		remove();
 //		main_menu.remove();
 		assert !multiplayer;
 	}
 
-        @Override
+    @Override
 	protected void doCancel() {
 		game_network.close();
 	}

@@ -5,22 +5,29 @@ import com.oddlabs.tt.gui.RaceIcons;
 import com.oddlabs.tt.model.weapon.MagicFactory;
 import com.oddlabs.tt.player.ChieftainAI;
 import com.oddlabs.tt.render.SpriteKey;
+import java.util.EnumMap;
+import java.util.Map;
 
 public final strictfp class Race {
-	public final static int BUILDING_QUARTERS = 0;
-	public final static int BUILDING_ARMORY = 1;
-	public final static int BUILDING_TOWER = 2;
+    public enum BuildingType {
+        QUARTERS,
+        ARMORY,
+        TOWER;
 
-	public final static int NUM_BUILDINGS = 3;
+        private static final BuildingType[] VALUES = values();
+        public static final int LENGTH = VALUES.length;
+    };
 
-	public final static int UNIT_WARRIOR_ROCK = 0;
-	public final static int UNIT_WARRIOR_IRON = 1;
-	public final static int UNIT_WARRIOR_RUBBER = 2;
-	public final static int UNIT_PEON = 3;
-	public final static int UNIT_CHIEFTAIN = 4;
+    public enum UnitType {
+        WARRIOR_ROCK,
+        WARRIOR_IRON,
+        WARRIOR_RUBBER,
+        PEON,
+        CHIEFTAIN
+    }
 
-	private final BuildingTemplate[] buildings = new BuildingTemplate[NUM_BUILDINGS];
-	private final UnitTemplate[] units = new UnitTemplate[5];
+	private final EnumMap<BuildingType,BuildingTemplate> buildings = new EnumMap<>(BuildingType.class);
+	private final EnumMap<UnitType,UnitTemplate> units = new EnumMap<>(UnitType.class);
 	private final SpriteKey rally_point;
 	private final RaceIcons icons;
 	private final Audio attack_notification;
@@ -44,17 +51,17 @@ public final strictfp class Race {
 			MagicFactory[] magic_factory,
 			ChieftainAI chieftain_ai,
 			String music_path) {
-		buildings[BUILDING_QUARTERS] = quarters;
-		buildings[BUILDING_ARMORY] = armory;
-		buildings[BUILDING_TOWER] = tower;
-		for (int i = 0; i < buildings.length; i++) {
-            assert buildings[i].getTemplateID() == i;
+		buildings.put(BuildingType.QUARTERS, quarters);
+		buildings.put(BuildingType.ARMORY, armory);
+		buildings.put(BuildingType.TOWER, tower);
+		for (Map.Entry<BuildingType,BuildingTemplate> entry : buildings.entrySet()) {
+            assert entry.getValue().getTemplateID() == entry.getKey();
         }
-		units[UNIT_WARRIOR_ROCK] = warrior_rock;
-		units[UNIT_WARRIOR_IRON] = warrior_iron;
-		units[UNIT_WARRIOR_RUBBER] = warrior_rubber;
-		units[UNIT_PEON] = peon;
-		units[UNIT_CHIEFTAIN] = chieftain;
+        units.put(UnitType.WARRIOR_ROCK, warrior_rock);
+        units.put(UnitType.WARRIOR_IRON, warrior_iron);
+        units.put(UnitType.WARRIOR_RUBBER, warrior_rubber);
+        units.put(UnitType.PEON, peon);
+        units.put(UnitType.CHIEFTAIN, chieftain);
 		this.rally_point = rally_point;
 		this.icons = icons;
 		this.attack_notification = attack_notification;
@@ -64,12 +71,12 @@ public final strictfp class Race {
 		this.music_path = music_path;
 	}
 
-	public BuildingTemplate getBuildingTemplate(int index) {
-		return buildings[index];
+	public BuildingTemplate getBuildingTemplate(Race.BuildingType index) {
+		return buildings.get(index);
 	}
 
-	public UnitTemplate getUnitTemplate(int index) {
-		return units[index];
+	public UnitTemplate getUnitTemplate(UnitType index) {
+		return units.get(index);
 	}
 
 	public SpriteKey getRallyPoint() {

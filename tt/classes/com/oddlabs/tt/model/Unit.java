@@ -578,7 +578,7 @@ public strictfp class Unit extends Selectable implements Occupant, Movable {
     public final void switchAnimation(float anim_speed, int animation) {
         assert !isDead();
         this.anim_speed = anim_speed;
-        if (this.animation != animation || getUnitTemplate().getSpriteRenderer().getAnimationType(animation) == AnimationInfo.ANIM_PLAIN) {
+        if (this.animation != animation || getUnitTemplate().getSpriteRenderer().getAnimationType(animation) == AnimationInfo.Type.PLAIN) {
             this.animation = animation;
             assert animation != -1;
             this.anim_time = 0f;

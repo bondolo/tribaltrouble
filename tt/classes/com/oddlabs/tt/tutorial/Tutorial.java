@@ -4,6 +4,7 @@ import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.delegate.TutorialOverDelegate;
+import com.oddlabs.tt.form.TutorialForm.TutorialType;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.Skin;
@@ -36,7 +37,7 @@ public final strictfp class Tutorial {
 			info.remove();
 	}
 
-	void done(int next_tutorial) {
+	void done(TutorialType next_tutorial) {
 		timer.stop();
 		removeInfo();
 		viewer.getGUIRoot().pushDelegate(new TutorialOverDelegate(viewer, tutorial_info, viewer.getGUIRoot().getDelegate().getCamera(), next_tutorial));

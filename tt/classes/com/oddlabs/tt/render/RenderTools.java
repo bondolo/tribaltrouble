@@ -27,7 +27,7 @@ final strictfp class RenderTools {
 	static void translateAndRotate(Model model) {
 		translateAndRotate(model.getPositionX(), model.getPositionY(), model.getPositionZ(), model.getDirectionX(), model.getDirectionY());
 	}
-	
+
 	static void translateAndRotate(float x, float y, float z, float dir_x, float dir_y) {
 		// Rotate and translate model
 /*		float c = dir_x;
@@ -198,12 +198,12 @@ final strictfp class RenderTools {
 	static void draw(BoundingBox box) {
 		draw(box, 1f, 1f, 1f);
 	}
-	
+
 	static void draw(BoundingBox box, float r, float g, float b) {
 		DebugRender.drawBox(box.bmin_x, box.bmax_x, box.bmin_y, box.bmax_y, box.bmin_z, box.bmax_z, r, g, b);
 	}
 
-	static void draw(BoundingBox box, int bound_type, float r, float g, float b) {
+	static void draw(BoundingBox box, Globals.Bounding bound_type, float r, float g, float b) {
 		if (Globals.isBoundsEnabled(bound_type))
 			draw(box, r, g, b);
 	}

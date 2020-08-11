@@ -152,16 +152,16 @@ public final strictfp class ActionButtonPanel extends GUIObject implements Anima
 		gather_repair_button.setIconDisabler(() -> !viewer.getLocalPlayer().canRepair());
 		quarters_button = new NonFocusIconButton(race_icons.getQuartersIcon(), formatTip("quarters_tip", "Q"));
 		peon_group.addChild(quarters_button);
-		quarters_button.addMouseClickListener(new PlaceListener(Race.BUILDING_QUARTERS));
-		quarters_button.setIconDisabler(new BuildingDisabler(Race.BUILDING_QUARTERS));
+		quarters_button.addMouseClickListener(new PlaceListener(Race.BuildingType.QUARTERS));
+		quarters_button.setIconDisabler(new BuildingDisabler(Race.BuildingType.QUARTERS));
 		armory_button = new NonFocusIconButton(race_icons.getArmoryIcon(), formatTip("armory_tip", "R"));
 		peon_group.addChild(armory_button);
-		armory_button.addMouseClickListener(new PlaceListener(Race.BUILDING_ARMORY));
-		armory_button.setIconDisabler(new BuildingDisabler(Race.BUILDING_ARMORY));
+		armory_button.addMouseClickListener(new PlaceListener(Race.BuildingType.ARMORY));
+		armory_button.setIconDisabler(new BuildingDisabler(Race.BuildingType.ARMORY));
 		tower_button = new NonFocusIconButton(race_icons.getTowerIcon(), formatTip("tower_tip", "T"));
 		peon_group.addChild(tower_button);
 		tower_button.addMouseClickListener(new TowerPlaceListener());
-		tower_button.setIconDisabler(new BuildingDisabler(Race.BUILDING_TOWER));
+		tower_button.setIconDisabler(new BuildingDisabler(Race.BuildingType.TOWER));
 		gather_repair_button.place();
 		quarters_button.place(gather_repair_button, BOTTOM_MID);
 		armory_button.place(quarters_button, BOTTOM_MID);
@@ -1085,9 +1085,9 @@ public final strictfp class ActionButtonPanel extends GUIObject implements Anima
 	}
 
 	private final strictfp class BuildingDisabler implements IconDisabler {
-		private final int building;
+		private final Race.BuildingType building;
 
-		public BuildingDisabler(int building) {
+		public BuildingDisabler(Race.BuildingType building) {
 			this.building = building;
 		}
 
@@ -1098,16 +1098,16 @@ public final strictfp class ActionButtonPanel extends GUIObject implements Anima
 	}
 
 	private final strictfp class TowerPlaceListener implements MouseClickListener {
-                @Override
+        @Override
 		public void mouseClicked(int button, int x, int y, int clicks) {
-			viewer.getGUIRoot().pushDelegate(new PlacingDelegate(viewer, camera.getState(), Race.BUILDING_TOWER));
+			viewer.getGUIRoot().pushDelegate(new PlacingDelegate(viewer, camera.getState(), Race.BuildingType.TOWER));
 		}
 	}
 
 	private final strictfp class PlaceListener implements MouseClickListener {
-		private final int building_index;
+		private final Race.BuildingType building_index;
 
-		public PlaceListener(int building_index) {
+		public PlaceListener(Race.BuildingType building_index) {
 			this.building_index = building_index;
 		}
 

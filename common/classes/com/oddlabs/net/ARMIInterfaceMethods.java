@@ -5,10 +5,10 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public final strictfp class ARMIInterfaceMethods {
-	private final Class armi_interface;
+	private final Class<?> armi_interface;
 	private final Method[] methods;
 
-	public ARMIInterfaceMethods(Class armi_interface) {
+	public ARMIInterfaceMethods(Class<?> armi_interface) {
 		assert armi_interface.isInterface();
 		this.armi_interface = armi_interface;
 		this.methods = armi_interface.getMethods();
@@ -21,15 +21,15 @@ public final strictfp class ARMIInterfaceMethods {
 	private boolean isLegal(Method method) {
 		return method.getReturnType().equals(void.class) && method.getExceptionTypes().length == 0;
 	}
-	
+
 	boolean isInstance(Object instance) {
 		return armi_interface.isInstance(instance);
 	}
 
-	Class getInterfaceClass() {
+	Class<?> getInterfaceClass() {
 		return armi_interface;
 	}
-	
+
 	void invoke(Object instance, Method method, Object[] args) throws IllegalARMIEventException {
 		try {
 			method.invoke(instance, args);

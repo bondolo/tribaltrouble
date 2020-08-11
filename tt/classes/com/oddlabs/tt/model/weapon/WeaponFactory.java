@@ -5,7 +5,7 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.util.Target;
 
-public abstract strictfp class WeaponFactory {
+public abstract strictfp class WeaponFactory<TW extends ThrowingWeapon> {
 	private final static float TERRAIN_MAX_BONUS = .25f;
 	private final static float TERRAIN_BONUS_PER_HEIGHT = TERRAIN_MAX_BONUS/20f;
 
@@ -49,5 +49,5 @@ public abstract strictfp class WeaponFactory {
 
 	protected abstract void doAttack(boolean hit, Unit src, Selectable target);
 
-	public abstract Class<? extends ThrowingWeapon> getType();
+	public abstract Class<TW> getType();
 }

@@ -7,6 +7,7 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.procedural.Landscape;
@@ -34,11 +35,11 @@ public final strictfp class VikingIsland5 extends Island {
 		// gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
 		GameNetwork game_network = startNewGame(network, gui_root, 512, Landscape.TerrainType.NATIVE, .85f, 1f, .9f, 89864, 5, VikingCampaign.MAX_UNITS, ai_names);
 		game_network.getClient().getServerInterface().setPlayerSlot(0,
-				PlayerSlot.HUMAN,
+				PlayerSlot.PlayerType.HUMAN,
 				RacesResources.RACE_VIKINGS,
 				0,
 				true,
-				PlayerSlot.AI_NONE);
+				AIType.AI_NONE);
 		game_network.getClient().setUnitInfo(0,
 				new UnitInfo(false, false, 0, true,
 					getCampaign().getState().getNumPeons(),
@@ -46,11 +47,11 @@ public final strictfp class VikingIsland5 extends Island {
 					getCampaign().getState().getNumIronWarriors(),
 					getCampaign().getState().getNumRubberWarriors()));
 		game_network.getClient().getServerInterface().setPlayerSlot(1,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_VIKINGS,
 				0,
 				true,
-				PlayerSlot.AI_HARD);
+				AIType.AI_HARD);
 		game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 25, 5, 0, 0));
 
 		int ai_peons;
@@ -68,18 +69,18 @@ public final strictfp class VikingIsland5 extends Island {
 				throw new RuntimeException();
 		}
 		game_network.getClient().getServerInterface().setPlayerSlot(2,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				1,
 				true,
-				PlayerSlot.AI_HARD);
+				AIType.AI_HARD);
 		game_network.getClient().setUnitInfo(2, new UnitInfo(true, false, 1, false, ai_peons, 0, 0, 1));
 		game_network.getClient().getServerInterface().setPlayerSlot(3,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				1,
 				true,
-				PlayerSlot.AI_HARD);
+				AIType.AI_HARD);
 		game_network.getClient().setUnitInfo(3, new UnitInfo(true, false, 1, false, ai_peons, 0, 0, 1));
 		game_network.getClient().getServerInterface().startServer();
 	}

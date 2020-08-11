@@ -26,8 +26,6 @@ public final strictfp class FinderTrackerAlgorithm<O extends Occupant> implement
 	public Region findPathRegion(int src_x, int src_y) {
 		TargetRegionFinder region_finder = new TargetRegionFinder(unit_grid, filter);
 		Region region = PathFinder.findPathRegion(unit_grid, region_finder, unit_grid.getRegion(src_x, src_y));
-		if (region == null)
-			return null;
 		return region;
 	}
 

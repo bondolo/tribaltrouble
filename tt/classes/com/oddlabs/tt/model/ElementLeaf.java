@@ -2,14 +2,14 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.landscape.HeightMap;
 
-public final strictfp class ElementLeaf extends AbstractElementNode {
+public final strictfp class ElementLeaf<E> extends AbstractElementNode<E> {
 	public ElementLeaf(AbstractElementNode owner/*, int level*/, int size, int x, int y) {
 		super(owner/*, level*/);
 		setBounds(x*HeightMap.METERS_PER_UNIT_GRID, (x + size)*HeightMap.METERS_PER_UNIT_GRID, y*HeightMap.METERS_PER_UNIT_GRID, (y + size)*HeightMap.METERS_PER_UNIT_GRID, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY);
 	}
 
     @Override
-	protected AbstractElementNode doInsertElement(Element model) {
+	protected AbstractElementNode<E> doInsertElement(Element<E> model) {
 		incElementCount();
 		return addElement(model);
 	}

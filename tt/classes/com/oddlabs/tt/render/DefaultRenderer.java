@@ -222,7 +222,7 @@ public final strictfp class DefaultRenderer implements UIRenderer {
 			UnitGrid.getGrid().debugRenderRegions(landscape_x, landscape_y);
 		}
          */
-        if (Globals.isBoundsEnabled(Globals.BOUNDING_OCCUPATION)) {
+        if (Globals.isBoundsEnabled(Globals.Bounding.OCCUPATION)) {
             picker.debugRender();
         }
 

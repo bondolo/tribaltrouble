@@ -8,6 +8,7 @@ import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.BuildingTemplate;
+import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.BuildingSiteScanFilter;
@@ -29,14 +30,14 @@ public final strictfp class PlacingDelegate extends ControllableCameraDelegate {
 	private final static LandscapeLocation landscape_hit = new LandscapeLocation();
 
 	private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
-	private final int building_index;
+	private final Race.BuildingType building_index;
 
 	static {
 		color = BufferUtils.createFloatBuffer(4).put(new float[]{1f, 1f, 1f, 1f});
 		color.rewind();
 	}
 
-	public PlacingDelegate(WorldViewer viewer, CameraState old_camera, int building_index) {
+	public PlacingDelegate(WorldViewer viewer, CameraState old_camera, Race.BuildingType building_index) {
 		super(viewer, new GameCamera(viewer, old_camera));
 		this.building_index = building_index;
 	}

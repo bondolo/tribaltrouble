@@ -116,8 +116,8 @@ public abstract class Island {
 			return null;
 	}
 
-	protected final void insertGuardTower(Player owner, int warrior_type, int grid_x, int grid_y) {
-		Building tower = owner.buildBuilding(Race.BUILDING_TOWER, grid_x, grid_y);
+	protected final void insertGuardTower(Player owner, Race.UnitType warrior_type, int grid_x, int grid_y) {
+		Building tower = owner.buildBuilding(Race.BuildingType.TOWER, grid_x, grid_y);
 		Unit unit = new Unit(owner,
 				UnitGrid.coordinateFromGrid(grid_x),
 				UnitGrid.coordinateFromGrid(grid_y),
@@ -137,23 +137,23 @@ public abstract class Island {
 		int ty = (int)(oy - 5f*dy*inv_dist);
 		for (int i = 0; i < peons; i++) {
 			new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-					null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+					null, captive.getRace().getUnitTemplate(Race.UnitType.PEON));
 		}
 		for (int i = 0; i < rock_warriors; i++) {
 			new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-					null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+					null, captive.getRace().getUnitTemplate(Race.UnitType.PEON));
 		}
 		for (int i = 0; i < iron_warriors; i++) {
 			new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-					null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+					null, captive.getRace().getUnitTemplate(Race.UnitType.PEON));
 		}
 		for (int i = 0; i < rubber_warriors; i++) {
 			new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-					null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+					null, captive.getRace().getUnitTemplate(Race.UnitType.PEON));
 		}
 		if (chieftain) {
 			captive.setActiveChieftain(new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-					null, captive.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN)));
+					null, captive.getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN)));
 		}
 	}
 

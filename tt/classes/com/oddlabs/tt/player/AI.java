@@ -57,10 +57,10 @@ public abstract strictfp class AI implements Animated {
 			int grid_start_x = UnitGrid.toGridCoordinate(owner.getStartX());
 			int grid_start_y = UnitGrid.toGridCoordinate(owner.getStartY());
 			if (unit_info.hasQuarters()) {
-				owner.buildBuilding(Race.BUILDING_QUARTERS, grid_start_x, grid_start_y);
+				owner.buildBuilding(Race.BuildingType.QUARTERS, grid_start_x, grid_start_y);
 			}
 			if (unit_info.hasArmory()) {
-				owner.buildBuilding(Race.BUILDING_ARMORY, grid_start_x, grid_start_y);
+				owner.buildBuilding(Race.BuildingType.ARMORY, grid_start_x, grid_start_y);
 			}
 			for (int i = 0; i < unit_info.getNumTowers(); i++) {
 				int center = owner.getWorld().getHeightMap().getGridUnitsPerWorld()/2;
@@ -69,29 +69,29 @@ public abstract strictfp class AI implements Animated {
 				float inv_dist = 1f/(float)StrictMath.sqrt(dx*dx + dy*dy);
 				int tx = (int)(grid_start_x + 10f*dx*inv_dist);
 				int ty = (int)(grid_start_y + 10f*dy*inv_dist);
-				owner.buildBuilding(Race.BUILDING_TOWER, tx, ty);
+				owner.buildBuilding(Race.BuildingType.TOWER, tx, ty);
 			}
 			Random random = new Random(42);
 			if (unit_info.hasChieftain()) {
 				Target t = getTarget(random);
-				Unit chieftain = new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN));
+				Unit chieftain = new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UnitType.CHIEFTAIN));
 				owner.setActiveChieftain(chieftain);
 			}
 			for (int i = 0; i < unit_info.getNumPeons(); i++) {
 				Target t = getTarget(random);
-				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UNIT_PEON));
+				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UnitType.PEON));
 			}
 			for (int i = 0; i < unit_info.getNumRockWarriors(); i++) {
 				Target t = getTarget(random);
-				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UnitType.WARRIOR_ROCK));
 			}
 			for (int i = 0; i < unit_info.getNumIronWarriors(); i++) {
 				Target t = getTarget(random);
-				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UnitType.WARRIOR_IRON));
 			}
 			for (int i = 0; i < unit_info.getNumRubberWarriors(); i++) {
 				Target t = getTarget(random);
-				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+				new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(Race.UnitType.WARRIOR_RUBBER));
 			}
 		}
 	}

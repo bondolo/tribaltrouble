@@ -35,7 +35,7 @@ final strictfp class GridNode extends Node {
 		return dir_node_grid[dx + 1][dy + 1];
 	}
 
-        @Override
+    @Override
 	public PathNode newPath() {
 		Node graph_node = this;
 		GridPathNode current_node = null;
@@ -106,7 +106,7 @@ final strictfp class GridNode extends Node {
 		return false;
 	}
 
-        @Override
+    @Override
 	public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
 		int x = getGridX();
 		int y = getGridY();

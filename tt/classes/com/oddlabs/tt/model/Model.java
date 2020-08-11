@@ -10,7 +10,7 @@ public abstract strictfp class Model extends Element<Model> {
 
 	protected Model(World world) {
 		super(Objects.requireNonNull(world, "world").getElementRoot());
-        this.world = world ;
+        this.world = world;
 	}
 
 	public abstract float getShadowDiameter();

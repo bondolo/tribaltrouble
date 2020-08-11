@@ -5,14 +5,19 @@ import java.nio.file.Paths;
 import org.lwjgl.opengl.*;
 
 public final strictfp class Globals {
-	public final static int BOUNDING_NONE = 0;
-	public final static int BOUNDING_UNIT_GRID = 1;
-	public final static int BOUNDING_LANDSCAPE = 2;
-	public final static int BOUNDING_TREES = 3;
-	public final static int BOUNDING_PLAYERS = 4;
-	public final static int BOUNDING_OCCUPATION = 5;
-	public final static int BOUNDING_REGIONS = 6;
-	public final static int BOUNDING_ALL = 7;
+    public enum Bounding {
+        NONE,
+        UNIT_GRID,
+        LANDSCAPE,
+        TREES,
+        PLAYERS,
+        OCCUPATION,
+        REGIONS,
+        ALL;
+
+        private static final Bounding[] VALUES = values();
+        private static final int LENGTH = VALUES.length;
+    };
 
 	public final static int DETAIL_LOW = 0;
 	public final static int DETAIL_NORMAL = 1;
@@ -56,14 +61,14 @@ public final strictfp class Globals {
 
 	public static boolean checksum_error_in_last_game = false;
 
-	private static int bounding = BOUNDING_NONE;
+	private static Bounding bounding = Bounding.NONE;
 
-	public static void switchBoundingMode() {
-		bounding = (bounding + 1)%(BOUNDING_ALL + 1);
+	public static void rotateBoundingMode() {
+        bounding = Bounding.VALUES[(bounding.ordinal() + 1) % Bounding.LENGTH];
 	}
 
-	public static boolean isBoundsEnabled(int bounding_type) {
-		return bounding == bounding_type || bounding == BOUNDING_ALL;
+	public static boolean isBoundsEnabled(Bounding bounding_type) {
+		return bounding == bounding_type || bounding == Bounding.ALL;
 	}
 
 	public static int COMPRESSED_RGB_FORMAT = GL13.GL_COMPRESSED_RGB;

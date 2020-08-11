@@ -16,7 +16,7 @@ public final strictfp class Connection extends AbstractConnection implements Han
 	private final static short HEADER_SIZE = 2;
 
 	private final ByteBuffer read_buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-	private final List back_log_list = new LinkedList();
+	private final List<ARMIEvent> back_log_list = new LinkedList<>();
 	private final ByteBuffer write_buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 	private final ConnectionPeerInterface peer_interface;
 	private final boolean ping_reply;
@@ -43,7 +43,7 @@ public final strictfp class Connection extends AbstractConnection implements Han
 		this.peer_interface = (ConnectionPeerInterface)ARMIEvent.createProxy(event_writer, ConnectionPeerInterface.class);
 		peer_interface.ping();
 	}
-	
+
 	public Connection(NetworkSelector network, String dns_name, int port, ConnectionInterface connection_interface) {
 		this(network, true);
 		setConnectionInterface(connection_interface);
@@ -139,7 +139,7 @@ public final strictfp class Connection extends AbstractConnection implements Han
 	public void dnsError(IOException e) {
 		error(e);
 	}
-	
+
 	private void setKey(SelectionKey key) {
 		assert key != null || network.getDeterministic().isPlayback();
 		this.key = key;
@@ -304,7 +304,7 @@ public final strictfp class Connection extends AbstractConnection implements Han
 				exception = e;
 			}
 			if (network.getDeterministic().log(exception != null))
-				throw (IOException)network.getDeterministic().log(exception);
+				throw network.getDeterministic().log(exception);
 			else
 				success = network.getDeterministic().log(success);
 			assert success; // finishConnect should always succeed (or throw), because we are called on OP_CONNECT
@@ -316,7 +316,7 @@ public final strictfp class Connection extends AbstractConnection implements Han
 			int new_ops = (interest_ops | SelectionKey.OP_READ) & ~SelectionKey.OP_CONNECT;
 			if (!network.getDeterministic().isPlayback())
 				key.interestOps(new_ops);
-			connected((InetAddress)network.getDeterministic().log(network.getDeterministic().isPlayback() ? null : channel.socket().getLocalAddress()));
+			connected(network.getDeterministic().log(network.getDeterministic().isPlayback() ? null : channel.socket().getLocalAddress()));
 		} else {
 			network.getDeterministic().checkpoint();
 			if (writing)
@@ -324,7 +324,7 @@ public final strictfp class Connection extends AbstractConnection implements Han
 			readFromChannel(channel);
 		}
 	}
-	
+
 	private boolean isKeyValid() {
 		// double negation because we want to the common result to be false, the default logger value
 		return !network.getDeterministic().log(network.getDeterministic().isPlayback() || !(key != null && key.isValid()));
@@ -355,7 +355,7 @@ public final strictfp class Connection extends AbstractConnection implements Han
 		}
 		network.unregisterForPinging(this);
 	}
-	
+
         @Override
 	public void handleError(IOException e) {
 		error(e);

@@ -12,6 +12,7 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.procedural.Landscape;
@@ -26,7 +27,7 @@ public final strictfp class VikingIsland13 extends Island {
 	private final CounterLabel counter = new CounterLabel(minutes*60f, Skin.getSkin().getHeadlineFont(), true);
 
 	private boolean alive;
-	
+
 	public VikingIsland13(Campaign campaign) {
 		super(campaign);
 	}
@@ -42,11 +43,11 @@ public final strictfp class VikingIsland13 extends Island {
 		// gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
 		GameNetwork game_network = startNewGame(network, gui_root, 512, Landscape.TerrainType.NATIVE, 1f, 1f, .8f, 16, 13, VikingCampaign.MAX_UNITS, ai_names);
 		game_network.getClient().getServerInterface().setPlayerSlot(0,
-				PlayerSlot.HUMAN,
+				PlayerSlot.PlayerType.HUMAN,
 				RacesResources.RACE_VIKINGS,
 				0,
 				true,
-				PlayerSlot.AI_NONE);
+				AIType.AI_NONE);
 		game_network.getClient().setUnitInfo(0,
 				new UnitInfo(false, false, 0, true,
 					getCampaign().getState().getNumPeons(),
@@ -54,11 +55,11 @@ public final strictfp class VikingIsland13 extends Island {
 					getCampaign().getState().getNumIronWarriors(),
 					getCampaign().getState().getNumRubberWarriors()));
 		game_network.getClient().getServerInterface().setPlayerSlot(2,
-				PlayerSlot.AI,
+				PlayerSlot.PlayerType.AI,
 				RacesResources.RACE_NATIVES,
 				1,
 				true,
-				PlayerSlot.AI_PASSIVE_CAMPAIGN);
+				AIType.AI_PASSIVE_CAMPAIGN);
 		game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, 0, 10, 30, 0));
 		game_network.getClient().getServerInterface().startServer();
 	}
@@ -108,24 +109,24 @@ public final strictfp class VikingIsland13 extends Island {
 		new DefeatTrigger(getCampaign(), local_player.getChieftain(), runnable);
 */
 		// Insert native towers
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 167, 60);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 171, 55);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 160, 60);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 142, 70);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 135, 72);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 130, 74);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 125, 76);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 120, 71);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 115, 67);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 95, 68);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 93, 63);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 92, 57);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 90, 52);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 96, 38);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 99, 34);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 105, 24);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 164, 51);
-		insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 103, 57);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 167, 60);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 171, 55);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 160, 60);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 142, 70);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 135, 72);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 130, 74);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 125, 76);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 120, 71);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 115, 67);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 95, 68);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 93, 63);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 92, 57);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 90, 52);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 96, 38);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 99, 34);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 105, 24);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 164, 51);
+		insertGuardTower(enemy, Race.UnitType.WARRIOR_RUBBER, 103, 57);
 
 		final int attack1;
 		final int attack2;

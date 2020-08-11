@@ -31,8 +31,8 @@ public final strictfp class HttpRequest {
 			}
 
             @Override
-			public void taskCompleted(Object result) {
-				((HttpResponse)result).notify(callback);
+			public void taskCompleted(HttpResponse result) {
+				result.notify(callback);
 			}
 
             @Override
@@ -44,17 +44,17 @@ public final strictfp class HttpRequest {
 
 	private static Task spawnGetRequest(TaskThread task_thread, final URL url, final HttpResponseParser parser, final HttpCallback callback) {
 		return task_thread.addTask(new Callable<HttpResponse>() {
-                        @Override
+            @Override
 			public HttpResponse call() throws IOException {
 				return runGetRequest(url, parser);
 			}
 
-                        @Override
-			public void taskCompleted(Object result) {
-				((HttpResponse)result).notify(callback);
+            @Override
+			public void taskCompleted(HttpResponse result) {
+				result.notify(callback);
 			}
 
-                        @Override
+            @Override
 			public void taskFailed(Exception e) {
 				callback.error((IOException)e);
 			}
@@ -75,10 +75,10 @@ public final strictfp class HttpRequest {
 		conn.setRequestMethod("POST");
 		conn.setDoOutput(true);
 		ByteArrayOutputStream byte_os = new ByteArrayOutputStream();
-            try (OutputStreamWriter out = new OutputStreamWriter(byte_os, "UTF-8")) {
-                String query_string = parameters.createQueryString();
-                out.write(query_string, 0, query_string.length());
-            }
+        try (OutputStreamWriter out = new OutputStreamWriter(byte_os, "UTF-8")) {
+            String query_string = parameters.createQueryString();
+            out.write(query_string, 0, query_string.length());
+        }
 
 		conn.setRequestProperty("Content-Length", String.valueOf(byte_os.size()));
 		conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -104,12 +104,10 @@ public final strictfp class HttpRequest {
 	}
 
 	private static HttpResponse readResponse(URLConnection conn, HttpResponseParser parser) throws IOException {
-		try {
-			try (InputStream is = conn.getInputStream()) {
-				HttpResponse response = new OkResponse(parser.parse(is));
-				copy(is, null); // Make sure the entire stream is read
-				return response;
-			}
+        try (InputStream is = conn.getInputStream()) {
+            HttpResponse response = new OkResponse(parser.parse(is));
+            copy(is, null); // Make sure the entire stream is read
+            return response;
 		} catch (IOException e) {
 			int response_code = ((HttpURLConnection)conn).getResponseCode();
 			String response_message = ((HttpURLConnection)conn).getResponseMessage();
@@ -125,7 +123,7 @@ public final strictfp class HttpRequest {
 		try {
 			return new URL(parameters.url + "?" + parameters.createQueryString());
 		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
+			throw new IllegalArgumentException(e);
 		}
 	}
 

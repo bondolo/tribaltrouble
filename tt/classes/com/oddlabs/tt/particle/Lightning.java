@@ -5,6 +5,7 @@ import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
 import com.oddlabs.tt.model.ElementVisitor;
+import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.tt.util.StateChecksum;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.Random;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
-public final strictfp class Lightning extends Element<Lightning> implements Animated {
+public final strictfp class Lightning extends Element<Model> implements Animated {
 	private final static float SQRT_2 = (float)StrictMath.sqrt(2f);
 
 	private final AnimationManager manager;

@@ -5,6 +5,7 @@ import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
 import com.oddlabs.tt.model.ElementVisitor;
+import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.tt.util.StateChecksum;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.util.vector.Vector3f;
 
-public abstract strictfp class Emitter extends Element<Emitter> implements Animated {
+public abstract strictfp class Emitter extends Element<Model> implements Animated {
 	private final AnimationManager manager;
 	private final List<Particle>[] particles;
 	private final TextureKey[] textures;

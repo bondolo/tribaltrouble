@@ -29,11 +29,11 @@ import com.oddlabs.tt.procedural.GeneratorLightning;
 import com.oddlabs.tt.procedural.GeneratorPoison;
 import com.oddlabs.tt.procedural.GeneratorSmoke;
 import com.oddlabs.tt.procedural.GeneratorSonic;
+import com.oddlabs.tt.procedural.TextureGenerator;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
-import com.oddlabs.tt.resource.ResourceDescriptor;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.resource.TextureFile;
@@ -64,7 +64,7 @@ public final strictfp class RacesResources {
 	public final static int INDEX_MAGIC_BLAST = 1;
 	public final static float THROW_RANGE = 6f;
 
-	public final static ResourceDescriptor DEFAULT_SHADOW_DESC = new GeneratorHalos(128, new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
+	public final static TextureGenerator DEFAULT_SHADOW_DESC = new GeneratorHalos(128, new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
 
 	private final static ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
 	private final static String[] race_names = new String[]{
@@ -103,7 +103,7 @@ public final strictfp class RacesResources {
 
 	private static BuildingTemplate createBuildingTemplate(
 			RenderQueues queues,
-			int template_id,
+			Race.BuildingType template_id,
 			String built_name,
 			float built_selection_radius,
 			float built_selection_height,
@@ -135,7 +135,7 @@ public final strictfp class RacesResources {
 
 		final float ring_mid = 0.38f;
 		final float fadeout = 0.005f;
-		ResourceDescriptor building_shadow_desc = new GeneratorHalos(256, new float[][]{{0.15f, 0.5f}, {0.5f, 0f}}, new float[][]{{ring_mid - ring_thickness/2 - fadeout, 0f}, {ring_mid - ring_thickness/2, 1f}, {ring_mid + ring_thickness/2, 1f}, {ring_mid + ring_thickness/2 + fadeout, 0f}});
+		TextureGenerator building_shadow_desc = new GeneratorHalos(256, new float[][]{{0.15f, 0.5f}, {0.5f, 0f}}, new float[][]{{ring_mid - ring_thickness/2 - fadeout, 0f}, {ring_mid - ring_thickness/2, 1f}, {ring_mid + ring_thickness/2, 1f}, {ring_mid + ring_thickness/2 + fadeout, 0f}});
 		ShadowListKey shadow_renderer = queues.registerSelectableShadowList(building_shadow_desc);
 		SpriteFile building = new SpriteFile(built_name,
 																 Globals.NO_MIPMAP_CUTOFF,
@@ -354,7 +354,7 @@ public final strictfp class RacesResources {
 
 		BuildingTemplate viking_quarters_template = createBuildingTemplate(
 				queues,
-				Race.BUILDING_QUARTERS,
+				Race.BuildingType.QUARTERS,
 				"/geometry/vikings/quarters.binsprite",
 				3.5f, 7f,
 				"/geometry/vikings/quarters_halfbuilt.binsprite",
@@ -371,7 +371,7 @@ public final strictfp class RacesResources {
 		ProgressForm.progress(1f/num_progress);
 		BuildingTemplate viking_armory_template = createBuildingTemplate(
 				queues,
-				Race.BUILDING_ARMORY,
+				Race.BuildingType.ARMORY,
 				"/geometry/vikings/armory.binsprite",
 				3.5f, 7f,
 				"/geometry/vikings/armory_halfbuilt.binsprite",
@@ -388,7 +388,7 @@ public final strictfp class RacesResources {
 		ProgressForm.progress(1f/num_progress);
 		BuildingTemplate viking_tower_template = createBuildingTemplate(
 				queues,
-				Race.BUILDING_TOWER,
+				Race.BuildingType.TOWER,
 				"/geometry/vikings/tower.binsprite",
 				1.25f, 11f,
 				"/geometry/vikings/tower_halfbuilt.binsprite",
@@ -405,7 +405,7 @@ public final strictfp class RacesResources {
 		ProgressForm.progress(1f/num_progress);
 		BuildingTemplate native_quarters_template = createBuildingTemplate(
 				queues,
-				Race.BUILDING_QUARTERS,
+				Race.BuildingType.QUARTERS,
 				"/geometry/natives/quarters.binsprite",
 				4f, 8f,
 				"/geometry/natives/quarters_halfbuilt.binsprite",
@@ -422,7 +422,7 @@ public final strictfp class RacesResources {
 		ProgressForm.progress(1f/num_progress);
 		BuildingTemplate native_armory_template = createBuildingTemplate(
 				queues,
-				Race.BUILDING_ARMORY,
+				Race.BuildingType.ARMORY,
 				"/geometry/natives/armory.binsprite",
 				4f, 8f,
 				"/geometry/natives/armory_halfbuilt.binsprite",
@@ -439,7 +439,7 @@ public final strictfp class RacesResources {
 		ProgressForm.progress(1f/num_progress);
 		BuildingTemplate native_tower_template = createBuildingTemplate(
 				queues,
-				Race.BUILDING_TOWER,
+				Race.BuildingType.TOWER,
 				"/geometry/natives/tower.binsprite",
 				1f, 14f,
 				"/geometry/natives/tower_halfbuilt.binsprite",
@@ -499,28 +499,28 @@ public final strictfp class RacesResources {
 			Resources.findResource(new AudioFile("/sfx/impact_meat4.ogg")),
 			Resources.findResource(new AudioFile("/sfx/impact_meat5.ogg"))
 		};
-		WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory(RockAxeWeapon.class, 0.5f, THROW_RANGE, 29f/58f,
-																	   queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_ROCK),
+		WeaponFactory<RockAxeWeapon> viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, 0.5f, THROW_RANGE, 29f/58f,
+																	   queues.register(viking_warrior_axe, Race.UnitType.WARRIOR_ROCK.ordinal()),
 																	   axe_throw_sound,
 																	   unit_hit_sounds);
-		WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory(IronAxeWeapon.class, 0.75f, THROW_RANGE, 29f/58f,
-																	   queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_IRON),
+		WeaponFactory<IronAxeWeapon> viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, 0.75f, THROW_RANGE, 29f/58f,
+																	   queues.register(viking_warrior_axe, Race.UnitType.WARRIOR_IRON.ordinal()),
 																	   axe_throw_sound,
 																	   unit_hit_sounds);
-		WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory(RubberAxeWeapon.class, 0.95f, THROW_RANGE, 29f/58f,
-																	   queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_RUBBER),
+		WeaponFactory<RubberAxeWeapon> viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, 0.95f, THROW_RANGE, 29f/58f,
+																	   queues.register(viking_warrior_axe, Race.UnitType.WARRIOR_RUBBER.ordinal()),
 																	   axe_throw_sound,
 																	   unit_hit_sounds);
-		WeaponFactory native_warrior_rock_weapon = new ThrowingFactory(RockSpearWeapon.class, 0.5f, THROW_RANGE, 46f/100f,
-																	   queues.register(native_warrior_spear, Race.UNIT_WARRIOR_ROCK),
+		WeaponFactory<RockSpearWeapon> native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, 0.5f, THROW_RANGE, 46f/100f,
+																	   queues.register(native_warrior_spear, Race.UnitType.WARRIOR_ROCK.ordinal()),
 																	   spear_throw_sound,
 																	   unit_hit_sounds);
-		WeaponFactory native_warrior_iron_weapon = new ThrowingFactory(IronSpearWeapon.class, 0.75f, THROW_RANGE, 46f/100f,
-																	   queues.register(native_warrior_spear, Race.UNIT_WARRIOR_IRON),
+		WeaponFactory<IronSpearWeapon> native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, 0.75f, THROW_RANGE, 46f/100f,
+																	   queues.register(native_warrior_spear, Race.UnitType.WARRIOR_IRON.ordinal()),
 																	   spear_throw_sound,
 																	   unit_hit_sounds);
-		WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory(RubberSpearWeapon.class, 0.95f, THROW_RANGE, 46f/100f,
-																	   queues.register(native_warrior_spear, Race.UNIT_WARRIOR_RUBBER),
+		WeaponFactory<RubberSpearWeapon> native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class, 0.95f, THROW_RANGE, 46f/100f,
+																	   queues.register(native_warrior_spear, Race.UnitType.WARRIOR_RUBBER.ordinal()),
 																	   spear_throw_sound,
 																	   unit_hit_sounds);
 
@@ -544,7 +544,7 @@ public final strictfp class RacesResources {
 																	 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
 																	 4f,
 																	 viking_warrior_rock_weapon,
-																	 queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_ROCK),
+																	 queues.register(sprite_list_warrior, Race.UnitType.WARRIOR_ROCK.ordinal()),
 																	 shadow_diameter_warrior,
 																	 default_shadow_list,
 																	 null,
@@ -562,7 +562,7 @@ public final strictfp class RacesResources {
 																	 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
 																	 4f,
 																	 viking_warrior_iron_weapon,
-																	 queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_IRON),
+																	 queues.register(sprite_list_warrior, Race.UnitType.WARRIOR_IRON.ordinal()),
 																	 shadow_diameter_warrior,
 																	 default_shadow_list,
 																	 null,
@@ -580,7 +580,7 @@ public final strictfp class RacesResources {
 																	   new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
 																	   4f,
 																	   viking_warrior_rubber_weapon,
-																	   queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_RUBBER),
+																	   queues.register(sprite_list_warrior, Race.UnitType.WARRIOR_RUBBER.ordinal()),
 																	 shadow_diameter_warrior,
 																	 default_shadow_list,
 																	   null,
@@ -598,7 +598,7 @@ public final strictfp class RacesResources {
 																	 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
 																	 4f,
 																	 native_warrior_rock_weapon,
-																	 queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_ROCK),
+																	 queues.register(sprite_list_native_warrior, Race.UnitType.WARRIOR_ROCK.ordinal()),
 																	 shadow_diameter_warrior,
 																	 default_shadow_list,
 																	 null,
@@ -616,7 +616,7 @@ public final strictfp class RacesResources {
 																	 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
 																	 4f,
 																	 native_warrior_iron_weapon,
-																	 queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_IRON),
+																	 queues.register(sprite_list_native_warrior, Race.UnitType.WARRIOR_IRON.ordinal()),
 																	 shadow_diameter_warrior,
 																	 default_shadow_list,
 																	 null,
@@ -634,7 +634,7 @@ public final strictfp class RacesResources {
 																	   new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
 																	   4f,
 																	   native_warrior_rubber_weapon,
-																	   queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_RUBBER),
+																	   queues.register(sprite_list_native_warrior, Race.UnitType.WARRIOR_RUBBER.ordinal()),
 																	 shadow_diameter_warrior,
 																	 default_shadow_list,
 																	   null,

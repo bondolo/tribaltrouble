@@ -64,7 +64,7 @@ final strictfp class EmitterRenderer {
 	}
 
 	private static void render(RenderQueues render_queues, Emitter emitter) {
-		if (Globals.isBoundsEnabled(Globals.BOUNDING_PLAYERS)) {
+		if (Globals.isBoundsEnabled(Globals.Bounding.PLAYERS)) {
 			RenderTools.draw(emitter, 1f, 1f, 1f);
 		}
 

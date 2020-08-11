@@ -31,18 +31,18 @@ public final strictfp class LoadDeterministic extends Deterministic {
 		getDefaults();
 	}
 
-        @Override
+    @Override
 	public boolean isPlayback() {
 		return true;
 	}
 
-        @Override
+    @Override
 	public void endLog() {
 //		assert isEndOfLog();
 		try {
 			channel.close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 
@@ -84,15 +84,14 @@ public final strictfp class LoadDeterministic extends Deterministic {
 			total_bytes_read += current_total;
 			return bytes_read == -1 && current_total == 0;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 
 	private boolean isEndOfLog() {
-		if (!buffer.hasRemaining() && num_defaults == MIN_DEFAULTS)
-			return tryFillBuffer();
-		else
-			return false;
+		return (!buffer.hasRemaining() && num_defaults == MIN_DEFAULTS)
+			?  tryFillBuffer()
+            : false;
 	}
 
 	private void getDefaults() {
@@ -102,7 +101,7 @@ public final strictfp class LoadDeterministic extends Deterministic {
 			System.out.println("***** End of log *****");
 	}
 
-        @Override
+    @Override
 	protected byte log(byte b, byte def) {
 		if (isDefault(1))
 			return def;
@@ -113,7 +112,7 @@ public final strictfp class LoadDeterministic extends Deterministic {
 		}
 	}
 
-        @Override
+    @Override
 	protected char log(char c, char def) {
 		if (isDefault(2))
 			return def;
@@ -124,7 +123,7 @@ public final strictfp class LoadDeterministic extends Deterministic {
 		}
 	}
 
-        @Override
+    @Override
 	protected int log(int i, int def) {
 		if (isDefault(4))
 			return def;
@@ -135,7 +134,7 @@ public final strictfp class LoadDeterministic extends Deterministic {
 		}
 	}
 
-        @Override
+    @Override
 	protected long log(long l, long def) {
 		if (isDefault(8))
 			return def;
@@ -146,7 +145,7 @@ public final strictfp class LoadDeterministic extends Deterministic {
 		}
 	}
 
-        @Override
+    @Override
 	protected float log(float f, float def) {
 		if (isDefault(4))
 			return def;
@@ -194,10 +193,10 @@ public final strictfp class LoadDeterministic extends Deterministic {
 	}
 
 	public final strictfp class ByteBufferInputStream extends InputStream {
-                @Override
+        @Override
 		public int read() throws IOException {
 			byte b = log((byte)0);
-			return ((int)b) & 0xFF;
+			return Byte.toUnsignedInt(b);
 		}
 	}
 }

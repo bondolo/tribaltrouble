@@ -30,7 +30,7 @@ public strictfp abstract class Delegate extends GUIObject {
 	public void render2D() {
 	}
 
-        @Override
+    @Override
 	protected void renderGeometry() {
 	}
 

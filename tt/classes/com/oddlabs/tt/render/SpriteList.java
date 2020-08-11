@@ -9,7 +9,7 @@ import com.oddlabs.util.Utils;
 public final strictfp class SpriteList {
 	private final BoundingBox[] bounds;
 	private final Sprite[] sprites;
-	private final int[] type_array;
+	private final AnimationInfo.Type[] type_array;
 
 	public SpriteList(SpriteFile sprite_file) {
 		Object[] sprites_and_animations = (Object[])Utils.loadObject(sprite_file.getURL());
@@ -21,7 +21,7 @@ public final strictfp class SpriteList {
         }
 		sprites = new Sprite[sprite_infos.length];
 		float[] cpw_array = new float[animation_infos.length];
-		type_array = new int[animation_infos.length];
+		type_array = new AnimationInfo.Type[animation_infos.length];
 		int[] animation_length_array = new int[animation_infos.length];
 		for (int i = 0; i < animation_infos.length; i++) {
 			cpw_array[i] = 1f/animation_infos[i].getWPC();
@@ -64,7 +64,7 @@ public final strictfp class SpriteList {
 		return sprites[index];
 	}
 
-	public int[] getAnimationTypes() {
+	public AnimationInfo.Type[] getAnimationTypes() {
 		return type_array;
 	}
 }

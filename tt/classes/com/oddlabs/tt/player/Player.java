@@ -21,6 +21,7 @@ import com.oddlabs.tt.model.weapon.RockAxeWeapon;
 import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.util.Target;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -73,7 +74,7 @@ public final strictfp class Player implements PlayerInterface {
 	private boolean can_build_chieftains = true;
 	private boolean can_repair = true;
 	private boolean can_attack = true;
-	private final boolean[] can_build = new boolean[Race.NUM_BUILDINGS];
+	private final EnumSet<Race.BuildingType> can_build = EnumSet.allOf(Race.BuildingType.class);
 	private boolean can_move = true;
 	private boolean can_exit_towers = true;
 	private boolean can_use_rubber = true;
@@ -94,9 +95,7 @@ public final strictfp class Player implements PlayerInterface {
 		for (int i = 0; i < can_do_magic.length; i++) {
             can_do_magic[i] = true;
         }
-		for (int i = 0; i < can_build.length; i++) {
-            can_build[i] = true;
-        }
+
 		this.player_info = player_info;
 		this.unit_count = new SupplyContainer(world.getMaxUnitCount());
 //		this.team_tip = Utils.getBundleString(bundle, "team", new Object[]{Integer.toString(player_info.getTeam() + 1)});
@@ -177,8 +176,11 @@ public final strictfp class Player implements PlayerInterface {
 		can_repair = enabled;
 	}
 
-	public void enableBuilding(int building, boolean enabled) {
-		can_build[building] = enabled;
+	public void enableBuilding(Race.BuildingType building, boolean enabled) {
+        if (enabled)
+            can_build.add(building);
+        else
+            can_build.remove(building);
 	}
 
 	public void enableAttacking(boolean enabled) {
@@ -237,8 +239,8 @@ public final strictfp class Player implements PlayerInterface {
 		return can_move;
 	}
 
-	public boolean canBuild(int building) {
-		return can_build[building] && getBuildingCountContainer().getNumSupplies() < Player.MAX_BUILDING_COUNT;
+	public boolean canBuild(Race.BuildingType building) {
+		return can_build.contains(building) && getBuildingCountContainer().getNumSupplies() < Player.MAX_BUILDING_COUNT;
 	}
 
 	public boolean canRepair() {
@@ -266,7 +268,7 @@ public final strictfp class Player implements PlayerInterface {
 		return ai;
 	}
 
-	public Building buildBuilding(int building_type, int grid_x, int grid_y) {
+	public Building buildBuilding(Race.BuildingType building_type, int grid_x, int grid_y) {
 		BuildingSiteScanFilter filter = new BuildingSiteScanFilter(world.getUnitGrid(), getRace().getBuildingTemplate(building_type), 40, true);
 		world.getUnitGrid().scan(filter, grid_x, grid_y);
 		List target_list = filter.getResult();
@@ -423,32 +425,32 @@ public final strictfp class Player implements PlayerInterface {
 			building.buildWeapons(IronAxeWeapon.class, num_weapons, infinite);
 	}
 
-        @Override
+    @Override
 	public void buildRubberWeapons(Building building, int num_weapons, boolean infinite) {
 		if (isValid(building))
 			building.buildWeapons(RubberAxeWeapon.class, num_weapons, infinite);
 	}
 
-        @Override
+    @Override
 	public void doMagic(Unit chieftain, int magic) {
 		if (isValid(chieftain))
 			chieftain.doMagic(magic, true);
 	}
 
-        @Override
+    @Override
 	public void exitTower(Building building) {
 		if (isValid(building))
 			building.exitTower();
 	}
 
-        @Override
+    @Override
 	public void trainChieftain(Building building, boolean start) {
 		if (isValid(building))
 			building.trainChieftain(start);
 	}
 
-        @Override
-	public void placeBuilding(Selectable[] selection, int template_id, int placing_grid_x, int placing_grid_y) {
+    @Override
+	public void placeBuilding(Selectable[] selection, Race.BuildingType template_id, int placing_grid_x, int placing_grid_y) {
 		Building building = new Building(this, getRace().getBuildingTemplate(template_id), placing_grid_x, placing_grid_y);
             for (Selectable selection1 : selection) {
                 if (isValid(selection1)) {

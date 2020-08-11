@@ -32,6 +32,7 @@ import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.resource.WorldGenerator;
@@ -177,21 +178,21 @@ public final strictfp class GameMenu extends Panel implements ConfigurationListe
 		boolean race_changed = player.getInfo() == null || race_index != player.getInfo().getRace();
 		boolean team_changed = player.getInfo() == null || team_index != player.getInfo().getTeam();
 		boolean ready_changed = ready != player.isReady();
-		boolean difficulty_changed = player.getInfo() == null || player.getAIDifficulty() != difficulty_index;
+		boolean difficulty_changed = player.getInfo() == null || player.getAIDifficulty().ordinal() != difficulty_index;
 		PulldownButton slot_button = slot_buttons[player_slot];
 		switch (index) {
 			case OPEN_INDEX:
-				if ((player.getType() != PlayerSlot.OPEN && player.getType() != PlayerSlot.HUMAN) || race_changed || team_changed || ready_changed) {
+				if ((player.getType() != PlayerSlot.PlayerType.OPEN && player.getType() != PlayerSlot.PlayerType.HUMAN) || race_changed || team_changed || ready_changed) {
 					if (player_slot == local_player_slot) {
-						int new_type = PlayerSlot.HUMAN;
-						game_network.getClient().getServerInterface().setPlayerSlot(player_slot, new_type, race_index, team_index, ready, PlayerSlot.AI_NONE);
+						PlayerSlot.PlayerType new_type = PlayerSlot.PlayerType.HUMAN;
+						game_network.getClient().getServerInterface().setPlayerSlot(player_slot, new_type, race_index, team_index, ready, AIType.AI_NONE);
 					} else {
 						game_network.getClient().getServerInterface().resetSlotState(player_slot, true);
 					}
 				}
 				break;
 			case CLOSED_INDEX:
-				if (player.getType() != PlayerSlot.CLOSED || race_changed || team_changed) {
+				if (player.getType() != PlayerSlot.PlayerType.CLOSED || race_changed || team_changed) {
 					slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(Utils.getBundleString(bundle, "open"));
 					game_network.getClient().getServerInterface().resetSlotState(player_slot, false);
 				}
@@ -200,14 +201,14 @@ public final strictfp class GameMenu extends Panel implements ConfigurationListe
 			case COMPUTER_NORMAL_INDEX:
 			case COMPUTER_HARD_INDEX:
 				assert !rated;
-				boolean new_ai = player.getType() != PlayerSlot.AI;
+				boolean new_ai = player.getType() != PlayerSlot.PlayerType.AI;
 				if (new_ai || race_changed || team_changed || difficulty_changed) {
 					slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(Utils.getBundleString(bundle, "open"));
 					if (new_ai) {
 						team_index = player_slot;
 						race_index = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick()).nextInt(RacesResources.getNumRaces());
 					}
-					game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race_index, team_index, true, difficulty_index);
+					game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.PlayerType.AI, race_index, team_index, true, AIType.values()[difficulty_index]);
 				}
 				break;
 			default:
@@ -228,7 +229,7 @@ public final strictfp class GameMenu extends Panel implements ConfigurationListe
 	private int countHumans(PlayerSlot[] players) {
 		int result = 0;
             for (PlayerSlot player : players) {
-                if (player.getType() == PlayerSlot.HUMAN) {
+                if (player.getType() == PlayerSlot.PlayerType.HUMAN) {
                     result++;
                 }
             }
@@ -253,7 +254,7 @@ public final strictfp class GameMenu extends Panel implements ConfigurationListe
 			ready_mark.setLit(player.isReady());
 			race_button.getMenu().chooseItem(player.getInfo() != null ? player.getInfo().getRace() : 0);
 			team_button.getMenu().chooseItem(player.getInfo() != null ? player.getInfo().getTeam() : 0);
-			if (player.getType() != PlayerSlot.CLOSED) {
+			if (player.getType() != PlayerSlot.PlayerType.CLOSED) {
 				slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(Utils.getBundleString(bundle, "open"));
 				slot_button.getMenu().chooseItem(OPEN_INDEX);
 			} else {
@@ -264,13 +265,13 @@ public final strictfp class GameMenu extends Panel implements ConfigurationListe
 			if (player.getInfo() != null) {
 				PlayerInfo player_info = player.getInfo();
 				switch (player.getType()) {
-					case PlayerSlot.AI:
+					case AI:
 						assert !rated;
-						slot_button.getMenu().chooseItem(player.getAIDifficulty() + 1);
+						slot_button.getMenu().chooseItem(player.getAIDifficulty().ordinal() + 1);
 						race_button.setDisabled(!canControlSlot(i));
 						team_button.setDisabled(!canControlSlot(i));
 						break;
-					case PlayerSlot.HUMAN:
+					case HUMAN:
 						String player_name = player_info.getName();
 						new_human_names.add(player_name);
 						slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(player_name);

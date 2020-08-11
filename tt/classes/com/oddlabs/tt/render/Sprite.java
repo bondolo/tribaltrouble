@@ -47,7 +47,7 @@ final strictfp class Sprite {
 	private final boolean modulate_color;
 	private final float[] cpw_array;
 	private final int[] animation_length_array;
-	private final int[] type_array;
+	private final AnimationInfo.Type[] type_array;
 	private final Texture respond_texture;
 
 	static {
@@ -55,7 +55,7 @@ final strictfp class Sprite {
 		white_color.rewind();
 	}
 
-	public Sprite(SpriteInfo sprite_info, AnimationInfo[] animations, boolean alpha, boolean lighted, boolean culled, boolean modulate_color, boolean max_alpha, int mipmap_cutoff, BoundingBox[] bounds, float[] cpw_array, int[] type_array, int[] animation_length_array) {
+	public Sprite(SpriteInfo sprite_info, AnimationInfo[] animations, boolean alpha, boolean lighted, boolean culled, boolean modulate_color, boolean max_alpha, int mipmap_cutoff, BoundingBox[] bounds, float[] cpw_array, AnimationInfo.Type[] type_array, int[] animation_length_array) {
 		this.culled = culled;
 		this.alpha = alpha;
 		this.lighted = lighted;
@@ -153,7 +153,7 @@ final strictfp class Sprite {
 		for (int i = 0; i < render_list.size(); i++) {
 			ModelState model = (ModelState)render_list.get(i);
 			render_list.set(i, null);
-			if (Globals.isBoundsEnabled(Globals.BOUNDING_PLAYERS))
+			if (Globals.isBoundsEnabled(Globals.Bounding.PLAYERS))
 				RenderTools.draw(model.getModel());
 			if (Globals.draw_misc) {
 				GL11.glPushMatrix();
@@ -363,7 +363,7 @@ final strictfp class Sprite {
 
 	private int getFrameCapped(int animation, int frame) {
 		int anim_length = animation_length_array[animation];
-		if (type_array[animation] == AnimationInfo.ANIM_LOOP)
+		if (type_array[animation] == AnimationInfo.Type.LOOP)
 			return frame%anim_length;
 		else
 			return StrictMath.min(frame, anim_length - 1);

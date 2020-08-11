@@ -103,36 +103,36 @@ public strictfp abstract class LinearEmitter extends Emitter {
 		List<Particle>[] particles = getParticles();
 		int size = 0;
 
-            for (List<Particle> particle1 : particles) {
-                for (int i = 0; i < particle1.size(); i++) {
-                    LinearParticle particle = (LinearParticle) particle1.get(i);
-                    if (particle.getEnergy() > 0f) {
-                        particle.update(t);
+        for (List<Particle> particle1 : particles) {
+            for (int i = 0; i < particle1.size(); i++) {
+                LinearParticle particle = (LinearParticle) particle1.get(i);
+                if (particle.getEnergy() > 0f) {
+                    particle.update(t);
 
-                        float x = particle.getPosX();
-                        float y = particle.getPosY();
-                        float z = particle.getPosZ();
-                        float landscape_z = getWorld().getHeightMap().getNearestHeight(x, y);
-                        if (z < landscape_z + particle.getRadiusZ() + offset_z) {
-                            particle.setPos(x, y, landscape_z + particle.getRadiusZ() + offset_z);
-                            particle.setVelocity(particle.getVelocityX()*friction, particle.getVelocityY()*friction, -particle.getVelocityZ()*friction);
-                        }
-
-                        float radius_x = particle.getRadiusX()*SQRT_2;
-                        float radius_y = particle.getRadiusY()*SQRT_2;
-                        float radius_z = particle.getRadiusZ()*SQRT_2;
-                        x_min = StrictMath.min(x_min, x - radius_x);
-                        x_max = StrictMath.max(x_max, x + radius_x);
-                        y_min = StrictMath.min(y_min, y - radius_y);
-                        y_max = StrictMath.max(y_max, y + radius_y);
-                        z_min = StrictMath.min(z_min, z - radius_z);
-                        z_max = StrictMath.max(z_max, z + radius_z);
-                    } else {
-                        particle1.remove(i);
+                    float x = particle.getPosX();
+                    float y = particle.getPosY();
+                    float z = particle.getPosZ();
+                    float landscape_z = getWorld().getHeightMap().getNearestHeight(x, y);
+                    if (z < landscape_z + particle.getRadiusZ() + offset_z) {
+                        particle.setPos(x, y, landscape_z + particle.getRadiusZ() + offset_z);
+                        particle.setVelocity(particle.getVelocityX()*friction, particle.getVelocityY()*friction, -particle.getVelocityZ()*friction);
                     }
+
+                    float radius_x = particle.getRadiusX()*SQRT_2;
+                    float radius_y = particle.getRadiusY()*SQRT_2;
+                    float radius_z = particle.getRadiusZ()*SQRT_2;
+                    x_min = StrictMath.min(x_min, x - radius_x);
+                    x_max = StrictMath.max(x_max, x + radius_x);
+                    y_min = StrictMath.min(y_min, y - radius_y);
+                    y_max = StrictMath.max(y_max, y + radius_y);
+                    z_min = StrictMath.min(z_min, z - radius_z);
+                    z_max = StrictMath.max(z_max, z + radius_z);
+                } else {
+                    particle1.remove(i);
                 }
-                size += particle1.size();
             }
+            size += particle1.size();
+        }
 		setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
 		reregister();
 		if (size == 0 && num_particles == 0)

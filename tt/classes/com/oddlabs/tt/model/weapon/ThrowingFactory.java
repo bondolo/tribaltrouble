@@ -6,14 +6,14 @@ import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.render.SpriteKey;
 import java.lang.reflect.InvocationTargetException;
 
-public final strictfp class ThrowingFactory extends WeaponFactory {
+public final strictfp class ThrowingFactory<TW extends ThrowingWeapon> extends WeaponFactory<TW> {
 	private final static Class[] types = new Class[]{boolean.class, Unit.class, Selectable.class, SpriteKey.class, Audio.class, Audio[].class};
-	private final Class weapon_type;
+	private final Class<TW> weapon_type;
 	private final SpriteKey weapon_sprite;
 	private final Audio throw_sound;
 	private final Audio[] hit_sounds;
 
-	public ThrowingFactory(Class weapon_type, float hit_chance, float range, float release_ratio, SpriteKey weapon_sprite, Audio throw_sound, Audio[] hit_sounds) {
+	public ThrowingFactory(Class<TW> weapon_type, float hit_chance, float range, float release_ratio, SpriteKey weapon_sprite, Audio throw_sound, Audio[] hit_sounds) {
 		super(hit_chance, range, release_ratio);
 		this.weapon_type = weapon_type;
 		this.weapon_sprite = weapon_sprite;
@@ -21,7 +21,7 @@ public final strictfp class ThrowingFactory extends WeaponFactory {
 		this.hit_sounds = hit_sounds;
 	}
 
-        @Override
+    @Override
 	protected void doAttack(boolean hit, Unit src, Selectable target) {
 		Object[] args = new Object[]{hit, src, target, weapon_sprite, throw_sound, hit_sounds};
 		try {
@@ -31,8 +31,8 @@ public final strictfp class ThrowingFactory extends WeaponFactory {
 		}
 	}
 
-        @Override
-	public Class getType() {
+    @Override
+	public Class <TW> getType() {
 		return weapon_type;
 	}
 }

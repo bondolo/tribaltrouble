@@ -18,7 +18,7 @@ public final strictfp class TutorialOverTrigger extends TutorialTrigger {
                 int units = current.getUnitCountContainer().getNumSupplies();
                 int buildings = current.getBuildingCountContainer().getNumSupplies();
                 if (units == 0 && (current == local_player || buildings == 0)) {
-                    tutorial.done(TutorialForm.TUTORIAL_BATTLE);
+                    tutorial.done(TutorialForm.TutorialType.TUTORIAL_BATTLE);
                 }
             }
 	}

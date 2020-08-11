@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,12 +16,13 @@ import org.xml.sax.InputSource;
 public final strictfp class MacOSXUtil extends OSUtil {
 	private static File locateDir(String app_dir_name) {
 		File current_dir = new File(".").getAbsoluteFile();
-		while (current_dir != null && !current_dir.getName().equals(app_dir_name))
-			current_dir = current_dir.getParentFile();
+		while (current_dir != null && !current_dir.getName().equals(app_dir_name)) {
+            current_dir = current_dir.getParentFile();
+        }
 		return current_dir;
 	}
 
-	private static void convertPlist(File info_plist_file, String script_url, Map script_parameters) {
+	private static void convertPlist(File info_plist_file, String script_url, Map<String,Object> script_parameters) {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder document_builder = factory.newDocumentBuilder();
@@ -44,10 +44,8 @@ public final strictfp class MacOSXUtil extends OSUtil {
 			TransformerFactory tf = TransformerFactory.newInstance();
 			Templates transformation = tf.newTemplates(xsltSource);
 			Transformer transformer = transformation.newTransformer();
-			Iterator it = script_parameters.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry entry = (Map.Entry)it.next();
-				transformer.setParameter((String)entry.getKey(), entry.getValue());
+			for (Map.Entry<String,Object> entry : script_parameters.entrySet()) {
+				transformer.setParameter(entry.getKey(), entry.getValue());
 			}
 			transformer.transform(source, result);
 			tmp_file.renameTo(info_plist_file);
@@ -56,18 +54,18 @@ public final strictfp class MacOSXUtil extends OSUtil {
 		}
 	}
 
-        @Override
+    @Override
 	public void registerURLScheme(String gamename, URLAssociation association) {
-		Map script_parameters = new HashMap();
+		Map<String,Object> script_parameters = new HashMap<>();
 		script_parameters.put("description", association.description);
 		script_parameters.put("scheme", association.scheme);
 		script_parameters.put("iconname", association.icon_name);
 		convertPlist(gamename, "scripts/urlschemeplist.xml", script_parameters);
 	}
 
-        @Override
+    @Override
 	public void registerAssociation(String gamename, Association association) {
-		Map script_parameters = new HashMap();
+		Map<String,Object> script_parameters = new HashMap<>();
 		script_parameters.put("mimetype", association.mime_type);
 		script_parameters.put("extension", association.extension);
 		script_parameters.put("extension2", association.extension.toUpperCase());
@@ -76,7 +74,7 @@ public final strictfp class MacOSXUtil extends OSUtil {
 		convertPlist(gamename, "scripts/filetypeplist.xml", script_parameters);
 	}
 
-	private static void convertPlist(String gamename, String script_url, Map script_parameters) {
+	private static void convertPlist(String gamename, String script_url, Map<String,Object> script_parameters) {
 		String app_dir_name = gamename + ".app";
 		File app_dir = locateDir(app_dir_name);
 		if (app_dir == null) {

@@ -72,7 +72,7 @@ public final strictfp class TreeRenderer extends TreePicker {
 		tree.getCrown().getSprite(0).setup(0, respond);
 		for (int i = 0; i < render_list.size(); i++) {
 			TreeSupply group = render_list.get(i);
-			if (Globals.isBoundsEnabled(Globals.BOUNDING_PLAYERS))
+			if (Globals.isBoundsEnabled(Globals.Bounding.PLAYERS))
 				RenderTools.draw(group);
 			if (Globals.draw_trees && cheat.draw_trees) {
 				GL11.glPushMatrix();

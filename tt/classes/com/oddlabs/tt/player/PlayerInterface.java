@@ -1,6 +1,7 @@
 package com.oddlabs.tt.player;
 
 import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.util.Target;
@@ -18,7 +19,7 @@ public strictfp interface PlayerInterface {
 	void doMagic(Unit chieftain, int magic);
 	void exitTower(Building building);
 	void trainChieftain(Building building, boolean start);
-	void placeBuilding(Selectable[] selection, int template_id, int placing_grid_x, int placing_grid_y);
+	void placeBuilding(Selectable[] selection, Race.BuildingType template_id, int placing_grid_x, int placing_grid_y);
 	void setRallyPoint(Building building, Target target);
 	void setTarget(Selectable[] selection, Target target, int action, boolean aggressive);
 	void setRallyPoint(Building building, int grid_x, int grid_y);

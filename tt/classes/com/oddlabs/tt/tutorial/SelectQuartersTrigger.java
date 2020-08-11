@@ -8,7 +8,7 @@ public final strictfp class SelectQuartersTrigger extends TutorialTrigger {
 		super(.1f, 0f, "select_quarters");
 	}
 
-        @Override
+    @Override
 	protected void run(Tutorial tutorial) {
 		Building building = tutorial.getViewer().getSelection().getCurrentSelection().getBuilding();
 		if (building != null && building.getAbilities().hasAbilities(Abilities.REPRODUCE))

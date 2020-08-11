@@ -236,7 +236,7 @@ public final strictfp class AdvancedAI extends AI {
 			float inv_dist = 1f/(float)StrictMath.sqrt(dx*dx + dy*dy);
 			int tx = (int)(ox + 10f*dx*inv_dist);
 			int ty = (int)(oy + 10f*dy*inv_dist);
-			setTowerUnderConstruction(buildBuilding(Race.BUILDING_TOWER, builders, tx, ty));
+			setTowerUnderConstruction(buildBuilding(Race.BuildingType.TOWER, builders, tx, ty));
 		}
 	}
 
@@ -418,7 +418,7 @@ else
 				return;
 
 			// TODO: Should use Quarters as origin, if it exists
-			setArmoryUnderConstruction(buildBuilding(Race.BUILDING_ARMORY, builders, builders[0].getGridX(), builders[0].getGridY()));
+			setArmoryUnderConstruction(buildBuilding(Race.BuildingType.ARMORY, builders, builders[0].getGridX(), builders[0].getGridY()));
 			reclassify();
 		}
 	}
@@ -430,7 +430,7 @@ else
 				return;
 
 			// TODO: Should use Armory as origin, if it exists
-			setQuartersUnderConstruction(buildBuilding(Race.BUILDING_QUARTERS, builders, builders[0].getGridX(), builders[0].getGridY()));
+			setQuartersUnderConstruction(buildBuilding(Race.BuildingType.QUARTERS, builders, builders[0].getGridX(), builders[0].getGridY()));
 			reclassify();
 		}
 	}
@@ -496,7 +496,7 @@ else
 			return best_building;
 	}
 
-	private boolean buildBuilding(int building_type, Selectable[] selection, int grid_x, int grid_y) {
+	private boolean buildBuilding(Race.BuildingType building_type, Selectable[] selection, int grid_x, int grid_y) {
 		BuildingSiteScanFilter filter = new BuildingSiteScanFilter(getUnitGrid(), getOwner().getRace().getBuildingTemplate(building_type), 40, true);
 		getUnitGrid().scan(filter, grid_x, grid_y);
 		List target_list = filter.getResult();

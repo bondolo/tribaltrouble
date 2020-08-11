@@ -13,6 +13,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.model.RacesResources;
+import com.oddlabs.tt.net.PlayerSlot.AIType;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;
@@ -34,7 +35,7 @@ public final strictfp class Server implements ConnectionListenerInterface {
 	private final WorldGenerator generator;
 	private final Game game;
 	private final AbstractConnectionListener local_listener;
-	private final Map connection_to_client = new LinkedHashMap();
+	private final Map<AbstractConnection,ClientConnection> connection_to_client = new LinkedHashMap<>();
 	private final Random random;
 	private AbstractConnectionListener tunnelled_listener;
 
@@ -59,16 +60,16 @@ public final strictfp class Server implements ConnectionListenerInterface {
 		}
 	}
 
-	private Iterator getClientIterator() {
+	private Iterator<ClientConnection> getClientIterator() {
 		return connection_to_client.values().iterator();
 	}
-	
+
 	private int getNumClients() {
 		return connection_to_client.size();
 	}
 
 	private ClientConnection getClientFromConnection(AbstractConnection conn) {
-		return (ClientConnection)connection_to_client.get(conn);
+		return connection_to_client.get(conn);
 	}
 
 	private void unregisterGame() {
@@ -85,9 +86,9 @@ public final strictfp class Server implements ConnectionListenerInterface {
 	}
 
 	private void closeConnections() {
-		Iterator it = connection_to_client.keySet().iterator();
+		Iterator<AbstractConnection> it = connection_to_client.keySet().iterator();
 		while (it.hasNext()) {
-			AbstractConnection conn = (AbstractConnection)it.next();
+			AbstractConnection conn = it.next();
 			conn.close();
 		}
 		connection_to_client.clear();
@@ -101,9 +102,9 @@ public final strictfp class Server implements ConnectionListenerInterface {
 
 	private int getNumReady() {
 		int count = 0;
-		Iterator it = getClientIterator();
+		Iterator<ClientConnection> it = getClientIterator();
 		while (it.hasNext()) {
-			ClientConnection client = (ClientConnection)it.next();
+			ClientConnection client = it.next();
 			if (client.getClient().getPlayerSlot().isReady())
 				count++;
 		}
@@ -134,9 +135,9 @@ public final strictfp class Server implements ConnectionListenerInterface {
 	}
 
 	private ClientConnection locateClientForSlot(PlayerSlot player_slot) {
-		Iterator it = getClientIterator();
+		Iterator<ClientConnection> it = getClientIterator();
 		while (it.hasNext()) {
-			ClientConnection client = (ClientConnection)it.next();
+			ClientConnection client = it.next();
 			if (client.getClient().getPlayerSlot() == player_slot)
 				return client;
 		}
@@ -150,11 +151,11 @@ public final strictfp class Server implements ConnectionListenerInterface {
 	}
 
 	private void resetSlotState(PlayerSlot client_slot, boolean open) {
-		client_slot.setType(open ? PlayerSlot.OPEN : PlayerSlot.CLOSED);
+		client_slot.setType(open ? PlayerSlot.PlayerType.OPEN : PlayerSlot.PlayerType.CLOSED);
 		client_slot.setInfo(null);
 		client_slot.setAddress(null);
 		client_slot.setReady(true);
-		client_slot.setAIDifficulty(PlayerSlot.AI_NONE);
+		client_slot.setAIDifficulty(AIType.AI_NONE);
 		ClientConnection player_client = locateClientForSlot(client_slot);
 		if (player_client != null)
 			disconnectClient(player_client);
@@ -174,18 +175,18 @@ public final strictfp class Server implements ConnectionListenerInterface {
 		broadcastInits();
 	}
 
-	public void setPlayerSlot(PlayerSlot client_slot, int slot, int type, int race, int team, boolean ready, int ai_difficulty) {
+	public void setPlayerSlot(PlayerSlot client_slot, int slot, PlayerSlot.PlayerType type, int race, int team, boolean ready, AIType ai_difficulty) {
 		if (!PlayerSlot.isValidType(type) || !RacesResources.isValidRace(race))
 			return;
-		if (!canControlSlot(client_slot, slot) || (client_slot.getSlot() == slot && type != PlayerSlot.HUMAN))
+		if (!canControlSlot(client_slot, slot) || (client_slot.getSlot() == slot && type != PlayerSlot.PlayerType.HUMAN))
 			return;
 		PlayerSlot player_slot = players[slot];
 //		PlayerInfo player_info = players[slot];
 		ClientConnection player_client = locateClientForSlot(player_slot);
-		if (player_client != null && type != PlayerSlot.HUMAN)
+		if (player_client != null && type != PlayerSlot.PlayerType.HUMAN)
 			disconnectClient(player_client);
 		String name;
-		if (type == PlayerSlot.AI) {
+		if (type == PlayerSlot.PlayerType.AI) {
 			name = ai_names[slot];
 		} else {
 			name = player_slot.getInfo().getName();
@@ -195,19 +196,19 @@ public final strictfp class Server implements ConnectionListenerInterface {
 		player_slot.setType(type);
 		player_slot.setAIDifficulty(ai_difficulty);
 		player_slot.setInfo(player_info);
-		player_slot.setReady(type != PlayerSlot.HUMAN || ready);
+		player_slot.setReady(type != PlayerSlot.PlayerType.HUMAN || ready);
 		broadcastPlayers(reset_ready);
 	}
 
 	private void resetReady() {
 		int num_humans = 0;
             for (PlayerSlot player_slot : players) {
-                if (player_slot.getType() == PlayerSlot.HUMAN)
+                if (player_slot.getType() == PlayerSlot.PlayerType.HUMAN)
                     num_humans++;
             }
 		if (num_humans > 1) {
                 for (PlayerSlot player_slot : players) {
-                    if (player_slot.getType() == PlayerSlot.HUMAN)
+                    if (player_slot.getType() == PlayerSlot.PlayerType.HUMAN)
                         player_slot.setReady(false);
                 }
 		}
@@ -216,25 +217,25 @@ public final strictfp class Server implements ConnectionListenerInterface {
 	private void broadcastPlayers(boolean reset_ready) {
 		if (reset_ready)
 			resetReady();
-		Iterator it = getClientIterator();
+		Iterator<ClientConnection> it = getClientIterator();
 		while (it.hasNext()) {
-			ClientConnection client = (ClientConnection)it.next();
+			ClientConnection client = it.next();
 			client.getClientInterface().setPlayers(players);
 		}
 	}
 
 	public void chat(PlayerSlot player_slot, String chat) {
-		Iterator it = getClientIterator();
+		Iterator<ClientConnection> it = getClientIterator();
 		while (it.hasNext()) {
-			ClientConnection client = (ClientConnection)it.next();
+			ClientConnection client = it.next();
 			client.getClientInterface().chat(player_slot.getSlot(), chat);
 		}
 	}
-	
+
 	private void broadcastInits() {
-		Iterator it = getClientIterator();
+		Iterator<ClientConnection> it = getClientIterator();
 		while (it.hasNext()) {
-			ClientConnection client = (ClientConnection)it.next();
+			ClientConnection client = it.next();
 			int session_id = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick()).nextInt();
 			client.getClientInterface().startGame(session_id);
 		}
@@ -242,7 +243,7 @@ public final strictfp class Server implements ConnectionListenerInterface {
 
 	private short locateAvailableSlot() {
 		for (short i = 0; i < players.length; i++) {
-			if (players[i].getType() == PlayerSlot.OPEN)
+			if (players[i].getType() == PlayerSlot.PlayerType.OPEN)
 				return i;
 		}
 		return (short)-1;
@@ -254,7 +255,7 @@ System.out.println("Incoming host connection from " + remote_address);
 		short available_slot = locateAvailableSlot();
 		if (state != NEGOTIATING || available_slot == -1 ||
 			(remote_address instanceof InetAddress && !((InetAddress)remote_address).isLoopbackAddress()) ||
-			(remote_address instanceof TunnelIdentifier && game != null && game.isRated() && 
+			(remote_address instanceof TunnelIdentifier && game != null && game.isRated() &&
 			((TunnelIdentifier)remote_address).getProfile().getWins() < GameSession.MIN_WINS_FOR_RANKING)) {
 			System.out.println("rejecting incoming connection since state = " + state + " | locateAvailableSlot() = " + available_slot + " remote_address = " + remote_address);
 			connection_listener.rejectConnection();
@@ -288,7 +289,7 @@ System.out.println("Incoming host connection from " + remote_address);
 			max_teams = 2;
 		PlayerInfo player_info = new PlayerInfo(available_slot%max_teams, random.nextInt(RacesResources.getNumRaces()), name);
 		player_slot.setRating(rating);
-		player_slot.setType(PlayerSlot.HUMAN);
+		player_slot.setType(PlayerSlot.PlayerType.HUMAN);
 		player_slot.setAddress(address);
 		player_slot.setInfo(player_info);
 		ClientInfo client = new ClientInfo(this, player_slot);
