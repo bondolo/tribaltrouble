@@ -151,601 +151,601 @@
 <icons texture="/textures/gui/icons">
 	<!-- Common icons -->
 	<tree_status_icon>
-		<quad left="32" top="448" right="64" bottom="480"/>
+		<quad left="64" top="896" right="128" bottom="960"/>
 	</tree_status_icon>
 	<rock_status_icon>
-		<quad left="64" top="448" right="96" bottom="480"/>
+		<quad left="128" top="896" right="192" bottom="960"/>
 	</rock_status_icon>
 	<iron_status_icon>
-		<quad left="96" top="448" right="128" bottom="480"/>
+		<quad left="192" top="896" right="256" bottom="960"/>
 	</iron_status_icon>
 	<rubber_status_icon>
-		<quad left="128" top="448" right="160" bottom="480"/>
+		<quad left="256" top="896" right="320" bottom="960"/>
 	</rubber_status_icon>
 	<cheat_icon>
-		<quad left="0" top="480" right="32" bottom="512"/>
+		<quad left="0" top="960" right="64" bottom="1024"/>
 	</cheat_icon>
 	<harvest_icon>
 		<normal>
-			<quad left="256" top="0" right="320" bottom="64"/>
+			<quad left="512" top="0" right="640" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="256" top="64" right="320" bottom="128"/>
+			<quad left="512" top="128" right="640" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="256" top="128" right="320" bottom="192"/>
+			<quad left="512" top="256" right="640" bottom="384"/>
 		</disabled>
 	</harvest_icon>
 	<tree_icon>
 		<normal>
-			<quad left="704" top="0" right="768" bottom="64"/>
+			<quad left="1408" top="0" right="1536" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="704" top="64" right="768" bottom="128"/>
+			<quad left="1408" top="128" right="1536" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="704" top="128" right="768" bottom="192"/>
+			<quad left="1408" top="256" right="1536" bottom="384"/>
 		</disabled>
 	</tree_icon>
 	<rock_icon>
 		<normal>
-			<quad left="768" top="0" right="832" bottom="64"/>
+			<quad left="1536" top="0" right="1664" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="768" top="64" right="832" bottom="128"/>
+			<quad left="1536" top="128" right="1664" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="768" top="128" right="832" bottom="192"/>
+			<quad left="1536" top="256" right="1664" bottom="384"/>
 		</disabled>
 	</rock_icon>
 	<iron_icon>
 		<normal>
-			<quad left="832" top="0" right="896" bottom="64"/>
+			<quad left="1664" top="0" right="1792" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="832" top="64" right="896" bottom="128"/>
+			<quad left="1664" top="128" right="1792" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="832" top="128" right="896" bottom="192"/>
+			<quad left="1664" top="256" right="1792" bottom="384"/>
 		</disabled>
 	</iron_icon>
 	<rubber_icon>
 		<normal>
-			<quad left="896" top="0" right="960" bottom="64"/>
+			<quad left="1792" top="0" right="1920" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="896" top="64" right="960" bottom="128"/>
+			<quad left="1792" top="128" right="1920" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="896" top="128" right="960" bottom="192"/>
+			<quad left="1792" top="256" right="1920" bottom="384"/>
 		</disabled>
 	</rubber_icon>
 
 	<!-- VIKINGS -->
 	<vikings_unit_status_icon>
-		<quad left="0" top="448" right="32" bottom="480"/>
+		<quad left="0" top="896" right="64" bottom="960"/>
 	</vikings_unit_status_icon>
 	<vikings_weapon_rock_status_icon>
-		<quad left="160" top="448" right="192" bottom="480"/>
+		<quad left="320" top="896" right="384" bottom="960"/>
 	</vikings_weapon_rock_status_icon>
 	<vikings_weapon_iron_status_icon>
-		<quad left="192" top="448" right="224" bottom="480"/>
+		<quad left="384" top="896" right="448" bottom="960"/>
 	</vikings_weapon_iron_status_icon>
 	<vikings_weapon_rubber_status_icon>
-		<quad left="224" top="448" right="256" bottom="480"/>
+		<quad left="448" top="896" right="512" bottom="960"/>
 	</vikings_weapon_rubber_status_icon>
 	<vikings_build_weapons_icon>
 		<normal>
-			<quad left="320" top="0" right="384" bottom="64"/>
+			<quad left="640" top="0" right="768" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="320" top="64" right="384" bottom="128"/>
+			<quad left="640" top="128" right="768" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="320" top="128" right="384" bottom="192"/>
+			<quad left="640" top="256" right="768" bottom="384"/>
 		</disabled>
 	</vikings_build_weapons_icon>
 	<vikings_build_weapon_rock_icon>
 		<normal>
-			<quad left="0" top="256" right="64" bottom="320"/>
+			<quad left="0" top="512" right="128" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="0" top="320" right="64" bottom="384"/>
+			<quad left="0" top="640" right="128" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="0" top="384" right="64" bottom="448"/>
+			<quad left="0" top="768" right="128" bottom="896"/>
 		</disabled>
 	</vikings_build_weapon_rock_icon>
 	<vikings_build_weapon_iron_icon>
 		<normal>
-			<quad left="64" top="256" right="128" bottom="320"/>
+			<quad left="128" top="512" right="256" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="64" top="320" right="128" bottom="384"/>
+			<quad left="128" top="640" right="256" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="64" top="384" right="128" bottom="448"/>
+			<quad left="128" top="768" right="256" bottom="896"/>
 		</disabled>
 	</vikings_build_weapon_iron_icon>
 	<vikings_build_weapon_rubber_icon>
 		<normal>
-			<quad left="128" top="256" right="192" bottom="320"/>
+			<quad left="256" top="512" right="384" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="128" top="320" right="192" bottom="384"/>
+			<quad left="256" top="640" right="384" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="128" top="384" right="192" bottom="448"/>
+			<quad left="256" top="768" right="384" bottom="896"/>
 		</disabled>
 	</vikings_build_weapon_rubber_icon>
 	<vikings_army_icon>
 		<normal>
-			<quad left="448" top="0" right="512" bottom="64"/>
+			<quad left="896" top="0" right="1024" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="448" top="64" right="512" bottom="128"/>
+			<quad left="896" top="128" right="1024" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="448" top="128" right="512" bottom="192"/>
+			<quad left="896" top="256" right="1024" bottom="384"/>
 		</disabled>
 	</vikings_army_icon>
 	<vikings_warrior_rock_icon>
 		<normal>
-			<quad left="448" top="256" right="512" bottom="320"/>
+			<quad left="896" top="512" right="1024" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="448" top="320" right="512" bottom="384"/>
+			<quad left="896" top="640" right="1024" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="448" top="384" right="512" bottom="448"/>
+			<quad left="896" top="768" right="1024" bottom="896"/>
 		</disabled>
 	</vikings_warrior_rock_icon>
 	<vikings_warrior_iron_icon>
 		<normal>
-			<quad left="512" top="256" right="576" bottom="320"/>
+			<quad left="1024" top="512" right="1152" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="512" top="320" right="576" bottom="384"/>
+			<quad left="1024" top="640" right="1152" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="512" top="384" right="576" bottom="448"/>
+			<quad left="1024" top="768" right="1152" bottom="896"/>
 		</disabled>
 	</vikings_warrior_iron_icon>
 	<vikings_warrior_rubber_icon>
 		<normal>
-			<quad left="576" top="256" right="640" bottom="320"/>
+			<quad left="1152" top="512" right="1280" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="576" top="320" right="640" bottom="384"/>
+			<quad left="1152" top="640" right="1280" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="576" top="384" right="640" bottom="448"/>
+			<quad left="1152" top="768" right="1280" bottom="896"/>
 		</disabled>
 	</vikings_warrior_rubber_icon>
 	<vikings_peon_icon>
 		<normal>
-			<quad left="384" top="256" right="448" bottom="320"/>
+			<quad left="768" top="512" right="896" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="384" top="320" right="448" bottom="384"/>
+			<quad left="768" top="640" right="896" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="384" top="384" right="448" bottom="448"/>
+			<quad left="768" top="768" right="896" bottom="896"/>
 		</disabled>
 	</vikings_peon_icon>
 	<vikings_chieftain_icon>
 		<normal>
-			<quad left="256" top="512" right="320" bottom="576"/>
+			<quad left="512" top="1024" right="640" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="256" top="576" right="320" bottom="640"/>
+			<quad left="512" top="1152" right="640" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="256" top="640" right="320" bottom="704"/>
+			<quad left="512" top="1280" right="640" bottom="1408"/>
 		</disabled>
 	</vikings_chieftain_icon>
 	<vikings_transport_icon>
 		<normal>
-			<quad left="576" top="0" right="640" bottom="64"/>
+			<quad left="1152" top="0" right="1280" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="576" top="64" right="640" bottom="128"/>
+			<quad left="1152" top="128" right="1280" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="576" top="128" right="640" bottom="192"/>
+			<quad left="1152" top="256" right="1280" bottom="384"/>
 		</disabled>
 	</vikings_transport_icon>
 	<vikings_attack_icon>
 		<normal>
-			<quad left="0" top="192" right="64" bottom="256"/>
+			<quad left="0" top="384" right="128" bottom="512"/>
 		</normal>
 		<active>
-			<quad left="64" top="192" right="128" bottom="256"/>
+			<quad left="128" top="384" right="256" bottom="512"/>
 		</active>
 		<disabled>
-			<quad left="128" top="192" right="192" bottom="256"/>
+			<quad left="256" top="384" right="384" bottom="512"/>
 		</disabled>
 	</vikings_attack_icon>
 	<vikings_move_icon>
 		<normal>
-			<quad left="256" top="448" right="320" bottom="512"/>
+			<quad left="512" top="896" right="640" bottom="1024"/>
 		</normal>
 		<active>
-			<quad left="320" top="448" right="384" bottom="512"/>
+			<quad left="640" top="896" right="768" bottom="1024"/>
 		</active>
 		<disabled>
-			<quad left="384" top="448" right="448" bottom="512"/>
+			<quad left="768" top="896" right="896" bottom="1024"/>
 		</disabled>
 	</vikings_move_icon>
 	<vikings_gather_repair_icon>
 		<normal>
-			<quad left="384" top="192" right="448" bottom="256"/>
+			<quad left="768" top="384" right="896" bottom="512"/>
 		</normal>
 		<active>
-			<quad left="448" top="192" right="512" bottom="256"/>
+			<quad left="896" top="384" right="1024" bottom="512"/>
 		</active>
 		<disabled>
-			<quad left="512" top="192" right="576" bottom="256"/>
+			<quad left="1024" top="384" right="1152" bottom="512"/>
 		</disabled>
 	</vikings_gather_repair_icon>
 	<vikings_quarters_icon>
 		<normal>
-			<quad left="0" top="0" right="64" bottom="64"/>
+			<quad left="0" top="0" right="128" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="0" top="64" right="64" bottom="128"/>
+			<quad left="0" top="128" right="128" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="0" top="128" right="64" bottom="192"/>
+			<quad left="0" top="256" right="128" bottom="384"/>
 		</disabled>
 	</vikings_quarters_icon>
 	<vikings_armory_icon>
 		<normal>
-			<quad left="0" top="512" right="64" bottom="576"/>
+			<quad left="0" top="1024" right="128" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="0" top="576" right="64" bottom="640"/>
+			<quad left="0" top="1152" right="128" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="0" top="640" right="64" bottom="704"/>
+			<quad left="0" top="1280" right="128" bottom="1408"/>
 		</disabled>
 	</vikings_armory_icon>
 	<vikings_tower_icon>
 		<normal>
-			<quad left="128" top="0" right="192" bottom="64"/>
+			<quad left="256" top="0" right="384" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="128" top="64" right="192" bottom="128"/>
+			<quad left="256" top="128" right="384" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="128" top="128" right="192" bottom="192"/>
+			<quad left="256" top="256" right="384" bottom="384"/>
 		</disabled>
 	</vikings_tower_icon>
 	<vikings_tower_exit_icon>
 		<normal>
-			<quad left="896" top="256" right="960" bottom="320"/>
+			<quad left="1792" top="512" right="1920" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="896" top="320" right="960" bottom="384"/>
+			<quad left="1792" top="640" right="1920" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="896" top="384" right="960" bottom="448"/>
+			<quad left="1792" top="768" right="1920" bottom="896"/>
 		</disabled>
 	</vikings_tower_exit_icon>
 	<vikings_rally_point_icon>
 		<normal>
-			<quad left="128" top="512" right="192" bottom="576"/>
+			<quad left="256" top="1024" right="384" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="128" top="576" right="192" bottom="640"/>
+			<quad left="256" top="1152" right="384" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="128" top="640" right="192" bottom="704"/>
+			<quad left="256" top="1280" right="384" bottom="1408"/>
 		</disabled>
 	</vikings_rally_point_icon>
 	<vikings_magic1_icon>
 		<normal>
-			<quad left="384" top="512" right="448" bottom="576"/>
+			<quad left="768" top="1024" right="896" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="384" top="576" right="448" bottom="640"/>
+			<quad left="768" top="1152" right="896" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="384" top="640" right="448" bottom="704"/>
+			<quad left="768" top="1280" right="896" bottom="1408"/>
 		</disabled>
 	</vikings_magic1_icon>
 	<vikings_magic2_icon>
 		<normal>
-			<quad left="448" top="512" right="512" bottom="576"/>
+			<quad left="896" top="1024" right="1024" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="448" top="576" right="512" bottom="640"/>
+			<quad left="896" top="1152" right="1024" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="448" top="640" right="512" bottom="704"/>
+			<quad left="896" top="1280" right="1024" bottom="1408"/>
 		</disabled>
 	</vikings_magic2_icon>
 
 	<!-- NATIVES -->
 	<natives_unit_status_icon>
-		<quad left="0" top="448" right="32" bottom="480"/>
+		<quad left="0" top="896" right="64" bottom="960"/>
 	</natives_unit_status_icon>
 	<natives_weapon_rock_status_icon>
-		<quad left="160" top="480" right="192" bottom="512"/>
+		<quad left="320" top="960" right="384" bottom="1024"/>
 	</natives_weapon_rock_status_icon>
 	<natives_weapon_iron_status_icon>
-		<quad left="192" top="480" right="224" bottom="512"/>
+		<quad left="384" top="960" right="448" bottom="1024"/>
 	</natives_weapon_iron_status_icon>
 	<natives_weapon_rubber_status_icon>
-		<quad left="224" top="480" right="256" bottom="512"/>
+		<quad left="448" top="960" right="512" bottom="1024"/>
 	</natives_weapon_rubber_status_icon>
 	<natives_build_weapons_icon>
 		<normal>
-			<quad left="384" top="0" right="448" bottom="64"/>
+			<quad left="768" top="0" right="896" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="384" top="64" right="448" bottom="128"/>
+			<quad left="768" top="128" right="896" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="384" top="128" right="448" bottom="192"/>
+			<quad left="768" top="256" right="896" bottom="384"/>
 		</disabled>
 	</natives_build_weapons_icon>
 	<natives_build_weapon_rock_icon>
 		<normal>
-			<quad left="192" top="256" right="256" bottom="320"/>
+			<quad left="384" top="512" right="512" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="192" top="320" right="256" bottom="384"/>
+			<quad left="384" top="640" right="512" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="192" top="384" right="256" bottom="448"/>
+			<quad left="384" top="768" right="512" bottom="896"/>
 		</disabled>
 	</natives_build_weapon_rock_icon>
 	<natives_build_weapon_iron_icon>
 		<normal>
-			<quad left="256" top="256" right="320" bottom="320"/>
+			<quad left="512" top="512" right="640" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="256" top="320" right="320" bottom="384"/>
+			<quad left="512" top="640" right="640" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="256" top="384" right="320" bottom="448"/>
+			<quad left="512" top="768" right="640" bottom="896"/>
 		</disabled>
 	</natives_build_weapon_iron_icon>
 	<natives_build_weapon_rubber_icon>
 		<normal>
-			<quad left="320" top="256" right="384" bottom="320"/>
+			<quad left="640" top="512" right="768" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="320" top="320" right="384" bottom="384"/>
+			<quad left="640" top="640" right="768" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="320" top="384" right="384" bottom="448"/>
+			<quad left="640" top="768" right="768" bottom="896"/>
 		</disabled>
 	</natives_build_weapon_rubber_icon>
 	<natives_army_icon>
 		<normal>
-			<quad left="512" top="0" right="576" bottom="64"/>
+			<quad left="1024" top="0" right="1152" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="512" top="64" right="576" bottom="128"/>
+			<quad left="1024" top="128" right="1152" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="512" top="128" right="576" bottom="192"/>
+			<quad left="1024" top="256" right="1152" bottom="384"/>
 		</disabled>
 	</natives_army_icon>
 	<natives_warrior_rock_icon>
 		<normal>
-			<quad left="704" top="256" right="768" bottom="320"/>
+			<quad left="1408" top="512" right="1536" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="704" top="320" right="768" bottom="384"/>
+			<quad left="1408" top="640" right="1536" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="704" top="384" right="768" bottom="448"/>
+			<quad left="1408" top="768" right="1536" bottom="896"/>
 		</disabled>
 	</natives_warrior_rock_icon>
 	<natives_warrior_iron_icon>
 		<normal>
-			<quad left="768" top="256" right="832" bottom="320"/>
+			<quad left="1536" top="512" right="1664" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="768" top="320" right="832" bottom="384"/>
+			<quad left="1536" top="640" right="1664" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="768" top="384" right="832" bottom="448"/>
+			<quad left="1536" top="768" right="1664" bottom="896"/>
 		</disabled>
 	</natives_warrior_iron_icon>
 	<natives_warrior_rubber_icon>
 		<normal>
-			<quad left="832" top="256" right="896" bottom="320"/>
+			<quad left="1664" top="512" right="1792" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="832" top="320" right="896" bottom="384"/>
+			<quad left="1664" top="640" right="1792" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="832" top="384" right="896" bottom="448"/>
+			<quad left="1664" top="768" right="1792" bottom="896"/>
 		</disabled>
 	</natives_warrior_rubber_icon>
 	<natives_peon_icon>
 		<normal>
-			<quad left="640" top="256" right="704" bottom="320"/>
+			<quad left="1280" top="512" right="1408" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="640" top="320" right="704" bottom="384"/>
+			<quad left="1280" top="640" right="1408" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="640" top="384" right="704" bottom="448"/>
+			<quad left="1280" top="768" right="1408" bottom="896"/>
 		</disabled>
 	</natives_peon_icon>
 	<natives_chieftain_icon>
 		<normal>
-			<quad left="320" top="512" right="384" bottom="576"/>
+			<quad left="640" top="1024" right="768" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="320" top="576" right="384" bottom="640"/>
+			<quad left="640" top="1152" right="768" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="320" top="640" right="384" bottom="704"/>
+			<quad left="640" top="1280" right="768" bottom="1408"/>
 		</disabled>
 	</natives_chieftain_icon>
 	<natives_transport_icon>
 		<normal>
-			<quad left="640" top="0" right="704" bottom="64"/>
+			<quad left="1280" top="0" right="1408" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="640" top="64" right="704" bottom="128"/>
+			<quad left="1280" top="128" right="1408" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="640" top="128" right="704" bottom="192"/>
+			<quad left="1280" top="256" right="1408" bottom="384"/>
 		</disabled>
 	</natives_transport_icon>
 	<natives_attack_icon>
 		<normal>
-			<quad left="192" top="192" right="256" bottom="256"/>
+			<quad left="384" top="384" right="512" bottom="512"/>
 		</normal>
 		<active>
-			<quad left="256" top="192" right="320" bottom="256"/>
+			<quad left="512" top="384" right="640" bottom="512"/>
 		</active>
 		<disabled>
-			<quad left="320" top="192" right="384" bottom="256"/>
+			<quad left="640" top="384" right="768" bottom="512"/>
 		</disabled>
 	</natives_attack_icon>
 	<natives_move_icon>
 		<normal>
-			<quad left="448" top="448" right="512" bottom="512"/>
+			<quad left="896" top="896" right="1024" bottom="1024"/>
 		</normal>
 		<active>
-			<quad left="512" top="448" right="576" bottom="512"/>
+			<quad left="1024" top="896" right="1152" bottom="1024"/>
 		</active>
 		<disabled>
-			<quad left="576" top="448" right="640" bottom="512"/>
+			<quad left="1152" top="896" right="1280" bottom="1024"/>
 		</disabled>
 	</natives_move_icon>
 	<natives_gather_repair_icon>
 		<normal>
-			<quad left="576" top="192" right="640" bottom="256"/>
+			<quad left="1152" top="384" right="1280" bottom="512"/>
 		</normal>
 		<active>
-			<quad left="640" top="192" right="704" bottom="256"/>
+			<quad left="1280" top="384" right="1408" bottom="512"/>
 		</active>
 		<disabled>
-			<quad left="704" top="192" right="768" bottom="256"/>
+			<quad left="1408" top="384" right="1536" bottom="512"/>
 		</disabled>
 	</natives_gather_repair_icon>
 	<natives_quarters_icon>
 		<normal>
-			<quad left="64" top="0" right="128" bottom="64"/>
+			<quad left="128" top="0" right="256" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="64" top="64" right="128" bottom="128"/>
+			<quad left="128" top="128" right="256" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="64" top="128" right="128" bottom="192"/>
+			<quad left="128" top="256" right="256" bottom="384"/>
 		</disabled>
 	</natives_quarters_icon>
 	<natives_armory_icon>
 		<normal>
-			<quad left="64" top="512" right="128" bottom="576"/>
+			<quad left="128" top="1024" right="256" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="64" top="576" right="128" bottom="640"/>
+			<quad left="128" top="1152" right="256" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="64" top="640" right="128" bottom="704"/>
+			<quad left="128" top="1280" right="256" bottom="1408"/>
 		</disabled>
 	</natives_armory_icon>
 	<natives_tower_icon>
 		<normal>
-			<quad left="192" top="0" right="256" bottom="64"/>
+			<quad left="384" top="0" right="512" bottom="128"/>
 		</normal>
 		<active>
-			<quad left="192" top="64" right="256" bottom="128"/>
+			<quad left="384" top="128" right="512" bottom="256"/>
 		</active>
 		<disabled>
-			<quad left="192" top="128" right="256" bottom="192"/>
+			<quad left="384" top="256" right="512" bottom="384"/>
 		</disabled>
 	</natives_tower_icon>
 	<natives_tower_exit_icon>
 		<normal>
-			<quad left="960" top="256" right="1024" bottom="320"/>
+			<quad left="1920" top="512" right="2048" bottom="640"/>
 		</normal>
 		<active>
-			<quad left="960" top="320" right="1024" bottom="384"/>
+			<quad left="1920" top="640" right="2048" bottom="768"/>
 		</active>
 		<disabled>
-			<quad left="960" top="384" right="1024" bottom="448"/>
+			<quad left="1920" top="768" right="2048" bottom="896"/>
 		</disabled>
 	</natives_tower_exit_icon>
 	<natives_rally_point_icon>
 		<normal>
-			<quad left="192" top="512" right="256" bottom="576"/>
+			<quad left="384" top="1024" right="512" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="192" top="576" right="256" bottom="640"/>
+			<quad left="384" top="1152" right="512" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="192" top="640" right="256" bottom="704"/>
+			<quad left="384" top="1280" right="512" bottom="1408"/>
 		</disabled>
 	</natives_rally_point_icon>
 	<natives_magic1_icon>
 		<normal>
-			<quad left="576" top="512" right="640" bottom="576"/>
+			<quad left="1152" top="1024" right="1280" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="576" top="576" right="640" bottom="640"/>
+			<quad left="1152" top="1152" right="1280" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="576" top="640" right="640" bottom="704"/>
+			<quad left="1152" top="1280" right="1280" bottom="1408"/>
 		</disabled>
 	</natives_magic1_icon>
 	<natives_magic2_icon>
 		<normal>
-			<quad left="512" top="512" right="576" bottom="576"/>
+			<quad left="1024" top="1024" right="1152" bottom="1152"/>
 		</normal>
 		<active>
-			<quad left="512" top="576" right="576" bottom="640"/>
+			<quad left="1024" top="1152" right="1152" bottom="1280"/>
 		</active>
 		<disabled>
-			<quad left="512" top="640" right="576" bottom="704"/>
+			<quad left="1024" top="1280" right="1152" bottom="1408"/>
 		</disabled>
 	</natives_magic2_icon>
 
 	<!-- Watch icons -->
 	<watch>
-		<quad left="0" top="959" right="22" bottom="981"/>
-		<quad left="32" top="959" right="54" bottom="981"/>
-		<quad left="64" top="959" right="86" bottom="981"/>
-		<quad left="96" top="959" right="118" bottom="981"/>
-		<quad left="128" top="959" right="150" bottom="981"/>
-		<quad left="160" top="959" right="182" bottom="981"/>
-		<quad left="192" top="959" right="214" bottom="981"/>
-		<quad left="224" top="959" right="246" bottom="981"/>
-		<quad left="256" top="959" right="278" bottom="981"/>
-		<quad left="288" top="959" right="310" bottom="981"/>
-		<quad left="320" top="959" right="342" bottom="981"/>
-		<quad left="352" top="959" right="374" bottom="981"/>
-		<quad left="384" top="959" right="406" bottom="981"/>
-		<quad left="0" top="991" right="22" bottom="1013"/>
-		<quad left="32" top="991" right="54" bottom="1013"/>
-		<quad left="64" top="991" right="86" bottom="1013"/>
-		<quad left="96" top="991" right="118" bottom="1013"/>
-		<quad left="128" top="991" right="150" bottom="1013"/>
-		<quad left="160" top="991" right="182" bottom="1013"/>
-		<quad left="192" top="991" right="214" bottom="1013"/>
-		<quad left="224" top="991" right="246" bottom="1013"/>
-		<quad left="256" top="991" right="278" bottom="1013"/>
-		<quad left="288" top="991" right="310" bottom="1013"/>
-		<quad left="320" top="991" right="342" bottom="1013"/>
-		<quad left="352" top="991" right="374" bottom="1013"/>
+		<quad left="0" top="1918" right="44" bottom="1962"/>
+		<quad left="64" top="1918" right="108" bottom="1962"/>
+		<quad left="128" top="1918" right="172" bottom="1962"/>
+		<quad left="192" top="1918" right="236" bottom="1962"/>
+		<quad left="256" top="1918" right="300" bottom="1962"/>
+		<quad left="320" top="1918" right="364" bottom="1962"/>
+		<quad left="384" top="1918" right="428" bottom="1962"/>
+		<quad left="448" top="1918" right="492" bottom="1962"/>
+		<quad left="512" top="1918" right="556" bottom="1962"/>
+		<quad left="576" top="1918" right="620" bottom="1962"/>
+		<quad left="640" top="1918" right="684" bottom="1962"/>
+		<quad left="704" top="1918" right="748" bottom="1962"/>
+		<quad left="768" top="1918" right="812" bottom="1962"/>
+		<quad left="0" top="1982" right="44" bottom="2026"/>
+		<quad left="64" top="1982" right="108" bottom="2026"/>
+		<quad left="128" top="1982" right="172" bottom="2026"/>
+		<quad left="192" top="1982" right="236" bottom="2026"/>
+		<quad left="256" top="1982" right="300" bottom="2026"/>
+		<quad left="320" top="1982" right="364" bottom="2026"/>
+		<quad left="384" top="1982" right="428" bottom="2026"/>
+		<quad left="448" top="1982" right="492" bottom="2026"/>
+		<quad left="512" top="1982" right="556" bottom="2026"/>
+		<quad left="576" top="1982" right="620" bottom="2026"/>
+		<quad left="640" top="1982" right="684" bottom="2026"/>
+		<quad left="704" top="1982" right="748" bottom="2026"/>
 	</watch>
 
 	<!-- Infinite char -->
 	<infinite>
-		<quad left="768" top="192" right="832" bottom="256"/>
+		<quad left="1536" top="384" right="1664" bottom="512"/>
 	</infinite>
 	
-	<notify_arrow head_x="64" head_y="32" end_x="0" end_y="32">
-		<quad left="832" top="192" right="896" bottom="256"/>
+	<notify_arrow head_x="128" head_y="64" end_x="0" end_y="64">
+		<quad left="1664" top="384" right="1792" bottom="512"/>
 	</notify_arrow>
 </icons>

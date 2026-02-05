@@ -106,8 +106,8 @@ final class Icons {
 						1f - bottom/(float)texture.getHeight(),
 						right/(float)texture.getWidth(),
 						1f - top/(float)texture.getHeight(),
-						right - left,
-						bottom - top,
+						(right - left) / 2,
+						(bottom - top) / 2,
 						texture);
 	}
 

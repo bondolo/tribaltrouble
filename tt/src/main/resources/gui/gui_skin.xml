@@ -185,213 +185,213 @@
 		<box left_offset="6" bottom_offset="10" top_offset="24" right_offset="10">
 			<left_bottom>
 				<normal>
-					<quad left="358" top="41" right="371" bottom="54"/>
+					<quad left="716" top="82" right="742" bottom="108"/>
 				</normal>
 				<active>
-					<quad left="358" top="105" right="371" bottom="118"/>
+					<quad left="716" top="210" right="742" bottom="236"/>
 				</active>
 				<disabled>
-					<quad left="358" top="169" right="371" bottom="182"/>
+					<quad left="716" top="338" right="742" bottom="464"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="372" top="41" right="373" bottom="54"/>
+					<quad left="744" top="82" right="746" bottom="108"/>
 				</normal>
 				<active>
-					<quad left="372" top="105" right="373" bottom="118"/>
+					<quad left="744" top="210" right="746" bottom="236"/>
 				</active>
 				<disabled>
-					<quad left="372" top="169" right="373" bottom="182"/>
+					<quad left="744" top="338" right="746" bottom="464"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="393" top="41" right="406" bottom="54"/>
+					<quad left="786" top="82" right="812" bottom="108"/>
 				</normal>
 				<active>
-					<quad left="393" top="105" right="406" bottom="118"/>
+					<quad left="786" top="210" right="812" bottom="236"/>
 				</active>
 				<disabled>
-					<quad left="393" top="169" right="406" bottom="182"/>
+					<quad left="786" top="338" right="812" bottom="464"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="393" top="39" right="406" bottom="40"/>
+					<quad left="786" top="78" right="812" bottom="80"/>
 				</normal>
 				<active>
-					<quad left="393" top="103" right="406" bottom="104"/>
+					<quad left="786" top="206" right="812" bottom="208"/>
 				</active>
 				<disabled>
-					<quad left="393" top="167" right="406" bottom="168"/>
+					<quad left="786" top="334" right="812" bottom="336"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="393" top="6" right="406" bottom="38"/>
+					<quad left="786" top="12" right="812" bottom="76"/>
 				</normal>
 				<active>
-					<quad left="393" top="70" right="406" bottom="102"/>
+					<quad left="786" top="140" right="812" bottom="204"/>
 				</active>
 				<disabled>
-					<quad left="393" top="134" right="406" bottom="166"/>
+					<quad left="786" top="268" right="812" bottom="332"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="391" top="6" right="392" bottom="38"/>
+					<quad left="782" top="12" right="784" bottom="76"/>
 				</normal>
 				<active>
-					<quad left="391" top="70" right="392" bottom="102"/>
+					<quad left="782" top="140" right="784" bottom="204"/>
 				</active>
 				<disabled>
-					<quad left="391" top="134" right="392" bottom="166"/>
+					<quad left="782" top="268" right="784" bottom="332"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="358" top="6" right="371" bottom="38"/>
+					<quad left="716" top="12" right="742" bottom="76"/>
 				</normal>
 				<active>
-					<quad left="358" top="70" right="371" bottom="102"/>
+					<quad left="716" top="140" right="742" bottom="204"/>
 				</active>
 				<disabled>
-					<quad left="358" top="134" right="371" bottom="166"/>
+					<quad left="716" top="268" right="742" bottom="332"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="358" top="40" right="371" bottom="41"/>
+					<quad left="716" top="80" right="742" bottom="82"/>
 				</normal>
 				<active>
-					<quad left="358" top="104" right="371" bottom="105"/>
+					<quad left="716" top="208" right="742" bottom="210"/>
 				</active>
 				<disabled>
-					<quad left="358" top="168" right="371" bottom="169"/>
+					<quad left="716" top="336" right="742" bottom="338"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="372" top="40" right="373" bottom="41"/>
+					<quad left="744" top="80" right="746" bottom="82"/>
 				</normal>
 				<active>
-					<quad left="372" top="104" right="373" bottom="105"/>
+					<quad left="744" top="208" right="746" bottom="210"/>
 				</active>
 				<disabled>
-					<quad left="372" top="168" right="373" bottom="169"/>
+					<quad left="744" top="336" right="746" bottom="338"/>
 				</disabled>
 			</center>
 		</box>
 		<normal>
-			<quad left="264" top="40" right="280" bottom="56"/>
+			<quad left="528" top="80" right="560" bottom="112"/>
 		</normal>
 		<active>
-			<quad left="264" top="104" right="280" bottom="120"/>
+			<quad left="528" top="208" right="560" bottom="240"/>
 		</active>
 		<disabled>
-			<quad left="264" top="168" right="280" bottom="184"/>
+			<quad left="528" top="336" right="560" bottom="368"/>
 		</disabled>
 	</form>
 	<slim_form>
 		<box left_offset="6" bottom_offset="10" top_offset="6" right_offset="10">
 			<left_bottom>
 				<normal>
-					<quad left="416" top="114" right="428" bottom="126"/>
+					<quad left="832" top="228" right="856" bottom="252"/>
 				</normal>
 				<active>
-					<quad left="464" top="114" right="476" bottom="126"/>
+					<quad left="928" top="228" right="952" bottom="252"/>
 				</active>
 				<disabled>
-					<quad left="464" top="146" right="476" bottom="158"/>
+					<quad left="928" top="292" right="952" bottom="316"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="429" top="114" right="430" bottom="126"/>
+					<quad left="858" top="228" right="860" bottom="252"/>
 				</normal>
 				<active>
-					<quad left="477" top="114" right="478" bottom="126"/>
+					<quad left="954" top="228" right="956" bottom="252"/>
 				</active>
 				<disabled>
-					<quad left="477" top="146" right="478" bottom="158"/>
+					<quad left="954" top="292" right="956" bottom="316"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="451" top="114" right="464" bottom="126"/>
+					<quad left="902" top="228" right="928" bottom="252"/>
 				</normal>
 				<active>
-					<quad left="499" top="114" right="512" bottom="126"/>
+					<quad left="998" top="228" right="1024" bottom="252"/>
 				</active>
 				<disabled>
-					<quad left="499" top="146" right="512" bottom="158"/>
+					<quad left="998" top="292" right="1024" bottom="316"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="451" top="112" right="464" bottom="113"/>
+					<quad left="902" top="224" right="928" bottom="226"/>
 				</normal>
 				<active>
-					<quad left="499" top="112" right="512" bottom="113"/>
+					<quad left="998" top="224" right="1024" bottom="226"/>
 				</active>
 				<disabled>
-					<quad left="499" top="145" right="512" bottom="146"/>
+					<quad left="998" top="290" right="1024" bottom="292"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="451" top="96" right="464" bottom="108"/>
+					<quad left="902" top="192" right="928" bottom="216"/>
 				</normal>
 				<active>
-					<quad left="499" top="96" right="512" bottom="108"/>
+					<quad left="998" top="192" right="1024" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="499" top="128" right="512" bottom="140"/>
+					<quad left="998" top="256" right="1024" bottom="280"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="449" top="96" right="450" bottom="108"/>
+					<quad left="898" top="192" right="900" bottom="216"/>
 				</normal>
 				<active>
-					<quad left="497" top="96" right="498" bottom="108"/>
+					<quad left="994" top="192" right="996" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="497" top="128" right="498" bottom="140"/>
+					<quad left="994" top="256" right="996" bottom="280"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="416" top="96" right="428" bottom="108"/>
+					<quad left="832" top="192" right="856" bottom="216"/>
 				</normal>
 				<active>
-					<quad left="464" top="96" right="476" bottom="108"/>
+					<quad left="928" top="192" right="952" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="464" top="128" right="476" bottom="140"/>
+					<quad left="928" top="256" right="952" bottom="280"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="416" top="109" right="428" bottom="110"/>
+					<quad left="832" top="218" right="856" bottom="220"/>
 				</normal>
 				<active>
-					<quad left="464" top="109" right="476" bottom="110"/>
+					<quad left="928" top="218" right="952" bottom="220"/>
 				</active>
 				<disabled>
-					<quad left="464" top="141" right="476" bottom="142"/>
+					<quad left="928" top="282" right="952" bottom="284"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="429" top="109" right="430" bottom="110"/>
+					<quad left="858" top="218" right="860" bottom="220"/>
 				</normal>
 				<active>
-					<quad left="477" top="109" right="478" bottom="110"/>
+					<quad left="954" top="218" right="956" bottom="220"/>
 				</active>
 				<disabled>
-					<quad left="477" top="141" right="478" bottom="142"/>
+					<quad left="954" top="282" right="956" bottom="284"/>
 				</disabled>
 			</center>
 		</box>
@@ -400,101 +400,101 @@
 		<box left_offset="4" bottom_offset="4" top_offset="4" right_offset="4">
 			<left_bottom>
 				<normal>
-					<quad left="36" top="41" right="42" bottom="60"/>
+					<quad left="72" top="82" right="84" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="36" top="105" right="42" bottom="124"/>
+					<quad left="72" top="210" right="84" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="36" top="169" right="42" bottom="188"/>
+					<quad left="72" top="338" right="84" bottom="376"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="42" top="41" right="43" bottom="60"/>
+					<quad left="84" top="82" right="86" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="42" top="105" right="43" bottom="124"/>
+					<quad left="84" top="210" right="86" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="42" top="169" right="43" bottom="188"/>
+					<quad left="84" top="338" right="86" bottom="376"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="57" top="41" right="60" bottom="60"/>
+					<quad left="114" top="82" right="120" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="57" top="105" right="60" bottom="124"/>
+					<quad left="114" top="210" right="120" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="57" top="169" right="60" bottom="188"/>
+					<quad left="114" top="338" right="120" bottom="376"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="57" top="40" right="60" bottom="41"/>
+					<quad left="114" top="80" right="120" bottom="82"/>
 				</normal>
 				<active>
-					<quad left="57" top="104" right="60" bottom="105"/>
+					<quad left="114" top="208" right="120" bottom="210"/>
 				</active>
 				<disabled>
-					<quad left="57" top="168" right="60" bottom="169"/>
+					<quad left="114" top="336" right="120" bottom="338"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="57" top="36" right="60" bottom="42"/>
+					<quad left="114" top="72" right="120" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="57" top="100" right="60" bottom="106"/>
+					<quad left="114" top="200" right="120" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="57" top="164" right="60" bottom="170"/>
+					<quad left="114" top="328" right="120" bottom="340"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="42" top="36" right="43" bottom="42"/>
+					<quad left="84" top="72" right="86" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="42" top="100" right="43" bottom="106"/>
+					<quad left="84" top="200" right="86" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="42" top="164" right="43" bottom="170"/>
+					<quad left="84" top="328" right="86" bottom="340"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="36" top="36" right="42" bottom="42"/>
+					<quad left="72" top="72" right="84" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="36" top="100" right="42" bottom="106"/>
+					<quad left="72" top="200" right="84" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="36" top="164" right="42" bottom="170"/>
+					<quad left="72" top="328" right="84" bottom="340"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="36" top="42" right="42" bottom="43"/>
+					<quad left="72" top="84" right="84" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="36" top="106" right="42" bottom="107"/>
+					<quad left="72" top="212" right="84" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="36" top="170" right="42" bottom="171"/>
+					<quad left="72" top="340" right="84" bottom="342"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="42" top="42" right="43" bottom="43"/>
+					<quad left="84" top="84" right="86" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="42" top="106" right="43" bottom="107"/>
+					<quad left="84" top="212" right="86" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="42" top="170" right="43" bottom="171"/>
+					<quad left="84" top="340" right="86" bottom="342"/>
 				</disabled>
 			</center>
 		</box>
@@ -503,101 +503,101 @@
 		<box left_offset="4" bottom_offset="4" top_offset="4" right_offset="4">
 			<left_bottom>
 				<normal>
-					<quad left="416" top="148" right="420" bottom="152"/>
+					<quad left="832" top="296" right="840" bottom="304"/>
 				</normal>
 				<active>
-					<quad left="416" top="148" right="420" bottom="152"/>
+					<quad left="832" top="296" right="840" bottom="304"/>
 				</active>
 				<disabled>
-					<quad left="416" top="148" right="420" bottom="152"/>
+					<quad left="832" top="296" right="840" bottom="304"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="420" top="148" right="436" bottom="152"/>
+					<quad left="840" top="296" right="872" bottom="304"/>
 				</normal>
 				<active>
-					<quad left="420" top="148" right="436" bottom="152"/>
+					<quad left="840" top="296" right="872" bottom="304"/>
 				</active>
 				<disabled>
-					<quad left="420" top="148" right="436" bottom="152"/>
+					<quad left="840" top="296" right="872" bottom="304"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="436" top="148" right="440" bottom="152"/>
+					<quad left="872" top="296" right="880" bottom="304"/>
 				</normal>
 				<active>
-					<quad left="436" top="148" right="440" bottom="152"/>
+					<quad left="872" top="296" right="880" bottom="304"/>
 				</active>
 				<disabled>
-					<quad left="436" top="148" right="440" bottom="152"/>
+					<quad left="872" top="296" right="880" bottom="304"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="436" top="132" right="440" bottom="148"/>
+					<quad left="872" top="264" right="880" bottom="296"/>
 				</normal>
 				<active>
-					<quad left="436" top="132" right="440" bottom="148"/>
+					<quad left="872" top="264" right="880" bottom="296"/>
 				</active>
 				<disabled>
-					<quad left="436" top="132" right="440" bottom="148"/>
+					<quad left="872" top="264" right="880" bottom="296"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="436" top="128" right="440" bottom="132"/>
+					<quad left="872" top="256" right="880" bottom="264"/>
 				</normal>
 				<active>
-					<quad left="436" top="128" right="440" bottom="132"/>
+					<quad left="872" top="256" right="880" bottom="264"/>
 				</active>
 				<disabled>
-					<quad left="436" top="128" right="440" bottom="132"/>
+					<quad left="872" top="256" right="880" bottom="264"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="420" top="128" right="436" bottom="132"/>
+					<quad left="840" top="256" right="872" bottom="264"/>
 				</normal>
 				<active>
-					<quad left="420" top="128" right="436" bottom="132"/>
+					<quad left="840" top="256" right="872" bottom="264"/>
 				</active>
 				<disabled>
-					<quad left="420" top="128" right="436" bottom="132"/>
+					<quad left="840" top="256" right="872" bottom="264"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="416" top="128" right="420" bottom="132"/>
+					<quad left="832" top="256" right="840" bottom="264"/>
 				</normal>
 				<active>
-					<quad left="416" top="128" right="420" bottom="132"/>
+					<quad left="832" top="256" right="840" bottom="264"/>
 				</active>
 				<disabled>
-					<quad left="416" top="128" right="420" bottom="132"/>
+					<quad left="832" top="256" right="840" bottom="264"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="416" top="132" right="420" bottom="148"/>
+					<quad left="832" top="264" right="840" bottom="296"/>
 				</normal>
 				<active>
-					<quad left="416" top="132" right="420" bottom="148"/>
+					<quad left="832" top="264" right="840" bottom="296"/>
 				</active>
 				<disabled>
-					<quad left="416" top="132" right="420" bottom="148"/>
+					<quad left="832" top="264" right="840" bottom="296"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="420" top="132" right="436" bottom="148"/>
+					<quad left="840" top="264" right="872" bottom="296"/>
 				</normal>
 				<active>
-					<quad left="420" top="132" right="436" bottom="148"/>
+					<quad left="840" top="264" right="872" bottom="296"/>
 				</active>
 				<disabled>
-					<quad left="420" top="132" right="436" bottom="148"/>
+					<quad left="840" top="264" right="872" bottom="296"/>
 				</disabled>
 			</center>
 		</box>
@@ -606,101 +606,101 @@
 		<box left_offset="7" bottom_offset="7" top_offset="7" right_offset="7">
 			<left_bottom>
 				<normal>
-					<quad left="292" top="53" right="299" bottom="60"/>
+					<quad left="584" top="106" right="598" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="292" top="117" right="299" bottom="124"/>
+					<quad left="584" top="234" right="598" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="292" top="181" right="299" bottom="188"/>
+					<quad left="584" top="362" right="598" bottom="376"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="299" top="53" right="300" bottom="60"/>
+					<quad left="598" top="106" right="600" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="299" top="117" right="300" bottom="124"/>
+					<quad left="598" top="234" right="600" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="299" top="181" right="300" bottom="188"/>
+					<quad left="598" top="362" right="600" bottom="376"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="309" top="53" right="316" bottom="60"/>
+					<quad left="618" top="106" right="632" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="309" top="117" right="316" bottom="124"/>
+					<quad left="618" top="234" right="632" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="309" top="181" right="316" bottom="188"/>
+					<quad left="618" top="362" right="632" bottom="376"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="309" top="43" right="316" bottom="44"/>
+					<quad left="618" top="86" right="632" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="309" top="107" right="316" bottom="108"/>
+					<quad left="618" top="214" right="632" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="309" top="171" right="316" bottom="172"/>
+					<quad left="618" top="342" right="632" bottom="344"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="309" top="36" right="316" bottom="43"/>
+					<quad left="618" top="72" right="632" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="309" top="100" right="316" bottom="107"/>
+					<quad left="618" top="200" right="632" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="309" top="164" right="316" bottom="171"/>
+					<quad left="618" top="328" right="632" bottom="342"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="299" top="36" right="300" bottom="43"/>
+					<quad left="598" top="72" right="600" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="299" top="100" right="300" bottom="107"/>
+					<quad left="598" top="200" right="600" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="299" top="164" right="300" bottom="171"/>
+					<quad left="598" top="328" right="600" bottom="342"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="292" top="36" right="299" bottom="43"/>
+					<quad left="584" top="72" right="598" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="292" top="100" right="299" bottom="107"/>
+					<quad left="584" top="200" right="598" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="292" top="164" right="299" bottom="171"/>
+					<quad left="584" top="328" right="598" bottom="342"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="292" top="43" right="299" bottom="44"/>
+					<quad left="584" top="86" right="598" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="292" top="107" right="299" bottom="108"/>
+					<quad left="584" top="214" right="598" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="292" top="171" right="299" bottom="172"/>
+					<quad left="584" top="342" right="598" bottom="344"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="299" top="43" right="300" bottom="44"/>
+					<quad left="598" top="86" right="600" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="299" top="107" right="300" bottom="108"/>
+					<quad left="598" top="214" right="600" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="299" top="171" right="300" bottom="172"/>
+					<quad left="598" top="342" right="600" bottom="344"/>
 				</disabled>
 			</center>
 		</box>
@@ -708,48 +708,48 @@
 	<checkbox>
 		<marked>
 			<normal>
-				<quad left="68" top="4" right="92" bottom="28"/>
+				<quad left="136" top="8" right="184" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="68" top="68" right="92" bottom="92"/>
+				<quad left="136" top="136" right="184" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="68" top="132" right="92" bottom="156"/>
+				<quad left="136" top="264" right="184" bottom="312"/>
 			</disabled>
 		</marked>
 		<unmarked>
 			<normal>
-				<quad left="4" top="4" right="28" bottom="28"/>
+				<quad left="8" top="8" right="56" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="4" top="68" right="28" bottom="92"/>
+				<quad left="8" top="136" right="56" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="4" top="132" right="28" bottom="156"/>
+				<quad left="8" top="264" right="56" bottom="312"/>
 			</disabled>
 		</unmarked>
 	</checkbox>
 	<radiobutton>
 		<marked>
 			<normal>
-				<quad left="164" top="4" right="188" bottom="28"/>
+				<quad left="328" top="8" right="376" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="164" top="68" right="188" bottom="92"/>
+				<quad left="328" top="136" right="376" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="164" top="132" right="188" bottom="156"/>
+				<quad left="328" top="264" right="376" bottom="312"/>
 			</disabled>
 		</marked>
 		<unmarked>
 			<normal>
-				<quad left="196" top="4" right="220" bottom="28"/>
+				<quad left="392" top="8" right="440" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="196" top="68" right="220" bottom="92"/>
+				<quad left="392" top="136" right="440" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="196" top="132" right="220" bottom="156"/>
+				<quad left="392" top="264" right="440" bottom="312"/>
 			</disabled>
 		</unmarked>
 	</radiobutton>
@@ -758,35 +758,35 @@
 			<horizontal>
 				<left>
 					<normal>
-						<quad left="36" top="4" right="46" bottom="28"/>
+						<quad left="72" top="8" right="92" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="36" top="68" right="46" bottom="92"/>
+						<quad left="72" top="136" right="92" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="36" top="132" right="46" bottom="156"/>
+						<quad left="72" top="264" right="92" bottom="312"/>
 					</disabled>
 				</left>
 				<center>
 					<normal>
-						<quad left="46" top="4" right="47" bottom="28"/>
+						<quad left="92" top="8" right="94" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="46" top="68" right="47" bottom="92"/>
+						<quad left="92" top="136" right="94" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="46" top="132" right="47" bottom="156"/>
+						<quad left="92" top="264" right="94" bottom="312"/>
 					</disabled>
 				</center>
 				<right>
 					<normal>
-						<quad left="50" top="4" right="60" bottom="28"/>
+						<quad left="100" top="8" right="120" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="50" top="68" right="60" bottom="92"/>
+						<quad left="100" top="136" right="120" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="50" top="132" right="60" bottom="156"/>
+						<quad left="100" top="264" right="120" bottom="312"/>
 					</disabled>
 				</right>
 			</horizontal>
@@ -795,35 +795,35 @@
 			<horizontal>
 				<left>
 					<normal>
-						<quad left="4" top="4" right="14" bottom="28"/>
+						<quad left="8" top="8" right="28" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="4" top="68" right="14" bottom="92"/>
+						<quad left="8" top="136" right="28" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="4" top="132" right="14" bottom="156"/>
+						<quad left="8" top="264" right="28" bottom="312"/>
 					</disabled>
 				</left>
 				<center>
 					<normal>
-						<quad left="14" top="4" right="15" bottom="28"/>
+						<quad left="28" top="8" right="30" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="14" top="68" right="15" bottom="92"/>
+						<quad left="28" top="136" right="30" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="14" top="132" right="15" bottom="156"/>
+						<quad left="28" top="264" right="30" bottom="312"/>
 					</disabled>
 				</center>
 				<right>
 					<normal>
-						<quad left="18" top="4" right="28" bottom="28"/>
+						<quad left="36" top="8" right="56" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="18" top="68" right="28" bottom="92"/>
+						<quad left="36" top="136" right="56" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="18" top="132" right="28" bottom="156"/>
+						<quad left="36" top="264" right="56" bottom="312"/>
 					</disabled>
 				</right>
 			</horizontal>
@@ -833,101 +833,101 @@
 		<box left_offset="4" bottom_offset="4" top_offset="4" right_offset="4">
 			<left_bottom>
 				<normal>
-					<quad left="36" top="41" right="42" bottom="60"/>
+					<quad left="72" top="82" right="84" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="36" top="105" right="42" bottom="124"/>
+					<quad left="72" top="210" right="84" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="36" top="169" right="42" bottom="188"/>
+					<quad left="72" top="338" right="84" bottom="376"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="42" top="41" right="43" bottom="60"/>
+					<quad left="84" top="82" right="86" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="42" top="105" right="43" bottom="124"/>
+					<quad left="84" top="210" right="86" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="42" top="169" right="43" bottom="188"/>
+					<quad left="84" top="338" right="86" bottom="376"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="57" top="41" right="60" bottom="60"/>
+					<quad left="114" top="82" right="120" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="57" top="105" right="60" bottom="124"/>
+					<quad left="114" top="210" right="120" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="57" top="169" right="60" bottom="188"/>
+					<quad left="114" top="338" right="120" bottom="376"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="57" top="40" right="60" bottom="41"/>
+					<quad left="114" top="80" right="120" bottom="82"/>
 				</normal>
 				<active>
-					<quad left="57" top="104" right="60" bottom="105"/>
+					<quad left="114" top="208" right="120" bottom="210"/>
 				</active>
 				<disabled>
-					<quad left="57" top="168" right="60" bottom="169"/>
+					<quad left="114" top="336" right="120" bottom="338"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="57" top="36" right="60" bottom="42"/>
+					<quad left="114" top="72" right="120" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="57" top="100" right="60" bottom="106"/>
+					<quad left="114" top="200" right="120" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="57" top="164" right="60" bottom="170"/>
+					<quad left="114" top="328" right="120" bottom="340"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="42" top="36" right="43" bottom="42"/>
+					<quad left="84" top="72" right="86" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="42" top="100" right="43" bottom="106"/>
+					<quad left="84" top="200" right="86" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="42" top="164" right="43" bottom="170"/>
+					<quad left="84" top="328" right="86" bottom="340"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="36" top="36" right="42" bottom="42"/>
+					<quad left="72" top="72" right="84" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="36" top="100" right="42" bottom="106"/>
+					<quad left="72" top="200" right="84" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="36" top="164" right="42" bottom="170"/>
+					<quad left="72" top="328" right="84" bottom="340"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="36" top="42" right="42" bottom="43"/>
+					<quad left="72" top="84" right="84" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="36" top="106" right="42" bottom="107"/>
+					<quad left="72" top="212" right="84" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="36" top="170" right="42" bottom="171"/>
+					<quad left="72" top="340" right="84" bottom="342"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="42" top="42" right="43" bottom="43"/>
+					<quad left="84" top="84" right="86" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="42" top="106" right="43" bottom="107"/>
+					<quad left="84" top="212" right="86" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="42" top="170" right="43" bottom="171"/>
+					<quad left="84" top="340" right="86" bottom="342"/>
 				</disabled>
 			</center>
 		</box>
@@ -936,35 +936,35 @@
 				<horizontal>
 					<left>
 						<normal>
-							<quad left="260" top="4" right="264" bottom="28"/>
+							<quad left="520" top="8" right="528" bottom="56"/>
 						</normal>
 						<active>
-							<quad left="260" top="68" right="264" bottom="92"/>
+							<quad left="520" top="136" right="528" bottom="184"/>
 						</active>
 						<disabled>
-							<quad left="260" top="132" right="264" bottom="156"/>
+							<quad left="520" top="264" right="528" bottom="312"/>
 						</disabled>
 					</left>
 					<center>
 						<normal>
-							<quad left="264" top="4" right="265" bottom="28"/>
+							<quad left="528" top="8" right="530" bottom="56"/>
 						</normal>
 						<active>
-							<quad left="264" top="68" right="265" bottom="92"/>
+							<quad left="528" top="136" right="530" bottom="184"/>
 						</active>
 						<disabled>
-							<quad left="264" top="132" right="265" bottom="156"/>
+							<quad left="528" top="264" right="530" bottom="312"/>
 						</disabled>
 					</center>
 					<right>
 						<normal>
-							<quad left="280" top="4" right="284" bottom="28"/>
+							<quad left="560" top="8" right="568" bottom="56"/>
 						</normal>
 						<active>
-							<quad left="280" top="68" right="284" bottom="92"/>
+							<quad left="560" top="136" right="568" bottom="184"/>
 						</active>
 						<disabled>
-							<quad left="280" top="132" right="284" bottom="156"/>
+							<quad left="560" top="264" right="568" bottom="312"/>
 						</disabled>
 					</right>
 				</horizontal>
@@ -973,35 +973,35 @@
 				<horizontal>
 					<left>
 						<normal>
-							<quad left="228" top="4" right="232" bottom="28"/>
+							<quad left="456" top="8" right="464" bottom="56"/>
 						</normal>
 						<active>
-							<quad left="228" top="68" right="232" bottom="92"/>
+							<quad left="456" top="136" right="464" bottom="184"/>
 						</active>
 						<disabled>
-							<quad left="228" top="132" right="232" bottom="156"/>
+							<quad left="456" top="264" right="464" bottom="312"/>
 						</disabled>
 					</left>
 					<center>
 						<normal>
-							<quad left="232" top="4" right="233" bottom="28"/>
+							<quad left="464" top="8" right="466" bottom="56"/>
 						</normal>
 						<active>
-							<quad left="232" top="68" right="233" bottom="92"/>
+							<quad left="464" top="136" right="466" bottom="184"/>
 						</active>
 						<disabled>
-							<quad left="232" top="132" right="233" bottom="156"/>
+							<quad left="464" top="264" right="466" bottom="312"/>
 						</disabled>
 					</center>
 					<right>
 						<normal>
-							<quad left="248" top="4" right="252" bottom="28"/>
+							<quad left="496" top="8" right="504" bottom="56"/>
 						</normal>
 						<active>
-							<quad left="248" top="68" right="252" bottom="92"/>
+							<quad left="496" top="136" right="504" bottom="184"/>
 						</active>
 						<disabled>
-							<quad left="248" top="132" right="252" bottom="156"/>
+							<quad left="496" top="264" right="504" bottom="312"/>
 						</disabled>
 					</right>
 				</horizontal>
@@ -1009,24 +1009,24 @@
 		</horiz_button>
 		<descending>
 			<normal>
-				<quad left="324" top="4" right="348" bottom="28"/>
+				<quad left="648" top="8" right="696" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="324" top="68" right="348" bottom="92"/>
+				<quad left="648" top="136" right="696" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="324" top="132" right="348" bottom="156"/>
+				<quad left="648" top="264" right="696" bottom="312"/>
 			</disabled>
 		</descending>
 		<ascending>
 			<normal>
-				<quad left="292" top="4" right="316" bottom="28"/>
+				<quad left="584" top="8" right="632" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="292" top="68" right="316" bottom="92"/>
+				<quad left="584" top="136" right="632" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="292" top="132" right="316" bottom="156"/>
+				<quad left="584" top="264" right="632" bottom="312"/>
 			</disabled>
 		</ascending>
 		<color1>
@@ -1043,46 +1043,46 @@
 		<horizontal>
 			<left>
 				<normal>
-					<quad left="196" top="36" right="201" bottom="60"/>
+					<quad left="392" top="72" right="402" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="196" top="100" right="201" bottom="124"/>
+					<quad left="392" top="200" right="402" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="196" top="164" right="201" bottom="188"/>
+					<quad left="392" top="328" right="402" bottom="376"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="202" top="36" right="203" bottom="60"/>
+					<quad left="404" top="72" right="406" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="202" top="100" right="203" bottom="124"/>
+					<quad left="404" top="200" right="406" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="202" top="164" right="203" bottom="188"/>
+					<quad left="404" top="328" right="406" bottom="376"/>
 				</disabled>
 			</center>
 			<right>
 				<normal>
-					<quad left="215" top="36" right="220" bottom="60"/>
+					<quad left="430" top="72" right="440" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="215" top="100" right="220" bottom="124"/>
+					<quad left="430" top="200" right="440" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="215" top="164" right="220" bottom="188"/>
+					<quad left="430" top="328" right="440" bottom="376"/>
 				</disabled>
 			</right>
 		</horizontal>
 		<normal>
-			<quad left="11" top="36" right="21" bottom="60"/>
+			<quad left="22" top="72" right="42" bottom="120"/>
 		</normal>
 		<active>
-			<quad left="11" top="100" right="21" bottom="124"/>
+			<quad left="22" top="200" right="42" bottom="248"/>
 		</active>
 		<disabled>
-			<quad left="11" top="164" right="21" bottom="188"/>
+			<quad left="22" top="328" right="42" bottom="376"/>
 		</disabled>
 	</slider>
 	<vert_scroll left_offset="0" bottom_offset="0" top_offset="0">
@@ -1090,69 +1090,69 @@
 			<pushbutton>
 				<pressed>
 					<normal>
-						<quad left="36" top="4" right="60" bottom="28"/>
+						<quad left="72" top="8" right="120" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="36" top="68" right="60" bottom="92"/>
+						<quad left="72" top="136" right="120" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="36" top="132" right="60" bottom="156"/>
+						<quad left="72" top="264" right="120" bottom="312"/>
 					</disabled>
 				</pressed>
 				<unpressed>
 					<normal>
-						<quad left="4" top="4" right="28" bottom="28"/>
+						<quad left="8" top="8" right="56" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="4" top="68" right="28" bottom="92"/>
+						<quad left="8" top="136" right="56" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="4" top="132" right="28" bottom="156"/>
+						<quad left="8" top="264" right="56" bottom="312"/>
 					</disabled>
 				</unpressed>
 			</pushbutton>
 			<normal>
-				<quad left="324" top="4" right="348" bottom="28"/>
+				<quad left="648" top="8" right="696" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="324" top="68" right="348" bottom="92"/>
+				<quad left="648" top="136" right="696" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="324" top="132" right="348" bottom="156"/>
+				<quad left="648" top="264" right="696" bottom="312"/>
 			</disabled>
 		</less>
 		<vertical>
 			<bottom>
 				<normal>
-					<quad left="324" top="53" right="348" bottom="60"/>
+					<quad left="648" top="106" right="696" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="324" top="117" right="348" bottom="124"/>
+					<quad left="648" top="234" right="696" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="324" top="181" right="348" bottom="188"/>
+					<quad left="648" top="362" right="696" bottom="376"/>
 				</disabled>
 			</bottom>
 			<center>
 				<normal>
-					<quad left="324" top="44" right="348" bottom="45"/>
+					<quad left="648" top="88" right="696" bottom="90"/>
 				</normal>
 				<active>
-					<quad left="324" top="109" right="348" bottom="117"/>
+					<quad left="648" top="218" right="696" bottom="234"/>
 				</active>
 				<disabled>
-					<quad left="324" top="173" right="348" bottom="181"/>
+					<quad left="648" top="346" right="696" bottom="362"/>
 				</disabled>
 			</center>
 			<top>
 				<normal>
-					<quad left="324" top="36" right="348" bottom="43"/>
+					<quad left="648" top="72" right="696" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="324" top="100" right="348" bottom="107"/>
+					<quad left="648" top="200" right="696" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="324" top="164" right="348" bottom="171"/>
+					<quad left="648" top="328" right="696" bottom="342"/>
 				</disabled>
 			</top>
 		</vertical>
@@ -1160,35 +1160,35 @@
 			<pushbutton>
 				<pressed>
 					<normal>
-						<quad left="36" top="4" right="60" bottom="28"/>
+						<quad left="72" top="8" right="120" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="36" top="68" right="60" bottom="92"/>
+						<quad left="72" top="136" right="120" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="36" top="132" right="60" bottom="156"/>
+						<quad left="72" top="264" right="120" bottom="312"/>
 					</disabled>
 				</pressed>
 				<unpressed>
 					<normal>
-						<quad left="4" top="4" right="28" bottom="28"/>
+						<quad left="8" top="8" right="56" bottom="56"/>
 					</normal>
 					<active>
-						<quad left="4" top="68" right="28" bottom="92"/>
+						<quad left="8" top="136" right="56" bottom="184"/>
 					</active>
 					<disabled>
-						<quad left="4" top="132" right="28" bottom="156"/>
+						<quad left="8" top="264" right="56" bottom="312"/>
 					</disabled>
 				</unpressed>
 			</pushbutton>
 			<normal>
-				<quad left="292" top="4" right="316" bottom="28"/>
+				<quad left="584" top="8" right="632" bottom="56"/>
 			</normal>
 			<active>
-				<quad left="292" top="68" right="316" bottom="92"/>
+				<quad left="584" top="136" right="632" bottom="184"/>
 			</active>
 			<disabled>
-				<quad left="292" top="132" right="316" bottom="156"/>
+				<quad left="584" top="264" right="632" bottom="312"/>
 			</disabled>
 		</more>
 	</vert_scroll>
@@ -1196,35 +1196,35 @@
 		<vertical>
 			<bottom>
 				<normal>
-					<quad left="68" top="51" right="92" bottom="60"/>
+					<quad left="136" top="102" right="184" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="68" top="115" right="92" bottom="124"/>
+					<quad left="136" top="230" right="184" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="68" top="179" right="92" bottom="188"/>
+					<quad left="136" top="358" right="184" bottom="376"/>
 				</disabled>
 			</bottom>
 			<center>
 				<normal>
-					<quad left="68" top="47" right="92" bottom="49"/>
+					<quad left="136" top="94" right="184" bottom="98"/>
 				</normal>
 				<active>
-					<quad left="68" top="111" right="92" bottom="113"/>
+					<quad left="136" top="222" right="184" bottom="226"/>
 				</active>
 				<disabled>
-					<quad left="68" top="175" right="92" bottom="177"/>
+					<quad left="136" top="350" right="184" bottom="354"/>
 				</disabled>
 			</center>
 			<top>
 				<normal>
-					<quad left="68" top="36" right="92" bottom="45"/>
+					<quad left="136" top="72" right="184" bottom="90"/>
 				</normal>
 				<active>
-					<quad left="68" top="100" right="92" bottom="109"/>
+					<quad left="136" top="200" right="184" bottom="218"/>
 				</active>
 				<disabled>
-					<quad left="68" top="164" right="92" bottom="173"/>
+					<quad left="136" top="328" right="184" bottom="346"/>
 				</disabled>
 			</top>
 		</vertical>
@@ -1234,35 +1234,35 @@
 			<horizontal>
 				<left>
 					<normal>
-						<quad left="227" top="36" right="235" bottom="43"/>
+						<quad left="454" top="72" right="470" bottom="86"/>
 					</normal>
 					<active>
-						<quad left="227" top="100" right="235" bottom="107"/>
+						<quad left="454" top="200" right="470" bottom="214"/>
 					</active>
 					<disabled>
-						<quad left="227" top="164" right="235" bottom="171"/>
+						<quad left="454" top="328" right="470" bottom="342"/>
 					</disabled>
 				</left>
 				<center>
 					<normal>
-						<quad left="236" top="36" right="237" bottom="43"/>
+						<quad left="472" top="72" right="474" bottom="86"/>
 					</normal>
 					<active>
-						<quad left="236" top="100" right="237" bottom="107"/>
+						<quad left="472" top="200" right="474" bottom="214"/>
 					</active>
 					<disabled>
-						<quad left="236" top="164" right="237" bottom="171"/>
+						<quad left="472" top="328" right="474" bottom="342"/>
 					</disabled>
 				</center>
 				<right>
 					<normal>
-						<quad left="243" top="36" right="252" bottom="43"/>
+						<quad left="486" top="72" right="504" bottom="86"/>
 					</normal>
 					<active>
-						<quad left="243" top="100" right="252" bottom="107"/>
+						<quad left="486" top="200" right="504" bottom="214"/>
 					</active>
 					<disabled>
-						<quad left="243" top="164" right="252" bottom="171"/>
+						<quad left="486" top="328" right="504" bottom="342"/>
 					</disabled>
 				</right>
 			</horizontal>
@@ -1271,35 +1271,35 @@
 			<horizontal>
 				<left>
 					<normal>
-						<quad left="227" top="51" right="235" bottom="60"/>
+						<quad left="454" top="102" right="470" bottom="120"/>
 					</normal>
 					<active>
-						<quad left="227" top="115" right="235" bottom="124"/>
+						<quad left="454" top="230" right="470" bottom="248"/>
 					</active>
 					<disabled>
-						<quad left="227" top="179" right="235" bottom="188"/>
+						<quad left="454" top="358" right="470" bottom="376"/>
 					</disabled>
 				</left>
 				<center>
 					<normal>
-						<quad left="236" top="51" right="237" bottom="60"/>
+						<quad left="472" top="102" right="474" bottom="120"/>
 					</normal>
 					<active>
-						<quad left="236" top="115" right="237" bottom="124"/>
+						<quad left="472" top="230" right="474" bottom="248"/>
 					</active>
 					<disabled>
-						<quad left="236" top="179" right="237" bottom="188"/>
+						<quad left="472" top="358" right="474" bottom="376"/>
 					</disabled>
 				</center>
 				<right>
 					<normal>
-						<quad left="243" top="51" right="252" bottom="60"/>
+						<quad left="486" top="102" right="504" bottom="120"/>
 					</normal>
 					<active>
-						<quad left="243" top="115" right="252" bottom="124"/>
+						<quad left="486" top="230" right="504" bottom="248"/>
 					</active>
 					<disabled>
-						<quad left="243" top="179" right="252" bottom="188"/>
+						<quad left="486" top="358" right="504" bottom="376"/>
 					</disabled>
 				</right>
 			</horizontal>
@@ -1309,101 +1309,101 @@
 		<box left_offset="6" bottom_offset="0" top_offset="0" right_offset="7">
 			<left_bottom>
 				<normal>
-					<quad left="227" top="43" right="235" bottom="44"/>
+					<quad left="454" top="86" right="470" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="227" top="107" right="235" bottom="108"/>
+					<quad left="454" top="214" right="470" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="227" top="171" right="235" bottom="172"/>
+					<quad left="454" top="342" right="470" bottom="344"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="235" top="43" right="236" bottom="44"/>
+					<quad left="470" top="86" right="472" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="235" top="107" right="236" bottom="108"/>
+					<quad left="470" top="214" right="472" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="235" top="171" right="236" bottom="172"/>
+					<quad left="470" top="342" right="472" bottom="344"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="243" top="43" right="252" bottom="44"/>
+					<quad left="486" top="86" right="504" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="243" top="107" right="252" bottom="108"/>
+					<quad left="486" top="214" right="504" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="243" top="171" right="252" bottom="172"/>
+					<quad left="486" top="342" right="504" bottom="344"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="243" top="50" right="252" bottom="51"/>
+					<quad left="486" top="100" right="504" bottom="102"/>
 				</normal>
 				<active>
-					<quad left="243" top="114" right="252" bottom="115"/>
+					<quad left="486" top="228" right="504" bottom="230"/>
 				</active>
 				<disabled>
-					<quad left="243" top="178" right="252" bottom="179"/>
+					<quad left="486" top="356" right="504" bottom="358"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="243" top="43" right="252" bottom="44"/>
+					<quad left="486" top="86" right="504" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="243" top="107" right="252" bottom="108"/>
+					<quad left="486" top="214" right="504" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="243" top="171" right="252" bottom="172"/>
+					<quad left="486" top="342" right="504" bottom="344"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="235" top="43" right="236" bottom="44"/>
+					<quad left="470" top="86" right="472" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="235" top="107" right="236" bottom="108"/>
+					<quad left="470" top="214" right="472" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="235" top="171" right="236" bottom="172"/>
+					<quad left="470" top="342" right="472" bottom="344"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="227" top="43" right="235" bottom="44"/>
+					<quad left="454" top="86" right="470" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="227" top="107" right="235" bottom="108"/>
+					<quad left="454" top="214" right="470" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="227" top="171" right="235" bottom="172"/>
+					<quad left="454" top="342" right="470" bottom="344"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="227" top="50" right="235" bottom="51"/>
+					<quad left="454" top="100" right="470" bottom="102"/>
 				</normal>
 				<active>
-					<quad left="227" top="114" right="235" bottom="115"/>
+					<quad left="454" top="228" right="470" bottom="230"/>
 				</active>
 				<disabled>
-					<quad left="227" top="178" right="235" bottom="179"/>
+					<quad left="454" top="356" right="470" bottom="358"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="235" top="43" right="236" bottom="44"/>
+					<quad left="470" top="86" right="472" bottom="88"/>
 				</normal>
 				<active>
-					<quad left="235" top="107" right="236" bottom="108"/>
+					<quad left="470" top="214" right="472" bottom="216"/>
 				</active>
 				<disabled>
-					<quad left="235" top="171" right="236" bottom="172"/>
+					<quad left="470" top="342" right="472" bottom="344"/>
 				</disabled>
 			</center>
 		</box>
@@ -1412,375 +1412,375 @@
 		<horizontal>
 			<left>
 				<normal>
-					<quad left="4" top="4" right="14" bottom="28"/>
+					<quad left="8" top="8" right="28" bottom="56"/>
 				</normal>
 				<active>
-					<quad left="4" top="68" right="14" bottom="92"/>
+					<quad left="8" top="136" right="28" bottom="184"/>
 				</active>
 				<disabled>
-					<quad left="4" top="132" right="14" bottom="156"/>
+					<quad left="8" top="264" right="28" bottom="312"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="14" top="4" right="15" bottom="28"/>
+					<quad left="28" top="8" right="30" bottom="56"/>
 				</normal>
 				<active>
-					<quad left="14" top="68" right="15" bottom="92"/>
+					<quad left="28" top="136" right="30" bottom="184"/>
 				</active>
 				<disabled>
-					<quad left="14" top="132" right="15" bottom="156"/>
+					<quad left="28" top="264" right="30" bottom="312"/>
 				</disabled>
 			</center>
 			<right>
 				<normal>
-					<quad left="18" top="4" right="28" bottom="28"/>
+					<quad left="36" top="8" right="56" bottom="56"/>
 				</normal>
 				<active>
-					<quad left="18" top="68" right="28" bottom="92"/>
+					<quad left="36" top="136" right="56" bottom="184"/>
 				</active>
 				<disabled>
-					<quad left="18" top="132" right="28" bottom="156"/>
+					<quad left="36" top="264" right="56" bottom="312"/>
 				</disabled>
 			</right>
 		</horizontal>
 		<normal>
-			<quad left="324" top="4" right="348" bottom="28"/>
+			<quad left="648" top="8" right="696" bottom="56"/>
 		</normal>
 		<active>
-			<quad left="324" top="68" right="348" bottom="92"/>
+			<quad left="648" top="136" right="696" bottom="184"/>
 		</active>
 		<disabled>
-			<quad left="324" top="132" right="348" bottom="156"/>
+			<quad left="648" top="264" right="696" bottom="312"/>
 		</disabled>
 	</pulldown_button>
 	<progressbar>
 		<horizontal>
 			<left>
 				<normal>
-					<quad left="96" top="192" right="100" bottom="208"/>
+					<quad left="192" top="384" right="200" bottom="416"/>
 				</normal>
 				<active>
-					<quad left="96" top="192" right="100" bottom="208"/>
+					<quad left="192" top="384" right="200" bottom="416"/>
 				</active>
 				<disabled>
-					<quad left="96" top="192" right="100" bottom="208"/>
+					<quad left="192" top="384" right="200" bottom="416"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="99" top="192" right="100" bottom="208"/>
+					<quad left="198" top="384" right="200" bottom="416"/>
 				</normal>
 				<active>
-					<quad left="99" top="192" right="100" bottom="208"/>
+					<quad left="198" top="384" right="200" bottom="416"/>
 				</active>
 				<disabled>
-					<quad left="99" top="192" right="100" bottom="208"/>
+					<quad left="198" top="384" right="200" bottom="416"/>
 				</disabled>
 			</center>
 			<right>
 				<normal>
-					<quad left="108" top="192" right="112" bottom="208"/>
+					<quad left="216" top="384" right="224" bottom="416"/>
 				</normal>
 				<active>
-					<quad left="108" top="192" right="112" bottom="208"/>
+					<quad left="216" top="384" right="224" bottom="416"/>
 				</active>
 				<disabled>
-					<quad left="108" top="192" right="112" bottom="208"/>
+					<quad left="216" top="384" right="224" bottom="416"/>
 				</disabled>
 			</right>
 		</horizontal>
 		<left>
 			<normal>
-				<quad left="96" top="208" right="100" bottom="224"/>
+				<quad left="192" top="416" right="200" bottom="448"/>
 			</normal>
 			<active>
-				<quad left="96" top="208" right="100" bottom="224"/>
+				<quad left="192" top="416" right="200" bottom="448"/>
 			</active>
 			<disabled>
-				<quad left="96" top="208" right="100" bottom="224"/>
+				<quad left="192" top="416" right="200" bottom="448"/>
 			</disabled>
 		</left>
 		<center>
 			<normal>
-				<quad left="101" top="208" right="102" bottom="224"/>
+				<quad left="202" top="416" right="204" bottom="448"/>
 			</normal>
 			<active>
-				<quad left="101" top="208" right="102" bottom="224"/>
+				<quad left="202" top="416" right="204" bottom="448"/>
 			</active>
 			<disabled>
-				<quad left="101" top="208" right="102" bottom="224"/>
+				<quad left="202" top="416" right="204" bottom="448"/>
 			</disabled>
 		</center>
 		<right>
 			<normal>
-				<quad left="108" top="208" right="112" bottom="224"/>
+				<quad left="216" top="416" right="224" bottom="448"/>
 			</normal>
 			<active>
-				<quad left="108" top="208" right="112" bottom="224"/>
+				<quad left="216" top="416" right="224" bottom="448"/>
 			</active>
 			<disabled>
-				<quad left="108" top="208" right="112" bottom="224"/>
+				<quad left="216" top="416" right="224" bottom="448"/>
 			</disabled>
 		</right>
 	</progressbar>
 	<plus_button>
 		<normal>
-			<quad left="102" top="38" right="123" bottom="59"/>
+			<quad left="204" top="76" right="246" bottom="118"/>
 		</normal>
 		<active>
-			<quad left="102" top="102" right="123" bottom="123"/>
+			<quad left="204" top="204" right="246" bottom="246"/>
 		</active>
 		<disabled>
-			<quad left="102" top="166" right="123" bottom="187"/>
+			<quad left="204" top="332" right="246" bottom="374"/>
 		</disabled>
 	</plus_button>
 	<minus_button>
 		<normal>
-			<quad left="134" top="38" right="155" bottom="59"/>
+			<quad left="268" top="76" right="310" bottom="118"/>
 		</normal>
 		<active>
-			<quad left="134" top="102" right="155" bottom="123"/>
+			<quad left="268" top="204" right="310" bottom="246"/>
 		</active>
 		<disabled>
-			<quad left="134" top="166" right="155" bottom="187"/>
+			<quad left="268" top="332" right="310" bottom="374"/>
 		</disabled>
 	</minus_button>
 	<accept_button>
 		<normal>
-			<quad left="416" top="0" right="448" bottom="32"/>
+			<quad left="832" top="0" right="896" bottom="64"/>
 		</normal>
 		<active>
-			<quad left="416" top="32" right="448" bottom="64"/>
+			<quad left="832" top="64" right="896" bottom="128"/>
 		</active>
 		<disabled>
-			<quad left="416" top="64" right="448" bottom="96"/>
+			<quad left="832" top="128" right="896" bottom="192"/>
 		</disabled>
 	</accept_button>
 	<cancel_button>
 		<normal>
-			<quad left="448" top="0" right="480" bottom="32"/>
+			<quad left="896" top="0" right="960" bottom="64"/>
 		</normal>
 		<active>
-			<quad left="448" top="32" right="480" bottom="64"/>
+			<quad left="896" top="64" right="960" bottom="128"/>
 		</active>
 		<disabled>
-			<quad left="448" top="64" right="480" bottom="96"/>
+			<quad left="896" top="128" right="960" bottom="192"/>
 		</disabled>
 	</cancel_button>
 	<back_button>
 		<normal>
-			<quad left="480" top="0" right="512" bottom="32"/>
+			<quad left="960" top="0" right="1024" bottom="64"/>
 		</normal>
 		<active>
-			<quad left="480" top="32" right="512" bottom="64"/>
+			<quad left="960" top="64" right="1024" bottom="128"/>
 		</active>
 		<disabled>
-			<quad left="480" top="64" right="512" bottom="96"/>
+			<quad left="960" top="128" right="1024" bottom="192"/>
 		</disabled>
 	</back_button>
 	<tool_tip left_offset="2" bottom_offset="1" right_offset="2" top_offset="-1">
 		<horizontal>
 			<left>
 				<normal>
-					<quad left="416" top="128" right="420" bottom="152"/>
+					<quad left="832" top="256" right="840" bottom="304"/>
 				</normal>
 				<active>
-					<quad left="416" top="128" right="420" bottom="152"/>
+					<quad left="832" top="256" right="840" bottom="304"/>
 				</active>
 				<disabled>
-					<quad left="416" top="128" right="420" bottom="152"/>
+					<quad left="832" top="256" right="840" bottom="304"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="420" top="128" right="421" bottom="152"/>
+					<quad left="840" top="256" right="842" bottom="304"/>
 				</normal>
 				<active>
-					<quad left="420" top="128" right="421" bottom="152"/>
+					<quad left="840" top="256" right="842" bottom="304"/>
 				</active>
 				<disabled>
-					<quad left="420" top="128" right="421" bottom="152"/>
+					<quad left="840" top="256" right="842" bottom="304"/>
 				</disabled>
 			</center>
 			<right>
 				<normal>
-					<quad left="436" top="128" right="440" bottom="152"/>
+					<quad left="872" top="256" right="880" bottom="304"/>
 				</normal>
 				<active>
-					<quad left="436" top="128" right="440" bottom="152"/>
+					<quad left="872" top="256" right="880" bottom="304"/>
 				</active>
 				<disabled>
-					<quad left="436" top="128" right="440" bottom="152"/>
+					<quad left="872" top="256" right="880" bottom="304"/>
 				</disabled>
 			</right>
 		</horizontal>
 	</tool_tip>
 	<diode>
 		<normal>
-			<quad left="416" top="160" right="434" bottom="178"/>
+			<quad left="832" top="320" right="868" bottom="356"/>
 		</normal>
 		<active>
-			<quad left="448" top="160" right="466" bottom="178"/>
+			<quad left="896" top="320" right="932" bottom="356"/>
 		</active>
 		<disabled>
-			<quad left="480" top="160" right="508" bottom="178"/>
+			<quad left="960" top="320" right="1016" bottom="356"/>
 		</disabled>
 	</diode>
 	<panel left_caption_offset="4" right_caption_offset="4" bottom_caption_offset="-3" left_tab_offset="4" bottom_tab_offset="4">
 		<box left_offset="9" bottom_offset="9" top_offset="9" right_offset="9">
 			<left_bottom>
 				<normal>
-					<quad left="36" top="41" right="42" bottom="60"/>
+					<quad left="72" top="82" right="84" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="36" top="105" right="42" bottom="124"/>
+					<quad left="72" top="210" right="84" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="36" top="169" right="42" bottom="188"/>
+					<quad left="72" top="338" right="84" bottom="376"/>
 				</disabled>
 			</left_bottom>
 			<bottom>
 				<normal>
-					<quad left="42" top="41" right="43" bottom="60"/>
+					<quad left="84" top="82" right="86" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="42" top="105" right="43" bottom="124"/>
+					<quad left="84" top="210" right="86" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="42" top="169" right="43" bottom="188"/>
+					<quad left="84" top="338" right="86" bottom="376"/>
 				</disabled>
 			</bottom>
 			<right_bottom>
 				<normal>
-					<quad left="57" top="41" right="60" bottom="60"/>
+					<quad left="114" top="82" right="120" bottom="120"/>
 				</normal>
 				<active>
-					<quad left="57" top="105" right="60" bottom="124"/>
+					<quad left="114" top="210" right="120" bottom="248"/>
 				</active>
 				<disabled>
-					<quad left="57" top="169" right="60" bottom="188"/>
+					<quad left="114" top="338" right="120" bottom="376"/>
 				</disabled>
 			</right_bottom>
 			<right>
 				<normal>
-					<quad left="57" top="40" right="60" bottom="41"/>
+					<quad left="114" top="80" right="120" bottom="82"/>
 				</normal>
 				<active>
-					<quad left="57" top="104" right="60" bottom="105"/>
+					<quad left="114" top="208" right="120" bottom="210"/>
 				</active>
 				<disabled>
-					<quad left="57" top="168" right="60" bottom="169"/>
+					<quad left="114" top="336" right="120" bottom="338"/>
 				</disabled>
 			</right>
 			<right_top>
 				<normal>
-					<quad left="57" top="36" right="60" bottom="42"/>
+					<quad left="114" top="72" right="120" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="57" top="100" right="60" bottom="106"/>
+					<quad left="114" top="200" right="120" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="57" top="164" right="60" bottom="170"/>
+					<quad left="114" top="328" right="120" bottom="340"/>
 				</disabled>
 			</right_top>
 			<top>
 				<normal>
-					<quad left="42" top="36" right="43" bottom="42"/>
+					<quad left="84" top="72" right="86" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="42" top="100" right="43" bottom="106"/>
+					<quad left="84" top="200" right="86" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="42" top="164" right="43" bottom="170"/>
+					<quad left="84" top="328" right="86" bottom="340"/>
 				</disabled>
 			</top>
 			<left_top>
 				<normal>
-					<quad left="36" top="36" right="42" bottom="42"/>
+					<quad left="72" top="72" right="84" bottom="84"/>
 				</normal>
 				<active>
-					<quad left="36" top="100" right="42" bottom="106"/>
+					<quad left="72" top="200" right="84" bottom="212"/>
 				</active>
 				<disabled>
-					<quad left="36" top="164" right="42" bottom="170"/>
+					<quad left="72" top="328" right="84" bottom="340"/>
 				</disabled>
 			</left_top>
 			<left>
 				<normal>
-					<quad left="36" top="42" right="42" bottom="43"/>
+					<quad left="72" top="84" right="84" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="36" top="106" right="42" bottom="107"/>
+					<quad left="72" top="212" right="84" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="36" top="170" right="42" bottom="171"/>
+					<quad left="72" top="340" right="84" bottom="342"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="42" top="42" right="43" bottom="43"/>
+					<quad left="84" top="84" right="86" bottom="86"/>
 				</normal>
 				<active>
-					<quad left="42" top="106" right="43" bottom="107"/>
+					<quad left="84" top="212" right="86" bottom="214"/>
 				</active>
 				<disabled>
-					<quad left="42" top="170" right="43" bottom="171"/>
+					<quad left="84" top="340" right="86" bottom="342"/>
 				</disabled>
 			</center>
 		</box>
 		<horizontal>
 			<left>
 				<normal>
-					<quad left="4" top="190" right="11" bottom="228"/>
+					<quad left="8" top="380" right="22" bottom="456"/>
 				</normal>
 				<active>
-					<quad left="36" top="190" right="43" bottom="228"/>
+					<quad left="72" top="380" right="86" bottom="456"/>
 				</active>
 				<disabled>
-					<quad left="68" top="190" right="75" bottom="228"/>
+					<quad left="136" top="380" right="150" bottom="456"/>
 				</disabled>
 			</left>
 			<center>
 				<normal>
-					<quad left="11" top="190" right="12" bottom="228"/>
+					<quad left="22" top="380" right="24" bottom="456"/>
 				</normal>
 				<active>
-					<quad left="43" top="190" right="44" bottom="228"/>
+					<quad left="86" top="380" right="88" bottom="456"/>
 				</active>
 				<disabled>
-					<quad left="75" top="190" right="76" bottom="228"/>
+					<quad left="150" top="380" right="152" bottom="456"/>
 				</disabled>
 			</center>
 			<right>
 				<normal>
-					<quad left="21" top="190" right="28" bottom="228"/>
+					<quad left="42" top="380" right="56" bottom="456"/>
 				</normal>
 				<active>
-					<quad left="53" top="190" right="60" bottom="228"/>
+					<quad left="106" top="380" right="120" bottom="456"/>
 				</active>
 				<disabled>
-					<quad left="85" top="190" right="92" bottom="228"/>
+					<quad left="170" top="380" right="184" bottom="456"/>
 				</disabled>
 			</right>
 		</horizontal>
 	</panel>
 	<flag_default>
-		<quad left="126" top="238" right="144" bottom="256"/>
+		<quad left="252" top="476" right="288" bottom="512"/>
 	</flag_default>
 	<flag_da>
-		<quad left="0" top="238" right="18" bottom="256"/>
+		<quad left="0" top="476" right="36" bottom="512"/>
 	</flag_da>
 	<flag_en>
-		<quad left="18" top="238" right="36" bottom="256"/>
+		<quad left="36" top="476" right="72" bottom="512"/>
 	</flag_en>
 	<flag_de>
-		<quad left="36" top="238" right="54" bottom="256"/>
+		<quad left="72" top="476" right="108" bottom="512"/>
 	</flag_de>
 	<flag_es>
-		<quad left="54" top="238" right="72" bottom="256"/>
+		<quad left="108" top="476" right="144" bottom="512"/>
 	</flag_es>
 	<flag_it>
-		<quad left="162" top="238" right="180" bottom="256"/>
+		<quad left="324" top="476" right="360" bottom="512"/>
 	</flag_it>
 </gui>
