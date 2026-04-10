@@ -109,13 +109,13 @@ public final class Utils {
         }
     }
 
-    public static <T> T loadObject(@NonNull URL url) {
-        return loadObject(url, false);
+    public static <T> T loadObject(@NonNull Class<T> clazz, @NonNull URL url) {
+        return loadObject(clazz, url, false);
     }
 
-    public static <T> T loadObject(@NonNull URL url, boolean zipped) {
+    public static <T> T loadObject(@NonNull Class<T> clazz, @NonNull URL url, boolean zipped) {
         try {
-            return tryLoadObject(url, zipped);
+            return tryLoadObject(clazz, url, zipped);
         } catch (IOException ioe) {
             throw new UncheckedIOException(ioe);
         } catch (ClassNotFoundException e) {
@@ -123,16 +123,15 @@ public final class Utils {
         }
     }
 
-    public static <T> T tryLoadObject(@NonNull URL url) throws IOException, ClassNotFoundException {
-        return tryLoadObject(url, false);
+    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url) throws IOException, ClassNotFoundException {
+        return tryLoadObject(clazz, url, false);
     }
 
-    public static <T> T tryLoadObject(@NonNull URL url, boolean zipped) throws IOException, ClassNotFoundException {
+    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url, boolean zipped) throws IOException, ClassNotFoundException {
         try (InputStream urlStream = url.openStream()) {
             try (InputStream input_stream = zipped ? new GZIPInputStream(urlStream) : new BufferedInputStream(urlStream)) {
                 try (ObjectInputStream obj_stream = new ObjectInputStream(input_stream)) {
-                    @SuppressWarnings("unchecked")
-                    T obj = (T) obj_stream.readObject();
+                    T obj = clazz.cast(obj_stream.readObject());
                     return obj;
                 }
             }

@@ -49,7 +49,7 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
     private int sound_play_counter = Settings.getSettings().play_sfx ? 1 : 0;
 
     /**
-     * @return The singleton AudioManager instance.
+     * {@return The singleton AudioManager instance.}
      * @throws IllegalStateException if the audio manager could not be initialized.
      */
     public static @NonNull AudioManager getManager() throws IllegalStateException {
@@ -141,8 +141,8 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
 
     private static @NonNull AbstractAudioPlayer doNewAudio(@NonNull AudioSource source, @NonNull AudioParameters<?> params) {
         // Bind the audio to the source before creating the player.
-        if (params.sound instanceof Audio) {
-            source.setAudio((Audio) params.sound);
+        if (params.sound instanceof Audio audio) {
+            source.setAudio(audio);
         }
         return createPlayer(source, params);
     }

@@ -24,7 +24,7 @@ public final class RegistrationKey {
 
     public static PublicKey loadPublicKey() throws Exception {
         URL key_url = Utils.tryMakeURL("/" + RegServiceInterface.PUBLIC_KEY_FILE);
-        byte[] encoded_key = Utils.tryLoadObject(key_url);
+        byte[] encoded_key = Utils.tryLoadObject(byte[].class, key_url);
         return KeyManager.readPublicKey(encoded_key, RegServiceInterface.KEY_ALGORITHM);
     }
 

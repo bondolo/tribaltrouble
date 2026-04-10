@@ -20,6 +20,7 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
         this.render_state = render_state;
     }
 
+    @Override
     public @NonNull Vector4f getColor() {
         return color;
     }

@@ -84,12 +84,14 @@ public abstract class GUIObject extends Renderable<GUIObject> {
         return null != parent ? parent.getParentGUIRoot() : null;
     }
 
+    @Override
     void addTree() {
         if (getParentGUIRoot() != null) {
             super.addTree();
         }
     }
 
+    @Override
     public void remove() {
         boolean notify_remove = getParentGUIRoot() != null && parent != null;
         super.remove();

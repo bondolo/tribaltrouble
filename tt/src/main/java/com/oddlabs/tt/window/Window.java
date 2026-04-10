@@ -6,6 +6,7 @@ import org.jspecify.annotations.NonNull;
 public interface Window extends AutoCloseable {
     void create(@NonNull SerializableDisplayMode mode, boolean fullscreen);
 
+    @Override
     void close();
 
     void update();

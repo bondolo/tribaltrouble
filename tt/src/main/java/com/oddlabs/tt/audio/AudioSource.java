@@ -17,7 +17,7 @@ public interface AudioSource extends AutoCloseable {
     }
 
     /**
-     * @return the current state of the source
+     * {@return the current state of the source}
      */
     @NonNull State getState();
 

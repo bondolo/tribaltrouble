@@ -72,7 +72,7 @@ public final class SpriteList implements AutoCloseable {
     }
 
     public SpriteList(@NonNull SpriteFile sprite_file) {
-        Object[] sprites_and_animations = Utils.loadObject(sprite_file.getURL());
+        Object[] sprites_and_animations = Utils.loadObject(Object[].class, sprite_file.getURL());
         SpriteInfo[] sprite_infos = (SpriteInfo[]) sprites_and_animations[0];
         AnimationInfo[] animation_infos = (AnimationInfo[]) sprites_and_animations[1];
         bounds = Stream.generate(BoundingBox::new).limit(animation_infos.length).toArray(BoundingBox[]::new);
@@ -225,6 +225,7 @@ public final class SpriteList implements AutoCloseable {
         return texcoords;
     }
 
+    @Override
     public void close() {
         if (tboTextureHandle != 0) {
             org.lwjgl.opengl.GL11.glDeleteTextures(tboTextureHandle);

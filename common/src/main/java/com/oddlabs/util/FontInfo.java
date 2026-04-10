@@ -74,6 +74,6 @@ public final class FontInfo implements Serializable {
     }
 
     public static FontInfo loadFromFile(@NonNull URL url) {
-        return Utils.loadObject(url);
+        return Utils.loadObject(FontInfo.class, url);
     }
 }

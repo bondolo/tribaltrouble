@@ -75,14 +75,17 @@ public final class GUIRoot extends GUIObject {
         Renderer.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
     }
 
+    @Override
     public @NonNull GUIRoot self() {
         return this;
     }
 
+    @Override
     public float getGlobalScale() {
         return effective_scale;
     }
 
+    @Override
     public @NonNull GUIRoot getParentGUIRoot() {
         return self();
     }

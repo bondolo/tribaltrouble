@@ -1,6 +1,7 @@
  import net.ltgt.gradle.errorprone.errorprone
+ import net.ltgt.gradle.nullaway.nullaway
 
-plugins {
+ plugins {
     java
     id("net.ltgt.errorprone") version "5.1.0" apply false
     id("net.ltgt.nullaway") version "3.0.0" apply false
@@ -18,7 +19,7 @@ subprojects {
 
     dependencies {
         implementation("org.jspecify:jspecify:1.0.0")
-        "errorprone"("com.google.errorprone:error_prone_core:2.48.0")
+        "errorprone"("com.google.errorprone:error_prone_core:2.49.0")
         "errorprone"("com.uber.nullaway:nullaway:0.13.1")
     }
 
@@ -31,19 +32,16 @@ subprojects {
     tasks.withType<JavaCompile>().configureEach {
         options.errorprone {
             option("NullAway:AnnotatedPackages", "com.oddlabs")
-
             disableAllChecks = false
 
-            disable( "NullAway", "IntLongMath", "ImmutableEnumChecker",
+
+            disable(  "NullAway", "IntLongMath", "ImmutableEnumChecker",
                 "NarrowingCompoundAssignment",
                 "UnusedNestedClass", "SameNameButDifferent", "AssignmentExpression",
-                "NullablePrimitive", "ObjectToString", "ByteBufferBackingArray",
-                "InputStreamSlowMultibyteRead", "BadComparable",
+                "ObjectToString",
                 "ModifyCollectionInEnhancedForLoop", "StringCaseLocaleUsage",
-                "EqualsHashCode", "MissingSummary", "JavaUtilDate", "DoNotCallSuggester",
+                "EqualsHashCode", "DoNotCallSuggester",
                 "MutablePublicArray", "InconsistentCapitalization",
-                "TypeParameterUnusedInFormals", "PatternMatchingInstanceof", "DefaultCharset",
-                "MissingOverride",
                 "EnumOrdinal", "UnnecessaryParentheses", "UnusedMethod", "UnusedVariable",
                 "StatementSwitchToExpressionSwitch",
                 "ArrayRecordComponent", "StringSplitter", "InterruptedInCatchBlock" )

@@ -27,6 +27,7 @@ public final class Utils {
 
     @FunctionalInterface
     public interface I18N extends BiFunction<@NonNull String, @NonNull Object @NonNull [], @NonNull String> {
+        @Override
         default @NonNull String apply(@NonNull String key, @NonNull Object @NonNull [] args) {
             return i18n(key, args);
         }

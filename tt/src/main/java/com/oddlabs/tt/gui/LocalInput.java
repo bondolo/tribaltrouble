@@ -168,6 +168,7 @@ public final class LocalInput implements AutoCloseable {
         mouse_y = deterministic.log(inputProvider.getMouseY());
     }
 
+    @Override
     public void close() {
         inputProvider.close();
     }

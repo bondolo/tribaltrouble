@@ -198,6 +198,7 @@ public final class LWJGL3Window implements Window {
         }
     }
 
+    @Override
     public boolean isOpen() {
         return windowHandle != MemoryUtil.NULL;
     }

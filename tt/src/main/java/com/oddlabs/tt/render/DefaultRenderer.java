@@ -104,6 +104,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         DebugRender.drawAxes(center, z);
     }
 
+    @Override
     public boolean isCheater() {
         return cheat != null && cheat.isEnabled();
     }

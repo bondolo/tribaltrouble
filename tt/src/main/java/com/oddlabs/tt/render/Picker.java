@@ -130,7 +130,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         Target nearest_pickable = getNearestPick(element_pick_list, Target.class);
         Selectable<?>[] selection = selected_army.filter(Abilities.TARGET);
         if (nearest_pickable != null) {
-            if (!(nearest_pickable instanceof SceneryModel) || ((SceneryModel) nearest_pickable).isOccupying())
+            if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
                 respond_manager.addResponder(nearest_pickable);
             if (isNewSetTarget(selection, nearest_pickable, action, Settings.getSettings().aggressive_units))
                 player_interface.setTarget(selection, nearest_pickable, action, Settings.getSettings().aggressive_units);

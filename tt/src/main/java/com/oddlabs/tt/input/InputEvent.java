@@ -93,7 +93,7 @@ public final class InputEvent {
     }
 
     /**
-     * @return true if there are unconsumed actions
+     * {@return true if there are unconsumed actions}
      */
     public boolean hasActions() {
         return !actions.isEmpty();

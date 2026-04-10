@@ -138,6 +138,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         return this == inUse.get();
     }
 
+    @Override
     public int getAttributeLocation(@NonNull String name) {
         return state.attributeLocations.computeIfAbsent(name, n -> {
             int loc = GL20.glGetAttribLocation(state.programId, n);
@@ -145,6 +146,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         });
     }
 
+    @Override
     public int getUniformLocation(@NonNull String name) {
         return state.uniformLocations.computeIfAbsent(name, n -> {
             int loc = GL20.glGetUniformLocation(state.programId, n);
@@ -152,30 +154,37 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         });
     }
 
+    @Override
     public void setUniform(@NonNull String name, int value) {
         GL20.glUniform1i(getUniformLocation(name), value);
     }
 
+    @Override
     public void setUniform(@NonNull String name, float value) {
         GL20.glUniform1f(getUniformLocation(name), value);
     }
 
+    @Override
     public void setUniform(@NonNull String name, boolean value) {
         GL20.glUniform1i(getUniformLocation(name), value ? 1 : 0);
     }
 
+    @Override
     public void setUniform(@NonNull String name, float x, float y) {
         GL20.glUniform2f(getUniformLocation(name), x, y);
     }
 
+    @Override
     public void setUniform(@NonNull String name, float x, float y, float z) {
         GL20.glUniform3f(getUniformLocation(name), x, y, z);
     }
 
+    @Override
     public void setUniform(@NonNull String name, float x, float y, float z, float w) {
         GL20.glUniform4f(getUniformLocation(name), x, y, z, w);
     }
 
+    @Override
     public void setUniform(@NonNull String name, float @NonNull [] value) {
         GL20.glUniform4f(getUniformLocation(name), value[0], value[1], value[2], value[3]);
     }
@@ -194,6 +203,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         }
     }
 
+    @Override
     public void setUniformMatrix4(@NonNull String name, boolean transpose, @NonNull FloatBuffer matrix) {
         GL20.glUniformMatrix4fv(getUniformLocation(name), transpose, matrix);
     }

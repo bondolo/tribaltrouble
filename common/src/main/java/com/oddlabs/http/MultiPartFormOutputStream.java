@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <code>MultiPartFormOutputStream</code> is used to write
@@ -390,7 +391,7 @@ public class MultiPartFormOutputStream {
         //"This is some file text.".getBytes("ASCII"));
         out.close();
         //--read response from server
-        BufferedReader in = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(urlConn.getInputStream(), StandardCharsets.UTF_8));
         String line;
         while ((line = in.readLine()) != null) {
             IO.println(line);
