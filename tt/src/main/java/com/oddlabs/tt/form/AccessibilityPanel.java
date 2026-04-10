@@ -125,7 +125,7 @@ public class AccessibilityPanel extends Panel {
         class ColorBox extends GUIObject {
             private final Vector4f color = new Vector4f(Color.WHITE);
 
-            public ColorBox() {
+             ColorBox() {
                 setDim(20, 20);
             }
 
@@ -134,7 +134,7 @@ public class AccessibilityPanel extends Panel {
                 renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), color);
             }
 
-            public void setColor(Vector4fc c) {
+             void setColor(Vector4fc c) {
                 this.color.set(c);
             }
         }

@@ -4,6 +4,9 @@ import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.zip.CRC32;
@@ -1145,11 +1148,11 @@ public final class Channel {
         float oldval = getPixel(init_x, init_y);
         boolean[][] marked = new boolean[width][height];
         marked[init_x][init_y] = true;
-        List<int[]> list = new java.util.LinkedList<>();
+        Deque<int[]> list = new ArrayDeque<>();
         list.add(new int[]{init_x, init_y});
 
         while (!list.isEmpty()) {
-            int[] coords = list.removeFirst();
+            int[] coords = list.remove();
             int x = coords[0];
             int y = coords[1];
             putPixel(x, y, value);
@@ -1186,7 +1189,7 @@ public final class Channel {
             // flood fill
             boolean[][] marked = new boolean[width][height];
             marked[init_x][init_y] = true;
-            List<int[]> list = new java.util.LinkedList<>();
+            Deque<int[]> list = new ArrayDeque<>();
             list.add(new int[]{init_x, init_y});
             while (!list.isEmpty()) {
                 int[] coords = list.removeFirst();
@@ -1234,7 +1237,7 @@ public final class Channel {
             // flood fill
             boolean[][] marked = new boolean[width][height];
             marked[init_x][init_y] = true;
-            List<int[]> list = new java.util.LinkedList<>();
+            Deque<int[]> list = new ArrayDeque<>();
             list.add(new int[]{init_x, init_y});
             while (!list.isEmpty()) {
                 int[] coords = list.removeFirst();

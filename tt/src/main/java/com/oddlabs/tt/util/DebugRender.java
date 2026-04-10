@@ -246,30 +246,30 @@ public final class DebugRender {
         private float[] elements;
         private int size;
 
-        public FloatList(int initialCapacity) {
+         FloatList(int initialCapacity) {
             elements = new float[initialCapacity];
         }
 
-        public void add(float value) {
+         void add(float value) {
             if (size == elements.length) {
                 elements = Arrays.copyOf(elements, size * 2);
             }
             elements[size++] = value;
         }
 
-        public float get(int index) {
+         float get(int index) {
             return elements[index];
         }
 
-        public int size() {
+         int size() {
             return size;
         }
 
-        public void clear() {
+         void clear() {
             size = 0;
         }
 
-        public boolean isEmpty() {
+         boolean isEmpty() {
             return size == 0;
         }
     }

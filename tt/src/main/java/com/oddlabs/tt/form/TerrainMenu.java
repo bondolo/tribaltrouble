@@ -664,7 +664,7 @@ public final class TerrainMenu extends Group {
     private final class DisableListener implements ItemChosenListener<Void> {
         final int i;
 
-        public DisableListener(int i) {
+         DisableListener(int i) {
             this.i = i;
         }
 

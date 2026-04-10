@@ -182,7 +182,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private static final class InvertedLabel extends Label {
-        public InvertedLabel(@NonNull String text, @NonNull Font font, int width) {
+         InvertedLabel(@NonNull String text, @NonNull Font font, int width) {
             super(text, font, width, Origin.AT_MIDDLE);
             setColor(Color.BLACK);
         }

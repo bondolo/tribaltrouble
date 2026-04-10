@@ -550,7 +550,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     private final class PlayerSlotListener implements ItemChosenListener<Void> {
         private final int player_slot;
 
-        public PlayerSlotListener(int player_slot) {
+         PlayerSlotListener(int player_slot) {
             this.player_slot = player_slot;
         }
 

@@ -77,7 +77,7 @@ public final class PanelGroup extends GUIObject {
     }
 
     private final class PanelBox extends GUIObject {
-        public PanelBox(int width, int height) {
+         PanelBox(int width, int height) {
             setDim(width, height);
             setPos(0, 0);
         }
@@ -92,7 +92,7 @@ public final class PanelGroup extends GUIObject {
     private final class TabListener implements MouseButtonListener {
         private final int index;
 
-        public TabListener(int index) {
+         TabListener(int index) {
             this.index = index;
         }
 

@@ -121,11 +121,11 @@ dumpBuffer(buffer);*/
         private float score;
         private int round_added;
 
-        public Index(short index) {
+        Index(short index) {
             this.index = index;
         }
 
-        public void updateScore(int cache_index, int round) {
+        void updateScore(int cache_index, int round) {
             score = 0;
             if (cache_index != -1) {
                 if (round != round_added) {
@@ -138,12 +138,12 @@ dumpBuffer(buffer);*/
             score += VALENCE_BOOST_SCALE * (float) Math.pow(triangle_list.size(), -VALENCE_BOOST_POWER);
         }
 
-        public void add(Triangle triangle) {
+         void add(Triangle triangle) {
 //			assert !triangle_list.contains(triangle);
             triangle_list.add(triangle);
         }
 
-        public void remove(Triangle triangle) {
+         void remove(Triangle triangle) {
             boolean success = triangle_list.remove(triangle);
             assert success;
         }
@@ -170,7 +170,7 @@ dumpBuffer(buffer);*/
                         score += indices[i].score;
                 }
         */
-        public float getScore() {
+         float getScore() {
             float score = 0;
             for (Index indice : indices) {
                 score += indice.score;
@@ -178,13 +178,13 @@ dumpBuffer(buffer);*/
             return score;
         }
 
-        public void remove() {
+         void remove() {
             for (Index indice : indices) {
                 indice.remove(this);
             }
         }
 
-        public void addToBuffer(@NonNull ShortBuffer buffer) {
+         void addToBuffer(@NonNull ShortBuffer buffer) {
             for (Index indice : indices) {
                 buffer.put(indice.index);
             }

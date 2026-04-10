@@ -203,7 +203,7 @@ public class Form extends Group {
     private static final class DragListener implements MouseMotionListener {
         private final Form owner;
 
-        public DragListener(Form owner) {
+         DragListener(Form owner) {
             this.owner = owner;
         }
 

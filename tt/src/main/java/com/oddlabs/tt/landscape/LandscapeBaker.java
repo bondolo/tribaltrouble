@@ -67,7 +67,7 @@ public final class LandscapeBaker {
             """;
 
     private static class BlendShader extends ShaderProgram {
-        public BlendShader() {
+         BlendShader() {
             super(VERTEX_SHADER, FRAGMENT_SHADER);
             // Layouts are defined in shader, no need for explicit bindFragDataLocation
             link();

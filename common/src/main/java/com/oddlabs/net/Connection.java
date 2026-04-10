@@ -10,6 +10,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public final class Connection extends AbstractConnection implements Handler, Con
     private static final short HEADER_SIZE = 2;
 
     private final ByteBuffer read_buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
-    private final List<ARMIEvent> back_log_list = new LinkedList<>();
+    private final Deque<ARMIEvent> back_log_list = new ArrayDeque<>();
     private final ByteBuffer write_buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
     private final @NonNull ConnectionPeerInterface peer_interface;
     private final boolean ping_reply;

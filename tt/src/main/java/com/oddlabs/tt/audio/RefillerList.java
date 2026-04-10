@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class RefillerList implements AutoCloseable {
 
-    private static final long THREAD_SLEEP_MILLIS = TimeUnit.MILLISECONDS.toMillis(50);
+    private static final long THREAD_SLEEP_MILLIS = 50L /* milliseconds */;
 
     private volatile boolean finished = false;
     private final Thread refill_thread = new Refiller();
@@ -51,7 +51,7 @@ public final class RefillerList implements AutoCloseable {
 
     private class Refiller extends Thread {
 
-        public Refiller() {
+         Refiller() {
             super("Refiller");
             setDaemon(true);
         }

@@ -220,7 +220,7 @@ public final class TutorialForm extends Form {
     private final class TutorialListener implements MouseClickListener {
         private final int number;
 
-        public TutorialListener(int number) {
+         TutorialListener(int number) {
             this.number = number;
         }
 

@@ -547,7 +547,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private final class PulldownListener implements ItemChosenListener<GameHost> {
         private final @NonNull MultiColumnComboBox<GameHost> box;
 
-        public PulldownListener(@NonNull MultiColumnComboBox<GameHost> box) {
+         PulldownListener(@NonNull MultiColumnComboBox<GameHost> box) {
             this.box = box;
         }
 

@@ -5,6 +5,7 @@ import com.oddlabs.net.ARMIInterfaceMethods;
 import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
+import kotlin.collections.ArrayDeque;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ final class RouterClient implements ConnectionInterface {
     private final Logger logger;
     private final AbstractConnection connection;
     private final Router router;
-    private final List<Integer> checksums = new LinkedList<>();
+    private final List<Integer> checksums = new ArrayDeque<>();
     private int client_id;
     private SessionManager.Timeout timeout;
     private Session session;

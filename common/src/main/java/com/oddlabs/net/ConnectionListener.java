@@ -10,6 +10,8 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,7 +24,7 @@ public final class ConnectionListener extends AbstractConnectionListener impleme
     private final @NonNull NetworkSelector network;
     private SelectionKey key;
 
-    private final List<SocketChannel> incoming_connections = new LinkedList<>();
+    private final Deque<SocketChannel> incoming_connections = new ArrayDeque<>();
 
     private static SelectionKey createServerSocket(@NonNull NetworkSelector network, InetAddress ip, int port) throws IOException {
         ServerSocketChannel server_channel = ServerSocketChannel.open();

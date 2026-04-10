@@ -104,7 +104,7 @@ public final class AmbientAudio {
             }
         }
 
-        public int getCount() {
+         int getCount() {
             return count;
         }
     }

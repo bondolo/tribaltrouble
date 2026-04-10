@@ -36,7 +36,7 @@ subprojects {
 
             disable( "NullAway", "IntLongMath", "ImmutableEnumChecker",
                 "NarrowingCompoundAssignment",
-                "TimeUnitConversionChecker", "UnusedNestedClass", "SameNameButDifferent", "AssignmentExpression",
+                "UnusedNestedClass", "SameNameButDifferent", "AssignmentExpression",
                 "NullablePrimitive", "ObjectToString", "ByteBufferBackingArray",
                 "InputStreamSlowMultibyteRead", "BadComparable",
                 "ModifyCollectionInEnhancedForLoop", "StringCaseLocaleUsage",
@@ -44,9 +44,9 @@ subprojects {
                 "MutablePublicArray", "InconsistentCapitalization",
                 "TypeParameterUnusedInFormals", "PatternMatchingInstanceof", "DefaultCharset",
                 "MissingOverride",
-                "EnumOrdinal", "JdkObsolete", "UnnecessaryParentheses", "UnusedMethod", "UnusedVariable",
+                "EnumOrdinal", "UnnecessaryParentheses", "UnusedMethod", "UnusedVariable",
                 "StatementSwitchToExpressionSwitch",
-                "EffectivelyPrivate", "ArrayRecordComponent", "StringSplitter", "InterruptedInCatchBlock" )
+                "ArrayRecordComponent", "StringSplitter", "InterruptedInCatchBlock" )
         }
     }
 }

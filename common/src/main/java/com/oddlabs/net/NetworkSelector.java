@@ -6,6 +6,8 @@ import org.jspecify.annotations.NonNull;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -22,8 +24,8 @@ public final class NetworkSelector {
     private final Map<Object, Handler> handler_map = new HashMap<>();
     private TaskThread task_thread;
     private Selector selector;
-    private final List<TimedConnection> ping_connections = new LinkedList<>();
-    private final List<TimedConnection> ping_timeouts = new LinkedList<>();
+    private final Deque<TimedConnection> ping_connections = new ArrayDeque<>();
+    private final Deque<TimedConnection> ping_timeouts = new ArrayDeque<>();
 
     private final Deterministic deterministic;
 

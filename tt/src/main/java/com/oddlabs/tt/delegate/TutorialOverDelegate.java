@@ -86,7 +86,7 @@ public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> imp
     private final class StartTutorialListener implements MouseClickListener {
         private final int tutorial_number;
 
-        public StartTutorialListener(int tutorial_number) {
+         StartTutorialListener(int tutorial_number) {
             this.tutorial_number = tutorial_number;
         }
 

@@ -175,7 +175,7 @@ public class ChatPanel extends Panel implements ChatListener {
     private final class PulldownListener implements ItemChosenListener<@NonNull ChatRoomUser> {
         private final MultiColumnComboBox<ChatRoomUser> box;
 
-        public PulldownListener(MultiColumnComboBox<@NonNull ChatRoomUser> box) {
+         PulldownListener(MultiColumnComboBox<@NonNull ChatRoomUser> box) {
             this.box = box;
         }
 
@@ -206,7 +206,7 @@ public class ChatPanel extends Panel implements ChatListener {
     private final class ChatRoomUserDoubleClickedListener implements RowListener<@NonNull ChatRoomUser> {
         private final @NonNull PulldownMenu<@NonNull ChatRoomUser> menu;
 
-        public ChatRoomUserDoubleClickedListener(@NonNull PulldownMenu<@NonNull ChatRoomUser> menu) {
+         ChatRoomUserDoubleClickedListener(@NonNull PulldownMenu<@NonNull ChatRoomUser> menu) {
             this.menu = menu;
         }
 
