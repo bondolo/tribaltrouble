@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.lwjgl.glfw.GLFW.GLFW_AUTO_ICONIFY;
@@ -74,6 +76,7 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public final class LWJGL3Window implements Window {
+    private static final Logger logger = Logger.getLogger(LWJGL3Window.class.getSimpleName());
 
     private long windowHandle = MemoryUtil.NULL;
     private @NonNull String title = "Tribal Trouble";
@@ -440,7 +443,7 @@ public final class LWJGL3Window implements Window {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Failed to match specific display mode", e);
         }
 
         try {
@@ -449,7 +452,7 @@ public final class LWJGL3Window implements Window {
                 return available[0];
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Failed to query available display modes", e);
         }
         return new SerializableDisplayMode(1280, 1024, 32, 60);
     }

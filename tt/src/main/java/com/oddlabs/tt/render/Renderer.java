@@ -193,7 +193,7 @@ public final class Renderer implements AutoCloseable {
                     continue;
                 deleteLog(log.toPath());
             } catch (IOException _) {
-
+                /* ignore */
             }
     }
 
@@ -327,6 +327,7 @@ public final class Renderer implements AutoCloseable {
                 xdgConfigHome = System.getenv("XDG_CONFIG_HOME");
                 appData = System.getenv("APPDATA");
             } catch (SecurityException _) {
+                /* ignore */
             }
 
             Path preferred = null;
@@ -414,6 +415,7 @@ public final class Renderer implements AutoCloseable {
                 try {
                     xdgStateHome = System.getenv("XDG_STATE_HOME");
                 } catch (SecurityException _) {
+                    /* ignore */
                 }
 
                 if (xdgStateHome != null && !xdgStateHome.isEmpty()) {
@@ -427,6 +429,7 @@ public final class Renderer implements AutoCloseable {
                 try {
                     localAppData = System.getenv("LOCALAPPDATA");
                 } catch (SecurityException _) {
+                    /* ignore */
                 }
 
                 if (localAppData != null) {
@@ -837,6 +840,7 @@ public final class Renderer implements AutoCloseable {
             try {
                 bpp = window.getDisplayMode().getBitsPerPixel();
             } catch (Exception _) {
+                /* ignore */
             } // ignore if not created
 
             window.setTitle("Tribal Trouble");

@@ -19,8 +19,11 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class Utils {
+    private static final Logger logger = Logger.getLogger(Utils.class.getName());
 
     @FunctionalInterface
     public interface I18N extends BiFunction<@NonNull String, @NonNull Object @NonNull [], @NonNull String> {
@@ -148,7 +151,7 @@ public final class Utils {
         try (OutputStream fout = Files.newOutputStream(image_file)) {
             fout.write(buffer.array());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Failed to save BMP: " + filename, e);
         }
         long after = System.nanoTime();
         IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
@@ -186,7 +189,7 @@ public final class Utils {
 
             fout.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Failed to save TGA: " + filename, e);
         }
         long after = System.nanoTime();
         IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
