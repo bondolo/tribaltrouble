@@ -7,6 +7,7 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.ShortBuffer;
+import java.util.Arrays;
 import java.util.Map;
 
 public final class Optimizer {
@@ -133,21 +134,15 @@ public final class Optimizer {
     }
 
     private static float[][] stripArray(int length, float @NonNull [] @NonNull [] array) {
-        float[][] copy = new float[length][];
-        System.arraycopy(array, 0, copy, 0, length);
-        return copy;
+        return Arrays.copyOf(array, length);
     }
 
     private static byte[][] stripArray(int length, byte @NonNull [] @NonNull [] array) {
-        byte[][] copy = new byte[length][];
-        System.arraycopy(array, 0, copy, 0, length);
-        return copy;
+        return Arrays.copyOf(array, length);
     }
 
     private static float[] stripArray(int length, float @NonNull [] array) {
-        float[] copy = new float[length];
-        System.arraycopy(array, 0, copy, 0, length);
-        return copy;
+        return Arrays.copyOf(array, length);
     }
 
     static @NonNull SpriteInfo convertToSprite(String[][] textures, @NonNull ModelInfo model_info, float[] clear_color) {

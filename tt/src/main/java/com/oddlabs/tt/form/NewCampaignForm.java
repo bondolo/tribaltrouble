@@ -34,6 +34,7 @@ import org.jspecify.annotations.Nullable;
 import java.io.FileNotFoundException;
 import java.io.InvalidClassException;
 import java.nio.file.NoSuchFileException;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
@@ -166,8 +167,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
 
         CampaignState[] new_states;
         if (campaign_states != null) {
-            new_states = new CampaignState[campaign_states.length + 1];
-            System.arraycopy(campaign_states, 0, new_states, 0, campaign_states.length);
+            new_states = Arrays.copyOf(campaign_states, campaign_states.length + 1);
         } else {
             new_states = new CampaignState[1];
         }

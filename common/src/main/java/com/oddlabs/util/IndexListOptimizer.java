@@ -4,11 +4,13 @@ import org.jspecify.annotations.NonNull;
 
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /* http://home.comcast.net/~tom_forsyth/papers/fast_vert_cache_opt.html*/
@@ -192,11 +194,10 @@ dumpBuffer(buffer);*/
 
         @Override
         public @NonNull String toString() {
-            String result = "Triangle score = " + getScore();
-            for (Index indice : indices) {
-                result += " " + indice.toString();
-            }
-            return result;
+            return "Triangle score = " + getScore() +
+                    Arrays.stream(indices)
+                            .map(Object::toString)
+                            .collect(Collectors.joining(" ", " ", ""));
         }
     }
 

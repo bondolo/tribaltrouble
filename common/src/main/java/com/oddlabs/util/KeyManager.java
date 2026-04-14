@@ -182,9 +182,8 @@ public final class KeyManager {
 
                 default:
                     if (--room < 0) {
-                        buf = new char[offset + 128];
+                        buf = Arrays.copyOf(lineBuffer, offset + 128);
                         room = buf.length - offset - 1;
-                        System.arraycopy(lineBuffer, 0, buf, 0, offset);
                         Arrays.fill(lineBuffer, ' ');
                         lineBuffer = buf;
                     }
@@ -197,8 +196,7 @@ public final class KeyManager {
             return null;
         }
 
-        char[] ret = new char[offset];
-        System.arraycopy(buf, 0, ret, 0, offset);
+        char[] ret = Arrays.copyOf(buf, offset);
         Arrays.fill(buf, ' ');
         return ret;
     }

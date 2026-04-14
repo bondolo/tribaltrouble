@@ -5,6 +5,8 @@ import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.matchmaking.Participant;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public final class TimestampedGameSession {
     private static final long JOIN_MAX_TIME = 3 * 60 * 1000;
@@ -52,18 +54,16 @@ public final class TimestampedGameSession {
         participant_state = new int[num_participants];
         last_status = new int[num_participants];
         this.create_timestamp = System.currentTimeMillis();
-        String nicks = " ";
-        for (int i = 0; i < num_participants; i++)
-            nicks += session.getParticipants()[i].getNick() + " ";
+        String nicks = Arrays.stream(session.getParticipants())
+                .map(Participant::getNick)
+                .collect(Collectors.joining(" ", " ", " "));
         MatchmakingServer.getLogger().info("Game " + database_id + " created. [" + nicks + "] " + getParticipantStates());
     }
 
     private String getParticipantStates() {
-        String result = "";
-        for (int i = 0; i < participant_state.length; i++)
-            result += PARTICIPANT_DEBUG_CHARS[participant_state[i]];
-        return result;
-
+        return Arrays.stream(participant_state)
+                .mapToObj(state -> PARTICIPANT_DEBUG_CHARS[state])
+                .collect(Collectors.joining());
     }
 
     public GameSession getSession() {

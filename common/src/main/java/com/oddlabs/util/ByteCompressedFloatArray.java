@@ -4,6 +4,8 @@ import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class ByteCompressedFloatArray implements Serializable {
     @Serial
@@ -65,11 +67,9 @@ public final class ByteCompressedFloatArray implements Serializable {
     @Override
     public @NonNull String toString() {
         float[] array = getFloatArray();
-        String result = "";
-        for (float v : array) {
-            result += v + ", ";
-        }
-        return result;
+        return IntStream.range(0, array.length)
+                .mapToObj(idx -> Float.toString(array[idx]))
+                .collect(Collectors.joining(", "));
     }
 /*
 	public static final void main(String[] args) {
