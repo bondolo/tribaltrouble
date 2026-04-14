@@ -6,6 +6,7 @@ import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +25,14 @@ public final class RubberGroup {
         int[] group_position = getGroupPosition();
         if (group_position != null) {
             int num_supplies = MIN_CHICKENS_PER_GROUP + world.getRandom().nextInt(MAX_CHICKENS_PER_GROUP - MIN_CHICKENS_PER_GROUP + 1);
-            Target[] supply_positions = world.getUnitGrid().findGridTargets(group_position[0], group_position[1], num_supplies, true);
+            Target [] supply_positions = world.getUnitGrid().findGridTargets(group_position[0], group_position[1], num_supplies, true);
             float spawn_x = UnitGrid.coordinateFromGrid(group_position[0]);
             float spawn_y = UnitGrid.coordinateFromGrid(group_position[1]);
             for (int i = 0; i < num_supplies; i++) {
-                int grid_x = supply_positions[i].getGridX();
-                int grid_y = supply_positions[i].getGridY();
+                Target target = supply_positions[i];
+                if (target == null) continue;
+                int grid_x = target.getGridX();
+                int grid_y = target.getGridY();
                 float x = UnitGrid.coordinateFromGrid(grid_x);
                 float y = UnitGrid.coordinateFromGrid(grid_y);
                 RubberSupply supply = new RubberSupply(world, world.getLandscapeResources().getChicken(), 2f, grid_x, grid_y, x, y, 0f, this, spawn_x, spawn_y);
@@ -40,7 +43,7 @@ public final class RubberGroup {
         }
     }
 
-    private int[] getGroupPosition() {
+    private int @Nullable [] getGroupPosition() {
         List<int[]> tree_positions = world.getHeightMap().getTrees();
         int start_index = world.getRandom().nextInt(tree_positions.size());
         int index = (start_index + 1) % tree_positions.size();

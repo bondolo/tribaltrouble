@@ -49,10 +49,10 @@ public class LandscapeTarget implements Target {
     }
 
     public final void startRespond() {
-        throw new RuntimeException();
+        throw new UnsupportedOperationException();
     }
 
     public final void stopRespond() {
-        throw new RuntimeException();
+        throw new UnsupportedOperationException();
     }
 }

@@ -13,16 +13,15 @@ public final class FindOccupantFilter<S extends Selectable<?>> implements ScanFi
     private final float y;
     private final float radius;
     private final @Nullable Selectable<?> src;
-    private final Class<S> type;
-    private final @NonNull List<@NonNull S> result;
+    private final @NonNull Class<S> type;
+    private final List<@NonNull S> result = new ArrayList<>();
 
-    public FindOccupantFilter(float x, float y, float radius, @Nullable Selectable<?> src, Class<S> type) {
+    public FindOccupantFilter(float x, float y, float radius, @Nullable Selectable<?> src, @NonNull Class<S> type) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.src = src;
         this.type = type;
-        result = new ArrayList<>();
     }
 
     @Override
@@ -45,7 +44,6 @@ public final class FindOccupantFilter<S extends Selectable<?>> implements ScanFi
             float squared_dist = dx * dx + dy * dy;
             if (!result.contains(s) && squared_dist < radius * radius) {
                 result.add(s);
-                return true;
             }
         }
         return false;
