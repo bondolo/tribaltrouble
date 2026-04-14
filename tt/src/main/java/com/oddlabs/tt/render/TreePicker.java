@@ -2,9 +2,9 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.landscape.TreeGroup;
 import com.oddlabs.tt.landscape.TreeLeaf;
-import com.oddlabs.tt.landscape.TreeNodeVisitor;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
@@ -20,7 +20,7 @@ import java.util.Map;
 import static com.oddlabs.tt.landscape.AbstractTreeGroup.TreeType;
 
 
-class TreePicker implements TreeNodeVisitor {
+class TreePicker {
     private static final int CROWN_MIPMAP_CUTOFF = Globals.NO_MIPMAP_CUTOFF;
     private static final float SELECTION_RADIUS = 1.5f;
 
@@ -110,14 +110,20 @@ class TreePicker implements TreeNodeVisitor {
         render_state_cache.clear();
     }
 
-    @Override
-    public final void visitLeaf(@NonNull TreeLeaf tree_leaf) {
-        tree_leaf.visitTrees(this);
-    }
-
-    @Override
-    public final void visitNode(@NonNull TreeGroup tree_group) {
-        tree_group.visitChildren(this);
+    public final void visit(@NonNull AbstractTreeGroup node) {
+        switch (node) {
+            case TreeGroup group -> {
+                for (AbstractTreeGroup child : group.children()) {
+                    visit(child);
+                }
+            }
+            case TreeLeaf leaf -> {
+                for (TreeSupply tree : leaf.getTrees()) {
+                    visitTree(tree);
+                }
+            }
+            case TreeSupply tree -> visitTree(tree);
+        }
     }
 
     private float getHeightScale(@NonNull TreeType tree_type) {
@@ -147,7 +153,6 @@ class TreePicker implements TreeNodeVisitor {
         return render_state;
     }
 
-    @Override
     public final void visitTree(@NonNull TreeSupply tree_supply) {
         if (tree_supply.isHidden())
             return;

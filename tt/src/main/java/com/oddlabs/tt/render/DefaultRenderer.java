@@ -247,7 +247,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
         if (Globals.process_trees) {
             tree_renderer.setup(frustum_state);
-            world.getTreeRoot().visit(tree_renderer);
+            tree_renderer.visit(world.getTreeRoot());
         }
         if (Globals.process_misc) {
             element_renderer.setup(frustum_state);

@@ -7,10 +7,11 @@ import com.oddlabs.tt.util.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public abstract class AbstractTreeGroup extends BoundingBox {
+public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeGroup, TreeLeaf, TreeSupply {
 
     public enum TreeType {
         JUNGLE,
@@ -19,15 +20,15 @@ public abstract class AbstractTreeGroup extends BoundingBox {
         PINE
     }
 
-    private final AbstractTreeGroup parent;
+    private final @Nullable AbstractTreeGroup parent;
 
     private int num_responding_trees = 0;
 
-    public AbstractTreeGroup(AbstractTreeGroup parent) {
+    public AbstractTreeGroup(@Nullable AbstractTreeGroup parent) {
         this.parent = parent;
     }
 
-    protected final AbstractTreeGroup getParent() {
+    protected final @Nullable AbstractTreeGroup getParent() {
         return parent;
     }
 
@@ -93,54 +94,27 @@ public abstract class AbstractTreeGroup extends BoundingBox {
             matrix2.identity();
             matrix2.translate(tree_x, tree_y, world.getHeightMap().getNearestHeight(tree_x, tree_y));
             matrix2.mul(matrix, matrix);
-            visit(new TreeNodeVisitor() {
-                private int child_size = world.getHeightMap().getMetersPerWorld();
-                private int x;
-                private int y;
 
-                @Override
-                public void visitLeaf(@NonNull TreeLeaf tree_leaf) {
-                    TreeSupply tree = new TreeSupply(world, tree_leaf, tree_x, tree_y, center_grid_x, center_grid_y, grid_size, radius, matrix, tree_type, tree_low_vertices);
-                    tree_leaf.insertTree(tree);
-                }
-
-                @Override
-                public void visitNode(@NonNull TreeGroup tree_group) {
-                    int old_x = x;
-                    int old_y = y;
-                    int old_size = child_size;
-                    child_size >>= 1;
-                    if (tree_x < x + child_size) {
-                        if (tree_y < y + child_size) {
-                            tree_group.getChild0().visit(this);
-                        } else {
-                            y += child_size;
-                            tree_group.getChild2().visit(this);
-                        }
-                    } else {
-                        if (tree_y < y + child_size) {
-                            x += child_size;
-                            tree_group.getChild1().visit(this);
-                        } else {
-                            x += child_size;
-                            y += child_size;
-                            tree_group.getChild3().visit(this);
-                        }
-                    }
-                    x = old_x;
-                    y = old_y;
-                    child_size = old_size;
-                }
-
-                @Override
-                public void visitTree(TreeSupply tree_supply) {
-                    throw new RuntimeException();
-                }
-            });
+            insertTreeRecursive(this, world, tree_type, grid_size, radius, matrix, tree_low_vertices, tree_x, tree_y, center_grid_x, center_grid_y, world.getHeightMap().getMetersPerWorld(), 0, 0);
         }
     }
 
-    public abstract void visit(TreeNodeVisitor visitor);
+    private void insertTreeRecursive(@NonNull AbstractTreeGroup node, @NonNull World world, @NonNull TreeType tree_type, int grid_size, float radius, @NonNull Matrix4f matrix, float @NonNull [] vertices, float tree_x, float tree_y, int center_grid_x, int center_grid_y, int size, int x, int y) {
+        switch (node) {
+            case TreeLeaf leaf -> {
+                TreeSupply tree = new TreeSupply(world, leaf, tree_x, tree_y, center_grid_x, center_grid_y, grid_size, radius, matrix, tree_type, vertices);
+                leaf.insertTree(tree);
+            }
+            case TreeGroup group -> {
+                int child_size = size >> 1;
+                int child_index = (tree_x < x + child_size ? 0 : 1) | (tree_y < y + child_size ? 0 : 2);
+                int next_x = x + (child_index & 1) * child_size;
+                int next_y = y + ((child_index >> 1) & 1) * child_size;
+                insertTreeRecursive(group.child(child_index), world, tree_type, grid_size, radius, matrix, vertices, tree_x, tree_y, center_grid_x, center_grid_y, child_size, next_x, next_y);
+            }
+            case TreeSupply _ -> throw new RuntimeException("Unexpected TreeSupply node in tree hierarchy");
+        }
+    }
 
     protected boolean initBounds() {
         return true;

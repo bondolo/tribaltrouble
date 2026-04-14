@@ -571,7 +571,7 @@ com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
     private void pickResources() {
         tree_pick_list.clear();
         tree_renderer.setup(tmp_camera);
-        local_player.getWorld().getTreeRoot().visit(tree_renderer);
+        tree_renderer.visit(local_player.getWorld().getTreeRoot());
         sprite_sorter.distributeModels();
         tree_renderer.getAllPicks(tree_pick_list);
     }

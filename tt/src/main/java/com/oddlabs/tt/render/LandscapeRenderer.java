@@ -5,10 +5,10 @@ import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.BoundingMode;
 import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.landscape.AbstractPatchGroup;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.LandscapeLeaf;
 import com.oddlabs.tt.landscape.PatchGroup;
-import com.oddlabs.tt.landscape.PatchGroupVisitor;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.shader.LandscapeShader;
 import com.oddlabs.tt.render.shader.ShaderProgram;
@@ -42,8 +42,8 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     private final @NonNull PatchMesh patchMesh;
     private final LandscapeShader shader = new LandscapeShader();
     private final Vector4f lightDir = new Vector4f();
-    private FloatVBO instanceVBO;
-    private FloatBuffer instanceBuffer;
+    private @NonNull FloatVBO instanceVBO;
+    private @NonNull FloatBuffer instanceBuffer;
 
     public @NonNull LandscapeShader getShader() {
         return shader;
@@ -79,8 +79,26 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     }
 
     private void doPrepareAll(@NonNull CameraState camera, final boolean visible_override, @NonNull Collection<LandscapeLeaf> result) {
-        var patch_visitor = new Visitor(camera, visible_override, result);
-        world.getPatchRoot().visit(patch_visitor);
+        traverse(world.getPatchRoot(), camera, visible_override, result);
+    }
+
+    private void traverse(@NonNull AbstractPatchGroup node, @NonNull CameraState camera, boolean visible_override, @NonNull Collection<LandscapeLeaf> result) {
+        switch (node) {
+            case PatchGroup group -> {
+                RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
+                if (visible_override || (frustum_state = RenderTools.inFrustum(group, camera.getFrustum())) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                    boolean next_visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
+                    for (AbstractPatchGroup child : group.children()) {
+                        traverse(child, camera, next_visible_override, result);
+                    }
+                }
+            }
+            case LandscapeLeaf leaf -> {
+                if (visible_override || RenderTools.inFrustum(leaf, camera.getFrustum()) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                    result.add(leaf);
+                }
+            }
+        }
     }
 
     @Override
@@ -184,35 +202,5 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         patchMesh.bind();
         patchMesh.draw();
         patchMesh.unbind();
-    }
-
-    private static final class Visitor implements PatchGroupVisitor {
-        private final @NonNull CameraState camera;
-        private boolean visible_override;
-        private final @NonNull Collection<LandscapeLeaf> result;
-
-        private Visitor(@NonNull CameraState camera, boolean visible_override, @NonNull Collection<LandscapeLeaf> result) {
-            this.camera = camera;
-            this.visible_override = visible_override;
-            this.result = result;
-        }
-
-        @Override
-        public void visitGroup(@NonNull PatchGroup group) {
-            RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
-            if (visible_override || (frustum_state = RenderTools.inFrustum(group, camera.getFrustum())) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-                boolean old_override = visible_override;
-                visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
-                group.visitChildren(this);
-                visible_override = old_override;
-            }
-        }
-
-        @Override
-        public void visitLeaf(@NonNull LandscapeLeaf leaf) {
-            if (visible_override || RenderTools.inFrustum(leaf, camera.getFrustum()) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-                result.add(leaf);
-            }
-        }
     }
 }

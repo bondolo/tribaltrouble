@@ -11,11 +11,11 @@ import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.landscape.AudioImplementation;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.TreeGroup;
 import com.oddlabs.tt.landscape.TreeLeaf;
-import com.oddlabs.tt.landscape.TreeNodeVisitor;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.resource.Resources;
@@ -38,9 +38,9 @@ public final class AmbientAudio {
     private final @NonNull Audio ambient_beach_buffer;
     private final @NonNull Audio ambient_wind_buffer;
 
-    private final AbstractAudioPlayer ambient_forest;
-    private final AbstractAudioPlayer ambient_beach;
-    private final AbstractAudioPlayer ambient_wind;
+    private final @NonNull AbstractAudioPlayer ambient_forest;
+    private final @NonNull AbstractAudioPlayer ambient_beach;
+    private final @NonNull AbstractAudioPlayer ambient_wind;
 
     private final Vector3f f = new Vector3f();
     private final Vector3f s = new Vector3f();
@@ -58,55 +58,47 @@ public final class AmbientAudio {
         ambient_wind.registerAmbient();
     }
 
-    private static final class TreeCounterVisitor implements TreeNodeVisitor {
-        private final float x, y, radiusSq;
-        private final int threshold;
-        private int count;
+    private static int countTrees(@NonNull AbstractTreeGroup node, float x, float y, float radiusSq, int threshold, int currentCount) {
+        if (currentCount >= threshold) return currentCount;
 
-        TreeCounterVisitor(float x, float y, float radius, int threshold) {
-            this.x = x;
-            this.y = y;
-            this.radiusSq = radius * radius;
-            this.threshold = threshold;
-        }
-
-        private boolean intersects(com.oddlabs.tt.util.@NonNull BoundingBox box) {
-            float dx = x - Math.max(box.bmin_x, Math.min(x, box.bmax_x));
-            float dy = y - Math.max(box.bmin_y, Math.min(y, box.bmax_y));
-            return (dx * dx + dy * dy) < radiusSq;
-        }
-
-        @Override
-        public void visitLeaf(@NonNull TreeLeaf tree_leaf) {
-            if (count >= threshold) return;
-            if (intersects(tree_leaf)) {
-                tree_leaf.visitTrees(this);
-            }
-        }
-
-        @Override
-        public void visitNode(@NonNull TreeGroup tree_group) {
-            if (count >= threshold) return;
-            if (intersects(tree_group)) {
-                tree_group.visitChildren(this);
-            }
-        }
-
-        @Override
-        public void visitTree(@NonNull TreeSupply tree_supply) {
-            if (count >= threshold) return;
-            if (!tree_supply.isHidden()) {
-                float dx = tree_supply.getPositionX() - x;
-                float dy = tree_supply.getPositionY() - y;
-                if (dx * dx + dy * dy < radiusSq) {
-                    count++;
+        if (intersects(node, x, y, radiusSq)) {
+            switch (node) {
+                case TreeGroup group -> {
+                    for (AbstractTreeGroup child : group.children()) {
+                        currentCount = countTrees(child, x, y, radiusSq, threshold, currentCount);
+                        if (currentCount >= threshold) break;
+                    }
+                }
+                case TreeLeaf leaf -> {
+                    for (TreeSupply tree : leaf.getTrees()) {
+                        if (currentCount >= threshold) break;
+                        if (!tree.isHidden()) {
+                            float dx = tree.getPositionX() - x;
+                            float dy = tree.getPositionY() - y;
+                            if (dx * dx + dy * dy < radiusSq) {
+                                currentCount++;
+                            }
+                        }
+                    }
+                }
+                case TreeSupply tree -> {
+                    if (!tree.isHidden()) {
+                        float dx = tree.getPositionX() - x;
+                        float dy = tree.getPositionY() - y;
+                        if (dx * dx + dy * dy < radiusSq) {
+                            currentCount++;
+                        }
+                    }
                 }
             }
         }
+        return currentCount;
+    }
 
-         int getCount() {
-            return count;
-        }
+    private static boolean intersects(com.oddlabs.tt.util.@NonNull BoundingBox box, float x, float y, float radiusSq) {
+        float dx = x - Math.max(box.bmin_x, Math.min(x, box.bmax_x));
+        float dy = y - Math.max(box.bmin_y, Math.min(y, box.bmax_y));
+        return (dx * dx + dy * dy) < radiusSq;
     }
 
     public void stop() {
@@ -167,10 +159,9 @@ public final class AmbientAudio {
 
                         // Check for forest density
                         World world = heightmap.getWorld();
-                        TreeCounterVisitor treeVisitor = new TreeCounterVisitor(camX, camY, 25f, TREES_FOREST_THRESHOLD);
-                        world.getTreeRoot().visit(treeVisitor);
+                        int treeCount = countTrees(world.getTreeRoot(), camX, camY, 25f * 25f, TREES_FOREST_THRESHOLD, 0);
 
-                        if (treeVisitor.getCount() >= TREES_FOREST_THRESHOLD) {
+                        if (treeCount >= TREES_FOREST_THRESHOLD) {
                             efx.setReverb(EFXManager.ReverbType.FOREST);
                         } else {
                             // Check for valley/enclosure by sampling terrain height around camera

@@ -13,6 +13,7 @@ import com.oddlabs.tt.util.Target;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated, ModelToolTip {
     private static final int INITIAL_SUPPLIES = 10;
@@ -34,7 +35,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private float scale = 1f;
     private int hit_counter = 0;
 
-    public TreeSupply(@NonNull World world, AbstractTreeGroup parent, float x, float y, int grid_x, int grid_y, int grid_size, float size, @NonNull Matrix4f matrix, @NonNull TreeType tree_type, float @NonNull [] vertices) {
+    public TreeSupply(@NonNull World world, @Nullable AbstractTreeGroup parent, float x, float y, int grid_x, int grid_y, int grid_size, float size, @NonNull Matrix4f matrix, @NonNull TreeType tree_type, float @NonNull [] vertices) {
         super(parent);
         this.world = world;
         this.x = x;
@@ -214,10 +215,5 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
 
     public boolean isHidden() {
         return hide;
-    }
-
-    @Override
-    public void visit(@NonNull TreeNodeVisitor visitor) {
-        visitor.visitTree(this);
     }
 }
