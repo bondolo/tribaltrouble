@@ -27,8 +27,6 @@ public abstract class Element<T extends Element<T>> extends BoundingBox implemen
 
     protected abstract @NonNull T self();
 
-    public abstract void visit(ElementVisitor visitor);
-
     protected void register() {
         node_parent = element_root.insertElement(self());
         assert node_parent != null;

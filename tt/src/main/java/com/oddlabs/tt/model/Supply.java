@@ -4,7 +4,7 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.Occupant;
 import org.jspecify.annotations.NonNull;
 
-public interface Supply extends Occupant {
+public non-sealed interface Supply extends Occupant, ModelToolTip {
     int HITS_PER_HARVEST = 10;
 
     boolean isEmpty();

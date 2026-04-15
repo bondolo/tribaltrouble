@@ -1,7 +1,6 @@
 package com.oddlabs.tt.particle;
 
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.ElementVisitor;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.render.SpriteKey;
 import org.joml.Matrix4f;
@@ -211,10 +210,5 @@ public class Particle extends Model {
     @Override
     public @Nullable SpriteKey getSpriteRenderer() {
         return null;
-    }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        // Do nothing
     }
 }

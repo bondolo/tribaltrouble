@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class Selectable<T extends Template> extends Model implements Target, Animated, ModelToolTip {
+public abstract sealed class Selectable<T extends Template> extends Model implements Target, Animated, ModelToolTip permits Unit, Building {
     private final @NonNull Player owner;
     private @Nullable Behaviour current_behaviour;
     private final Abilities abilities = new Abilities(Abilities.NONE);
@@ -284,7 +284,6 @@ public abstract class Selectable<T extends Template> extends Model implements Ta
         if (owner.isEnemy(attacker))
             owner.getWorld().getNotificationListener().newAttackNotification(this);
     }
-
 
     public static <T extends Template> @NonNull Class<Selectable<T>> genericClass() {
         //noinspection unchecked

@@ -9,7 +9,7 @@ import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public class SceneryModel extends Model implements Occupant, ModelToolTip, Animated {
+public sealed class SceneryModel extends Model implements Occupant, ModelToolTip, Animated permits Plants {
     private final @NonNull SpriteKey sprite_renderer;
     private final float shadow_diameter;
     private final boolean occupy;
@@ -72,11 +72,6 @@ public class SceneryModel extends Model implements Occupant, ModelToolTip, Anima
     }
 
     @Override
-    public final void visit(@NonNull ToolTipVisitor visitor) {
-        visitor.visitSceneryModel(this);
-    }
-
-    @Override
     public final void animate(float t) {
         anim_time += t / 2.5f;
         if (seconds_per_animation_cycle > -1 && anim_time > seconds_per_animation_cycle)
@@ -130,10 +125,5 @@ public class SceneryModel extends Model implements Occupant, ModelToolTip, Anima
     @Override
     public final @NonNull SpriteKey getSpriteRenderer() {
         return sprite_renderer;
-    }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitSceneryModel(this);
     }
 }

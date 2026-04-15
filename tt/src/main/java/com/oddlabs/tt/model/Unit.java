@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Unit extends Selectable<UnitTemplate> implements Occupant, Movable {
+public final class Unit extends Selectable<UnitTemplate> implements Occupant, Movable {
 
     private static final float IDLE_SPEED = 1f / 2.5f;
     private static final float TRANSPORT_SPEED_SCALE = 4f / 5f;
@@ -143,11 +143,6 @@ public class Unit extends Selectable<UnitTemplate> implements Occupant, Movable 
         return getLandscapeError();
     }
 
-    @Override
-    public final void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitUnit(this);
-    }
-
     public final @Nullable UnitSupplyContainer getSupplyContainer() {
         return supply_container;
     }
@@ -193,16 +188,11 @@ public class Unit extends Selectable<UnitTemplate> implements Occupant, Movable 
     }
 
     @Override
-    public final AttackScanFilter.@NonNull Priority getAttackPriority() {
+    public AttackScanFilter.@NonNull Priority getAttackPriority() {
         assert !isDead();
-        return getAbilities().hasAbilities(Abilities.BUILD)
+        return getTemplate().getAbilities().hasAbilities(Abilities.BUILD)
                 ? AttackScanFilter.Priority.PEON
                 : AttackScanFilter.Priority.WARRIOR;
-    }
-
-    @Override
-    public final void visit(@NonNull ToolTipVisitor visitor) {
-        visitor.visitUnit(this);
     }
 
     public final @Nullable String getName() {

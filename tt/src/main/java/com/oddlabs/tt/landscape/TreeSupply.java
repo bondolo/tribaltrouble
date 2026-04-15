@@ -3,9 +3,7 @@ package com.oddlabs.tt.landscape;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.model.ModelToolTip;
 import com.oddlabs.tt.model.Supply;
-import com.oddlabs.tt.model.ToolTipVisitor;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
@@ -15,7 +13,7 @@ import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated, ModelToolTip {
+public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated {
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
 
@@ -63,11 +61,6 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     @Override
     public @NonNull World getWorld() {
         return world;
-    }
-
-    @Override
-    public void visit(@NonNull ToolTipVisitor visitor) {
-        visitor.visitSupply(this);
     }
 
     public float getScale() {

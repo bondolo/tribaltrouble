@@ -4,7 +4,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 
-public abstract class Controller {
+public abstract sealed class Controller permits AttackController, DefendController, DieController, EnterController, GatherController, HarvestController, HuntController, IdleController, MagicController, NullController, PlaceBuildingController, RepairController, StunController, TransferUnitController, WalkController {
     private static final int MAX_TRIES = 1;
     private final int @NonNull [] give_up_counters;
 

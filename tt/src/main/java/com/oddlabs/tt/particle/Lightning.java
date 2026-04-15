@@ -4,7 +4,6 @@ import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.model.ElementVisitor;
 import com.oddlabs.tt.render.TextureKey;
 import org.joml.Vector3fc;
 import org.joml.Vector4fc;
@@ -148,11 +147,6 @@ public final class Lightning extends Element<Lightning> implements Animated {
     protected void register() {
         super.register();
         manager.registerAnimation(this);
-    }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitLightning(this);
     }
 
     @Override

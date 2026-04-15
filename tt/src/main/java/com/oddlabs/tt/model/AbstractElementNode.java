@@ -8,17 +8,18 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.util.LinkedList;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public abstract class AbstractElementNode<T extends Element<T>> extends BoundingBox {
+public abstract sealed class AbstractElementNode<T extends Element<T>> extends BoundingBox permits ElementNode, ElementLeaf {
     private final LinkedList<T> models = new LinkedList<>();
 
     private int child_count = 0;
 
-    private final AbstractElementNode<T> owner;
+    private final @Nullable AbstractElementNode<T> owner;
 
-    protected AbstractElementNode(AbstractElementNode<T> owner) {
+    protected AbstractElementNode(@Nullable AbstractElementNode<T> owner) {
         this.owner = owner;
     }
 
@@ -62,6 +63,10 @@ public abstract class AbstractElementNode<T extends Element<T>> extends Bounding
     protected final @NonNull AbstractElementNode<T> addElement(@NonNull T model) {
         models.addLast(model);
         return this;
+    }
+
+    public final @NonNull LinkedList<T> getModels() {
+        return models;
     }
 
     public static <T extends Element<T>> @NonNull AbstractElementNode<T> newRoot(@NonNull HeightMap heightmap) {
@@ -125,15 +130,5 @@ public abstract class AbstractElementNode<T extends Element<T>> extends Bounding
             }
         }
         IO.println("num_plants = " + num_plants);
-    }
-
-    public abstract void visit(ElementNodeVisitor<T> visitor);
-
-    public final void visitElements(@NonNull ElementNodeVisitor<T> visitor) {
-        T model = models.getFirst();
-        while (model != null) {
-            visitor.visit(model);
-            model = model.getNext();
-        }
     }
 }

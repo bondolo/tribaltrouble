@@ -4,7 +4,6 @@ import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.model.ElementVisitor;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.tt.util.StateChecksum;
@@ -132,11 +131,6 @@ public abstract class Emitter<P extends Particle> extends Element<Emitter<P>> im
     protected void register() {
         super.register();
         manager.registerAnimation(this);
-    }
-
-    @Override
-    public final void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitEmitter(this);
     }
 
     @Override

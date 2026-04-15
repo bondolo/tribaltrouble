@@ -18,9 +18,4 @@ public final class Plants extends SceneryModel {
             reinsert();
         }
     }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitPlants(this);
-    }
 }

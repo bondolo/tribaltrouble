@@ -257,10 +257,4 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         getWorld().getAnimationManagerGameTime().removeAnimation(this);
         super.remove();
     }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitRubberSupply(this);
-    }
-
 }

@@ -1,13 +1,12 @@
 package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.model.ElementVisitor;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.render.SpriteKey;
 import org.jspecify.annotations.NonNull;
 
-public abstract class RotatingThrowingWeapon extends ThrowingWeapon {
+public abstract sealed class RotatingThrowingWeapon extends ThrowingWeapon permits RockAxeWeapon, IronAxeWeapon, RubberAxeWeapon {
     private float angle = 0;
 
     public RotatingThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull Audio throw_sound, Audio @NonNull [] hit_sounds) {
@@ -33,10 +32,5 @@ public abstract class RotatingThrowingWeapon extends ThrowingWeapon {
     @Override
     protected float getLoftFactor() {
         return 1.01f;
-    }
-
-    @Override
-    public final void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitRotatingThrowingWeapon(this);
     }
 }

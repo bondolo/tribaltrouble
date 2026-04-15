@@ -9,7 +9,6 @@ import com.oddlabs.tt.model.ModelToolTip;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Supply;
-import com.oddlabs.tt.model.ToolTipVisitor;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.behaviour.Controller;
 import com.oddlabs.tt.model.behaviour.GatherController;
@@ -20,7 +19,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
-final class ToolTipAdapter implements ToolTipVisitor, ToolTip {
+final class ToolTipAdapter implements ToolTip {
     private final ModelToolTip model;
     private final Player local_player;
     private ToolTipBox tool_tip_box;
@@ -56,24 +55,27 @@ final class ToolTipAdapter implements ToolTipVisitor, ToolTip {
     @Override
     public void appendToolTip(ToolTipBox tool_tip) {
         tool_tip_box = tool_tip;
-        model.visit(this);
+        switch (model) {
+            case Unit unit -> visitUnit(unit);
+            case Building building -> visitBuilding(building);
+            case Supply supply -> visitSupply(supply);
+            case SceneryModel scenery -> visitSceneryModel(scenery);
+            default -> {}
+        }
     }
 
-    @Override
-    public void visitSceneryModel(@NonNull SceneryModel model) {
+    private void visitSceneryModel(@NonNull SceneryModel model) {
         String name = model.getName();
         if (name != null)
             tool_tip_box.append(name);
     }
 
-    @Override
-    public void visitSupply(@NonNull Supply model) {
+    private void visitSupply(@NonNull Supply model) {
         tool_tip_box.append(Utils.getBundleString(ResourceBundle.getBundle(model.getClass().getName()), "name"));
         tool_tip_box.append(GUIIcons.getIcons().getToolTipIcon(model.getClass()));
     }
 
-    @Override
-    public void visitBuilding(@NonNull Building building) {
+    private void visitBuilding(@NonNull Building building) {
         visitSelectable(building);
         tool_tip_box.append(building.getTemplate().getName());
         IconQuad[] watch = GUIIcons.getIcons().getWatch();
@@ -85,8 +87,7 @@ final class ToolTipAdapter implements ToolTipVisitor, ToolTip {
 
     }
 
-    @Override
-    public void visitUnit(@NonNull Unit unit) {
+    private void visitUnit(@NonNull Unit unit) {
         visitSelectable(unit);
         String name = unit.getName();
         if (name != null)

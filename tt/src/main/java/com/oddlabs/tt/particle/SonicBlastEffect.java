@@ -2,7 +2,6 @@ package com.oddlabs.tt.particle;
 
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.model.ElementVisitor;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 
@@ -71,11 +70,6 @@ public final class SonicBlastEffect extends Element<SonicBlastEffect> {
 
     public float getDuration() {
         return duration;
-    }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitSonicBlastEffect(this);
     }
 
     @Override

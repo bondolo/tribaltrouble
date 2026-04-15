@@ -563,7 +563,7 @@ com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
     private void pickObjects() {
         element_pick_list.clear();
         element_renderer.setup(tmp_camera);
-        local_player.getWorld().getElementRoot().visit(element_renderer);
+        element_renderer.visit(local_player.getWorld().getElementRoot());
         sprite_sorter.distributeModels();
         render_queues.getAllPicks(element_pick_list);
     }

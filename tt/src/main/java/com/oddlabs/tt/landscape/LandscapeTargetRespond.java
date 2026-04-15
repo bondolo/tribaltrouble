@@ -3,7 +3,6 @@ package com.oddlabs.tt.landscape;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.model.ElementVisitor;
 import org.jspecify.annotations.NonNull;
 
 public final class LandscapeTargetRespond extends Element<LandscapeTargetRespond> implements Animated {
@@ -43,11 +42,6 @@ public final class LandscapeTargetRespond extends Element<LandscapeTargetRespond
         super.register();
         time = SECOND_PER_PICK_RESPOND;
         LocalEventQueue.getQueue().getManager().registerAnimation(this);
-    }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitRespond(this);
     }
 
     @Override

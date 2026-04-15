@@ -4,8 +4,9 @@ import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeTargetRespond;
 import com.oddlabs.tt.model.Abilities;
+import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.ElementVisitor;
+import com.oddlabs.tt.model.Element;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Plants;
 import com.oddlabs.tt.model.RacesResources;
@@ -31,7 +32,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-final class RenderState implements ElementVisitor {
+final class RenderState {
     private final Queue<@NonNull Emitter<?>> emitter_queue = new ArrayDeque<>();
     private final Queue<@NonNull Lightning> lightning_queue = new ArrayDeque<>();
     private final Queue<@NonNull SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
@@ -60,6 +61,32 @@ final class RenderState implements ElementVisitor {
         this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(
                 render_queues.registerSelectableShadowList(RacesResources.DEFAULT_SHADOW_DESC));
         this.render_state_cache = new RenderStateCache<>(() -> new ElementRenderState<>(RenderState.this));
+    }
+
+    public void visit(@NonNull Element<?> element) {
+        switch (element) {
+            case Unit unit -> visitUnit(unit);
+            case Building building -> visitBuilding(building);
+            case Emitter<?> emitter -> visitEmitter(emitter);
+            case Lightning lightning -> visitLightning(lightning);
+            case SonicBlastEffect effect -> visitSonicBlastEffect(effect);
+            case LandscapeTargetRespond respond -> visitRespond(respond);
+            case RubberSupply model -> visitRubberSupply(model);
+            case SupplyModel model -> visitSupplyModel(model);
+            case Plants plants -> visitPlants(plants);
+            case SceneryModel model -> visitSceneryModel(model);
+            case Accessory accessory -> visitAccessory(accessory);
+            default -> throw new UnsupportedOperationException("element has no rendering defined " + element);
+        }
+    }
+
+    private void visitAccessory(final @NonNull Accessory accessory) {
+        if (picking) return;
+        switch (accessory) {
+            case DirectedThrowingWeapon model -> addToRenderList(getCachedState(directed_weapon_model_visitor, model));
+            case RotatingThrowingWeapon model -> addToRenderList(getCachedState(rotating_weapon_model_visitor, model));
+            default -> throw new UnsupportedOperationException("accessory has no rendering defined " + accessory);
+        }
     }
 
     @NonNull Player getLocalPlayer() {
@@ -108,20 +135,19 @@ final class RenderState implements ElementVisitor {
     private static final ModelVisitor<Unit> unit_visitor = new SelectableVisitor<>() {
         @Override
         public void markDetailPolygon(@NonNull ElementRenderState<Unit> render_state, @NonNull PolyDetail detail) {
-            Unit unit = render_state.model;
-            super.markDetailPolygon(render_state, detail);
-            UnitSupplyContainer supply_container = unit.getSupplyContainer();
-            if (!render_state.render_state.isPicking() && unit.getAbilities().hasAbilities(Abilities.BUILD) && supply_container.getSupplyType() != null) {
-                if (supply_container.getNumSupplies() > 0) {
-                    SpriteRenderer supply_sprite = render_state.getRenderer(supply_container.getSupplySpriteRenderer(supply_container.getSupplyType()));
-                    supply_sprite.addToRenderList(detail, render_state, false);
-                }
+        Unit unit = render_state.model;
+        super.markDetailPolygon(render_state, detail);
+        UnitSupplyContainer supply_container = unit.getSupplyContainer();
+        if (!render_state.render_state.isPicking() && unit.getAbilities().hasAbilities(Abilities.BUILD) && supply_container.getSupplyType() != null) {
+            if (supply_container.getNumSupplies() > 0) {
+                SpriteRenderer supply_sprite = render_state.getRenderer(supply_container.getSupplySpriteRenderer(supply_container.getSupplyType()));
+                supply_sprite.addToRenderList(detail, render_state, false);
             }
+        }
         }
     };
 
-    @Override
-    public void visitUnit(final @NonNull Unit unit) {
+    private void visitUnit(final @NonNull Unit unit) {
         float z_offset = getVisuallyCorrectHeight(unit.getPositionX(), unit.getPositionY()) + unit.getOffsetZ();
         visitSelectable(unit_visitor, unit, z_offset, unit.getTemplate().getSelectionRadius(), unit.getTemplate().getSelectionHeight());
     }
@@ -199,8 +225,7 @@ final class RenderState implements ElementVisitor {
 
     private static final ModelVisitor<Building> building_visitor = new SelectableVisitor<>();
 
-    @Override
-    public void visitBuilding(final @NonNull Building building) {
+    private void visitBuilding(final @NonNull Building building) {
         visitSelectable(building_visitor, building, building.getPositionZ(), getBuildingSelectionRadius(building), getBuildingSelectionHeight(building));
     }
 
@@ -212,26 +237,22 @@ final class RenderState implements ElementVisitor {
         return sprite_sorter.add(model, camera, point_on_map);
     }
 
-    @Override
-    public void visitEmitter(final @NonNull Emitter<?> emitter) {
+    private void visitEmitter(final @NonNull Emitter<?> emitter) {
         if (!picking)
             emitter_queue.add(emitter);
     }
 
-    @Override
-    public void visitLightning(@NonNull Lightning lightning) {
+    private void visitLightning(@NonNull Lightning lightning) {
         if (!picking)
             lightning_queue.add(lightning);
     }
 
-    @Override
-    public void visitSonicBlastEffect(@NonNull SonicBlastEffect effect) {
+    private void visitSonicBlastEffect(@NonNull SonicBlastEffect effect) {
         if (!picking)
             sonic_blast_queue.add(effect);
     }
 
-    @Override
-    public void visitRespond(final @NonNull LandscapeTargetRespond respond) {
+    private void visitRespond(final @NonNull LandscapeTargetRespond respond) {
         if (!picking)
             target_respond_renderer.addToTargetList(respond);
     }
@@ -245,8 +266,7 @@ final class RenderState implements ElementVisitor {
         }
     };
 
-    @Override
-    public void visitSupplyModel(final @NonNull SupplyModel model) {
+    private void visitSupplyModel(final @NonNull SupplyModel model) {
         addToRenderList(getCachedState(supply_model_visitor, model));
     }
 
@@ -260,8 +280,7 @@ final class RenderState implements ElementVisitor {
         }
     };
 
-    @Override
-    public void visitRubberSupply(final @NonNull RubberSupply model) {
+    private void visitRubberSupply(final @NonNull RubberSupply model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
         ModelState<RubberSupply> state = getCachedState(rubber_model_visitor, model, z_offset);
         addToRenderList(state);
@@ -272,8 +291,7 @@ final class RenderState implements ElementVisitor {
     private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {
     };
 
-    @Override
-    public void visitSceneryModel(final @NonNull SceneryModel model) {
+    private void visitSceneryModel(final @NonNull SceneryModel model) {
         ModelState<SceneryModel> state = getCachedState(scenery_model_visitor, model);
         addToRenderList(state);
         if (!picking) {
@@ -302,8 +320,7 @@ final class RenderState implements ElementVisitor {
         }
     };
 
-    @Override
-    public void visitPlants(final @NonNull Plants plants) {
+    private void visitPlants(final @NonNull Plants plants) {
         if (!picking && Globals.draw_plants) {
             float camera_dist_sqr = RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ());
             if (camera_dist_sqr <= PLANTS_CUT_DIST * PLANTS_CUT_DIST)
@@ -323,13 +340,6 @@ final class RenderState implements ElementVisitor {
         }
     };
 
-    @Override
-    public void visitDirectedThrowingWeapon(final @NonNull DirectedThrowingWeapon model) {
-        if (!picking) {
-            addToRenderList(getCachedState(directed_weapon_model_visitor, model));
-        }
-    }
-
     private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor = new WhiteModelVisitor<>() {
         @Override
         public void getTransform(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state, @NonNull Matrix4f dest) {
@@ -341,13 +351,6 @@ final class RenderState implements ElementVisitor {
                     .rotate(spinRad, 0f, 1f, 0f);
         }
     };
-
-    @Override
-    public void visitRotatingThrowingWeapon(final @NonNull RotatingThrowingWeapon model) {
-        if (!picking) {
-            addToRenderList(getCachedState(rotating_weapon_model_visitor, model));
-        }
-    }
 
     public @NonNull Queue<@NonNull Emitter<?>> getEmitterQueue() {
         return emitter_queue;

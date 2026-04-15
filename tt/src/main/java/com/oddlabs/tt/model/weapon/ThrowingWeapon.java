@@ -5,7 +5,7 @@ import com.oddlabs.tt.audio.AbstractAudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.model.Accessories;
+import com.oddlabs.tt.model.AbstractAccessory;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.UnitTemplate;
@@ -14,7 +14,7 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 
-public abstract class ThrowingWeapon extends Accessories implements Animated {
+public abstract sealed class ThrowingWeapon extends AbstractAccessory implements Animated permits RotatingThrowingWeapon, DirectedThrowingWeapon {
     /**
      * Multiplier for projectile arc exaggeration.
      */
@@ -28,7 +28,6 @@ public abstract class ThrowingWeapon extends Accessories implements Animated {
 
     private final @NonNull AbstractAudioPlayer audio_player;
     private final @NonNull Audio @NonNull [] hit_sounds;
-    private final @NonNull Player owner;
     private final boolean hit;
 
     private @NonNull Selectable<?> target;
@@ -51,20 +50,19 @@ public abstract class ThrowingWeapon extends Accessories implements Animated {
     private float deterministic_z;
 
     public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull Audio throw_sound, @NonNull Audio @NonNull [] hit_sounds) {
-        super(target.getOwner().getWorld(), sprite_renderer);
+        super(src, sprite_renderer);
+
         this.hit = hit;
         this.hit_sounds = hit_sounds;
 
-        owner = src.getOwner();
-
         setPosition(src.getPositionX() + OFFSET_X * src.getDirectionX() - OFFSET_Y * src.getDirectionY(), src.getPositionY() + OFFSET_X * src.getDirectionY() - OFFSET_Y * src.getDirectionX());
         deterministic_z = OFFSET_Z + src.getMountOffset();
-        current_z = owner.getWorld().getHeightMap().getNearestHeight(getPositionX(), getPositionY()) + deterministic_z;
+        current_z = getWorld().getHeightMap().getNearestHeight(getPositionX(), getPositionY()) + deterministic_z;
 
         setTarget(target);
 
         reinsert();
-        audio_player = target.getOwner().getWorld().getAudio().newAudio(new AudioParameters<>(
+        audio_player = getWorld().getAudio().newAudio(new AudioParameters<>(
                 throw_sound,
                 getPositionX(),
                 getPositionY(),
@@ -73,8 +71,8 @@ public abstract class ThrowingWeapon extends Accessories implements Animated {
                 AudioPlayer.AUDIO_DISTANCE_WEAPON_ATTACK,
                 AudioPlayer.AUDIO_GAIN_WEAPON_ATTACK,
                 AudioPlayer.AUDIO_RADIUS_WEAPON_ATTACK,
-                target.getOwner().getWorld().getRandom().nextFloat() * .2f + .9f));
-        target.getOwner().getWorld().getAnimationManagerGameTime().registerAnimation(this);
+                getWorld().getRandom().nextFloat() * .2f + .9f));
+        getWorld().getAnimationManagerGameTime().registerAnimation(this);
 
         // stats
         src.getOwner().weaponThrown();
@@ -101,7 +99,7 @@ public abstract class ThrowingWeapon extends Accessories implements Animated {
         time_limit = (len / getMetersPerSecond()) * getLoftFactor();
         time = 0;
         // current_z is already set to absolute start height
-        float dest_z = owner.getWorld().getHeightMap().getNearestHeight(end_x, end_y) + target.getHitOffsetZ();
+        float dest_z = getWorld().getHeightMap().getNearestHeight(end_x, end_y) + target.getHitOffsetZ();
         float dest_vec_z = dest_z - current_z;
         z_speed = (dest_vec_z) / time_limit - GRAVITY * time_limit / 2f;
     }
@@ -138,7 +136,7 @@ public abstract class ThrowingWeapon extends Accessories implements Animated {
     @Override
     public void animate(float t) {
         if (time >= time_limit) {
-            hitTarget(hit, owner, target);
+            hitTarget(hit, getUnit().getOwner(), target);
             return;
         }
 
@@ -162,14 +160,14 @@ public abstract class ThrowingWeapon extends Accessories implements Animated {
         z_speed += GRAVITY * t;
 
         setPosition(x, y);
-        deterministic_z = current_z - owner.getWorld().getHeightMap().getNearestHeight(x, y);
+        deterministic_z = current_z - getWorld().getHeightMap().getNearestHeight(x, y);
 
         reinsert();
         audio_player.setPos(getPositionX(), getPositionY(), getPositionZ() + getOffsetZ());
     }
 
     protected void hitTarget(boolean hit, @NonNull Player owner, @NonNull Selectable<?> target) {
-        owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+        getWorld().getAnimationManagerGameTime().removeAnimation(this);
         audio_player.stop();
         remove();
         if (hit)
@@ -178,14 +176,14 @@ public abstract class ThrowingWeapon extends Accessories implements Animated {
 
     protected final void damageTarget(@NonNull Selectable<?> target) {
         if (target instanceof Unit) {
-            owner.getWorld().getAudio().newAudio(new AudioParameters<>(hit_sounds[owner.getWorld().getRandom().nextInt(hit_sounds.length)], target.getPositionX(), target.getPositionY(), target.getPositionZ(),
+            getWorld().getAudio().newAudio(new AudioParameters<>(hit_sounds[getWorld().getRandom().nextInt(hit_sounds.length)], target.getPositionX(), target.getPositionY(), target.getPositionZ(),
                     AudioPlayer.AUDIO_RANK_DEATH,
                     AudioPlayer.AUDIO_DISTANCE_DEATH,
                     AudioPlayer.AUDIO_GAIN_DEATH,
                     AudioPlayer.AUDIO_RADIUS_DEATH,
-                    1f + (owner.getWorld().getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch()));
+                    1f + (getWorld().getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch()));
         }
-        target.hit(getDamage(), dir_x, dir_y, owner);
+        target.hit(getDamage(), dir_x, dir_y, getUnit().getOwner());
     }
 
     protected abstract int getDamage();

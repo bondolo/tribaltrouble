@@ -251,7 +251,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
         if (Globals.process_misc) {
             element_renderer.setup(frustum_state);
-            world.getElementRoot().visit(element_renderer);
+            element_renderer.visit(world.getElementRoot());
         }
 
         sprite_sorter.distributeModels();

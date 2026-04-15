@@ -2,7 +2,7 @@ package com.oddlabs.tt.model.behaviour;
 
 import org.jspecify.annotations.NonNull;
 
-public interface Behaviour {
+public sealed interface Behaviour permits AttackBehaviour, DieBehaviour, HarvestBehaviour, IdleBehaviour, MagicBehaviour, NullBehaviour, RepairBehaviour, StunBehaviour, WalkBehaviour {
     enum State {
         UNINTERRUPTIBLE, INTERRUPTIBLE, DONE
     }

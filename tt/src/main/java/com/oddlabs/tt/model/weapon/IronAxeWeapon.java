@@ -7,8 +7,8 @@ import com.oddlabs.tt.render.SpriteKey;
 import org.jspecify.annotations.NonNull;
 
 public final class IronAxeWeapon extends RotatingThrowingWeapon {
-    private final float ROTS_PER_SECOND = 6;
-    private final float ANGLE_DELTA = ROTS_PER_SECOND * 360f;
+    private static final float ROTS_PER_SECOND = 6;
+    private static final float ANGLE_DELTA = ROTS_PER_SECOND * 360f;
     private static final float METERS_PER_SECOND = 25f; //multiplied by meters/second (in 2D)
 
     public IronAxeWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull Audio throw_sound, Audio @NonNull [] hit_sounds) {

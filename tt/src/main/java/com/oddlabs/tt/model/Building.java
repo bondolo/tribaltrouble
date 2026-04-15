@@ -117,11 +117,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         production_emitter.stop();
     }
 
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitBuilding(this);
-    }
-
     public boolean hasRallyPoint() {
         return rally_point != this;
     }
@@ -608,11 +603,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             case HALFBUILT -> getTemplate().getHalfbuiltRenderer();
             case BUILT -> getTemplate().getBuiltRenderer();
         };
-    }
-
-    @Override
-    public void visit(@NonNull ToolTipVisitor visitor) {
-        visitor.visitBuilding(this);
     }
 
     private void flattenLandscape() {

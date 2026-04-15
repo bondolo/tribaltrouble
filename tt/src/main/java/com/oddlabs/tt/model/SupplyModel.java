@@ -8,7 +8,7 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
-public abstract class SupplyModel extends Model implements Supply, Target, ModelToolTip {
+public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply, RubberSupply, RockSupply {
     private static final float SPAWN_OFFSET_Z = -2f;
 
     private final @NonNull SpriteKey sprite_renderer;
@@ -43,11 +43,6 @@ public abstract class SupplyModel extends Model implements Supply, Target, Model
         reinsert();
         if (increase_count)
             world.getSupplyManager(getClass()).newSupply();
-    }
-
-    @Override
-    public final void visit(@NonNull ToolTipVisitor visitor) {
-        visitor.visitSupply(this);
     }
 
     public final float getRotation() {
@@ -159,11 +154,6 @@ public abstract class SupplyModel extends Model implements Supply, Target, Model
     @Override
     public final @NonNull SpriteKey getSpriteRenderer() {
         return sprite_renderer;
-    }
-
-    @Override
-    public void visit(@NonNull ElementVisitor visitor) {
-        visitor.visitSupplyModel(this);
     }
 
     @Override
