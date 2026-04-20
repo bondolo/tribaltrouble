@@ -5,6 +5,9 @@ import com.oddlabs.tt.gui.IconQuad;
 import com.oddlabs.tt.landscape.TreeSupply;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Arrays;
+
+/** Captures the supply types and amounts needed for a production */
 public final class Cost {
     private final @NonNull Class<? extends Supply> @NonNull [] supply_types;
     private final int @NonNull [] supply_amounts;
@@ -15,19 +18,16 @@ public final class Cost {
         assert supply_types.length == supply_amounts.length;
     }
 
-    public Class<? extends Supply> @NonNull [] getSupplyTypes() {
+    public @NonNull Class<? extends Supply> @NonNull [] getSupplyTypes() {
         return supply_types;
     }
 
-    public int[] getSupplyAmounts() {
+    public int @NonNull [] getSupplyAmounts() {
         return supply_amounts;
     }
 
     public @NonNull IconQuad @NonNull [] toIconArray() {
-        int size = 0;
-        for (int supplyAmount : supply_amounts) {
-            size += supplyAmount;
-        }
+        int size = Arrays.stream(supply_amounts).sum();
         IconQuad[] result = new IconQuad[size];
         int index = 0;
         for (int i = 0; i < supply_types.length; i++) {
@@ -51,7 +51,7 @@ public final class Cost {
         } else if (supply_type == RubberSupply.class) {
             icon = GUIIcons.getIcons().getRubberStatusIcon();
         } else {
-            throw new RuntimeException("Wrong supply_type");
+            throw new IllegalArgumentException("Unknown supply_type: " + supply_type);
         }
         return icon;
     }
