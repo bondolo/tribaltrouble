@@ -3,6 +3,9 @@ package com.oddlabs.tt.render.shader;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
+/**
+ * Shader for rendering the expanding ring effect of a Sonic Blast magic attack.
+ */
 public final class SonicBlastShader extends ShaderProgram implements FogShader {
 
     public interface Uniforms {
