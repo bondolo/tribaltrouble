@@ -123,33 +123,30 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
                         vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
                     
-                        vec3 r_plus_up = (right + up) * radius;
-                        vec3 r_minus_up = (right - up) * radius;
-                    
                         vec4 viewCenter = mv * vec4(center, 1.0);
                         v_fogDist = length(viewCenter.xyz);
-                    
+
                         // Bottom-left
-                        vec4 vPos = mv * vec4(center - r_plus_up, 1.0);
-                        gl_Position = u_projectionMatrix * vPos;
+                        vec3 p = center + (right * -radius.x) + (up * -radius.y);
+                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
                         v_texCoord = gs_UvCoords1[0].xy;
                         EmitVertex();
                     
                         // Bottom-right
-                        vPos = mv * vec4(center + r_minus_up, 1.0);
-                        gl_Position = u_projectionMatrix * vPos;
+                        p = center + (right * radius.x) + (up * -radius.y);
+                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
                         v_texCoord = gs_UvCoords1[0].zw;
                         EmitVertex();
                     
                         // Top-left
-                        vPos = mv * vec4(center - r_minus_up, 1.0);
-                        gl_Position = u_projectionMatrix * vPos;
+                        p = center + (right * -radius.x) + (up * radius.y);
+                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
                         v_texCoord = gs_UvCoords2[0].zw;
                         EmitVertex();
                     
                         // Top-right
-                        vPos = mv * vec4(center + r_plus_up, 1.0);
-                        gl_Position = u_projectionMatrix * vPos;
+                        p = center + (right * radius.x) + (up * radius.y);
+                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
                         v_texCoord = gs_UvCoords2[0].xy;
                         EmitVertex();
                     
