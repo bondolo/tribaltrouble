@@ -9,10 +9,7 @@ import com.oddlabs.tt.player.PlayerInterface;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
 
 public final class Peer implements PeerHubInterface {
     private final GameArgumentReader argument_reader;
