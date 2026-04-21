@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 
@@ -21,6 +22,9 @@ import java.util.logging.Logger;
 
 import static com.oddlabs.tt.util.GLUtils.checkGLError;
 
+/**
+ * Holds native state for shaders including vertex, fragment and optionally geometry shader.
+ */
 public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program> implements Shader {
     private static final Logger logger = Logger.getLogger(ShaderProgram.class.getSimpleName());
     /**
@@ -57,6 +61,14 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
             GL20.glLinkProgram(programId);
             if (GL20.glGetProgrami(programId, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
                 throw new IllegalArgumentException("Shader link failed: " + GL20.glGetProgramInfoLog(programId, 1024));
+            }
+            bindGlobalStateBlock();
+        }
+
+        private void bindGlobalStateBlock() {
+            int blockIndex = GL31.glGetUniformBlockIndex(programId, "GlobalState");
+            if (blockIndex != -1) {
+                GL31.glUniformBlockBinding(programId, blockIndex, 0);
             }
         }
 
