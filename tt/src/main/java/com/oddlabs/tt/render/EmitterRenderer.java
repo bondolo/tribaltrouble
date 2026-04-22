@@ -17,6 +17,8 @@ import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -66,6 +68,15 @@ public final class EmitterRenderer implements AutoCloseable {
         vao.bind();
         particle_vbo.makeCurrent();
         VERTEX_LAYOUT.bind(shader);
+        
+        // Configure all attributes as instance attributes
+        for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
+            int loc = shader.getAttributeLocation(attr.getName());
+            if (loc >= 0) {
+                GL33.glVertexAttribDivisor(loc, 1);
+            }
+        }
+        
         vao.unbind();
     }
 
@@ -180,9 +191,19 @@ public final class EmitterRenderer implements AutoCloseable {
             vbo_offset = 0;
         }
 
-        int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
+        int stride = VERTEX_LAYOUT.getStride();
+        int floatsPerParticle = stride / Float.BYTES;
         particle_vbo.putSubData(vbo_offset * floatsPerParticle, particle_buffer);
-        GL11.glDrawArrays(GL11.GL_POINTS, vbo_offset, particleCount);
+        
+        // Shifting attribute pointers to account for vbo_offset since we use instanced rendering
+        for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
+            int loc = shader.getAttributeLocation(attr.getName());
+            if (loc >= 0) {
+                attr.setPointer(loc, stride, VERTEX_LAYOUT.getOffset(attr) + vbo_offset * stride);
+            }
+        }
+
+        GL31.glDrawArraysInstanced(GL11.GL_TRIANGLE_STRIP, 0, 4, particleCount);
 
         vbo_offset += particleCount;
     }

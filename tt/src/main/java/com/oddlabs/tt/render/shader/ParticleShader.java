@@ -4,7 +4,8 @@ import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 /**
- * A shader for rendering particles using a geometry shader to generate billboards.
+ * A shader for rendering particles using hardware instancing.
+ * Billboard expansion is performed in the vertex shader using gl_VertexID.
  */
 public final class ParticleShader extends ShaderProgram implements FogShader {
 
@@ -69,90 +70,59 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
 
     private static final String VERTEX_SHADER = """
             #version 410 core
-            
-            layout(location = 0) in vec3 in_CenterPosition;
-            layout(location = 1) in vec3 in_Size;
-            layout(location = 3) in vec4 in_Color;
-            layout(location = 4) in vec4 in_UvCoords1;
-            layout(location = 5) in vec4 in_UvCoords2;
-            
-            uniform mat4 u_modelViewMatrix;
-            
-            out vec3 gs_CenterWorld;
-            out vec3 gs_Size;
-            out vec4 gs_Color;
-            out vec4 gs_UvCoords1;
-            out vec4 gs_UvCoords2;
-            
-            void main() {
-                gs_CenterWorld = in_CenterPosition;
-                gs_Size = in_Size;
-                gs_Color = in_Color;
-                gs_UvCoords1 = in_UvCoords1;
-                gs_UvCoords2 = in_UvCoords2;
-                // No need to set gl_Position here as we use gs_CenterWorld in GS
-            }
-            """;
-
-    private static final String GEOMETRY_SHADER = """
-            #version 410 core
             """ +
             GLOBAL_STATE_BLOCK +
             """
-                    layout (points) in;
-                    layout (triangle_strip, max_vertices = 4) out;
-                    
-                    uniform mat4 u_modelViewMatrix;
-                    
-                    in vec3[] gs_CenterWorld;
-                    in vec3[] gs_Size;
-                    in vec4[] gs_Color;
-                    in vec4[] gs_UvCoords1;
-                    in vec4[] gs_UvCoords2;
-                    
-                    out vec2 v_texCoord;
-                    out vec4 v_color;
-                    out float v_fogDist;
-                    
-                    void main() {
-                        vec3 center = gs_CenterWorld[0];
-                        vec3 radius = gs_Size[0];
-                        v_color = gs_Color[0];
-                    
-                        mat4 mv = u_modelViewMatrix;
-                        vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
-                        vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
-                    
-                        vec4 viewCenter = mv * vec4(center, 1.0);
-                        v_fogDist = length(viewCenter.xyz);
+            
+            layout(location = 0) in vec3 in_CenterPosition;
+            layout(location = 1) in vec3 in_Size;
+            layout(location = 2) in vec4 in_Color;
+            layout(location = 3) in vec4 in_UvCoords1;
+            layout(location = 4) in vec4 in_UvCoords2;
+            
+            uniform mat4 u_modelViewMatrix;
+            
+            out vec2 v_texCoord;
+            out vec4 v_color;
+            out float v_fogDist;
+            
+            void main() {
+                vec3 center = in_CenterPosition;
+                vec3 radius = in_Size;
+                v_color = in_Color;
+            
+                mat4 mv = u_modelViewMatrix;
+                vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
+                vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
+            
+                vec3 r_plus_up = (right + up) * radius;
+                vec3 r_minus_up = (right - up) * radius;
+            
+                vec4 viewCenter = mv * vec4(center, 1.0);
+                v_fogDist = length(viewCenter.xyz);
 
-                        // Bottom-left
-                        vec3 p = center + (right * -radius.x) + (up * -radius.y);
-                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
-                        v_texCoord = gs_UvCoords1[0].xy;
-                        EmitVertex();
-                    
-                        // Bottom-right
-                        p = center + (right * radius.x) + (up * -radius.y);
-                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
-                        v_texCoord = gs_UvCoords1[0].zw;
-                        EmitVertex();
-                    
-                        // Top-left
-                        p = center + (right * -radius.x) + (up * radius.y);
-                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
-                        v_texCoord = gs_UvCoords2[0].zw;
-                        EmitVertex();
-                    
-                        // Top-right
-                        p = center + (right * radius.x) + (up * radius.y);
-                        gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
-                        v_texCoord = gs_UvCoords2[0].xy;
-                        EmitVertex();
-                    
-                        EndPrimitive();
-                    }
-                    """;
+                vec3 p;
+                if (gl_VertexID == 0) {
+                    // Bottom-left
+                    p = center - r_plus_up;
+                    v_texCoord = in_UvCoords1.xy;
+                } else if (gl_VertexID == 1) {
+                    // Bottom-right
+                    p = center + r_minus_up;
+                    v_texCoord = in_UvCoords1.zw;
+                } else if (gl_VertexID == 2) {
+                    // Top-left
+                    p = center - r_minus_up;
+                    v_texCoord = in_UvCoords2.zw;
+                } else {
+                    // Top-right
+                    p = center + r_plus_up;
+                    v_texCoord = in_UvCoords2.xy;
+                }
+                
+                gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
+            }
+            """;
 
     private static final String FRAGMENT_SHADER =
             """
@@ -188,7 +158,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                             """;
 
     public ParticleShader() {
-        super(VERTEX_SHADER, FRAGMENT_SHADER, GEOMETRY_SHADER);
+        super(VERTEX_SHADER, FRAGMENT_SHADER);
         // bindFragDataLocation(0, "out_FragColor");
         link();
     }
