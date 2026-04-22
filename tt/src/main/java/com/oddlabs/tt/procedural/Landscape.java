@@ -998,7 +998,7 @@ public final class Landscape {
                                 && supplies.getPixel(x - 1, y) > 0
                                 && supplies.getPixel(x + 1, y) > 0
                                 && supplies.getPixel(x, y - 1) > 0
-                                && supplies.getPixel(x, y - 1) > 0
+                                && supplies.getPixel(x, y + 1) > 0
                         ) {
                             place.putPixel(x, y, 1f);
                             // place shadow
@@ -1153,7 +1153,7 @@ public final class Landscape {
         return detail;
     }
 
-    public float @NonNull [] @NonNull [] getHeight() {
+    public float @NonNull [] getHeight() {
         return height.getPixels();
     }
 
