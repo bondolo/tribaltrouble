@@ -89,7 +89,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     public boolean isProducing() {
-        return is_training_chieftain || (weapons_producer != null && weapons_producer.isProducing());
+        return weapons_producer != null && weapons_producer.isProducing();
     }
 
     @Override
