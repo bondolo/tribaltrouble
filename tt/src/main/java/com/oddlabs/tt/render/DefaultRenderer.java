@@ -259,6 +259,12 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             element_renderer.visit(world.getElementRoot());
         }
 
+        // Now that the world has been visited and queues populated, process transient effects.
+        // This MUST happen before rendering passes so that particles are correctly queued.
+        lightningRenderer.render(context, render_queues, element_renderer.getRenderState().getLightningQueue(), frustum_state, modelViewStack, projectionStack);
+        emitterRenderer.render(context, render_queues, element_renderer.getRenderState().getEmitterQueue(), frustum_state, modelViewStack, projectionStack);
+        sonicBlastRenderer.render(context, render_queues, element_renderer.getRenderState().getSonicBlastQueue(), frustum_state, modelViewStack, projectionStack);
+
         sprite_sorter.distributeModels();
 
         if (Globals.process_shadows) {
@@ -296,13 +302,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
         if (Globals.process_misc)
             render_queues.renderBlends(context, frustum_state, projectionStack);
-
-        lightningRenderer.render(context, render_queues, element_renderer.getRenderState().getLightningQueue(), frustum_state, modelViewStack, projectionStack);
-        emitterRenderer.render(context, render_queues, element_renderer.getRenderState().getEmitterQueue(), frustum_state, modelViewStack, projectionStack);
-
-        if (world.getRacesResources() != null) {
-            sonicBlastRenderer.render(context, render_queues, element_renderer.getRenderState().getSonicBlastQueue(), frustum_state, modelViewStack, projectionStack, world.getRacesResources().getPoisonTextures()[0]);
-        }
 
         // Rally point uses SpriteShader (Mask) -> Enable
         setDrawBuffers(true);

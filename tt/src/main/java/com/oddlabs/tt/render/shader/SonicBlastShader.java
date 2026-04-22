@@ -11,6 +11,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
     public interface Uniforms {
         String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
+        String TEXTURE_0 = "u_texture0";
         String TIME = "u_time";
         String MAX_RADIUS = "u_maxRadius";
         String EXPANSION_SPEED = "u_expansionSpeed";
@@ -91,6 +92,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                     GLOBAL_STATE_BLOCK +
                     FOG_FUNCTION +
                     """
+                            uniform sampler2D u_texture0;
                             uniform float u_time;
                             uniform float u_maxRadius;
                             uniform float u_expansionSpeed;
@@ -145,9 +147,10 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                                     totalIntensity += ringIntensity * fade * 0.8;
                                 }
                             
-                                // Procedural noise/turbulence (Sine waves based on position and time)
-                                float noise = sin(v_texCoord.x * 20.0 + u_time * 10.0) * cos(v_texCoord.y * 20.0 - u_time * 5.0);
-                                totalIntensity *= (0.6 + 0.4 * noise);
+                                // Organic noise/turbulence using the noise texture
+                                vec2 noiseCoord = v_texCoord * 2.0 + vec2(u_time * 0.2, u_time * -0.1);
+                                float noise = texture(u_texture0, noiseCoord).r;
+                                totalIntensity *= (0.5 + 0.5 * noise);
                             
                                 // Clamp intensity
                                 totalIntensity = clamp(totalIntensity, 0.0, 1.0);

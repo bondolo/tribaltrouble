@@ -83,7 +83,7 @@ public final class EmitterRenderer implements AutoCloseable {
     public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (emitters.isEmpty()) return;
 
-        // Reset offset at start of frame
+        // Reset offset and orphan at start of frame to prevent flickering
         vbo_offset = 0;
         particle_vbo.orphan();
 

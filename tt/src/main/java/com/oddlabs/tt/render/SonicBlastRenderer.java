@@ -2,6 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.particle.SonicBlastEffect;
+import com.oddlabs.tt.procedural.GeneratorNoise;
 import com.oddlabs.tt.render.shader.SonicBlastShader;
 import com.oddlabs.tt.render.shader.VertexLayout;
 import com.oddlabs.tt.render.state.BlendMode;
@@ -11,6 +12,7 @@ import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.VertexArray;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -18,6 +20,9 @@ import org.lwjgl.opengl.GL15;
 import java.nio.FloatBuffer;
 import java.util.Queue;
 
+/**
+ * Specialized renderer for the Sonic Blast expanding ring effect.
+ */
 public final class SonicBlastRenderer implements AutoCloseable {
     private static final VertexLayout<SonicBlastShader.Attribute> LAYOUT = new VertexLayout<>(
             SonicBlastShader.Attribute.POSITION,
@@ -26,9 +31,10 @@ public final class SonicBlastRenderer implements AutoCloseable {
     private final @NonNull SonicBlastShader shader;
     private final @NonNull FloatVBO vbo;
     private final VertexArray vao = new VertexArray();
+    private final @NonNull Texture[] noiseTextures;
 
     public SonicBlastRenderer() {
-        shader = new SonicBlastShader();
+        this.shader = new SonicBlastShader();
 
         // Create a simple quad centered at 0,0 on XY plane, scaled to 1x1
         FloatBuffer buffer = BufferUtils.createFloatBuffer(4 * 5); // 4 verts * (3 pos + 2 uv)
@@ -42,13 +48,16 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
         vbo = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
 
+        // Utilize procedural generator for ring noise
+        this.noiseTextures = new GeneratorNoise(64, 42).generate();
+
         vao.bind();
         vbo.makeCurrent();
         LAYOUT.bind(shader);
         vao.unbind();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<@NonNull SonicBlastEffect> queue, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull TextureKey noiseTextureKey) {
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<@NonNull SonicBlastEffect> queue, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (queue.isEmpty()) return;
 
         try (var _ = shader.use();
@@ -57,6 +66,10 @@ public final class SonicBlastRenderer implements AutoCloseable {
              var _ = context.withCullMode(CullMode.NONE)) {
 
             shader.setUniform(SonicBlastShader.Uniforms.COLOR, 0.7f, 0.85f, 1.0f); // Electric blue/white
+
+            // Bind generated noise texture for ring turbulence
+            context.setTexture(0, noiseTextures[0].getHandle());
+            shader.setUniform(SonicBlastShader.Uniforms.TEXTURE_0, 0);
 
             vao.bind();
 
@@ -96,5 +109,8 @@ public final class SonicBlastRenderer implements AutoCloseable {
         shader.close();
         vbo.close();
         vao.close();
+        for (Texture t : noiseTextures) {
+            t.close();
+        }
     }
 }

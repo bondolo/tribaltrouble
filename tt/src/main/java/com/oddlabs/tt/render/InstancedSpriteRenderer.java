@@ -72,6 +72,12 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             context.setBlendMode(BlendMode.NONE);
             context.setCullMode(CullMode.BACK);
             GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
+            
+            // Explicitly reset divisors to 0 to prevent leakage into non-instanced sprite passes
+            for (int i = 4; i <= 14; i++) {
+                GL33.glVertexAttribDivisor(i, 0);
+            }
+            
             GL30.glBindVertexArray(0);
         }
     }
@@ -225,6 +231,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
             // Upload data
             vbo.makeCurrent();
+            vbo.orphan(); // Orphan to prevent flickering and synchronization stalls
             // Use explicit limit and position to allow multiple rendering passes (Opaque, Transparent)
             instanceBuffer.limit(totalInstances * FLOATS_PER_INSTANCE).position(0);
             GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, instanceBuffer);

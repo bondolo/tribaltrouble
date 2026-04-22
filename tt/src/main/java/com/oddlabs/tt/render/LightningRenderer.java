@@ -75,7 +75,7 @@ public final class LightningRenderer implements AutoCloseable {
     public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<@NonNull Lightning> queue, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (queue.isEmpty()) return;
 
-        // Reset offset at start of frame
+        // Reset offset and orphan at start of frame to prevent flickering
         vbo_offset = 0;
         particle_vbo.orphan();
 
