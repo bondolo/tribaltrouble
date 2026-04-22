@@ -4,6 +4,7 @@ import com.oddlabs.tt.global.Settings;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
@@ -11,6 +12,10 @@ import org.lwjgl.opengl.GL31;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+/**
+ * Concrete implementation of RenderContext using LWJGL OpenGL bindings.
+ * Manages OpenGL state transitions and provides shadowing to minimize redundant GL calls.
+ */
 public final class GLRenderContext implements RenderContext {
     private static final Logger logger = Logger.getLogger(GLRenderContext.class.getName());
     private static final ScopedState NO_OP = () -> {
@@ -202,6 +207,7 @@ public final class GLRenderContext implements RenderContext {
     @Override
     public void setBlendFunc(int src, int dst) {
         GL11.glBlendFunc(src, dst);
+        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
         this.currentBlend = BlendMode.CUSTOM; // Invalidate shadow state
     }
 

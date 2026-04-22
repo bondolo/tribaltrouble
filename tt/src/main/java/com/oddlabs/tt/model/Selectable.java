@@ -16,7 +16,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract sealed class Selectable<T extends Template> extends Model implements Target, Animated, ModelToolTip permits Unit, Building {
+/**
+ * Represents a {@link Model} that can be selected, commanded, and augmented with accessories.
+ * Base class for both {@link Unit} and {@link Building}.
+ */
+public abstract sealed class Selectable<T extends Template> extends AccessorizableModel implements Target, Animated, ModelToolTip permits Unit, Building {
     private final @NonNull Player owner;
     private @Nullable Behaviour current_behaviour;
     private final Abilities abilities = new Abilities(Abilities.NONE);
@@ -76,6 +80,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
             }
             case DONE -> decide();
         }
+        animateAccessories(t);
         doAnimate(t);
         owner.getWorld().updateGlobalChecksum(grid_x + grid_y);
     }
@@ -135,7 +140,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     }
 
     @Override
-    protected final void register() {
+    public final void register() {
         super.register();
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
         enable();
@@ -151,6 +156,9 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
 
     private void doDecide() {
         should_decide = false;
+        if (current_behaviour != null) {
+            current_behaviour.onCleanup();
+        }
         current_behaviour = null;
         getCurrentController().decide();
     }
@@ -188,6 +196,9 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     public final void setBehaviour(@NonNull Behaviour behaviour) {
         assert !isDead();
         assert last != Behaviour.State.UNINTERRUPTIBLE : "Invalid behaviour state";
+        if (current_behaviour != null) {
+            current_behaviour.onCleanup();
+        }
         current_behaviour = behaviour;
     }
 

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.particle;
 
-import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.TextureKey;
 import org.joml.Vector3f;
@@ -9,6 +8,9 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * A linear emitter that spawns particles in a ring formation.
+ */
 public final class RingEmitter extends LinearEmitter {
     private final int num_particles;
 
@@ -19,7 +21,7 @@ public final class RingEmitter extends LinearEmitter {
                        @NonNull Vector4f color, @NonNull Vector4f delta_color,
                        @NonNull Vector3f particle_radius, @NonNull Vector3f growth_rate, float energy, float friction,
                        int src_blend_func, int dst_blend_func,
-                       @NonNull TextureKey @NonNull [] textures, @NonNull AnimationManager manager) {
+                       @NonNull TextureKey @NonNull [] textures) {
         super(world, position,
                 offset_z,
                 emitter_radius,
@@ -38,8 +40,7 @@ public final class RingEmitter extends LinearEmitter {
                 dst_blend_func,
                 textures,
                 null,
-                textures.length,
-                manager);
+                textures.length);
         this.num_particles = num_particles;
     }
 

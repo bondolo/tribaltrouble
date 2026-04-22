@@ -14,6 +14,9 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Random;
 
+/**
+ * Visual effect representing a lightning strike.
+ */
 public final class Lightning extends Element<Lightning> implements Animated {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
 
@@ -144,7 +147,7 @@ public final class Lightning extends Element<Lightning> implements Animated {
     }
 
     @Override
-    protected void register() {
+    public void register() {
         super.register();
         manager.registerAnimation(this);
     }
@@ -153,6 +156,11 @@ public final class Lightning extends Element<Lightning> implements Animated {
     public void remove() {
         super.remove();
         manager.removeAnimation(this);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return particles.isEmpty();
     }
 
 }

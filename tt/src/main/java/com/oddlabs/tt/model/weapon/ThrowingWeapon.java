@@ -5,7 +5,7 @@ import com.oddlabs.tt.audio.AbstractAudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.model.AbstractAccessory;
+import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.UnitTemplate;
@@ -14,7 +14,10 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 
-public abstract sealed class ThrowingWeapon extends AbstractAccessory implements Animated permits RotatingThrowingWeapon, DirectedThrowingWeapon {
+/**
+ * Base {@link Model} class for all projectile weapons that are thrown through the world.
+ */
+public abstract sealed class ThrowingWeapon extends Model implements Animated permits RotatingThrowingWeapon, DirectedThrowingWeapon {
     /**
      * Multiplier for projectile arc exaggeration.
      */
@@ -29,7 +32,10 @@ public abstract sealed class ThrowingWeapon extends AbstractAccessory implements
     private final @NonNull AbstractAudioPlayer audio_player;
     private final @NonNull Audio @NonNull [] hit_sounds;
     private final boolean hit;
+    private final @NonNull SpriteKey sprite_renderer;
+    private final @NonNull Unit src;
 
+    /** the target of the weapon. Mutable because rubber weapons bounce and change targets **/
     private @NonNull Selectable<?> target;
     private float start_x;
     private float start_y;
@@ -50,8 +56,9 @@ public abstract sealed class ThrowingWeapon extends AbstractAccessory implements
     private float deterministic_z;
 
     public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull Audio throw_sound, @NonNull Audio @NonNull [] hit_sounds) {
-        super(src, sprite_renderer);
-
+        super(src.getOwner().getWorld());
+        this.sprite_renderer = sprite_renderer;
+        this.src = src;
         this.hit = hit;
         this.hit_sounds = hit_sounds;
 
@@ -61,7 +68,9 @@ public abstract sealed class ThrowingWeapon extends AbstractAccessory implements
 
         setTarget(target);
 
+        register();
         reinsert();
+
         audio_player = getWorld().getAudio().newAudio(new AudioParameters<>(
                 throw_sound,
                 getPositionX(),
@@ -76,6 +85,15 @@ public abstract sealed class ThrowingWeapon extends AbstractAccessory implements
 
         // stats
         src.getOwner().weaponThrown();
+    }
+
+    public final @NonNull Unit getSrc() {
+        return src;
+    }
+
+    @Override
+    public final @NonNull SpriteKey getSpriteRenderer() {
+        return sprite_renderer;
     }
 
     @Override
@@ -136,7 +154,7 @@ public abstract sealed class ThrowingWeapon extends AbstractAccessory implements
     @Override
     public void animate(float t) {
         if (time >= time_limit) {
-            hitTarget(hit, getUnit().getOwner(), target);
+            hitTarget(hit, getSrc().getOwner(), target);
             return;
         }
 
@@ -163,7 +181,7 @@ public abstract sealed class ThrowingWeapon extends AbstractAccessory implements
         deterministic_z = current_z - getWorld().getHeightMap().getNearestHeight(x, y);
 
         reinsert();
-        audio_player.setPos(getPositionX(), getPositionY(), getPositionZ() + getOffsetZ());
+        audio_player.setPos(getPositionX(), getPositionY(), getPositionZ());
     }
 
     protected void hitTarget(boolean hit, @NonNull Player owner, @NonNull Selectable<?> target) {
@@ -183,7 +201,7 @@ public abstract sealed class ThrowingWeapon extends AbstractAccessory implements
                     AudioPlayer.AUDIO_RADIUS_DEATH,
                     1f + (getWorld().getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch()));
         }
-        target.hit(getDamage(), dir_x, dir_y, getUnit().getOwner());
+        target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());
     }
 
     protected abstract int getDamage();

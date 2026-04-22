@@ -1,6 +1,5 @@
 package com.oddlabs.tt.particle;
 
-import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
@@ -11,14 +10,17 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
+/**
+ * A linear emitter that applies randomized initial velocities to its particles.
+ */
 public final class RandomVelocityEmitter extends LinearEmitter {
     private final @NonNull Random random;
 
     private final float uv_angle;
     private final float angle_bound;
     private final float angle_max_jump;
-    private final @NonNull Vector3f velocity;
-    private final @NonNull Vector3f offset_velocity;
+    private final @NonNull Vector3f current_velocity;
+    private final @NonNull Vector3fc base_velocity;
 
     private float x_angle = 0;
     private float y_angle = 0;
@@ -26,12 +28,11 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     private RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z, float uv_angle,
                                   float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
                                   int num_particles, float particles_per_second,
-                                  @NonNull Vector3f velocity, @NonNull Vector3fc acceleration,
+                                  @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
                                   @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
                                   @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
                                   int src_blend_func, int dst_blend_func,
-                                  TextureKey @NonNull [] textures, SpriteKey[] sprite_renderers, int types,
-                                  @NonNull AnimationManager manager) {
+                                  TextureKey @NonNull [] textures, SpriteKey[] sprite_renderers, int types) {
         super(world, position,
                 offset_z,
                 emitter_radius,
@@ -50,12 +51,11 @@ public final class RandomVelocityEmitter extends LinearEmitter {
                 dst_blend_func,
                 textures,
                 sprite_renderers,
-                types,
-                manager);
+                types);
         this.random = world.getRandom();
         this.uv_angle = uv_angle;
-        this.velocity = velocity;
-        offset_velocity = new Vector3f(velocity.x(), velocity.y(), velocity.z());
+        this.base_velocity = velocity;
+        this.current_velocity = new Vector3f(velocity);
         this.angle_bound = angle_bound;
         this.angle_max_jump = angle_max_jump;
     }
@@ -63,11 +63,11 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     public RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z, float uv_angle,
                                  float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
                                  int num_particles, float particles_per_second,
-                                 @NonNull Vector3f velocity, @NonNull Vector3fc acceleration,
+                                 @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
                                  @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
                                  @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
                                  int src_blend_func, int dst_blend_func,
-                                 TextureKey @NonNull [] textures, @NonNull AnimationManager manager) {
+                                 TextureKey @NonNull [] textures) {
         this(world, position,
                 offset_z,
                 uv_angle,
@@ -89,17 +89,16 @@ public final class RandomVelocityEmitter extends LinearEmitter {
                 dst_blend_func,
                 textures,
                 null,
-                textures.length,
-                manager);
+                textures.length);
     }
 
     public RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
                                  float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
                                  int num_particles, float particles_per_second,
-                                 @NonNull Vector3f velocity, @NonNull Vector3fc acceleration,
+                                 @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
                                  @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
                                  @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
-                                 SpriteKey @NonNull [] sprite_renderers, @NonNull AnimationManager manager) {
+                                 SpriteKey @NonNull [] sprite_renderers) {
         this(world, position,
                 offset_z,
                 0f,
@@ -121,8 +120,7 @@ public final class RandomVelocityEmitter extends LinearEmitter {
                 0,
                 null,
                 sprite_renderers,
-                sprite_renderers.length,
-                manager);
+                sprite_renderers.length);
     }
 
     @Override
@@ -135,7 +133,7 @@ public final class RandomVelocityEmitter extends LinearEmitter {
         LinearParticle particle = new LinearParticle(getWorld(), uv_angle);
         Vector3f pos = randomPosition();
         particle.setPos(pos.x(), pos.y(), pos.z());
-        particle.setVelocity(velocity.x(), velocity.y(), velocity.z());
+        particle.setVelocity(current_velocity.x(), current_velocity.y(), current_velocity.z());
         particle.setAcceleration(acceleration.x(), acceleration.y(), acceleration.z());
         particle.setColor(color.x(), color.y(), color.z(), color.w());
         particle.setDeltaColor(delta_color.x(), delta_color.y(), delta_color.z(), delta_color.w());
@@ -161,9 +159,9 @@ public final class RandomVelocityEmitter extends LinearEmitter {
         else
             y_angle += dy_angle;
 
-        float x = offset_velocity.x() + offset_velocity.z() * (float) Math.sin(x_angle);
-        float y = offset_velocity.y() + offset_velocity.z() * (float) Math.sin(y_angle);
-        velocity.set(x, y, offset_velocity.z());
+        float x = base_velocity.x() + base_velocity.z() * (float) Math.sin(x_angle);
+        float y = base_velocity.y() + base_velocity.z() * (float) Math.sin(y_angle);
+        current_velocity.set(x, y, base_velocity.z());
     }
 
 }

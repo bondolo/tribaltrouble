@@ -30,6 +30,10 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Specialized renderer that handles high-performance 3D sprite rendering using hardware instancing.
+ * Batches sprites by texture and render state to minimize draw calls and state changes.
+ */
 public final class InstancedSpriteRenderer implements AutoCloseable {
 
     private final InstancedSpriteShader shader = new InstancedSpriteShader();
@@ -63,13 +67,12 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 batch.render(context, shader, whiteTexture, state);
             }
         } finally {
-            // Restore default state to prevent leakage to other renderers (Sky, Landscape)
+            // Restore default state to prevent leakage to other renderers (Sky, Landscape, etc.)
             context.setDepthMode(DepthMode.READ_WRITE);
             context.setBlendMode(BlendMode.NONE);
             context.setCullMode(CullMode.BACK);
             GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
             GL30.glBindVertexArray(0);
-            clear();
         }
     }
 
@@ -193,6 +196,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
                 vbo.close();
                 vbo = new FloatVBO(GL15.GL_STREAM_DRAW, newCapacity * FLOATS_PER_INSTANCE);
+                vbo.orphan();
 
                 // Rebind VAO to update VBO binding point
                 vao.bind();
@@ -202,21 +206,16 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 capacity = newCapacity;
             }
 
-            modelMatrix.get(instanceBuffer);
-            instanceBuffer.position(instanceBuffer.position() + 16);
-            color.get(instanceBuffer);
-            instanceBuffer.position(instanceBuffer.position() + 4);
-            decalColor.get(instanceBuffer);
-            instanceBuffer.position(instanceBuffer.position() + 4);
-            instanceBuffer.put(pos1);
-            instanceBuffer.put(norm1);
-            instanceBuffer.put(pos2);
-            instanceBuffer.put(norm2);
-            instanceBuffer.put(tween);
+            modelMatrix.get(instanceBuffer).position(instanceBuffer.position() + 16);
+            color.get(instanceBuffer).position(instanceBuffer.position() + 4);
+            decalColor.get(instanceBuffer).position(instanceBuffer.position() + 4);
+            instanceBuffer
+                    .put((float) pos1).put((float) norm1)
+                    .put((float) pos2).put((float) norm2)
+                    .put(tween);
 
             totalInstances++;
         }
-
         void render(@NonNull RenderContext context, @NonNull InstancedSpriteShader shader, Texture whiteTexture, @NonNull RenderState state) {
             if (totalInstances == 0) return;
 
@@ -226,7 +225,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
             // Upload data
             vbo.makeCurrent();
-            instanceBuffer.flip();
+            // Use explicit limit and position to allow multiple rendering passes (Opaque, Transparent)
+            instanceBuffer.limit(totalInstances * FLOATS_PER_INSTANCE).position(0);
             GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, instanceBuffer);
 
             // Bind TBO
@@ -274,7 +274,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             vao.unbind();
         }
 
-        private void draw(Sprite sprite) {
+        private void draw(@NonNull Sprite sprite) {
             // Use glDrawElementsInstanced
             GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, sprite.getTriangleCount() * 3, GL11.GL_UNSIGNED_SHORT, (long) sprite.indices_offset * Short.BYTES, totalInstances);
         }

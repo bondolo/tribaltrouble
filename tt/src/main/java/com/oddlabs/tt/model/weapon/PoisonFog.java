@@ -4,6 +4,7 @@ import com.oddlabs.tt.audio.AbstractAudioPlayer;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
@@ -14,6 +15,10 @@ import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
+/**
+ * Logic controller for the Poison Fog magic effect.
+ * Periodically spawns gas bursts and applies damage to units within its radius.
+ */
 public final class PoisonFog implements Magic {
     public static final float OFFSET_Z = 1.1f;
 
@@ -32,7 +37,7 @@ public final class PoisonFog implements Magic {
     private final float start_x;
     private final float start_y;
     private final float total_time;
-    private final AbstractAudioPlayer bubbling_sound;
+    private final @NonNull AbstractAudioPlayer bubbling_sound;
 
     private int next_sound = 1;
     private float time = 0f;
@@ -81,15 +86,16 @@ public final class PoisonFog implements Magic {
             float alpha = 8f;
             float energy = 2f;
 
-            new RandomVelocityEmitter(owner.getWorld(), new Vector3f(x, y, z), OFFSET_Z, owner.getWorld().getRandom().nextFloat() * (float) Math.PI * 2,
+            RandomVelocityEmitter emitter = new RandomVelocityEmitter(owner.getWorld(), new Vector3f(x, y, z), OFFSET_Z, owner.getWorld().getRandom().nextFloat() * (float) Math.PI * 2,
                     BURST_RADIUS, 0f, 0f, 0f,
                     PARTICLES_PER_BURST, PARTICLES_PER_BURST,
                     new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f),
                     new Vector4f(1f, 1f, 1f, alpha), new Vector4f(0f, 0f, 0f, -alpha / energy),
                     new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    owner.getWorld().getRacesResources().getPoisonTextures(),
-                    owner.getWorld().getAnimationManagerGameTime());
+                    owner.getWorld().getRacesResources().getPoisonTextures());
+            new PointEmitterModel(owner.getWorld(), emitter);
+
             if (bursts % next_sound == 0) {
                 next_sound = MIN_BURSTS_PER_SOUND + owner.getWorld().getRandom().nextInt(5);
                 owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getGasSound(), x, y, z,

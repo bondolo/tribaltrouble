@@ -4,16 +4,22 @@ import com.oddlabs.tt.audio.AbstractAudioPlayer;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.model.AccessorizableModel;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.render.SpriteKey;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-public final class SonicBlast implements Magic {
+/**
+ * Logic controller for the Sonic Blast magic effect.
+ */
+public final class SonicBlast extends AccessorizableModel implements Magic {
     private final float hit_radius;
     private final float hit_chance_closest;
     private final float hit_chance_farthest;
@@ -34,6 +40,7 @@ public final class SonicBlast implements Magic {
     private boolean first_ring_sent = false;
 
     public SonicBlast(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance_closest, float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, @NonNull Unit src) {
+        super(src.getOwner().getWorld());
         this.hit_radius = hit_radius;
         this.hit_chance_closest = hit_chance_closest;
         this.hit_chance_farthest = hit_chance_farthest;
@@ -45,6 +52,10 @@ public final class SonicBlast implements Magic {
         start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
         start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         start_z = src.getPositionZ() + offset_z;
+
+        setPosition(start_x, start_y);
+        setPositionZ(start_z);
+        register();
 
         var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable.genericClass());
         UnitGrid unit_grid = owner.getWorld().getUnitGrid();
@@ -65,6 +76,8 @@ public final class SonicBlast implements Magic {
                 AudioPlayer.AUDIO_GAIN_BLAST_RUMBLE,
                 AudioPlayer.AUDIO_RADIUS_BLAST_RUMBLE,
                 1f));
+
+        owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
 
     @Override
@@ -110,6 +123,7 @@ public final class SonicBlast implements Magic {
                 targets.remove();
             }
         }
+        animateAccessories(t);
     }
 
     private float calculateValueFromCurrentRadius(float current_radius, float max, float min) {
@@ -125,5 +139,19 @@ public final class SonicBlast implements Magic {
         lur.stop(.2f, Settings.getSettings().sound_gain);
         rumble.stop(.2f, Settings.getSettings().sound_gain);
         sonicBlastEffect.abort();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return time >= seconds && sonicBlastEffect.isFinished();
+    }
+
+    @Override
+    public @Nullable SpriteKey getSpriteRenderer() {
+        return null;
+    }
+
+    public @NonNull SonicBlastEffect getSonicBlastEffect() {
+        return sonicBlastEffect;
     }
 }

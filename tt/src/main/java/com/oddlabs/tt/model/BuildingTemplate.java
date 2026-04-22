@@ -2,8 +2,12 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Template defining the static properties, costs, and visual representations of a building type.
+ */
 public final class BuildingTemplate extends Template {
     private final int template_id;
     private final int placing_size;
@@ -22,12 +26,8 @@ public final class BuildingTemplate extends Template {
     private final float halfbuilt_selection_height;
     private final float start_selection_radius;
     private final float start_selection_height;
-    private final float rally_x;
-    private final float rally_y;
-    private final float rally_z;
-    private final float chimney_x;
-    private final float chimney_y;
-    private final float chimney_z;
+    private final @NonNull Vector3fc rally;
+    private final @NonNull Vector3fc chimney;
 
     public BuildingTemplate(
             int template_id,
@@ -47,12 +47,8 @@ public final class BuildingTemplate extends Template {
             float mount_offset,
             float no_detail_size,
             float defense_chance,
-            float rally_x,
-            float rally_y,
-            float rally_z,
-            float chimney_x,
-            float chimney_y,
-            float chimney_z,
+            @NonNull Vector3fc rally,
+            @NonNull Vector3fc chimney,
             @NonNull String name) {
         super(abilities, shadow_diameter, shadow_renderer, hit_offset_z, no_detail_size, defense_chance, name);
         this.template_id = template_id;
@@ -72,12 +68,8 @@ public final class BuildingTemplate extends Template {
         this.max_hit_points = max_hit_points;
         this.unit_container_factory = unit_container_factory;
         this.mount_offset = mount_offset;
-        this.rally_x = rally_x;
-        this.rally_y = rally_y;
-        this.rally_z = rally_z;
-        this.chimney_x = chimney_x;
-        this.chimney_y = chimney_y;
-        this.chimney_z = chimney_z;
+        this.rally = rally;
+        this.chimney = chimney;
     }
 
     public int getTemplateID() {
@@ -148,27 +140,11 @@ public final class BuildingTemplate extends Template {
         return mount_offset;
     }
 
-    public float getRallyX() {
-        return rally_x;
+    public @NonNull Vector3fc getRally() {
+        return rally;
     }
 
-    public float getRallyY() {
-        return rally_y;
-    }
-
-    public float getRallyZ() {
-        return rally_z;
-    }
-
-    public float getChimneyX() {
-        return chimney_x;
-    }
-
-    public float getChimneyY() {
-        return chimney_y;
-    }
-
-    public float getChimneyZ() {
-        return chimney_z;
+    public @NonNull Vector3fc getChimney() {
+        return chimney;
     }
 }

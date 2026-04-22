@@ -6,16 +6,20 @@ import org.joml.Matrix4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * A specialized {@link ModelVisitor} that renders models with a neutral white team color.
+ * Used as a base for custom visitors or for temporary visual effects.
+ */
 class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
-    private static final Vector4fc COLOR_TEAM = Color.WHITE;
+    private static final @NonNull Vector4fc COLOR_TEAM = Color.WHITE;
 
     @Override
-    public final @NonNull Vector4fc getSelectionColor(@NonNull ElementRenderState<M> render_state) {
+    public @NonNull Vector4fc getSelectionColor(@NonNull ElementRenderState<M> render_state) {
         return COLOR_TEAM;
     }
 
     @Override
-    public final @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<M> render_state) {
+    public @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<M> render_state) {
         return COLOR_TEAM;
     }
 

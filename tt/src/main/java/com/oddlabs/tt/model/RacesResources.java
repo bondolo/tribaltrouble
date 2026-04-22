@@ -36,6 +36,7 @@ import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.resource.TextureFile;
 import com.oddlabs.tt.util.Utils;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
@@ -46,6 +47,10 @@ import java.util.ResourceBundle;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
+/**
+ * Central registry for all visual and audio resources used by the different game races.
+ * Handles textures, sounds, and building templates.
+ */
 public final class RacesResources {
     public static final int QUARTERS_SIZE = 5;
     public static final int ARMORY_SIZE = 5;
@@ -176,12 +181,9 @@ public final class RacesResources {
                 mount_offset,
                 no_detail_size,
                 0f,
-                rally_x,
-                rally_y,
-                rally_z,
-                chimney_x,
-                chimney_y,
-                chimney_z, name);
+                new Vector3f(rally_x, rally_y, rally_z),
+                new Vector3f(chimney_x, chimney_y, chimney_z),
+                name);
     }
 
     public RacesResources(@NonNull RenderQueues queues) {

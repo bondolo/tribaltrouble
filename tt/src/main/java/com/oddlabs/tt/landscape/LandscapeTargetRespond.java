@@ -5,6 +5,9 @@ import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.model.Element;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Visual element that appears as a target indicator when the user clicks on the landscape.
+ */
 public final class LandscapeTargetRespond extends Element<LandscapeTargetRespond> implements Animated {
     public static final int SIZE = 128;
     private static final float SECOND_PER_PICK_RESPOND = 1f / 3f;
@@ -38,14 +41,14 @@ public final class LandscapeTargetRespond extends Element<LandscapeTargetRespond
     }
 
     @Override
-    protected void register() {
+    public void register() {
         super.register();
         time = SECOND_PER_PICK_RESPOND;
         LocalEventQueue.getQueue().getManager().registerAnimation(this);
     }
 
     @Override
-    protected void remove() {
+    public void remove() {
         super.remove();
         LocalEventQueue.getQueue().getManager().removeAnimation(this);
     }

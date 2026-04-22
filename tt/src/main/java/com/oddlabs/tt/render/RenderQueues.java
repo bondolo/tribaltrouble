@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * Manages the collection of renderers and texture/sprite registries.
+ * Acts as a central hub for accessing various specialized rendering systems.
+ */
 public final class RenderQueues implements AutoCloseable {
     private final List<@NonNull SpriteRenderer> sprite_renderers = new ArrayList<>();
     private final List<@NonNull SpriteRenderer> blend_sprite_renderers = new ArrayList<>();

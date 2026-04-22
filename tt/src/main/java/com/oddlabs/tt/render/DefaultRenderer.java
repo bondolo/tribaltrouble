@@ -7,7 +7,6 @@ import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.shader.DebugMeshShader;
@@ -28,6 +27,7 @@ import com.oddlabs.tt.viewer.AmbientAudio;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.Selection;
 import org.joml.Vector3f;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -115,18 +115,20 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private void renderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state) {
         if (selected_building != null && !selected_building.isDead() && selected_building.hasRallyPoint())
-            doRenderRallyPoint(context, camera_state);
+            doRenderRallyPoint(context, camera_state,
+                    selected_building.getRallyPoint(), selected_building.getOwner().getRace().getRallyPoint(),
+                    SelectableVisitor.getTeamColor(selected_building));
     }
 
     private static final SpriteShader spriteShader = new SpriteShader(); // For rally point
 
-    private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state) {
+    private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state,
+                                    @NonNull Target rally_point, @NonNull SpriteKey rally_sprite,
+                                    @NonNull Vector4fc teamColor) {
         try (var _ = spriteShader.use();
              var _ = context.withBlendMode(BlendMode.ALPHA)) {
 
-            Target rally_point = selected_building.getRallyPoint();
-            Race race = selected_building.getOwner().getRace();
-            SpriteRenderer rally_point_renderer = render_queues.getRenderer(race.getRallyPoint());
+            SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);
             Sprite sprite = rally_point_renderer.getSpriteList().getSprite(0);
 
             sprite.setupShaderUniforms(context, spriteShader, 0, false);
@@ -135,9 +137,10 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             float y = rally_point.getPositionY();
             float z = world.getHeightMap().getNearestHeight(rally_point.getPositionX(), rally_point.getPositionY());
             if (rally_point instanceof Building rally_building) {
-                x += rally_building.getTemplate().getRallyX();
-                y += rally_building.getTemplate().getRallyY();
-                z += rally_building.getTemplate().getRallyZ();
+                var rally = rally_building.getTemplate().getRally();
+                x += rally.x();
+                y += rally.y();
+                z += rally.z();
             }
 
             modelViewStack.push();
@@ -152,7 +155,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
             spriteShader.setUniformMatrix4(SpriteShader.Uniforms.MODEL_VIEW_MATRIX, false, modelViewStack.current());
 
-            var teamColor = SelectableVisitor.getTeamColor(selected_building);
             spriteShader.setUniform(SpriteShader.Uniforms.DECAL_COLOR, teamColor.x(), teamColor.y(), teamColor.z(), 1f);
             spriteShader.setUniform(SpriteShader.Uniforms.COLOR, 1f, 1f, 1f, 1f);
 
@@ -213,6 +215,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     @Override
     public void render(@NonNull RenderContext context, @NonNull AmbientAudio ambient, @NonNull CameraState frustum_state, @NonNull GUIRoot gui_root) {
+        treeSpriteRenderer.clear();
+        render_queues.getInstancedRenderer().clear();
+
         if (postProcessor.resize(frustum_state.getWidth(), frustum_state.getHeight())) {
             postProcessor.bindSceneFBO();
             context.clear(true, true);

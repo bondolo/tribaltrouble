@@ -3,13 +3,15 @@ package com.oddlabs.tt.model;
 import com.oddlabs.tt.audio.AbstractAudioPlayer;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.particle.LinearEmitter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/**
+ * Manages the production of weapons in an armory building.
+ */
 public class WeaponsProducer {
     private static final float MAX_BREAK_TIME = .25f;
     private static final float BREAK_PROBABILITY = .2f;
@@ -19,16 +21,19 @@ public class WeaponsProducer {
     private final @NonNull Building building;
     private final @NonNull WorkerUnitContainer unit_container;
     private final @NonNull BuildProductionContainer @NonNull [] production_containers;
-    private final @NonNull LinearEmitter emitter;
 
     private float break_time = 0f;
+    private boolean producing;
     private @Nullable AbstractAudioPlayer production_player;
 
-    public WeaponsProducer(@NonNull Building building, @NonNull WorkerUnitContainer unit_container, @NonNull BuildProductionContainer @NonNull [] production_containers, @NonNull LinearEmitter emitter) {
+    public WeaponsProducer(@NonNull Building building, @NonNull WorkerUnitContainer unit_container, @NonNull BuildProductionContainer @NonNull [] production_containers) {
         this.building = building;
         this.unit_container = unit_container;
         this.production_containers = production_containers;
-        this.emitter = emitter;
+    }
+
+    public final boolean isProducing() {
+        return producing;
     }
 
     public final void animate(float t) {
@@ -42,9 +47,9 @@ public class WeaponsProducer {
             if (break_time <= 0) {
                 if (building.getOwner().getWorld().getRandom().nextFloat() < BREAK_PROBABILITY) {
                     break_time = building.getOwner().getWorld().getRandom().nextFloat() * MAX_BREAK_TIME;
-                    emitter.stop();
+                    producing = false;
                 } else {
-                    emitter.start();
+                    producing = true;
                 }
             }
             startSound();
@@ -53,7 +58,7 @@ public class WeaponsProducer {
                 build_list.pop().build(man_seconds_per_container);
             }
         } else {
-            emitter.stop();
+            producing = false;
             stopSound();
         }
         break_time -= t;

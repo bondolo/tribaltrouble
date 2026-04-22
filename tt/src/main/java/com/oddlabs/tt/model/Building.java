@@ -17,8 +17,6 @@ import com.oddlabs.tt.model.weapon.RockSpearWeapon;
 import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.model.weapon.RubberSpearWeapon;
 import com.oddlabs.tt.model.weapon.ThrowingWeapon;
-import com.oddlabs.tt.particle.LinearEmitter;
-import com.oddlabs.tt.particle.RandomAccelerationEmitter;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.UnitGrid;
@@ -35,6 +33,9 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents a static building structure in the game world.
+ */
 public final class Building extends Selectable<BuildingTemplate> implements Occupant {
     private static final float REMOVE_DELAY = 1f / 10f;
 
@@ -52,13 +53,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @SuppressWarnings({"unchecked"})
     public static final Cost COST_RUBBER_WEAPON = new Cost(new Class[]{TreeSupply.class, RockSupply.class, IronSupply.class, RubberSupply.class}, new int[]{2, 1, 1, 1});
 
-    private static final float DAMAGED_PARTICLE_ALPHA = 3f;
-
     private final Map<@NonNull Class<?>, @NonNull SupplyContainer> supply_containers = new HashMap<>();
     private final Map<@NonNull Class<?>, @NonNull BuildProductionContainer> build_containers = new HashMap<>();
     private final Map<@NonNull DeployType, @NonNull DeployContainer> deploy_containers = new EnumMap<>(DeployType.class);
-    private final @NonNull LinearEmitter damaged_emitter;
-    private final @NonNull LinearEmitter production_emitter;
 
     private @Nullable ChieftainContainer chieftain_container = null;
     private @Nullable WeaponsProducer weapons_producer = null;
@@ -67,71 +64,32 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private int build_points = 0;
     private float[][] old_landscape_heights;
 
-    private Target rally_point = this;
+    private @NonNull Target rally_point = this;
     private boolean is_training_chieftain = false;
 
     public Building(@NonNull Player owner, @NonNull BuildingTemplate template, int grid_x, int grid_y) {
         super(owner, template);
         setGridPosition(grid_x, grid_y);
-        UnitGrid unit_grid = getUnitGrid();
         float x = UnitGrid.coordinateFromGrid(grid_x);
         float y = UnitGrid.coordinateFromGrid(grid_y);
         setPosition(x, y);
         pushController(new NullController(this));
-/*
-   Vector3f position, float offset_z, float uv_angle,
-   float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
-   int num_particles, float particles_per_second,
-   Vector3f velocity, Vector3f acceleration,
-   Vector4f color, Vector4f delta_color,
-   Vector3f particle_radius, Vector3f growth_rate, int energy, float friction,
-   int src_blend_func, int dst_blend_func,
-   Texture texture
-*/
-        damaged_emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ() + getHitOffsetZ()), 0f, 0f,
-                0.01f, 0.01f, 0.5f, .7f,
-                -1, 4f,
-                new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, 0f),
-                new Vector4f(.3f, .3f, .3f, DAMAGED_PARTICLE_ALPHA), new Vector4f(0f, 0f, 0f, 0f),
-                new Vector3f(1.5f, 1.5f, 1.5f), new Vector3f(.6f, .6f, .6f), 1.5f, .75f,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                owner.getWorld().getRacesResources().getDamageSmokeTextures(),
-                owner.getWorld().getAnimationManagerRealTime());
-        damaged_emitter.stop();
 
-        float xc = getPositionX() + getTemplate().getChimneyX();
-        float yc = getPositionY() + getTemplate().getChimneyY();
-        float zc = getPositionZ() + getTemplate().getChimneyZ();
+        addAccessory(new BuildingDamagedAccessory(this, getHitOffsetZ(), owner.getWorld().getRacesResources().getDamageSmokeTextures()));
 
-        float energy = 4f;
-        float alpha = .6f;
-        production_emitter = new RandomAccelerationEmitter(owner.getWorld(), new Vector3f(xc, yc, zc), 0f,
-                0.01f, 0.01f, 1.5f, 0.1f,
-                -1, 6f,
-                new Vector3f(0f, 0f, 1.3f), new Vector3f(0f, 0f, .25f), .7f,
-                new Vector4f(.35f, .35f, .35f, alpha), new Vector4f(0f, 0f, 0f, -alpha / energy),
-                new Vector3f(.3f, .3f, .3f), new Vector3f(.5f, .5f, .5f), energy, 1f,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                owner.getWorld().getRacesResources().getSmokeTextures(),
-                owner.getWorld().getAnimationManagerRealTime());
-        production_emitter.stop();
+        addAccessory(new BuildingProductionAccessory(this, getTemplate().getChimney(), owner.getWorld().getRacesResources().getSmokeTextures()));
     }
 
     public boolean hasRallyPoint() {
         return rally_point != this;
     }
 
-    public Target getRallyPoint() {
+    public @NonNull Target getRallyPoint() {
         return rally_point;
     }
 
-    @Override
-    protected void onReinsert() {
-        super.onReinsert();
-        float xc = getPositionX() + getTemplate().getChimneyX();
-        float yc = getPositionY() + getTemplate().getChimneyY();
-        float zc = getPositionZ() + getTemplate().getChimneyZ();
-        production_emitter.setPosition(new Vector3f(xc, yc, zc));
+    public boolean isProducing() {
+        return is_training_chieftain || (weapons_producer != null && weapons_producer.isProducing());
     }
 
     @Override
@@ -164,21 +122,19 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             remove_delay -= t;
             if (remove_delay <= 0) {
                 remove();
-                damaged_emitter.done();
-                production_emitter.done();
                 if (weapons_producer != null)
                     weapons_producer.stopSound();
                 float energy = 3f;
                 float fade_speed = 2.5f;
 
-                new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f,
+                RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f,
                         getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
                         getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                         new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
                         new Vector4f(1f, 1f, 1f, energy * fade_speed), new Vector4f(0f, 0f, 0f, -fade_speed),
                         new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                        getOwner().getWorld().getRacesResources().getWoodFragments(),
-                        getOwner().getWorld().getAnimationManagerRealTime());
+                        getOwner().getWorld().getRacesResources().getWoodFragments());
+                new PointEmitterModel(getOwner().getWorld(), emitter);
             }
         }
     }
@@ -298,7 +254,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         getOwner().setActiveChieftain(chieftain);
     }
 
-    private @NonNull Unit createUnit(Target rally_point, @NonNull UnitTemplate template) {
+    private @NonNull Unit createUnit(@Nullable Target rally_point, @NonNull UnitTemplate template) {
         return new Unit(getOwner(), getPositionX(), getPositionY(), rally_point, template, null, true, true);
     }
 
@@ -359,18 +315,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return hit_points;
     }
 
+    private void adjustHitPoints(int amount) {
+        setHitPoints(hit_points + amount);
+    }
     private void setHitPoints(int new_hit_points) {
-        final float MIN_ENERGY = 3f;
-        final float MAX_ENERGY = 5f;
-        final int START_SMOKE = getTemplate().getMaxHitPoints() / 2;
-        hit_points = Math.max(Math.min(new_hit_points, getTemplate().getMaxHitPoints()), 0);
-        if (build_points == getTemplate().getMaxHitPoints() && hit_points < START_SMOKE) {
-            float energy = MIN_ENERGY + ((1 - (float) hit_points / (START_SMOKE)) * (MAX_ENERGY - MIN_ENERGY));
-            damaged_emitter.start();
-            damaged_emitter.setDeltaColor(new Vector4f(0f, 0f, 0f, -DAMAGED_PARTICLE_ALPHA / energy));
-            damaged_emitter.setEnergy(energy);
-        } else
-            damaged_emitter.stop();
+        hit_points = Math.clamp(new_hit_points, 0, getTemplate().getMaxHitPoints());
     }
 
     public void repair(int amount) {
@@ -379,7 +328,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         if (!isDamaged())
             return;
 
-        setHitPoints(hit_points + amount);
+        adjustHitPoints(amount);
         if (build_points < getTemplate().getMaxHitPoints()) {
             build_points = Math.min(build_points + amount, getTemplate().getMaxHitPoints());
             reinsert();
@@ -405,7 +354,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                     supply_containers.put(IronSpearWeapon.class, iron_weapon_container);
                     SupplyContainer rubber_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
                     supply_containers.put(RubberAxeWeapon.class, rubber_weapon_container);
-                    supply_containers.put(RubberSpearWeapon.class, rubber_weapon_container);
+                    SupplyContainer rubber_spear_weapon = new SupplyContainer(MAX_SUPPLY_COUNT);
+                    supply_containers.put(RubberSpearWeapon.class, rubber_spear_weapon);
 
                     BuildProductionContainer rock_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
                             rock_weapon_container,
@@ -427,7 +377,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                     build_containers.put(RubberAxeWeapon.class, rubber_axe_weapon);
                     BuildProductionContainer[] production_containers = new BuildProductionContainer[]{rock_axe_weapon, iron_axe_weapon, rubber_axe_weapon};
 
-                    weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer(), production_containers, production_emitter);
+                    weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer(), production_containers);
 
                     deploy_containers.put(DeployType.ROCK_WARRIOR, new DeployContainer(this, 1f, DeployType.ROCK_WARRIOR, RockAxeWeapon.class));
                     deploy_containers.put(DeployType.IRON_WARRIOR, new DeployContainer(this, 1.5f, DeployType.IRON_WARRIOR, IronAxeWeapon.class));
@@ -539,15 +489,29 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @Override
     protected void removeDying() {
 
-        new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f, 0f,
+        RandomVelocityEmitter collapse_emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f, 0f,
                 getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 1f, 1f,
                 30, 400f,
                 new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
                 new Vector4f(1f, .8f, .6f, 1f), new Vector4f(0f, 0f, 0f, -1f),
-                new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1, 0.75f,
+                new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                getOwner().getWorld().getRacesResources().getSmokeTextures(),
-                getOwner().getWorld().getAnimationManagerRealTime());
+                getOwner().getWorld().getRacesResources().getSmokeTextures());
+        new PointEmitterModel(getOwner().getWorld(), collapse_emitter, getOwner().getWorld().getAnimationManagerRealTime());
+
+        {
+            float energy = 3f;
+            float fade_speed = 2.5f;
+
+            RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f,
+                    getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
+                    getTemplate().getNumFragments(), getTemplate().getNumFragments(),
+                    new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
+                    new Vector4f(1f, 1f, 1f, energy * fade_speed), new Vector4f(0f, 0f, 0f, -fade_speed),
+                    new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
+                    getOwner().getWorld().getRacesResources().getWoodFragments());
+            new PointEmitterModel(getOwner().getWorld(), emitter, getOwner().getWorld().getAnimationManagerRealTime());
+        }
 
         remove_delay = REMOVE_DELAY;
         getOwner().getWorld().getAudio().newAudio(new AudioParameters<>(getOwner().getWorld().getRacesResources().getBuildingCollapseSound(), getPositionX(), getPositionY(), getPositionZ(), AudioPlayer.AUDIO_RANK_BUILDING_COLLAPSE, AudioPlayer.AUDIO_DISTANCE_BUILDING_COLLAPSE, AudioPlayer.AUDIO_GAIN_BUILDING_COLLAPSE, AudioPlayer.AUDIO_RADIUS_BUILDING_COLLAPSE));
@@ -575,9 +539,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     public boolean isValidRallyPoint(Target t) {
-        if (!(t instanceof Building b))
-            return false;
-        return getOwner() == b.getOwner() && b.getAbilities().hasAbilities(Abilities.RALLY_TO);
+        return t instanceof Building b &&
+                getOwner() == b.getOwner() &&
+                b.getAbilities().hasAbilities(Abilities.RALLY_TO);
     }
 
     public void setRallyPoint(@NonNull Target target) {
@@ -589,16 +553,16 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     public @NonNull BuildState getRenderLevel() {
-        return build_points == getTemplate().getMaxHitPoints()
+        var max_points = getTemplate().getMaxHitPoints();
+        return build_points == max_points
                 ? BuildState.BUILT
-                : (float) build_points / getTemplate().getMaxHitPoints() < .5
+                : (float) build_points / max_points < .5
                   ? BuildState.START : BuildState.HALFBUILT;
     }
 
     @Override
     public @NonNull SpriteKey getSpriteRenderer() {
-        BuildState render_level = getRenderLevel();
-        return switch (render_level) {
+        return switch (getRenderLevel()) {
             case START -> getTemplate().getStartRenderer();
             case HALFBUILT -> getTemplate().getHalfbuiltRenderer();
             case BUILT -> getTemplate().getBuiltRenderer();
@@ -667,10 +631,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     public void hit(int damage, float dir_x, float dir_y, @NonNull Player owner) {
         super.hit(damage, dir_x, dir_y, owner);
         if (!isDead()) {
-            setHitPoints(hit_points - damage);
+            adjustHitPoints(- damage);
             World world = getOwner().getWorld();
             world.getAudio().newAudio(new AudioParameters<>(world.getRacesResources().getBuildingHitSound(world.getRandom()), getPositionX(), getPositionY(), getPositionZ(), AudioPlayer.AUDIO_RANK_WEAPON_HIT, AudioPlayer.AUDIO_DISTANCE_WEAPON_HIT, AudioPlayer.AUDIO_GAIN_WEAPON_HIT, AudioPlayer.AUDIO_RADIUS_WEAPON_HIT));
-            if (hit_points == 0) {
+            if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();
                 owner.buildingDestroyed();

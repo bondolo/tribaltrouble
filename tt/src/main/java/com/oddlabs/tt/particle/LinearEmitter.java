@@ -1,9 +1,10 @@
 package com.oddlabs.tt.particle;
 
-import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.render.RenderTools;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
+import com.oddlabs.tt.util.BoundingBox;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
@@ -15,6 +16,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * An emitter that spawns particles with linear movement properties (velocity, acceleration).
+ */
 public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
 
@@ -23,19 +27,16 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private final float offset_z;
     private final float emitter_radius;
     private final float emitter_height;
-    private final float particles_per_second;
     private final @NonNull Vector3fc velocity;
     private final @NonNull Vector3fc acceleration;
     private final @NonNull Vector4fc color;
     private final @NonNull Vector3fc particle_radius;
     private final @NonNull Vector3fc growth_rate;
     private final float friction;
+    private final BoundingBox bounds = new BoundingBox();
 
     private @NonNull Vector4fc delta_color;
     private float energy;
-    private int num_particles;
-    private float particle_counter = 0;
-    private boolean started = true;
 
     protected LinearEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
                             float emitter_radius, float emitter_height,
@@ -44,14 +45,11 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
                             @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
                             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
                             int src_blend_func, int dst_blend_func,
-                            @NonNull TextureKey @NonNull [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers, int types,
-                            @NonNull AnimationManager manager) {
-        super(world, position, src_blend_func, dst_blend_func, textures, sprite_renderers, types, manager);
+                            @NonNull TextureKey @NonNull [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers, int types) {
+        super(world, position, src_blend_func, dst_blend_func, textures, sprite_renderers, types, num_particles, particles_per_second);
         this.offset_z = offset_z;
         this.emitter_radius = emitter_radius;
         this.emitter_height = emitter_height;
-        this.num_particles = num_particles;
-        this.particles_per_second = particles_per_second;
         this.velocity = velocity;
         this.acceleration = acceleration;
         this.color = color;
@@ -62,8 +60,6 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.friction = friction;
         random = new Random((long) (position.x() * position.y() * position.z()));
         position.set(position.x(), position.y(), position.z() + offset_z);
-
-        register();
     }
 
     public final void setDeltaColor(@NonNull Vector4f delta_color) {
@@ -74,30 +70,9 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.energy = energy;
     }
 
-    public final void start() {
-        started = true;
-    }
-
-    public final void stop() {
-        started = false;
-    }
-
-    public final void done() {
-        num_particles = 0;
-    }
-
     @Override
     public final void animate(float t) {
-        if (started)
-            particle_counter += particles_per_second * t;
-
-        while (particle_counter >= 1 && (num_particles == -1 || num_particles != 0) && started) {
-            int initiated = initParticle(getPosition(), velocity, acceleration, color, delta_color, particle_radius, growth_rate, energy);
-            assert initiated <= num_particles || num_particles == -1 : "Too many particles initiated";
-            particle_counter -= initiated;
-            if (num_particles > 0)
-                num_particles -= initiated;
-        }
+        updateSpawning(t);
 
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
@@ -106,7 +81,6 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         float z_min = Float.POSITIVE_INFINITY;
         float z_max = Float.NEGATIVE_INFINITY;
 
-        int size = 0;
         for (List<LinearParticle> particles : getParticles()) {
             Iterator<LinearParticle> iterator = particles.iterator();
             while (iterator.hasNext()) {
@@ -127,6 +101,9 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
                     particle.setVelocity(particle.getVelocityX() * friction, particle.getVelocityY() * friction, -particle.getVelocityZ() * friction);
                 }
 
+                x = particle.getPosX();
+                y = particle.getPosY();
+                z = particle.getPosZ();
                 float radius_x = particle.getRadiusX() * SQRT_2;
                 float radius_y = particle.getRadiusY() * SQRT_2;
                 float radius_z = particle.getRadiusZ() * SQRT_2;
@@ -137,12 +114,22 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
                 z_min = Math.min(z_min, z - radius_z);
                 z_max = Math.max(z_max, z + radius_z);
             }
-            size += particles.size();
         }
-        setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
-        reregister();
-        if (size == 0 && num_particles == 0)
-            remove();
+        bounds.setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
+    }
+
+    @Override
+    public void debugRender() {
+        RenderTools.draw(bounds, 1f, 1f, 1f);
+    }
+
+    @Override
+    protected int initParticles(int count) {
+        int initiated = 0;
+        for (int i = 0; i < count; i++) {
+            initiated += initParticle(getPosition(), velocity, acceleration, color, delta_color, particle_radius, growth_rate, energy);
+        }
+        return initiated;
     }
 
     protected abstract int initParticle(@NonNull Vector3f position,

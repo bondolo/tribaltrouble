@@ -15,7 +15,7 @@ import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
 /**
- * aka Chicken
+ * Represents a rubber resource, visually represented as a chicken.
  */
 public final class RubberSupply extends SupplyModel implements Animated, Movable {
     private static final float MIN_TREE_FALL_HEIGHT = 4f;
@@ -247,13 +247,13 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     }
 
     @Override
-    protected void register() {
+    public void register() {
         super.register();
         getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
 
     @Override
-    protected void remove() {
+    public void remove() {
         getWorld().getAnimationManagerGameTime().removeAnimation(this);
         super.remove();
     }

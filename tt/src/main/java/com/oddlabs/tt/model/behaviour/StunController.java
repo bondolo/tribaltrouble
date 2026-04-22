@@ -1,19 +1,23 @@
 package com.oddlabs.tt.model.behaviour;
 
+import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Unit;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Controller that manages the application of the stun state to a unit.
+ */
 public final class StunController extends Controller {
     private final @NonNull Unit unit;
     private final @NonNull StunBehaviour stun_behaviour;
 
     private float time;
 
-    public StunController(@NonNull Unit unit, float time) {
+    public StunController(@NonNull Unit unit, float time, @NonNull Accessory accessory) {
         super(0);
         this.unit = unit;
         this.time = time;
-        stun_behaviour = new StunBehaviour(this, unit);
+        stun_behaviour = new StunBehaviour(this, unit, accessory);
     }
 
     public boolean shouldSleep(float t) {
