@@ -80,14 +80,13 @@ public final class LightningRenderer implements AutoCloseable {
         particle_vbo.orphan();
 
         try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.MAX);
+             var _ = context.withBlendMode(BlendMode.ADDITIVE);
              var _ = context.withDepthMode(DepthMode.READ_ONLY);
              var _ = context.withCullMode(CullMode.NONE)) {
 
             Matrix4fc mv = modelViewStack.current();
             shader.setUniformMatrix4(LightningShader.Uniforms.MODEL_VIEW_MATRIX, false, mv);
 
-            context.setBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
             shader.setUniform(LightningShader.Uniforms.TEXTURE_0, 0);
 
             vao.bind();
