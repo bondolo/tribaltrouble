@@ -6,6 +6,10 @@ import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.DebugRender;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Utility class providing common rendering operations, including frustum culling,
+ * coordinate transformations, and debug visualization.
+ */
 public final class RenderTools {
 
     enum FrustumIntersection {
@@ -95,18 +99,19 @@ public final class RenderTools {
         return dist2;
     }
 
-    static void draw(@NonNull BoundingBox box) {
+    public static void draw(@NonNull BoundingBox box) {
         draw(box, 1f, 1f, 1f);
     }
 
-    static void draw(@NonNull BoundingBox box, float r, float g, float b) {
+    public static void draw(@NonNull BoundingBox box, float r, float g, float b) {
         DebugRender.drawBox(box.bmin_x, box.bmax_x, box.bmin_y, box.bmax_y, box.bmin_z, box.bmax_z, r, g, b);
     }
 
-    static void draw(@NonNull BoundingBox box, @NonNull BoundingMode bound_type, float r, float g, float b) {
+    public static void draw(@NonNull BoundingBox box, @NonNull BoundingMode bound_type, float r, float g, float b) {
         draw(box, r, g, b);
     }
 
     private RenderTools() {
+        // no instances
     }
 }
