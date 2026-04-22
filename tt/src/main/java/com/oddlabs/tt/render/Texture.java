@@ -1,5 +1,6 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.resource.GLImage;
@@ -97,6 +98,51 @@ public final class Texture extends NativeResource<Texture.NativeTexture> {
 
     public static int globalSize() {
         return NativeTexture.global_size.intValue();
+    }
+
+    public Texture(float @NonNull [] pixels, int width, int height, int internal_format, int min_filter, int mag_filter, int wrap) {
+        this(width, height, min_filter, mag_filter, wrap, wrap, Globals.NO_MIPMAP_CUTOFF);
+        uploadPixels(pixels, internal_format);
+    }
+
+    public Texture(@NonNull Channel channel, int internal_format, int min_filter, int mag_filter, int wrap) {
+        this(channel.getWidth(), channel.getHeight(), min_filter, mag_filter, wrap, wrap, Globals.NO_MIPMAP_CUTOFF);
+        uploadPixels(channel.getPixels(), internal_format);
+    }
+
+    private void uploadPixels(float @NonNull [] pixels, int internal_format) {
+        FloatBuffer buffer = BufferUtils.createFloatBuffer(pixels.length);
+        buffer.put(pixels).flip();
+
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, getHandle());
+        GL11.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+
+        int format = GL11.GL_RED;
+        int type = GL11.GL_FLOAT;
+
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type, buffer);
+
+        int size = determineMipMapSize(0, internal_format, width, height);
+        setSize(size);
+        GLUtils.checkAndThrow("uploadPixels");
+    }
+
+    public void update(int x, int y, int width, int height, float value) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(1);
+            buffer.put(value).flip();
+
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, getHandle());
+            GL11.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
+            GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
+            GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
+            GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+            GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x, y, width, height, GL11.GL_RED, GL11.GL_FLOAT, buffer);
+        }
+        GLUtils.checkAndThrow("Texture update (single value)");
     }
 
     public Texture(@NonNull TextureFile texture_file) {

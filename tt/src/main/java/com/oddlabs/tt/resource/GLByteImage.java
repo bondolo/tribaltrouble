@@ -29,11 +29,11 @@ public final class GLByteImage extends GLImage {
 
     public GLByteImage(@NonNull Channel channel, int format) {
         this(channel.getWidth(), channel.getHeight(), format);
-        for (int y = 0; y < getHeight(); y++) {
-            for (int x = 0; x < getWidth(); x++) {
-                int pixel = Math.round(channel.getPixel(x, y) * 255);
-                putPixel(x, y, Math.clamp(pixel, 0, 255));
-            }
+        float[] pixels = channel.getPixels();
+        ByteBuffer buffer = getPixels();
+        for (int i = 0; i < pixels.length; i++) {
+            int pixel = Math.round(pixels[i] * 255);
+            buffer.put(i, (byte) Math.clamp(pixel, 0, 255));
         }
     }
 

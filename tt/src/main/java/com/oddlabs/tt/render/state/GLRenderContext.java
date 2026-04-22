@@ -67,8 +67,8 @@ public final class GLRenderContext implements RenderContext {
         currentBlend = BlendMode.NONE;
         currentDepth = DepthMode.NONE;
         currentCull = CullMode.NONE;
-        currentDepthFunc = -1;
-        scissorEnabled = false; // We can't know for sure, but usually we start disabled
+        currentDepthFunc = GL11.GL_LESS; // Start with standard GL default
+        scissorEnabled = false;
         GL11.glDisable(GL11.GL_SCISSOR_TEST); // Ensure consistent start
 
         maskR = maskG = maskB = maskA = true;
@@ -250,15 +250,14 @@ public final class GLRenderContext implements RenderContext {
     @Override
     public void setDepthFunc(int func) {
         if (currentDepthFunc == func) return;
-        GL11.glDepthFunc(func);
-        int error = GL11.glGetError();
-        if (error != GL11.GL_NO_ERROR) {
-            // Log error instead of crashing to allow recovery
-            logger.severe("glDepthFunc produced error: " + error + " (0x" + Integer.toHexString(error) + ")");
-            logger.severe("Invalid depth func value: " + func);
-
-            // Do NOT update currentDepthFunc if the call failed, GL state didn't change.
-            return;
+        if (func != -1) {
+            GL11.glDepthFunc(func);
+            int error = GL11.glGetError();
+            if (error != GL11.GL_NO_ERROR) {
+                // Log error instead of crashing to allow recovery
+                logger.severe("glDepthFunc(0x" + Integer.toHexString(func) + ") produced error: " + error + " (0x" + Integer.toHexString(error) + ")");
+                return;
+            }
         }
         currentDepthFunc = func;
     }

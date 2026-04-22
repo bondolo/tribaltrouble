@@ -392,14 +392,19 @@ public abstract class GLImage {
         Channel g = new Channel(width, height);
         Channel b = new Channel(width, height);
         Channel a = new Channel(width, height);
+        float[] r_pixels = r.getPixels();
+        float[] g_pixels = g.getPixels();
+        float[] b_pixels = b.getPixels();
+        float[] a_pixels = a.getPixels();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int pixel = getPixel(x, y);
+                int index = y * width + x;
                 // Unpack ABGR
-                a.putPixel(x, y, (pixel >>> 24) / 255f);
-                b.putPixel(x, y, ((pixel >> 16) & 0xff) / 255f);
-                g.putPixel(x, y, ((pixel >> 8) & 0xff) / 255f);
-                r.putPixel(x, y, (pixel & 0xff) / 255f);
+                a_pixels[index] = (pixel >>> 24) / 255f;
+                b_pixels[index] = ((pixel >> 16) & 0xff) / 255f;
+                g_pixels[index] = ((pixel >> 8) & 0xff) / 255f;
+                r_pixels[index] = (pixel & 0xff) / 255f;
             }
         }
         return new Layer(r, g, b, a);
