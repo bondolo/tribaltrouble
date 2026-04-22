@@ -26,17 +26,22 @@ public final class GLRenderContext implements RenderContext {
     private @NonNull CullMode currentCull = CullMode.NONE;
     private int currentDepthFunc = GL11.GL_LEQUAL;
     private boolean scissorEnabled = false;
+    private boolean sampleAlphaToCoverageEnabled = false;
+    private boolean depthTestEnabled = false;
+    private boolean depthMaskEnabled = true;
 
     private boolean maskR = true, maskG = true, maskB = true, maskA = true;
 
     private int activeTextureUnit = -1;
     private final int[] boundTextures = new int[8];
+    private final int[] boundBuffers = new int[2]; // 0: ARRAY_BUFFER, 1: ELEMENT_ARRAY_BUFFER
 
     private int globalUbo = 0;
     private static final int GLOBAL_UBO_BINDING = 0;
 
     public GLRenderContext() {
         Arrays.fill(boundTextures, -1);
+        Arrays.fill(boundBuffers, -1);
     }
 
     @Override
@@ -68,8 +73,9 @@ public final class GLRenderContext implements RenderContext {
 
         maskR = maskG = maskB = maskA = true;
 
-        activeTextureUnit = -1;
+        activeTextureUnit = 0;
         Arrays.fill(boundTextures, -1);
+        Arrays.fill(boundBuffers, -1);
     }
 
     @Override
@@ -149,9 +155,8 @@ public final class GLRenderContext implements RenderContext {
     public void setTexture(int unit, int textureHandle) {
         if (unit < 0 || unit >= boundTextures.length) return;
 
-        setActiveTexture(unit);
-
         if (boundTextures[unit] != textureHandle) {
+            setActiveTexture(unit);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureHandle);
             boundTextures[unit] = textureHandle;
         }
@@ -161,21 +166,85 @@ public final class GLRenderContext implements RenderContext {
     public void setBlendMode(@NonNull BlendMode mode) {
         if (this.currentBlend == mode) return;
         this.currentBlend = mode;
-        mode.apply();
+        mode.apply(this);
     }
 
     @Override
     public void setDepthMode(@NonNull DepthMode mode) {
         if (this.currentDepth == mode) return;
         this.currentDepth = mode;
-        mode.apply();
+        mode.apply(this);
     }
 
     @Override
     public void setCullMode(@NonNull CullMode mode) {
         if (this.currentCull == mode) return;
         this.currentCull = mode;
-        mode.apply();
+        mode.apply(this);
+    }
+
+    private boolean blendEnabled = false;
+
+    @Override
+    public void setBlend(boolean enabled) {
+        if (blendEnabled == enabled) return;
+        if (enabled) {
+            GL11.glEnable(GL11.GL_BLEND);
+        } else {
+            GL11.glDisable(GL11.GL_BLEND);
+        }
+        blendEnabled = enabled;
+    }
+
+    @Override
+    public void setDepthTest(boolean enabled) {
+        if (depthTestEnabled == enabled) return;
+        if (enabled) {
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+        } else {
+            GL11.glDisable(GL11.GL_DEPTH_TEST);
+        }
+        depthTestEnabled = enabled;
+    }
+
+    @Override
+    public void setDepthMask(boolean enabled) {
+        if (depthMaskEnabled == enabled) return;
+        GL11.glDepthMask(enabled);
+        depthMaskEnabled = enabled;
+    }
+
+    private boolean cullFaceEnabled = false;
+
+    @Override
+    public void setCullFace(boolean enabled) {
+        if (cullFaceEnabled == enabled) return;
+        if (enabled) {
+            GL11.glEnable(GL11.GL_CULL_FACE);
+        } else {
+            GL11.glDisable(GL11.GL_CULL_FACE);
+        }
+        cullFaceEnabled = enabled;
+    }
+
+    private int currentCullFaceMode = GL11.GL_BACK;
+
+    @Override
+    public void setCullFaceMode(int mode) {
+        if (currentCullFaceMode == mode) return;
+        GL11.glCullFace(mode);
+        currentCullFaceMode = mode;
+    }
+
+    @Override
+    public void setSampleAlphaToCoverage(boolean enabled) {
+        if (sampleAlphaToCoverageEnabled == enabled) return;
+        if (enabled) {
+            GL11.glEnable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
+        } else {
+            GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
+        }
+        sampleAlphaToCoverageEnabled = enabled;
     }
 
     @Override
@@ -204,11 +273,23 @@ public final class GLRenderContext implements RenderContext {
         maskA = a;
     }
 
+    private int currentBlendSrc = -1;
+    private int currentBlendDst = -1;
+    private int currentBlendEquation = GL14.GL_FUNC_ADD;
+
     @Override
     public void setBlendFunc(int src, int dst) {
+        if (currentBlendSrc == src && currentBlendDst == dst) return;
         GL11.glBlendFunc(src, dst);
-        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
-        this.currentBlend = BlendMode.CUSTOM; // Invalidate shadow state
+        currentBlendSrc = src;
+        currentBlendDst = dst;
+    }
+
+    @Override
+    public void setBlendEquation(int equation) {
+        if (currentBlendEquation == equation) return;
+        GL14.glBlendEquation(equation);
+        currentBlendEquation = equation;
     }
 
     @Override
@@ -226,6 +307,27 @@ public final class GLRenderContext implements RenderContext {
             GL11.glDisable(GL11.GL_SCISSOR_TEST);
             scissorEnabled = false;
         }
+    }
+
+    private int currentVAO = -1;
+
+    @Override
+    public void bindVertexArray(int vao) {
+        if (currentVAO == vao) return;
+        GL30.glBindVertexArray(vao);
+        currentVAO = vao;
+        // Invalidate ELEMENT_ARRAY_BUFFER shadow as it's part of VAO state
+        boundBuffers[1] = -1;
+    }
+
+    @Override
+    public void bindBuffer(int target, int buffer) {
+        int index = (target == GL15.GL_ARRAY_BUFFER) ? 0 : (target == GL15.GL_ELEMENT_ARRAY_BUFFER) ? 1 : -1;
+        if (index != -1) {
+            if (boundBuffers[index] == buffer) return;
+            boundBuffers[index] = buffer;
+        }
+        GL15.glBindBuffer(target, buffer);
     }
 
     @Override
@@ -263,6 +365,14 @@ public final class GLRenderContext implements RenderContext {
         CullMode previous = this.currentCull;
         setCullMode(mode);
         return () -> setCullMode(previous);
+    }
+
+    @Override
+    public @NonNull ScopedState withSampleAlphaToCoverage(boolean enabled) {
+        if (sampleAlphaToCoverageEnabled == enabled) return NO_OP;
+        boolean previous = sampleAlphaToCoverageEnabled;
+        setSampleAlphaToCoverage(enabled);
+        return () -> setSampleAlphaToCoverage(previous);
     }
 
     @Override

@@ -1,6 +1,9 @@
 package com.oddlabs.tt.vbo;
 
+import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.NativeResource;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 
@@ -44,15 +47,31 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
         GL15.glBindBuffer(target, handle);
     }
 
-    public static void releaseAll() {
-        makeCurrent(GL15.GL_ARRAY_BUFFER, 0);
-        releaseIndexVBO();
+    public static void releaseAll(@NonNull RenderContext context) {
+        context.bindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        releaseIndexVBO(context);
     }
 
+    public static void releaseIndexVBO(@NonNull RenderContext context) {
+        context.bindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    public final void bind(@NonNull RenderContext context) {
+        context.bindBuffer(target, state.handle);
+    }
+
+    @Deprecated
+    public static void releaseAll() {
+        makeCurrent(GL15.GL_ARRAY_BUFFER, 0);
+        makeCurrent(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    @Deprecated
     public static void releaseIndexVBO() {
         makeCurrent(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
+    @Deprecated
     public final void makeCurrent() {
         makeCurrent(target, state.handle);
     }

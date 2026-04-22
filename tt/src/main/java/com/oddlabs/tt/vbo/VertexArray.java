@@ -1,5 +1,7 @@
 package com.oddlabs.tt.vbo;
 
+import com.oddlabs.tt.render.state.RenderContext;
+import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL30;
 
 /**
@@ -16,8 +18,16 @@ public final class VertexArray implements AutoCloseable {
         GL30.glBindVertexArray(id);
     }
 
+    public void bind(@NonNull RenderContext context) {
+        context.bindVertexArray(id);
+    }
+
     public void unbind() {
         GL30.glBindVertexArray(0);
+    }
+
+    public void unbind(@NonNull RenderContext context) {
+        context.bindVertexArray(0);
     }
 
     @Override

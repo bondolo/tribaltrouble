@@ -971,7 +971,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     public static void initGL() {
-        VBO.releaseAll();
+        VBO.releaseAll(getRenderer().renderContext);
         getRenderer().renderContext.applyDefaults();
     }
 

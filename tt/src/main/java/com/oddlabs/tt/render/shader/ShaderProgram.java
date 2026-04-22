@@ -3,6 +3,11 @@ package com.oddlabs.tt.render.shader;
 import com.oddlabs.tt.render.state.ScopedState;
 import com.oddlabs.tt.resource.NativeResource;
 import org.joml.Matrix4fc;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -14,6 +19,7 @@ import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,6 +45,12 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         private final int geometryShaderId;
         private final Map<@NonNull String, @NonNull Integer> uniformLocations = new HashMap<>();
         private final Map<@NonNull String, @NonNull Integer> attributeLocations = new HashMap<>();
+        private final Map<Integer, Integer> intUniforms = new HashMap<>();
+        private final Map<Integer, Float> floatUniforms = new HashMap<>();
+        private final Map<Integer, Vector2fc> vec2Uniforms = new HashMap<>();
+        private final Map<Integer, Vector3fc> vec3Uniforms = new HashMap<>();
+        private final Map<Integer, Vector4fc> vec4Uniforms = new HashMap<>();
+        private final Map<Integer, float[]> mat4Uniforms = new HashMap<>();
 
         Program(int vertexShaderId, int fragmentShaderId, int geometryShaderId) {
             this.vertexShaderId = vertexShaderId;
@@ -133,7 +145,6 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         var active = inUse.compareAndExchange(null, this);
         if (null == active) {
             GL20.glUseProgram(state.programId);
-            checkGLError("glUseProgram:" + state.programId);
             return this::disuse;
         }
         var ise = new IllegalStateException("Shader already in use; active=" + active);
@@ -168,41 +179,74 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
 
     @Override
     public void setUniform(@NonNull String name, int value) {
-        GL20.glUniform1i(getUniformLocation(name), value);
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+        Integer lastValue = state.intUniforms.get(loc);
+        if (lastValue != null && lastValue == value) return;
+        GL20.glUniform1i(loc, value);
+        state.intUniforms.put(loc, value);
     }
 
     @Override
     public void setUniform(@NonNull String name, float value) {
-        GL20.glUniform1f(getUniformLocation(name), value);
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+        Float lastValue = state.floatUniforms.get(loc);
+        if (lastValue != null && lastValue == value) return;
+        GL20.glUniform1f(loc, value);
+        state.floatUniforms.put(loc, value);
     }
 
     @Override
     public void setUniform(@NonNull String name, boolean value) {
-        GL20.glUniform1i(getUniformLocation(name), value ? 1 : 0);
+        setUniform(name, value ? 1 : 0);
     }
 
     @Override
     public void setUniform(@NonNull String name, float x, float y) {
-        GL20.glUniform2f(getUniformLocation(name), x, y);
+        setUniform(name, new Vector2f(x, y));
+    }
+
+    public void setUniform(@NonNull String name, @NonNull Vector2fc value) {
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+        Vector2fc lastValue = state.vec2Uniforms.get(loc);
+        if (lastValue != null && lastValue.equals(value)) return;
+        GL20.glUniform2f(loc, value.x(), value.y());
+        state.vec2Uniforms.put(loc, new Vector2f(value));
     }
 
     @Override
     public void setUniform(@NonNull String name, float x, float y, float z) {
-        GL20.glUniform3f(getUniformLocation(name), x, y, z);
+        setUniform(name, new Vector3f(x, y, z));
+    }
+
+    public void setUniform(@NonNull String name, @NonNull Vector3fc value) {
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+        Vector3fc lastValue = state.vec3Uniforms.get(loc);
+        if (lastValue != null && lastValue.equals(value)) return;
+        GL20.glUniform3f(loc, value.x(), value.y(), value.z());
+        state.vec3Uniforms.put(loc, new Vector3f(value));
     }
 
     @Override
     public void setUniform(@NonNull String name, float x, float y, float z, float w) {
-        GL20.glUniform4f(getUniformLocation(name), x, y, z, w);
+        setUniform(name, new Vector4f(x, y, z, w));
     }
 
     @Override
     public void setUniform(@NonNull String name, float @NonNull [] value) {
-        GL20.glUniform4f(getUniformLocation(name), value[0], value[1], value[2], value[3]);
+        setUniform(name, new Vector4f(value[0], value[1], value[2], value[3]));
     }
 
     public void setUniform(@NonNull String name, @NonNull Vector4fc value) {
-        GL20.glUniform4f(getUniformLocation(name), value.x(), value.y(), value.z(), value.w());
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+        Vector4fc lastValue = state.vec4Uniforms.get(loc);
+        if (lastValue != null && lastValue.equals(value)) return;
+        GL20.glUniform4f(loc, value.x(), value.y(), value.z(), value.w());
+        state.vec4Uniforms.put(loc, new Vector4f(value));
     }
 
     public void setUniform(@NonNull String name, @NonNull Matrix4fc matrix) {
@@ -217,14 +261,25 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
 
     @Override
     public void setUniformMatrix4(@NonNull String name, boolean transpose, @NonNull FloatBuffer matrix) {
-        GL20.glUniformMatrix4fv(getUniformLocation(name), transpose, matrix);
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+
+        float[] currentValue = new float[16];
+        int pos = matrix.position();
+        matrix.get(currentValue);
+        matrix.position(pos); // Restore position
+
+        float[] lastValue = state.mat4Uniforms.get(loc);
+        if (lastValue != null && Arrays.equals(lastValue, currentValue)) return;
+
+        GL20.glUniformMatrix4fv(loc, transpose, matrix);
+        state.mat4Uniforms.put(loc, currentValue);
     }
 
     private void disuse() {
         var active = inUse.compareAndExchange(this, null);
         if (this == active) {
             GL20.glUseProgram(0);
-            checkGLError("glUseProgram(0)");
         } else {
             var ise = new IllegalStateException("Shader not in use; active=" + active);
             logger.log(Level.SEVERE, ise.getMessage(), ise);

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.render.state;
 
 import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.vbo.VBO;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -11,6 +12,16 @@ public interface RenderContext {
     void setDepthMode(@NonNull DepthMode mode);
 
     void setCullMode(@NonNull CullMode mode);
+
+    // Alpha to Coverage
+    void setSampleAlphaToCoverage(boolean enabled);
+
+    // Low-level state
+    void setDepthTest(boolean enabled);
+    void setDepthMask(boolean enabled);
+    void setBlend(boolean enabled);
+    void setCullFace(boolean enabled);
+    void setCullFaceMode(int mode);
 
     // Depth Func
     void setDepthFunc(int func);
@@ -32,6 +43,16 @@ public interface RenderContext {
 
     void clearScissor();
 
+    // VAO
+    void bindVertexArray(int vao);
+
+    // VBO
+    void bindBuffer(int target, int buffer);
+
+    default void bindBuffer(int target, @Nullable VBO vbo) {
+        bindBuffer(target, vbo != null ? vbo.getHandle() : 0);
+    }
+
     // Clearing
     void clearColor(float r, float g, float b, float a);
 
@@ -45,6 +66,8 @@ public interface RenderContext {
 
     @NonNull ScopedState withCullMode(@NonNull CullMode mode);
 
+    @NonNull ScopedState withSampleAlphaToCoverage(boolean enabled);
+
     @NonNull ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a);
 
     @NonNull ScopedState withDepthFunc(int func);
@@ -54,6 +77,7 @@ public interface RenderContext {
 
     // Custom State
     void setBlendFunc(int src, int dst);
+    void setBlendEquation(int equation);
 
     // Lifecycle & Debug
     void init();

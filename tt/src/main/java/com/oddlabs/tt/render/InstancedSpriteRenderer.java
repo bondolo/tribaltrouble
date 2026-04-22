@@ -68,17 +68,11 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
         } finally {
             // Restore default state to prevent leakage to other renderers (Sky, Landscape, etc.)
+            context.bindVertexArray(0);
             context.setDepthMode(DepthMode.READ_WRITE);
             context.setBlendMode(BlendMode.NONE);
             context.setCullMode(CullMode.BACK);
-            GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
-            
-            // Explicitly reset divisors to 0 to prevent leakage into non-instanced sprite passes
-            for (int i = 4; i <= 14; i++) {
-                GL33.glVertexAttribDivisor(i, 0);
-            }
-            
-            GL30.glBindVertexArray(0);
+            context.setSampleAlphaToCoverage(false);
         }
     }
 
@@ -243,7 +237,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 state.boundTBO = key.spriteList.getTBOTextureHandle();
             }
 
-            vao.bind();
+            vao.bind(context);
 
             if (key.respond) {
                 // Two-pass technique to avoid alpha accumulation (like building placement ghosts)
@@ -251,8 +245,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 try (var _ = context.withColorMask(false, false, false, false);
                      var _ = context.withDepthMode(DepthMode.READ_WRITE);
                      var _ = context.withDepthFunc(GL11.GL_LEQUAL);
-                     var _ = context.withBlendMode(BlendMode.NONE)) {
-                    GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
+                     var _ = context.withBlendMode(BlendMode.NONE);
+                     var _ = context.withSampleAlphaToCoverage(false)) {
                     draw(sprite);
                 }
 
@@ -260,8 +254,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 try (var _ = context.withColorMask(true, true, true, true);
                      var _ = context.withDepthMode(DepthMode.READ_ONLY);
                      var _ = context.withDepthFunc(GL11.GL_EQUAL);
-                     var _ = context.withBlendMode(BlendMode.ALPHA)) {
-                    GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
+                     var _ = context.withBlendMode(BlendMode.ALPHA);
+                     var _ = context.withSampleAlphaToCoverage(false)) {
                     draw(sprite);
                 }
             } else {
@@ -270,15 +264,13 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
                 if (key.blend) {
                     context.setBlendMode(BlendMode.ALPHA);
-                    GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
+                    context.setSampleAlphaToCoverage(false);
                 } else {
                     context.setBlendMode(BlendMode.NONE);
-                    GL11.glEnable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
+                    context.setSampleAlphaToCoverage(true);
                 }
                 draw(sprite);
             }
-
-            vao.unbind();
         }
 
         private void draw(@NonNull Sprite sprite) {
