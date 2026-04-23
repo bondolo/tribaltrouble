@@ -237,6 +237,23 @@ public final class GUIRenderer {
         vertexBuffer.clear();
     }
 
+    public void setScissor(int x, int y, int w, int h) {
+        if (currentContext != null) {
+            currentContext.setScissor(x, y, w, h);
+        } else {
+            GL11.glEnable(GL11.GL_SCISSOR_TEST);
+            GL11.glScissor(x, y, w, h);
+        }
+    }
+
+    public void clearScissor() {
+        if (currentContext != null) {
+            currentContext.clearScissor();
+        } else {
+            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        }
+    }
+
     @NonNull
     public MatrixStack getMatrixStack() {
         return matrixStack;

@@ -129,19 +129,18 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
                 scissor_box = null;
             }
             renderer.flush();
-            GL11.glEnable(GL11.GL_SCISSOR_TEST);
 
             float scale = getGlobalScale();
-            GL11.glScissor((int) (getRootX() * scale), (int) (getRootY() * scale),
+            renderer.setScissor((int) (getRootX() * scale), (int) (getRootY() * scale),
                     (int) (getWidth() * scale), (int) (getHeight() * scale));
 
             renderClipped(renderer, clip_left, clip_right, clip_bottom, clip_top);
 
             renderer.flush();
             if (null != scissor_box) {
-                GL11.glScissor(scissor_box.get(0), scissor_box.get(1), scissor_box.get(2), scissor_box.get(3));
+                renderer.setScissor(scissor_box.get(0), scissor_box.get(1), scissor_box.get(2), scissor_box.get(3));
             } else {
-                GL11.glDisable(GL11.GL_SCISSOR_TEST);
+                renderer.clearScissor();
             }
         } else {
             renderClipped(renderer, clip_left, clip_right, clip_bottom, clip_top);

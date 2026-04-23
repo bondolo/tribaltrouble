@@ -139,10 +139,6 @@ public final class SpriteList implements AutoCloseable {
     private void initTBO() {
         tboTextureHandle = org.lwjgl.opengl.GL11.glGenTextures();
         org.lwjgl.opengl.GL11.glBindTexture(GL31.GL_TEXTURE_BUFFER, tboTextureHandle);
-        // vertices_and_normals is a VBO. We need its handle.
-        // Assuming getHandle() exists or accessing protected field via VBO.
-        // VBO.java likely stores handle.
-        // I will use getHandle() and assume I need to expose it if missing.
         GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGB32F, vertices_and_normals.getHandle());
     }
 

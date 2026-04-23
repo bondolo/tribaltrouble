@@ -67,15 +67,26 @@ public final class GLRenderContext implements RenderContext {
         currentBlend = BlendMode.NONE;
         currentDepth = DepthMode.NONE;
         currentCull = CullMode.NONE;
-        currentDepthFunc = GL11.GL_LESS; // Start with standard GL default
+        currentDepthFunc = -1;
         scissorEnabled = false;
         GL11.glDisable(GL11.GL_SCISSOR_TEST); // Ensure consistent start
 
         maskR = maskG = maskB = maskA = true;
 
-        activeTextureUnit = 0;
+        activeTextureUnit = -1;
+        currentVAO = -1;
+        currentBlendSrc = -1;
+        currentBlendDst = -1;
+        currentBlendEquation = GL14.GL_FUNC_ADD;
         Arrays.fill(boundTextures, -1);
         Arrays.fill(boundBuffers, -1);
+
+        blendEnabled = false;
+        depthTestEnabled = false;
+        depthMaskEnabled = true;
+        cullFaceEnabled = false;
+        currentCullFaceMode = -1;
+        sampleAlphaToCoverageEnabled = false;
     }
 
     @Override
