@@ -43,22 +43,22 @@ public class Particle extends Model {
         uvVector.set(-.5f, -.5f, 0f, 0f);
         rotMatrix.transform(uvVector);
         u1 = uvVector.x() + .5f;
-        v1 = uvVector.y() + .5f;
+        v1 = .5f - uvVector.y();
 
         uvVector.set(.5f, -.5f, 0f, 0f);
         rotMatrix.transform(uvVector);
         u2 = uvVector.x() + .5f;
-        v2 = uvVector.y() + .5f;
+        v2 = .5f - uvVector.y();
 
         uvVector.set(.5f, .5f, 0f, 0f);
         rotMatrix.transform(uvVector);
         u3 = uvVector.x() + .5f;
-        v3 = uvVector.y() + .5f;
+        v3 = .5f - uvVector.y();
 
         uvVector.set(-.5f, .5f, 0f, 0f);
         rotMatrix.transform(uvVector);
         u4 = uvVector.x() + .5f;
-        v4 = uvVector.y() + .5f;
+        v4 = .5f - uvVector.y();
     }
 
     public final float getU1() {
