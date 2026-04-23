@@ -310,7 +310,7 @@ public abstract class GLImage {
         int yy = y;
         for (; yy < y + height; yy++) {
             for (int xx = x; xx < x + width; xx++) {
-                putPixel(yy, xx, color);
+                putPixel(xx, yy, color);
             }
         }
     }
