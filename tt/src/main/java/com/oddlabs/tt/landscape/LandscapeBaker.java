@@ -1,6 +1,7 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.render.FBO;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.resource.BlendInfo;
@@ -111,15 +112,17 @@ public final class LandscapeBaker {
                     IntBuffer drawBuffers = stack.mallocInt(2);
                     drawBuffers.put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1).flip();
 
+                    var context = Renderer.getRenderer().getRenderContext();
+
                     for (int i = 0; i < blendInfos.length; i++) {
                         BlendInfo info = blendInfos[i];
                         int src = current;
                         int dst = 1 - current;
 
-                        fbo.bind();
+                        fbo.bind(context);
                         fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT0, diffuse[dst]);
                         fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT1, normal[dst]);
-                        GL30.glDrawBuffers(drawBuffers);
+                        context.setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
                         fbo.checkStatus();
                         checkGLError("After FBO setup " + i);
 

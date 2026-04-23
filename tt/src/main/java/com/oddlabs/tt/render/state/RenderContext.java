@@ -43,11 +43,20 @@ public interface RenderContext {
 
     void clearScissor();
 
+    void setViewport(int x, int y, int w, int h);
+
     // VAO
     void bindVertexArray(int vao);
 
-    // VBO
+    // VBO / FBO
     void bindBuffer(int target, int buffer);
+
+    void bindFramebuffer(int target, int framebuffer);
+
+    void invalidateTexture(int handle);
+    void invalidateBuffer(int handle);
+    void invalidateFramebuffer(int handle);
+    void invalidateVertexArray(int handle);
 
     default void bindBuffer(int target, @Nullable VBO vbo) {
         bindBuffer(target, vbo != null ? vbo.getHandle() : 0);
@@ -72,12 +81,24 @@ public interface RenderContext {
 
     @NonNull ScopedState withDepthFunc(int func);
 
+    @NonNull ScopedState withDrawBuffers(boolean mask);
+
     // UBO Management
     void updateGlobalState(java.nio.@NonNull ByteBuffer data);
 
     // Custom State
     void setBlendFunc(int src, int dst);
     void setBlendEquation(int equation);
+
+    /**
+     * Resets the blend functions for all draw buffers to the current global setBlendFunc state.
+     * This is useful to clear per-buffer blend states (e.g. from glBlendFunci) after complex composite operations.
+     */
+    void resetBlendFunc();
+
+    void setDrawBuffers(boolean mask);
+
+    void setDrawBuffers(int @NonNull [] attachments);
 
     // Lifecycle & Debug
     void init();

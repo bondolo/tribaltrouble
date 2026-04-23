@@ -158,6 +158,10 @@ public final class Renderer implements AutoCloseable {
         GLUtils.checkGLError("After Cleanup");
 
         gui.render(ambient);
+
+        if (Globals.debugRenderingEnabled()) {
+            renderContext.validate();
+        }
     }
 
     public void updateProgress(@NonNull GUI gui) {
@@ -576,7 +580,7 @@ public final class Renderer implements AutoCloseable {
                         int height = window.getHeight();
                         Settings.getSettings().view_width = width;
                         Settings.getSettings().view_height = height;
-                        GL11.glViewport(0, 0, width, height);
+                        renderContext.setViewport(0, 0, width, height);
                         initGL();
                         gui.getGUIRoot().displayChanged(width, height);
                     }

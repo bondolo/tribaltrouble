@@ -1,9 +1,9 @@
 package com.oddlabs.tt.vbo;
 
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 
@@ -32,6 +32,7 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
 
         @Override
         public void close() {
+            Renderer.getRenderer().getRenderContext().invalidateBuffer(handle);
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 IntBuffer handle_buffer = stack.mallocInt(1);
                 handle_buffer.put(0, handle);
@@ -44,7 +45,7 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
     private final int size;
 
     private static void makeCurrent(int target, int handle) {
-        GL15.glBindBuffer(target, handle);
+        Renderer.getRenderer().getRenderContext().bindBuffer(target, handle);
     }
 
     public static void releaseAll(@NonNull RenderContext context) {

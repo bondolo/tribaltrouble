@@ -19,10 +19,8 @@ import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
@@ -73,6 +71,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             context.setBlendMode(BlendMode.NONE);
             context.setCullMode(CullMode.BACK);
             context.setSampleAlphaToCoverage(false);
+            context.setDrawBuffers(true);
+            context.setColorMask(true, true, true, true);
         }
     }
 
@@ -190,7 +190,10 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             if (totalInstances >= capacity) {
                 int newCapacity = capacity * 2;
                 FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity * FLOATS_PER_INSTANCE);
-                instanceBuffer.flip();
+                
+                // Copy existing data using absolute indices
+                instanceBuffer.position(0);
+                instanceBuffer.limit(totalInstances * FLOATS_PER_INSTANCE);
                 newBuffer.put(instanceBuffer);
                 instanceBuffer = newBuffer;
 
@@ -206,13 +209,16 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 capacity = newCapacity;
             }
 
-            modelMatrix.get(instanceBuffer).position(instanceBuffer.position() + 16);
-            color.get(instanceBuffer).position(instanceBuffer.position() + 4);
-            decalColor.get(instanceBuffer).position(instanceBuffer.position() + 4);
-            instanceBuffer
-                    .put((float) pos1).put((float) norm1)
-                    .put((float) pos2).put((float) norm2)
-                    .put(tween);
+            int base = totalInstances * FLOATS_PER_INSTANCE;
+            modelMatrix.get(base, instanceBuffer);
+            color.get(base + 16, instanceBuffer);
+            decalColor.get(base + 20, instanceBuffer);
+            
+            instanceBuffer.put(base + 24, (float) pos1);
+            instanceBuffer.put(base + 25, (float) norm1);
+            instanceBuffer.put(base + 26, (float) pos2);
+            instanceBuffer.put(base + 27, (float) norm2);
+            instanceBuffer.put(base + 28, tween);
 
             totalInstances++;
         }
@@ -246,7 +252,9 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                      var _ = context.withDepthMode(DepthMode.READ_WRITE);
                      var _ = context.withDepthFunc(GL11.GL_LEQUAL);
                      var _ = context.withBlendMode(BlendMode.NONE);
-                     var _ = context.withSampleAlphaToCoverage(false)) {
+                     var _ = context.withSampleAlphaToCoverage(false);
+                     var _ = context.withDrawBuffers(false)) {
+                    // Mask attachment is disabled via withDrawBuffers
                     draw(sprite);
                 }
 
@@ -255,7 +263,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                      var _ = context.withDepthMode(DepthMode.READ_ONLY);
                      var _ = context.withDepthFunc(GL11.GL_EQUAL);
                      var _ = context.withBlendMode(BlendMode.ALPHA);
-                     var _ = context.withSampleAlphaToCoverage(false)) {
+                     var _ = context.withSampleAlphaToCoverage(false);
+                     var _ = context.withDrawBuffers(true)) {
                     draw(sprite);
                 }
             } else {

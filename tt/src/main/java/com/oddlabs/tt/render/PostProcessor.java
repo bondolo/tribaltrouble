@@ -65,8 +65,16 @@ public final class PostProcessor implements AutoCloseable {
         return true;
     }
 
+    public void bindSceneFBO(@NonNull RenderContext context) {
+        sceneFBO.bind(context);
+    }
+
     public void bindSceneFBO() {
         sceneFBO.bind();
+    }
+
+    public void unbindSceneFBO(@NonNull RenderContext context) {
+        sceneFBO.unbind(); // unbind already uses Renderer context
     }
 
     public void unbindSceneFBO() {
@@ -75,7 +83,7 @@ public final class PostProcessor implements AutoCloseable {
 
     public void renderComposite(@NonNull RenderContext context, @NonNull Consumer<@NonNull RenderContext> guiRenderCallback) {
         // 1. Render GUI into the Scene FBO (on top of the 3D scene)
-        bindSceneFBO();
+        bindSceneFBO(context);
 
         // Use glBlendFunci to set different blend modes for different draw buffers.
         // Buffer 0 (Color): GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
@@ -85,12 +93,16 @@ public final class PostProcessor implements AutoCloseable {
 
         guiRenderCallback.accept(context);
 
-        unbindSceneFBO();
+        // Restore global blend state across all buffers
+        context.resetBlendFunc();
+
+        unbindSceneFBO(context);
 
         // 2. Composite the FBO to the screen with Post-Processing (CVD, High Contrast, Team Stencil)
         // Render to default framebuffer (screen)
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-        GL11.glViewport(0, 0, currentWidth, currentHeight);
+        context.bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        context.setViewport(0, 0, currentWidth, currentHeight);
+        context.setDrawBuffers(false); // Ensure only back buffer is active for FBO 0
         context.clear(true, true);
 
         try (var _ = shader.use();
@@ -113,6 +125,11 @@ public final class PostProcessor implements AutoCloseable {
             GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
             vao.unbind();
         }
+
+        // Unbind textures to prevent feedback loops in next frame
+        context.setTexture(0, 0);
+        context.setTexture(1, 0);
+        context.setTexture(2, 0);
     }
 
     @Override

@@ -60,7 +60,7 @@ final class AttachedRenderState implements ModelState<Model> {
         // Standard sprite rendering
         SpriteKey key = accessory.getSpriteRenderer();
         if (key != null) {
-            parentState.render_state.getRenderQueues().getRenderer(key).addToRenderList(detail, this, false);
+            parentState.render_state.getRenderQueues().getRenderer(key).addToRenderList(detail, this, parentState.render_state.isResponding(parentState.model));
         }
     }
 

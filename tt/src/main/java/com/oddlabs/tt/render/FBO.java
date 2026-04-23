@@ -1,5 +1,6 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.render.state.RenderContext;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -40,7 +41,7 @@ public final class FBO implements AutoCloseable {
         fbo.depthTexture = depth;
 
         // Explicitly declare draw buffers
-        GL30.glDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+        Renderer.getRenderer().getRenderContext().setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
 
         fbo.checkStatus();
         fbo.unbind();
@@ -73,19 +74,25 @@ public final class FBO implements AutoCloseable {
         if (depthTexture != null) attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthTexture);
 
         // Restore draw buffers state after resize/rebind
-        GL30.glDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+        Renderer.getRenderer().getRenderContext().setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
 
         checkStatus();
         unbind();
     }
 
+    public void bind(@NonNull RenderContext context) {
+        context.bindFramebuffer(GL30.GL_FRAMEBUFFER, id);
+        context.setViewport(0, 0, width, height);
+    }
+
     public void bind() {
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, id);
-        GL11.glViewport(0, 0, width, height);
+        var context = Renderer.getRenderer().getRenderContext();
+        context.bindFramebuffer(GL30.GL_FRAMEBUFFER, id);
+        context.setViewport(0, 0, width, height);
     }
 
     public void unbind() {
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        Renderer.getRenderer().getRenderContext().bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
     public @Nullable Texture getColorTexture() {
@@ -126,8 +133,21 @@ public final class FBO implements AutoCloseable {
     @Override
     public void close() {
         if (id != 0) {
+            Renderer.getRenderer().getRenderContext().invalidateFramebuffer(id);
             GL30.glDeleteFramebuffers(id);
             id = 0;
+        }
+        if (colorTexture != null) {
+            colorTexture.close();
+            colorTexture = null;
+        }
+        if (maskTexture != null) {
+            maskTexture.close();
+            maskTexture = null;
+        }
+        if (depthTexture != null) {
+            depthTexture.close();
+            depthTexture = null;
         }
     }
 }

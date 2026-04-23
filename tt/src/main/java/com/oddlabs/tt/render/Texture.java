@@ -52,6 +52,7 @@ public final class Texture extends NativeResource<Texture.NativeTexture> {
         @Override
         public void close() {
             global_size.addAndGet(-size);
+            Renderer.getRenderer().getRenderContext().invalidateTexture(texture_handle);
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 IntBuffer handle_buffer = stack.mallocInt(1);
                 handle_buffer.put(0, texture_handle);

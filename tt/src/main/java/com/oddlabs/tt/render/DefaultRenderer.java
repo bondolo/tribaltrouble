@@ -31,8 +31,6 @@ import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 
 import java.util.function.Consumer;
 
@@ -63,19 +61,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final Vector3f groundAmbient = new Vector3f(0.15f, 0.12f, 0.1f); // Ground
 
     private @Nullable Building selected_building;
-
-    private void setDrawBuffers(boolean mask) {
-        try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
-            java.nio.IntBuffer buffers;
-            if (mask) {
-                buffers = stack.mallocInt(2).put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1);
-            } else {
-                buffers = stack.mallocInt(1).put(GL30.GL_COLOR_ATTACHMENT0);
-            }
-            buffers.flip();
-            GL20.glDrawBuffers(buffers);
-        }
-    }
 
     public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull WorldInfo world_info, @NonNull LandscapeRenderer landscape_renderer, @NonNull Picker picker, @NonNull Selection selection, @NonNull WorldGenerator generator, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         this.world = local_player.getWorld();
@@ -218,10 +203,17 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
 
-        if (postProcessor.resize(frustum_state.getWidth(), frustum_state.getHeight())) {
-            postProcessor.bindSceneFBO();
-            context.clear(true, true);
-        }
+        postProcessor.resize(frustum_state.getWidth(), frustum_state.getHeight());
+        postProcessor.bindSceneFBO(context);
+        context.setDrawBuffers(true); // Ensure both Color and Mask are cleared
+        context.setColorMask(true, true, true, true);
+        context.setDepthMask(true);
+        context.setDepthTest(true);
+        context.setDepthFunc(GL11.GL_LEQUAL);
+        context.clearScissor();
+        context.clear(true, true);
+
+        context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
 
         // Update Global UBO
         globalUniforms.update(frustum_state, sunDirection, globalAmbient, groundAmbient, LocalEventQueue.getQueue().getTime());
@@ -236,7 +228,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
 
         // Sky & Landscape don't write to mask -> Disable Mask Buffer
-        setDrawBuffers(false);
+        context.setDrawBuffers(false);
 
         if (Globals.draw_sky) {
             sky.render(context, frustum_state, modelViewStack, projectionStack);
@@ -248,7 +240,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             landscape_renderer.render(context, frustum_state, modelViewStack, projectionStack);
         }
         // Trees & Units write to mask -> Enable Mask Buffer
-        setDrawBuffers(true);
+        context.setDrawBuffers(true);
 
         if (Globals.process_trees) {
             tree_renderer.setup(frustum_state);
@@ -281,12 +273,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             render_queues.renderNoDetail();
         }
 
-        // Render transient effects (smoke, lightning) AFTER all opaque scene objects.
-        // This ensures they are depth-tested against the complete scene.
-        lightningRenderer.render(context, render_queues, element_renderer.getRenderState().getLightningQueue(), frustum_state, modelViewStack, projectionStack);
-        emitterRenderer.render(context, render_queues, element_renderer.getRenderState().getEmitterQueue(), frustum_state, modelViewStack, projectionStack);
-        sonicBlastRenderer.render(context, render_queues, element_renderer.getRenderState().getSonicBlastQueue(), frustum_state, modelViewStack, projectionStack);
-
         gui_root.getDelegate().render3D(landscape_renderer, render_queues, frustum_state, modelViewStack, projectionStack);
 
         if (Globals.debugRenderingEnabled()) {
@@ -294,7 +280,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
 
         // Water & Particles don't write to mask -> Disable Mask Buffer
-        setDrawBuffers(false);
+        context.setDrawBuffers(false);
 
         if (Globals.draw_water) {
             water.render(context, frustum_state, landscape_renderer.getVisiblePatches());
@@ -303,8 +289,14 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         if (Globals.process_misc)
             render_queues.renderBlends(context, frustum_state, projectionStack);
 
+        // Render transient effects (smoke, lightning) AFTER all other scene objects.
+        // This ensures they are depth-tested against the complete scene (including water and blended units).
+        lightningRenderer.render(context, render_queues, element_renderer.getRenderState().getLightningQueue(), frustum_state, modelViewStack, projectionStack);
+        emitterRenderer.render(context, render_queues, element_renderer.getRenderState().getEmitterQueue(), frustum_state, modelViewStack, projectionStack);
+        sonicBlastRenderer.render(context, render_queues, element_renderer.getRenderState().getSonicBlastQueue(), frustum_state, modelViewStack, projectionStack);
+
         // Rally point uses SpriteShader (Mask) -> Enable
-        setDrawBuffers(true);
+        context.setDrawBuffers(true);
         renderRallyPoint(context, frustum_state);
 
         assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
@@ -314,7 +306,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
 
         // Ensure Mask is enabled for GUI clearing
-        setDrawBuffers(true);
+        context.setDrawBuffers(true);
 
         if (Globals.debugRenderingEnabled()) {
             context.validate();
