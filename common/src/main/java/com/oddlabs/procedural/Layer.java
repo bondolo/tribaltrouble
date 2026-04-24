@@ -23,6 +23,14 @@ public final class Layer {
     private static final float GAMMA_EXPONENT = 2.2f;
     private static final float INV_GAMMA_EXPONENT = 1f / GAMMA_EXPONENT;
 
+    private static float toLinear(float s) {
+        return (float) Math.pow(s, GAMMA_EXPONENT);
+    }
+
+    private static float toSRGB(float l) {
+        return (float) Math.pow(l, INV_GAMMA_EXPONENT);
+    }
+
     private int width;
     private int height;
     public @NonNull Channel r;
@@ -570,6 +578,51 @@ public final class Layer {
         }
         width = r.getWidth();
         height = r.getHeight();
+        return this;
+    }
+
+    /**
+     * Scales the layer to half its dimensions using linear-space filtering.
+     * This is critical for sRGB textures to prevent darkening during downscaling.
+     */
+    public @NonNull Layer scaleHalfLinear() {
+        int new_width = width >> 1;
+        int new_height = height >> 1;
+        if (new_width == 0) new_width = 1;
+        if (new_height == 0) new_height = 1;
+
+        Channel nr = new Channel(new_width, new_height);
+        Channel ng = new Channel(new_width, new_height);
+        Channel nb = new Channel(new_width, new_height);
+        Channel na = (a != null) ? new Channel(new_width, new_height) : null;
+
+        for (int y = 0; y < new_height; y++) {
+            for (int x = 0; x < new_width; x++) {
+                // Average 2x2 block in linear space
+                float lr = 0, lg = 0, lb = 0, la = 0;
+                for (int dy = 0; dy < 2; dy++) {
+                    for (int dx = 0; dx < 2; dx++) {
+                        int sx = Math.min(x * 2 + dx, width - 1);
+                        int sy = Math.min(y * 2 + dy, height - 1);
+                        lr += toLinear(r.getPixel(sx, sy));
+                        lg += toLinear(g.getPixel(sx, sy));
+                        lb += toLinear(b.getPixel(sx, sy));
+                        if (a != null) la += a.getPixel(sx, sy); // Alpha is already linear
+                    }
+                }
+                nr.putPixel(x, y, toSRGB(lr * 0.25f));
+                ng.putPixel(x, y, toSRGB(lg * 0.25f));
+                nb.putPixel(x, y, toSRGB(lb * 0.25f));
+                if (na != null) na.putPixel(x, y, la * 0.25f);
+            }
+        }
+
+        this.r = nr;
+        this.g = ng;
+        this.b = nb;
+        this.a = na;
+        this.width = new_width;
+        this.height = new_height;
         return this;
     }
 

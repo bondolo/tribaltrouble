@@ -3,6 +3,7 @@ package com.oddlabs.tt.landscape;
 import com.oddlabs.tt.render.FBO;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.render.shader.Shader;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.resource.BlendInfo;
 import com.oddlabs.tt.resource.BlendLighting;
@@ -34,6 +35,9 @@ public final class LandscapeBaker {
 
     private static final String FRAGMENT_SHADER = """
             #version 410 core
+            """ +
+            Shader.COLOR_SPACE_FUNCTIONS +
+            """
             uniform sampler2D u_BaseDiffuse;
             uniform sampler2D u_LayerDiffuse;
             uniform sampler2D u_BaseNormal;
@@ -54,15 +58,17 @@ public final class LandscapeBaker {
                 float alpha = texture(u_AlphaMap, v_texCoord).r;
             
                 if (u_Mode == 0) { // Structure Blend
+                    // Fetch source textures (already hardware linearized)
                     vec4 layerDiff = texture(u_LayerDiffuse, v_texCoord * u_TextureScale);
                     vec4 layerNorm = texture(u_LayerNormal, v_texCoord * u_TextureScale);
             
                     out_Diffuse = mix(baseDiff, layerDiff, alpha);
                     out_Normal = mix(baseNorm, layerNorm, alpha);
                 } else { // Lighting Blend
-                    // Additive blend for highlights
-                    out_Diffuse = baseDiff + vec4(u_Color * alpha, 0.0);
-                    out_Normal = baseNorm;         // Keep normals
+                    // u_Color is sRGB, convert to linear for math
+                    vec3 linearLight = toLinear(u_Color);
+                    out_Diffuse = baseDiff + vec4(linearLight * alpha, 0.0);
+                    out_Normal = baseNorm;
                 }
             }
             """;
@@ -124,10 +130,12 @@ public final class LandscapeBaker {
                         fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT1, normal[dst]);
                         context.setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
                         fbo.checkStatus();
-                        checkGLError("After FBO setup " + i);
 
-                        // We don't clear here because we are blending on top of previous result
-                        // GL11.glClear(GL11.GL_COLOR_BUFFER_BIT); 
+                        if (i == 0) {
+                            // First layer initialization
+                            GL11.glClearColor(0, 0, 0, 0);
+                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                        }
 
                         GL13.glActiveTexture(GL13.GL_TEXTURE0);
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, diffuse[src].getHandle());
@@ -148,8 +156,6 @@ public final class LandscapeBaker {
                         }
 
                         quad.render();
-                        checkGLError("After render " + i);
-
                         current = dst; // Flip
                     }
                 }

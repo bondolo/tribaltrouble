@@ -228,7 +228,9 @@ public final class Sprite {
             if (lowerName.contains("leaf") || lowerName.contains("plant") || lowerName.contains("crown") || lowerName.contains("branch") || lowerName.contains("foliage") || lowerName.contains("bush")) {
                 wrapMode = GL12.GL_CLAMP_TO_EDGE;
             }
-            return new Texture[]{Resources.findResource(new TextureFile("/textures/models/" + texture_name, color_format, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, wrapMode, wrapMode, mipmap_cutoff, 100000, 0.1f, max_alpha))};
+            boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica") || lowerName.contains("team");
+            boolean isSrgb = !isData;
+            return new Texture[]{Resources.findResource(new TextureFile("/textures/models/" + texture_name, color_format, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, wrapMode, wrapMode, mipmap_cutoff, 100000, 0.1f, max_alpha, isData, isSrgb))};
         }
     }
 

@@ -13,8 +13,8 @@ import org.jspecify.annotations.Nullable;
  * Specialized render state for handling attached accessories.
  */
 final class AttachedRenderState implements ModelState<Model> {
-    private @NonNull ElementRenderState<?> parentState;
-    private @NonNull Accessory accessory;
+    private ElementRenderState<?> parentState;
+    private Accessory accessory;
 
     AttachedRenderState() {
     }

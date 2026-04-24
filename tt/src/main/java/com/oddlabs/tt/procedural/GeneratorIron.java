@@ -7,6 +7,7 @@ import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.GLIntImage;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL21;
 
 public final class GeneratorIron extends TextureGenerator {
     private static final int TEXTURE_SIZE = 128;
@@ -39,7 +40,7 @@ public final class GeneratorIron extends TextureGenerator {
         if (Landscape.DEBUG) new GLIntImage(normalMapLayer).saveAsPNG("generator_iron_normal");
 
         return new Texture[]{
-                new Texture(new GLIntImage(rock), GL11.GL_RGB, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT),
+                new Texture(new GLIntImage(rock), GL21.GL_SRGB8, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT),
                 new Texture(new GLIntImage(normalMapLayer), GL11.GL_RGB, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT)
         };
     }

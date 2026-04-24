@@ -72,6 +72,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     """ +
                     GLOBAL_STATE_BLOCK +
                     FOG_FUNCTION +
+                    COLOR_SPACE_FUNCTIONS +
                     """
                             uniform sampler2D u_DiffuseMap;
                             uniform sampler2D u_NormalMap;
@@ -98,7 +99,8 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                                 vec4 litColor = vec4(diffuseColor.rgb * intensity, diffuseColor.a);
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                                out_FragColor = vec4(mix(u_fogColor.rgb, litColor.rgb, fogFactor), litColor.a);
+                                vec3 finalColor = mix(toLinear(u_fogColor).rgb, litColor.rgb, fogFactor);
+                                out_FragColor = toSRGB(vec4(finalColor, litColor.a));
                             }
                             """;
 

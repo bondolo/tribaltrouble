@@ -50,6 +50,7 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                             out float v_fogDist;
                             out vec3 v_viewPosition;
                             out vec3 v_viewNormal;
+                            out vec3 v_worldNormal;
                             
                             void main() {
                                 vec4 viewPosition = u_modelViewMatrix * vec4(in_Position, 1.0);
@@ -60,6 +61,7 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                             
                                 v_viewPosition = viewPosition.xyz;
                                 v_viewNormal = normalize((u_modelViewMatrix * vec4(in_Normal, 0.0)).xyz);
+                                v_worldNormal = normalize((transpose(u_viewMatrix) * vec4(v_viewNormal, 0.0)).xyz);
                             }
                             """;
 
@@ -89,9 +91,12 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                             in float v_fogDist;
                             in vec3 v_viewPosition;
                             in vec3 v_viewNormal;
+                            in vec3 v_worldNormal;
                             
                             layout(location = 0) out vec4 out_FragColor;
                             layout(location = 1) out vec4 out_MaskColor;
+                            
+                            """ + COLOR_SPACE_FUNCTIONS + """
                             
                             void main() {
                                 vec4 base = texture(u_texture0, v_texCoord0);
@@ -119,7 +124,7 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                             
                                     vec3 lightIntensity = vec3(1.0);
                                     if (u_enableLighting) {
-                                        lightIntensity = calculateLighting(normal, v_viewPosition, specularStrength);
+                                        lightIntensity = calculateLighting(normal, v_worldNormal, v_viewPosition, specularStrength);
                                     }
                             
                                     finalColor = vec4(v_color.rgb * base.rgb * lightIntensity, v_color.a * base.a);
@@ -140,7 +145,8 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                                 if (finalColor.a <= u_alphaTestValue) discard;
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                                out_FragColor = vec4(mix(u_fogColor.rgb, finalColor.rgb, fogFactor), finalColor.a);
+                                vec3 litColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
+                                out_FragColor = toSRGB(vec4(litColor, finalColor.a));
                             }
                             """;
 

@@ -63,6 +63,7 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                         out float v_fogDist;
                         out vec3 v_viewPosition;
                         out vec3 v_viewNormal;
+                        out vec3 v_worldNormal;
                     
                         void main() {
                             // Fetch vertex data for both frames
@@ -94,6 +95,7 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                     
                             v_viewPosition = viewPosition.xyz;
                             v_viewNormal = normalize((u_viewMatrix * in_InstanceModelMatrix * vec4(normal, 0.0)).xyz);
+                            v_worldNormal = normalize((in_InstanceModelMatrix * vec4(normal, 0.0)).xyz);
                         }
                     """;
 
@@ -105,6 +107,7 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                     FOG_FUNCTION +
                     PERTURB_NORMAL_FUNC +
                     FRAGMENT_LIGHTING_FUNCTION +
+                    COLOR_SPACE_FUNCTIONS +
                     """
                             uniform sampler2D u_texture0;
                             uniform sampler2D u_texture1;
@@ -124,6 +127,7 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                             in float v_fogDist;
                             in vec3 v_viewPosition;
                             in vec3 v_viewNormal;
+                            in vec3 v_worldNormal;
                             
                             layout(location = 0) out vec4 out_FragColor;
                             layout(location = 1) out vec4 out_MaskColor;
@@ -156,7 +160,7 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                             
                                     vec3 lightIntensity = vec3(1.0);
                                     if (u_enableLighting) {
-                                        lightIntensity = calculateLighting(normal, v_viewPosition, specularStrength);
+                                        lightIntensity = calculateLighting(normal, v_worldNormal, v_viewPosition, specularStrength);
                                     }
                             
                                     // v_color is the instance color (e.g. material color)
@@ -178,7 +182,8 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                                 }
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                                out_FragColor = vec4(mix(u_fogColor.rgb, finalColor.rgb, fogFactor), finalColor.a);
+                                vec3 litColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
+                                out_FragColor = toSRGB(vec4(litColor, finalColor.a));
                             }
                             """;
 

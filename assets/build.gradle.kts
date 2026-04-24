@@ -136,7 +136,7 @@ fun convertTexture(name: String, png: Any, outSubdir: String, vararg convertArgs
 // 1. External Model Textures
 val convertExternalModels = convertBatch("convertExternalModels", 
     layout.buildDirectory.dir("external_source/textures/textures/models"), "models",
-    "-flip", "-gamma", "0.45454545454545453", "-mipmaps", "-gamma", "2.2", "-format", "dds")
+    "-flip", "-mipmaps", "-format", "dds")
 convertExternalModels.configure { dependsOn(downloadAssets) }
 
 val convertExternalDecals = convertBatch("convertExternalDecals",

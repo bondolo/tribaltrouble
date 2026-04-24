@@ -233,8 +233,8 @@ final class RenderState {
             Player owner = selectable.getOwnerNoCheck();
             boolean point_on_map = !local_player.isEnemy(owner) || (!owner.teamHasBuilding() && PeerHub.getFreeQuitTimeLeft(local_player.getWorld()) < 0f);
             ElementRenderState<S> state = (ElementRenderState<S>) getCachedState(visitor, selectable, z_offset);
-            int sort_status = addToRenderList(state, point_on_map);
-            if (!picking && selectable.isEnabled() && sort_status == SpriteSorter.DETAIL_POLYGON) {
+            SpriteSorter.DetailMode sort_status = addToRenderList(state, point_on_map);
+            if (!picking && selectable.isEnabled() && sort_status == SpriteSorter.DetailMode.POLYGON) {
                 SelectableShadowRenderer shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(selectable.getTemplate().getSelectableShadowRenderer());
                 if (isHovered(selectable) || isSelected(selectable)) {
                     shadow_renderer.addToSelectionList(state);
@@ -325,11 +325,11 @@ final class RenderState {
         visitSelectable(building_visitor, building, z_offset, getBuildingSelectionRadius(building), getBuildingSelectionHeight(building));
     }
 
-    int addToRenderList(@NonNull LODObject model) {
+    SpriteSorter.@NonNull DetailMode addToRenderList(@NonNull LODObject model) {
         return addToRenderList(model, false);
     }
 
-    int addToRenderList(@NonNull LODObject model, boolean point_on_map) {
+    SpriteSorter.@NonNull DetailMode addToRenderList(@NonNull LODObject model, boolean point_on_map) {
         return sprite_sorter.add(model, camera, point_on_map);
     }
 

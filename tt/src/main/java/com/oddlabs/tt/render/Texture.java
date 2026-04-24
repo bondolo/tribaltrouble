@@ -18,6 +18,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
@@ -327,8 +328,8 @@ public final class Texture extends NativeResource<Texture.NativeTexture> {
                 return size_buffer.get(0);
             } else {
                 return switch (internal_format) {
-                    case GL13.GL_COMPRESSED_RGB, GL11.GL_RGB, GL11.GL_RGB8 -> width * height * 3;
-                    case GL13.GL_COMPRESSED_RGBA, GL11.GL_RGBA, GL11.GL_RGBA8 -> width * height * 4;
+                    case GL13.GL_COMPRESSED_RGB, GL11.GL_RGB, GL11.GL_RGB8, GL21.GL_SRGB8 -> width * height * 3;
+                    case GL13.GL_COMPRESSED_RGBA, GL11.GL_RGBA, GL11.GL_RGBA8, GL21.GL_SRGB8_ALPHA8 -> width * height * 4;
                     case GL11.GL_LUMINANCE, GL11.GL_ALPHA8, GL11.GL_ALPHA, GL13.GL_COMPRESSED_LUMINANCE,
                          GL13.GL_COMPRESSED_ALPHA, GL11.GL_RED, GL30.GL_R8 -> width * height;
                     case GL30.GL_R32F -> width * height * 4;

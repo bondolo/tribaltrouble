@@ -44,7 +44,7 @@ public final class TextureProcessor {
         } else {
             // Standard fallback path using STB
             Layer[] images = new Layer[]{loadFile(infile)};
-            images = applyOperations(Arrays.asList(operations.toArray(new String[0])).iterator(), images);
+            images = applyOperations(Arrays.asList(operations.toArray(new String[0])).iterator(), images, infile);
 
             Files.createDirectories(outfile.getParent());
             save(outfile, images);
@@ -196,30 +196,33 @@ public final class TextureProcessor {
         }
     }
 
-    private static Layer @NonNull [] applyOperations(@NonNull Iterator<String> args, Layer @NonNull [] images) {
+    private static Layer @NonNull [] applyOperations(@NonNull Iterator<String> args, Layer @NonNull [] images, @NonNull Path infile) {
         while (args.hasNext()) {
             String op = args.next();
-            images = applyOperation(op, args, images);
+            images = applyOperation(op, args, images, infile);
         }
         return images;
     }
 
-    private static Layer @NonNull [] applyOperation(@NonNull String op, @NonNull Iterator<String> args, Layer @NonNull [] images) {
+    private static Layer @NonNull [] applyOperation(@NonNull String op, @NonNull Iterator<String> args, Layer @NonNull [] images, @NonNull Path infile) {
+        String lowerName = infile.getFileName().toString().toLowerCase();
+        boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica");
+
         switch (op) {
             case "-mipmaps":
                 if (images.length != 1)
                     throw new IllegalArgumentException("Can only create mipmaps from one image, not " + images.length);
                 List<Layer> mipmaps = new ArrayList<>();
-                Layer original_image = images[0];
-                int mip_width = original_image.getWidth();
-                int mip_height = original_image.getHeight();
-                mipmaps.add(original_image);
-                while (mip_width > 1 && mip_height > 1) {
-                    mip_width /= 2;
-                    mip_height /= 2;
-                    Layer mipmap = original_image.copy();
-                    mipmap.scaleCubicWrapping(mip_width, mip_height);
-                    mipmaps.add(mipmap);
+                Layer current = images[0];
+                mipmaps.add(current);
+                while (current.getWidth() > 1 || current.getHeight() > 1) {
+                    current = current.copy();
+                    if (isData) {
+                        current.scaleHalf();
+                    } else {
+                        current.scaleHalfLinear();
+                    }
+                    mipmaps.add(current);
                 }
                 images = mipmaps.toArray(new Layer[0]);
                 break;
