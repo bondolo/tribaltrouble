@@ -1,6 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector4fc;
@@ -21,6 +22,11 @@ class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     @Override
     public @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<M> render_state) {
         return COLOR_TEAM;
+    }
+
+    @Override
+    public Selectable.@NonNull VisualPattern getPattern(@NonNull ElementRenderState<M> render_state) {
+        return Selectable.VisualPattern.NONE;
     }
 
     @Override

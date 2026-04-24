@@ -19,6 +19,12 @@ public final class Color {
 
     public static final Vector4fc BLACK = argb4v(BLACK_INT);
     public static final Vector4fc WHITE = argb4v(WHITE_INT);
+    public static final Vector4fc DARK_RED = argb4v(0xFF_7F_00_00);
+    public static final Vector4fc DARK_GREEN = argb4v(0xFF_00_7F_00);
+    public static final Vector4fc DARK_BLUE = argb4v(0xFF_00_00_7F);
+    public static final Vector4fc RED = argb4v(RED_INT);
+    public static final Vector4fc GREEN = argb4v(GREEN_INT);
+    public static final Vector4fc BLUE = argb4v(BLUE_INT);
     public static final Vector4fc TRANSPARENT = argb4v(TRANSPARENT_INT);
 
     /**

@@ -9,6 +9,8 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.tt.util.Target;
+import com.oddlabs.util.Color;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -21,6 +23,25 @@ import java.util.List;
  * Base class for both {@link Unit} and {@link Building}.
  */
 public abstract sealed class Selectable<T extends Template> extends AccessorizableModel implements Target, Animated, ModelToolTip permits Unit, Building {
+    
+    public enum VisualPattern {
+        NONE(Color.TRANSPARENT, Color.TRANSPARENT),
+        FRIENDLY(Color.GREEN, Color.DARK_GREEN),
+        NEUTRAL(Color.BLUE, Color.DARK_BLUE),
+        ENEMY(Color.RED, Color.DARK_RED),
+        FRIENDLY_BUILDING(Color.GREEN, Color.DARK_GREEN),
+        NEUTRAL_BUILDING(Color.BLUE, Color.DARK_BLUE),
+        ENEMY_BUILDING(Color.RED, Color.DARK_RED);
+
+        public final @NonNull Vector4fc selectedColor;
+        public final @NonNull Vector4fc hoveredColor;
+
+        VisualPattern(@NonNull Vector4fc selectedColor, @NonNull Vector4fc hoveredColor) {
+            this.selectedColor = selectedColor;
+            this.hoveredColor = hoveredColor;
+        }
+    }
+
     private final @NonNull Player owner;
     private @Nullable Behaviour current_behaviour;
     private final Abilities abilities = new Abilities(Abilities.NONE);
@@ -254,6 +275,24 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
 
     public final @NonNull Player getOwner() {
         return getOwnerNoCheck();
+    }
+
+    public final @NonNull VisualPattern getVisualPattern(@NonNull Player localPlayer) {
+        boolean isBuilding = this instanceof Building;
+        return owner == localPlayer
+                ? isBuilding ? VisualPattern.FRIENDLY_BUILDING : VisualPattern.FRIENDLY
+                : localPlayer.isEnemy(owner)
+                    ? isBuilding ? VisualPattern.ENEMY_BUILDING : VisualPattern.ENEMY
+                    : isBuilding ? VisualPattern.NEUTRAL_BUILDING : VisualPattern.NEUTRAL;
+    }
+
+    public final @NonNull Vector4fc getSelectionColor(@NonNull Player localPlayer, boolean selected, boolean hovered) {
+        VisualPattern pattern = getVisualPattern(localPlayer);
+        return selected
+                ? pattern.selectedColor
+                : hovered
+                  ? pattern.hoveredColor
+                  : owner.getColor();
     }
 
     @Override

@@ -2,8 +2,10 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeTargetRespond;
+import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.Resources;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
@@ -18,6 +20,7 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
 
     public TargetRespondRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
         ring = Resources.findResource(desc)[0];
+        setRadial(true);
     }
 
     public void addToTargetList(@NonNull LandscapeTargetRespond target) {
@@ -30,7 +33,8 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
         if (target_list.isEmpty()) return;
 
         try (var _ = setupShadows(context, renderer, modelViewStack, projectionStack)) {
-            setShadowColor(0f, 1f, 0f, 1f);
+            setShadowColor(Color.BLUE);
+            setPattern(Selectable.VisualPattern.FRIENDLY);
             bindShadowTexture(ring);
             while (!target_list.isEmpty()) {
                 var target = target_list.pop();

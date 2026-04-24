@@ -3,6 +3,7 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.model.AccessorizableModel;
 import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Selectable;
 import org.joml.Matrix4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
@@ -43,6 +44,11 @@ final class AttachedRenderState implements ModelState<Model> {
     @Override
     public @NonNull Vector4fc getColor() {
         return parentState.getColor();
+    }
+
+    @Override
+    public Selectable.@NonNull VisualPattern getPattern() {
+        return parentState.getPattern();
     }
 
     @Override

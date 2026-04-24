@@ -1,6 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Selectable;
 import org.joml.Matrix4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
@@ -14,6 +15,8 @@ interface ModelState<M extends Model> extends LODObject {
     @NonNull Vector4fc getSelectionColor();
 
     @NonNull Vector4fc getColor();
+
+    Selectable.@NonNull VisualPattern getPattern();
 
     @Nullable M getModel();
 }

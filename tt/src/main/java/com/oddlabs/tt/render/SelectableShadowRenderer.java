@@ -1,10 +1,14 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.Resources;
+import com.oddlabs.util.Color;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -28,6 +32,7 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         }
+        setRadial(true);
     }
 
     public void addToSelectionList(@NonNull ModelState<?> modelState) {
@@ -48,7 +53,8 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
     @Override
     protected void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         try (var _ = setupShadows(context, renderer, modelViewStack, projectionStack)) {
-            setShadowColor(1f, 1f, 1f, 1f);
+            setShadowColor(Color.WHITE);
+            setPattern(Selectable.VisualPattern.NONE);
             bindShadowTexture(halos[GeneratorHalos.SHADOWED]);
             while (!shadowed_list.isEmpty()) {
                 var model = shadowed_list.pop();
@@ -59,8 +65,9 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
             while (!selection_list.isEmpty()) {
                 var modelState = selection_list.pop();
                 var model = Objects.requireNonNull(modelState.getModel());
-                Vector4fc color = modelState.getSelectionColor();
-                setShadowColor(color.x(), color.y(), color.z(), 1f);
+                setShadowColor(modelState.getSelectionColor());
+                setPattern(modelState.getPattern());
+
                 renderShadow(context, renderer, model.getShadowDiameter(), model.getPositionX(), model.getPositionY());
             }
         }

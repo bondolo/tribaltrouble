@@ -1,5 +1,6 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.player.Player;
@@ -9,12 +10,6 @@ import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
-    private static final Vector4fc COLOR_RED = Color.argb4v(0xC0_FF_00_00);
-    private static final Vector4fc COLOR_RED_HOVER = Color.argb4v(0xC0_7f_00_00);
-    private static final Vector4fc COLOR_GREEN = Color.argb4v(0xC0_00_FF_00);
-    private static final Vector4fc COLOR_GREEN_HOVER = Color.argb4v(0xC0_00_7F_00);
-    private static final Vector4fc COLOR_BLUE = Color.argb4v(0xC0_00_00_FF);
-    private static final Vector4fc COLOR_BLUE_HOVER = Color.argb4v(0xC0_00_00_7F);
 
     @Override
     public void getTransform(@NonNull ElementRenderState<S> render_state, @NonNull Matrix4f dest) {
@@ -37,17 +32,13 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
     public final @NonNull Vector4fc getSelectionColor(@NonNull ElementRenderState<S> render_state) {
         Player local_player = render_state.render_state.getLocalPlayer();
         S model = render_state.getModel();
-        return render_state.render_state.isSelected(model)
-                ? model.getOwner() == local_player
-                  ? COLOR_GREEN
-                  : local_player.isEnemy(model.getOwner())
-                    ? COLOR_RED : COLOR_BLUE
-                : render_state.render_state.isHovered(model)
-                  ? model.getOwner() == local_player
-                    ? COLOR_GREEN_HOVER
-                    : local_player.isEnemy(model.getOwner())
-                      ? COLOR_RED_HOVER : COLOR_BLUE_HOVER
-                  : model.getOwner().getColor();
+        return model.getSelectionColor(local_player, render_state.render_state.isSelected(model), render_state.render_state.isHovered(model));
+    }
+
+    @Override
+    public final Selectable.@NonNull VisualPattern getPattern(@NonNull ElementRenderState<S> render_state) {
+        Player local_player = render_state.render_state.getLocalPlayer();
+        return render_state.getModel().getVisualPattern(local_player);
     }
 
     @Override

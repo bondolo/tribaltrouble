@@ -1,5 +1,6 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.render.shader.DecalShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
@@ -9,6 +10,7 @@ import com.oddlabs.tt.render.state.ScopedState;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;
+import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -29,14 +31,17 @@ public final class DecalRenderer implements AutoCloseable {
     private final @NonNull ShortVBO meshIBO;
     private final @NonNull FloatVBO instanceVBO;
 
+    public static final int HALO_LUT_RESOLUTION = 256;
+
     private static final int MAX_INSTANCES = 1024;
-    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4; // Pos(2) + Size(1) + Color(4)
+    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1; // Pos(2) + Size(1) + Color(4) + Pattern(1)
     private final @NonNull FloatBuffer instanceBuffer;
 
     private int instanceCount = 0;
     private @Nullable Texture currentTexture;
+    private boolean radial = false;
 
-    private static final int GRID_SIZE = 8; // 8x8 grid
+    private static final int GRID_SIZE = 32; // 32x32 grid
     private static final int VERTEX_COUNT = GRID_SIZE * GRID_SIZE;
     private static final int INDEX_COUNT = (GRID_SIZE - 1) * (GRID_SIZE - 1) * 6;
 
@@ -100,7 +105,22 @@ public final class DecalRenderer implements AutoCloseable {
         GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, stride, 3 * Float.BYTES);
         GL33.glVertexAttribDivisor(3, 1);
 
+        // in_InstancePattern (Loc 6, 1 float)
+        GL20.glEnableVertexAttribArray(6);
+        GL20.glVertexAttribPointer(6, 1, GL11.GL_FLOAT, false, stride, 7 * Float.BYTES);
+        GL33.glVertexAttribDivisor(6, 1);
+
         this.vao.unbind();
+    }
+
+    public void setRadial(boolean radial) {
+        if (this.radial != radial) {
+            this.radial = radial;
+        }
+    }
+
+    public boolean isRadial() {
+        return radial;
     }
 
     public @NonNull ScopedState setup(@NonNull RenderContext context, @NonNull LandscapeRenderer landscape, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
@@ -110,6 +130,7 @@ public final class DecalRenderer implements AutoCloseable {
 
         shader.setUniform(DecalShader.Uniforms.WORLD_SIZE, (float) landscape.getHeightMap().getMetersPerWorld());
         shader.setUniform(DecalShader.Uniforms.DEPTH_BIAS, 0.05f);
+        shader.setUniform(DecalShader.Uniforms.RADIAL, radial);
 
         context.setTexture(1, landscape.getHeightMap().getHeightTexture());
         shader.setUniform(DecalShader.Uniforms.HEIGHT_MAP, 1);
@@ -140,7 +161,11 @@ public final class DecalRenderer implements AutoCloseable {
         };
     }
 
-    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size, float r, float g, float b, float a) {
+    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size, @NonNull Vector4fc color) {
+        draw(context, texture, x, y, size, color, Selectable.VisualPattern.NONE);
+    }
+
+    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size, @NonNull Vector4fc color, Selectable.@NonNull VisualPattern pattern) {
         if (currentTexture != texture) {
             flush(context);
             currentTexture = texture;
@@ -153,10 +178,11 @@ public final class DecalRenderer implements AutoCloseable {
         instanceBuffer.put(x);
         instanceBuffer.put(y);
         instanceBuffer.put(size);
-        instanceBuffer.put(r);
-        instanceBuffer.put(g);
-        instanceBuffer.put(b);
-        instanceBuffer.put(a);
+        instanceBuffer.put(color.x());
+        instanceBuffer.put(color.y());
+        instanceBuffer.put(color.z());
+        instanceBuffer.put(color.w());
+        instanceBuffer.put((float) pattern.ordinal());
         instanceCount++;
     }
 

@@ -2,6 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Selectable;
 import org.joml.Matrix4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
@@ -33,4 +34,6 @@ abstract class ModelVisitor<M extends Model> {
     public abstract @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<M> render_state);
 
     public abstract @NonNull Vector4fc getSelectionColor(@NonNull ElementRenderState<M> render_state);
+
+    public abstract Selectable.@NonNull VisualPattern getPattern(@NonNull ElementRenderState<M> render_state);
 }

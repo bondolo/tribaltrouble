@@ -74,7 +74,7 @@ final class RenderState {
         this.picker = picker;
         this.sprite_sorter = sprite_sorter;
         this.render_queues = render_queues;
-        ShadowListKey key = render_queues.registerRespondRenderer(new GeneratorRing(LandscapeTargetRespond.SIZE, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}}));
+        ShadowListKey key = render_queues.registerRespondRenderer(new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}}));
         this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(key);
         this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(
                 render_queues.registerSelectableShadowList(RacesResources.DEFAULT_SHADOW_DESC));

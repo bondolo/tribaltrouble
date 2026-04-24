@@ -1,5 +1,6 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.particle.Particle;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -30,6 +31,11 @@ final class ParticleModelState implements ModelState<Particle> {
     @Override
     public @NonNull Vector4fc getSelectionColor() {
         return NO_SELECTION;
+    }
+
+    @Override
+    public Selectable.@NonNull VisualPattern getPattern() {
+        return Selectable.VisualPattern.NONE;
     }
 
     @Override

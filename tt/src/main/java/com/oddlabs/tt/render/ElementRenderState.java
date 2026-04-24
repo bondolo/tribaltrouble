@@ -1,6 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -48,6 +49,11 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
     @Override
     public @NonNull Vector4fc getSelectionColor() {
         return visitor.getSelectionColor(this);
+    }
+
+    @Override
+    public Selectable.@NonNull VisualPattern getPattern() {
+        return visitor.getPattern(this);
     }
 
     void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model, float f) {

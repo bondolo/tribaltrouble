@@ -27,6 +27,7 @@ import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.procedural.GeneratorLightning;
 import com.oddlabs.tt.procedural.GeneratorPoison;
 import com.oddlabs.tt.procedural.GeneratorSmoke;
+import com.oddlabs.tt.render.DecalRenderer;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
@@ -72,7 +73,9 @@ public final class RacesResources {
     public static final int INDEX_MAGIC_BLAST = 1;
     public static final float THROW_RANGE = 6f;
 
-    public static final GeneratorHalos DEFAULT_SHADOW_DESC = new GeneratorHalos(128, new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
+    public static final float BUILDING_RING_PHYSICAL_THICKNESS = 0.2f;
+
+    public static final GeneratorHalos DEFAULT_SHADOW_DESC = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION, new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
 
@@ -126,7 +129,6 @@ public final class RacesResources {
             float start_selection_radius,
             float start_selection_height,
             float shadow_diameter,
-            float ring_thickness,
             int placing_size,
             float smoke_radius,
             float smoke_height,
@@ -145,9 +147,10 @@ public final class RacesResources {
             float chimney_z, @NonNull String name) {
         assert hit_offset_z.length == 3;
 
-        final float ring_mid = 0.38f;
-        final float fadeout = 0.005f;
-        Supplier<Texture[]> building_shadow_desc = new GeneratorHalos(256, new float[][]{{0.15f, 0.5f}, {0.5f, 0f}}, new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2 + fadeout, 0f}});
+        final float ring_mid = 0.445f;
+        final float fadeout = 0.002f;
+        final float ring_thickness = BUILDING_RING_PHYSICAL_THICKNESS / shadow_diameter;
+        Supplier<Texture[]> building_shadow_desc = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION, new float[][]{{0.15f, 0.5f}, {0.5f, 0f}}, new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2 + fadeout, 0f}});
         ShadowListKey shadow_renderer = queues.registerSelectableShadowList(building_shadow_desc);
         SpriteFile building = new SpriteFile(built_name,
                 Globals.NO_MIPMAP_CUTOFF,
@@ -332,7 +335,7 @@ public final class RacesResources {
                 3.5f, 6f,
                 "/geometry/vikings/quarters_start.binsprite",
                 5f, 1f,
-                22f, .001f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
+                22f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
                 new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
@@ -349,7 +352,7 @@ public final class RacesResources {
                 3.5f, 6f,
                 "/geometry/vikings/armory_start.binsprite",
                 5f, 1f,
-                22f, .001f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
+                22f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
                 new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
@@ -366,7 +369,7 @@ public final class RacesResources {
                 2f, 7f,
                 "/geometry/vikings/tower_start.binsprite",
                 2.5f, 1f,
-                10f, .009f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
+                10f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
                 new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 2f, 7.5f}, 9.55f, 2.5f,
@@ -383,7 +386,7 @@ public final class RacesResources {
                 4f, 6f,
                 "/geometry/natives/quarters_start.binsprite",
                 5f, 1f,
-                16f, .004f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
+                16f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
                 new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
@@ -400,7 +403,7 @@ public final class RacesResources {
                 4f, 6f,
                 "/geometry/natives/armory_start.binsprite",
                 5f, 1f,
-                16f, .004f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
+                16f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
                 new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
@@ -417,7 +420,7 @@ public final class RacesResources {
                 1f, 14f,
                 "/geometry/natives/tower_start.binsprite",
                 1.5f, 2f,
-                5f, .025f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
+                5f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
                 new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 11.5f, 11.5f}, 13f, 2.5f,
