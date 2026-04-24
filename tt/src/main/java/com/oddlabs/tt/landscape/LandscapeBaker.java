@@ -173,6 +173,10 @@ public final class LandscapeBaker {
                 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
 
+                // Detach textures from FBO before returning them
+                // This prevents GL_INVALID_OPERATION when they are later bound as source textures (feedback loop).
+                fbo.detachAll();
+
                 // Delete the unused pair
                 diffuse[1 - current].close();
                 normal[1 - current].close();

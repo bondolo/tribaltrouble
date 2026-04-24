@@ -80,7 +80,7 @@ public final class EmitterRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
         if (emitters.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
@@ -96,6 +96,13 @@ public final class EmitterRenderer implements AutoCloseable {
 
             context.setActiveTexture(0);
             shader.setUniform(ParticleShader.Uniforms.TEXTURE_0, 0);
+            
+            context.setActiveTexture(1);
+            context.setTexture(1, depthTexture.getHandle());
+            shader.setUniform(ParticleShader.Uniforms.DEPTH_MAP, 1);
+            
+            shader.setUniform(ParticleShader.Uniforms.NEAR_FAR, Globals.VIEW_MIN, Globals.VIEW_MAX);
+            shader.setUniform(ParticleShader.Uniforms.SOFT_RANGE, 2.0f); // Adjust default as needed
 
             for (Emitter<?> emitter : emitters) {
                 if (Globals.draw_particles)
@@ -107,6 +114,7 @@ public final class EmitterRenderer implements AutoCloseable {
             batches.clear();
             vao.unbind();
             context.setTexture(0, 0);
+            context.setTexture(1, 0);
         }
     }
 

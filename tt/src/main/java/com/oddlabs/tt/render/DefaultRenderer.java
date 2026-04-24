@@ -289,10 +289,13 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         if (Globals.process_misc)
             render_queues.renderBlends(context, frustum_state, projectionStack);
 
+        // Copy depth buffer for Soft Particles (smoke/effects)
+        postProcessor.copyDepthBuffer();
+
         // Render transient effects (smoke, lightning) AFTER all other scene objects.
         // This ensures they are depth-tested against the complete scene (including water and blended units).
         lightningRenderer.render(context, render_queues, element_renderer.getRenderState().getLightningQueue(), frustum_state, modelViewStack, projectionStack);
-        emitterRenderer.render(context, render_queues, element_renderer.getRenderState().getEmitterQueue(), frustum_state, modelViewStack, projectionStack);
+        emitterRenderer.render(context, render_queues, element_renderer.getRenderState().getEmitterQueue(), frustum_state, modelViewStack, projectionStack, postProcessor.getDepthCopyTexture());
         sonicBlastRenderer.render(context, render_queues, element_renderer.getRenderState().getSonicBlastQueue(), frustum_state, modelViewStack, projectionStack);
 
         // Rally point uses SpriteShader (Mask) -> Enable

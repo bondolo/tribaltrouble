@@ -73,8 +73,13 @@ public final class FBO implements AutoCloseable {
         if (maskTexture != null) attachTexture(GL30.GL_COLOR_ATTACHMENT1, maskTexture);
         if (depthTexture != null) attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthTexture);
 
-        // Restore draw buffers state after resize/rebind
-        Renderer.getRenderer().getRenderContext().setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+        // Restore draw buffers state after resize/rebind (if we have color attachments)
+        if (colorTexture != null || maskTexture != null) {
+            Renderer.getRenderer().getRenderContext().setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+        } else {
+            GL11.glDrawBuffer(GL11.GL_NONE);
+            GL11.glReadBuffer(GL11.GL_NONE);
+        }
 
         checkStatus();
         unbind();
@@ -95,6 +100,17 @@ public final class FBO implements AutoCloseable {
         Renderer.getRenderer().getRenderContext().bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
+    public void detachAll() {
+        bind();
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, 0, 0);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL11.GL_TEXTURE_2D, 0, 0);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, 0, 0);
+        colorTexture = null;
+        maskTexture = null;
+        depthTexture = null;
+        unbind();
+    }
+
     public @Nullable Texture getColorTexture() {
         return colorTexture;
     }
@@ -107,12 +123,24 @@ public final class FBO implements AutoCloseable {
         return depthTexture;
     }
 
+    public void blitDepthTo(@NonNull FBO target) {
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, id);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.id);
+        GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, target.width, target.height,
+                GL11.GL_DEPTH_BUFFER_BIT, GL11.GL_NEAREST);
+        // Bind back to original target
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, id);
+    }
+
     public void attachTexture(int attachmentPoint, @NonNull Texture texture) {
         attachTexture(attachmentPoint, texture, 0);
     }
 
     public void attachTexture(int attachmentPoint, @NonNull Texture texture, int level) {
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachmentPoint, GL11.GL_TEXTURE_2D, texture.getHandle(), level);
+        if (attachmentPoint == GL30.GL_COLOR_ATTACHMENT0) colorTexture = texture;
+        else if (attachmentPoint == GL30.GL_COLOR_ATTACHMENT1) maskTexture = texture;
+        else if (attachmentPoint == GL30.GL_DEPTH_ATTACHMENT) depthTexture = texture;
     }
 
     public void checkStatus() {

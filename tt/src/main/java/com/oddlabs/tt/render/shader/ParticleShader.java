@@ -13,7 +13,10 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
         String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0";
+        String DEPTH_MAP = "u_depthMap";
         String IS_ADDITIVE = "u_isAdditive";
+        String NEAR_FAR = "u_nearFar"; // x = near, y = far
+        String SOFT_RANGE = "u_softRange";
     }
 
     public interface Attributes {
@@ -85,6 +88,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
             out vec2 v_texCoord;
             out vec4 v_color;
             out float v_fogDist;
+            out vec3 v_viewPos;
             
             void main() {
                 vec3 center = in_CenterPosition;
@@ -120,7 +124,9 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     v_texCoord = in_UvCoords2.xy;
                 }
                 
-                gl_Position = u_projectionMatrix * (mv * vec4(p, 1.0));
+                vec4 viewPosition = mv * vec4(p, 1.0);
+                v_viewPos = viewPosition.xyz;
+                gl_Position = u_projectionMatrix * viewPosition;
             }
             """;
 
@@ -132,13 +138,22 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     FOG_FUNCTION +
                     """
                             uniform sampler2D u_texture0;
+                            uniform sampler2D u_depthMap;
                             uniform float u_isAdditive;
+                            uniform vec2 u_nearFar;
+                            uniform float u_softRange;
                             
                             in vec2 v_texCoord;
                             in vec4 v_color;
                             in float v_fogDist;
+                            in vec3 v_viewPos;
                             
                             layout(location = 0) out vec4 out_FragColor;
+                            
+                            float getLinearDepth(float depth) {
+                                float z = depth * 2.0 - 1.0;
+                                return (2.0 * u_nearFar.x * u_nearFar.y) / (u_nearFar.y + u_nearFar.x - z * (u_nearFar.y - u_nearFar.x));
+                            }
                             
                             void main() {
                                 vec4 texColor = texture(u_texture0, v_texCoord);
@@ -146,6 +161,15 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                             
                                 if (finalColor.a <= 0.0) {
                                     discard;
+                                }
+
+                                // Soft Particles (Depth Fading)
+                                if (u_softRange > 0.0) {
+                                    vec2 screenUV = gl_FragCoord.xy / textureSize(u_depthMap, 0).xy;
+                                    float sceneDepth = getLinearDepth(texture(u_depthMap, screenUV).r);
+                                    float particleDepth = -v_viewPos.z; // view-space Z is negative
+                                    float depthDiff = sceneDepth - particleDepth;
+                                    finalColor.a *= clamp(depthDiff / u_softRange, 0.0, 1.0);
                                 }
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);

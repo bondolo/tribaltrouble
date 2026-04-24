@@ -13,6 +13,9 @@ import org.lwjgl.opengl.GL31;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import static com.oddlabs.tt.util.GLUtils.checkAndThrow;
+import static com.oddlabs.tt.util.GLUtils.checkGLError;
+
 /**
  * Concrete implementation of RenderContext using LWJGL OpenGL bindings.
  * Manages OpenGL state transitions and provides shadowing to minimize redundant GL calls.
@@ -181,7 +184,7 @@ public final class GLRenderContext implements RenderContext {
 
     @Override
     public void validate() {
-        com.oddlabs.tt.util.GLUtils.checkAndThrow("State Validation Pre-Check");
+        checkAndThrow("State Validation Pre-Check");
 
         // Verify Depth Func
         int glDepthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
@@ -207,7 +210,7 @@ public final class GLRenderContext implements RenderContext {
             }
         }
 
-        com.oddlabs.tt.util.GLUtils.checkAndThrow("State Validation Post-Check");
+        checkAndThrow("State Validation Post-Check");
     }
 
     @Override
@@ -221,6 +224,10 @@ public final class GLRenderContext implements RenderContext {
     @Override
     public void setTexture(int unit, int textureHandle) {
         if (unit < 0 || unit >= boundTextures.length) return;
+
+        // Clear any latent errors from previous operations (like glDrawBuffers safety checks)
+        // to prevent them from surfacing here as an "invalid operation".
+        checkGLError("Pre-setTexture Unit=" + unit + " Handle=" + textureHandle);
 
         if (boundTextures[unit] != textureHandle) {
             setActiveTexture(unit);
@@ -495,23 +502,42 @@ public final class GLRenderContext implements RenderContext {
             if (mask) {
                 // Safety check: Does this FBO actually have a second color attachment?
                 // This prevents GL_INVALID_OPERATION on platforms like macOS during complex transitions.
-                stack.push();
-                java.nio.IntBuffer params = stack.mallocInt(1);
-                GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
-                boolean hasAttachment1 = params.get(0) != GL11.GL_NONE;
-                stack.pop();
+                // We only check if an FBO is bound (currentFBO != 0).
+                boolean hasAttachment1 = false;
+                if (currentFBO != 0) {
+                    stack.push();
+                    java.nio.IntBuffer params = stack.mallocInt(1);
+                    GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
+                    hasAttachment1 = params.get(0) != GL11.GL_NONE;
+                    stack.pop();
+                }
 
                 if (hasAttachment1) {
                     buffers = stack.mallocInt(2).put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1);
                 } else {
-                    buffers = stack.mallocInt(1).put(GL30.GL_COLOR_ATTACHMENT0);
+                    buffers = stack.mallocInt(1).put(currentFBO == 0 ? GL11.GL_BACK : GL30.GL_COLOR_ATTACHMENT0);
                 }
             } else {
-                buffers = stack.mallocInt(1).put(GL30.GL_COLOR_ATTACHMENT0);
+                // Another safety check: Does this FBO have ANY color attachment?
+                // For depth-only FBOs (like depthCopyFBO), we MUST use GL_NONE.
+                boolean hasAttachment0 = currentFBO == 0; // Backbuffer always has attachment 0
+                if (currentFBO != 0) {
+                    stack.push();
+                    java.nio.IntBuffer params = stack.mallocInt(1);
+                    GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
+                    hasAttachment0 = params.get(0) != GL11.GL_NONE;
+                    stack.pop();
+                }
+
+                if (hasAttachment0) {
+                    buffers = stack.mallocInt(1).put(currentFBO == 0 ? GL11.GL_BACK : GL30.GL_COLOR_ATTACHMENT0);
+                } else {
+                    buffers = stack.mallocInt(1).put(GL11.GL_NONE);
+                }
             }
             buffers.flip();
             GL20.glDrawBuffers(buffers);
-            com.oddlabs.tt.util.GLUtils.checkAndThrow("glDrawBuffers");
+            checkAndThrow("glDrawBuffers(" + mask + ") FBO=" + currentFBO);
         }
         maskState = newState;
     }
@@ -532,7 +558,7 @@ public final class GLRenderContext implements RenderContext {
             }
             buffers.flip();
             GL20.glDrawBuffers(buffers);
-            com.oddlabs.tt.util.GLUtils.checkAndThrow("glDrawBuffers(int[])");
+            checkAndThrow("glDrawBuffers(int[])");
         }
         // Sync maskState if it matches one of our known configurations
         if (attachments.length == 2 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0 && attachments[1] == GL30.GL_COLOR_ATTACHMENT1) {
