@@ -135,20 +135,19 @@ public final class VikingIsland1 extends Island {
         };
 
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY:
+            case CampaignState.DIFFICULTY_EASY -> {
                 new TimeTrigger(getViewer().getWorld(), 8f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 25f * 60f, attack2_runnable);
-                break;
-            case CampaignState.DIFFICULTY_NORMAL:
+            }
+            case CampaignState.DIFFICULTY_NORMAL -> {
                 new TimeTrigger(getViewer().getWorld(), 5f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 8.5f * 60f, attack2_runnable);
-                break;
-            case CampaignState.DIFFICULTY_HARD:
+            }
+            case CampaignState.DIFFICULTY_HARD -> {
                 new TimeTrigger(getViewer().getWorld(), 4f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack2_runnable);
-                break;
-            default:
-                throw new IllegalArgumentException("unexpected difficulty");
+            }
+            default -> throw new IllegalArgumentException("unexpected difficulty");
         }
 
         // Defeat if neutrals eliminated

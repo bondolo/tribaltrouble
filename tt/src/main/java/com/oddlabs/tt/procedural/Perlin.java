@@ -194,30 +194,30 @@ public final class Perlin {
     private void transformImage(int width, int height, @NonNull Summation summation) {
         float value = 0;
         switch (summation) {
-            case NORMAL:
-                break;
-            case ABS:
+            case NORMAL -> {
+            }
+            case ABS -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         channel.putPixel(x, y, Math.abs(channel.getPixel(x, y)));
                     }
                 }
-                break;
-            case SINE:
+            }
+            case SINE -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         channel.putPixel(x, y, (float) Math.sin(Math.PI * 8 * channel.getPixel(x, y)));
                     }
                 }
-                break;
-            case XSINE:
+            }
+            case XSINE -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         channel.putPixel(x, y, (float) Math.sin(x / ((width / 256f) * Math.PI) + channel.getPixel(x, y)));
                     }
                 }
-                break;
-            case NORMAL_MOD:
+            }
+            case NORMAL_MOD -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         value = channel.getPixel(x, y);
@@ -225,8 +225,8 @@ public final class Perlin {
                         channel.putPixel(x, y, value);
                     }
                 }
-                break;
-            case ABS_MOD:
+            }
+            case ABS_MOD -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         value = Math.abs(channel.getPixel(x, y));
@@ -234,8 +234,8 @@ public final class Perlin {
                         channel.putPixel(x, y, value);
                     }
                 }
-                break;
-            case XSINE_MOD:
+            }
+            case XSINE_MOD -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         value = (float) Math.sin(x / ((width / 256f) * Math.PI) + channel.getPixel(x, y));
@@ -243,8 +243,8 @@ public final class Perlin {
                         channel.putPixel(x, y, value);
                     }
                 }
-                break;
-            case WOOD1:
+            }
+            case WOOD1 -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         value = 4 * channel.getPixel(x, y);
@@ -253,8 +253,8 @@ public final class Perlin {
                         channel.putPixel(x, y, value);
                     }
                 }
-                break;
-            case WOOD2:
+            }
+            case WOOD2 -> {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         value = 0.5f * (1 + (float) Math.sin(x / ((width / 256f) * Math.PI) + channel.getPixel(x, y)));
@@ -262,9 +262,10 @@ public final class Perlin {
                         channel.putPixel(x, y, value);
                     }
                 }
-                break;
-            default:
+            }
+            default -> {
                 assert false : "incorrect sum_method";
+            }
         }
     }
 

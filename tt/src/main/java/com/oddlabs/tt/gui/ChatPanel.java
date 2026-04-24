@@ -184,20 +184,15 @@ public class ChatPanel extends Panel implements ChatListener {
             ChatRoomUser user = box.getRightClickedRowData();
             String nick = user.getNick();
             switch (item_index) {
-                case PULLDOWN_INDEX_MESSAGE:
-                    gui_root.addModalForm(new PrivateMessageForm(gui_root, nick));
-                    break;
-                case PULLDOWN_INDEX_INFO:
-                    Network.getMatchmakingClient().requestInfo(gui_root, nick);
-                    break;
-                case PULLDOWN_INDEX_IGNORE:
+                case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, nick));
+                case PULLDOWN_INDEX_INFO -> Network.getMatchmakingClient().requestInfo(gui_root, nick);
+                case PULLDOWN_INDEX_IGNORE -> {
                     if (ChatCommand.isIgnoring(nick))
                         ChatCommand.unignore(gui_root.getInfoPrinter(), nick);
                     else
                         ChatCommand.ignore(gui_root.getInfoPrinter(), nick);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unexpected pulldown index");
+                }
+                default -> throw new IllegalArgumentException("Unexpected pulldown index");
             }
             box.setFocus();
         }

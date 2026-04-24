@@ -820,7 +820,7 @@ public final class Channel {
         int tmp_w = width;
         int tmp_h = height;
         switch (degrees) {
-            case 90:
+            case 90 -> {
                 channel = new Channel(height, width);
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
@@ -829,16 +829,16 @@ public final class Channel {
                 }
                 width = tmp_h;
                 height = tmp_w;
-                break;
-            case 180:
+            }
+            case 180 -> {
                 channel = new Channel(width, height);
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         channel.putPixel(width - x - 1, height - y - 1, pixels[y * width + x]);
                     }
                 }
-                break;
-            case 270:
+            }
+            case 270 -> {
                 channel = new Channel(height, width);
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
@@ -847,11 +847,12 @@ public final class Channel {
                 }
                 width = tmp_h;
                 height = tmp_w;
-                break;
-            default:
+            }
+            default -> {
                 assert false : "Rotation degrees not a multiple of 90";
+            }
         }
-        if (channel != null) pixels = channel.getPixels();
+        pixels = channel.getPixels();
         return this;
     }
 

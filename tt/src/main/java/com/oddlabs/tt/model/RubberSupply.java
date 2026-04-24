@@ -104,7 +104,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public @NonNull Supply respawn() {
-        throw new RuntimeException();
+        throw new UnsupportedOperationException("RubberSupply cannot respawn");
     }
 
     @Override
@@ -197,16 +197,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private void fly(float t) {
         PathTracker.State state = path_tracker.animate(METERS_PER_SECOND * t);
         switch (state) {
-            case OK:
-            case OK_INTERRUPTIBLE:
-                return;
-            case DONE:
-            case BLOCKED:
-            case SOFTBLOCKED:
+            case OK, OK_INTERRUPTIBLE -> {
+            }
+            case DONE, BLOCKED, SOFTBLOCKED -> {
                 setNewAnimation(Animation.IDLING);
-                return;
-            default:
-                throw new RuntimeException("Invalid tracker state: " + state);
+            }
+            default -> throw new IllegalStateException("Invalid tracker state: " + state);
         }
     }
 

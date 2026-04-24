@@ -345,40 +345,36 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     @Override
     public void receivedList(int type, Object @NonNull [] names) {
         switch (type) {
-            case MatchmakingServerInterface.TYPE_GAME:
+            case MatchmakingServerInterface.TYPE_GAME -> {
                 game_hosts.addAll(Arrays.asList((GameHost[]) names));
                 updateGameListGUI();
-                break;
-            case MatchmakingServerInterface.TYPE_CHAT_ROOM_LIST:
+            }
+            case MatchmakingServerInterface.TYPE_CHAT_ROOM_LIST -> {
                 chat_rooms.addAll(Arrays.asList((ChatRoomEntry[]) names));
                 updateChatRoomListGUI();
-                break;
-            case MatchmakingServerInterface.TYPE_RANKING_LIST:
+            }
+            case MatchmakingServerInterface.TYPE_RANKING_LIST -> {
                 for (Object name : names) {
                     updateRankingList((RankingEntry) name);
                 }
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected list type " + type);
+            }
+            default -> throw new IllegalArgumentException("Unexpected list type " + type);
         }
     }
 
     @Override
     public void clearList(int type) {
         switch (type) {
-            case MatchmakingServerInterface.TYPE_GAME:
+            case MatchmakingServerInterface.TYPE_GAME -> {
                 game_hosts.clear();
                 game_list_box.clear();
-                break;
-            case MatchmakingServerInterface.TYPE_CHAT_ROOM_LIST:
+            }
+            case MatchmakingServerInterface.TYPE_CHAT_ROOM_LIST -> {
                 chat_rooms.clear();
                 chat_room_list_box.clear();
-                break;
-            case MatchmakingServerInterface.TYPE_RANKING_LIST:
-                ranking_list_box.clear();
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected list type " + type);
+            }
+            case MatchmakingServerInterface.TYPE_RANKING_LIST -> ranking_list_box.clear();
+            default -> throw new IllegalArgumentException("Unexpected list type " + type);
         }
     }
 
@@ -555,14 +551,11 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         public void itemChosen(@NonNull PulldownMenu<GameHost> menu, int item_index) {
             GameHost host = box.getRightClickedRowData();
             switch (item_index) {
-                case 0: //Join
-                    joinGame(host);
-                    break;
-                case 1: //Info
-                    gui_root.addModalForm(new GameInfoForm(host.getGame()));
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unexpected action " + item_index);
+                case 0 -> //Join
+                        joinGame(host);
+                case 1 -> //Info
+                        gui_root.addModalForm(new GameInfoForm(host.getGame()));
+                default -> throw new IllegalArgumentException("Unexpected action " + item_index);
             }
             box.setFocus();
         }

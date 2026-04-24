@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
@@ -67,7 +68,7 @@ public final class ARMIEvent implements Serializable {
                 }
                 return static_byte_stream.toByteArray();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         } else
             return null;

@@ -8,13 +8,15 @@ import org.jspecify.annotations.NonNull;
 import java.util.Random;
 
 public final class Bricks {
+    public enum Type {
+        BUMP,
+        COLOR
+    }
+
     private final @NonNull Random random;
     public final @NonNull Channel channel;
 
-    public static final int BUMP = 1;
-    public static final int COLOR = 2;
-
-    public Bricks(int width, int height, int bricks, int layers, float x_mortar, float y_mortar, float stagger, float randomness, long seed, int type) {
+    public Bricks(int width, int height, int bricks, int layers, float x_mortar, float y_mortar, float stagger, float randomness, long seed, @NonNull Type type) {
 
         random = new Random(seed);
         float[][] cells = new float[bricks][layers];
@@ -42,18 +44,14 @@ public final class Bricks {
                     channel.putPixel(x, y, 0f);
                 } else {
                     switch (type) {
-                        case BUMP:
-                            channel.putPixel(x, y, 1f);
-                            break;
-                        case COLOR:
+                        case BUMP -> channel.putPixel(x, y, 1f);
+                        case COLOR -> {
                             if (x_coord < 0 || x_coord > 1) {
                                 channel.putPixel(x, y, cells[Tools.modulo(x_cell + Math.round(x_coord - x_coord_mod), bricks)][y_cell]);
                             } else {
                                 channel.putPixel(x, y, cells[x_cell][y_cell]);
                             }
-                            break;
-                        default:
-                            assert false : "incorrect coloring type";
+                        }
                     }
                 }
             }

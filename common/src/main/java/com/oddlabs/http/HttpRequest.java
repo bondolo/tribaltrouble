@@ -25,7 +25,7 @@ public final class HttpRequest {
             URL url = new URL(parameters.url);
             return spawnPostRequest(task_thread, url, parameters, parser, callback);
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException("Invalid URL: " + parameters.url, e);
         }
     }
 
@@ -111,7 +111,7 @@ public final class HttpRequest {
                 CryptUtils.setupHttpsConnection(connection);
             return conn;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IOException("Failed to setup HTTPS connection", e);
         }
     }
 

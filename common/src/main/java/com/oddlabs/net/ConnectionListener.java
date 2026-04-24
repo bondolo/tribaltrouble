@@ -3,6 +3,7 @@ package com.oddlabs.net;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -12,8 +13,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,7 +116,7 @@ public final class ConnectionListener extends AbstractConnectionListener impleme
             SelectionKey socket_key = channel.register(network.getSelector(), SelectionKey.OP_READ);
             return socket_key;
         } catch (ClosedChannelException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

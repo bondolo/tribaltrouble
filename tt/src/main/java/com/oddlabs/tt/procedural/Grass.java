@@ -130,28 +130,29 @@ public final class Grass {
                 float color_b = 0;
 
                 switch ((int) (t * 4)) {
-                    case 0:
+                    case 0 -> {
                         color_r = Tools.interpolateLinear(color0_r, color1_r, t / 0.25f);
                         color_g = Tools.interpolateLinear(color0_g, color1_g, t / 0.25f);
                         color_b = Tools.interpolateLinear(color0_b, color1_b, t / 0.25f);
-                        break;
-                    case 1:
+                    }
+                    case 1 -> {
                         color_r = Tools.interpolateLinear(color1_r, color2_r, (t - 0.25f) / 0.25f);
                         color_g = Tools.interpolateLinear(color1_g, color2_g, (t - 0.25f) / 0.25f);
                         color_b = Tools.interpolateLinear(color1_b, color2_b, (t - 0.25f) / 0.25f);
-                        break;
-                    case 2:
+                    }
+                    case 2 -> {
                         color_r = Tools.interpolateLinear(color2_r, color3_r, (t - 0.50f) / 0.25f);
                         color_g = Tools.interpolateLinear(color2_g, color3_g, (t - 0.50f) / 0.25f);
                         color_b = Tools.interpolateLinear(color2_b, color3_b, (t - 0.50f) / 0.25f);
-                        break;
-                    case 3:
+                    }
+                    case 3 -> {
                         color_r = Tools.interpolateLinear(color3_r, color4_r, (t - 0.75f) / 0.25f);
                         color_g = Tools.interpolateLinear(color3_g, color4_g, (t - 0.75f) / 0.25f);
                         color_b = Tools.interpolateLinear(color3_b, color4_b, (t - 0.75f) / 0.25f);
-                        break;
-                    default:
+                    }
+                    default -> {
                         assert false : "incorrect color point";
+                    }
                 }
 
                 int x_int = (int) x;

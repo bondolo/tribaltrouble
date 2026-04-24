@@ -40,7 +40,7 @@ final class Icons {
             Document document = builder.parse(url.openStream());
             return document.getDocumentElement();
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to load icon atlas: " + xml_file, e);
         }
     }
 

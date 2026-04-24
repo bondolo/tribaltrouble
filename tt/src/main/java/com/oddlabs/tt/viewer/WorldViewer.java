@@ -239,7 +239,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 else if (player.getRace().getChieftainAI() instanceof NativeChieftainAI)
                     chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle, "native_chieftain_name"), false);
                 else
-                    throw new RuntimeException("Unknown chieftain AI");
+                    throw new IllegalStateException("Unknown chieftain AI: " + player.getRace().getChieftainAI());
                 chieftain.increaseMagicEnergy(0, 1000);
                 chieftain.increaseMagicEnergy(1, 1000);
                 player.setActiveChieftain(chieftain);

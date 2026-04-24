@@ -895,43 +895,44 @@ public final class Layer {
                 t = v_val * (1 - s_val * (1 - f));
 
                 switch (i) {
-                    case 0:
+                    case 0 -> {
                         r_val = v_val;
                         g_val = t;
                         b_val = p;
-                        break;
-                    case 1:
+                    }
+                    case 1 -> {
                         r_val = q;
                         g_val = v_val;
                         b_val = p;
-                        break;
-                    case 2:
+                    }
+                    case 2 -> {
                         r_val = p;
                         g_val = v_val;
                         b_val = t;
-                        break;
-                    case 3:
+                    }
+                    case 3 -> {
                         r_val = p;
                         g_val = q;
                         b_val = v_val;
-                        break;
-                    case 4:
+                    }
+                    case 4 -> {
                         r_val = t;
                         g_val = p;
                         b_val = v_val;
-                        break;
-                    case 5:
+                    }
+                    case 5 -> {
                         r_val = v_val;
                         g_val = p;
                         b_val = q;
-                        break;
-                    case 6:
+                    }
+                    case 6 -> {
                         r_val = v_val;
                         g_val = p;
                         b_val = q;
-                        break;
-                    default:
+                    }
+                    default -> {
                         assert false : "hsv to rgb error";
+                    }
                 }
 
                 r.putPixel(x, y, r_val);

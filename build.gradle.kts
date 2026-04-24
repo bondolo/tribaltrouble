@@ -1,7 +1,6 @@
- import net.ltgt.gradle.errorprone.errorprone
- import net.ltgt.gradle.nullaway.nullaway
+import net.ltgt.gradle.errorprone.errorprone
 
- plugins {
+plugins {
     java
     id("net.ltgt.errorprone") version "5.1.0" apply false
     id("net.ltgt.nullaway") version "3.0.0" apply false
@@ -20,7 +19,7 @@ subprojects {
     dependencies {
         implementation("org.jspecify:jspecify:1.0.0")
         "errorprone"("com.google.errorprone:error_prone_core:2.49.0")
-        "errorprone"("com.uber.nullaway:nullaway:0.13.1")
+        "errorprone"("com.uber.nullaway:nullaway:0.13.4")
     }
 
     java {
@@ -35,16 +34,16 @@ subprojects {
             disableAllChecks = false
 
 
-            disable(  "NullAway", "IntLongMath", "ImmutableEnumChecker",
+            disable(  "NullAway", "ImmutableEnumChecker",
                 "NarrowingCompoundAssignment",
-                "UnusedNestedClass", "SameNameButDifferent", "AssignmentExpression",
+                "SameNameButDifferent", "AssignmentExpression",
                 "ObjectToString",
                 "ModifyCollectionInEnhancedForLoop", "StringCaseLocaleUsage",
                 "EqualsHashCode", "DoNotCallSuggester",
                 "MutablePublicArray", "InconsistentCapitalization",
                 "EnumOrdinal", "UnnecessaryParentheses", "UnusedMethod", "UnusedVariable",
                 "StatementSwitchToExpressionSwitch",
-                "ArrayRecordComponent", "StringSplitter", "InterruptedInCatchBlock" )
+                "ArrayRecordComponent", "StringSplitter" )
         }
     }
 }

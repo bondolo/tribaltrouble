@@ -187,7 +187,7 @@ public final class VikingIsland8 extends Island {
             case CampaignState.DIFFICULTY_EASY -> 7;
             case CampaignState.DIFFICULTY_NORMAL -> 13;
             case CampaignState.DIFFICULTY_HARD -> 20;
-            default -> throw new RuntimeException();
+            default -> throw new IllegalArgumentException("Unrecognized difficulty");
         };
         final Selectable<?>[] army2 = Selectable.newArray(num_hidden);
         army2[0] = new Unit(enemy, 364 * 2, 440 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));

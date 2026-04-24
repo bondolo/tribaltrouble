@@ -64,17 +64,11 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
 
     public void chat(@NonNull String text, ChatMessage.@NonNull Type type) {
         switch (type) {
-            case NORMAL:
-                print(text);
-                break;
-            case TEAM:
-                print(text, TEAM_COLOR);
-                break;
-            case PRIVATE:
-                print(text, PRIVATE_COLOR);
-                break;
-            default:
-                break;
+            case NORMAL -> print(text);
+            case TEAM -> print(text, TEAM_COLOR);
+            case PRIVATE -> print(text, PRIVATE_COLOR);
+            default -> {
+            }
         }
     }
 

@@ -16,7 +16,7 @@ public final class UnitSupplyContainer extends SupplyContainer {
 
     @Override
     public int increaseSupply(int amount) {
-        throw new RuntimeException();
+        throw new UnsupportedOperationException("UnitSupplyContainer requires a supply type");
     }
 
     public int increaseSupply(int amount, Class<? extends Supply> type) {

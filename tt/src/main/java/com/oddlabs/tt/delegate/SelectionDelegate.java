@@ -406,7 +406,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                             else if (selectable instanceof Unit unit)
                                 friendly_units.add(unit);
                             else
-                                throw new RuntimeException();
+                                throw new IllegalArgumentException("Unknown Selectable type for friendly unit: " + selectable.getClass().getName());
                         } else {
                             enemy = selectable;
                         }
@@ -464,7 +464,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
             if (!observer) {
                 var inputManager = Renderer.getLocalInput().getInputManager();
                 switch (button) {
-                    case LEFT:
+                    case LEFT -> {
                         if (!inputManager.isActive(GameAction.CAMERA_MAP_MODE)) {
                             selection = true;
                         }
@@ -472,17 +472,14 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                         selection_y1 = y;
                         selection_x2 = x;
                         selection_y2 = y;
-                        break;
-                    case RIGHT: {
+                    }
+                    case RIGHT -> {
                         Army selection = getViewer().getSelection().getCurrentSelection();
                         if (selection.size() > 0 && selection.containsAbility(Abilities.TARGET)) {
                             getViewer().getPicker().pickTarget(selection, getViewer().getGUIRoot().getDelegate().getCamera().getState(), getViewer().getPeerHub().getPlayerInterface(), x, y, Action.DEFAULT);
                         }
-                        break;
                     }
-                    default:
-                        super.mousePressed(button, x, y);
-                        break;
+                    default -> super.mousePressed(button, x, y);
                 }
             } else {
                 super.mousePressed(button, x, y);

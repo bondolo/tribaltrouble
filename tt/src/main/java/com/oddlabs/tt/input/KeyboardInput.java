@@ -143,34 +143,17 @@ public final class KeyboardInput {
             boolean repeat_event = deterministic.log(input.isRepeatEvent());
 
             switch (event_key) {
-                case LSHIFT:
-                    left_shift_down = event_key_down;
-                    break;
-                case RSHIFT:
-                    right_shift_down = event_key_down;
-                    break;
-                case LCONTROL:
-                    left_control_down = event_key_down;
-                    break;
-                case RCONTROL:
-                    right_control_down = event_key_down;
-                    break;
-                case LALT:
-                    left_alt_down = event_key_down;
-                    break;
-                case RALT:
-                    right_alt_down = event_key_down;
-                    break;
-                case LSUPER:
-                    left_meta_down = event_key_down;
-                    break;
-                case RSUPER:
-                    right_meta_down = event_key_down;
-                    break;
-                default:
-                    // Other keys are not tracked as dedicated boolean flags here.
-                    // They are processed into the actions set below.
-                    break;
+                case LSHIFT -> left_shift_down = event_key_down;
+                case RSHIFT -> right_shift_down = event_key_down;
+                case LCONTROL -> left_control_down = event_key_down;
+                case RCONTROL -> right_control_down = event_key_down;
+                case LALT -> left_alt_down = event_key_down;
+                case RALT -> right_alt_down = event_key_down;
+                case LSUPER -> left_meta_down = event_key_down;
+                case RSUPER -> right_meta_down = event_key_down;
+                default -> { }
+                // Other keys are not tracked as dedicated boolean flags here.
+                // They are processed into the actions set below.
             }
 
             if (checkMagicKey(event_key_down, event_key, false, repeat_event))

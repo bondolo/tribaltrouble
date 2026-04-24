@@ -31,7 +31,7 @@ public final class Utils {
         try {
             return tryGetLoopbackAddress();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

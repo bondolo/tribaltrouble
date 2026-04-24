@@ -24,7 +24,7 @@ public final class GeneratorPoison extends TextureGenerator {
 		poison_color.bump(poison_bump, 0f, -4f, 0f, 1f, 0f);
 		*/
 
-        Channel blob = new Hill(TEXTURE_SIZE, Hill.CIRCLE).toChannel();
+        Channel blob = new Hill(TEXTURE_SIZE, Hill.Shape.CIRCLE).toChannel();
         Channel noise = new Midpoint(TEXTURE_SIZE, 2, .45f, seed).toChannel();
         Channel poison_alpha = noise.copy().channelMultiply(blob.copy().dynamicRange(.25f, 1f)).channelSubtract(blob.copy().invert().brightness(.25f));
 

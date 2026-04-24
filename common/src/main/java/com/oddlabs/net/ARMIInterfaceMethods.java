@@ -38,7 +38,10 @@ public final class ARMIInterfaceMethods {
         } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new IllegalARMIEventException(e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            Throwable target = e.getTargetException();
+            if (target instanceof RuntimeException re) throw re;
+            if (target instanceof Error err) throw err;
+            throw new IllegalStateException("Invocation failed", target);
         }
     }
 
@@ -51,6 +54,6 @@ public final class ARMIInterfaceMethods {
             if (methods[i].equals(method))
                 return i;
         }
-        throw new RuntimeException("Unknown method: " + method);
+        throw new IllegalArgumentException("Unknown method: " + method);
     }
 }

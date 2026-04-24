@@ -11,16 +11,18 @@ import java.util.Random;
 public final class Spectral {
 
     // interpolation methods
-    public static final int LINEAR = 1;
-    public static final int SMOOTH = 2;
-    public static final int CUBIC = 3;
-    public static final int AUTO = 4;
+    public enum Interpolation {
+        LINEAR,
+        SMOOTH,
+        CUBIC,
+        AUTO
+    }
 
     private Random random;
     public Channel channel;
     public Channel[] noise_channels;
 
-    public Spectral(int size, int base_frequency, int octaves, float persistence, long seed, int interpolation) {
+    public Spectral(int size, int base_frequency, int octaves, float persistence, long seed, @NonNull Interpolation interpolation) {
         assert Utils.isPowerOf2(size) : "size must be power of 2";
         assert Utils.isPowerOf2(base_frequency) : "base_frequency must be power of 2";
         generateOctaves(base_frequency, octaves, seed);
@@ -45,12 +47,12 @@ public final class Spectral {
     }
 
     // interpolate and sum octave channels
-    private void mergeOctaves(int size, float persistence, int octaves, int interpolation) {
+    private void mergeOctaves(int size, float persistence, int octaves, @NonNull Interpolation interpolation) {
         channel = new Channel(size, size);
         int method_threshold = 0;
-        if (interpolation == SMOOTH) {
+        if (interpolation == Interpolation.SMOOTH) {
             method_threshold = noise_channels.length;
-        } else if (interpolation == AUTO) {
+        } else if (interpolation == Interpolation.AUTO) {
             while (size >> 3 > (int) Math.pow(2, method_threshold))
                 method_threshold++;
         }
@@ -70,7 +72,7 @@ public final class Spectral {
                         channel.putPixel(x_pixel, y_pixel, channel.getPixel(x_pixel, y_pixel) + octave.getPixel(x_pixel, y_pixel) * amplitude);
                     }
                 }
-            } else if (interpolation != CUBIC && i >= method_threshold) { // interpolate linear
+            } else if (interpolation != Interpolation.CUBIC && i >= method_threshold) { // interpolate linear
                 float y_incr1, y_incr2, x_incr;
                 for (y_block_lo = 0; y_block_lo < blocks; y_block_lo++) {
                     y_block_hi = (y_block_lo + 1) % octave.width;
@@ -94,7 +96,7 @@ public final class Spectral {
                         }
                     }
                 }
-            } else if (interpolation != CUBIC) { // interpolate smooth
+            } else if (interpolation != Interpolation.CUBIC) { // interpolate smooth
                 float y_coord, x_coord, y_diff, x_diff;
                 for (y_block_lo = 0; y_block_lo < blocks; y_block_lo++) {
                     y_block_hi = (y_block_lo + 1) % octave.width;

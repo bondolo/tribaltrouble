@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
 public final class ConvertToBinary {
@@ -202,7 +203,7 @@ public final class ConvertToBinary {
             if (nl.item(i).getNodeName().equals(name))
                 return nl.item(i);
         }
-        throw new RuntimeException("Missing node: " + name);
+        throw new NoSuchElementException("Missing node: " + name);
     }
 
     private static String getName(@NonNull Node n) {
@@ -218,7 +219,7 @@ public final class ConvertToBinary {
         return switch (str) {
             case "loop" -> AnimationInfo.AnimationType.LOOP;
             case "plain" -> AnimationInfo.AnimationType.PLAIN;
-            default -> throw new RuntimeException("Unknown animation type: " + str);
+            default -> throw new IllegalArgumentException("Unknown animation type: " + str);
         };
     }
 

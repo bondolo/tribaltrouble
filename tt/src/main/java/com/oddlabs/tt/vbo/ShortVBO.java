@@ -34,7 +34,7 @@ public final class ShortVBO extends VBO {
             case GL11.GL_LINES -> count; // Assume a line is two triangles
             case GL11.GL_POINTS -> count * 3; // assume a line is one triangle;
             case GL11.GL_LINE_STRIP -> (count - 1) * 2;
-            default -> throw new RuntimeException("Unknown primitive type: 0x" + Integer.toHexString(mode));
+            default -> throw new IllegalArgumentException("Unknown primitive type: 0x" + Integer.toHexString(mode));
         };
     }
 

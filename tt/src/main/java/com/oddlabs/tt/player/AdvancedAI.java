@@ -205,7 +205,7 @@ public final class AdvancedAI extends AI {
         } else if (unit.getWeaponFactory().getType() == RubberAxeWeapon.class || unit.getWeaponFactory().getType() == RubberSpearWeapon.class) {
             return SCORE_WARRIOR_RUBBER;
         }
-        throw new RuntimeException();
+        throw new IllegalArgumentException("Unit has no valid weapon or magic abilities");
     }
 
     private void nodeGuardTowers(int num_towers) {

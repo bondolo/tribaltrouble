@@ -173,16 +173,15 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         }
         Campaign campaign;
         switch (race_pulldown.getChosenItemIndex()) {
-            case 0:
+            case 0 -> {
                 campaign = new VikingCampaign(network, gui_root);
                 campaign.getState().setRace(CampaignState.RACE_VIKINGS);
-                break;
-            case 1:
+            }
+            case 1 -> {
                 campaign = new NativeCampaign(network, gui_root);
                 campaign.getState().setRace(CampaignState.RACE_NATIVES);
-                break;
-            default:
-                throw new IllegalArgumentException();
+            }
+            default -> throw new IllegalArgumentException();
         }
         campaign.getState().setName(name);
         campaign.getState().setDate(System.currentTimeMillis());

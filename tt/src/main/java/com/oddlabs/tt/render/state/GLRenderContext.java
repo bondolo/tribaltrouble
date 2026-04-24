@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static com.oddlabs.tt.util.GLUtils.checkAndThrow;
-import static com.oddlabs.tt.util.GLUtils.checkGLError;
 
 /**
  * Concrete implementation of RenderContext using LWJGL OpenGL bindings.
@@ -225,14 +224,11 @@ public final class GLRenderContext implements RenderContext {
     public void setTexture(int unit, int textureHandle) {
         if (unit < 0 || unit >= boundTextures.length) return;
 
-        // Clear any latent errors from previous operations (like glDrawBuffers safety checks)
-        // to prevent them from surfacing here as an "invalid operation".
-        checkGLError("Pre-setTexture Unit=" + unit + " Handle=" + textureHandle);
-
         if (boundTextures[unit] != textureHandle) {
             setActiveTexture(unit);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureHandle);
             boundTextures[unit] = textureHandle;
+            checkAndThrow("glBindTexture");
         }
     }
 

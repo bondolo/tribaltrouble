@@ -164,7 +164,7 @@ public final class NativeIsland2 extends Island {
             deploy(enemy, defense);
         };
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY:
+            case CampaignState.DIFFICULTY_EASY -> {
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 16f * 60f, attack2_runnable);
@@ -173,8 +173,8 @@ public final class NativeIsland2 extends Island {
                 new TimeTrigger(getViewer().getWorld(), 31f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 36f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 41f * 60f, attack2_runnable);
-                break;
-            case CampaignState.DIFFICULTY_NORMAL:
+            }
+            case CampaignState.DIFFICULTY_NORMAL -> {
                 new TimeTrigger(getViewer().getWorld(), 5f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 8.5f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 13f * 60f, attack2_runnable);
@@ -185,8 +185,8 @@ public final class NativeIsland2 extends Island {
                 new TimeTrigger(getViewer().getWorld(), 33f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 37f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 41f * 60f, attack2_runnable);
-                break;
-            case CampaignState.DIFFICULTY_HARD:
+            }
+            case CampaignState.DIFFICULTY_HARD -> {
                 new TimeTrigger(getViewer().getWorld(), 4f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
@@ -197,9 +197,8 @@ public final class NativeIsland2 extends Island {
                 new TimeTrigger(getViewer().getWorld(), 31f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 35f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 39f * 60f, attack2_runnable);
-                break;
-            default:
-                throw new RuntimeException();
+            }
+            default -> throw new IllegalArgumentException("Unrecognized difficulty");
         }
 
         // Defeat if netrauls eleminated

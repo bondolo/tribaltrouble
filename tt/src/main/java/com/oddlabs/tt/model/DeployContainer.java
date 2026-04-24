@@ -59,42 +59,18 @@ public class DeployContainer extends SupplyContainer {
 
     private void doDeploy() {
         switch (deploy_type) {
-            case ROCK_WARRIOR:
-                building.createArmy(0, 1, 0, 0);
-                break;
-            case IRON_WARRIOR:
-                building.createArmy(0, 0, 1, 0);
-                break;
-            case RUBBER_WARRIOR:
-                building.createArmy(0, 0, 0, 1);
-                break;
-            case PEON:
-                building.createArmy(1, 0, 0, 0);
-                break;
-            case PEON_HARVEST_TREE:
-                building.createHarvesters(1, 0, 0, 0);
-                break;
-            case PEON_TRANSPORT_TREE:
-                building.createTransporters(1, 0, 0, 0);
-                break;
-            case PEON_HARVEST_ROCK:
-                building.createHarvesters(0, 1, 0, 0);
-                break;
-            case PEON_TRANSPORT_ROCK:
-                building.createTransporters(0, 1, 0, 0);
-                break;
-            case PEON_HARVEST_IRON:
-                building.createHarvesters(0, 0, 1, 0);
-                break;
-            case PEON_TRANSPORT_IRON:
-                building.createTransporters(0, 0, 1, 0);
-                break;
-            case PEON_HARVEST_RUBBER:
-                building.createHarvesters(0, 0, 0, 1);
-                break;
-            case PEON_TRANSPORT_RUBBER:
-                building.createTransporters(0, 0, 0, 1);
-                break;
+            case ROCK_WARRIOR -> building.createArmy(0, 1, 0, 0);
+            case IRON_WARRIOR -> building.createArmy(0, 0, 1, 0);
+            case RUBBER_WARRIOR -> building.createArmy(0, 0, 0, 1);
+            case PEON -> building.createArmy(1, 0, 0, 0);
+            case PEON_HARVEST_TREE -> building.createHarvesters(1, 0, 0, 0);
+            case PEON_TRANSPORT_TREE -> building.createTransporters(1, 0, 0, 0);
+            case PEON_HARVEST_ROCK -> building.createHarvesters(0, 1, 0, 0);
+            case PEON_TRANSPORT_ROCK -> building.createTransporters(0, 1, 0, 0);
+            case PEON_HARVEST_IRON -> building.createHarvesters(0, 0, 1, 0);
+            case PEON_TRANSPORT_IRON -> building.createTransporters(0, 0, 1, 0);
+            case PEON_HARVEST_RUBBER -> building.createHarvesters(0, 0, 0, 1);
+            case PEON_TRANSPORT_RUBBER -> building.createTransporters(0, 0, 0, 1);
         }
     }
 

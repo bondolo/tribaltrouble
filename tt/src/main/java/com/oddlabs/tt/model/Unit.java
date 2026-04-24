@@ -480,7 +480,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         assert !target.isDead() : "Setting dead target";
         assert !mounted;
         switch (action) {
-            case DEFAULT:
+            case DEFAULT -> {
                 if (canBuild(target)) {
                     pushController(new PlaceBuildingController(this, (Building) target));
                 } else if (canGather(target)) {
@@ -494,34 +494,30 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 } else {
                     walkToTarget(target, aggressive);
                 }
-                break;
-            case MOVE:
+            }
+            case MOVE -> {
                 if (canEnter(target)) {
                     pushController(new EnterController(this, (Building) target));
                 } else {
                     walkToTarget(target, false);
                 }
-                break;
-            case ATTACK:
+            }
+            case ATTACK -> {
                 if (canAttack(target, true)) {
                     pushController(new HuntController(this, (Selectable<?>) target));
                 } else {
                     walkToTarget(target, true);
                 }
-                break;
-            case GATHER_REPAIR:
+            }
+            case GATHER_REPAIR -> {
                 if (canGather(target)) {
                     pushController(new GatherController(this, (Supply) target, ((Supply) target).getClass()));
                 } else if (canRepair(target, true)) {
                     pushController(new RepairController(this, (Building) target));
                 }
-                break;
-            case DEFEND:
-                pushController(new DefendController(this, target));
-                break;
-            default:
-                IO.println("Invalid action: " + action);
-                break;
+            }
+            case DEFEND -> pushController(new DefendController(this, target));
+            default -> IO.println("Invalid action: " + action);
         }
     }
 

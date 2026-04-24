@@ -110,7 +110,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
 
     @Override
     public final float getSize() {
-        throw new RuntimeException();
+        throw new UnsupportedOperationException("SceneryModel does not have a size");
     }
 
     @Override

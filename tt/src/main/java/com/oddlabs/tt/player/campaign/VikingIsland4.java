@@ -94,23 +94,22 @@ public final class VikingIsland4 extends Island {
         final int attack2;
         final int defense;
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY:
+            case CampaignState.DIFFICULTY_EASY -> {
                 attack1 = 4;
                 attack2 = 8;
                 defense = 10;
-                break;
-            case CampaignState.DIFFICULTY_NORMAL:
+            }
+            case CampaignState.DIFFICULTY_NORMAL -> {
                 attack1 = 7;
                 attack2 = 12;
                 defense = 12;
-                break;
-            case CampaignState.DIFFICULTY_HARD:
+            }
+            case CampaignState.DIFFICULTY_HARD -> {
                 attack1 = 11;
                 attack2 = 16;
                 defense = 20;
-                break;
-            default:
-                throw new RuntimeException();
+            }
+            default -> throw new IllegalArgumentException("Unrecognized difficulty");
         }
 
         // Attack1
@@ -139,20 +138,19 @@ public final class VikingIsland4 extends Island {
             deploy(enemy, defense);
         };
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY:
+            case CampaignState.DIFFICULTY_EASY -> {
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
-                break;
-            case CampaignState.DIFFICULTY_NORMAL:
+            }
+            case CampaignState.DIFFICULTY_NORMAL -> {
                 new TimeTrigger(getViewer().getWorld(), 4.5f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 8f * 60f, attack2_runnable);
-                break;
-            case CampaignState.DIFFICULTY_HARD:
+            }
+            case CampaignState.DIFFICULTY_HARD -> {
                 new TimeTrigger(getViewer().getWorld(), 4f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 6.5f * 60f, attack2_runnable);
-                break;
-            default:
-                throw new RuntimeException();
+            }
+            default -> throw new IllegalArgumentException("Unrecognized difficulty");
         }
 
         // Winner prize

@@ -209,7 +209,7 @@ public final class TextureProcessor {
         boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica");
 
         switch (op) {
-            case "-mipmaps":
+            case "-mipmaps" -> {
                 if (images.length != 1)
                     throw new IllegalArgumentException("Can only create mipmaps from one image, not " + images.length);
                 List<Layer> mipmaps = new ArrayList<>();
@@ -225,35 +225,33 @@ public final class TextureProcessor {
                     mipmaps.add(current);
                 }
                 images = mipmaps.toArray(new Layer[0]);
-                break;
-            case "-half":
+            }
+            case "-half" -> {
                 for (Layer image : images) {
                     image.scaleHalf();
                 }
-                break;
-            case "-format":
-                args.next(); // Skip, used for extension determination only
-                break;
-            case "-flip":
+            }
+            case "-format" -> args.next(); // Skip, used for extension determination only
+            case "-flip" -> {
                 for (Layer image : images) {
                     image.flipV();
                 }
-                break;
-            case "-gamma":
+            }
+            case "-gamma" -> {
                 String gamma_str = args.next();
                 float gamma = Float.parseFloat(gamma_str);
                 for (Layer image : images) {
                     image.gamma(gamma);
                 }
-                break;
-            case "-bgra":
+            }
+            case "-bgra" -> {
                 for (Layer image : images) {
                     Channel temp = image.r;
                     image.r = image.b;
                     image.b = temp;
                 }
-                break;
-            case "-argb":
+            }
+            case "-argb" -> {
                 for (Layer image : images) {
                     Channel old_r = image.r;
                     Channel old_g = image.g;
@@ -268,9 +266,8 @@ public final class TextureProcessor {
                     image.b = old_g;
                     image.a = old_b;
                 }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown operation: " + op);
+            }
+            default -> throw new IllegalArgumentException("Unknown operation: " + op);
         }
         return images;
     }

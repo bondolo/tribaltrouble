@@ -220,7 +220,7 @@ public final class Sprite {
                 return Resources.findResource(descriptor);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |
                      InvocationTargetException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException("Failed to instantiate texture generator: " + generator_class_name, e);
             }
         } else {
             int wrapMode = GL11.GL_REPEAT;

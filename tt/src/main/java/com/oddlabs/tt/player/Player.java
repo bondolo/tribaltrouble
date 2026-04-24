@@ -597,7 +597,7 @@ public final class Player implements PlayerInterface {
         } else if (type == RubberSupply.class) {
             rubber_harvested++;
         } else
-            throw new RuntimeException();
+            throw new IllegalArgumentException("Unknown supply type: " + type.getName());
     }
 
     public int getTreeHarvested() {

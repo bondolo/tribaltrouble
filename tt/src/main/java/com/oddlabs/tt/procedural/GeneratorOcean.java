@@ -51,20 +51,20 @@ public final class GeneratorOcean extends TextureGenerator {
         water2.bump(voronoi12, 3.5f, 0f, 0.5f, 0.5f, 0.8f, 1f, 0f, 0f, 0f);
 
         switch (terrain) {
-            case NATIVE:
+            case NATIVE -> {
                 water2.r.dynamicRange(0f, 0.4f);
                 water2.g.dynamicRange(0.6f, 1f);
                 water2.b.dynamicRange(0.9f, 1f);
-                break;
-            case VIKING:
+            }
+            case VIKING -> {
                 water2.r.dynamicRange(0.5f, 1f);
                 water2.g.dynamicRange(0.7f, 1f);
                 water2.b.dynamicRange(0.8f, 1f);
                 water2.a.gamma(0.5f).dynamicRange(0f, 0.2f);
-                break;
-            default:
+            }
+            default -> {
                 assert false : "illegal terrain";
-                break;
+            }
         }
 
         if (Landscape.DEBUG) new GLIntImage(water1).saveAsPNG("generator_water_1");

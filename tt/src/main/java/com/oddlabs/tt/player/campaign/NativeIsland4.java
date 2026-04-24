@@ -177,32 +177,32 @@ public final class NativeIsland4 extends Island {
         final int attack5;
         final int attack6;
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY:
+            case CampaignState.DIFFICULTY_EASY -> {
                 attack1 = 5;
                 attack2 = 15;
                 attack3 = 20;
                 attack4 = 35;
                 attack5 = 35;
                 attack6 = 35;
-                break;
-            case CampaignState.DIFFICULTY_NORMAL:
+            }
+            case CampaignState.DIFFICULTY_NORMAL -> {
                 attack1 = 10;
                 attack2 = 30;
                 attack3 = 40;
                 attack4 = 70;
                 attack5 = 70;
                 attack6 = 70;
-                break;
-            case CampaignState.DIFFICULTY_HARD:
+            }
+            case CampaignState.DIFFICULTY_HARD -> {
                 attack1 = 20;
                 attack2 = 60;
                 attack3 = 80;
                 attack4 = 90;
                 attack5 = 90;
                 attack6 = 90;
-                break;
-            default:
-                throw new IllegalArgumentException("unexpected difficulty: " + getCampaign().getState().getDifficulty());
+            }
+            default ->
+                    throw new IllegalArgumentException("unexpected difficulty: " + getCampaign().getState().getDifficulty());
         }
 
         // Fill native armory with units and weapons

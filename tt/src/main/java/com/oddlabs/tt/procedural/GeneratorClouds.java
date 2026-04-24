@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 public final class GeneratorClouds extends TextureGenerator {
     private static final int TEXTURE_SIZE = 512;
 
+    // indicies of clouds in generate result
     public static final int INNER = 0;
     public static final int OUTER = 1;
 

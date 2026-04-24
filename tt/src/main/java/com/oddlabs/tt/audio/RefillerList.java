@@ -8,7 +8,6 @@ import org.lwjgl.system.MemoryUtil;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.TimeUnit;
 
 public final class RefillerList implements AutoCloseable {
 
@@ -32,8 +31,8 @@ public final class RefillerList implements AutoCloseable {
         try {
             refill_thread.join();
         } catch (InterruptedException e) {
-            Thread.interrupted();
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new AssertionError(e);
         }
     }
 
@@ -73,14 +72,13 @@ public final class RefillerList implements AutoCloseable {
                         while (players.isEmpty() && !finished) try {
                             RefillerList.this.wait();
                         } catch (InterruptedException _) {
-                            Thread.interrupted();
+                            // ignore
                         }
                     }
                     try {
                         //noinspection BusyWait
                         Thread.sleep(THREAD_SLEEP_MILLIS);
                     } catch (InterruptedException _) {
-                        Thread.interrupted();
                         // ignore
                     }
                 }

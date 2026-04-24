@@ -271,7 +271,7 @@ public final class NativeIsland3 extends Island {
             case CampaignState.DIFFICULTY_EASY -> 120f;
             case CampaignState.DIFFICULTY_NORMAL -> 60f;
             case CampaignState.DIFFICULTY_HARD -> 30f;
-            default -> throw new RuntimeException("unrecognized difficulty");
+            default -> throw new IllegalArgumentException("Unrecognized difficulty");
         };
         float time = interval;
         for (int i = 0; i < 10; i++) {

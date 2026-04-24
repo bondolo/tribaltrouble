@@ -334,7 +334,7 @@ public final class GUIRoot extends GUIObject {
                     }
                     if (event.consumeAction(GameAction.DEBUG_CRASH)) {
                         logger.info("crash!");
-                        throw new RuntimeException("Debug crash action triggered.");
+                        throw new IllegalStateException("Debug crash action triggered.");
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRAME_BUFFER)) {
                         Globals.clear_frame_buffer = !Globals.clear_frame_buffer;

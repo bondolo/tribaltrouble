@@ -106,7 +106,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
                     i18n("username_error_invalid_characters");
             case MatchmakingClientInterface.USERNAME_ERROR_TOO_LONG -> i18n("username_error_too_long");
             case MatchmakingClientInterface.USERNAME_ERROR_TOO_SHORT -> i18n("username_error_too_short");
-            default -> throw new RuntimeException("Unknown error code: " + error_code);
+            default -> throw new IllegalArgumentException("Unknown error code: " + error_code);
         };
         gui_root.addModalForm(new MessageForm(error_message));
     }

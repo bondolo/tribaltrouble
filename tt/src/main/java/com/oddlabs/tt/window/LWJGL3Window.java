@@ -73,7 +73,6 @@ import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public final class LWJGL3Window implements Window {
     private static final Logger logger = Logger.getLogger(LWJGL3Window.class.getSimpleName());
@@ -155,7 +154,7 @@ public final class LWJGL3Window implements Window {
 
         windowHandle = glfwCreateWindow(mode.getWidth(), mode.getHeight(), title, monitor, MemoryUtil.NULL);
         if (windowHandle == MemoryUtil.NULL) {
-            throw new RuntimeException("Failed to create the GLFW window");
+            throw new IllegalStateException("Failed to create the GLFW window");
         }
 
         glfwSetWindowSizeLimits(windowHandle, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);

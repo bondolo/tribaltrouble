@@ -93,7 +93,7 @@ public final class PeerHub implements Animated, RouterHandler {
         if (!is_multiplayer) {
             this.router = new Router(network, com.oddlabs.util.Utils.getLoopbackAddress(), 0, Logger.getAnonymousLogger(), (IOException e) -> {
                 //					PeerHub.this.routerFailed(e);
-                throw new RuntimeException(e);
+                throw new IllegalStateException("Local router failed", e);
             });
             this.router_client = new RouterClient(network, this, router.getPort());
         } else {

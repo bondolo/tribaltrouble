@@ -14,8 +14,11 @@ import org.lwjgl.opengl.GL12;
 import java.util.Arrays;
 
 public final class GeneratorHalos extends TextureGenerator {
-    public static final int SHADOWED = 0;
-    public static final int SELECTED = 1;
+    public enum HaloType {
+        SHADOWED,
+        SELECTED
+    }
+
     private final int size;
     private final float @NonNull [] @NonNull [] shadow_parms;
     private final float @NonNull [] @NonNull [] ring_parms;
@@ -70,11 +73,11 @@ public final class GeneratorHalos extends TextureGenerator {
         
         Layer[] layers = new Layer[2];
         
-        // SHADOWED (Index 0): Just the shadow in Green channel
-        layers[SHADOWED] = new Layer(channel_black.copy(), channel_shadow.copy(), channel_black.copy(), channel_white.copy());
+        // SHADOWED: Just the shadow in Green channel
+        layers[HaloType.SHADOWED.ordinal()] = new Layer(channel_black.copy(), channel_shadow.copy(), channel_black.copy(), channel_white.copy());
 
-        // SELECTED (Index 1): Ring in Red, Shadow in Green
-        layers[SELECTED] = new Layer(channel_ring.copy(), channel_shadow.copy(), channel_black.copy(), channel_white.copy());
+        // SELECTED: Ring in Red, Shadow in Green
+        layers[HaloType.SELECTED.ordinal()] = new Layer(channel_ring.copy(), channel_shadow.copy(), channel_black.copy(), channel_white.copy());
 
         Texture[] textures = new Texture[layers.length];
         for (int i = 0; i < layers.length; i++) {

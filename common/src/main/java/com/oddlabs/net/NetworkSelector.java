@@ -4,14 +4,13 @@ import com.oddlabs.event.Deterministic;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +45,7 @@ public final class NetworkSelector {
         try {
             initSelector();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
         DNSTask task = new DNSTask(dns_name, port, conn);
         getTaskThread().addTask(task);
@@ -68,7 +67,7 @@ public final class NetworkSelector {
         try {
             initSelector();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
         return selector;
     }
@@ -151,7 +150,7 @@ public final class NetworkSelector {
             if (deterministic.log(selector != null && selector.selectNow() > 0))
                 doTick();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

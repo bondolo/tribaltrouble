@@ -109,14 +109,11 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
             for (AudioSource source : sources) {
                 int rank = source.getRank();
                 switch (rank) {
-                    case AudioPlayer.AUDIO_RANK_MUSIC: // can't stop the music
-                        continue;
-                    case AudioPlayer.AUDIO_RANK_AMBIENT:
-                        source.pause();
-                        break;
-                    default:
-                        source.stop();
-                        break;
+                    case AudioPlayer.AUDIO_RANK_MUSIC -> {
+                        // can't stop the music
+                    }
+                    case AudioPlayer.AUDIO_RANK_AMBIENT -> source.pause();
+                    default -> source.stop();
                 }
             }
         }

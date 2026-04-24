@@ -515,7 +515,7 @@ public final class Landscape {
         }
 
         height.perturb(new Midpoint(unit_grids_per_world, 2, 0.5f, seed).toChannel(), 0.25f);
-        Channel shape = new Hill(unit_grids_per_world, Hill.OVAL).toChannel();
+        Channel shape = new Hill(unit_grids_per_world, Hill.Shape.OVAL).toChannel();
         height.channelAdd(shape.copy().multiply(0.15f));
         height.channelSubtract(shape.copy().invert().multiply(0.5f));
         height.erode((24f - hills * 12f) / unit_grids_per_world, unit_grids_per_world >> 2);
@@ -571,7 +571,7 @@ public final class Landscape {
         height.perturb(new Midpoint(unit_grids_per_world, 2, 0.5f, seed).toChannel(), 0.25f);
         height.erode((24f - hills * 12f) / unit_grids_per_world, unit_grids_per_world >> 2);
 
-        Channel shape = new Hill(unit_grids_per_world, Hill.SQUARE).toChannel().smoothGain().gamma8();
+        Channel shape = new Hill(unit_grids_per_world, Hill.Shape.SQUARE).toChannel().smoothGain().gamma8();
         height.channelMultiply(shape);
 
         // add roughness to inaccessible areas
@@ -844,7 +844,7 @@ public final class Landscape {
     // ************
     private void generateSupplies(@NonNull Channel grass_alpha) {
         // generate overall probability map for rock and iron resources
-        Channel centerprob = new Hill(unit_grids_per_world, Hill.CIRCLE).toChannel().addClip(-.5f).dynamicRange();
+        Channel centerprob = new Hill(unit_grids_per_world, Hill.Shape.CIRCLE).toChannel().addClip(-.5f).dynamicRange();
 
         // generate (oak)tree/palmtree(/pine) maps
         Channel noise = new Midpoint(unit_grids_per_world, Utils.powerOf2Log2(unit_grids_per_world) - 3, 0.33f, seed).toChannel();

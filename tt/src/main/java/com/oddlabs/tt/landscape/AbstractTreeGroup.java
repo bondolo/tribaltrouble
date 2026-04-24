@@ -46,14 +46,14 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
         AbstractTreeGroup root = new TreeGroup(null, 0);
 
         switch (terrain) {
-            case NATIVE:
+            case NATIVE -> {
                 root.buildTrees(world, TreeType.JUNGLE, 3, 2.3f, tree_positions, 0.25f, 0.75f);
                 root.buildTrees(world, TreeType.PALM, 1, 1.6f, palm_tree_positions, 0.5f, 1f);
-                break;
-            case VIKING:
+            }
+            case VIKING -> {
                 root.buildTrees(world, TreeType.OAK, 3, 2.3f, tree_positions, 0.5f, 1f);
                 root.buildTrees(world, TreeType.PINE, 1, 1.6f, palm_tree_positions, 0.5f, 1f);
-                break;
+            }
         }
 
         root.initBounds();
@@ -112,7 +112,7 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
                 int next_y = y + ((child_index >> 1) & 1) * child_size;
                 insertTreeRecursive(group.child(child_index), world, tree_type, grid_size, radius, matrix, vertices, tree_x, tree_y, center_grid_x, center_grid_y, child_size, next_x, next_y);
             }
-            case TreeSupply _ -> throw new RuntimeException("Unexpected TreeSupply node in tree hierarchy");
+            case TreeSupply _ -> throw new IllegalStateException("Unexpected TreeSupply node in tree hierarchy");
         }
     }
 

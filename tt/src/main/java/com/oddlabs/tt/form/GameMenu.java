@@ -193,7 +193,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         boolean difficulty_changed = player.getInfo() == null || player.getAIDifficulty() != difficulty_index;
         PulldownButton<?> slot_button = slot_buttons[player_slot];
         switch (index) {
-            case OPEN_INDEX:
+            case OPEN_INDEX -> {
                 if ((player.getType() != PlayerSlot.OPEN && player.getType() != PlayerSlot.HUMAN) || race_changed || team_changed || ready_changed) {
                     if (player_slot == local_player_slot) {
                         int new_type = PlayerSlot.HUMAN;
@@ -202,16 +202,14 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                         game_network.getClient().getServerInterface().resetSlotState(player_slot, true);
                     }
                 }
-                break;
-            case CLOSED_INDEX:
+            }
+            case CLOSED_INDEX -> {
                 if (player.getType() != PlayerSlot.CLOSED || race_changed || team_changed) {
                     slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(i18n("open"));
                     slot_button.getMenu().chooseItem(OPEN_INDEX);
                 }
-                break;
-            case COMPUTER_EASY_INDEX:
-            case COMPUTER_NORMAL_INDEX:
-            case COMPUTER_HARD_INDEX:
+            }
+            case COMPUTER_EASY_INDEX, COMPUTER_NORMAL_INDEX, COMPUTER_HARD_INDEX -> {
                 assert !rated;
                 boolean new_ai = player.getType() != PlayerSlot.AI;
                 if (new_ai || race_changed || team_changed || difficulty_changed) {
@@ -222,9 +220,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                     }
                     game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race_index, team_index, true, difficulty_index);
                 }
-                break;
-            default:
-                throw new RuntimeException("Invalid item index");
+            }
+            default -> throw new IllegalArgumentException("Invalid item index");
         }
     }
 
@@ -281,13 +278,13 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             if (player.getInfo() != null) {
                 PlayerInfo player_info = player.getInfo();
                 switch (player.getType()) {
-                    case PlayerSlot.AI:
+                    case PlayerSlot.AI -> {
                         assert !rated;
                         slot_button.getMenu().chooseItem(player.getAIDifficulty() + 1);
                         race_button.setDisabled(!canControlSlot(i));
                         team_button.setDisabled(!canControlSlot(i));
-                        break;
-                    case PlayerSlot.HUMAN:
+                    }
+                    case PlayerSlot.HUMAN -> {
                         String player_name = player_info.getName();
                         new_human_names.add(player_name);
                         slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(player_name);
@@ -298,9 +295,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                         player_ratings[human_index] = player.getRating();
                         player_teams[human_index] = player_info.getTeam();
                         human_index++;
-                        break;
-                    default:
-                        throw new RuntimeException("Unknown Player type: " + player.getType());
+                    }
+                    default -> throw new IllegalArgumentException("Unknown Player type: " + player.getType());
                 }
             }
         }

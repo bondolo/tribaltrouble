@@ -146,7 +146,7 @@ public final class FBO implements AutoCloseable {
     public void checkStatus() {
         int status = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
         if (status != GL30.GL_FRAMEBUFFER_COMPLETE) {
-            throw new RuntimeException("Framebuffer is incomplete: " + status);
+            throw new IllegalStateException("Framebuffer is incomplete: " + status);
         }
     }
 

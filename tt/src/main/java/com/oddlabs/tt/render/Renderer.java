@@ -111,7 +111,7 @@ public final class Renderer implements AutoCloseable {
         try {
             getRenderer().getWindow().makeCurrent();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to make OpenGL context current", e);
         }
     }
 
@@ -487,7 +487,7 @@ public final class Renderer implements AutoCloseable {
                         case "normal":
                             break;
                         default:
-                            throw new RuntimeException("Unknown event load mode: " + args[i]);
+                            throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
                     }
                 }
                 case "--silent" -> silent = true;
@@ -610,7 +610,8 @@ public final class Renderer implements AutoCloseable {
                     try {
                         TimeUnit.MILLISECONDS.sleep(10);
                     } catch (InterruptedException e) {
-                        throw new RuntimeException("woken", e);
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Sleep interrupted", e);
                     }
                 }
             }
@@ -756,7 +757,7 @@ public final class Renderer implements AutoCloseable {
             resetInput();
         } catch (Exception e) {
             logger.log(java.util.logging.Level.SEVERE, "Mode switching failed with exception", e);
-            throw new RuntimeException("Mode switching failed");
+            throw new IllegalStateException("Mode switching failed", e);
         }
     }
 
@@ -909,7 +910,7 @@ public final class Renderer implements AutoCloseable {
         int num_combined_tex_units = GL11.glGetInteger(GL20.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
         logger.info("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: " + num_combined_tex_units);
         if (num_combined_tex_units < 8) {
-            throw new RuntimeException("Number of combined texture image units " + num_combined_tex_units + " is less than the required 8.");
+            throw new IllegalStateException("Number of combined texture image units " + num_combined_tex_units + " is less than the required 8.");
         }
 
         resetInput();

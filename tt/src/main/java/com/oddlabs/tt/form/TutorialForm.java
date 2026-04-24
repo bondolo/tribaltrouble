@@ -173,16 +173,13 @@ public final class TutorialForm extends Form {
         final TutorialInGameInfo ingame_info;
         GameNetwork game_network;
         switch (tutorial_number) {
-            case TUTORIAL_CAMERA:
-                startNewGame(network, gui_root, (WorldViewer viewer) -> new ScrollTrigger(viewer.getLocalPlayer()), 1);
-                break;
-            case TUTORIAL_QUARTERS:
-                startNewGame(network, gui_root, (WorldViewer viewer) -> new PlacingDelegateTrigger(viewer.getLocalPlayer()), 2);
-                break;
-            case TUTORIAL_ARMORY:
-                startNewGame(network, gui_root, (WorldViewer viewer) -> new SelectArmoryTrigger(viewer.getLocalPlayer()), 3);
-                break;
-            case TUTORIAL_TOWER:
+            case TUTORIAL_CAMERA ->
+                    startNewGame(network, gui_root, (WorldViewer viewer) -> new ScrollTrigger(viewer.getLocalPlayer()), 1);
+            case TUTORIAL_QUARTERS ->
+                    startNewGame(network, gui_root, (WorldViewer viewer) -> new PlacingDelegateTrigger(viewer.getLocalPlayer()), 2);
+            case TUTORIAL_ARMORY ->
+                    startNewGame(network, gui_root, (WorldViewer viewer) -> new SelectArmoryTrigger(viewer.getLocalPlayer()), 3);
+            case TUTORIAL_TOWER -> {
                 ingame_info = new TutorialInGameInfo();
                 WorldInitAction action = (WorldViewer viewer) -> {
                     Player player = viewer.getLocalPlayer();
@@ -195,25 +192,24 @@ public final class TutorialForm extends Form {
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI, RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_TOWER_TUTORIAL);
                 game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
                 game_network.getClient().getServerInterface().startServer();
-                break;
-            case TUTORIAL_CHIEFTAIN:
+            }
+            case TUTORIAL_CHIEFTAIN -> {
                 ingame_info = new TutorialInGameInfo();
                 game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction((WorldViewer viewer) -> new BuildingChieftainTrigger(viewer.getLocalPlayer()), ingame_info), Player.INITIAL_UNIT_COUNT, 5);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_NONE);
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI, RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_CHIEFTAIN_TUTORIAL);
                 game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
                 game_network.getClient().getServerInterface().startServer();
-                break;
-            case TUTORIAL_BATTLE:
+            }
+            case TUTORIAL_BATTLE -> {
                 ingame_info = new TutorialInGameInfo();
                 game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction((WorldViewer _) -> new TutorialOverTrigger(), ingame_info), Player.INITIAL_UNIT_COUNT, 6);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_NONE);
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI, RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_BATTLE_TUTORIAL);
                 game_network.getClient().setUnitInfo(1, new UnitInfo(true, true, 0, false, 0, 15, 0, 0));
                 game_network.getClient().getServerInterface().startServer();
-                break;
-            default:
-                throw new RuntimeException();
+            }
+            default -> throw new IllegalArgumentException("Unexpected tutorial number:" + tutorial_number);
         }
     }
 

@@ -121,7 +121,7 @@ public final class DBInterface {
                     }
                     Profile[] profile_array = new Profile[profiles.size()];
                     for (int i = 0; i < profile_array.length; i++)
-                        profile_array[i] = (Profile) profiles.get(i);
+                        profile_array[i] = profiles.get(i);
 
                     return profile_array;
                 } finally {
@@ -438,10 +438,10 @@ public final class DBInterface {
     public static int getSettingsInt(String setting) {
         try {
             String value = getSetting(setting);
-            return Integer.valueOf(value);
+            return Integer.parseInt(value);
         } catch (Exception e) {
             MatchmakingServer.getLogger().throwing(DBInterface.class.getName(), "getSettingsInt", e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Configuration error for setting: " + setting, e);
         }
     }
 
