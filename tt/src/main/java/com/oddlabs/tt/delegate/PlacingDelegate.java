@@ -127,8 +127,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
         Sprite sprite = built_renderer.getSpriteList().getSprite(0);
 
         try (var _ = spriteShader.use()) {
-
-            spriteShader.setUniform(SpriteShader.Uniforms.DESATURATE, 0.5f);
+            spriteShader.setUniform(SpriteShader.Uniforms.DESATURATE, 0.3f);
             sprite.setupShaderUniforms(context, spriteShader, 0, false);
             spriteShader.setUniform(SpriteShader.Uniforms.MODULATE_COLOR, true);
             spriteShader.setUniform(SpriteShader.Uniforms.ALPHA_TEST_VALUE, 0.5f);
