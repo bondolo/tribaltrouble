@@ -26,6 +26,8 @@ import java.util.stream.Stream;
  */
 public final class TextureProcessor {
 
+    record SourceTarget(@NonNull Path source, @NonNull Path target) {}
+
     private TextureProcessor() {
     }
 
@@ -33,10 +35,6 @@ public final class TextureProcessor {
      * Processes a single file to a specific output file.
      */
     public static void processFile(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile) throws IOException {
-        if (Files.exists(outfile) && Files.getLastModifiedTime(outfile).compareTo(Files.getLastModifiedTime(infile)) >= 0) {
-            return;
-        }
-
         String basisuPath = System.getProperty("basisu.path");
         if (basisuPath != null && outfile.toString().endsWith(".dds")) {
             // High quality path using basisu CLI
@@ -149,10 +147,9 @@ public final class TextureProcessor {
     }
 
     private static void execute(@NonNull List<String> command, @NonNull Path workingDir) throws IOException {
-        Process process = new ProcessBuilder(command)
+        try (Process process = new ProcessBuilder(command)
                 .directory(workingDir.toFile())
-                .start();
-        try {
+                .start()) {
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 System.err.println("Basisu command failed in " + workingDir + ": " + String.join(" ", command));
@@ -168,7 +165,14 @@ public final class TextureProcessor {
     /**
      * Processes all PNG files in a directory into an output directory.
      */
-    public static void processBatch(@NonNull Path inputDir, @NonNull List<String> operations, @NonNull Path outputDir) throws IOException {
+    public static void processBatch(@NonNull Path inputDir, @NonNull List<@NonNull String> operations, @NonNull Path outputDir) throws IOException {
+        Files.createDirectories(outputDir);
+        try (Stream<Path> stream = Files.list(inputDir)) {
+            processFiles(stream, operations, outputDir);
+        }
+    }
+
+    public static void processFiles(@NonNull Stream<Path> stream, @NonNull List<@NonNull String> operations, @NonNull Path outputDir) throws IOException {
         String format = "dds";
         // Check for -format in operations
         for (int i = 0; i < operations.size(); i++) {
@@ -178,19 +182,40 @@ public final class TextureProcessor {
             }
         }
 
-        Files.createDirectories(outputDir);
-        final String finalFormat = format;
-        try (Stream<Path> stream = Files.list(inputDir)) {
-            stream.filter(p -> p.toString().endsWith(".png")).forEach(p -> {
-                try {
-                    String baseName = p.getFileName().toString().substring(0, p.getFileName().toString().lastIndexOf('.'));
-                    Path target = outputDir.resolve(baseName + "." + finalFormat);
-                    System.out.println("Batch processing: " + p.getFileName() + " -> " + target.getFileName());
-                    processFile(p, operations, target);
-                } catch (IOException e) {
-                    throw new UncheckedIOException("Failed to process " + p, e);
-                }
-            });
+        var finalFormat = format;
+        try {
+            processFiles(stream.filter(Files::isRegularFile)
+                    .filter(sourceFile -> sourceFile.toString().endsWith(".png"))
+                    .map(sourceFile -> {
+                        var filename = sourceFile.getFileName().toString();
+                        String baseName = filename.substring(0, filename.lastIndexOf('.'));
+                        return new SourceTarget(sourceFile, outputDir.resolve(baseName + "." + finalFormat));
+                    }), operations);
+        } catch (UncheckedIOException uioe) {
+            throw uioe.getCause();
+        }
+    }
+
+    public static void processFiles(@NonNull Stream<@NonNull SourceTarget> stream, @NonNull List<String> operations) throws IOException {
+        try {
+            stream.filter(st -> {
+                        try {
+                            // check if target is absent or if the source file is newer than the target
+                            return !Files.exists(st.target) || Files.getLastModifiedTime(st.target).compareTo(Files.getLastModifiedTime(st.source)) > 0;
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    })
+                    .parallel()
+                    .forEach(st -> {
+                        try {
+                            ;
+                            IO.println("Batch processing: " + st.source.getFileName() + " -> " + st.target.getFileName());
+                            processFile(st.source, operations, st.target);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException("Failed to process " + st.source, e);
+                        }
+                    });
         } catch (UncheckedIOException uioe) {
             throw uioe.getCause();
         }
