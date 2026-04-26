@@ -150,32 +150,42 @@ public final class AmbientAudio {
                 EFXManager efx = alManager.getEfxManager();
                 if (efx.isSupported()) {
                     float camZ = camera.getCurrentZ();
+                    float camX = camera.getCurrentX();
+                    float camY = camera.getCurrentY();
+                    float hCurrent = heightmap.getNearestHeight(camX, camY);
 
                     if (camZ < heightmap.getSeaLevelMeters()) {
                         efx.setReverb(EFXManager.ReverbType.UNDERWATER);
                     } else {
-                        float camX = camera.getCurrentX();
-                        float camY = camera.getCurrentY();
+                        float heightAboveGround = camZ - hCurrent;
 
                         // Check for forest density
                         World world = heightmap.getWorld();
                         int treeCount = countTrees(world.getTreeRoot(), camX, camY, 25f * 25f, TREES_FOREST_THRESHOLD, 0);
 
                         if (treeCount >= TREES_FOREST_THRESHOLD) {
-                            efx.setReverb(EFXManager.ReverbType.FOREST);
+                            // Forest reverb: Blend from FOREST (fully active at 15m) to NONE (fully silent at 30m)
+                            float blend = Math.clamp((30.0f - heightAboveGround) / 15.0f, 0f, 1f);
+                            efx.setReverb(EFXManager.ReverbType.NONE, EFXManager.ReverbType.FOREST, blend);
                         } else {
                             // Check for valley/enclosure by sampling terrain height around camera
-                            float hCurrent = heightmap.getNearestHeight(camX, camY);
                             float hN = heightmap.getNearestHeight(camX, camY + CANYON_PROXIMITY_DISTANCE);
                             float hS = heightmap.getNearestHeight(camX, camY - CANYON_PROXIMITY_DISTANCE);
                             float hE = heightmap.getNearestHeight(camX + CANYON_PROXIMITY_DISTANCE, camY);
                             float hW = heightmap.getNearestHeight(camX - CANYON_PROXIMITY_DISTANCE, camY);
 
                             float avgSurround = (hN + hS + hE + hW) * 0.25f;
+                            float valleyDepth = avgSurround - hCurrent;
 
-                            // If average surrounding height is significantly higher than current ground position,
-                            // we are likely in a valley or depression.
-                            efx.setReverb(avgSurround > hCurrent + 8.0f ? EFXManager.ReverbType.VALLEY : EFXManager.ReverbType.GENERIC);
+                            if (valleyDepth > 8.0f) {
+                                // Valley reverb: Blend from VALLEY (fully active at 8m) to NONE (fully silent at 16m)
+                                float blend = Math.clamp((16.0f - heightAboveGround) / 8.0f, 0f, 1f);
+                                efx.setReverb(EFXManager.ReverbType.NONE, EFXManager.ReverbType.VALLEY, blend);
+                            } else {
+                                // Open Plains (Generic) reverb: Blend from GENERIC (fully active at 10m) to NONE (fully silent at 20m)
+                                float blend = Math.clamp((20.0f - heightAboveGround) / 10.0f, 0f, 1f);
+                                efx.setReverb(EFXManager.ReverbType.NONE, EFXManager.ReverbType.GENERIC, blend);
+                            }
                         }
                     }
                 }
