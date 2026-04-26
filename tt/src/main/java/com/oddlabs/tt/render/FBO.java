@@ -69,15 +69,16 @@ public final class FBO implements AutoCloseable {
         }
 
         bind();
+        var context = Renderer.getRenderer().getRenderContext();
         if (colorTexture != null) attachTexture(GL30.GL_COLOR_ATTACHMENT0, colorTexture);
         if (maskTexture != null) attachTexture(GL30.GL_COLOR_ATTACHMENT1, maskTexture);
         if (depthTexture != null) attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthTexture);
 
         // Restore draw buffers state after resize/rebind (if we have color attachments)
         if (colorTexture != null || maskTexture != null) {
-            Renderer.getRenderer().getRenderContext().setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+            context.setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
         } else {
-            GL11.glDrawBuffer(GL11.GL_NONE);
+            context.setDrawBuffers(new int[]{GL11.GL_NONE});
             GL11.glReadBuffer(GL11.GL_NONE);
         }
 
@@ -124,12 +125,13 @@ public final class FBO implements AutoCloseable {
     }
 
     public void blitDepthTo(@NonNull FBO target) {
-        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, id);
-        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.id);
+        var context = Renderer.getRenderer().getRenderContext();
+        context.bindFramebuffer(GL30.GL_READ_FRAMEBUFFER, id);
+        context.bindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.id);
         GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, target.width, target.height,
                 GL11.GL_DEPTH_BUFFER_BIT, GL11.GL_NEAREST);
         // Bind back to original target
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, id);
+        context.bindFramebuffer(GL30.GL_FRAMEBUFFER, id);
     }
 
     public void attachTexture(int attachmentPoint, @NonNull Texture texture) {
