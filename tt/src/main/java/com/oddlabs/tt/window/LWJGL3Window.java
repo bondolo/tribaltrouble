@@ -124,6 +124,7 @@ public final class LWJGL3Window implements Window {
 
             glfwSetWindowSizeLimits(windowHandle, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
+            glfwFocusWindow(windowHandle);
             return;
         }
 
@@ -182,6 +183,7 @@ public final class LWJGL3Window implements Window {
         GL.createCapabilities();
 
         glfwShowWindow(windowHandle);
+        glfwFocusWindow(windowHandle);
     }
 
     @Override

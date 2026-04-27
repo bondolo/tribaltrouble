@@ -562,10 +562,12 @@ public final class Renderer implements AutoCloseable {
                     if (Settings.getSettings().fullscreen) {
                         window.minimize();
                     }
+                } else if (!isActive && first_frame) {
+                    window.focus();
                 }
                 wasActive = isActive;
 
-                if (window.isVisible() && isActive) {
+                if (first_frame || (window.isVisible() && isActive)) {
                     runGameLoop(network, gui);
                     AudioManager.getManager().masterGain(1f);
                     if (reset_keyboard) {
