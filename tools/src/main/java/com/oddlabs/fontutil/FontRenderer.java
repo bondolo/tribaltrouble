@@ -12,15 +12,23 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Transparency;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.awt.color.ColorSpace;
 import java.util.stream.IntStream;
 
 public final class FontRenderer {
@@ -29,6 +37,18 @@ public final class FontRenderer {
     private static final int GLYPH_X_OVERLAP = 7;
     private static final int GLYPH_Y_OVERLAP = 5;
     private static final float SPACE_SCALE = 0.66666f;
+    private static final int CHANNEL_COUNT_RGBA = 4;
+
+    private static @NonNull BufferedImage createSrgbAbgrImage(int width, int height) {
+        var colorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+        int[] bandOffsets = new int[]{3, 2, 1, 0};
+        var sampleModel = new PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, CHANNEL_COUNT_RGBA,
+                width * CHANNEL_COUNT_RGBA, bandOffsets);
+        var dataBuffer = new DataBufferByte(width * height * CHANNEL_COUNT_RGBA);
+        WritableRaster raster = Raster.createWritableRaster(sampleModel, dataBuffer, null);
+        var colorModel = new ComponentColorModel(colorSpace, true, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE);
+        return new BufferedImage(colorModel, raster, false, null);
+    }
 
     static void main(@NonNull String @NonNull ... args) {
         if (args.length < 9) {
@@ -72,7 +92,7 @@ public final class FontRenderer {
         int scaled_y_border = Math.round(GLYPH_Y_BORDER * scale_factor);
 
         // calculate space width
-        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage image = createSrgbAbgrImage(1, 1);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
         g2d.setFont(src_font);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -136,7 +156,7 @@ public final class FontRenderer {
                                        int image_width, int space_width,
                                        int @NonNull [] codepoints,
                                        int x_border, int y_border) {
-        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage image = createSrgbAbgrImage(1, 1);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
         g2d.setFont(src_font);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -200,7 +220,7 @@ public final class FontRenderer {
                                       int image_width, int image_height, int space_width,
                                       int @NonNull [] codepoints, boolean saveFontInfo,
                                       int x_border, int y_border) {
-        BufferedImage image = new BufferedImage(image_width, image_height, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage image = createSrgbAbgrImage(image_width, image_height);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
         g2d.setFont(src_font);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -228,7 +248,7 @@ public final class FontRenderer {
                 int min_x = (int) Math.floor(glyph_bounds.getMinX()) - x_border;
                 //int min_y = (int)Math.floor(glyph_bounds.getMinY()) - GLYPH_Y_BORDER;
                 int max_x = (int) Math.ceil(glyph_bounds.getMaxX()) + x_border;
-                //int max_y = (int)Math.ceil(glyph_bounds.getMaxY()) + GLYPH_Y_BORDER;
+                //int max_y = (int)Math.ceil(glyph_bounds.getMaxY()) - GLYPH_Y_BORDER;
                 int glyph_width = codepoint == 32 ? space_width : max_x - min_x;
                 assert glyph_width <= image_width : "character too wide to fit in image";
                 if (current_x + glyph_width > image_width) {
