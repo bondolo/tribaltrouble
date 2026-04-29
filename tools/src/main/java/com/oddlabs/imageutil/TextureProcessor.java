@@ -4,6 +4,7 @@ import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.util.DXTImage;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.stb.STBDXT;
 import org.lwjgl.system.MemoryUtil;
 
@@ -17,8 +18,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 /**
@@ -26,7 +29,12 @@ import java.util.stream.Stream;
  */
 public final class TextureProcessor {
 
-    record SourceTarget(@NonNull Path source, @NonNull Path target) {}
+    private enum UsageMode {
+        COLOR_SRGB,
+        DATA_LINEAR
+    }
+
+    public record SourceTarget(@NonNull Path source, @NonNull Path target) {}
 
     private TextureProcessor() {
     }
@@ -36,9 +44,10 @@ public final class TextureProcessor {
      */
     public static void processFile(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile) throws IOException {
         String basisuPath = System.getProperty("basisu.path");
+        UsageMode usageMode = determineMode(infile, operations);
         if (basisuPath != null && outfile.toString().endsWith(".dds")) {
             // High quality path using basisu CLI
-            processWithBasisu(infile, operations, outfile, basisuPath);
+            processWithBasisu(infile, operations, outfile, basisuPath, usageMode);
         } else {
             // Standard fallback path using STB
             Layer[] images = new Layer[]{loadFile(infile)};
@@ -49,7 +58,8 @@ public final class TextureProcessor {
         }
     }
 
-    private static void processWithBasisu(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile, @NonNull String basisuPath) throws IOException {
+    private static void processWithBasisu(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile,
+                                          @NonNull String basisuPath, @NonNull UsageMode usageMode) throws IOException {
         Path workDir = Files.createTempDirectory("basisu_work");
         try {
             // copy input to workDir to have a clean, known name
@@ -82,14 +92,19 @@ public final class TextureProcessor {
 
             if (mipmaps) {
                 compressCmd.add("-mipmap");
+                compressCmd.add(usageMode == UsageMode.COLOR_SRGB ? "-mip_srgb" : "-mip_linear");
             }
             // basisu defaults to no mipmaps, so we don't need -no_mipmap (which is invalid)
 
             if (flip) compressCmd.add("-y_flip");
 
-            // Use quality 1 (ETC1S) which transcodes reliably to BC1/BC3
+            if (usageMode == UsageMode.DATA_LINEAR) {
+                compressCmd.add("-linear");
+            }
+
+            // Use highest ETC1S quality level that still transcodes reliably to BC1/BC3.
             compressCmd.add("-comp_level");
-            compressCmd.add("1");
+            compressCmd.add("5");
 
             execute(compressCmd, workDir);
 
@@ -135,7 +150,7 @@ public final class TextureProcessor {
     private static void deleteDirectory(@NonNull Path path) throws IOException {
         if (Files.exists(path)) {
             try (Stream<Path> s = Files.walk(path)) {
-                s.sorted((a, b) -> b.compareTo(a)).forEach(p -> {
+                s.sorted(Comparator.reverseOrder()).forEach(p -> {
                     try {
                         Files.delete(p);
                     } catch (IOException e) {
@@ -199,39 +214,56 @@ public final class TextureProcessor {
     public static void processFiles(@NonNull Stream<@NonNull SourceTarget> stream, @NonNull List<String> operations) throws IOException {
         try {
             stream.filter(st -> {
-                        try {
-                            // check if target is absent or if the source file is newer than the target
-                            return !Files.exists(st.target) || Files.getLastModifiedTime(st.target).compareTo(Files.getLastModifiedTime(st.source)) > 0;
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    })
-                    .parallel()
-                    .forEach(st -> {
-                        try {
-                            ;
-                            IO.println("Batch processing: " + st.source.getFileName() + " -> " + st.target.getFileName());
-                            processFile(st.source, operations, st.target);
-                        } catch (IOException e) {
-                            throw new UncheckedIOException("Failed to process " + st.source, e);
-                        }
-                    });
+                    try {
+                        // check if target is absent or if the source file is newer than the target
+                        return !Files.exists(st.target) || Files.getLastModifiedTime(st.source).compareTo(Files.getLastModifiedTime(st.target)) >= 0;
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                })
+                .parallel()
+                .forEach(st -> {
+                    try {
+                        IO.println("Batch processing: " + st.source.getFileName() + " -> " + st.target.getFileName());
+                        processFile(st.source, operations, st.target);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException("Failed to process " + st.source, e);
+                    }
+                });
         } catch (UncheckedIOException uioe) {
             throw uioe.getCause();
         }
     }
 
     private static Layer @NonNull [] applyOperations(@NonNull Iterator<String> args, Layer @NonNull [] images, @NonNull Path infile) {
+        UsageMode usageMode = inferUsageFromName(infile);
         while (args.hasNext()) {
             String op = args.next();
-            images = applyOperation(op, args, images, infile);
+            if ("-usage".equals(op) && args.hasNext()) {
+                String value = args.next().toLowerCase(Locale.ROOT);
+                if ("data".equals(value) || "linear".equals(value)) {
+                    usageMode = UsageMode.DATA_LINEAR;
+                } else if ("color".equals(value) || "srgb".equals(value)) {
+                    usageMode = UsageMode.COLOR_SRGB;
+                }
+                continue;
+            }
+            if ("-data".equals(op)) {
+                usageMode = UsageMode.DATA_LINEAR;
+                continue;
+            }
+            if ("-color".equals(op)) {
+                usageMode = UsageMode.COLOR_SRGB;
+                continue;
+            }
+            images = applyOperation(op, args, images, usageMode);
         }
         return images;
     }
 
-    private static Layer @NonNull [] applyOperation(@NonNull String op, @NonNull Iterator<String> args, Layer @NonNull [] images, @NonNull Path infile) {
-        String lowerName = infile.getFileName().toString().toLowerCase();
-        boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica");
+    private static Layer @NonNull [] applyOperation(@NonNull String op, @NonNull Iterator<String> args,
+                                                     Layer @NonNull [] images, @NonNull UsageMode usageMode) {
+        boolean isData = usageMode == UsageMode.DATA_LINEAR;
 
         switch (op) {
             case "-mipmaps" -> {
@@ -295,6 +327,40 @@ public final class TextureProcessor {
             default -> throw new IllegalArgumentException("Unknown operation: " + op);
         }
         return images;
+    }
+
+    private static @NonNull UsageMode determineMode(@NonNull Path infile, @NonNull List<String> operations) {
+        UsageMode usageMode = parseExplictMode(operations);
+        return usageMode != null ? usageMode : inferUsageFromName(infile);
+    }
+
+    private static @Nullable UsageMode parseExplictMode(@NonNull List<String> operations) {
+        for (int i = 0; i < operations.size(); i++) {
+            String op = operations.get(i);
+            if ("-data".equals(op)) {
+                return UsageMode.DATA_LINEAR;
+            }
+            if ("-color".equals(op)) {
+                return UsageMode.COLOR_SRGB;
+            }
+            if ("-usage".equals(op) && i + 1 < operations.size()) {
+                String value = operations.get(i + 1).toLowerCase(Locale.ROOT);
+                if ("data".equals(value) || "linear".equals(value)) {
+                    return UsageMode.DATA_LINEAR;
+                }
+                if ("color".equals(value) || "srgb".equals(value)) {
+                    return UsageMode.COLOR_SRGB;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static @NonNull UsageMode inferUsageFromName(@NonNull Path infile) {
+        String lowerName = infile.getFileName().toString().toLowerCase(Locale.ROOT);
+        return lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica")
+                ? UsageMode.DATA_LINEAR
+                : UsageMode.COLOR_SRGB;
     }
 
     public static @NonNull Layer loadFile(@NonNull Path file) throws IOException {

@@ -4,9 +4,6 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import org.gradle.internal.os.OperatingSystem
 
-group = "com.oddlabs.tribaltrouble"
-version = "1.0.0"
-
 plugins {
     id("com.smushytaco.lwjgl3")
 }
@@ -136,17 +133,17 @@ fun convertTexture(name: String, png: Any, outSubdir: String, vararg convertArgs
 // 1. External Model Textures
 val convertExternalModels = convertBatch("convertExternalModels", 
     layout.buildDirectory.dir("external_source/textures/textures/models"), "models",
-    "-flip", "-mipmaps", "-format", "dds")
+    "-color", "-flip", "-mipmaps", "-format", "dds")
 convertExternalModels.configure { dependsOn(downloadAssets) }
 
 val convertExternalDecals = convertBatch("convertExternalDecals",
     layout.buildDirectory.dir("external_source/textures/textures/teamdecals"), "models",
-    "-half", "-flip", "-mipmaps", "-format", "dds")
+    "-color", "-half", "-flip", "-mipmaps", "-format", "dds")
 convertExternalDecals.configure { dependsOn(downloadAssets) }
 
 // 2. GUI Textures
-val convertGui = convertBatch("convertGui", "textures/gui", "gui", "-flip", "-format", "dds")
-val convertPixelPerfect = convertBatch("convertPixelPerfect", "textures/pixelperfect", "gui", "-flip", "-format", "dds")
+val convertGui = convertBatch("convertGui", "textures/gui", "gui", "-color", "-flip", "-format", "dds")
+val convertPixelPerfect = convertBatch("convertPixelPerfect", "textures/pixelperfect", "gui", "-color", "-flip", "-format", "dds")
 
 // 3. Fonts
 val fontInfoDir = layout.buildDirectory.dir("resources/font")
@@ -173,7 +170,7 @@ val renderInterLightFont = tasks.register<JavaExec>("renderInterLightFont") {
 }
 
 val convertInterLightFont = convertTexture("convertInterLightFont", 
-    layout.buildDirectory.dir("font_png/light").map { it.file("inter-light_13.png") }, "font", "-flip", "-format", "dds")
+    layout.buildDirectory.dir("font_png/light").map { it.file("inter-light_13.png") }, "font", "-color", "-flip", "-format", "dds")
 convertInterLightFont.configure { dependsOn(renderInterLightFont) }
 
 val renderInterTightBlackFont = tasks.register<JavaExec>("renderInterTightBlackFont") {
@@ -197,7 +194,7 @@ val renderInterTightBlackFont = tasks.register<JavaExec>("renderInterTightBlackF
 }
 
 val convertInterTightBlackFont = convertTexture("convertInterTightBlackFont", 
-    layout.buildDirectory.dir("font_png/black").map { it.file("intertight-black_28.png") }, "font", "-flip", "-format", "dds")
+    layout.buildDirectory.dir("font_png/black").map { it.file("intertight-black_28.png") }, "font", "-color", "-flip", "-format", "dds")
 convertInterTightBlackFont.configure { dependsOn(renderInterTightBlackFont) }
 
 // 4. Geometry
