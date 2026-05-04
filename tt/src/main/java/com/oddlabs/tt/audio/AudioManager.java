@@ -92,7 +92,7 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
     public abstract float[] getListenerPosition();
 
     /**
-     * Create Audio instance for the specified file.
+     * Create an Audio instance for the specified file.
      *
      * @param file The audio resource file.
      * @return the created instance
@@ -121,19 +121,13 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
 
     public @NonNull AbstractAudioPlayer newAudio(@NonNull CameraState camera_state, @NonNull AudioParameters<?> params) {
         AudioSource source = getSource(camera_state, params);
-        if (source == null) {
-            return createPlayer(null, params);
-        }
-        return doNewAudio(source, params);
+        return source != null ? doNewAudio(source, params) : createPlayer(null, params);
     }
 
     @Override
     public @NonNull AbstractAudioPlayer newAudio(@NonNull AudioParameters<?> params) {
         AudioSource source = getSource(params);
-        if (source == null) {
-            return createPlayer(null, params);
-        }
-        return doNewAudio(source, params);
+        return source != null ? doNewAudio(source, params) : createPlayer(null, params);
     }
 
     private static @NonNull AbstractAudioPlayer doNewAudio(@NonNull AudioSource source, @NonNull AudioParameters<?> params) {
@@ -269,6 +263,7 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
         logger.info("AudioManager closing sources...");
         for (AudioSource source : sources)
             try {
+                // This check is needed for failure to initialize.
                 if (null != source) source.close(); // Ensure all sources are closed
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Error closing audio source", e);

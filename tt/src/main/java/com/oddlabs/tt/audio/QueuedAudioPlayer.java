@@ -17,23 +17,18 @@ import java.nio.ShortBuffer;
 
 final class QueuedAudioPlayer extends AbstractAudioPlayer {
     private static final int NUM_BUFFERS = 12;
-    private final @NonNull ShortBuffer pcmBuffer;
-    private final @Nullable OpenALAudio audio;
+    private final ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(16384);
     private final IntBuffer al_return_buffers = BufferUtils.createIntBuffer(1);
-    private final @NonNull URL url;
     private final int channels;
 
-    private @Nullable OGGStream ogg_stream;
+    private final @Nullable OGGStream ogg_stream;
     private int oldest_buffer = 0;
 
     QueuedAudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<@NonNull String> params) throws IOException {
         super(source, params);
-        this.url = Utils.makeURL(params.sound);
-        this.pcmBuffer = BufferUtils.createShortBuffer(16384);
         if ((!params.music && !Settings.getSettings().play_sfx) || this.source == null) {
             this.ogg_stream = null;
             this.channels = 0;
-            this.audio = null;
             return;
         }
 
@@ -42,9 +37,9 @@ final class QueuedAudioPlayer extends AbstractAudioPlayer {
         setGain(params.gain);
         setPos(params.x, params.y, params.z);
 
-        audio = new OpenALAudio(NUM_BUFFERS);
+        OpenALAudio audio = new OpenALAudio(NUM_BUFFERS);
         IntBuffer al_buffers = audio.getBuffers();
-        this.ogg_stream = new OGGStream(url);
+        this.ogg_stream = new OGGStream(Utils.makeURL(params.sound));
         this.channels = ogg_stream.getChannels();
         for (int i = 0; i < al_buffers.capacity(); i++) {
             fillBuffer(al_buffers.get(i));
@@ -68,23 +63,25 @@ final class QueuedAudioPlayer extends AbstractAudioPlayer {
         AL10.alBufferData(al_buffer, Wave.getFormat(channels, 16), pcmBuffer, ogg_stream.getRate());
     }
 
-    private int fillBuffer(int al_buffer) throws IOException {
+    private int fillBuffer(int al_buffer) {
         pcmBuffer.clear();
         if (ogg_stream == null) return 0;
-        int shortsRead = ogg_stream.read(pcmBuffer);
-        if (shortsRead > 0) {
-            // Update limit to match read data before flipping
-            pcmBuffer.position(shortsRead);
-            fillBufferFromStream(al_buffer);
-        } else if (getParameters().looping) {
-            ogg_stream.close();
-            ogg_stream = new OGGStream(url);
+        int shortsRead;
+        while(true) {
             shortsRead = ogg_stream.read(pcmBuffer);
             if (shortsRead > 0) {
+                // Update limit to match read data before flipping
                 pcmBuffer.position(shortsRead);
                 fillBufferFromStream(al_buffer);
+                break;
+            } else if (getParameters().looping) {
+                // "Again, from the top."
+                ogg_stream.seek(0);
+            } else {
+                break;
             }
         }
+
         return shortsRead;
     }
 
@@ -122,7 +119,6 @@ final class QueuedAudioPlayer extends AbstractAudioPlayer {
             AudioManager.getManager().removeQueuedPlayer(this);
             if (ogg_stream != null) {
                 ogg_stream.close();
-                ogg_stream = null;
             }
             super.stop();
         }
