@@ -9,6 +9,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public final class SpriteRenderer {
     private final @NonNull SpriteList sprite_list;
@@ -53,12 +54,12 @@ public final class SpriteRenderer {
         no_detail_render_list.clear();
     }
 
-    public void getAllPicks(@NonNull List<@NonNull Target> pick_list) {
+    public void getAllPicks(@NonNull Consumer<@NonNull Target> picks) {
         for (int i = 0; i < sprite_list.getNumSprites(); i++) {
-            sprite_list_renderer.getAllPicks(pick_list, i, tex_index);
+            sprite_list_renderer.getAllPicks(picks, i, tex_index);
         }
         for (ModelState<?> model : no_detail_render_list) {
-            pick_list.add((Target) model.getModel());
+            picks.accept((Target) model.getModel());
         }
         clearRenderLists();
     }

@@ -32,14 +32,17 @@ import org.jspecify.annotations.NonNull;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Handles the user interaction for placing a new building on the landscape.
+ */
 public final class PlacingDelegate extends ControllableCameraDelegate {
     private static final Logger logger = Logger.getLogger(PlacingDelegate.class.getName());
     private static final int GRID_RADIUS = 20;
     private static final LandscapeLocation landscape_hit = new LandscapeLocation();
 
     private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
-    private final int building_index;
     private final SpriteShader spriteShader = new SpriteShader();
+    private final int building_index;
 
     public PlacingDelegate(@NonNull WorldViewer viewer, @NonNull CameraState old_camera, int building_index) {
         super(viewer, new GameCamera(viewer, old_camera));
@@ -51,13 +54,9 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
     }
 
     public void placeObject() {
-        if (!getViewer().getPicker().pickLocation(getCamera().getState(), landscape_hit)) {
-            logger.info("placeObject: Pick failed (off map?)");
-            return;
-        }
-        UnitGrid unit_grid = getViewer().getWorld().getUnitGrid();
-        int placing_grid_x = UnitGrid.toGridCoordinate(landscape_hit.x);
-        int placing_grid_y = UnitGrid.toGridCoordinate(landscape_hit.y);
+        getViewer().getPicker().pickLocation(getCamera().getState()).ifPresentOrElse(landscape_hit -> {
+            int placing_grid_x = landscape_hit.getGridX();
+            int placing_grid_y = landscape_hit.getGridY();
         if (Building.isPlacingLegal(getViewer().getWorld().getUnitGrid(), getTemplate(), placing_grid_x, placing_grid_y)) {
             var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
             if (peons.length > 0) {
@@ -71,6 +70,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
         } else {
             logger.info("placeObject: Placement illegal");
         }
+        }, () -> logger.info("placeObject: Pick failed (off map?)"));
     }
 
     @Override
@@ -105,16 +105,20 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
 
     @Override
     public void render3D(@NonNull LandscapeRenderer renderer, @NonNull RenderQueues queues, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        if (!getViewer().getPicker().pickLocation(getCamera().getState(), landscape_hit)) return;
-        UnitGrid unit_grid = getViewer().getWorld().getUnitGrid();
-        int placing_grid_x = UnitGrid.toGridCoordinate(landscape_hit.x) - (getTemplate().getPlacingSize() - 1);
-        int placing_grid_y = UnitGrid.toGridCoordinate(landscape_hit.y) - (getTemplate().getPlacingSize() - 1);
-        int placing_center_grid_x = UnitGrid.toGridCoordinate(landscape_hit.x);
-        int placing_center_grid_y = UnitGrid.toGridCoordinate(landscape_hit.y);
+        var hit = getViewer().getPicker().pickLocation(getCamera().getState());
+        if (hit.isEmpty()) {
+            return;
+        }
+        var landscape_hit = hit.get();
+        int placing_grid_x = landscape_hit.getGridX() - (getTemplate().getPlacingSize() - 1);
+        int placing_grid_y = landscape_hit.getGridY() - (getTemplate().getPlacingSize() - 1);
+        int placing_center_grid_x = landscape_hit.getGridX();
+        int placing_center_grid_y = landscape_hit.getGridY();
 
         float center_x = HeightMap.METERS_PER_UNIT_GRID * (placing_grid_x + (getTemplate().getPlacingSize() - .5f));
         float center_y = HeightMap.METERS_PER_UNIT_GRID * (placing_grid_y + (getTemplate().getPlacingSize() - .5f));
 
+        UnitGrid unit_grid = getViewer().getWorld().getUnitGrid();
         BuildingSiteScanFilter filter = new BuildingSiteScanFilter(unit_grid, getTemplate(), GRID_RADIUS, false);
         unit_grid.scan(filter, placing_center_grid_x, placing_center_grid_y);
         List<LandscapeTarget> target_list = filter.getResult();

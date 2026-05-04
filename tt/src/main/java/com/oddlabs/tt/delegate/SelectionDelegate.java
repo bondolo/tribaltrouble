@@ -34,6 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Handles core in-game interaction, primarily the selection and commanding of units and buildings.
+ * It also manages in-game chat, jumping to notifications, and switching to map or observer modes.
+ */
 public final class SelectionDelegate extends ControllableCameraDelegate {
     private static final Vector4fc SELECTION_COLOR = Color.argb4v(0xFF_4C_FF_00);
     private static final GameAction[] ARMY_CREATES = new GameAction[]{

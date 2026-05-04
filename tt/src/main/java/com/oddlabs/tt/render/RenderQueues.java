@@ -9,9 +9,11 @@ import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -85,10 +87,7 @@ public final class RenderQueues implements AutoCloseable {
         sprite_list_lookup.add(sprite_renderer);
         registerSpriteRenderer(sprite_renderer, sprite_file.getLocation());
         AnimationInfo.AnimationType[] animation_types = sprite_list.getAnimationTypes();
-        int[] type_array = new int[animation_types.length];
-        for (int i = 0; i < animation_types.length; i++) {
-            type_array[i] = animation_types[i].ordinal();
-        }
+        int[] type_array = Arrays.stream(animation_types).mapToInt(Enum::ordinal).toArray();
         return new SpriteKey(index, sprite_list.getBounds(), type_array);
     }
 
@@ -110,7 +109,7 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    void getAllPicks(@NonNull List<@NonNull Target> pick_list) {
+    void getAllPicks(@NonNull Consumer<@NonNull Target> pick_list) {
         for (SpriteRenderer spriteRenderer : sprite_renderers) {
             spriteRenderer.getAllPicks(pick_list);
         }
@@ -120,36 +119,24 @@ public final class RenderQueues implements AutoCloseable {
     }
 
     void renderAll(@NonNull RenderContext context, @NonNull CameraState camera_state, @NonNull MatrixStack projectionStack) {
-        for (SpriteRenderer spriteRenderer : sprite_renderers) {
-            spriteRenderer.renderAll();
-        }
+        sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
     void renderPlants(@NonNull RenderContext context, @NonNull CameraState camera_state, @NonNull MatrixStack projectionStack) {
-        for (SpriteRenderer spriteRenderer : plant_renderers) {
-            spriteRenderer.renderAll();
-        }
+        plant_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
     void renderBlends(@NonNull RenderContext context, @NonNull CameraState camera_state, @NonNull MatrixStack projectionStack) {
-        for (SpriteRenderer blendSpriteRenderer : blend_sprite_renderers) {
-            blendSpriteRenderer.renderAll();
-        }
+        blend_sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
     void renderNoDetail() {
-        for (SpriteRenderer spriteRenderer : sprite_renderers) {
-            spriteRenderer.renderNoDetail();
-        }
-        for (SpriteRenderer spriteRenderer : plant_renderers) {
-            spriteRenderer.renderNoDetail();
-        }
-        for (SpriteRenderer blendSpriteRenderer : blend_sprite_renderers) {
-            blendSpriteRenderer.renderNoDetail();
-        }
+        sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
+        plant_renderers.forEach(SpriteRenderer::renderNoDetail);
+        blend_sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
     }
 
     void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
@@ -164,8 +151,6 @@ public final class RenderQueues implements AutoCloseable {
         for (SpriteList spriteList : sprite_list_lookup.stream().map(SpriteRenderer::getSpriteList).distinct().toList()) {
             spriteList.close();
         }
-        for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
-            shadowListRenderer.close();
-        }
+        shadow_renderer_lookup.forEach(ShadowListRenderer::close);
     }
 }

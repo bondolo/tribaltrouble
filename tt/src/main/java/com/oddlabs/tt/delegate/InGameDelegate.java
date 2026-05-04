@@ -10,7 +10,6 @@ import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.render.LandscapeLocation;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.WorldViewer;
@@ -19,6 +18,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 
+/**
+ * Base class for all delegates active during actual gameplay. Provides common functionality
+ * such as cheat code handling and opening the in-game main menu.
+ */
 public abstract class InGameDelegate extends CameraDelegate<Camera> {
     private final @NonNull WorldViewer viewer;
 
@@ -32,47 +35,49 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         Cheat cheat = viewer.getCheat();
         if (!cheat.isEnabled())
             return false;
-        LandscapeLocation landscape_hit = new LandscapeLocation();
-        viewer.getPicker().pickLocation(getCamera().getState(), landscape_hit);
-        float landscape_x = landscape_hit.x;
-        float landscape_y = landscape_hit.y;
+        var pickLocation = viewer.getPicker().pickLocation(getCamera().getState());
 
         if (actions.contains(GameAction.CHEAT_1)) {
             // F1 creates a peon at the center of the view unless the player already has maximum units.
-            if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
-                new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+                var location = pickLocation.get();
+                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_PEON));
                 return true;
             }
         }
         if (actions.contains(GameAction.CHEAT_2)) {
             // F2 creates a rock warrior at the center of the view unless the player already has maximum units.
-            if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
-                new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+                var location = pickLocation.get();
+                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
                 return true;
             }
         }
         if (actions.contains(GameAction.CHEAT_3)) {
             // F3 creates an iron warrior at the center of the view unless the player already has maximum units.
-            if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
-                new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+                var location = pickLocation.get();
+                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
                 return true;
             }
         }
         if (actions.contains(GameAction.CHEAT_4)) {
             // F4 creates a chicken warrior at the center of the view unless the player already has maximum units.
-            if (viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
-                new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+                var location = pickLocation.get();
+                new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
                 return true;
             }
         }
         if (actions.contains(GameAction.CHEAT_5)) {
             // F5 creates a chieftain at the center of the view unless the player already has one or is training one
-            if (!viewer.getLocalPlayer().hasActiveChieftain() && !viewer.getLocalPlayer().isTrainingChieftain()) {
-                Unit chieftain = new Unit(viewer.getLocalPlayer(), landscape_x, landscape_y, null,
+            if (pickLocation.isPresent() && !viewer.getLocalPlayer().hasActiveChieftain() && !viewer.getLocalPlayer().isTrainingChieftain()) {
+                var location = pickLocation.get();
+                Unit chieftain = new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN));
                 viewer.getLocalPlayer().setActiveChieftain(chieftain);
                 return true;

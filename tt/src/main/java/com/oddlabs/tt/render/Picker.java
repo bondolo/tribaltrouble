@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -49,6 +50,36 @@ public final class Picker implements Updatable<TimerAnimation> {
     private static final float PATCH_PICK_STEP = 2f;
     private static final float TOOL_TIP_DELAY = .1f;
 
+    public record LandscapeLocation(float x, float y) implements Target {
+
+        public int getGridX() {
+            return UnitGrid.toGridCoordinate(x);
+        }
+
+        public int getGridY() {
+            return UnitGrid.toGridCoordinate(y);
+        }
+
+        @Override
+        public float getPositionX() {
+            return x;
+        }
+
+        @Override
+        public float getPositionY() {
+            return y;
+        }
+
+        @Override
+        public float getSize() {
+            return 0;
+        }
+
+        @Override
+        public boolean isDead() {
+            return false;
+        }
+    }
     private final Matrix4f proj = new Matrix4f();
 
     private final IntBuffer viewport = Objects.requireNonNull(BufferUtils.createIntBuffer(16));
@@ -65,7 +96,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final @NonNull LandscapeRenderer landscape_renderer;
     private final @NonNull ElementRenderer<?> element_renderer;
     private final @NonNull TreePicker tree_renderer;
-    private final @NonNull SpriteSorter sprite_sorter;
+    private final SpriteSorter sprite_sorter = new SpriteSorter();
     private final @NonNull RenderQueues render_queues;
     private final @NonNull RespondManager respond_manager;
     private final @NonNull Player local_player;
@@ -93,7 +124,6 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.local_player = local_player;
         this.gui_root = gui_root;
         this.render_queues = render_queues;
-        this.sprite_sorter = new SpriteSorter();
         this.respond_manager = new RespondManager(manager);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, sprite_sorter, selection);
         this.tree_renderer = new TreePicker(sprite_sorter, respond_manager);
@@ -524,15 +554,11 @@ com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
         current_tooltip = null;
     }
 
-    public boolean pickLocation(@NonNull CameraState camera, @NonNull LandscapeLocation landscape_location) {
+    public Optional<LandscapeLocation> pickLocation(@NonNull CameraState camera) {
         int x = Renderer.getLocalInput().getMouseX();
         int y = Renderer.getLocalInput().getMouseY();
         setupPicking(camera, x, y, PICK_SIZE, PICK_SIZE);
-        if (!nearestLandscape(x, y))
-            return false;
-        landscape_location.x = patch_hit_x;
-        landscape_location.y = patch_hit_y;
-        return true;
+        return !nearestLandscape(x, y) ? Optional.empty() : Optional.of(new LandscapeLocation(patch_hit_x, patch_hit_y));
     }
 
     private void setupPicking(@NonNull CameraState camera, float x_center, float y_center, int width, int height) {
@@ -565,7 +591,7 @@ com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
         element_renderer.setup(tmp_camera);
         element_renderer.visit(local_player.getWorld().getElementRoot());
         sprite_sorter.distributeModels();
-        render_queues.getAllPicks(element_pick_list);
+        render_queues.getAllPicks(element_pick_list::add);
     }
 
     private void pickResources() {
@@ -604,7 +630,7 @@ com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
 
         @Override
         public int compare(@NonNull LandscapeLeaf l1, @NonNull LandscapeLeaf l2) {
-            return compare(tmp_camera, l1, l2);
+            return compare(Picker.this.tmp_camera, l1, l2);
         }
     }
 }

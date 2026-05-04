@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 final class SpriteListRenderer {
     private final @NonNull SpriteList sprite_list;
@@ -45,22 +46,22 @@ final class SpriteListRenderer {
         respond_render_lists[sprite_index][tex_index].add(model);
     }
 
-    public void getAllPicks(@NonNull List<Target> pick_list, int sprite_index, int tex_index) {
+    public void getAllPicks(@NonNull Consumer<Target> picks, int sprite_index, int tex_index) {
         List<ModelState<?>> render_list = render_lists[sprite_index][tex_index];
-        pickFromList(render_list, pick_list);
+        pickFromList(render_list, picks);
         render_list.clear();
 
         render_list = respond_render_lists[sprite_index][tex_index];
-        pickFromList(render_list, pick_list);
+        pickFromList(render_list, picks);
         render_list.clear();
     }
 
-    private void pickFromList(@NonNull List<@Nullable ModelState<?>> render_list, @NonNull List<@NonNull Target> pick_list) {
+    private void pickFromList(@NonNull List<@Nullable ModelState<?>> render_list, @NonNull Consumer<@NonNull Target> picks) {
         for (int i = 0; i < render_list.size(); i++) {
             ModelState<?> model = render_list.get(i);
             render_list.set(i, null);
             if (model.getModel() instanceof Target target) {
-                pick_list.add(target);
+                picks.accept(target);
             }
         }
     }
