@@ -118,10 +118,6 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     }
 
     @Override
-    public void saveSucceeded() {
-    }
-
-    @Override
     public void failed(@NonNull Throwable e) {
         logger.log(Level.SEVERE, "Failed to load savegames", e);
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {

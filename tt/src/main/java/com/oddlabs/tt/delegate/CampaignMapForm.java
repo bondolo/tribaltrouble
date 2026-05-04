@@ -70,13 +70,12 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                 }
 
                 if (campaign.getState().getCurrentIsland() == 14) {
-                    final Runnable runnable_menu = () -> closeCampaign(network, gui_root.getGUI());
                     final Runnable runnable_next = () -> {
                         CampaignDialogForm dialog = new CampaignDialogForm(i18n("native_campaign_opened_header"),
                                 i18n("native_campaign_opened"),
                                 null,
                                 Origin.AT_START,
-                                runnable_menu);
+                                () -> closeCampaign(network, gui_root.getGUI()));
                         gui_root.addModalForm(dialog);
                     };
                     CampaignDialogForm dialog = new CampaignDialogForm(i18n("viking_header"),
@@ -95,12 +94,11 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                 }
 
                 if (campaign.getState().getCurrentIsland() == 7) {
-                    Runnable runnable = () -> closeCampaign(network, gui_root.getGUI());
                     CampaignDialogForm dialog = new CampaignDialogForm(i18n("native_header"),
                             i18n("native_campaign_completed"),
                             campaign.getIcons().getFaces()[0],
                             Origin.AT_START,
-                            runnable);
+                            () -> closeCampaign(network, gui_root.getGUI()));
                     gui_root.addModalForm(dialog);
                 }
             }

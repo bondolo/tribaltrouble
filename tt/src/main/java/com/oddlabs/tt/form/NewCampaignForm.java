@@ -20,7 +20,6 @@ import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.guievent.EnterListener;
-import com.oddlabs.tt.guievent.ItemChosenListener;
 import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.player.campaign.Campaign;
 import com.oddlabs.tt.player.campaign.CampaignState;
@@ -47,19 +46,19 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     private static final int INDEX_VIKINGS = 0;
     private static final int INDEX_NATIVES = 1;
 
-    private final @NonNull Menu main_menu;
-    private final @NonNull CampaignForm campaign_form;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NewCampaignForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull EditLine editline_name;
-    private final @NonNull PulldownMenu<Void> race_pulldown;
-    private final @NonNull PulldownMenu<Void> difficulty_pulldown;
-    private final @NonNull GUIRoot gui_root;
     private final @NonNull NetworkSelector network;
+    private final @NonNull GUIRoot gui_root;
+    private final @NonNull Menu main_menu;
+    private final @NonNull CampaignForm campaign_form;
+    private final EditLine editline_name = new EditLine(EDITLINE_WIDTH, 200);
+    private final PulldownMenu<Void> race_pulldown = new PulldownMenu<>();
+    private final PulldownMenu<Void> difficulty_pulldown = new PulldownMenu<>();
     private @NonNull CampaignState @Nullable [] campaign_states;
 
     public NewCampaignForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu, @NonNull CampaignForm campaign_form) {
@@ -74,24 +73,26 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         // name
         Group group = new Group();
         Label name_label = new Label(i18n("name"), Skin.getSkin().getEditFont());
-        editline_name = new EditLine(EDITLINE_WIDTH, 200);
         editline_name.addEnterListener(new NameListener());
         group.addChild(name_label);
         group.addChild(editline_name);
 
         // race
         Label race_label = new Label(i18n("race"), Skin.getSkin().getEditFont());
-        race_pulldown = new PulldownMenu<>();
         race_pulldown.addItem(new PulldownItem<>(i18n("vikings")));
         race_pulldown.addItem(new PulldownItem<>(i18n("natives")));
-        race_pulldown.addItemChosenListener(new RaceListener());
+        race_pulldown.addItemChosenListener((@NonNull PulldownMenu<Void> menu, int item_index) -> {
+            if (item_index == INDEX_NATIVES && (!Settings.getSettings().has_native_campaign)) {
+                menu.chooseItem(INDEX_VIKINGS);
+                gui_root.addModalForm(new MessageForm(i18n("native_unavailable")));
+            }
+        });
         PulldownButton<Void> race_pb = new PulldownButton<>(gui_root, race_pulldown, INDEX_VIKINGS, 100);
         group.addChild(race_label);
         group.addChild(race_pb);
 
         // difficulty
         Label difficulty_label = new Label(i18n("difficulty"), Skin.getSkin().getEditFont());
-        difficulty_pulldown = new PulldownMenu<>();
         difficulty_pulldown.addItem(new PulldownItem<>(i18n("easy")));
         difficulty_pulldown.addItem(new PulldownItem<>(i18n("normal")));
         difficulty_pulldown.addItem(new PulldownItem<>(i18n("hard")));
@@ -143,15 +144,10 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         }
     }
 
-    private boolean nameIsUnique(String name) {
-        if (campaign_states != null) {
-            for (CampaignState campaign_state : campaign_states) {
-                if (campaign_state.getName().equals(name)) {
-                    return false;
-                }
-            }
-        }
-        return true;
+    private boolean nameIsUnique(@NonNull String name) {
+        return campaign_states == null || Arrays.stream(campaign_states)
+                .map(CampaignState::getName)
+                .noneMatch(campaign_name -> campaign_name.equals(name));
     }
 
     private void save() {
@@ -165,12 +161,9 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
             return;
         }
 
-        CampaignState[] new_states;
-        if (campaign_states != null) {
-            new_states = Arrays.copyOf(campaign_states, campaign_states.length + 1);
-        } else {
-            new_states = new CampaignState[1];
-        }
+        CampaignState[] new_states = campaign_states != null
+                ? Arrays.copyOf(campaign_states, campaign_states.length + 1)
+                : new CampaignState[1];
         Campaign campaign;
         switch (race_pulldown.getChosenItemIndex()) {
             case 0 -> {
@@ -190,7 +183,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
             case 0 -> CampaignState.DIFFICULTY_EASY;
             case 1 -> CampaignState.DIFFICULTY_NORMAL;
             case 2 -> CampaignState.DIFFICULTY_HARD;
-            default -> throw new IllegalArgumentException();
+            default -> throw new IllegalArgumentException("unexpected difficulty: " + difficulty_pulldown.getChosenItemIndex());
         };
         campaign.getState().setDifficulty(difficulty);
         new_states[new_states.length - 1] = campaign.getState();
@@ -199,11 +192,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     }
 
     @Override
-    public void saveSucceeded() {
-    }
-
-    @Override
-    public void loadSucceeded(CampaignState[] campaign_states) {
+    public void loadSucceeded(CampaignState @NonNull [] campaign_states) {
         this.campaign_states = campaign_states;
     }
 
@@ -226,16 +215,6 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         @Override
         public void enterPressed(@NonNull CharSequence text) {
             save();
-        }
-    }
-
-    private final class RaceListener implements ItemChosenListener<Void> {
-        @Override
-        public void itemChosen(@NonNull PulldownMenu<Void> menu, int item_index) {
-            if (item_index == INDEX_NATIVES && (!Settings.getSettings().has_native_campaign)) {
-                menu.chooseItem(INDEX_VIKINGS);
-                gui_root.addModalForm(new MessageForm(i18n("native_unavailable")));
-            }
         }
     }
 }

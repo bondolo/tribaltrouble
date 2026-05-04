@@ -49,6 +49,7 @@ public final class NativeCampaign extends Campaign {
 
     public NativeCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, CampaignState campaign_state) {
         super(campaign_state);
+
         if (getState().getCurrentIsland() == -1) {
             startIsland(network, gui_root, 0);
         }
