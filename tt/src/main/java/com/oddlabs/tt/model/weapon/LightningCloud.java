@@ -39,8 +39,8 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private final float hit_chance;
     private final int damage;
     private final float height;
-    private final @Nullable AbstractAudioPlayer bubbling_sound;
-    private AbstractAudioPlayer cloud_sound;
+    private final AbstractAudioPlayer<?> bubbling_sound;
+    private AbstractAudioPlayer<?> cloud_sound;
 
     private float seconds_to_live;
     private @Nullable Selectable<?> target = null;
@@ -187,8 +187,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
 
     @Override
     public void interrupt() {
-        if (bubbling_sound != null)
-            bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
+        bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
         remove();
     }
 }

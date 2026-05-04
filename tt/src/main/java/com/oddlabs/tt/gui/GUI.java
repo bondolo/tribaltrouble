@@ -13,6 +13,9 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Container for the 2D user interface
+ */
 public final class GUI implements Animated {
     private final @NonNull GUIRenderer guiRenderer;
     private @NonNull GUIRoot current_root;

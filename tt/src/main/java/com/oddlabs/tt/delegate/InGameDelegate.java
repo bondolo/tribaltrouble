@@ -11,6 +11,7 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.render.LandscapeLocation;
+import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -78,7 +79,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
             }
         }
         if (actions.contains(GameAction.CHEAT_6)) {
-            // F6 does massive damve on whatever is selected.
+            // F6 does massive damage on whatever is selected.
             viewer.getLocalPlayer().killSelection(viewer.getSelection().getCurrentSelection().filter(Abilities.NONE));
             return true;
         }
@@ -94,7 +95,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         }
         if (actions.contains(GameAction.CHEAT_9)) {
             // F9 toggles fog
-            com.oddlabs.tt.resource.FogInfo fog_info = viewer.getGUIRoot().getDelegate().getCamera().getState().getFog();
+            FogInfo fog_info = viewer.getGUIRoot().getDelegate().getCamera().getState().getFog();
             fog_info.setEnabled(!fog_info.isEnabled());
             return true;
         }

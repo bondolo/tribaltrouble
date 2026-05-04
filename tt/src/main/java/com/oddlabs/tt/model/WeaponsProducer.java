@@ -24,7 +24,7 @@ public class WeaponsProducer {
 
     private float break_time = 0f;
     private boolean producing;
-    private @Nullable AbstractAudioPlayer production_player;
+    private @Nullable AbstractAudioPlayer<?> production_player;
 
     public WeaponsProducer(@NonNull Building building, @NonNull WorkerUnitContainer unit_container, @NonNull BuildProductionContainer @NonNull [] production_containers) {
         this.building = building;

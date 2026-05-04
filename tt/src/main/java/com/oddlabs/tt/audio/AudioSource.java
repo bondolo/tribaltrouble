@@ -146,14 +146,14 @@ public interface AudioSource extends AutoCloseable {
      *
      * @return The associated AbstractAudioPlayer.
      */
-    @Nullable AbstractAudioPlayer getAudioPlayer();
+    @Nullable AbstractAudioPlayer<?> getAudioPlayer();
 
     /**
      * Associates an audio player with this source.
      *
      * @param audioPlayer The audio player to associate.
      */
-    void setAudioPlayer(AbstractAudioPlayer audioPlayer);
+    void setAudioPlayer(AbstractAudioPlayer<?> audioPlayer);
 
     /**
      * Closes the audio source and releases its native resources.

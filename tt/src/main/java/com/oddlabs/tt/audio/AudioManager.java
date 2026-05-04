@@ -1,9 +1,9 @@
 package com.oddlabs.tt.audio;
 
+import com.oddlabs.tt.audio.openal.OpenALAudioSource;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Settings;
-import com.oddlabs.tt.landscape.AudioImplementation;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * and controlling global audio properties like listener orientation and master gain.
  */
 @SuppressWarnings("UnusedReturnValue")
-public abstract class AudioManager implements AudioImplementation, AutoCloseable {
+public abstract class AudioManager implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(AudioManager.class.getName());
 
     private static final Holder SINGLETON = new Holder();
@@ -119,18 +119,17 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
         }
     }
 
-    public @NonNull AbstractAudioPlayer newAudio(@NonNull CameraState camera_state, @NonNull AudioParameters<?> params) {
+    public @NonNull AbstractAudioPlayer<?> newAudio(@NonNull CameraState camera_state, @NonNull AudioParameters<?> params) {
         AudioSource source = getSource(camera_state, params);
         return source != null ? doNewAudio(source, params) : createPlayer(null, params);
     }
 
-    @Override
-    public @NonNull AbstractAudioPlayer newAudio(@NonNull AudioParameters<?> params) {
+    public @NonNull AbstractAudioPlayer<?> newAudio(@NonNull AudioParameters<?> params) {
         AudioSource source = getSource(params);
         return source != null ? doNewAudio(source, params) : createPlayer(null, params);
     }
 
-    private static @NonNull AbstractAudioPlayer doNewAudio(@NonNull AudioSource source, @NonNull AudioParameters<?> params) {
+    private static @NonNull AbstractAudioPlayer<?> doNewAudio(@NonNull AudioSource source, @NonNull AudioParameters<?> params) {
         // Bind the audio to the source before creating the player.
         if (params.sound instanceof Audio audio) {
             source.setAudio(audio);
@@ -139,12 +138,12 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
     }
 
     @SuppressWarnings("unchecked")
-    private static @NonNull AbstractAudioPlayer createPlayer(@Nullable AudioSource source, @NonNull AudioParameters<?> params) {
+    private static @NonNull AbstractAudioPlayer<?> createPlayer(@Nullable AudioSource source, @NonNull AudioParameters<?> params) {
         if (params.sound instanceof Audio) {
             return new AudioPlayer(source, (AudioParameters<Audio>) params);
         } else if (params.sound instanceof String) {
             try {
-                return new QueuedAudioPlayer(source, (AudioParameters<String>) params);
+                return new QueuedAudioPlayer((OpenALAudioSource) source, (AudioParameters<String>) params);
             } catch (IOException ex) {
                 throw new IllegalArgumentException("Could not load " + params.sound, ex);
             }
@@ -235,7 +234,7 @@ public abstract class AudioManager implements AudioImplementation, AutoCloseable
     }
 
     private static void stopSource(@Nullable AudioSource source) {
-        AbstractAudioPlayer player;
+        AbstractAudioPlayer<?> player;
         if (source != null && (player = source.getAudioPlayer()) != null) {
             player.stop();
         }

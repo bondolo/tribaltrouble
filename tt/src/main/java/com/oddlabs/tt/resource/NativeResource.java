@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A class with associated native state which is not reclaimed automatically by the garbage collector.
+ * A class with associated native state that is not reclaimed automatically by the garbage collector.
  *
  * @param <R> The native state type
  */

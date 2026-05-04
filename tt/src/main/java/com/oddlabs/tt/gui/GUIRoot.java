@@ -55,7 +55,7 @@ public final class GUIRoot extends GUIObject {
     private boolean render_tool_tip = false;
 
     /**
-     * the cotnrol which currently has focus
+     * the control that currently has focus
      */
     private @NonNull GUIObject current_gui_object = this;
     private @NonNull GUIObject global_focus = this;
@@ -232,7 +232,7 @@ public final class GUIRoot extends GUIObject {
         if (width <= 0 || height <= 0) return 1.0f;
         float maxScaleX = width / 800f;
         float maxScaleY = height / 600f;
-        return Math.max(1.0f, Math.min(maxScaleX, maxScaleY));
+        return Math.clamp(maxScaleX, 1.0f, maxScaleY);
     }
 
     public static float calculateMinScale(int width, int height) {

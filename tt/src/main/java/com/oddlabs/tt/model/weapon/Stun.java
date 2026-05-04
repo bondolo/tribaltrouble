@@ -32,7 +32,7 @@ public final class Stun extends PointEmitterModel implements Magic {
     private final float stun_time_closest;
     private final float stun_time_farthest;
     private final @NonNull Player owner;
-    private final @NonNull AbstractAudioPlayer sound;
+    private final @NonNull AbstractAudioPlayer<?> sound;
 
     private final @NonNull Iterable<? extends Selectable<?>> target_list;
 

@@ -29,7 +29,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private static final float OFFSET_Y = -.347f;
     private static final float OFFSET_Z = 1.382f;
 
-    private final @NonNull AbstractAudioPlayer audio_player;
+    private final @NonNull AbstractAudioPlayer<?> audio_player;
     private final @NonNull Audio @NonNull [] hit_sounds;
     private final boolean hit;
     private final @NonNull SpriteKey sprite_renderer;

@@ -16,7 +16,6 @@ import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.ActionButtonPanel;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
-import com.oddlabs.tt.landscape.AudioImplementation;
 import com.oddlabs.tt.landscape.LandscapeResources;
 import com.oddlabs.tt.landscape.NotificationListener;
 import com.oddlabs.tt.landscape.World;
@@ -92,7 +91,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = World.loadCommon(render_queues);
         RacesResources races_resources = World.loadInGame(render_queues);
-        AudioImplementation audio_impl = (AudioParameters<?> params) -> AudioManager.getManager().newAudio(camera_state, params);
         this.distributable_table = new DistributableTable();
         NotificationListener listener = new NotificationListener() {
             @Override
@@ -139,7 +137,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         };
         PlayerInfo[] player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toArray(PlayerInfo[]::new);
         WorldInfo world_info = generator.generate(player_infos.length, world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
-        this.world = World.newWorld(audio_impl, landscape_resources, races_resources, listener, world_params, world_info, generator.getTerrainType(), player_infos, worldFog);
+        this.world = World.newWorld((@NonNull AudioParameters<?> params) -> AudioManager.getManager().newAudio(camera_state, params), landscape_resources, races_resources, listener, world_params, world_info, generator.getTerrainType(), player_infos, worldFog);
         this.local_player = world.getPlayers()[player_slot];
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
@@ -199,23 +197,22 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     private void initPlayer(@NonNull ResourceBundle bundle, float[] starting_location, @NonNull PlayerSlot slot, @NonNull Player player, @NonNull UnitInfo unit_info, int initial_gamespeed) {
         if (slot.getType() == PlayerSlot.AI) {
-            AI ai = null;
-            switch (slot.getAIDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> ai = new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_NORMAL);
-                case PlayerSlot.AI_HARD -> ai = new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_HARD);
-                case PlayerSlot.AI_EASY -> ai = new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_EASY);
-                case PlayerSlot.AI_BATTLE_TUTORIAL -> ai = new PassiveAI(player, unit_info, true);
-                case PlayerSlot.AI_TOWER_TUTORIAL -> {
-                }
+            AI ai = switch (slot.getAIDifficulty()) {
+                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_NORMAL);
+                case PlayerSlot.AI_HARD -> new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_HARD);
+                case PlayerSlot.AI_EASY -> new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_EASY);
+                case PlayerSlot.AI_BATTLE_TUTORIAL -> new PassiveAI(player, unit_info, true);
+                case PlayerSlot.AI_TOWER_TUTORIAL -> null;
                 case PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> {
                     new Unit(player, 100, 100, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
                     new Unit(player, 200, 100, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
                     new Unit(player, 40, 200, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
+                    yield null;
                 }
-                case PlayerSlot.AI_PASSIVE_CAMPAIGN -> ai = new PassiveAI(player, unit_info, true);
-                case PlayerSlot.AI_NEUTRAL_CAMPAIGN -> ai = new PassiveAI(player, unit_info, false);
+                case PlayerSlot.AI_PASSIVE_CAMPAIGN -> new PassiveAI(player, unit_info, true);
+                case PlayerSlot.AI_NEUTRAL_CAMPAIGN -> new PassiveAI(player, unit_info, false);
                 default -> throw new IllegalArgumentException("unexpected difficulty: " + slot.getAIDifficulty());
-            }
+            };
             player.setAI(ai);
         } else {
             player.setPreferredGamespeed(initial_gamespeed);

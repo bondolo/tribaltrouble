@@ -8,6 +8,7 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
+/** A GUI object that is used to provide a text label another GUI object. */
 public class Label extends TextField implements Comparable<Label> {
     public static final Vector4fc DEFAULT_COLOR = Color.WHITE;
     public static final Vector4fc DISABLED_COLOR = Color.argb4v(0xB2_B2_B2_B2);

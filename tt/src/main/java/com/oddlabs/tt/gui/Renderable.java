@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import java.nio.IntBuffer;
 import java.util.Objects;
 
+/** A renderable component with position, size, and optionally renderable children. */
 public abstract class Renderable<R extends Renderable<R>> extends ListElementImpl<R> {
     private int x = 0;
     private int y = 0;

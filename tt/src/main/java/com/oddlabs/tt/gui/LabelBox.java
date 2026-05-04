@@ -8,6 +8,7 @@ import com.oddlabs.util.Color;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
+/** A GUI Label that provides a text label drawn in a box. */
 public class LabelBox extends TextField implements Comparable<LabelBox>, Clipped {
     private @NonNull TextLayout textLayout;
 

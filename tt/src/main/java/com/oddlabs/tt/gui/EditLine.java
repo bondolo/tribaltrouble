@@ -21,6 +21,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+/**
+ * A single-line text input field. Supports basic text editing, cursor navigation,
+ * input filtering, and horizontal scrolling for text that exceeds the visual width.
+ */
 public class EditLine extends TextField implements Clipped {
     private final Set<@NonNull EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
     private final @NonNull Origin alignment;

@@ -7,6 +7,9 @@ import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Handles full-screen fade transitions between different GUI states or root nodes.
+ */
 final class Fade {
     private static final float FADE_TIME = 1f;
 

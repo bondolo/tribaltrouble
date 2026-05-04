@@ -5,7 +5,7 @@ import com.oddlabs.tt.audio.openal.OpenALManager;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public final class AudioPlayer extends AbstractAudioPlayer {
+public final class AudioPlayer<AS extends AudioSource> extends AbstractAudioPlayer<AS> {
     public static final int AUDIO_RANK_AMBIENT = 75;
     public static final int AUDIO_RANK_MUSIC = 50;
     public static final int AUDIO_RANK_NOTIFICATION = 40;
@@ -80,8 +80,7 @@ public final class AudioPlayer extends AbstractAudioPlayer {
 
     private static final float MAX_HEARING_DIST = 150f;
 
-
-    AudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<Audio> params) {
+    AudioPlayer(@Nullable AS source, @NonNull AudioParameters<Audio> params) {
         super(source, params);
         if (this.source == null) {
             return;

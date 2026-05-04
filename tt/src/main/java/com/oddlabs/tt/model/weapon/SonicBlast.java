@@ -30,8 +30,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
     private final float start_x;
     private final float start_y;
     private final float start_z;
-    private final @NonNull AbstractAudioPlayer lur;
-    private final @NonNull AbstractAudioPlayer rumble;
+    private final @NonNull AbstractAudioPlayer<?> lur;
+    private final @NonNull AbstractAudioPlayer<?> rumble;
 
     private float time = 0f;
     private final @NonNull Iterable<? extends Selectable<?>> blast_targets;

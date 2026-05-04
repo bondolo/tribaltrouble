@@ -60,7 +60,7 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         }
     }
 
-    private @Nullable AbstractAudioPlayer audio_player;
+    private @Nullable AbstractAudioPlayer<?> audio_player;
     private final FloatBuffer positionBuffer = BufferUtils.createFloatBuffer(3);
     private @Nullable OpenALFilter directFilter;
 
@@ -250,12 +250,12 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
     }
 
     @Override
-    public @Nullable AbstractAudioPlayer getAudioPlayer() {
+    public @Nullable AbstractAudioPlayer<?> getAudioPlayer() {
         return audio_player;
     }
 
     @Override
-    public void setAudioPlayer(@Nullable AbstractAudioPlayer audio_player) {
+    public void setAudioPlayer(@Nullable AbstractAudioPlayer<?> audio_player) {
         if (this.audio_player != null)
             this.audio_player.stop();
         this.audio_player = audio_player;

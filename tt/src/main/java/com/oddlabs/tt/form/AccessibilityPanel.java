@@ -22,6 +22,10 @@ import org.jspecify.annotations.NonNull;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/**
+ * A UI panel allowing players to configure various accessibility options, such as
+ * high contrast modes, color vision deficiency (CVD) filters, and custom team colors.
+ */
 public class AccessibilityPanel extends Panel {
     private static final int SLIDER_WIDTH = 270;
     private static final int MAX_VALUE = 20;

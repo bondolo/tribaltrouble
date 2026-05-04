@@ -15,7 +15,7 @@ import java.net.URL;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-final class QueuedAudioPlayer extends AbstractAudioPlayer {
+final class QueuedAudioPlayer extends AbstractAudioPlayer<OpenALAudioSource> {
     private static final int NUM_BUFFERS = 12;
     private final ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(16384);
     private final IntBuffer al_return_buffers = BufferUtils.createIntBuffer(1);
@@ -24,7 +24,7 @@ final class QueuedAudioPlayer extends AbstractAudioPlayer {
     private final @Nullable OGGStream ogg_stream;
     private int oldest_buffer = 0;
 
-    QueuedAudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<@NonNull String> params) throws IOException {
+    QueuedAudioPlayer(@Nullable OpenALAudioSource source, @NonNull AudioParameters<@NonNull String> params) throws IOException {
         super(source, params);
         if ((!params.music && !Settings.getSettings().play_sfx) || this.source == null) {
             this.ogg_stream = null;
@@ -86,27 +86,18 @@ final class QueuedAudioPlayer extends AbstractAudioPlayer {
     }
 
     public void refill() throws IOException { // Run by the Refiller thread
-        int processed = ((OpenALAudioSource) source).processed();
+        int processed = source.processed();
 //System.out.println("this = " + this + " | processed = " + processed);
         while (processed > 0) {
-//			assert processed <= al_buffers.capacity();
-//			al_buffers.position(oldest_buffer);
-//			al_buffers.limit(oldest_buffer + 1);
-//			assert AL10.alIsBuffer(al_buffers.get(al_buffers.position())): al_buffers.get(al_buffers.position()) + " is not a buffer";
-            ((OpenALAudioSource) source).unqueued(al_return_buffers);
-//			assert al_return_buffers.get(0) == al_buffers.get(al_buffers.position()): "Unexpected buffer removed: " + al_return_buffers.get(0) + " should be " + al_buffers.get(al_buffers.position());
+            source.unqueued(al_return_buffers);
             int bytes = fillBuffer(al_return_buffers.get(0));
             if (bytes == 0) {
                 stop();
                 return;
             }
-//			assert AL10.alIsBuffer(al_buffers.get(al_buffers.position())): al_buffers.get(al_buffers.position()) + " is not a buffer";
-            ((OpenALAudioSource) source).queue(al_return_buffers);
-//System.out.println("oldest_buffer = " + oldest_buffer + " | processed = " + processed + " | capacity = " + buffer_streams[oldest_buffer].buffer().capacity() + " | position " + buffer_streams[oldest_buffer].buffer().position() + " | limit " + buffer_streams[oldest_buffer].buffer().limit() + " al_size = " + AL10.alGetBufferi(al_buffers.get(oldest_buffer), AL10.AL_SIZE));
+            source.queue(al_return_buffers);
             oldest_buffer = (oldest_buffer + 1) % NUM_BUFFERS;
             processed--;
-/*			int test_processed = AL10.alGetSourcei(source.getSource(), AL10.AL_BUFFERS_PROCESSED);
-			assert test_processed >= processed: test_processed + " " + processed;*/
         }
         if (source.getState() == AudioSource.State.STOPPED)
             source.play();

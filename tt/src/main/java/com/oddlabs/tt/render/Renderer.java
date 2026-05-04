@@ -84,7 +84,7 @@ public final class Renderer implements AutoCloseable {
 
     private final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), "default");
 
-    private AbstractAudioPlayer music;
+    private AbstractAudioPlayer<?> music;
     private String music_path;
     private @Nullable TimerAnimation music_timer;
 
@@ -544,7 +544,7 @@ public final class Renderer implements AutoCloseable {
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio(AudioManager.getManager());
+        ambient = new AmbientAudio(AudioManager.getManager()::newAudio);
 
         Runnable load_task = setupMainMenu(network, gui, true);
 
@@ -684,7 +684,7 @@ public final class Renderer implements AutoCloseable {
         FogInfo fog_info = generator.getFogInfo();
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = World.loadCommon(render_queues);
-        World world = World.newWorld(AudioManager.getManager(), landscape_resources, null, new NotificationListener() {
+        World world = World.newWorld(AudioManager.getManager()::newAudio, landscape_resources, null, new NotificationListener() {
         }, world_params, world_info, generator.getTerrainType(), players, fog_info);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
@@ -969,7 +969,7 @@ public final class Renderer implements AutoCloseable {
         }
     }
 
-    public AbstractAudioPlayer getMusicPlayer() {
+    public AbstractAudioPlayer<?> getMusicPlayer() {
         return music;
     }
 

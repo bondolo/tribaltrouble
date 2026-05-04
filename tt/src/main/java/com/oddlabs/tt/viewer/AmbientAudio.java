@@ -3,6 +3,7 @@ package com.oddlabs.tt.viewer;
 import com.oddlabs.tt.audio.AbstractAudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioFile;
+import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -12,7 +13,6 @@ import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.landscape.AbstractTreeGroup;
-import com.oddlabs.tt.landscape.AudioImplementation;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.TreeGroup;
 import com.oddlabs.tt.landscape.TreeLeaf;
@@ -34,22 +34,18 @@ public final class AmbientAudio {
     private static final int TREES_FOREST_THRESHOLD = 10;
     private static final float CANYON_PROXIMITY_DISTANCE = 30f;
 
-    private final @NonNull Audio ambient_forest_buffer;
-    private final @NonNull Audio ambient_beach_buffer;
-    private final @NonNull Audio ambient_wind_buffer;
-
-    private final @NonNull AbstractAudioPlayer ambient_forest;
-    private final @NonNull AbstractAudioPlayer ambient_beach;
-    private final @NonNull AbstractAudioPlayer ambient_wind;
+    private final @NonNull AbstractAudioPlayer<?> ambient_forest;
+    private final @NonNull AbstractAudioPlayer<?> ambient_beach;
+    private final @NonNull AbstractAudioPlayer<?> ambient_wind;
 
     private final Vector3f f = new Vector3f();
     private final Vector3f s = new Vector3f();
     private final Vector3f u = new Vector3f();
 
     public AmbientAudio(@NonNull AudioImplementation audio_implementation) {
-        ambient_forest_buffer = Resources.findResource(new AudioFile("/sfx/ambient_forest.ogg"));
-        ambient_beach_buffer = Resources.findResource(new AudioFile("/sfx/ambient_beach.ogg"));
-        ambient_wind_buffer = Resources.findResource(new AudioFile("/sfx/ambient_wind.ogg"));
+        var ambient_forest_buffer = Resources.findResource(new AudioFile("/sfx/ambient_forest.ogg"));
+        var ambient_beach_buffer = Resources.findResource(new AudioFile("/sfx/ambient_beach.ogg"));
+        var ambient_wind_buffer = Resources.findResource(new AudioFile("/sfx/ambient_wind.ogg"));
         ambient_forest = audio_implementation.newAudio(new AudioParameters<>(ambient_forest_buffer, 10000f, 10000f, 10000f, AudioPlayer.AUDIO_RANK_AMBIENT, AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_FOREST, AudioPlayer.AUDIO_RADIUS_AMBIENT_FOREST, 1f, true, true, false));
         ambient_beach = audio_implementation.newAudio(new AudioParameters<>(ambient_beach_buffer, 10000f, 10000f, 10000f, AudioPlayer.AUDIO_RANK_AMBIENT, AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_BEACH, AudioPlayer.AUDIO_RADIUS_AMBIENT_BEACH, 1f, true, true, false));
         ambient_wind = audio_implementation.newAudio(new AudioParameters<>(ambient_wind_buffer, 10000f, 10000f, 10000f, AudioPlayer.AUDIO_RANK_AMBIENT, AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_WIND, AudioPlayer.AUDIO_RADIUS_AMBIENT_WIND, 1f, true, true, false));

@@ -7,11 +7,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL10;
 
-public abstract class AbstractAudioPlayer implements Animated {
+public abstract class AbstractAudioPlayer<AS extends AudioSource> implements Animated {
     /** sound volume decay over distance. */
     protected static final float ROLLOFF_FACTOR = 0.20f;
 
-    protected final @Nullable AudioSource source;
+    protected final @Nullable AS source;
     private final @NonNull AudioParameters<?> parameters;
     private boolean playing = false;
 
@@ -19,13 +19,12 @@ public abstract class AbstractAudioPlayer implements Animated {
     private float end_gain;
     private float fadeout_gain;
 
-    protected AbstractAudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<?> params) {
+    protected AbstractAudioPlayer(@Nullable AS source, @NonNull AudioParameters<?> params) {
         this.parameters = params;
+        this.source = source;
         if (source == null || (!params.music && !Settings.getSettings().play_sfx)) {
-            this.source = null;
             return;
         }
-        this.source = source;
         source.setAudioPlayer(this);
         playing = true;
     }

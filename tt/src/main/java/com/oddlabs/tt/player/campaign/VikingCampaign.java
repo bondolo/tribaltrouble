@@ -11,6 +11,9 @@ import com.oddlabs.tt.gui.VikingCampaignIcons;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 public final class VikingCampaign extends Campaign {
     public static final int MAX_UNITS = 46;
     private static final int[] INITIAL_STATES = new int[]{
@@ -47,7 +50,12 @@ public final class VikingCampaign extends Campaign {
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE};
 
-    private final @NonNull Island @NonNull [] islands;
+    private final @NonNull Island [] islands = Stream.<Function<VikingCampaign, Island>>of(
+            VikingIsland0::new, VikingIsland1::new, VikingIsland2::new, VikingIsland3::new, VikingIsland4::new,
+            VikingIsland5::new, VikingIsland6::new, VikingIsland7::new, VikingIsland8::new, VikingIsland9::new,
+            VikingIsland10::new, VikingIsland11::new, VikingIsland12::new, VikingIsland13::new, VikingIsland14::new)
+                .map(c -> c.apply(this))
+                .toArray(Island[]::new);
 
     public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
         this(network, gui_root, new CampaignState(INITIAL_STATES));
@@ -55,22 +63,6 @@ public final class VikingCampaign extends Campaign {
 
     public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, CampaignState campaign_state) {
         super(campaign_state);
-        islands = new Island[VikingCampaignIcons.getIcons().getNumIslands()];
-        islands[0] = new VikingIsland0(this);
-        islands[1] = new VikingIsland1(this);
-        islands[2] = new VikingIsland2(this);
-        islands[3] = new VikingIsland3(this);
-        islands[4] = new VikingIsland4(this);
-        islands[5] = new VikingIsland5(this);
-        islands[6] = new VikingIsland6(this);
-        islands[7] = new VikingIsland7(this);
-        islands[8] = new VikingIsland8(this);
-        islands[9] = new VikingIsland9(this);
-        islands[10] = new VikingIsland10(this);
-        islands[11] = new VikingIsland11(this);
-        islands[12] = new VikingIsland12(this);
-        islands[13] = new VikingIsland13(this);
-        islands[14] = new VikingIsland14(this);
         if (getState().getCurrentIsland() == -1) {
             startIsland(network, gui_root, 0);
         }
