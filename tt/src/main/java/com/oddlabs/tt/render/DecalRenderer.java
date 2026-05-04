@@ -193,7 +193,7 @@ public final class DecalRenderer implements AutoCloseable {
         shader.setUniform(DecalShader.Uniforms.TEXTURE, 0);
 
         vao.bind();
-        instanceVBO.makeCurrent();
+        instanceVBO.bind(context);
         instanceBuffer.flip();
         instanceVBO.put(instanceBuffer); // Or glBufferSubData if partial
         instanceBuffer.clear(); // Reset for writing

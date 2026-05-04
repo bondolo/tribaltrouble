@@ -156,7 +156,7 @@ public final class SpriteList implements AutoCloseable {
         int posLoc = shader.getAttributeLocation(SpriteShader.Attributes.POSITION);
         int normLoc = shader.getAttributeLocation(SpriteShader.Attributes.NORMAL);
 
-        indices.makeCurrent();
+        indices.bind();
 
         if (texCoordLoc >= 0) {
             GL20.glEnableVertexAttribArray(texCoordLoc);

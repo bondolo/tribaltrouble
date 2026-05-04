@@ -66,8 +66,8 @@ public final class LightningRenderer implements AutoCloseable {
         particle_ibo = new ShortVBO(GL15.GL_STATIC_DRAW, iboBuffer);
 
         vao.bind();
-        particle_vbo.makeCurrent();
-        particle_ibo.makeCurrent();
+        particle_vbo.bind();
+        particle_ibo.bind();
         LAYOUT.bind(shader);
         vao.unbind();
     }

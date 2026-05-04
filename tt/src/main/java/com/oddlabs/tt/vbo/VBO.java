@@ -24,7 +24,7 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
                 GL15.glGenBuffers(handle_buffer);
                 int handle = handle_buffer.get(0);
                 assert handle != 0;
-                makeCurrent(target, handle);
+                Renderer.getRenderer().getRenderContext().bindBuffer(target, handle);
                 GL15.glBufferData(target, size, usage);
                 return handle;
             }
@@ -44,10 +44,6 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
     private final int target;
     private final int size;
 
-    private static void makeCurrent(int target, int handle) {
-        Renderer.getRenderer().getRenderContext().bindBuffer(target, handle);
-    }
-
     public static void releaseAll(@NonNull RenderContext context) {
         context.bindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         releaseIndexVBO(context);
@@ -57,30 +53,18 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
         context.bindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    public final void bind(@NonNull RenderContext context) {
-        context.bindBuffer(target, state.handle);
-    }
-
-    @Deprecated
-    public static void releaseAll() {
-        makeCurrent(GL15.GL_ARRAY_BUFFER, 0);
-        makeCurrent(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    @Deprecated
-    public static void releaseIndexVBO() {
-        makeCurrent(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    @Deprecated
-    public final void makeCurrent() {
-        makeCurrent(target, state.handle);
-    }
-
     public VBO(int target, int usage, int size) {
         super(new Buffer(target, usage, size));
         this.target = target;
         this.size = size;
+    }
+
+    public final void bind() {
+        bind(Renderer.getRenderer().getRenderContext());
+    }
+
+    public final void bind(@NonNull RenderContext context) {
+        context.bindBuffer(target, state.handle);
     }
 
     protected final int getTarget() {

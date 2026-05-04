@@ -123,9 +123,9 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             ShortVBO ibo = spriteList.getIndices();
             FloatVBO texCoordVBO = spriteList.getTexcoords();
 
-            ibo.makeCurrent();
+            ibo.bind();
 
-            texCoordVBO.makeCurrent();
+            texCoordVBO.bind();
             GL20.glEnableVertexAttribArray(2); // TexCoord
             Sprite sprite = spriteList.getSprite(key.spriteIndex);
             GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, 0, sprite.texcoords_offset * 4L);
@@ -136,7 +136,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         private void setupInstanceAttributes() {
-            vbo.makeCurrent();
+            vbo.bind();
             int instanceStride = FLOATS_PER_INSTANCE * Float.BYTES;
 
             // Model Matrix (Locations 4-7)
@@ -230,7 +230,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             setupTextures(context, shader, sprite, whiteTexture, state);
 
             // Upload data
-            vbo.makeCurrent();
+            vbo.bind(context);
             vbo.orphan(); // Orphan to prevent flickering and synchronization stalls
             // Use explicit limit and position to allow multiple rendering passes (Opaque, Transparent)
             instanceBuffer.limit(totalInstances * FLOATS_PER_INSTANCE).position(0);

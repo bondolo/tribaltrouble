@@ -66,7 +66,7 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_vbo = new FloatVBO(GL15.GL_STREAM_DRAW, particle_buffer.capacity());
 
         vao.bind();
-        particle_vbo.makeCurrent();
+        particle_vbo.bind();
         VERTEX_LAYOUT.bind(shader);
         
         // Configure all attributes as instance attributes

@@ -39,7 +39,7 @@ public final class ShortVBO extends VBO {
     }
 
     public void put(@NonNull ShortBuffer buffer) {
-        makeCurrent();
+        bind();
         GL15.glBufferSubData(getTarget(), 0, buffer);
         buffer.position(buffer.limit());
     }
@@ -50,13 +50,13 @@ public final class ShortVBO extends VBO {
 
     public void drawElements(int mode, int count, int index) {
         registerTrianglesRendered(mode, count);
-        makeCurrent();
+        bind();
         GL11.glDrawElements(mode, count, GL11.GL_UNSIGNED_SHORT, index << 1);
     }
 
     public void drawElementsInstanced(int mode, int count, int index, int primcount) {
         registerTrianglesRendered(mode, count * primcount);
-        makeCurrent();
+        bind();
         GL31.glDrawElementsInstanced(mode, count, GL11.GL_UNSIGNED_SHORT, index << 1, primcount);
     }
 

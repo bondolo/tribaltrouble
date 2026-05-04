@@ -52,7 +52,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
         this.noiseTextures = new GeneratorNoise(64, 42).generate();
 
         vao.bind();
-        vbo.makeCurrent();
+        vbo.bind();
         LAYOUT.bind(shader);
         vao.unbind();
     }

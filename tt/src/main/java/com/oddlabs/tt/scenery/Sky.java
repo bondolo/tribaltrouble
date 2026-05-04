@@ -162,7 +162,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
             skyVAO.unbind();
         } finally {
-            com.oddlabs.tt.vbo.VBO.releaseIndexVBO();
+            com.oddlabs.tt.vbo.VBO.releaseIndexVBO(context);
         }
     }
 
@@ -243,7 +243,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
             context.setActiveTexture(0);
         } finally {
-            com.oddlabs.tt.vbo.VBO.releaseIndexVBO();
+            com.oddlabs.tt.vbo.VBO.releaseIndexVBO(context);
         }
     }
 
@@ -306,7 +306,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
         this.skyVAO = new VertexArray();
         skyVAO.bind();
-        sky_vbo.makeCurrent();
+        sky_vbo.bind();
         GL20.glEnableVertexAttribArray(0); // Position
         GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, stride, 0);
         GL20.glEnableVertexAttribArray(1); // Normal
@@ -321,7 +321,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
         this.seaBottomVAO = new VertexArray();
         seaBottomVAO.bind();
-        bottom_vertices.makeCurrent();
+        bottom_vertices.bind();
         GL20.glEnableVertexAttribArray(0); // Position
         GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0);
         seaBottomVAO.unbind();

@@ -26,7 +26,7 @@ public final class QuadVBO implements AutoCloseable {
 
         vao = new VertexArray();
         vao.bind();
-        vbo.makeCurrent();
+        vbo.bind();
 
         // Position attribute
         GL20.glEnableVertexAttribArray(0);

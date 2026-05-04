@@ -49,8 +49,8 @@ public final class PatchMesh {
         ibo = new ShortVBO(GL15.GL_STATIC_DRAW, indices);
 
         vao.bind();
-        vbo.makeCurrent();
-        ibo.makeCurrent();
+        vbo.bind();
+        ibo.bind();
         GL20.glEnableVertexAttribArray(0);
         GL20.glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 0, 0);
         vao.unbind();

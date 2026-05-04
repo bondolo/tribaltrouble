@@ -86,7 +86,7 @@ public final class Water implements AutoCloseable {
 
     private void setupWaterAttributes(@NonNull FloatVBO vbo, @NonNull WaterShader shader) {
         int posLoc = shader.getAttributeLocation(WaterShader.Attributes.POSITION);
-        vbo.makeCurrent();
+        vbo.bind();
         GL20.glEnableVertexAttribArray(posLoc);
         GL20.glVertexAttribPointer(posLoc, 3, GL11.GL_FLOAT, false, 0, 0L);
     }
@@ -160,7 +160,7 @@ public final class Water implements AutoCloseable {
                         instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, Math.max(instanceVBO.capacity() * 2, requiredBytes));
                     }
 
-                    instanceVBO.makeCurrent();
+                    instanceVBO.bind(context);
                     GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, instanceBuffer);
 
                     patchMesh.bind();

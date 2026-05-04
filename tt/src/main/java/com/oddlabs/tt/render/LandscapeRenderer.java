@@ -144,7 +144,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
                 }
                 instanceBuffer.flip();
 
-                instanceVBO.makeCurrent();
+                instanceVBO.bind(context);
                 GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, instanceBuffer);
 
                 patchMesh.bind();
