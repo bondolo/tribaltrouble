@@ -112,7 +112,7 @@ public final class GUIRenderer {
         vao.unbind();
     }
 
-    public void renderFrame(@NonNull RenderContext context, float width, float height, boolean outputSRGB, @NonNull Runnable frameCommands) {
+    public void renderFrame(@NonNull RenderContext context, float width, float height, @NonNull Runnable frameCommands) {
         GLUtils.checkGLError("Before GUI Render");
         this.currentContext = context;
 
@@ -122,7 +122,6 @@ public final class GUIRenderer {
 
             projectionMatrix.identity().ortho(0, width, 0, height, -1, 1);
             shader.setUniform(GUIShader.Uniforms.PROJECTION_MATRIX, projectionMatrix);
-            shader.setUniform(GUIShader.Uniforms.OUTPUT_SRGB, outputSRGB);
 
             // Set texture unit indices [0, 1, ... 7]
             int[] units = new int[MAX_TEXTURES];

@@ -48,6 +48,7 @@ public final class GLRenderContext implements RenderContext {
     private @NonNull GLState depthMaskEnabled = GLState.UNKNOWN;
     private @NonNull GLState blendEnabled = GLState.UNKNOWN;
     private @NonNull GLState cullFaceEnabled = GLState.UNKNOWN;
+    private @NonNull GLState framebufferSrgbEnabled = GLState.UNKNOWN;
 
     private @NonNull GLState maskR = GLState.UNKNOWN;
     private @NonNull GLState maskG = GLState.UNKNOWN;
@@ -127,6 +128,7 @@ public final class GLRenderContext implements RenderContext {
         cullFaceEnabled = GLState.UNKNOWN;
         currentCullFaceMode = -1;
         sampleAlphaToCoverageEnabled = GLState.UNKNOWN;
+        framebufferSrgbEnabled = GLState.UNKNOWN;
         maskState = GLState.UNKNOWN;
 
         viewX = -1;
@@ -173,6 +175,9 @@ public final class GLRenderContext implements RenderContext {
 
         // Blend
         setBlendMode(BlendMode.ALPHA);
+
+        // Framebuffer sRGB
+        setFramebufferSrgb(true);
 
         // Draw Buffers
         setDrawBuffers(true);
@@ -560,6 +565,18 @@ public final class GLRenderContext implements RenderContext {
                         : GLState.UNKNOWN;
     }
 
+    @Override
+    public void setFramebufferSrgb(boolean enabled) {
+        GLState state = GLState.from(enabled);
+        if (framebufferSrgbEnabled == state) return;
+        if (enabled) {
+            GL11.glEnable(GL30.GL_FRAMEBUFFER_SRGB);
+        } else {
+            GL11.glDisable(GL30.GL_FRAMEBUFFER_SRGB);
+        }
+        framebufferSrgbEnabled = state;
+    }
+
     // Scoped State Implementations
 
     @Override
@@ -650,4 +667,19 @@ public final class GLRenderContext implements RenderContext {
                 setDrawBuffers(true); // Force sync to a known default
             }
         };
-    }}
+    }
+
+    @Override
+    public @NonNull ScopedState withFramebufferSrgb(boolean enabled) {
+        GLState previousState = framebufferSrgbEnabled;
+        setFramebufferSrgb(enabled);
+        return () -> {
+            if (previousState != GLState.UNKNOWN) {
+                setFramebufferSrgb(previousState.isTrue());
+            } else {
+                framebufferSrgbEnabled = GLState.UNKNOWN;
+                setFramebufferSrgb(true); // Safe linear default for the project
+            }
+        };
+    }
+}

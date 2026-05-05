@@ -83,6 +83,8 @@ public interface RenderContext {
 
     @NonNull ScopedState withDrawBuffers(boolean mask);
 
+    @NonNull ScopedState withFramebufferSrgb(boolean enabled);
+
     // UBO Management
     void updateGlobalState(java.nio.@NonNull ByteBuffer data);
 
@@ -99,6 +101,8 @@ public interface RenderContext {
     void setDrawBuffers(boolean mask);
 
     void setDrawBuffers(int @NonNull [] attachments);
+
+    void setFramebufferSrgb(boolean enabled);
 
     // Lifecycle & Debug
     void init();

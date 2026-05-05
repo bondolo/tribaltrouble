@@ -125,13 +125,12 @@ public final class GUI implements Animated {
 
     private void renderGUI(@NonNull RenderContext context) {
         GUIRoot guiRoot = getGUIRoot();
-        boolean outputSRGB = renderer == null || renderer.isClosed();
         
         // If we are rendering directly to the back buffer (e.g. loading screen),
         // we must set the correct blend mode here. 
         // During gameplay, PostProcessor.renderComposite sets per-buffer blend modes.
-        try (var _ = outputSRGB ? context.withBlendMode(BlendMode.PREMULTIPLIED) : (ScopedState) () -> {}) {
-            guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), outputSRGB, () -> {
+        try (var _ = (renderer == null || renderer.isClosed()) ? context.withBlendMode(BlendMode.PREMULTIPLIED) : (ScopedState) () -> {}) {
+            guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
                 guiRoot.render(guiRenderer);
                 guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null && renderer.isCheater());
             });

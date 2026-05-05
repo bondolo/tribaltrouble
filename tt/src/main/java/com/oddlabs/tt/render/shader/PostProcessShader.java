@@ -126,17 +126,18 @@ public final class PostProcessShader extends ShaderProgram {
             
             void main() {
                 vec4 sceneColor = texture(u_sceneTexture, v_texCoord);
-                
-                // 1. Convert to display-encoded sRGB first for perceptual math.
-                // We apply conversion to the composited linear color.
-                vec3 finalColor = toSRGB(sceneColor.rgb);
             
-                // 2. Apply High Contrast in sRGB space
+                // 1. Scene color is linear. 
+                // Note: Perceptual math (High Contrast, CVD) now operates on linear values
+                // to support hardware sRGB encoding on the backbuffer.
+                vec3 finalColor = sceneColor.rgb;
+            
+                // 2. Apply High Contrast in linear space
                 if (u_highContrast) {
                     finalColor = applyHighContrast(finalColor);
                 }
             
-                // 3. Team Stencil & Border (Already works on display-space values)
+                // 3. Team Stencil & Border
                 if (u_teamStencil) {
                     vec4 mask = texture(u_maskTexture, v_texCoord);
                     // Team objects write alpha=1.0. Clear color is alpha=0.0.
@@ -145,7 +146,7 @@ public final class PostProcessShader extends ShaderProgram {
             
                     if (isUnit) {
                         if (dot(mask.rgb, vec3(1.0)) > 0.01) {
-                            finalColor = mix(finalColor, toSRGB(mask.rgb), 0.2);
+                            finalColor = mix(finalColor, mask.rgb, 0.2);
                         } else {
                             vec2 texelSize = 1.0 / textureSize(u_maskTexture, 0);
                             int maskCount = 0;
@@ -159,7 +160,7 @@ public final class PostProcessShader extends ShaderProgram {
                                     vec4 neighbor = texture(u_maskTexture, v_texCoord + vec2(float(x) * texelSize.x, float(y) * texelSize.y));
                                     if (dot(neighbor.rgb, vec3(1.0)) > 0.01) {
                                         maskCount++;
-                                        accumulatedColor += toSRGB(neighbor.rgb);
+                                        accumulatedColor += neighbor.rgb;
                                     }
                                 }
                             }
@@ -171,12 +172,13 @@ public final class PostProcessShader extends ShaderProgram {
                     }
                 }
             
-                // 4. Apply CVD correction using sRGB-referred matrices
+                // 4. Apply CVD correction
                 if (u_cvdMode > 0) {
                     finalColor = daltonize(finalColor);
                 }
             
-                // 5. Final Output (Always Opaque for the backbuffer)
+                // 5. Final Output (Opaque)
+                // GL_FRAMEBUFFER_SRGB handles the conversion to sRGB for the backbuffer.
                 out_FragColor = vec4(finalColor, 1.0);
             }
             """;

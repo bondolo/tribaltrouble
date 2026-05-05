@@ -42,10 +42,7 @@ public final class GUIShader extends ShaderProgram {
     private static final String FRAGMENT_SHADER = """
             #version 410 core
             
-            """ + COLOR_SPACE_FUNCTIONS + """
-            
             uniform sampler2D u_textures[8];
-            uniform bool u_outputSRGB;
             
             in vec4 v_Color;
             in vec2 v_TexCoord;
@@ -73,16 +70,8 @@ public final class GUIShader extends ShaderProgram {
                     }
                     color = v_Color * texColor;
                 }
-                
-                if (u_outputSRGB) {
-                    // Fallback for direct back-buffer rendering (e.g. Loading Screen).
-                    // We apply toSRGB to the weighted color for correct gamma-corrected edges.
-                    // This is "Premultiplied sRGB Blending".
-                    out_FragColor = vec4(toSRGB(color.rgb * color.a), color.a);
-                } else {
-                    // Modern Linear Pipeline: Premultiply linear color.
-                    out_FragColor = vec4(color.rgb * color.a, color.a);
-                }
+             
+                out_FragColor = vec4(color.rgb * color.a, color.a);
                 
                 // Write a special marker to the mask alpha channel to indicate "GUI Pixel".
                 // Team objects write alpha=1.0. Clear color is alpha=0.0.
@@ -103,7 +92,6 @@ public final class GUIShader extends ShaderProgram {
         public static final String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         public static final String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
         public static final String TEXTURES = "u_textures";
-        public static final String OUTPUT_SRGB = "u_outputSRGB";
     }
 
     /**
