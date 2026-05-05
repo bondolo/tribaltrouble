@@ -5,6 +5,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
+/**
+ * Parameters used to configure the creation and playback of audio.
+ */
 public final class AudioParameters<S> {
     public final float x;
     public final float y;

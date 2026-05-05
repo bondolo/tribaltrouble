@@ -1,11 +1,15 @@
 package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.audio.openal.OpenALAudioSource;
-import com.oddlabs.tt.audio.openal.OpenALManager;
+import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.event.LocalEventQueue;
+import com.oddlabs.tt.global.Settings;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public final class AudioPlayer<AS extends AudioSource> extends AbstractAudioPlayer<AS> {
+/**
+ * Manages the playback of a single audio instance associated with an {@link AudioSource}.
+ */
+public abstract class AudioPlayer implements Animated {
     public static final int AUDIO_RANK_AMBIENT = 75;
     public static final int AUDIO_RANK_MUSIC = 50;
     public static final int AUDIO_RANK_NOTIFICATION = 40;
@@ -25,14 +29,14 @@ public final class AudioPlayer<AS extends AudioSource> extends AbstractAudioPlay
     public static final float AUDIO_DISTANCE_AMBIENT = Float.MAX_VALUE;
     public static final float AUDIO_DISTANCE_NOTIFICATION = Float.MAX_VALUE;
     public static final float AUDIO_DISTANCE_BUILDING_COLLAPSE = 150f;
-    public static final float AUDIO_DISTANCE_DEATH = 150f;
+    public static final float AUDIO_DISTANCE_DEATH = 100f;
     public static final float AUDIO_DISTANCE_MAGIC = Float.MAX_VALUE;
-    public static final float AUDIO_DISTANCE_WEAPON_HIT = 150f;
-    public static final float AUDIO_DISTANCE_WEAPON_ATTACK = 150f;
-    public static final float AUDIO_DISTANCE_TREE_FALL = 150f;
-    public static final float AUDIO_DISTANCE_ARMORY = Float.MAX_VALUE;
-    public static final float AUDIO_DISTANCE_HARVEST = 150f;
-    public static final float AUDIO_DISTANCE_CHICKEN = 150f;
+    public static final float AUDIO_DISTANCE_WEAPON_HIT = 75f;
+    public static final float AUDIO_DISTANCE_WEAPON_ATTACK = 75f;
+    public static final float AUDIO_DISTANCE_TREE_FALL = 80f;
+    public static final float AUDIO_DISTANCE_ARMORY = 60f;
+    public static final float AUDIO_DISTANCE_HARVEST = 40f;
+    public static final float AUDIO_DISTANCE_CHICKEN = 25f;
 
     public static final float AUDIO_GAIN_AMBIENT_FOREST = .01f;
     public static final float AUDIO_GAIN_AMBIENT_BEACH = .05f;
@@ -54,37 +58,50 @@ public final class AudioPlayer<AS extends AudioSource> extends AbstractAudioPlay
     public static final float AUDIO_GAIN_BLAST_LUR = 1f;
     public static final float AUDIO_GAIN_BLAST_RUMBLE = 1f;
     public static final float AUDIO_GAIN_BLAST_BLAST = 1f;
-    public static final float AUDIO_GAIN_ARMORY = 1f;
+    public static final float AUDIO_GAIN_ARMORY = .5f;
 
     public static final float AUDIO_RADIUS_AMBIENT_FOREST = 1f;
     public static final float AUDIO_RADIUS_AMBIENT_BEACH = 1f;
     public static final float AUDIO_RADIUS_AMBIENT_WIND = 1f;
-    public static final float AUDIO_RADIUS_BUILDING_COLLAPSE = 1f;
-    public static final float AUDIO_RADIUS_WEAPON_HIT = .5f;
-    public static final float AUDIO_RADIUS_WEAPON_ATTACK = .5f;
-    public static final float AUDIO_RADIUS_HARVEST = .1f;
+    public static final float AUDIO_RADIUS_BUILDING_COLLAPSE = 5f;
+    public static final float AUDIO_RADIUS_WEAPON_HIT = 1f;
+    public static final float AUDIO_RADIUS_WEAPON_ATTACK = 1f;
+    public static final float AUDIO_RADIUS_HARVEST = .5f;
     public static final float AUDIO_RADIUS_CHICKEN_IDLE = .1f;
     public static final float AUDIO_RADIUS_CHICKEN_PECK = .1f;
     public static final float AUDIO_RADIUS_CHICKEN_DEATH = .1f;
-    public static final float AUDIO_RADIUS_DEATH = .5f;
-    public static final float AUDIO_RADIUS_TREE_FALL = .1f;
-    public static final float AUDIO_RADIUS_LIGHTNING = 1f;
-    public static final float AUDIO_RADIUS_CLOUD = 1f;
+    public static final float AUDIO_RADIUS_DEATH = 1f;
+    public static final float AUDIO_RADIUS_TREE_FALL = 2f;
+    public static final float AUDIO_RADIUS_LIGHTNING = 5f;
+    public static final float AUDIO_RADIUS_CLOUD = 5f;
     public static final float AUDIO_RADIUS_BUBBLING = 1f;
-    public static final float AUDIO_RADIUS_GAS = .2f;
+    public static final float AUDIO_RADIUS_GAS = .5f;
     public static final float AUDIO_RADIUS_STUN_LUR = 1f;
     public static final float AUDIO_RADIUS_BLAST_LUR = 1f;
     public static final float AUDIO_RADIUS_BLAST_RUMBLE = 1f;
     public static final float AUDIO_RADIUS_BLAST_BLAST = 1f;
-    public static final float AUDIO_RADIUS_ARMORY = .05f;
+    public static final float AUDIO_RADIUS_ARMORY = 4f;
 
-    private static final float MAX_HEARING_DIST = 150f;
+    /** The volume threshold at which a sound is considered silent (reached at max distance). */
+    private static final float SILENCE_THRESHOLD = 0.032f;
 
-    AudioPlayer(@Nullable AS source, @NonNull AudioParameters<Audio> params) {
-        super(source, params);
-        if (this.source == null) {
+    protected final @Nullable AudioSource source;
+    private final @NonNull AudioParameters<?> parameters;
+    private boolean playing = false;
+
+    private float fadeout_time;
+    private float end_gain;
+    private float fadeout_gain;
+
+    protected AudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<?> params) {
+        this.parameters = params;
+        this.source = source;
+        if (source == null || (!params.music && !Settings.getSettings().play_sfx)) {
             return;
         }
+        source.setAudioPlayer(this);
+        playing = true;
+        
         source.setLooping(params.looping);
         source.setRelative(params.relative);
 
@@ -93,38 +110,73 @@ public final class AudioPlayer<AS extends AudioSource> extends AbstractAudioPlay
         var state = source.getState();
         assert state == AudioSource.State.STOPPED || state == AudioSource.State.INITIAL;
 
-        source.setRolloff(ROLLOFF_FACTOR);
-        source.setDistance(params.radius);
+        // Calculate rolloff so the sound reaches SILENCE_THRESHOLD at params.distance
+        float refDist = params.radius;
+        float maxDist = params.distance;
+        float rolloff = (maxDist > refDist) 
+                ? (refDist / SILENCE_THRESHOLD - refDist) / (maxDist - refDist) 
+                : 1.0f;
+
+        source.setRolloff(rolloff);
+        source.setDistance(refDist);
         source.setMinGain(0f);
         source.setMaxGain(1f);
         source.setPitch(params.pitch);
+    }
 
-        if (source instanceof OpenALAudioSource alSource && AudioManager.getManager() instanceof OpenALManager alManager) {
-            EFXManager efx = alManager.getEfxManager();
-            if (efx.isSupported()) {
-                boolean useReverb = params.rank != AUDIO_RANK_MUSIC && params.rank != AUDIO_RANK_NOTIFICATION;
-                alSource.setAuxiliarySend(useReverb ? efx.getEffectSlot() : 0, 0);
+    protected final boolean isPlaying() {
+        return playing;
+    }
 
-                if (useReverb) {
-                    float[] listenerPos = AudioManager.getManager().getListenerPosition();
-                    float dx = params.x - listenerPos[0];
-                    float dy = params.y - listenerPos[1];
-                    float dz = params.z - listenerPos[2];
-                    float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+    public final @NonNull AudioParameters<?> getParameters() {
+        return parameters;
+    }
 
-                    // Simple air absorption: brighter up close, muffled far away
-                    // Clamp to [0.1, 1.0] to avoid total silence in HF
-                    float gainHF = Math.clamp(1.0f - (dist / MAX_HEARING_DIST), 0.1f, 1.0f);
-
-                    alSource.setDirectFilterGainHF(gainHF);
-                } else {
-                    alSource.setDirectFilterGainHF(1.0f); // Reset to full brightness
-                }
-            }
-        }
-
-        if (params.music || AudioManager.getManager().startPlaying()) {
-            source.play();
+    public final void setGain(float gain) {
+        if (playing && source != null) {
+            var settings = Settings.getSettings();
+            source.setGain(gain * (parameters.music ? settings.music_gain : settings.sound_gain));
         }
     }
+
+    public final void setPos(float x, float y, float z) {
+        if (playing && source != null)
+            source.setPosition(x, y, z);
+    }
+
+    public void stop() {
+        if (playing && source != null) {
+            source.stop();
+            playing = false;
+        }
+    }
+
+    public final void registerAmbient() {
+        if (source != null)
+            AudioManager.getManager().registerAmbient(source);
+    }
+
+    public final void removeAmbient() {
+        if (source != null)
+            AudioManager.getManager().removeAmbient(source);
+    }
+
+    public final void stop(float delay, float end_gain) {
+        this.end_gain = end_gain;
+        fadeout_gain = end_gain;
+        fadeout_time = delay;
+        LocalEventQueue.getQueue().getManager().registerAnimation(this);
+    }
+
+    @Override
+    public final void animate(float t) {
+        fadeout_gain -= t * (end_gain / fadeout_time);
+        if (fadeout_gain <= 0) {
+            stop();
+            LocalEventQueue.getQueue().getManager().removeAnimation(this);
+        } else {
+            setGain(fadeout_gain);
+        }
+    }
+
 }

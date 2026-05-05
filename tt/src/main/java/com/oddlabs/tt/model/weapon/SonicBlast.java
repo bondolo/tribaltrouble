@@ -1,8 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.AccessorizableModel;
 import com.oddlabs.tt.model.Selectable;
@@ -30,8 +29,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
     private final float start_x;
     private final float start_y;
     private final float start_z;
-    private final @NonNull AbstractAudioPlayer<?> lur;
-    private final @NonNull AbstractAudioPlayer<?> rumble;
+    private final @NonNull AudioPlayer lur;
+    private final @NonNull AudioPlayer rumble;
 
     private float time = 0f;
     private final @NonNull Iterable<? extends Selectable<?>> blast_targets;

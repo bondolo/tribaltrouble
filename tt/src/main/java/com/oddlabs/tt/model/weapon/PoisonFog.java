@@ -1,8 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.Unit;
@@ -37,7 +36,7 @@ public final class PoisonFog implements Magic {
     private final float start_x;
     private final float start_y;
     private final float total_time;
-    private final @NonNull AbstractAudioPlayer<?> bubbling_sound;
+    private final @NonNull AudioPlayer bubbling_sound;
 
     private int next_sound = 1;
     private float time = 0f;

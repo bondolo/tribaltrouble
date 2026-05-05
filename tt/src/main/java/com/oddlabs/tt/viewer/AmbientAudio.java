@@ -1,13 +1,11 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.audio.EFXManager;
+import com.oddlabs.tt.audio.openal.EFXManager;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
@@ -34,9 +32,9 @@ public final class AmbientAudio {
     private static final int TREES_FOREST_THRESHOLD = 10;
     private static final float CANYON_PROXIMITY_DISTANCE = 30f;
 
-    private final @NonNull AbstractAudioPlayer<?> ambient_forest;
-    private final @NonNull AbstractAudioPlayer<?> ambient_beach;
-    private final @NonNull AbstractAudioPlayer<?> ambient_wind;
+    private final @NonNull AudioPlayer ambient_forest;
+    private final @NonNull AudioPlayer ambient_beach;
+    private final @NonNull AudioPlayer ambient_wind;
 
     private final Vector3f f = new Vector3f();
     private final Vector3f s = new Vector3f();
@@ -109,14 +107,9 @@ public final class AmbientAudio {
     public void updateSoundListener(@NonNull CameraState camera, @NonNull HeightMap heightmap) {
         if (Settings.getSettings().play_sfx) {
             camera.updateDirectionAndNormal(f, u, s);
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                FloatBuffer orientation_buffer = stack.mallocFloat(6);
-                f.get(orientation_buffer);
-                u.get(3, orientation_buffer);
-                AudioManager.getManager()
-                        .updatePosition(camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ())
-                        .updateOrientation(orientation_buffer);
-            }
+            AudioManager.getManager()
+                    .setListenerPosition(camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ())
+                    .setListenerOrientation(f, u);
 
             int meters_per_world = heightmap.getMetersPerWorld();
             float dx = Math.abs(camera.getCurrentX() - meters_per_world / 2f);

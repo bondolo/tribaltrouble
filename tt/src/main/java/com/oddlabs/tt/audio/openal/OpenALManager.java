@@ -1,19 +1,24 @@
 package com.oddlabs.tt.audio.openal;
 
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.audio.EFXManager;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.global.Settings;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.FloatBuffer;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,34 +131,53 @@ public final class OpenALManager extends AudioManager {
     }
 
     @Override
-    public @NonNull AudioManager masterGain(float gain) {
+    public @NonNull AudioManager setMasterGain(float gain) {
+        super.setMasterGain(gain);
         AL10.alListenerf(AL10.AL_GAIN, gain);
-        checkALError("alListener3f AL_GAIN");
+        checkALError("alListenerf AL_GAIN");
         return this;
     }
 
     @Override
-    public @NonNull AudioManager updateOrientation(@NonNull FloatBuffer fu) {
-        AL10.alListenerfv(AL10.AL_ORIENTATION, fu);
-        checkALError("alListenerfv AL_ORIENTATION");
+    public @NonNull AudioManager setListenerOrientation(@NonNull Vector3fc forward, @NonNull Vector3fc up) {
+        super.setListenerOrientation(forward, up);
+        try (var stack = MemoryStack.stackPush()) {
+            var fb = stack.mallocFloat(6);
+            fb.put(forward.x()).put(forward.y()).put(forward.z());
+            fb.put(up.x()).put(up.y()).put(up.z());
+            fb.flip();
+            AL10.alListenerfv(AL10.AL_ORIENTATION, fb);
+            checkALError("alListenerfv AL_ORIENTATION");
+        }
         return this;
     }
 
     @Override
-    public @NonNull AudioManager updatePosition(float x, float y, float z) {
-        this.listenerX = x;
-        this.listenerY = y;
-        this.listenerZ = z;
+    public @NonNull AudioManager setListenerPosition(float x, float y, float z) {
+        super.setListenerPosition(x, y, z);
         AL10.alListener3f(AL10.AL_POSITION, x, y, z);
         checkALError("alListener3f AL_POSITION");
         return this;
     }
 
-    private float listenerX, listenerY, listenerZ;
-
     @Override
-    public float[] getListenerPosition() {
-        return new float[]{listenerX, listenerY, listenerZ};
+    protected @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, @NonNull AudioParameters<?> params) {
+        return createPlayer((OpenALAudioSource) source, params);
+    }
+
+    @SuppressWarnings("unchecked")
+    private @NonNull AudioPlayer createPlayer(@Nullable OpenALAudioSource source, @NonNull AudioParameters<?> params)  {
+        if (params.sound instanceof Audio) {
+            return new OpenALAudioPlayer(source, (AudioParameters<Audio>) params);
+        } else if (params.sound instanceof String) {
+            try {
+                return new OpenALQueuedAudioPlayer(source, (AudioParameters<String>) params);
+            } catch (IOException ex) {
+                throw new IllegalArgumentException("Could not load " + params.sound, ex);
+            }
+        } else {
+            throw new IllegalArgumentException("Unrecognized audio parameters : " + params.sound.getClass().getSimpleName());
+        }
     }
 
     @Override

@@ -17,6 +17,9 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
+/**
+ * A stream used to decode OGG Vorbis audio data.
+ */
 public final class OGGStream extends NativeResource<OGGStream.Decoder> {
 
     protected static class Decoder extends NativeResource.NativeState {

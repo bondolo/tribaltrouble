@@ -7,7 +7,7 @@ import com.oddlabs.tt.Main;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.MenuCamera;
@@ -85,7 +85,7 @@ public final class Renderer implements AutoCloseable {
 
     private final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), "default");
 
-    private AbstractAudioPlayer<?> music;
+    private AudioPlayer music;
     private String music_path;
     private @Nullable TimerAnimation music_timer;
 
@@ -570,7 +570,7 @@ public final class Renderer implements AutoCloseable {
 
                 if (first_frame || (window.isVisible() && isActive)) {
                     runGameLoop(network, gui);
-                    AudioManager.getManager().masterGain(1f);
+                    AudioManager.getManager().setMasterGain(1f);
                     if (reset_keyboard) {
                         reset_keyboard = false;
                         Renderer.getLocalInput().resetKeyboard();
@@ -609,7 +609,7 @@ public final class Renderer implements AutoCloseable {
                 } else {
                     AnimationManager.freezeTime();
                     reset_keyboard = true;
-                    AudioManager.getManager().masterGain(0f);
+                    AudioManager.getManager().setMasterGain(0f);
                     try {
                         TimeUnit.MILLISECONDS.sleep(10);
                     } catch (InterruptedException e) {
@@ -970,7 +970,7 @@ public final class Renderer implements AutoCloseable {
         }
     }
 
-    public AbstractAudioPlayer<?> getMusicPlayer() {
+    public AudioPlayer getMusicPlayer() {
         return music;
     }
 

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.audio;
+package com.oddlabs.tt.audio.openal;
 
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.AL10;
@@ -14,9 +14,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 
+/** PCM audio samples */
 public final class Wave {
-
-    private final ByteBuffer data;
+    private final @NonNull ByteBuffer data;
     private final int format;
     private final int sample_rate;
 
@@ -37,7 +37,7 @@ public final class Wave {
         }
     }
 
-    public Wave(ByteBuffer data, int channels, int bitrate, int sample_rate) {
+    public Wave(@NonNull ByteBuffer data, int channels, int bitrate, int sample_rate) {
         this.data = data;
         this.sample_rate = sample_rate;
         format = getFormat(channels, bitrate);

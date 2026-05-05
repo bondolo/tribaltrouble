@@ -1,10 +1,9 @@
 package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
@@ -29,7 +28,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private static final float OFFSET_Y = -.347f;
     private static final float OFFSET_Z = 1.382f;
 
-    private final @NonNull AbstractAudioPlayer<?> audio_player;
+    private final @NonNull AudioPlayer audio_player;
     private final @NonNull Audio @NonNull [] hit_sounds;
     private final boolean hit;
     private final @NonNull SpriteKey sprite_renderer;

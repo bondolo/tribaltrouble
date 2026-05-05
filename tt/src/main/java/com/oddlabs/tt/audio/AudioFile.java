@@ -7,6 +7,9 @@ import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+/**
+ * A resource handle for an audio file.
+ */
 public final class AudioFile extends File<Audio> {
     public AudioFile(@NonNull String location) {
         super(location);

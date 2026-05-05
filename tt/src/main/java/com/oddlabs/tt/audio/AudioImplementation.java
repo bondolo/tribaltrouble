@@ -1,16 +1,19 @@
 package com.oddlabs.tt.audio;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Function;
 
-/** Returns an audio player for the provided audio parameters. */
+/**
+ * Interface for audio backend implementations to create audio players.
+ */
 @FunctionalInterface
-public interface AudioImplementation extends Function<AudioParameters<?>, AbstractAudioPlayer<?>> {
-    @NonNull AbstractAudioPlayer<?> newAudio(@NonNull AudioParameters<?> params);
+public interface AudioImplementation extends Function<AudioParameters<?>, AudioPlayer> {
+    @NonNull AudioPlayer newAudio(@NonNull AudioParameters<?> params);
 
     @Override
-    default @NonNull AbstractAudioPlayer<?> apply(@NonNull AudioParameters<?> params) {
+    default @NonNull AudioPlayer apply(@NonNull AudioParameters<?> params) {
         return newAudio(params);
     }
 }

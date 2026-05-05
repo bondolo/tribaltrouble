@@ -1,6 +1,5 @@
-package com.oddlabs.tt.audio;
+package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.openal.OpenALManager;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;

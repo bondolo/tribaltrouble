@@ -1,8 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
@@ -32,7 +31,7 @@ public final class Stun extends PointEmitterModel implements Magic {
     private final float stun_time_closest;
     private final float stun_time_farthest;
     private final @NonNull Player owner;
-    private final @NonNull AbstractAudioPlayer<?> sound;
+    private final @NonNull AudioPlayer sound;
 
     private final @NonNull Iterable<? extends Selectable<?>> target_list;
 

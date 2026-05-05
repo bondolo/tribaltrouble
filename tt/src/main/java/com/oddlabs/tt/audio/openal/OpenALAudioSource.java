@@ -1,8 +1,7 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
-import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
@@ -20,6 +19,9 @@ import java.util.logging.Logger;
 import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
 import static org.lwjgl.openal.EXTEfx.AL_AUXILIARY_SEND_FILTER;
 
+/**
+ * OpenAL implementation of {@link AudioSource} managing a native OpenAL source.
+ */
 public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> implements AudioSource {
     private static final Logger logger = Logger.getLogger(OpenALAudioSource.class.getSimpleName());
 
@@ -60,12 +62,24 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         }
     }
 
-    private @Nullable AbstractAudioPlayer<?> audio_player;
+    private @Nullable AudioPlayer audio_player;
     private final FloatBuffer positionBuffer = BufferUtils.createFloatBuffer(3);
     private @Nullable OpenALFilter directFilter;
+    private float rolloff;
+    private float reference_distance;
 
     public OpenALAudioSource() {
         super(new Source());
+    }
+
+    @Override
+    public float getRolloff() {
+        return rolloff;
+    }
+
+    @Override
+    public float getDistance() {
+        return reference_distance;
     }
 
     @Override
@@ -170,12 +184,14 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
 
     @Override
     public void setRolloff(float rolloff) {
+        this.rolloff = rolloff;
         AL10.alSourcef(getSource(), AL10.AL_ROLLOFF_FACTOR, rolloff);
         checkALError("alSourcef AL_ROLLOFF_FACTOR");
     }
 
     @Override
     public void setDistance(float distance) {
+        this.reference_distance = distance;
         AL10.alSourcef(getSource(), AL10.AL_REFERENCE_DISTANCE, distance);
         checkALError("alSourcef AL_REFERENCE_DISTANCE");
     }
@@ -200,6 +216,10 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
     public void stop() {
         AL10.alSourceStop(getSource());
         checkALError("alSourceStop");
+        AL10.alSourcei(getSource(), AL10.AL_BUFFER, AL10.AL_NONE);
+        checkALError("alSourcei AL_BUFFER AL_NONE");
+        AL10.alSourceRewind(getSource());
+        checkALError("alSourceRewind");
     }
 
     @Override
@@ -210,8 +230,11 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
 
     @Override
     public void play() {
-        AL10.alSourcePlay(getSource());
-        checkALError("alSourcePlay");
+        // Only play if not already playing to avoid OpenAL source stealing/restarting
+        if (getState() != State.PLAYING) {
+            AL10.alSourcePlay(getSource());
+            checkALError("alSourcePlay");
+        }
     }
 
     @Override
@@ -250,12 +273,12 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
     }
 
     @Override
-    public @Nullable AbstractAudioPlayer<?> getAudioPlayer() {
+    public @Nullable AudioPlayer getAudioPlayer() {
         return audio_player;
     }
 
     @Override
-    public void setAudioPlayer(@Nullable AbstractAudioPlayer<?> audio_player) {
+    public void setAudioPlayer(@Nullable AudioPlayer audio_player) {
         if (this.audio_player != null)
             this.audio_player.stop();
         this.audio_player = audio_player;

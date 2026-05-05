@@ -4,8 +4,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * An audio source, which is a point in 3D space that emits sound.
- * This abstracts the underlying audio implementation (e.g., OpenAL).
+ * A point in 3D space that emits sound, abstracting the underlying audio implementation.
  */
 public interface AudioSource extends AutoCloseable {
 
@@ -69,6 +68,16 @@ public interface AudioSource extends AutoCloseable {
      * @param gain The gain value. 0 is mute, 1 is full volume.
      */
     void setDistance(float gain);
+
+    /**
+     * {@return the current rolloff factor}
+     */
+    float getRolloff();
+
+    /**
+     * {@return the current reference distance (radius)}
+     */
+    float getDistance();
 
     /**
      * Sets the position of the audio source in 3D space.
@@ -146,14 +155,14 @@ public interface AudioSource extends AutoCloseable {
      *
      * @return The associated AbstractAudioPlayer.
      */
-    @Nullable AbstractAudioPlayer<?> getAudioPlayer();
+    @Nullable AudioPlayer getAudioPlayer();
 
     /**
      * Associates an audio player with this source.
      *
      * @param audioPlayer The audio player to associate.
      */
-    void setAudioPlayer(AbstractAudioPlayer<?> audioPlayer);
+    void setAudioPlayer(AudioPlayer audioPlayer);
 
     /**
      * Closes the audio source and releases its native resources.

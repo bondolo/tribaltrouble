@@ -12,6 +12,9 @@ import static org.lwjgl.openal.EXTEfx.alFilterf;
 import static org.lwjgl.openal.EXTEfx.alFilteri;
 import static org.lwjgl.openal.EXTEfx.alGenFilters;
 
+/**
+ * Manages a native OpenAL filter for environmental audio effects.
+ */
 public final class OpenALFilter extends NativeResource<OpenALFilter.FilterState> {
 
     static final class FilterState extends NativeResource.NativeState {

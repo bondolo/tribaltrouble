@@ -1,8 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AbstractAudioPlayer;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.PointEmitterModel;
@@ -37,8 +36,8 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private final float hit_chance;
     private final int damage;
     private final float height;
-    private final AbstractAudioPlayer<?> bubbling_sound;
-    private AbstractAudioPlayer<?> cloud_sound;
+    private final AudioPlayer bubbling_sound;
+    private AudioPlayer cloud_sound;
 
     private float seconds_to_live;
     private @Nullable Selectable<?> target = null;
