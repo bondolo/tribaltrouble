@@ -3,14 +3,13 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.render.state.ScopedState;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 abstract class ShadowRenderer {
     private final DecalRenderer decalRenderer = new DecalRenderer();
-    private final Vector4f color = new Vector4f(1f, 1f, 1f, 1f);
+    private Color color = new Color.Linear(Color.WHITE_LINEAR);
     private Selectable.@NonNull VisualPattern pattern = Selectable.VisualPattern.NONE;
     private @Nullable Texture currentTexture;
 
@@ -24,12 +23,8 @@ abstract class ShadowRenderer {
         };
     }
 
-    protected void setShadowColor(float r, float g, float b, float a) {
-        this.color.set(r, g, b, a);
-    }
-
-    protected void setShadowColor(@NonNull Vector4fc color) {
-        this.color.set(color);
+    protected void setShadowColor(@NonNull Color color) {
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
     }
 
     protected void setPattern(Selectable.@NonNull VisualPattern pattern) {

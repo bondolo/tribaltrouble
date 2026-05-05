@@ -5,10 +5,9 @@ import com.oddlabs.tt.render.RenderTools;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -29,20 +28,20 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private final float emitter_height;
     private final @NonNull Vector3fc velocity;
     private final @NonNull Vector3fc acceleration;
-    private final @NonNull Vector4fc color;
+    private final @NonNull Color color;
     private final @NonNull Vector3fc particle_radius;
     private final @NonNull Vector3fc growth_rate;
     private final float friction;
     private final BoundingBox bounds = new BoundingBox();
 
-    private @NonNull Vector4fc delta_color;
+    private @NonNull Color delta_color;
     private float energy;
 
     protected LinearEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
                             float emitter_radius, float emitter_height,
                             int num_particles, float particles_per_second,
                             @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                            @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                            @NonNull Color color, @NonNull Color delta_color,
                             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
                             int src_blend_func, int dst_blend_func,
                             @NonNull TextureKey @NonNull [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers, int types) {
@@ -62,7 +61,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         position.set(position.x(), position.y(), position.z() + offset_z);
     }
 
-    public final void setDeltaColor(@NonNull Vector4f delta_color) {
+    public final void setDeltaColor(@NonNull Color delta_color) {
         this.delta_color = delta_color;
     }
 
@@ -134,7 +133,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
 
     protected abstract int initParticle(@NonNull Vector3f position,
                                         @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                                        @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                                        @NonNull Color color, @NonNull Color delta_color,
                                         @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
                                         float energy);
 

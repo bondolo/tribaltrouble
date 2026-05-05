@@ -3,9 +3,9 @@ package com.oddlabs.tt.particle;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
@@ -30,7 +30,7 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
                                      int num_particles, float particles_per_second,
                                      @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
                                      float acceleration_factor,
-                                     @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                                     @NonNull Color color, @NonNull Color delta_color,
                                      @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
                                      int src_blend_func, int dst_blend_func,
                                      TextureKey @NonNull [] textures, SpriteKey[] sprite_renderers, int types) {
@@ -66,7 +66,7 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
                                      int num_particles, float particles_per_second,
                                      @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
                                      float acceleration_factor,
-                                     @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                                     @NonNull Color color, @NonNull Color delta_color,
                                      @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
                                      int src_blend_func, int dst_blend_func,
                                      TextureKey @NonNull [] textures) {
@@ -96,7 +96,7 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
 
     @Override
     protected int initParticle(@NonNull Vector3f position, @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                               @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                               @NonNull Color color, @NonNull Color delta_color,
                                @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy) {
         randomizeAcceleration();
 
@@ -105,8 +105,8 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
         particle.setPos(pos.x(), pos.y(), pos.z());
         particle.setVelocity(velocity.x(), velocity.y(), velocity.z());
         particle.setAcceleration(current_acceleration.x(), current_acceleration.y(), current_acceleration.z());
-        particle.setColor(color.x(), color.y(), color.z(), color.w());
-        particle.setDeltaColor(delta_color.x(), delta_color.y(), delta_color.z(), delta_color.w());
+        particle.setColor(color);
+        particle.setDeltaColor(delta_color);
         particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
         particle.setEnergy(energy);

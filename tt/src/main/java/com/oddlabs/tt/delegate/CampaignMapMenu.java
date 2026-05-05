@@ -14,34 +14,28 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+/**
+ * A modal menu that appears over the campaign map, providing options to resume the game,
+ * adjust settings, end the campaign, or quit the application.
+ */
 final class CampaignMapMenu extends Form {
-    private static final Vector4fc DARK_GLASS = new Vector4f(0f, 0f, 0f, 0.7f);
+    private static final Color DARK_GLASS = new Color.Linear(new Color.Standard(0f, 0f, 0f, 0.3f));
     private final @NonNull GUIRoot gui_root;
     private final @NonNull NetworkSelector network;
-    private GUIImage overlay;
-    private GUIImage logo;
-    private MenuButton resumeButton;
+    private final @NonNull GUIImage overlay;
+    private final @NonNull GUIImage logo;
+    private final @NonNull MenuButton resumeButton;
+
+    private @Nullable Form current_menu;
 
     CampaignMapMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
         this.network = network;
         this.gui_root = gui_root;
 
-        initBackground();
-
-        addResumeButton();
-        addOptionsButton();
-        addAbortButton();
-        addExitButton();
-
-        layoutButtons();
-        setFocus();
-    }
-
-    private void initBackground() {
         int width = gui_root.getWidth();
         int height = gui_root.getHeight();
 
@@ -57,12 +51,46 @@ final class CampaignMapMenu extends Form {
         logo = new GUIImage(logoWidth, logoHeight, 0f, 0f, 347f / 512f, 206f / 256f, logo_file);
         logo.setPos(0, height - logoHeight);
         addChild(logo);
-    }
 
-    private void addResumeButton() {
         resumeButton = new MenuButton(Menu.i18n("resume"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(resumeButton);
         resumeButton.addMouseClickListener((_, _, _, _) -> cancel());
+
+        addOptionsButton();
+        addAbortButton();
+        addExitButton();
+
+        layoutButtons();
+        setFocus();
+    }
+
+    private void disableButtons(boolean disabled) {
+        GUIObject child = getFirstChild();
+        while (child != null) {
+            if (child instanceof MenuButton button) {
+                button.setDisabled(disabled);
+            }
+            child = child.getNext();
+        }
+    }
+
+    private void setMenuCentered(@NonNull Form menu) {
+        setMenu(menu);
+        menu.centerPos();
+    }
+
+    private void setMenu(@NonNull Form menu) {
+        if (current_menu != null) {
+            current_menu.remove();
+        }
+        disableButtons(true);
+        menu.addCloseListener(() -> {
+            disableButtons(false);
+            current_menu = null;
+        });
+        current_menu = menu;
+        addChild(current_menu);
+        current_menu.setFocus();
     }
 
     @Override
@@ -76,17 +104,17 @@ final class CampaignMapMenu extends Form {
 
     @Override
     public void setFocus() {
-        if (resumeButton != null) {
-            resumeButton.setFocus();
+        if (current_menu != null) {
+            current_menu.setFocus();
         } else {
-            super.setFocus();
+            resumeButton.setFocus();
         }
     }
 
     private void addOptionsButton() {
         MenuButton options = new MenuButton(Menu.i18n("options"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(options);
-        options.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new OptionsMenu(gui_root)));
+        options.addMouseClickListener((_, _, _, _) -> setMenuCentered(new OptionsMenu(gui_root)));
     }
 
     private void addAbortButton() {
@@ -94,14 +122,14 @@ final class CampaignMapMenu extends Form {
         MenuButton abort = new MenuButton(abort_text, Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(abort);
         abort.addMouseClickListener((_, _, _, _) ->
-                gui_root.addModalForm(new QuestionForm(Menu.i18n("end_game_confirm"),
+                setMenuCentered(new QuestionForm(Menu.i18n("end_game_confirm"),
                         (_, _, _, _) -> CampaignMapForm.closeCampaign(network, gui_root.getGUI()))));
     }
 
     private void addExitButton() {
         MenuButton exit = new MenuButton(Menu.i18n("quit"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(exit);
-        exit.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuitForm(gui_root)));
+        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(gui_root)));
     }
 
     private void layoutButtons() {
@@ -109,17 +137,13 @@ final class CampaignMapMenu extends Form {
         int height = gui_root.getHeight();
         setDim(width, height);
 
-        if (overlay != null) {
-            overlay.setDim(width, height);
-        }
+        overlay.setDim(width, height);
 
-        if (logo != null) {
-            float heightScale = height / 600f;
-            int logoHeight = (int) (206f * heightScale);
-            int logoWidth = (int) (347f * heightScale);
-            logo.setDim(logoWidth, logoHeight);
-            logo.setPos(0, height - logoHeight);
-        }
+        float heightScale = height / 600f;
+        int logoHeight = (int) (206f * heightScale);
+        int logoWidth = (int) (347f * heightScale);
+        logo.setDim(logoWidth, logoHeight);
+        logo.setPos(0, height - logoHeight);
 
         int x = 15;
         int y = getHeight() - (int) (190f * getHeight() / 600f);
@@ -154,7 +178,7 @@ final class CampaignMapMenu extends Form {
 
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
-        // Draw dark background
+        // Draw subtle dark background
         renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), DARK_GLASS);
     }
 }

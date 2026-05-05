@@ -10,7 +10,7 @@ import com.oddlabs.tt.render.state.ScopedState;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -126,7 +126,7 @@ public final class DecalRenderer implements AutoCloseable {
     public @NonNull ScopedState setup(@NonNull RenderContext context, @NonNull LandscapeRenderer landscape, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         var shaderUseState = shader.use();
 
-        shader.setUniformMatrix4(DecalShader.Uniforms.MODEL_VIEW_MATRIX, false, modelViewStack.current());
+        shader.setUniform(DecalShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
         shader.setUniform(DecalShader.Uniforms.WORLD_SIZE, (float) landscape.getHeightMap().getMetersPerWorld());
         shader.setUniform(DecalShader.Uniforms.DEPTH_BIAS, 0.05f);
@@ -135,17 +135,14 @@ public final class DecalRenderer implements AutoCloseable {
         context.setTexture(1, landscape.getHeightMap().getHeightTexture());
         shader.setUniform(DecalShader.Uniforms.HEIGHT_MAP, 1);
 
-        // Render State
-        var blend = context.withBlendMode(BlendMode.ALPHA);
+        // Render State: Use Premultiplied blending for stable color/shadow combination.
+        var blend = context.withBlendMode(BlendMode.PREMULTIPLIED);
         var depth = context.withDepthMode(DepthMode.READ_ONLY);
         var cull = context.withCullMode(CullMode.NONE);
 
         // Bias to prevent Z-fighting with terrain
         GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
         GL11.glPolygonOffset(-16.0f, -32.0f);
-
-        // Disable writing to Mask Buffer (Attachment 1) since DecalShader doesn't output to it
-        var drawBuffers = context.withDrawBuffers(false);
 
         return () -> {
             flush(context);
@@ -155,17 +152,17 @@ public final class DecalRenderer implements AutoCloseable {
             cull.close();
             depth.close();
             blend.close();
-            drawBuffers.close();
 
             this.currentTexture = null;
         };
     }
 
-    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size, @NonNull Vector4fc color) {
-        draw(context, texture, x, y, size, color, Selectable.VisualPattern.NONE);
-    }
-
-    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size, @NonNull Vector4fc color, Selectable.@NonNull VisualPattern pattern) {
+    /**
+     * Draws the specified decal texture with the provided tint and pattern at the specified position and size.
+     *
+     * @param color is assumed to be linear
+     */
+    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size, @NonNull Color color, Selectable.@NonNull VisualPattern pattern) {
         if (currentTexture != texture) {
             flush(context);
             currentTexture = texture;
@@ -178,6 +175,7 @@ public final class DecalRenderer implements AutoCloseable {
         instanceBuffer.put(x);
         instanceBuffer.put(y);
         instanceBuffer.put(size);
+        assert color instanceof Color.Linear : "Color must be linear, not " + color.getClass().getSimpleName();
         instanceBuffer.put(color.x());
         instanceBuffer.put(color.y());
         instanceBuffer.put(color.z());

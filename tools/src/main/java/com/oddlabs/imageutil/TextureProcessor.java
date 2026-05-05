@@ -45,11 +45,14 @@ public final class TextureProcessor {
     public static void processFile(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile) throws IOException {
         String basisuPath = System.getProperty("basisu.path");
         UsageMode usageMode = determineMode(infile, operations);
-        if (basisuPath != null && outfile.toString().endsWith(".dds")) {
+
+        boolean forceStb = operations.contains("-stb");
+
+        if (basisuPath != null && outfile.toString().endsWith(".dds") && !forceStb) {
             // High quality path using basisu CLI
             processWithBasisu(infile, operations, outfile, basisuPath, usageMode);
         } else {
-            // Standard fallback path using STB
+            // Standard fallback path using STB (High quality DXT5/1)
             Layer[] images = new Layer[]{loadFile(infile)};
             images = applyOperations(Arrays.asList(operations.toArray(new String[0])).iterator(), images, infile);
 
@@ -83,10 +86,12 @@ public final class TextureProcessor {
 
             boolean mipmaps = false;
             boolean flip = false;
+            boolean uastc = false;
             for (int i = 0; i < operations.size(); i++) {
                 String op = operations.get(i);
                 if ("-mipmaps".equals(op)) mipmaps = true;
                 if ("-flip".equals(op)) flip = true;
+                if ("-uastc".equals(op)) uastc = true;
                 if ("-gamma".equals(op)) i++; // skip value
             }
 
@@ -102,9 +107,16 @@ public final class TextureProcessor {
                 compressCmd.add("-linear");
             }
 
-            // Use highest ETC1S quality level that still transcodes reliably to BC1/BC3.
-            compressCmd.add("-comp_level");
-            compressCmd.add("5");
+            if (uastc) {
+                compressCmd.add("-uastc");
+                // UASTC level 2 is a good balance for high quality UI
+                compressCmd.add("-uastc_level");
+                compressCmd.add("2");
+            } else {
+                // Use highest ETC1S quality level that still transcodes reliably to BC1/BC3.
+                compressCmd.add("-comp_level");
+                compressCmd.add("5");
+            }
 
             execute(compressCmd, workDir);
 
@@ -293,6 +305,12 @@ public final class TextureProcessor {
                 for (Layer image : images) {
                     image.flipV();
                 }
+            }
+            case "-uastc" -> {
+                // Basis-specific, ignored in fallback path
+            }
+            case "-stb" -> {
+                // Forcing STB path, handled in processFile
             }
             case "-gamma" -> {
                 String gamma_str = args.next();

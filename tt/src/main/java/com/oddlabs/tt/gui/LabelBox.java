@@ -5,14 +5,13 @@ import com.oddlabs.tt.font.TextLayout;
 import com.oddlabs.tt.font.TextLineRenderer;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 /** A GUI Label that provides a text label drawn in a box. */
 public class LabelBox extends TextField implements Comparable<LabelBox>, Clipped {
     private @NonNull TextLayout textLayout;
 
-    private @NonNull Vector4fc color = Color.WHITE;
+    private @NonNull Color color = Color.WHITE_LINEAR;
 
     public LabelBox(@NonNull CharSequence text, @NonNull Font font, int width) {
         super(text, font, Integer.MAX_VALUE);
@@ -38,8 +37,8 @@ public class LabelBox extends TextField implements Comparable<LabelBox>, Clipped
         return this;
     }
 
-    public final @NonNull LabelBox setColor(@NonNull Vector4fc color) {
-        this.color = color;
+    public final @NonNull LabelBox setColor(@NonNull Color color) {
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         return this;
     }
 

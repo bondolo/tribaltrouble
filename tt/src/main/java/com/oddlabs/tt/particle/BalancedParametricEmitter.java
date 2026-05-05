@@ -2,9 +2,9 @@ package com.oddlabs.tt.particle;
 
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.TextureKey;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -20,7 +20,7 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
     public BalancedParametricEmitter(@NonNull World world, @NonNull ParametricFunction function, @NonNull Vector3f position,
                                      float velocity_u, float velocity_v, float dist_u, float dist_v,
                                      int num_particles, float margin_u, float margin_v,
-                                     @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                                     @NonNull Color color, @NonNull Color delta_color,
                                      @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
                                      int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
         super(world, function, position,
@@ -39,7 +39,7 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
     @Override
     protected int initParticle(@NonNull ParametricFunction function,
                                float velocity_u, float velocity_v,
-                               @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                               @NonNull Color color, @NonNull Color delta_color,
                                @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
                                float energy) {
 
@@ -49,8 +49,8 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
             ParametricParticle particle = new ParametricParticle(getWorld(), function, u, v, 0f, 0f, 0f);
             Vector3f offset = randomOffset(margin_u, margin_v, 0f);
             particle.setVelocity(velocity_u + offset.x(), velocity_v + offset.y());
-            particle.setColor(color.x(), color.y(), color.z(), color.w());
-            particle.setDeltaColor(delta_color.x(), delta_color.y(), delta_color.z(), delta_color.w());
+            particle.setColor(color);
+            particle.setDeltaColor(delta_color);
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
             particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
             particle.setEnergy(energy);

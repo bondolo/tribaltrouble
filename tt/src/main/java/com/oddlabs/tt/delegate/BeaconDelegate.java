@@ -3,7 +3,6 @@ package com.oddlabs.tt.delegate;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.model.Action;
-import com.oddlabs.tt.render.LandscapeLocation;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

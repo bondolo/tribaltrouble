@@ -2,7 +2,7 @@ package com.oddlabs.tt.gui;
 
 
 import com.oddlabs.tt.render.GUIRenderer;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -64,11 +64,11 @@ public class PulldownItem<T> extends ButtonObject {
         return label;
     }
 
-    public @NonNull Vector4fc getLabelColor() {
+    public @NonNull Color getLabelColor() {
         return label.getColor();
     }
 
-    public void setLabelColor(@NonNull Vector4fc color) {
+    public void setLabelColor(@NonNull Color color) {
         label.setColor(color);
     }
 

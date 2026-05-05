@@ -4,9 +4,13 @@ package com.oddlabs.tt.render.shader;
  * Interface for shaders that support a common, simple lighting model.
  */
 public interface LitShader extends Shader {
+    String LIGHTING_CONSTANTS = """
+            const vec3 u_lightDirection = vec3(-0.70710678, 0.0, 0.70710678);
+            const vec3 u_globalAmbient = vec3(0.132866, 0.132866, 0.170656); // Linearized (0.4, 0.4, 0.45)
+            const vec3 u_groundAmbient = vec3(0.019472, 0.012726, 0.008518); // Linearized (0.15, 0.12, 0.1)
+            """;
+
     interface Uniforms {
-        String LIGHT_DIR = "u_lightDirection";
-        String GLOBAL_AMBIENT = "u_globalAmbient";
     }
 
     String PERTURB_NORMAL_FUNC = """
@@ -96,7 +100,7 @@ public interface LitShader extends Shader {
                 vec3 halfDir = normalize(lightDir + viewDir);
                 float spec = pow(max(dot(normal, halfDir), 0.0), 32.0);
                 vec3 specular = specularStrength * spec * vec3(1.0);
-                
+            
                 // Rim Lighting
                 // Adds a subtle glow to edges to detach objects from the background.
                 float rim = 1.0 - max(dot(viewDir, normal), 0.0);
@@ -104,8 +108,8 @@ public interface LitShader extends Shader {
                 vec3 rimLight = rim * u_globalAmbient * 0.25;
             
                 // Overall light intensity scaler to prevent scenes from being too dark
-                float exposure = 1.1; 
-                
+                float exposure = 1.1;
+            
                 return (ambient + diff * vec3(1.0) + specular + rimLight) * exposure;
             }
             """;

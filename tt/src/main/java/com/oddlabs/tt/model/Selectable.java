@@ -10,7 +10,6 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -33,10 +32,10 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
         NEUTRAL_BUILDING(Color.BLUE, Color.DARK_BLUE),
         ENEMY_BUILDING(Color.RED, Color.DARK_RED);
 
-        public final @NonNull Vector4fc selectedColor;
-        public final @NonNull Vector4fc hoveredColor;
+        public final @NonNull Color selectedColor;
+        public final @NonNull Color hoveredColor;
 
-        VisualPattern(@NonNull Vector4fc selectedColor, @NonNull Vector4fc hoveredColor) {
+        VisualPattern(@NonNull Color selectedColor, @NonNull Color hoveredColor) {
             this.selectedColor = selectedColor;
             this.hoveredColor = hoveredColor;
         }
@@ -286,7 +285,7 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
                     : isBuilding ? VisualPattern.NEUTRAL_BUILDING : VisualPattern.NEUTRAL;
     }
 
-    public final @NonNull Vector4fc getSelectionColor(@NonNull Player localPlayer, boolean selected, boolean hovered) {
+    public final @NonNull Color getSelectionColor(@NonNull Player localPlayer, boolean selected, boolean hovered) {
         VisualPattern pattern = getVisualPattern(localPlayer);
         return selected
                 ? pattern.selectedColor

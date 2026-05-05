@@ -24,6 +24,10 @@ import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Manages the visual representation of loading progress, displaying a background image,
+ * a progress bar, and optional loading tips to the user.
+ */
 public final class ProgressForm {
     private static final int PROGRESSBAR_LOADINGTIP_SPACING = 45;
     private static final int NUM_TIPS = 39;
@@ -37,6 +41,17 @@ public final class ProgressForm {
     private static final String[] LOADING_TIPS = IntStream.range(0, NUM_TIPS)
             .mapToObj(idx -> i18n(TIP_PREFIX + idx))
             .toArray(String[]::new);
+
+    private static final @NonNull ProgressBarInfo [] PROGRESS_BAR_INFO = new ProgressBarInfo[]{
+        new ProgressBarInfo(""/*"Loading landscape resources"*/, 10),
+        new ProgressBarInfo(""/*"Loading races resources"*/, 30),
+        new ProgressBarInfo(""/*"Generating textures"*/, 5),
+        new ProgressBarInfo(""/*"Generating terrain"*/, 5),
+        new ProgressBarInfo(""/*"Generating alpha maps"*/, 5),
+        new ProgressBarInfo(""/*"Blending textures"*/, 2f),
+        new ProgressBarInfo(""/*"Generating pathfinding grids"*/, 5),
+        new ProgressBarInfo(""/*"Generating quadtrees"*/, 6)
+    };
 
     private static @Nullable ProgressForm current_progress = null;
 
@@ -81,20 +96,17 @@ public final class ProgressForm {
         }
 
         Fadable load_fadable = () -> callback(gui, callback, first_progress);
-        current_progress = new ProgressForm(network, gui, load_fadable, first_progress, new ProgressBarInfo[]{new ProgressBarInfo(""/*"Loading landscape resources"*/, 10),
-                new ProgressBarInfo(""/*"Loading races resources"*/, 30),
-                new ProgressBarInfo(""/*"Generating textures"*/, 5),
-                new ProgressBarInfo(""/*"Generating terrain"*/, 5),
-                new ProgressBarInfo(""/*"Generating alpha maps"*/, 5),
-                new ProgressBarInfo(""/*"Blending textures"*/, 2f),
-                new ProgressBarInfo(""/*"Generating pathfinding grids"*/, 5),
-                new ProgressBarInfo(""/*"Generating quadtrees"*/, 6)},
+        current_progress = new ProgressForm(network, gui, load_fadable, first_progress, PROGRESS_BAR_INFO,
                 texture, texture_width, texture_height, image_width, image_height, progress_x, progress_y, progress_width, show_tip);
 
         return first_progress ? load_fadable::fadingDone : null;
     }
 
-    private ProgressForm(@NonNull NetworkSelector network, final @NonNull GUI gui, final Fadable load_fadable, boolean first_progress, ProgressBarInfo @NonNull [] info, @NonNull String texture_name, int texture_width, int texture_height, int image_width, int image_height, int progress_x, int progress_y, int progress_width, boolean show_tip) {
+    private ProgressForm(@NonNull NetworkSelector network, final @NonNull GUI gui, final Fadable load_fadable,
+                         boolean first_progress, @NonNull ProgressBarInfo @NonNull [] info,
+                         @NonNull String texture_name, int texture_width, int texture_height, int image_width, int image_height,
+                         int progress_x, int progress_y, int progress_width,
+                         boolean show_tip) {
         this.gui = gui;
         AudioManager.getManager().stopSources();
         var gui_root = first_progress ? gui.getGUIRoot() : gui.newFade(load_fadable, null);

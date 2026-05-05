@@ -46,6 +46,7 @@ import com.oddlabs.tt.viewer.AmbientAudio;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.Selection;
 import com.oddlabs.tt.window.Window;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -237,7 +238,7 @@ public final class Renderer implements AutoCloseable {
             try {
                 result = Files.createTempDirectory(property);
             } catch (IOException | SecurityException totalFailure) {
-                result = null;
+                logger.log(Level.WARNING, "Failed to create temp directory for " + property, totalFailure);
             }
         }
 
@@ -978,12 +979,13 @@ public final class Renderer implements AutoCloseable {
     }
 
     public static void initGL() {
-        VBO.releaseAll(getRenderer().renderContext);
-        getRenderer().renderContext.applyDefaults();
+        RenderContext context = getRenderer().renderContext;
+        VBO.releaseAll(context);
+        context.applyDefaults();
     }
 
     public static void clearScreen() {
-        GL11.glClearColor(0f, 0f, 0f, 0f);
+        GL11.glClearColor(Color.BLACK_LINEAR.x(), Color.BLACK_LINEAR.y(), Color.BLACK_LINEAR.z(), Color.BLACK_LINEAR.w());
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
     }
 

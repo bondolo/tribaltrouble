@@ -4,10 +4,9 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.RenderTools;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
@@ -27,18 +26,18 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     private final float velocity_u;
     private final float velocity_v;
     private final float velocity_random_margin;
-    private final @NonNull Vector4fc color;
+    private final @NonNull Color color;
     private final @NonNull Vector3fc particle_radius;
     private final @NonNull Vector3fc growth_rate;
     private final BoundingBox bounds = new BoundingBox();
 
-    private @NonNull Vector4fc delta_color;
+    private @NonNull Color delta_color;
     private float energy;
 
     public ParametricEmitter(@NonNull World world, @NonNull ParametricFunction function, @NonNull Vector3f position,
                              float area_xy, float area_z, float velocity_u, float velocity_v, float velocity_random_margin,
                              int num_particles, float particles_per_second,
-                             @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                             @NonNull Color color, @NonNull Color delta_color,
                              @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
                              int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
         super(world, position, src_blend_func, dst_blend_func, textures, null, textures.length, num_particles, particles_per_second);
@@ -56,7 +55,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         random = world.getRandom();
     }
 
-    public final void setDeltaColor(@NonNull Vector4f delta_color) {
+    public final void setDeltaColor(@NonNull Color delta_color) {
         this.delta_color = delta_color;
     }
 
@@ -123,7 +122,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
     protected int initParticle(@NonNull ParametricFunction function,
                                float velocity_u, float velocity_v,
-                               @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                               @NonNull Color color, @NonNull Color delta_color,
                                @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
                                float energy) {
 
@@ -132,8 +131,8 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
                 offset.x(), offset.y(), offset.z());
         offset = randomOffset(velocity_random_margin, velocity_random_margin, 0f);
         particle.setVelocity(velocity_u + offset.x(), velocity_v + offset.y());
-        particle.setColor(color.x(), color.y(), color.z(), color.w());
-        particle.setDeltaColor(delta_color.x(), delta_color.y(), delta_color.z(), delta_color.w());
+        particle.setColor(color);
+        particle.setDeltaColor(delta_color);
         particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
         particle.setEnergy(energy);

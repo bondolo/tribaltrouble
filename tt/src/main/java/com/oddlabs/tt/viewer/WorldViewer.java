@@ -53,6 +53,10 @@ import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+/**
+ * Orchestrates the primary in-game experience, managing the world state, player interactions,
+ * rendering, and the user interface for a single player.
+ */
 public final class WorldViewer implements Animated, AutoCloseable {
 
     private static final String[] GAMESPEED_STRINGS = new String[]{"paused", "slow", "normal", "fast", "ludicrous"};
@@ -168,6 +172,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         peerhub.close();
         ingame_info.close(this);
         Renderer.getRenderer().setCheat(null);
+        renderer.close();
     }
 
     public @NonNull WorldParameters getParameters() {

@@ -34,9 +34,9 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.procedural.GeneratorRing;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.viewer.Selection;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -411,7 +411,8 @@ final class RenderState {
             if (dist_squared > START_FADE_DIST * START_FADE_DIST) {
                 float camera_dist = (float) Math.sqrt(dist_squared);
                 float alpha = 1f - ((camera_dist - START_FADE_DIST) / (PLANTS_CUT_DIST - START_FADE_DIST));
-                render_state.getColor().set(1f, 1f, 1f, alpha);
+                var linearOne = Color.toLinear(1f);
+                render_state.setColor(linearOne, linearOne, linearOne, alpha);
             }
         }
     };
@@ -436,7 +437,7 @@ final class RenderState {
         }
 
         @Override
-        public @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state) {
+        public @NonNull Color getTeamColor(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state) {
             return render_state.getModel().getSrc().getOwner().getColor();
         }
     };
@@ -453,7 +454,7 @@ final class RenderState {
         }
 
         @Override
-        public @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state) {
+        public @NonNull Color getTeamColor(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state) {
             return render_state.getModel().getSrc().getOwner().getColor();
         }
     };

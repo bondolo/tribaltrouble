@@ -1,12 +1,10 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
@@ -19,17 +17,17 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
                 .rotate(angle, 0f, 0f, 1f);
     }
 
-    static @NonNull Vector4fc getTeamColor(@NonNull Selectable<?> model) {
+    static @NonNull Color getTeamColor(@NonNull Selectable<?> model) {
         return model.getOwner().getColor();
     }
 
     @Override
-    public final @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<S> render_state) {
+    public final @NonNull Color getTeamColor(@NonNull ElementRenderState<S> render_state) {
         return getTeamColor(render_state.getModel());
     }
 
     @Override
-    public final @NonNull Vector4fc getSelectionColor(@NonNull ElementRenderState<S> render_state) {
+    public final @NonNull Color getSelectionColor(@NonNull ElementRenderState<S> render_state) {
         Player local_player = render_state.render_state.getLocalPlayer();
         S model = render_state.getModel();
         return model.getSelectionColor(local_player, render_state.render_state.isSelected(model), render_state.render_state.isHovered(model));

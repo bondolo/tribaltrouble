@@ -2,7 +2,6 @@ package com.oddlabs.tt.util;
 
 import com.oddlabs.tt.render.shader.DebugShaderRenderer;
 import com.oddlabs.util.Color;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -12,16 +11,16 @@ import java.util.Arrays;
  * Utilities for rendering debug shapes (boxes, lines, spheres, etc.) using a {@link DebugShaderRenderer}.
  */
 public final class DebugRender {
-    private static final Vector4fc AXIS_X_COLOR = Color.argb4v(0xFF_FF_00_00);
-    private static final Vector4fc AXIS_Y_COLOR = Color.argb4v(0xFF_00_FF_00);
-    private static final Vector4fc AXIS_Z_COLOR = Color.argb4v(0xFF_00_00_FF);
+    private static final Color AXIS_X_COLOR = Color.RED_LINEAR;
+    private static final Color AXIS_Y_COLOR = Color.GREEN_LINEAR;
+    private static final Color AXIS_Z_COLOR = Color.BLUE_LINEAR;
 
-    public static final Vector4fc[] debug_colors = {
-            Color.argb4v(0xFF_7f_1f_1f), Color.argb4v(0xFF_7f_1f_00), Color.argb4v(0xFF_7f_00_1f), Color.argb4v(0xFF_3f_7f_00),
-            Color.argb4v(0xFF_00_1f_1f), Color.argb4v(0xFF_00_1f_00), Color.argb4v(0xFF_00_00_1f), Color.argb4v(0xFF_00_00_00),
-            Color.argb4v(0xFF_00_5f_5f), Color.argb4v(0xFF_00_5f_00), Color.argb4v(0xFF_00_00_5f), Color.argb4v(0xFF_5f_8f_8f),
-            Color.argb4v(0xFF_3f_5f_1f), Color.argb4v(0xFF_5f_5f_8f), Color.argb4v(0xFF_3f_2f_5f), Color.argb4v(0xFF_3f_3f_3f),
-            Color.argb4v(0xFF_5f_1f_1f), Color.argb4v(0xFF_5f_1f_5f), Color.argb4v(0xFF_5f_5f_1f), Color.argb4v(0xFF_5f_5f_5f)
+    public static final Color[] debug_colors = {
+            new Color.Linear(Color.argb4v(0xFF_7f_1f_1f)), new Color.Linear(Color.argb4v(0xFF_7f_1f_00)), new Color.Linear(Color.argb4v(0xFF_7f_00_1f)), new Color.Linear(Color.argb4v(0xFF_3f_7f_00)),
+            new Color.Linear(Color.argb4v(0xFF_00_1f_1f)), new Color.Linear(Color.argb4v(0xFF_00_1f_00)), new Color.Linear(Color.argb4v(0xFF_00_00_1f)), new Color.Linear(Color.argb4v(0xFF_00_00_00)),
+            new Color.Linear(Color.argb4v(0xFF_00_5f_5f)), new Color.Linear(Color.argb4v(0xFF_00_5f_00)), new Color.Linear(Color.argb4v(0xFF_00_00_5f)), new Color.Linear(Color.argb4v(0xFF_5f_8f_8f)),
+            new Color.Linear(Color.argb4v(0xFF_3f_5f_1f)), new Color.Linear(Color.argb4v(0xFF_5f_5f_8f)), new Color.Linear(Color.argb4v(0xFF_3f_2f_5f)), new Color.Linear(Color.argb4v(0xFF_3f_3f_3f)),
+            new Color.Linear(Color.argb4v(0xFF_5f_1f_1f)), new Color.Linear(Color.argb4v(0xFF_5f_1f_5f)), new Color.Linear(Color.argb4v(0xFF_5f_5f_1f)), new Color.Linear(Color.argb4v(0xFF_5f_5f_5f))
     };
     private static final float CIRCLE_DELTA = (float) java.lang.Math.PI / 2;
     private static final float ANGLE_DELTA = (float) java.lang.Math.PI / 20;
@@ -113,7 +112,7 @@ public final class DebugRender {
     }
 
     /**
-     * Draws a point.
+     * Draws a point. Color is assumed to be linear.
      */
     public static void drawPoint(float x, float y, float z, float size, float r, float g, float b) {
         if (null == shaderRenderer) return;
@@ -128,7 +127,7 @@ public final class DebugRender {
     }
 
     /**
-     * Draws a line segment.
+     * Draws a line segment. Color is assumed to be linear.
      */
     public static void drawLine(float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b) {
         if (null == shaderRenderer) return;
@@ -161,7 +160,7 @@ public final class DebugRender {
     }
 
     /**
-     * Draws a wireframe quad.
+     * Draws a wireframe quad. color is assumed to be linear.
      */
     public static void drawQuad(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float z, float r, float g, float b) {
         if (null == shaderRenderer) return;
@@ -172,7 +171,7 @@ public final class DebugRender {
     }
 
     /**
-     * Draws a wireframe cylinder composed of multiple circles.
+     * Draws a wireframe cylinder composed of multiple circles.  color is assumed to be linear.
      */
     public static void drawCylinder(float origin_x, float origin_y, float origin_z, float radius, int num_circles, float r, float g, float b) {
         if (null == shaderRenderer) return;

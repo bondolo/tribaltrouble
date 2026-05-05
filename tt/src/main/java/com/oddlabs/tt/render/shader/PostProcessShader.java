@@ -34,9 +34,12 @@ public final class PostProcessShader extends ShaderProgram {
             }
             """;
 
-    private static final String FRAGMENT_SHADER = """
+    private static final String FRAGMENT_SHADER =
+            """
             #version 410 core
             
+            """ + COLOR_SPACE_FUNCTIONS +
+            """
             uniform sampler2D u_sceneTexture;
             uniform sampler2D u_maskTexture;
             uniform int u_cvdMode; // 0=None, 1=Protanopia, 2=Deuteranopia, 3=Tritanopia
@@ -123,46 +126,44 @@ public final class PostProcessShader extends ShaderProgram {
             
             void main() {
                 vec4 sceneColor = texture(u_sceneTexture, v_texCoord);
-                vec3 finalColor = sceneColor.rgb;
+                
+                // 1. Convert to display-encoded sRGB first for perceptual math.
+                // We apply conversion to the composited linear color.
+                vec3 finalColor = toSRGB(sceneColor.rgb);
             
+                // 2. Apply High Contrast in sRGB space
                 if (u_highContrast) {
                     finalColor = applyHighContrast(finalColor);
                 }
             
+                // 3. Team Stencil & Border (Already works on display-space values)
                 if (u_teamStencil) {
-                    // Team Stencil & Border
                     vec4 mask = texture(u_maskTexture, v_texCoord);
+                    // Team objects write alpha=1.0. Clear color is alpha=0.0.
+                    // We check if it's a team unit (alpha > 0.9).
+                    bool isUnit = mask.a > 0.9;
             
-                    // Check for GUI marker (alpha ~ 0.5)
-                    bool isGUI = abs(mask.a - 0.5) < 0.1;
-            
-                    if (!isGUI) {
-                        // Check RGB intensity instead of Alpha, because GUI writes (0,0,0,1) to clear mask
+                    if (isUnit) {
                         if (dot(mask.rgb, vec3(1.0)) > 0.01) {
-                            // Stencil: blend 20% team color
-                            finalColor = mix(finalColor, mask.rgb, 0.2);
+                            finalColor = mix(finalColor, toSRGB(mask.rgb), 0.2);
                         } else {
-                            // Border Detection (3-pixel thickness) with Despeckle
                             vec2 texelSize = 1.0 / textureSize(u_maskTexture, 0);
                             int maskCount = 0;
                             vec3 accumulatedColor = vec3(0.0);
             
-                            // Search in a radius of 3 pixels
                             for (int y = -3; y <= 3; y++) {
                                 for (int x = -3; x <= 3; x++) {
                                     if (x == 0 && y == 0) continue;
                                     if (abs(x) + abs(y) > 4) continue;
             
                                     vec4 neighbor = texture(u_maskTexture, v_texCoord + vec2(float(x) * texelSize.x, float(y) * texelSize.y));
-                                    // Check neighbor RGB
                                     if (dot(neighbor.rgb, vec3(1.0)) > 0.01) {
                                         maskCount++;
-                                        accumulatedColor += neighbor.rgb;
+                                        accumulatedColor += toSRGB(neighbor.rgb);
                                     }
                                 }
                             }
             
-                            // Filter small features: 2x2 pixels = 4 pixels.
                             if (maskCount > 4) {
                                 finalColor = accumulatedColor / float(maskCount);
                             }
@@ -170,11 +171,13 @@ public final class PostProcessShader extends ShaderProgram {
                     }
                 }
             
+                // 4. Apply CVD correction using sRGB-referred matrices
                 if (u_cvdMode > 0) {
                     finalColor = daltonize(finalColor);
                 }
             
-                out_FragColor = vec4(finalColor, sceneColor.a);
+                // 5. Final Output (Always Opaque for the backbuffer)
+                out_FragColor = vec4(finalColor, 1.0);
             }
             """;
 

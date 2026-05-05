@@ -1,5 +1,7 @@
 package com.oddlabs.tt.scenery;
 
+import com.oddlabs.procedural.Channel;
+import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
@@ -21,10 +23,9 @@ import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.util.Stitcher;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.ShortVBO;
+import com.oddlabs.tt.vbo.VBO;
 import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -34,13 +35,12 @@ import org.lwjgl.opengl.GL20;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.stream.IntStream;
-
-import static com.oddlabs.tt.procedural.Landscape.NATIVE_SEA_BOTTOM_COLOR;
-import static com.oddlabs.tt.procedural.Landscape.VIKING_SEA_BOTTOM_COLOR;
 
 public final class Sky implements SceneRenderer, AutoCloseable {
     private static final float[] SKYDOME_SPEED_OUTER = {0.2f, 0f};
@@ -49,20 +49,25 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private static final int SKYDOME_GRADIENT_LENGTH = 20;
     private static final int SKYDOME_DEFAULT_COLOR = 8;
 
-    private static final Vector4fc[] SKYDOME_INITCOLOR = {
-            /* Native */ Color.argb4v(0xFF_E5_F2_FF),
-            /* Viking */ Color.argb4v(0xFF_FF_E5_A6)
-    };
+    private static final Map<Landscape.TerrainType, Color.@NonNull Standard> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
+            Landscape.TerrainType.NATIVE, new Color.Standard(0.90f, 0.95f, 1f, 1f),
+            Landscape.TerrainType.VIKING, new Color.Standard(1.50f, 0.90f, 0.65f, 1f)
+    ));
 
-    private static final Vector4fc[] SKYDOME_GRADIENT = {
-            /* Native */ Color.argb4v(0xFF_BF_D2_F2),
-            /* Viking */ Color.argb4v(0xFF_99_99_D9)
-    };
+    private static final Map<Landscape.TerrainType, Color.@NonNull Standard> SKYDOME_GRADIENT = new EnumMap<>(Map.of(
+            Landscape.TerrainType.NATIVE, new Color.Standard(0.75f, 0.825f, 0.95f, 1f),
+            Landscape.TerrainType.VIKING, new Color.Standard(0.6f, 0.6f, 0.85f, 1f)
+    ));
 
-    private static final Vector4fc[] tex_env_color = {
-            /* Native */ Color.argb4v(0xFF_F2_F8_FF),
-            /* Viking */ Color.argb4v(0xFF_FF_F2_CC)
-    };
+    private static final Map<Landscape.TerrainType, Color.@NonNull Standard> TEX_ENV_COLOR = new EnumMap<>(Map.of(
+            Landscape.TerrainType.NATIVE, new Color.Standard(0.95f, 0.975f, 1f, 1f),
+            Landscape.TerrainType.VIKING, new Color.Standard(1f, 0.95f, 0.8f, 1f)
+    ));
+
+    private static final Map<Landscape.TerrainType, Color.@NonNull Standard> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
+            Landscape.TerrainType.NATIVE, new Color.Standard(0.45f, 0.25f, 0.6f, 1f),
+            Landscape.TerrainType.VIKING, new Color.Standard(0f, 0f, 0f, 1f)
+    ));
 
     private static final float SKYDOME_OUTER_UTILING = 8f;
     private static final float SKYDOME_OUTER_VTILING = 8f;
@@ -73,7 +78,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
     private static final float START_ANGLE = -(float) Math.PI / 4f;
 
-    private final @NonNull FloatBuffer color;
+    private final Color.@NonNull Linear skyColor;
+    private final Color.@NonNull Linear seaBottomColor;
     private final ShortVBO @NonNull [] strip_indices;
     private final @NonNull ShortVBO fan_indices;
     private final @NonNull FloatVBO water_vertices;
@@ -127,132 +133,13 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         this(renderer, terrain, (float) (renderer.getHeightMap().getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 20, 20, SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, renderer.getHeightMap().getMetersPerWorld() / 2f, renderer.getHeightMap().getMetersPerWorld() / 2f, SKYDOME_HEIGHT, detail);
     }
 
-    @Override
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelView, @NonNull MatrixStack projection) {
-        try (var _ = skyShader.use();
-             var _ = context.withBlendMode(BlendMode.NONE);
-             var _ = context.withDepthMode(DepthMode.READ_WRITE);
-             var _ = context.withCullMode(CullMode.BACK)) {
-
-            skyShader.setUniformMatrix4(SkyShader.Uniforms.MODEL_VIEW_MATRIX, false, modelView.current());
-            skyShader.setUniform(SkyShader.Uniforms.SKY_COLOR, color.get(0), color.get(1), color.get(2), color.get(3));
-
-            skyShader.setUniform(SkyShader.Uniforms.FOG_FADE_START, 0.0f);
-            skyShader.setUniform(SkyShader.Uniforms.FOG_FADE_END, 0.1f);
-
-            context.setTexture(0, clouds[GeneratorClouds.INNER]);
-            skyShader.setUniform(SkyShader.Uniforms.TEXTURE_0, 0);
-
-            context.setTexture(1, clouds[GeneratorClouds.OUTER]);
-            skyShader.setUniform(SkyShader.Uniforms.TEXTURE_1, 1);
-
-            updateAnimation();
-
-            skyShader.setUniform(SkyShader.Uniforms.INNER_OFFSET, innerOffset[0], innerOffset[1]);
-            skyShader.setUniform(SkyShader.Uniforms.OUTER_OFFSET, outerOffset[0], outerOffset[1]);
-            skyShader.setUniform(SkyShader.Uniforms.INNER_CLOUD_DENSITY, innerCloudDensity);
-            skyShader.setUniform(SkyShader.Uniforms.OUTER_CLOUD_DENSITY, outerCloudDensity);
-
-            skyVAO.bind();
-
-            for (ShortVBO strip_indice : strip_indices) {
-                strip_indice.drawElements(GL11.GL_TRIANGLE_STRIP, subdiv_axis * 2 + 2, 0);
-            }
-            fan_indices.drawElements(GL11.GL_TRIANGLE_FAN, subdiv_axis + 2, 0);
-
-            skyVAO.unbind();
-        } finally {
-            com.oddlabs.tt.vbo.VBO.releaseIndexVBO(context);
-        }
-    }
-
-    private void updateAnimation() {
-        float currentTime = LocalEventQueue.getQueue().getTime();
-        float dt = currentTime - lastTime;
-        if (dt < 0 || dt > 1.0f) dt = 0.016f;
-        lastTime = currentTime;
-
-        innerTimeSinceChange += dt;
-        if (innerTimeSinceChange > innerChangeInterval) {
-            innerTimeSinceChange = 0f;
-            innerChangeInterval = 30f + (float) random.nextGaussian() * 10f;
-            float dirChange = (float) random.nextGaussian() * 10f;
-            targetInnerDirection += (float) Math.toRadians(dirChange);
-            float speedChange = innerSpeed * (float) random.nextGaussian() * 0.1f;
-            targetInnerSpeed = Math.clamp(targetInnerSpeed + speedChange, 0.002f, 0.008f);
-        }
-        innerDirection += (targetInnerDirection - innerDirection) * dt * 0.2f;
-        innerSpeed += (targetInnerSpeed - innerSpeed) * dt * 0.2f;
-
-        innerOffset[0] += (float) Math.cos(innerDirection) * innerSpeed * dt;
-        innerOffset[1] += (float) Math.sin(innerDirection) * innerSpeed * dt;
-
-        outerTimeSinceChange += dt;
-        if (outerTimeSinceChange > outerChangeInterval) {
-            outerTimeSinceChange = 0f;
-            outerChangeInterval = 40f + (float) random.nextGaussian() * 15f;
-            float dirChange = (float) random.nextGaussian() * 8f;
-            targetOuterDirection += (float) Math.toRadians(dirChange);
-            float speedChange = outerSpeed * (float) random.nextGaussian() * 0.1f;
-            targetOuterSpeed = Math.clamp(targetOuterSpeed + speedChange, 0.001f, 0.004f);
-        }
-        outerDirection += (targetOuterDirection - outerDirection) * dt * 0.1f;
-        outerSpeed += (targetOuterSpeed - outerSpeed) * dt * 0.1f;
-
-        outerOffset[0] += (float) Math.cos(outerDirection) * outerSpeed * dt;
-        outerOffset[1] += (float) Math.sin(outerDirection) * outerSpeed * dt;
-
-        densityTimeSinceChange += dt;
-        if (densityTimeSinceChange > densityChangeInterval) {
-            densityTimeSinceChange = 0f;
-            densityChangeInterval = 60f + random.nextFloat() * 60f;
-            float innerChange = (float) random.nextGaussian() * 0.1f;
-            targetInnerCloudDensity = Math.clamp(innerChange, -0.2f, 0.2f);
-            float outerChange = (float) random.nextGaussian() * 0.1f;
-            targetOuterCloudDensity = Math.clamp(outerChange, -0.2f, 0.2f);
-        }
-        innerCloudDensity += (targetInnerCloudDensity - innerCloudDensity) * dt * 0.05f;
-        outerCloudDensity += (targetOuterCloudDensity - outerCloudDensity) * dt * 0.05f;
-    }
-
-    public void renderSeaBottom(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelView, @NonNull MatrixStack projection) {
-        try (var _ = seaBottomShader.use();
-             var _ = context.withBlendMode(BlendMode.NONE);
-             var _ = context.withDepthMode(DepthMode.READ_WRITE);
-             var _ = context.withCullMode(CullMode.BACK)) {
-
-            seaBottomShader.setUniformMatrix4(SeaBottomShader.Uniforms.MODEL_VIEW_MATRIX, false, modelView.current());
-
-            var seaColor = switch (terrain) {
-                case NATIVE -> NATIVE_SEA_BOTTOM_COLOR;
-                case VIKING -> VIKING_SEA_BOTTOM_COLOR;
-            };
-            seaBottomShader.setUniform(SeaBottomShader.Uniforms.BASE_COLOR, seaColor.x(), seaColor.y(), seaColor.z(), seaColor.w());
-
-            if (Globals.draw_detail) {
-                context.setTexture(1, detail);
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_1, 1);
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, Globals.LANDSCAPE_DETAIL_REPEAT_RATE);
-            } else {
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, 0f);
-            }
-
-            seaBottomVAO.bind();
-            water_indices.drawElements(GL11.GL_TRIANGLES, water_indices.capacity(), 0);
-            seaBottomVAO.unbind();
-
-            context.setActiveTexture(0);
-        } finally {
-            com.oddlabs.tt.vbo.VBO.releaseIndexVBO(context);
-        }
-    }
-
     private Sky(@NonNull LandscapeRenderer landscape_renderer, Landscape.@NonNull TerrainType terrain, float inner_radius, float radius, int subdiv_axis, int subdiv_height, float outer_utile, float outer_vtile, float inner_utile, float inner_vtile, float origin_x, float origin_y, float origin_z, @NonNull Texture detail) {
         this.terrain = terrain;
         this.detail = detail;
         this.subdiv_axis = subdiv_axis;
         this.subdiv_height = subdiv_height;
-        this.color = tex_env_color[terrain.ordinal()].get(BufferUtils.createFloatBuffer(4)).rewind();
+        this.skyColor = new Color.Linear(TEX_ENV_COLOR.get(terrain));
+        this.seaBottomColor = new Color.Linear(SEA_BOTTOM_COLOR.get(terrain));
         TextureGenerator clouds_desc = new GeneratorClouds(terrain);
         clouds = Resources.findResource(clouds_desc);
 
@@ -267,7 +154,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         strip_indices = makeSkyStripIndices();
         fan_indices = makeSkyFanIndices();
 
-        // --- Sea bottom and water stitching logic (remains complex) ---
+        // --- Sea bottom and water stitching logic ---
         List<SkyStitchVertex[]> vertices_stitch_list = new ArrayList<>();
         List<ShortBuffer> stitch_indices_list = new ArrayList<>();
         int num_vertices_water = 0;
@@ -327,6 +214,122 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         seaBottomVAO.unbind();
     }
 
+    @Override
+    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelView, @NonNull MatrixStack projection) {
+        try (var _ = skyShader.use();
+             var _ = context.withBlendMode(BlendMode.NONE);
+             var _ = context.withDepthMode(DepthMode.READ_WRITE);
+             var _ = context.withCullMode(CullMode.BACK)) {
+
+            skyShader.setUniform(SkyShader.Uniforms.MODEL_VIEW_MATRIX, modelView.current());
+            skyShader.setUniform(SkyShader.Uniforms.SKY_COLOR, skyColor);
+
+            skyShader.setUniform(SkyShader.Uniforms.FOG_FADE_START, 0.0f);
+            skyShader.setUniform(SkyShader.Uniforms.FOG_FADE_END, 0.1f);
+
+            context.setTexture(0, clouds[GeneratorClouds.INNER]);
+            skyShader.setUniform(SkyShader.Uniforms.TEXTURE_0, 0);
+
+            context.setTexture(1, clouds[GeneratorClouds.OUTER]);
+            skyShader.setUniform(SkyShader.Uniforms.TEXTURE_1, 1);
+
+            updateAnimation();
+
+            skyShader.setUniform(SkyShader.Uniforms.INNER_OFFSET, innerOffset[0], innerOffset[1]);
+            skyShader.setUniform(SkyShader.Uniforms.OUTER_OFFSET, outerOffset[0], outerOffset[1]);
+            skyShader.setUniform(SkyShader.Uniforms.INNER_CLOUD_DENSITY, innerCloudDensity);
+            skyShader.setUniform(SkyShader.Uniforms.OUTER_CLOUD_DENSITY, outerCloudDensity);
+
+            skyVAO.bind();
+
+            for (ShortVBO strip_index : strip_indices) {
+                strip_index.drawElements(GL11.GL_TRIANGLE_STRIP, subdiv_axis * 2 + 2, 0);
+            }
+            fan_indices.drawElements(GL11.GL_TRIANGLE_FAN, subdiv_axis + 2, 0);
+
+            skyVAO.unbind();
+        } finally {
+            VBO.releaseIndexVBO(context);
+        }
+    }
+
+    private void updateAnimation() {
+        float currentTime = LocalEventQueue.getQueue().getTime();
+        float dt = currentTime - lastTime;
+        if (dt < 0 || dt > 1.0f) dt = 0.016f;
+        lastTime = currentTime;
+
+        innerTimeSinceChange += dt;
+        if (innerTimeSinceChange > innerChangeInterval) {
+            innerTimeSinceChange = 0f;
+            innerChangeInterval = 30f + (float) random.nextGaussian() * 10f;
+            float dirChange = (float) random.nextGaussian() * 10f;
+            targetInnerDirection += (float) Math.toRadians(dirChange);
+            float speedChange = innerSpeed * (float) random.nextGaussian() * 0.1f;
+            targetInnerSpeed = Math.clamp(targetInnerSpeed + speedChange, 0.002f, 0.008f);
+        }
+        innerDirection += (targetInnerDirection - innerDirection) * dt * 0.2f;
+        innerSpeed += (targetInnerSpeed - innerSpeed) * dt * 0.2f;
+
+        innerOffset[0] += (float) Math.cos(innerDirection) * innerSpeed * dt;
+        innerOffset[1] += (float) Math.sin(innerDirection) * innerSpeed * dt;
+
+        outerTimeSinceChange += dt;
+        if (outerTimeSinceChange > outerChangeInterval) {
+            outerTimeSinceChange = 0f;
+            outerChangeInterval = 40f + (float) random.nextGaussian() * 15f;
+            float dirChange = (float) random.nextGaussian() * 8f;
+            targetOuterDirection += (float) Math.toRadians(dirChange);
+            float speedChange = outerSpeed * (float) random.nextGaussian() * 0.1f;
+            targetOuterSpeed = Math.clamp(targetOuterSpeed + speedChange, 0.001f, 0.004f);
+        }
+        outerDirection += (targetOuterDirection - outerDirection) * dt * 0.1f;
+        outerSpeed += (targetOuterSpeed - outerSpeed) * dt * 0.1f;
+
+        outerOffset[0] += (float) Math.cos(outerDirection) * outerSpeed * dt;
+        outerOffset[1] += (float) Math.sin(outerDirection) * outerSpeed * dt;
+
+        densityTimeSinceChange += dt;
+        if (densityTimeSinceChange > densityChangeInterval) {
+            densityTimeSinceChange = 0f;
+            densityChangeInterval = 60f + random.nextFloat() * 60f;
+            float innerChange = (float) random.nextGaussian() * 0.1f;
+            targetInnerCloudDensity = Math.clamp(innerChange, -0.2f, 0.2f);
+            float outerChange = (float) random.nextGaussian() * 0.1f;
+            targetOuterCloudDensity = Math.clamp(outerChange, -0.2f, 0.2f);
+        }
+        innerCloudDensity += (targetInnerCloudDensity - innerCloudDensity) * dt * 0.05f;
+        outerCloudDensity += (targetOuterCloudDensity - outerCloudDensity) * dt * 0.05f;
+    }
+
+    public void renderSeaBottom(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelView, @NonNull MatrixStack projection) {
+        try (var _ = seaBottomShader.use();
+             var _ = context.withBlendMode(BlendMode.NONE);
+             var _ = context.withDepthMode(DepthMode.READ_WRITE);
+             var _ = context.withCullMode(CullMode.BACK)) {
+
+            seaBottomShader.setUniform(SeaBottomShader.Uniforms.MODEL_VIEW_MATRIX, modelView.current());
+
+            seaBottomShader.setUniform(SeaBottomShader.Uniforms.BASE_COLOR, seaBottomColor);
+
+            if (Globals.draw_detail) {
+                context.setTexture(1, detail);
+                seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_1, 1);
+                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, Globals.LANDSCAPE_DETAIL_REPEAT_RATE);
+            } else {
+                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, 0f);
+            }
+
+            seaBottomVAO.bind();
+            water_indices.drawElements(GL11.GL_TRIANGLES, water_indices.capacity(), 0);
+            seaBottomVAO.unbind();
+
+            context.setActiveTexture(0);
+        } finally {
+            VBO.releaseIndexVBO(context);
+        }
+    }
+
     private static @NonNull FloatVBO toVBO(SkyStitchVertex @NonNull [] vertices, float height) {
         FloatBuffer vertex_buffer = Objects.requireNonNull(BufferUtils.createFloatBuffer(vertices.length * 3));
         for (SkyStitchVertex vertex : vertices) {
@@ -356,26 +359,36 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         float a_angle_inc = (float) java.lang.Math.PI * 2 / subdiv_axis;
         float offset_angle = a_angle_inc / 2f;
 
-        Vector4f skydome_default_color = new Vector4f(
-                (float) Math.pow(SKYDOME_GRADIENT[terrain.ordinal()].x(), SKYDOME_DEFAULT_COLOR),
-                (float) Math.pow(SKYDOME_GRADIENT[terrain.ordinal()].y(), SKYDOME_DEFAULT_COLOR),
-                (float) Math.pow(SKYDOME_GRADIENT[terrain.ordinal()].z(), SKYDOME_DEFAULT_COLOR),
+        // skydome_default_color is authored to be darker in the original game (sRGB space)
+        Color.Standard skydome_gradient_const = SKYDOME_GRADIENT.get(terrain);
+        Color.Standard skydome_default_srgb = new Color.Standard(
+                (float) Math.pow(skydome_gradient_const.x, SKYDOME_DEFAULT_COLOR),
+                (float) Math.pow(skydome_gradient_const.y, SKYDOME_DEFAULT_COLOR),
+                (float) Math.pow(skydome_gradient_const.z, SKYDOME_DEFAULT_COLOR),
                 1.0f
         );
-        Vector4f[] skydome_gradient = new Vector4f[SKYDOME_GRADIENT_LENGTH];
-        skydome_gradient[0] = new Vector4f(SKYDOME_INITCOLOR[terrain.ordinal()]);
+
+        Color.Linear[] skydome_gradient = new Color.Linear[SKYDOME_GRADIENT_LENGTH];
+        Color.Standard initialSrgb = SKYDOME_INITCOLOR.get(terrain);
+        skydome_gradient[0] = new Color.Linear(initialSrgb);
 
         float alpha;
-        Vector4fc gradient = SKYDOME_GRADIENT[terrain.ordinal()];
+        Color.Standard prevSrgb = initialSrgb;
         for (int i = 1; i < SKYDOME_GRADIENT_LENGTH; i++) {
             alpha = (float) i / (SKYDOME_GRADIENT_LENGTH - 1);
-            skydome_gradient[i] = new Vector4f(
-                    alpha * skydome_default_color.x() + (1f - alpha) * skydome_gradient[i - 1].x() * gradient.x(),
-                    alpha * skydome_default_color.y() + (1f - alpha) * skydome_gradient[i - 1].y() * gradient.y(),
-                    alpha * skydome_default_color.z() + (1f - alpha) * skydome_gradient[i - 1].z() * gradient.z(),
-                    1.0f
-            );
+
+            // To match legacy look, the "mixing" was done in sRGB space including a multiplication
+            Color.Standard currentSrgb = new Color.Standard();
+            currentSrgb.x = alpha * skydome_default_srgb.x + (1f - alpha) * prevSrgb.x * skydome_gradient_const.x;
+            currentSrgb.y = alpha * skydome_default_srgb.y + (1f - alpha) * prevSrgb.y * skydome_gradient_const.y;
+            currentSrgb.z = alpha * skydome_default_srgb.z + (1f - alpha) * prevSrgb.z * skydome_gradient_const.z;
+            currentSrgb.w = 1.0f;
+
+            skydome_gradient[i] = new Color.Linear(currentSrgb);
+            prevSrgb = currentSrgb;
         }
+
+        Color.Linear defaultLinear = new Color.Linear(skydome_default_srgb);
 
         for (int i = 0; i < subdiv_height - 1; i++) {
             z = (float) java.lang.Math.sin(h_angle_inc * i) * radius;
@@ -391,17 +404,16 @@ public final class Sky implements SceneRenderer, AutoCloseable {
                 buffer.put(x * inv_len).put(y * inv_len).put(z * inv_len); // Normal
                 buffer.put(x * height_coeff / (radius * outer_utile) + 0.5f).put(y * height_coeff / (radius * outer_vtile) + 0.5f); // TexCoord0
                 buffer.put(x * height_coeff / (radius * inner_utile) + 0.5f).put(y * height_coeff / (radius * inner_vtile) + 0.5f); // TexCoord1
-                Vector4fc color = i < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[i] : skydome_default_color;
-                buffer.put(color.x()).put(color.y()).put(color.z()); // Color
+                Color colorVal = i < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[i] : defaultLinear;
+                buffer.put(colorVal.x()).put(colorVal.y()).put(colorVal.z()); // Color
             }
         }
-        int last_index = subdiv_axis * (subdiv_height - 1);
         buffer.put(origin_x).put(origin_y).put(radius + origin_z); // Position
         buffer.put(0).put(0).put(1); // Normal
         buffer.put(0.5f).put(0.5f); // TexCoord0
         buffer.put(0.5f).put(0.5f); // TexCoord1
-        Vector4fc color = subdiv_height - 1 < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[subdiv_height - 1] : skydome_default_color;
-        buffer.put(color.x()).put(color.y()).put(color.z()); // Color
+        Color colorVal = subdiv_height - 1 < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[subdiv_height - 1] : defaultLinear;
+        buffer.put(colorVal.x()).put(colorVal.y()).put(colorVal.z()); // Color
     }
 
     private @NonNull ShortVBO @NonNull [] makeSkyStripIndices() {
@@ -472,6 +484,25 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         return result;
     }
 
+    public static Landscape.@NonNull StructureLayers genSeabottom(Landscape.TerrainType terrain, int size, @NonNull Channel noise8, @NonNull Channel noise256, @NonNull Channel voronoi4, @NonNull Channel voronoi8) {
+        Color.Standard color = SEA_BOTTOM_COLOR.get(terrain);
+        Layer bottom = new Layer(
+                new Channel(size, size).fill(color.x),
+                new Channel(size, size).fill(color.y),
+                new Channel(size, size).fill(color.z)
+        );
+        return new Landscape.StructureLayers(bottom, getFlatNormal(size));
+    }
+
+    private static @NonNull Layer getFlatNormal(int size) {
+        return new Layer(
+                new Channel(size, size).fill(0.5f),
+                new Channel(size, size).fill(0.5f),
+                new Channel(size, size).fill(1.0f),
+                new Channel(size, size).fill(0.0f) // Specular = 0
+        );
+    }
+
     private static class SkyStitchVertex extends Stitcher.Vertex<SkyStitchVertex> {
         private final float x;
         private final float y;
@@ -490,27 +521,6 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         @Override
         public final int compareTo(@NonNull SkyStitchVertex o) {
             return -Float.compare(theta, o.theta);
-        }
-
-        @Override
-        public int hashCode() {
-            return Float.hashCode(theta);
-        }
-
-        @Override
-        public final boolean equals(Object o) {
-            return o instanceof SkyStitchVertex other && other.heightmap == heightmap && other.theta == theta;
-        }
-
-        @Override
-        public final @NonNull String toString() {
-            float half_world_size = heightmap.getMetersPerWorld() * .5f;
-            float x0 = x - half_world_size;
-            float y0 = y - half_world_size;
-            float inv_len = (float) (1 / Math.sqrt(x0 * x0 + y0 * y0));
-            x0 *= inv_len;
-            y0 *= inv_len;
-            return x + " " + y + "\t\t" + x0 + " " + y0 + " " + theta / Math.PI + " " + super.toString();
         }
     }
 

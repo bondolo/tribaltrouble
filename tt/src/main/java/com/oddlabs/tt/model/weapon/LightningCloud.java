@@ -17,8 +17,6 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -29,9 +27,9 @@ import org.lwjgl.opengl.GL11;
 public final class LightningCloud extends PointEmitterModel implements Magic {
     private static final int NUM_STRIKES = 6;
     private static final float SECONDS_BETWEEN_STRIKES = .125f;
-    private static final float BRIGHTNESS = .2f;
+    private static final float BRIGHTNESS = Color.toLinear(.2f);
     private static final float LIGHTNING_TIME = .1f;
-    private static final Vector4fc DELTA_COLOR = new Vector4f(0f, 0f, 0f, -1f / LIGHTNING_TIME);
+    private static final Color DELTA_COLOR = new Color.Linear(new Color.Standard(0f, 0f, 0f, -1f / LIGHTNING_TIME));
 
     private final @NonNull Player owner;
     private final float seconds_per_hit;
@@ -84,7 +82,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         return new ParametricEmitter(world, new CloudFunction(2.5f, .7f), pos,
                 0f, 0f, .5f, .5f, .2f,
                 25, 100f,
-                new Vector4f(.4f, .4f, .4f, .6f), new Vector4f(0f, 0f, 0f, 0f),
+                new Color.Linear(new Color.Standard(.4f, .4f, .4f, .6f)), Color.BLACK_LINEAR,
                 new Vector3f(3f, 3f, 1f), new Vector3f(0f, 0f, 0f), seconds_to_live + seconds_to_init,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, world.getRacesResources().getSmokeTextures());
     }

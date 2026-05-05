@@ -5,7 +5,6 @@ import com.oddlabs.tt.gui.ModeIconQuads;
 import com.oddlabs.tt.render.shader.GUIShader;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.render.shader.VertexLayout;
-import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
@@ -13,7 +12,6 @@ import com.oddlabs.tt.util.GLUtils;
 import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -23,7 +21,9 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 
 /**
  * A renderer for drawing 2D GUI elements using a shader-based batching system.
@@ -51,6 +51,10 @@ public final class GUIRenderer {
     private int textureCount = 0;
     private int quadCount = 0;
 
+    // Modulation stack
+    private final Deque<Color> modulationStack = new ArrayDeque<>();
+    private Color currentModulation = Color.WHITE_LINEAR;
+
     private @Nullable RenderContext currentContext;
 
     public GUIRenderer() {
@@ -61,6 +65,7 @@ public final class GUIRenderer {
                 GUIShader.Attribute.TEX_COORD,
                 GUIShader.Attribute.TEX_INDEX
         );
+        this.modulationStack.push(Color.WHITE_LINEAR);
 
         this.vao = new VertexArray();
         this.vbo = GL15.glGenBuffers();
@@ -68,6 +73,18 @@ public final class GUIRenderer {
         this.vertexBuffer = BufferUtils.createByteBuffer(MAX_QUADS * VERTICES_PER_QUAD * layout.getStride());
 
         setupBuffers(ibo);
+    }
+
+    public void pushModulation(@NonNull Color modulation) {
+        flush();
+        modulationStack.push(modulation);
+        currentModulation = modulation;
+    }
+
+    public void popModulation() {
+        flush();
+        modulationStack.pop();
+        currentModulation = modulationStack.peek();
     }
 
     private void setupBuffers(int ibo) {
@@ -95,17 +112,17 @@ public final class GUIRenderer {
         vao.unbind();
     }
 
-    public void renderFrame(@NonNull RenderContext context, float width, float height, @NonNull Runnable frameCommands) {
+    public void renderFrame(@NonNull RenderContext context, float width, float height, boolean outputSRGB, @NonNull Runnable frameCommands) {
         GLUtils.checkGLError("Before GUI Render");
         this.currentContext = context;
 
         try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.ALPHA);
              var _ = context.withDepthMode(DepthMode.NONE);
              var _ = context.withCullMode(CullMode.NONE)) {
 
             projectionMatrix.identity().ortho(0, width, 0, height, -1, 1);
-            shader.setUniformMatrix4(GUIShader.Uniforms.PROJECTION_MATRIX, false, projectionMatrix);
+            shader.setUniform(GUIShader.Uniforms.PROJECTION_MATRIX, projectionMatrix);
+            shader.setUniform(GUIShader.Uniforms.OUTPUT_SRGB, outputSRGB);
 
             // Set texture unit indices [0, 1, ... 7]
             int[] units = new int[MAX_TEXTURES];
@@ -113,6 +130,9 @@ public final class GUIRenderer {
             GL20.glUniform1iv(shader.getUniformLocation(GUIShader.Uniforms.TEXTURES), units);
 
             matrixStack.clear();
+            modulationStack.clear();
+            modulationStack.push(Color.WHITE_LINEAR);
+            currentModulation = Color.WHITE_LINEAR;
 
             frameCommands.run();
 
@@ -122,12 +142,12 @@ public final class GUIRenderer {
         }
     }
 
-    public void drawColoredQuad(float x, float y, float w, float h, @NonNull Vector4fc color) {
+    public void drawColoredQuad(float x, float y, float w, float h, @NonNull Color color) {
         if (quadCount >= MAX_QUADS) {
             flush();
         }
         // Use -1 for "no texture"
-        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, Color.abgri(color));
+        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color instanceof Color.Linear linear ? linear : new Color.Linear(color));
     }
 
     public void drawModeIcon(@NonNull ModeIconQuads iconQuad, ModeIconQuads.@NonNull Mode skinMode, float x, float y) {
@@ -135,24 +155,24 @@ public final class GUIRenderer {
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y) {
-        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.WHITE);
+        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.WHITE_LINEAR);
     }
 
-    public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, @NonNull Vector4fc color) {
-        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), color);
+    public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, @NonNull Color tint) {
+        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), tint);
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, float w, float h) {
-        drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.WHITE);
+        drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.WHITE_LINEAR);
     }
 
-    public void drawTexture(@NonNull Texture texture, float x, float y, float w, float h, float u1, float v1, float u2, float v2, @NonNull Vector4fc tint) {
+    public void drawTexture(@NonNull Texture texture, float x, float y, float w, float h, float u1, float v1, float u2, float v2, @NonNull Color tint) {
         if (quadCount >= MAX_QUADS) {
             flush();
         }
 
         float texIndex = getTextureIndex(texture);
-        putQuad(x, y, w, h, u1, v1, u2, v2, texIndex, Color.abgri(tint));
+        putQuad(x, y, w, h, u1, v1, u2, v2, texIndex, tint instanceof Color.Linear linear ? linear : new Color.Linear(tint));
     }
 
     private float getTextureIndex(@NonNull Texture texture) {
@@ -171,8 +191,17 @@ public final class GUIRenderer {
         return (float) textureCount++;
     }
 
-    private void putQuad(float x, float y, float w, float h, float u1, float v1, float u2, float v2, float texIndex, int color) {
+    /**
+     * @param tint Assumed to be a linear color.
+     */
+    private void putQuad(float x, float y, float w, float h, float u1, float v1, float u2, float v2, float texIndex, @NonNull Color tint) {
+        assert tint instanceof Color.Linear : "Tint must be linear not " + tint.getClass().getSimpleName();
         Matrix4f mat = matrixStack.current();
+
+        float r = tint.x() * currentModulation.x();
+        float g = tint.y() * currentModulation.y();
+        float b = tint.z() * currentModulation.z();
+        float a = tint.w() * currentModulation.w();
 
         // Transform vertices on CPU
         float x1 = x;
@@ -184,25 +213,29 @@ public final class GUIRenderer {
         vertexBuffer.putFloat(mat.m00() * x1 + mat.m10() * y1 + mat.m30())
                 .putFloat(mat.m01() * x1 + mat.m11() * y1 + mat.m31())
                 .putFloat(mat.m02() * x1 + mat.m12() * y1 + mat.m32())
-                .putInt(color).putFloat(u1).putFloat(v1).putFloat(texIndex);
+                .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
+                .putFloat(u1).putFloat(v1).putFloat(texIndex);
 
         // P2 (x2, y1)
         vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y1 + mat.m30())
                 .putFloat(mat.m01() * x2 + mat.m11() * y1 + mat.m31())
                 .putFloat(mat.m02() * x2 + mat.m12() * y1 + mat.m32())
-                .putInt(color).putFloat(u2).putFloat(v1).putFloat(texIndex);
+                .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
+                .putFloat(u2).putFloat(v1).putFloat(texIndex);
 
         // P3 (x2, y2)
         vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y2 + mat.m30())
                 .putFloat(mat.m01() * x2 + mat.m11() * y2 + mat.m31())
                 .putFloat(mat.m02() * x2 + mat.m12() * y2 + mat.m32())
-                .putInt(color).putFloat(u2).putFloat(v2).putFloat(texIndex);
+                .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
+                .putFloat(u2).putFloat(v2).putFloat(texIndex);
 
         // P4 (x1, y2)
         vertexBuffer.putFloat(mat.m00() * x1 + mat.m10() * y2 + mat.m30())
                 .putFloat(mat.m01() * x1 + mat.m11() * y2 + mat.m31())
                 .putFloat(mat.m02() * x1 + mat.m12() * y2 + mat.m32())
-                .putInt(color).putFloat(u1).putFloat(v2).putFloat(texIndex);
+                .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
+                .putFloat(u1).putFloat(v2).putFloat(texIndex);
 
         quadCount++;
     }
@@ -210,7 +243,7 @@ public final class GUIRenderer {
     public void flush() {
         if (quadCount == 0) return;
 
-        shader.setUniformMatrix4(GUIShader.Uniforms.MODEL_VIEW_MATRIX, false, IDENTITY_MATRIX);
+        shader.setUniform(GUIShader.Uniforms.MODEL_VIEW_MATRIX, IDENTITY_MATRIX);
 
         // Bind all active textures
         for (int i = 0; i < textureCount; i++) {

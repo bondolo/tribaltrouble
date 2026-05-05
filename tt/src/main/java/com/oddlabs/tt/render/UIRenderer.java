@@ -22,4 +22,6 @@ public interface UIRenderer {
     void startFrame(@NonNull RenderContext context);
 
     void endFrame(@NonNull RenderContext context, @NonNull Consumer<@NonNull RenderContext> guiRenderCallback);
+
+    boolean isClosed();
 }

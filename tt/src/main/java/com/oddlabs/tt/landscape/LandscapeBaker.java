@@ -3,7 +3,6 @@ package com.oddlabs.tt.landscape;
 import com.oddlabs.tt.render.FBO;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.render.shader.Shader;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.resource.BlendInfo;
 import com.oddlabs.tt.resource.BlendLighting;
@@ -35,9 +34,6 @@ public final class LandscapeBaker {
 
     private static final String FRAGMENT_SHADER = """
             #version 410 core
-            """ +
-            Shader.COLOR_SPACE_FUNCTIONS +
-            """
             uniform sampler2D u_BaseDiffuse;
             uniform sampler2D u_LayerDiffuse;
             uniform sampler2D u_BaseNormal;
@@ -53,21 +49,27 @@ public final class LandscapeBaker {
             layout(location = 1) out vec4 out_Normal;
             
             void main() {
+                // Fetch base values
                 vec4 baseDiff = texture(u_BaseDiffuse, v_texCoord);
                 vec4 baseNorm = texture(u_BaseNormal, v_texCoord);
                 float alpha = texture(u_AlphaMap, v_texCoord).r;
             
                 if (u_Mode == 0) { // Structure Blend
-                    // Fetch source textures (already hardware linearized)
+                    // Fetch source textures
                     vec4 layerDiff = texture(u_LayerDiffuse, v_texCoord * u_TextureScale);
                     vec4 layerNorm = texture(u_LayerNormal, v_texCoord * u_TextureScale);
             
-                    out_Diffuse = mix(baseDiff, layerDiff, alpha);
+                    // IMPORTANT: To match legacy visual look, we must blend in sRGB space.
+                    // Hardware fetch already gave us linear data, so we convert back to sRGB for the mix.
+                    vec3 srgbBase = pow(baseDiff.rgb, vec3(1.0 / 2.2));
+                    vec3 srgbLayer = pow(layerDiff.rgb, vec3(1.0 / 2.2));
+                    vec3 srgbMixed = mix(srgbBase, srgbLayer, alpha);
+                    
+                    // Convert back to linear for the HDR output
+                    out_Diffuse = vec4(pow(srgbMixed, vec3(2.2)), mix(baseDiff.a, layerDiff.a, alpha));
                     out_Normal = mix(baseNorm, layerNorm, alpha);
                 } else { // Lighting Blend
-                    // u_Color is sRGB, convert to linear for math
-                    vec3 linearLight = toLinear(u_Color);
-                    out_Diffuse = baseDiff + vec4(linearLight * alpha, 0.0);
+                    out_Diffuse = baseDiff + vec4(u_Color * alpha, 0.0);
                     out_Normal = baseNorm;
                 }
             }
@@ -152,7 +154,7 @@ public final class LandscapeBaker {
                             GL11.glBindTexture(GL11.GL_TEXTURE_2D, sb.getNormalMap().getHandle());
                         } else if (info instanceof BlendLighting bl) {
                             shader.setUniform("u_Mode", 1);
-                            shader.setUniform("u_Color", bl.getR(), bl.getG(), bl.getB());
+                            shader.setUniformColor3("u_Color", bl.getColor());
                         }
 
                         quad.render();

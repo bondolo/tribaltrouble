@@ -3,9 +3,14 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.util.Color;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * An animated arrow that points toward a specific 3D coordinate in the game world,
+ * constrained to the edges of the screen if the target is off-screen.
+ */
 public final class Arrow extends GUIObject {
     private static final float SECONDS_PER_FLASH = .5f;
     private static final float COLOR_DELTA = .5f;
@@ -13,20 +18,16 @@ public final class Arrow extends GUIObject {
     private final float target_x;
     private final float target_y;
     private final float target_z;
-    private final float r;
-    private final float g;
-    private final float b;
+    private final Color color;
     private final boolean show_always;
     private final @NonNull GUIRoot gui_root;
 
-    public Arrow(@NonNull HeightMap heightmap, @NonNull GUIRoot gui_root, float target_x, float target_y, float r, float g, float b, boolean show_always) {
+    public Arrow(@NonNull HeightMap heightmap, @NonNull GUIRoot gui_root, float target_x, float target_y, @NonNull Color color, boolean show_always) {
         this.gui_root = gui_root;
         this.target_x = target_x;
         this.target_y = target_y;
         this.target_z = heightmap.getNearestHeight(target_x, target_y);
-        this.r = r;
-        this.g = g;
-        this.b = b;
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         this.show_always = show_always;
         displayChangedNotify(gui_root.getWidth(), gui_root.getHeight());
     }
@@ -92,7 +93,7 @@ public final class Arrow extends GUIObject {
                 val = 2f - val;
             val = COLOR_DELTA * val;
             IconQuad arrow = data.arrow();
-            renderer.drawIcon(arrow, -head_x, -head_y, new Vector4f(r, g, b, 1f - val));
+            renderer.drawIcon(arrow, -head_x, -head_y, new Color.Linear(color.x(), color.y(), color.z(), 1f - val));
             renderer.getMatrixStack().pop();
         }
     }

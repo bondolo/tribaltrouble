@@ -4,7 +4,8 @@ import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.font.TextLineRenderer;
 import com.oddlabs.tt.render.GUIRenderer;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
+
 import org.jspecify.annotations.NonNull;
 
 public final class MenuButton extends ButtonObject {
@@ -12,16 +13,16 @@ public final class MenuButton extends ButtonObject {
     private static final float HOVER_SCALE_FACTOR = 0.06f;
 
     private final @NonNull CharSequence text;
-    private final @NonNull Vector4fc color_normal;
-    private final @NonNull Vector4fc color_active;
+    private final @NonNull Color color_normal;
+    private final @NonNull Color color_active;
 
     private float start_hover_time;
 
-    public MenuButton(@NonNull String caption, @NonNull Vector4fc color_normal, @NonNull Vector4fc color_active) {
+    public MenuButton(@NonNull String caption, @NonNull Color color_normal, @NonNull Color color_active) {
         this(caption, Skin.getSkin().getHeadlineFont(), color_normal, color_active);
     }
 
-    private MenuButton(@NonNull CharSequence text, @NonNull Font font, @NonNull Vector4fc color_normal, @NonNull Vector4fc color_active) {
+    private MenuButton(@NonNull CharSequence text, @NonNull Font font, @NonNull Color color_normal, @NonNull Color color_active) {
         super(font);
         setDim(font.getWidth(text), font.getHeight());
         this.text = text;
@@ -40,7 +41,7 @@ public final class MenuButton extends ButtonObject {
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
         renderer.getMatrixStack().push()
                 .translate(getWidth() / 2f, getHeight() / 2f, 0);
-        Vector4fc c;
+        Color c;
         if (isActive()) {
             c = color_active;
             scaleHovered(renderer);

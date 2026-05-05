@@ -4,8 +4,6 @@ import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -15,19 +13,23 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
     private ModelVisitor<M> visitor;
     M model;
     float f;
-    final Vector4f color = new Vector4f(Color.WHITE);
+    final Color.Linear color = new Color.Linear(Color.WHITE_LINEAR);
 
     ElementRenderState(@NonNull RenderState render_state) {
         this.render_state = render_state;
     }
 
     @Override
-    public @NonNull Vector4f getColor() {
+    public Color.@NonNull Linear getColor() {
         return color;
     }
 
+    public void setColor(float r, float g, float b, float a) {
+        this.color.set(r, g, b, a);
+    }
+
     public void resetColor() {
-        color.set(Color.WHITE);
+        color.set(Color.WHITE_LINEAR);
     }
 
     @Override
@@ -42,12 +44,12 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
     }
 
     @Override
-    public @NonNull Vector4fc getTeamColor() {
+    public @NonNull Color getTeamColor() {
         return visitor.getTeamColor(this);
     }
 
     @Override
-    public @NonNull Vector4fc getSelectionColor() {
+    public @NonNull Color getSelectionColor() {
         return visitor.getSelectionColor(this);
     }
 

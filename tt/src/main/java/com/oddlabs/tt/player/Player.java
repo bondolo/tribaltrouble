@@ -23,7 +23,7 @@ import com.oddlabs.tt.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.model.weapon.RockAxeWeapon;
 import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.util.Target;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -43,7 +43,7 @@ public final class Player implements PlayerInterface {
     private final @NonNull SupplyContainer unit_count;
     private final SupplyContainer building_count = new SupplyContainer(MAX_BUILDING_COUNT);
 
-    private final @NonNull Vector4fc color;
+    private final @NonNull Color color;
 
 //	private final String team_tip;
 
@@ -86,9 +86,9 @@ public final class Player implements PlayerInterface {
 
     private int preferred_speed = World.GAMESPEED_DONTCARE;
 
-    public Player(@NonNull World world, @NonNull PlayerInfo player_info, @NonNull Vector4fc color) {
+    public Player(@NonNull World world, @NonNull PlayerInfo player_info, @NonNull Color color) {
         this.world = world;
-        this.color = color;
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         Arrays.fill(can_do_magic, true);
         Arrays.fill(can_build, true);
         this.player_info = player_info;
@@ -377,7 +377,7 @@ public final class Player implements PlayerInterface {
         return training_chieftain;
     }
 
-    public @NonNull Vector4fc getColor() {
+    public @NonNull Color getColor() {
         return color;
     }
 

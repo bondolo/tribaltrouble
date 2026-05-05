@@ -24,7 +24,7 @@ import com.oddlabs.tt.player.campaign.CampaignState;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
-import org.joml.Vector4f;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
@@ -32,14 +32,15 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 /**
- * presents campaign map allowing island selection
+ * Presents the campaign map UI, allowing the player to select available islands,
+ * view progress, and navigate the campaign story.
  */
 public final class CampaignMapForm extends CameraDelegate<StaticCamera> implements Animated {
     private static final float BASE_WIDTH = 800f;
     private static final float BASE_HEIGHT = 600f;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignMapForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -52,7 +53,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     private boolean initialFocusSet = false;
 
     private float flicker_time;
-    private final Vector4f mapColor = new Vector4f(1f, 1f, 1f, 1f);
+    private final Color.Linear mapColor = new Color.Linear(Color.WHITE_LINEAR);
 
     public CampaignMapForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Campaign campaign) {
         super(gui_root, new StaticCamera(new CameraState()));
@@ -279,7 +280,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
 
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
-        renderer.drawIcon(campaign.getIcons().getMap(), 0f, 0f, mapColor);
+        renderer.drawIcon(campaign.getIcons().getMap(), 0f, 0f, Color.WHITE_LINEAR);
     }
 
     @Override
@@ -297,16 +298,31 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     @Override
     public void animate(float t) {
         flicker_time += t;
-        float flicker = 0.9f + (float) (0.0375 * Math.sin(flicker_time * 4.5) + 0.0375 * Math.sin(flicker_time * 10.35));
-        mapColor.set(flicker, flicker, flicker, 1f);
+        
+        // Multi-frequency wave for organic flickering (simulating an oil lamp).
+        float n1 = (float) Math.sin(flicker_time * 1.8);
+        float n2 = (float) Math.sin(flicker_time * 4.7);
+        float n3 = (float) Math.sin(flicker_time * 9.3);
+        
+        float noise = n1 * 0.4f + n2 * 0.4f + n3 * 0.2f;
+        
+        // Base linear factor 0.9 (approx 0.95 sRGB) with +/- 10% swing.
+        // This avoids blowing out the bright map center while maintaining visible flicker.
+        float factor = 0.9f + noise * 0.10f;
+        mapColor.set(factor, factor, factor, 1f);
     }
 
     @Override
     protected void render(@NonNull GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom, float clip_top) {
         renderer.getMatrixStack().push();
         renderer.getMatrixStack().scale(scale_x, scale_y, 1f);
-        super.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
-        renderer.getMatrixStack().pop();
+        renderer.pushModulation(mapColor);
+        try {
+            super.render(renderer, clip_left, clip_right, clip_bottom, clip_top);
+        } finally {
+            renderer.popModulation();
+            renderer.getMatrixStack().pop();
+        }
     }
 
     @Override

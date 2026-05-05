@@ -27,7 +27,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
-import java.util.List;
+import java.util.Collection;
 import java.util.Random;
 
 /**
@@ -92,7 +92,7 @@ public final class Water implements AutoCloseable {
     }
 
 
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull List<LandscapeLeaf> visiblePatches) {
+    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull Collection<@NonNull LandscapeLeaf> visiblePatches) {
         updateAnimation();
 
         try (var _ = waterShader.use();
@@ -102,7 +102,7 @@ public final class Water implements AutoCloseable {
 
             context.setBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-            waterShader.setUniformMatrix4(WaterShader.Uniforms.MODEL_VIEW_MATRIX, false, modelViewStack.current());
+            waterShader.setUniform(WaterShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
             waterShader.setUniform(WaterShader.Uniforms.SCROLL_OFFSET_0, scrollOffset0[0], scrollOffset0[1]);
             waterShader.setUniform(WaterShader.Uniforms.SCROLL_OFFSET_1, scrollOffset1[0], scrollOffset1[1]);

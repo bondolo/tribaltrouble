@@ -12,6 +12,7 @@ import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.VertexArray;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
@@ -92,7 +93,7 @@ public final class EmitterRenderer implements AutoCloseable {
              var _ = context.withBlendMode(BlendMode.ALPHA);
              var _ = context.withDepthMode(DepthMode.READ_ONLY)) {
 
-            shader.setUniformMatrix4(ParticleShader.Uniforms.MODEL_VIEW_MATRIX, false, modelViewStack.current());
+            shader.setUniform(ParticleShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
             context.setActiveTexture(0);
             shader.setUniform(ParticleShader.Uniforms.TEXTURE_0, 0);
@@ -121,7 +122,14 @@ public final class EmitterRenderer implements AutoCloseable {
     private <P extends Particle> void renderParticle(@NonNull P particle, @NonNull Emitter<P> emitter) {
         particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
         particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter.getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
-        particle_buffer.put(particle.getColorR()).put(particle.getColorG()).put(particle.getColorB()).put(Math.min(particle.getColorA(), 1.0f)); // Color
+
+        var color = particle.getColor();
+        var alpha = Math.min(color.w(), 1.0f);
+        var linearColor = color instanceof Color.Linear linear
+            ? linear
+            : new Color.Linear(Color.toLinear(color.x()), Color.toLinear(color.y()), Color.toLinear(color.z()), 0f);
+        particle_buffer.put(linearColor.x).put(linearColor.y).put(linearColor.z).put(alpha);
+
         // UV Info 1: u1, v1, u2, v2
         particle_buffer.put(particle.getU1()).put(particle.getV1()).put(particle.getU2()).put(particle.getV2());
         // UV Info 2: u3, v3, u4, v4

@@ -1877,4 +1877,11 @@ public final class Channel {
         }
         return this;
     }
+
+    public @NonNull Channel toLinear() {
+        for (int i = 0; i < pixels.length; i++) {
+            pixels[i] = com.oddlabs.util.Color.toLinear(pixels[i]);
+        }
+        return this;
+    }
 }

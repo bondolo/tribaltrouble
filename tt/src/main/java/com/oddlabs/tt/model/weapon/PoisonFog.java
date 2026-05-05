@@ -10,8 +10,8 @@ import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
@@ -90,7 +90,7 @@ public final class PoisonFog implements Magic {
                     BURST_RADIUS, 0f, 0f, 0f,
                     PARTICLES_PER_BURST, PARTICLES_PER_BURST,
                     new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f),
-                    new Vector4f(1f, 1f, 1f, alpha), new Vector4f(0f, 0f, 0f, -alpha / energy),
+                    new Color.Standard(1f, 1f, 1f, alpha), new Color.Standard(0f, 0f, 0f, -alpha / energy),
                     new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                     owner.getWorld().getRacesResources().getPoisonTextures());

@@ -5,11 +5,10 @@ import com.oddlabs.tt.particle.Particle;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 final class ParticleModelState implements ModelState<Particle> {
-    private static final Vector4fc NO_SELECTION = Color.TRANSPARENT;
+    private static final Color NO_SELECTION = Color.TRANSPARENT_LINEAR;
     private final @NonNull Particle particle;
     private final @NonNull Matrix4fc viewMatrix;
 
@@ -24,12 +23,12 @@ final class ParticleModelState implements ModelState<Particle> {
     }
 
     @Override
-    public @NonNull Vector4fc getTeamColor() {
+    public @NonNull Color getTeamColor() {
         return particle.getColor();
     }
 
     @Override
-    public @NonNull Vector4fc getSelectionColor() {
+    public @NonNull Color getSelectionColor() {
         return NO_SELECTION;
     }
 
@@ -39,7 +38,7 @@ final class ParticleModelState implements ModelState<Particle> {
     }
 
     @Override
-    public @NonNull Vector4fc getColor() {
+    public @NonNull Color getColor() {
         return particle.getColor();
     }
 

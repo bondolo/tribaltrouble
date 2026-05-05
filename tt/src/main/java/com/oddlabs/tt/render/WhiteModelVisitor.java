@@ -4,7 +4,6 @@ import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -12,16 +11,14 @@ import org.jspecify.annotations.NonNull;
  * Used as a base for custom visitors or for temporary visual effects.
  */
 class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
-    private static final @NonNull Vector4fc COLOR_TEAM = Color.WHITE;
-
     @Override
-    public @NonNull Vector4fc getSelectionColor(@NonNull ElementRenderState<M> render_state) {
-        return COLOR_TEAM;
+    public @NonNull Color getSelectionColor(@NonNull ElementRenderState<M> render_state) {
+        return Color.WHITE_LINEAR;
     }
 
     @Override
-    public @NonNull Vector4fc getTeamColor(@NonNull ElementRenderState<M> render_state) {
-        return COLOR_TEAM;
+    public @NonNull Color getTeamColor(@NonNull ElementRenderState<M> render_state) {
+        return Color.WHITE_LINEAR;
     }
 
     @Override

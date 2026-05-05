@@ -27,8 +27,8 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -422,7 +422,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
                 velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
                 num_particles, 0f, 2f,
-                new Vector4f(1f, 1f, 1f, 1f), new Vector4f(0f, 0f, 0f, 0f),
+                Color.WHITE, Color.BLACK,
                 new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), time,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, getOwner().getWorld().getRacesResources().getStarTextures());
 

@@ -2,6 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.render.shader.PostProcessShader;
+import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
@@ -11,19 +12,24 @@ import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL40;
 
 import java.nio.FloatBuffer;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 /**
  * Manages the full-screen post-processing pipeline.
  * Handles rendering the scene to an FBO and applying effects via PostProcessShader.
  */
 public final class PostProcessor implements AutoCloseable {
+    private static final Logger logger = Logger.getLogger(PostProcessor.class.getSimpleName());
+
     private final @NonNull PostProcessShader shader;
     private final @NonNull VertexArray vao;
     private final @NonNull FloatVBO quadVBO;
@@ -49,7 +55,7 @@ public final class PostProcessor implements AutoCloseable {
         this.depthCopyFBO.checkStatus();
         this.depthCopyFBO.unbind();
 
-        // Setup Full Screen Quad
+        // Setup Full-Screen Quad
         this.vao = new VertexArray();
         this.vao.bind();
 
@@ -100,43 +106,44 @@ public final class PostProcessor implements AutoCloseable {
         sceneFBO.bind(context);
     }
 
-    public void bindSceneFBO() {
-        sceneFBO.bind();
-    }
-
     public void unbindSceneFBO(@NonNull RenderContext context) {
-        sceneFBO.unbind(); // unbind already uses Renderer context
-    }
-
-    public void unbindSceneFBO() {
-        sceneFBO.unbind();
+        sceneFBO.unbind(context);
     }
 
     public void renderComposite(@NonNull RenderContext context, @NonNull Consumer<@NonNull RenderContext> guiRenderCallback) {
         // 1. Render GUI into the Scene FBO (on top of the 3D scene)
         bindSceneFBO(context);
 
-        // Use glBlendFunci to set different blend modes for different draw buffers.
-        // Buffer 0 (Color): GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
-        // Buffer 1 (Mask): GL_ONE, GL_ZERO (Overwrite)
-        GL40.glBlendFunci(0, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL40.glBlendFunci(1, GL11.GL_ONE, GL11.GL_ZERO);
+        // Ensure blending is enabled for the GUI pass.
+        // Buffer 0 (Color): GL_ONE, GL_ONE_MINUS_SRC_ALPHA (Premultiplied Linear)
+        // Buffer 1 (Mask): Wipes unit color proportionally and uses MAX for the marker alpha.
+        try (var _ = context.withBlendMode(BlendMode.CUSTOM)) {
+            context.setBlend(true);
+            GL40.glBlendFunci(0, GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            
+            // Mask RGB: Wipe background unit color as GUI becomes opaque
+            // Mask Alpha: Use MAX to prevent marker (0.5) from accumulating to 1.0
+            GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_MAX);
+            GL40.glBlendFunci(1, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-        guiRenderCallback.accept(context);
-
-        // Restore global blend state across all buffers
-        context.resetBlendFunc();
+            guiRenderCallback.accept(context);
+            
+            // Explicitly reset per-buffer state to prevent leaking into next pass/frame
+            GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_FUNC_ADD);
+            GL20.glDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+        }
 
         unbindSceneFBO(context);
 
         // 2. Composite the FBO to the screen with Post-Processing (CVD, High Contrast, Team Stencil)
-        // Render to default framebuffer (screen)
+        // Render to the default framebuffer (screen)
         context.bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
         context.setViewport(0, 0, currentWidth, currentHeight);
         context.setDrawBuffers(false); // Ensure only back buffer is active for FBO 0
         context.clear(true, true);
 
         try (var _ = shader.use();
+             var _ = context.withBlendMode(BlendMode.NONE);
              var _ = context.withDepthMode(DepthMode.NONE);
              var _ = context.withCullMode(CullMode.NONE)) {
 

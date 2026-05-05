@@ -7,7 +7,6 @@ import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.Network;
 import com.oddlabs.util.Color;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
@@ -15,12 +14,12 @@ import java.util.List;
 
 public final class InfoPrinter extends GUIObject implements Animated, ChatListener {
     private static final float SECONDS_PER_TIMEOUT = 8f;
-    private static final Vector4fc PRIVATE_COLOR = Color.argb4v(0xFF_33_66_FF);
-    private static final Vector4fc TEAM_COLOR = Color.argb4v(0xFF_4C_7F_FF);
+    private static final Color PRIVATE_COLOR = new Color.Linear(Color.argb4v(0xFF_33_66_FF));
+    private static final Color TEAM_COLOR = new Color.Linear(Color.argb4v(0xFF_4C_7F_FF));
 
     private final @NonNull Font font;
     private final List<@NonNull LabelBox> history = new ArrayList<>();
-    private final List<Float> timers = new ArrayList<>();
+    private final List<@NonNull Float> timers = new ArrayList<>();
     private final int lines;
     private final @NonNull GUIRoot gui_root;
 
@@ -73,10 +72,10 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
     }
 
     public void print(@NonNull String text) {
-        print(text, Color.TRANSPARENT);
+        print(text, Color.TRANSPARENT_LINEAR);
     }
 
-    public void print(@NonNull String text, @NonNull Vector4fc color) {
+    public void print(@NonNull String text, @NonNull Color color) {
         int width = Math.min(font.getWidth(text), getWidth());
         LabelBox label_box = new BackgroundLabelBox(text, font, width);
         if (color.w() > .2f)

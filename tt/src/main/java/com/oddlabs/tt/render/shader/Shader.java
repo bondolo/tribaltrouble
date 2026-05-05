@@ -1,8 +1,8 @@
 package com.oddlabs.tt.render.shader;
 
+import com.oddlabs.util.Color;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.NonNull;
-
-import java.nio.FloatBuffer;
 
 public interface Shader {
     // Standard Attribute Locations
@@ -26,9 +26,6 @@ public interface Shader {
             layout(std140) uniform GlobalState {
                 mat4 u_projectionMatrix;
                 mat4 u_viewMatrix;
-                vec3 u_lightDirection;
-                vec3 u_globalAmbient;
-                vec3 u_groundAmbient;
                 vec4 u_fogColor;
                 vec3 u_fogParams;
                 float u_cameraHeight;
@@ -40,16 +37,16 @@ public interface Shader {
 
     String COLOR_SPACE_FUNCTIONS = """
             vec3 toLinear(vec3 srgb) {
-                return pow(srgb, vec3(2.2));
+                return mix(srgb / 12.92, pow((srgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), srgb));
             }
             vec4 toLinear(vec4 srgb) {
-                return vec4(pow(srgb.rgb, vec3(2.2)), srgb.a);
+                return vec4(toLinear(srgb.rgb), srgb.a);
             }
             vec3 toSRGB(vec3 linear) {
-                return pow(linear, vec3(1.0 / 2.2));
+                return mix(linear * 12.92, 1.055 * pow(linear, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), linear));
             }
             vec4 toSRGB(vec4 linear) {
-                return vec4(pow(linear.rgb, vec3(1.0 / 2.2)), linear.a);
+                return vec4(toSRGB(linear.rgb), linear.a);
             }
             """;
 
@@ -69,10 +66,14 @@ public interface Shader {
 
     void setUniform(@NonNull String name, float x, float y, float z);
 
-    void setUniform(@NonNull String name, float x, float y, float z, float w);
+    /** set the named uniform to the specified color.
+     *
+     * @param color should be in linear space but is converted if necessary
+     */
+    void setUniform(@NonNull String name, @NonNull Color color);
 
-    void setUniform(@NonNull String name, float @NonNull [] value);
+    void setUniform(@NonNull String name, @NonNull Matrix4fc matrix);
 
-    void setUniformMatrix4(@NonNull String name, boolean transpose, @NonNull FloatBuffer matrix);
+    void setUniform(@NonNull String name, boolean transpose, @NonNull Matrix4fc matrix);
 }
 

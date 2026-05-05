@@ -4,19 +4,17 @@ import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.font.TextLineRenderer;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 /** A GUI object that is used to provide a text label another GUI object. */
 public class Label extends TextField implements Comparable<Label> {
-    public static final Vector4fc DEFAULT_COLOR = Color.WHITE;
-    public static final Vector4fc DISABLED_COLOR = Color.argb4v(0xB2_B2_B2_B2);
+    public static final Color DEFAULT_COLOR = Color.WHITE_LINEAR;
+    public static final Color DISABLED_COLOR = new Color.Linear(Color.argb4v(0xB2_B2_B2_B2));
     private static final int INSET = 2;
 
     private final @NonNull Origin align;
 
-    private final Vector4f color = new Vector4f(DEFAULT_COLOR);
+    private @NonNull Color color = DEFAULT_COLOR;
 
     public Label(@NonNull CharSequence text, @NonNull Font font) {
         this(text, font, font.getWidth(text), Origin.AT_START);
@@ -32,12 +30,12 @@ public class Label extends TextField implements Comparable<Label> {
         setDim(width, font.getHeight());
     }
 
-    public final @NonNull Label setColor(@NonNull Vector4fc color) {
-        this.color.set(color);
+    public final @NonNull Label setColor(@NonNull Color color) {
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         return this;
     }
 
-    public @NonNull Vector4fc getColor() {
+    public @NonNull Color getColor() {
         return color;
     }
 

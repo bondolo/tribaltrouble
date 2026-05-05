@@ -7,7 +7,9 @@ import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.UIRenderer;
+import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.RenderContext;
+import com.oddlabs.tt.render.state.ScopedState;
 import com.oddlabs.tt.viewer.AmbientAudio;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -17,15 +19,13 @@ import org.jspecify.annotations.Nullable;
  * Container for the 2D user interface
  */
 public final class GUI implements Animated {
-    private final @NonNull GUIRenderer guiRenderer;
-    private @NonNull GUIRoot current_root;
+    private final GUIRenderer guiRenderer = new GUIRenderer();
+    private @NonNull GUIRoot current_root = createRoot();
     private @Nullable Fade fade;
     private @Nullable UIRenderer renderer;
     private final CameraState frustum_state = new CameraState();
 
     public GUI() {
-        this.guiRenderer = new GUIRenderer();
-        this.current_root = createRoot();
     }
 
     public @NonNull GUIRoot newFade() {
@@ -76,6 +76,10 @@ public final class GUI implements Animated {
         return fade;
     }
 
+    public @Nullable UIRenderer getRenderer() {
+        return renderer;
+    }
+
     public void render(@NonNull AmbientAudio ambient) {
         Matrix4f proj = new Matrix4f();
         Matrix4f modelView = new Matrix4f();
@@ -93,16 +97,16 @@ public final class GUI implements Animated {
             frustum_state.set(camera);
         }
 
-        if (renderer != null) {
+        if (renderer != null && !renderer.isClosed()) {
             renderer.startFrame(context);
         } else {
             context.clear(true, true);
         }
 
-        if (renderer != null)
+        if (renderer != null && !renderer.isClosed())
             renderer.render(context, ambient, frustum_state, current_root);
 
-        if (renderer != null) {
+        if (renderer != null && !renderer.isClosed()) {
             renderer.endFrame(context, this::renderGUI);
         } else {
             renderGUI(context);
@@ -121,9 +125,16 @@ public final class GUI implements Animated {
 
     private void renderGUI(@NonNull RenderContext context) {
         GUIRoot guiRoot = getGUIRoot();
-        guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
-            guiRoot.render(guiRenderer);
-            guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null && renderer.isCheater());
-        });
+        boolean outputSRGB = renderer == null || renderer.isClosed();
+        
+        // If we are rendering directly to the back buffer (e.g. loading screen),
+        // we must set the correct blend mode here. 
+        // During gameplay, PostProcessor.renderComposite sets per-buffer blend modes.
+        try (var _ = outputSRGB ? context.withBlendMode(BlendMode.PREMULTIPLIED) : (ScopedState) () -> {}) {
+            guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), outputSRGB, () -> {
+                guiRoot.render(guiRenderer);
+                guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null && renderer.isCheater());
+            });
+        }
     }
 }

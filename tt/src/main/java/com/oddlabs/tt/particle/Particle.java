@@ -3,6 +3,7 @@ package com.oddlabs.tt.particle;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -20,8 +21,8 @@ public class Particle extends Model {
     private final float v4;
 
     private final Vector3f position = new Vector3f();
-    private final Vector4f color = new Vector4f();
-    private final Vector4f deltaColor = new Vector4f();
+    private final Color.Linear color = new Color.Linear();
+    private final Color.Linear deltaColor = new Color.Linear();
     private final Vector3f growthRate = new Vector3f();
     private final Vector3f radius = new Vector3f();
 
@@ -115,11 +116,16 @@ public class Particle extends Model {
         return position.z();
     }
 
+    final void setColor(@NonNull Color color) {
+        this.color.set(color);
+    }
+
+    /** The provided color is assumed to be linear. */
     final void setColor(float r, float g, float b, float a) {
         color.set(r, g, b, a);
     }
 
-    public final @NonNull Vector4f getColor() {
+    public final @NonNull Color getColor() {
         return color;
     }
 
@@ -139,24 +145,12 @@ public class Particle extends Model {
         return color.w();
     }
 
-    public final void setDeltaColor(float r, float g, float b, float a) {
-        deltaColor.set(r, g, b, a);
+    public final @NonNull Color getDeltaColor() {
+        return deltaColor;
     }
 
-    public final float getDeltaColorR() {
-        return deltaColor.x();
-    }
-
-    public final float getDeltaColorG() {
-        return deltaColor.y();
-    }
-
-    public final float getDeltaColorB() {
-        return deltaColor.z();
-    }
-
-    public final float getDeltaColorA() {
-        return deltaColor.w();
+    public final void setDeltaColor(@NonNull Color color) {
+        deltaColor.set(color);
     }
 
     public final void setEnergy(float energy) {

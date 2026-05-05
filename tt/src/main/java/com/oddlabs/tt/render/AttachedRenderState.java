@@ -4,8 +4,8 @@ import com.oddlabs.tt.model.AccessorizableModel;
 import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -32,17 +32,17 @@ final class AttachedRenderState implements ModelState<Model> {
     }
 
     @Override
-    public @NonNull Vector4fc getTeamColor() {
+    public @NonNull Color getTeamColor() {
         return parentState.getTeamColor();
     }
 
     @Override
-    public @NonNull Vector4fc getSelectionColor() {
+    public @NonNull Color getSelectionColor() {
         return parentState.getSelectionColor();
     }
 
     @Override
-    public @NonNull Vector4fc getColor() {
+    public @NonNull Color getColor() {
         return parentState.getColor();
     }
 

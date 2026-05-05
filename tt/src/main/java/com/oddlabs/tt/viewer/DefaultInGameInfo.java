@@ -14,8 +14,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
@@ -23,7 +22,6 @@ import java.util.ResourceBundle;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
-
 public class DefaultInGameInfo implements InGameInfo {
     private static final ResourceBundle terrain_menu_bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
     private boolean replay_island_flag;
@@ -90,7 +88,7 @@ public class DefaultInGameInfo implements InGameInfo {
         for (Player player : players) {
             PlayerInfo player_info = player.getPlayerInfo();
             var color_floats = player.getColor();
-            Vector4fc color = viewer.getPeerHub().isAlive(player) ? color_floats : new Vector4f(color_floats.x(), color_floats.y(), color_floats.z(), .25f);
+            Color color = viewer.getPeerHub().isAlive(player) ? color_floats : new Color.Standard(color_floats.x(), color_floats.y(), color_floats.z(), .25f);
             Label name = new Label(player_info.getName(), Skin.getSkin().getHeadlineFont())
                     .setColor(color);
             String race_str = RacesResources.getRaceName(player_info.getRace());

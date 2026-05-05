@@ -3,8 +3,6 @@ package com.oddlabs.tt.global;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
@@ -23,6 +21,9 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Manages the user's global game settings, persisting them to a file.
+ */
 public final class Settings implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -31,6 +32,16 @@ public final class Settings implements Serializable {
 
     // event logging
     private static final Logger logger = Logger.getLogger(Settings.class.getName());
+
+    public static final Color[] DEFAULT_TEAM_COLOURS = {
+            Color.argb4v(0xFFFFBF00), /* Orange */
+            Color.argb4v(0xFF007FFF), /* Royal Blue */
+            Color.argb4v(0xFFFF0040), /* Red */
+            Color.argb4v(0xFF00FFBF), /* Teal */
+            Color.argb4v(0xFFBF00FF), /* Purple */
+            Color.argb4v(0xFFBFFF00) /* Lime */
+    };
+
     public transient @NonNull Path last_event_log_dir = Path.of("");
     public int last_revision = -1;
     public boolean crashed = false;
@@ -95,21 +106,21 @@ public final class Settings implements Serializable {
     public float contrast_intensity = 0.5f;
     public boolean team_stencil = false;
 
-    public static final Vector4f[] DEFAULT_TEAM_COLOURS = {
-            Color.argb4v(0xFFFFBF00), /* Orange */
-            Color.argb4v(0xFF007FFF), /* Royal Blue */
-            Color.argb4v(0xFFFF0040), /* Red */
-            Color.argb4v(0xFF00FFBF), /* Teal */
-            Color.argb4v(0xFFBF00FF), /* Purple */
-            Color.argb4v(0xFFBFFF00) /* Lime */
-    };
+    public Color @NonNull [] team_colours = Arrays.stream(DEFAULT_TEAM_COLOURS)
+            .map(Color.Standard::new)
+            .toArray(Color[]::new);
 
-    public Vector4f @NonNull [] team_colours = new Vector4f[DEFAULT_TEAM_COLOURS.length];
+    public transient Color.Linear @NonNull [] linear_team_colours = Arrays.stream(team_colours)
+            .map(Color.Linear::new)
+            .toArray(Color.Linear[]::new);
 
     public Settings() {
-        for (int i = 0; i < DEFAULT_TEAM_COLOURS.length; i++) {
-            team_colours[i] = new Vector4f(DEFAULT_TEAM_COLOURS[i]);
-        }
+    }
+
+    public void updateLinearColors() {
+        linear_team_colours = Arrays.stream(team_colours)
+                .map(Color.Linear::new)
+                .toArray(Color.Linear[]::new);
     }
 
     public static void setSettings(Settings new_settings) {
@@ -226,6 +237,7 @@ public final class Settings implements Serializable {
         contrast_intensity = getFloat(props, "contrast_intensity", contrast_intensity);
         team_stencil = getBoolean(props, "team_stencil", team_stencil);
         team_colours = getColours(props, "team_colours", team_colours);
+        updateLinearColors();
 
         Renderer.getLocalInput().getInputManager().loadBindings(props);
     }
@@ -261,7 +273,7 @@ public final class Settings implements Serializable {
         }
     }
 
-    private void setProperty(@NonNull Properties props, @NonNull String key, @NonNull Vector4fc @NonNull [] value, @NonNull Vector4fc @NonNull [] defaultValue) {
+    private void setProperty(@NonNull Properties props, @NonNull String key, @NonNull Color @NonNull [] value, @NonNull Color @NonNull [] defaultValue) {
         if (!Arrays.equals(value, defaultValue)) {
             String colors = Arrays.stream(value)
                     .mapToInt(Color::argbi)
@@ -321,21 +333,26 @@ public final class Settings implements Serializable {
         }
     }
 
-    private static Vector4f @NonNull [] getColours(@NonNull Properties props, @NonNull String key, Vector4f @NonNull [] defaultValue) {
+    private static @NonNull Color @NonNull [] getColours(@NonNull Properties props, @NonNull String key, @NonNull Color @NonNull [] defaultValue) {
         String value = props.getProperty(key);
         if (value == null) {
             return defaultValue;
         }
         try {
             String[] hexStrings = value.split(",");
-            Vector4f[] result = new Vector4f[DEFAULT_TEAM_COLOURS.length];
-            for (int i = 0; i < DEFAULT_TEAM_COLOURS.length; i++) {
-                result[i] = new Vector4f(DEFAULT_TEAM_COLOURS[i]);
-            }
-            for (int i = 0; i < Math.min(DEFAULT_TEAM_COLOURS.length, hexStrings.length); i++) {
-                int argb = (int) Long.parseLong(hexStrings[i], 16);
-                result[i] = Color.argb4v(argb);
-            }
+            Color[] result = new Color[DEFAULT_TEAM_COLOURS.length];
+            Arrays.setAll(result, i -> {
+                if (i < hexStrings.length) {
+                    try {
+                        int argb = (int) Long.parseLong(hexStrings[i], 16);
+                        return Color.argb4v(argb);
+                    } catch (NumberFormatException _) {
+                        // ignore invalid color constants
+                    }
+                }
+                return new Color.Standard(DEFAULT_TEAM_COLOURS[i]);
+            });
+
             return result;
         } catch (Exception e) {
             logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value. Error: " + e);

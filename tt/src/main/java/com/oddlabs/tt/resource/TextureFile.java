@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.EXTTextureCompressionS3TC;
 import org.lwjgl.opengl.EXTTextureSRGB;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL21;
 
 import java.io.IOException;
@@ -97,7 +98,7 @@ public final class TextureFile extends File<Texture> {
     }
 
     public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t, int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data) {
-        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level, fadeout_factor, max_alpha, is_data, false);
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level, fadeout_factor, max_alpha, is_data, !is_data);
     }
 
     public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t, int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data, boolean is_srgb) {
@@ -176,6 +177,7 @@ public final class TextureFile extends File<Texture> {
                 super.equals(o);
     }
 
+
     public int getInternalFormat() {
         if (is_dxt) {
             return switch (getDXTImage().getFourCC()) {
@@ -192,6 +194,8 @@ public final class TextureFile extends File<Texture> {
         if (is_srgb && !is_data) {
             if (internal_format == GL11.GL_RGB || internal_format == GL11.GL_RGB8) return GL21.GL_SRGB8;
             if (internal_format == GL11.GL_RGBA || internal_format == GL11.GL_RGBA8) return GL21.GL_SRGB8_ALPHA8;
+            if (internal_format == GL13.GL_COMPRESSED_RGB) return EXTTextureSRGB.GL_COMPRESSED_SRGB_EXT;
+            if (internal_format == GL13.GL_COMPRESSED_RGBA) return EXTTextureSRGB.GL_COMPRESSED_SRGB_ALPHA_EXT;
         }
         
         return internal_format;

@@ -96,7 +96,7 @@ final class SpriteListRenderer {
                 // Let's assume No Depth Write for overlays is safer.
                 instancedSpriteRenderer.add(sprite_list, index, model.getModel().getAnimation(),
                         model.getModel().getAnimationTicks(), tex_index, true, true, false, true,
-                        model.getTransform(tempMatrix), Color.WHITE, Color.WHITE);
+                        model.getTransform(tempMatrix), Color.WHITE_LINEAR, Color.WHITE_LINEAR);
             }
             render_list.clear();
         }

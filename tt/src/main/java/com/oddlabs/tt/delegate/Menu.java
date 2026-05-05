@@ -33,22 +33,25 @@ import com.oddlabs.tt.viewer.InGameInfo;
 import com.oddlabs.tt.viewer.MultiplayerInGameInfo;
 import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.util.Color;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.util.ResourceBundle;
 
+/**
+ * Base class for full-screen menus in the game, such as the main menu or the in-game escape menu.
+ * It provides common UI elements like the background logo and layout helpers for menu buttons.
+ */
 public abstract class Menu extends CameraDelegate<Camera> {
-    static final Vector4fc COLOR_NORMAL = Color.WHITE;
-    static final Vector4fc COLOR_ACTIVE = Color.argb4v(0xFF_FF_CC_9F);
+    static final Color COLOR_NORMAL = Color.WHITE;
+    static final Color COLOR_ACTIVE = Color.argb4v(0xFF_FF_CC_9F);
     private static final int MENU_X = 160;
-    private static final int overlay_texture_width = 1024;
-    private static final int overlay_texture_height = 1024;
-    private static final int overlay_image_width = 800;
-    private static final int overlay_image_height = 600;
-    private static final String overlay_texture_name = "/textures/gui/mainmenu";
+    private static final int OVERLAY_TEXTURE_WIDTH = 1024;
+    private static final int OVERLAY_TEXTURE_HEIGHT = 1024;
+    private static final int OVERLAY_IMAGE_WIDTH = 800;
+    private static final int OVERLAY_IMAGE_HEIGHT = 600;
+    private static final String OVERLAY_TEXTURE_NAME = "/textures/gui/mainmenu";
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(MainMenu.class.getName());
 
@@ -79,7 +82,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         clearChildren();
         int screen_width = getGUIRoot().getWidth();
         int screen_height = getGUIRoot().getHeight();
-        overlay = new GUIImage(screen_width, screen_height, 0f, 0f, (float) overlay_image_width / overlay_texture_width, (float) overlay_image_height / overlay_texture_height, overlay_texture_name);
+        overlay = new GUIImage(screen_width, screen_height, 0f, 0f, (float) OVERLAY_IMAGE_WIDTH / OVERLAY_TEXTURE_WIDTH, (float) OVERLAY_IMAGE_HEIGHT / OVERLAY_TEXTURE_HEIGHT, OVERLAY_TEXTURE_NAME);
         overlay.setPos(0, 0);
         addChild(overlay);
 
@@ -155,7 +158,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     public void displayChangedNotify(int width, int height) {
         setDim(width, height);
 
-        int y = height - (int) (190f * height / overlay_image_height);
+        int y = height - (int) (190f * height / OVERLAY_IMAGE_HEIGHT);
         int x = 15;
 
         overlay.setDim(width, height);

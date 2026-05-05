@@ -11,8 +11,8 @@ import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.VertexArray;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -24,18 +24,17 @@ import java.util.Queue;
  * Specialized renderer for the Sonic Blast expanding ring effect.
  */
 public final class SonicBlastRenderer implements AutoCloseable {
+    private static final Color.Linear BLAST_COLOR = new Color.Linear(new Color.Standard(0.7f, 0.85f, 1.0f, 1.0f));
     private static final VertexLayout<SonicBlastShader.Attribute> LAYOUT = new VertexLayout<>(
             SonicBlastShader.Attribute.POSITION,
             SonicBlastShader.Attribute.TEX_COORD
     );
-    private final @NonNull SonicBlastShader shader;
+    private final @NonNull SonicBlastShader shader = new SonicBlastShader();
     private final @NonNull FloatVBO vbo;
     private final VertexArray vao = new VertexArray();
     private final @NonNull Texture[] noiseTextures;
 
     public SonicBlastRenderer() {
-        this.shader = new SonicBlastShader();
-
         // Create a simple quad centered at 0,0 on XY plane, scaled to 1x1
         FloatBuffer buffer = BufferUtils.createFloatBuffer(4 * 5); // 4 verts * (3 pos + 2 uv)
         float s = 0.5f;
@@ -65,7 +64,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
              var _ = context.withDepthMode(DepthMode.NONE);
              var _ = context.withCullMode(CullMode.NONE)) {
 
-            shader.setUniform(SonicBlastShader.Uniforms.COLOR, 0.7f, 0.85f, 1.0f); // Electric blue/white
+            shader.setUniformColor3(SonicBlastShader.Uniforms.COLOR, BLAST_COLOR);
 
             // Bind generated noise texture for ring turbulence
             context.setTexture(0, noiseTextures[0].getHandle());
@@ -89,7 +88,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
                 modelViewStack.translate(x, y, z);
                 modelViewStack.scale(r, r, 1.0f);
 
-                shader.setUniformMatrix4(SonicBlastShader.Uniforms.MODEL_VIEW_MATRIX, false, modelViewStack.current());
+                shader.setUniform(SonicBlastShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
                 shader.setUniform(SonicBlastShader.Uniforms.TIME, effect.getTime());
                 shader.setUniform(SonicBlastShader.Uniforms.MAX_RADIUS, visualRadius);
                 shader.setUniform(SonicBlastShader.Uniforms.EXPANSION_SPEED, visualRadius / Math.max(effect.getDuration(), 0.001f));

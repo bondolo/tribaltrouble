@@ -9,8 +9,7 @@ import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.RenderQueues;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -19,7 +18,7 @@ import org.jspecify.annotations.NonNull;
  * in both 2D and 3D rendering passes.
  */
 public abstract class Delegate extends GUIObject {
-    private static final Vector4fc BACKGROUND_ALPHA = new Vector4f(0f, 0f, 0f, .3f);
+    private static final Color BACKGROUND_ALPHA = new Color.Standard(0f, 0f, 0f, .3f);
 
     Delegate() {
         setPos(0, 0);

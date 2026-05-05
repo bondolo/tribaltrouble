@@ -18,7 +18,6 @@ import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.vbo.FloatVBO;
-import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -37,13 +36,11 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     private final List<@NonNull LandscapeLeaf> render_list = new ArrayList<>();
     private final @NonNull World world;
     private final @NonNull Texture diffuseMap;
-    private final @NonNull Texture normalMap;
     private final @NonNull Texture detailMap;
-    private final @NonNull PatchMesh patchMesh;
+    private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
-    private final Vector4f lightDir = new Vector4f();
     private @NonNull FloatVBO instanceVBO;
-    private @NonNull FloatBuffer instanceBuffer;
+    private FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
 
     public @NonNull LandscapeShader getShader() {
         return shader;
@@ -52,16 +49,13 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     public LandscapeRenderer(@NonNull World world, @NonNull WorldInfo world_info, @NonNull AnimationManager manager) {
         this.world = world;
         this.diffuseMap = world_info.maps().diffuse();
-        this.normalMap = world_info.maps().normal();
         this.detailMap = world_info.detail();
-        this.patchMesh = new PatchMesh();
         this.instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2); // Initial capacity
-        this.instanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
 
         manager.registerAnimation(this);
     }
 
-    public @NonNull List<@NonNull LandscapeLeaf> getVisiblePatches() {
+    public @NonNull Collection<@NonNull LandscapeLeaf> getVisiblePatches() {
         return render_list;
     }
 
@@ -114,9 +108,6 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
 
             context.setTexture(0, diffuseMap);
             shader.setUniform(LandscapeShader.Uniforms.DIFFUSE_MAP, 0);
-
-            context.setTexture(1, normalMap);
-            shader.setUniform(LandscapeShader.Uniforms.NORMAL_MAP, 1);
 
             context.setTexture(2, detailMap);
             shader.setUniform(LandscapeShader.Uniforms.DETAIL_MAP, 2);

@@ -74,6 +74,7 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
                     #version 410 core
                     """ +
                     GLOBAL_STATE_BLOCK +
+                    LIGHTING_CONSTANTS +
                     VERTEX_LIGHTING_FUNCTION +
                     """
                             layout(location = 0) in vec3 in_Position;
@@ -142,8 +143,8 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
                             	    discard;
                             	}
                             
-                                      float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                            	out_FragColor = vec4(mix(u_fogColor.rgb, color.rgb, fogFactor), color.a);
+                                float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                                out_FragColor = vec4(mix(u_fogColor.rgb, color.rgb, fogFactor), color.a);
                             }
                             """;
 

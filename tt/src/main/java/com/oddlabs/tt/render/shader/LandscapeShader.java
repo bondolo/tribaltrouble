@@ -7,12 +7,9 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
         String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         String HEIGHT_MAP = "u_HeightMap";
         String DIFFUSE_MAP = "u_DiffuseMap";
-        String NORMAL_MAP = "u_NormalMap";
         String DETAIL_MAP = "u_DetailMap";
         String WORLD_SIZE = "u_WorldSize";
         String DETAIL_SCALE = "u_DetailScale";
-        String LIGHT_DIRECTION = LitShader.Uniforms.LIGHT_DIR;
-        String GLOBAL_AMBIENT = LitShader.Uniforms.GLOBAL_AMBIENT;
     }
 
     public interface Attributes {
@@ -37,22 +34,12 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                             out vec2 v_texCoord1;
                             out float v_fogDist;
                             out vec3 v_viewPosition;
-                            out vec3 v_viewNormal;
                             
                             void main() {
                                 vec2 worldPos = in_InstancePatchOffset + in_Position;
                                 // Add half-texel offset to align vertex-centered heightmap (1 grid unit = 2 meters)
                                 vec2 uv = (worldPos + 1.0) / u_WorldSize;
                                 float h = texture(u_HeightMap, uv).r;
-                            
-                                // Calculate normal from height map
-                                float texelSize = 1.0 / u_WorldSize;
-                                float h_plus_x = texture(u_HeightMap, uv + vec2(texelSize, 0)).r;
-                                float h_minus_x = texture(u_HeightMap, uv - vec2(texelSize, 0)).r;
-                                float h_plus_y = texture(u_HeightMap, uv + vec2(0, texelSize)).r;
-                                float h_minus_y = texture(u_HeightMap, uv - vec2(0, texelSize)).r;
-                            
-                                vec3 normal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 2.0 * texelSize * u_WorldSize));
                             
                                 vec4 worldPosition4 = vec4(worldPos.x, worldPos.y, h, 1.0);
                                 vec4 viewPosition = u_viewMatrix * worldPosition4;
@@ -62,7 +49,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                                 v_texCoord1 = worldPos * u_DetailScale;
                                 v_fogDist = length(viewPosition.xyz);
                                 v_viewPosition = viewPosition.xyz;
-                                v_viewNormal = normalize((u_viewMatrix * vec4(normal, 0.0)).xyz);
                             }
                             """;
 
@@ -71,18 +57,17 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     #version 410 core
                     """ +
                     GLOBAL_STATE_BLOCK +
+                    LIGHTING_CONSTANTS +
                     FOG_FUNCTION +
-                    COLOR_SPACE_FUNCTIONS +
                     """
                             uniform sampler2D u_DiffuseMap;
-                            uniform sampler2D u_NormalMap;
                             uniform sampler2D u_DetailMap;
+                            uniform sampler2D u_HeightMap;
                             
                             in vec2 v_texCoord0;
                             in vec2 v_texCoord1;
                             in float v_fogDist;
                             in vec3 v_viewPosition;
-                            in vec3 v_viewNormal;
                             
                             layout(location = 0) out vec4 out_FragColor;
                             
@@ -90,17 +75,23 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                                 vec4 diffuseColor = texture(u_DiffuseMap, v_texCoord0);
                                 vec4 detailColor = texture(u_DetailMap, v_texCoord1);
                             
-                                // Apply detail map
-                                diffuseColor.rgb = mix(diffuseColor.rgb, detailColor.rgb, detailColor.a);
+                                // Subtly modulate diffuse color with detail noise (legacy parity range)
+                                diffuseColor.rgb *= (detailColor.rgb * 0.4 + 0.8);
                             
-                                // Lighting is already baked into u_DiffuseMap in LandscapeBaker.
-                                // We use intensity 1.0 to avoid double-lighting.
-                                vec3 intensity = vec3(1.0);
-                                vec4 litColor = vec4(diffuseColor.rgb * intensity, diffuseColor.a);
+                                // We rely on baked lighting from the LandscapeBaker for terrain.
+                                // Dynamic lighting is disabled to ensure smooth legacy-style shading.
+                                vec4 litColor = diffuseColor;
+                            
+                                // For fog, we still need a surface normal to blend correctly at the horizon
+                                float h_plus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(1, 0)).r;
+                                float h_minus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(-1, 0)).r;
+                                float h_plus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, 1)).r;
+                                float h_minus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, -1)).r;
+                                vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                                vec3 finalColor = mix(toLinear(u_fogColor).rgb, litColor.rgb, fogFactor);
-                                out_FragColor = toSRGB(vec4(finalColor, litColor.a));
+                                vec3 finalColor = mix(u_fogColor.rgb, litColor.rgb, fogFactor);
+                                out_FragColor = vec4(finalColor, litColor.a);
                             }
                             """;
 

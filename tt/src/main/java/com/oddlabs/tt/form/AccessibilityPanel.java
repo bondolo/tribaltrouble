@@ -15,8 +15,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
@@ -127,7 +125,7 @@ public class AccessibilityPanel extends Panel {
 
         // Color Preview Box
         class ColorBox extends GUIObject {
-            private final Vector4f color = new Vector4f(Color.WHITE);
+            private @NonNull Color color = Color.WHITE;
 
              ColorBox() {
                 setDim(20, 20);
@@ -138,8 +136,8 @@ public class AccessibilityPanel extends Panel {
                 renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), color);
             }
 
-             void setColor(Vector4fc c) {
-                this.color.set(c);
+             void setColor(@NonNull Color c) {
+                this.color = c;
             }
         }
         ColorBox colorBox = new ColorBox();
@@ -158,7 +156,7 @@ public class AccessibilityPanel extends Panel {
             int teamIndex = pm_team.getChosenItemIndex();
             float hue = slider_hue.getValue();
             int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1.0f, 1.0f);
-            Vector4f newColor = Color.argb4v((0xFF << 24) | (rgb & 0xFFFFFF));
+            var newColor = Color.argb4v((0xFF << 24) | (rgb & 0xFFFFFF));
             Settings.getSettings().team_colours[teamIndex] = newColor;
             colorBox.setColor(newColor);
 
@@ -169,7 +167,7 @@ public class AccessibilityPanel extends Panel {
 
         Runnable refreshUI = () -> {
             int index = pm_team.getChosenItemIndex();
-            Vector4fc currentColor = Settings.getSettings().team_colours[index];
+            var currentColor = Settings.getSettings().team_colours[index];
             float[] hsb = java.awt.Color.RGBtoHSB((int) (currentColor.x() * 255), (int) (currentColor.y() * 255), (int) (currentColor.z() * 255), null);
             slider_hue.setValue((int) (hsb[0] * 360));
             colorBox.setColor(currentColor);
@@ -182,7 +180,7 @@ public class AccessibilityPanel extends Panel {
 
         button_reset.addMouseClickListener((_, _, _, _) -> {
             int index = pm_team.getChosenItemIndex();
-            Settings.getSettings().team_colours[index] = new Vector4f(Settings.DEFAULT_TEAM_COLOURS[index]);
+            Settings.getSettings().team_colours[index] = new Color.Standard(Settings.DEFAULT_TEAM_COLOURS[index]);
             refreshUI.run();
             pm_team.getItem(index).setLabelColor(Settings.getSettings().team_colours[index]);
             pb_team.setLabelColor(Settings.getSettings().team_colours[index]);

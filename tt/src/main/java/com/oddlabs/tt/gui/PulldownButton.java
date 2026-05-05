@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.render.GUIRenderer;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 public final class PulldownButton<T> extends GUIObject {
@@ -97,7 +97,7 @@ public final class PulldownButton<T> extends GUIObject {
             menu.remove();
     }
 
-    public void setLabelColor(@NonNull Vector4fc color) {
+    public void setLabelColor(@NonNull Color color) {
         label.setColor(color);
     }
 

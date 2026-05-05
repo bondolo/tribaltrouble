@@ -42,7 +42,10 @@ public final class GUIShader extends ShaderProgram {
     private static final String FRAGMENT_SHADER = """
             #version 410 core
             
+            """ + COLOR_SPACE_FUNCTIONS + """
+            
             uniform sampler2D u_textures[8];
+            uniform bool u_outputSRGB;
             
             in vec4 v_Color;
             in vec2 v_TexCoord;
@@ -52,8 +55,9 @@ public final class GUIShader extends ShaderProgram {
             layout(location = 1) out vec4 out_MaskColor;
             
             void main() {
+                vec4 color;
                 if (v_TexIndex < 0) {
-                    out_FragColor = v_Color;
+                    color = v_Color;
                 } else {
                     vec4 texColor;
                     switch (v_TexIndex) {
@@ -67,8 +71,19 @@ public final class GUIShader extends ShaderProgram {
                         case 7: texColor = texture(u_textures[7], v_TexCoord); break;
                         default: texColor = texture(u_textures[0], v_TexCoord); break;
                     }
-                    out_FragColor = v_Color * texColor;
+                    color = v_Color * texColor;
                 }
+                
+                if (u_outputSRGB) {
+                    // Fallback for direct back-buffer rendering (e.g. Loading Screen).
+                    // We apply toSRGB to the weighted color for correct gamma-corrected edges.
+                    // This is "Premultiplied sRGB Blending".
+                    out_FragColor = vec4(toSRGB(color.rgb * color.a), color.a);
+                } else {
+                    // Modern Linear Pipeline: Premultiply linear color.
+                    out_FragColor = vec4(color.rgb * color.a, color.a);
+                }
+                
                 // Write a special marker to the mask alpha channel to indicate "GUI Pixel".
                 // Team objects write alpha=1.0. Clear color is alpha=0.0.
                 // We use alpha=0.5 to identify GUI pixels in the post-process shader.
@@ -88,6 +103,7 @@ public final class GUIShader extends ShaderProgram {
         public static final String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         public static final String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
         public static final String TEXTURES = "u_textures";
+        public static final String OUTPUT_SRGB = "u_outputSRGB";
     }
 
     /**
@@ -105,7 +121,7 @@ public final class GUIShader extends ShaderProgram {
 
     public enum Attribute implements VertexAttribute {
         POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
-        COLOR(Attributes.COLOR, 4, GL11.GL_UNSIGNED_BYTE, true),
+        COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT, false),
         TEX_COORD(Attributes.TEX_COORD, 2, GL11.GL_FLOAT),
         TEX_INDEX(Attributes.TEX_INDEX, 1, GL11.GL_FLOAT);
 

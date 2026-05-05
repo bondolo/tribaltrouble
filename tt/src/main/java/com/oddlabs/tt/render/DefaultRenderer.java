@@ -26,8 +26,7 @@ import com.oddlabs.tt.util.ToolTip;
 import com.oddlabs.tt.viewer.AmbientAudio;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.Selection;
-import org.joml.Vector3f;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -35,7 +34,6 @@ import org.lwjgl.opengl.GL11;
 import java.util.function.Consumer;
 
 public final class DefaultRenderer implements UIRenderer, AutoCloseable {
-
     private final @NonNull Picker picker;
     private final @NonNull Water water;
     private final @NonNull Sky sky;
@@ -51,14 +49,11 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final @NonNull EmitterRenderer emitterRenderer;
     private final @NonNull LightningRenderer lightningRenderer;
     private final @NonNull SonicBlastRenderer sonicBlastRenderer;
-    private final @NonNull InstancedSpriteRenderer treeSpriteRenderer = new InstancedSpriteRenderer();
+    private final InstancedSpriteRenderer treeSpriteRenderer = new InstancedSpriteRenderer();
     private final @NonNull PostProcessor postProcessor;
     private final @Nullable Cheat cheat;
 
     private final GlobalUniforms globalUniforms = new GlobalUniforms();
-    private final Vector3f sunDirection = new Vector3f(-1f, 0f, 1f).normalize();
-    private final Vector3f globalAmbient = new Vector3f(0.4f, 0.4f, 0.45f); // Sky
-    private final Vector3f groundAmbient = new Vector3f(0.15f, 0.12f, 0.1f); // Ground
 
     private @Nullable Building selected_building;
 
@@ -109,7 +104,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state,
                                     @NonNull Target rally_point, @NonNull SpriteKey rally_sprite,
-                                    @NonNull Vector4fc teamColor) {
+                                    @NonNull Color teamColor) {
         try (var _ = spriteShader.use();
              var _ = context.withBlendMode(BlendMode.ALPHA)) {
 
@@ -138,10 +133,10 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
                 modelViewStack.translate(x, y, z);
             }
 
-            spriteShader.setUniformMatrix4(SpriteShader.Uniforms.MODEL_VIEW_MATRIX, false, modelViewStack.current());
+            spriteShader.setUniform(SpriteShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
-            spriteShader.setUniform(SpriteShader.Uniforms.DECAL_COLOR, teamColor.x(), teamColor.y(), teamColor.z(), 1f);
-            spriteShader.setUniform(SpriteShader.Uniforms.COLOR, 1f, 1f, 1f, 1f);
+            spriteShader.setUniform(SpriteShader.Uniforms.DECAL_COLOR, teamColor);
+            spriteShader.setUniform(SpriteShader.Uniforms.COLOR, Color.WHITE_LINEAR);
 
             sprite.renderShader(spriteShader, 0, 0f, rally_point_renderer.getSpriteList());
 
@@ -189,7 +184,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     @Override
     public void startFrame(@NonNull RenderContext context) {
-        postProcessor.bindSceneFBO();
+        postProcessor.bindSceneFBO(context);
         context.clear(true, true);
     }
 
@@ -216,7 +211,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
 
         // Update Global UBO
-        globalUniforms.update(frustum_state, sunDirection, globalAmbient, groundAmbient, LocalEventQueue.getQueue().getTime());
+        globalUniforms.update(frustum_state, LocalEventQueue.getQueue().getTime());
         context.updateGlobalState(globalUniforms.getBuffer());
 
         ambient.updateSoundListener(frustum_state, world.getHeightMap());
@@ -316,14 +311,24 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
     }
 
+    private boolean closed = false;
+
+    @Override
+    public boolean isClosed() {
+        return closed;
+    }
+
     @Override
     public void close() {
-        emitterRenderer.close();
-        lightningRenderer.close();
-        sonicBlastRenderer.close();
-        sky.close();
-        water.close();
-        treeSpriteRenderer.close();
-        postProcessor.close();
+        if (!closed) {
+            closed = true;
+            emitterRenderer.close();
+            lightningRenderer.close();
+            sonicBlastRenderer.close();
+            sky.close();
+            water.close();
+            treeSpriteRenderer.close();
+            postProcessor.close();
+        }
     }
 }

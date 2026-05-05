@@ -34,7 +34,7 @@ public abstract class Campaign {
     }
 
     public final void pushDelegate(@NonNull NetworkSelector network, @NonNull GUI gui) {
-        final GUIRoot gui_root = gui.newFade();
+        final GUIRoot gui_root = gui.newFade(null, gui.getRenderer());
         gui_root.pushDelegate(new CampaignMapForm(network, gui_root, Campaign.this));
     }
 

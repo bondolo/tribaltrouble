@@ -399,7 +399,7 @@ public abstract class GUIObject extends Renderable<GUIObject> {
         }
 
         // Secondary Sort: X (Ascending)
-        return a.getX() - b.getX();
+        return Integer.compare(a.getX(), b.getX());
     }
 
     private static void switchFocusToObject(@NonNull GUIObject obj, @NonNull FocusDirection dir) {

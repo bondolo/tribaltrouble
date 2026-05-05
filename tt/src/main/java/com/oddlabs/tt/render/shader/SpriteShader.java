@@ -70,6 +70,7 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                     #version 410 core
                     """ +
                     GLOBAL_STATE_BLOCK +
+                    LIGHTING_CONSTANTS +
                     FOG_FUNCTION +
                     PERTURB_NORMAL_FUNC +
                     FRAGMENT_LIGHTING_FUNCTION +
@@ -95,8 +96,6 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                             
                             layout(location = 0) out vec4 out_FragColor;
                             layout(location = 1) out vec4 out_MaskColor;
-                            
-                            """ + COLOR_SPACE_FUNCTIONS + """
                             
                             void main() {
                                 vec4 base = texture(u_texture0, v_texCoord0);
@@ -151,7 +150,7 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
                                 vec3 litColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
-                                out_FragColor = toSRGB(vec4(litColor, finalColor.a));
+                                out_FragColor = vec4(litColor, finalColor.a);
                             }
                             """;
 

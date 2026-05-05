@@ -52,10 +52,12 @@ public final class Picker implements Updatable<TimerAnimation> {
 
     public record LandscapeLocation(float x, float y) implements Target {
 
+        @Override
         public int getGridX() {
             return UnitGrid.toGridCoordinate(x);
         }
 
+        @Override
         public int getGridY() {
             return UnitGrid.toGridCoordinate(y);
         }
@@ -80,6 +82,7 @@ public final class Picker implements Updatable<TimerAnimation> {
             return false;
         }
     }
+
     private final Matrix4f proj = new Matrix4f();
 
     private final IntBuffer viewport = Objects.requireNonNull(BufferUtils.createIntBuffer(16));
@@ -558,6 +561,7 @@ com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
         int x = Renderer.getLocalInput().getMouseX();
         int y = Renderer.getLocalInput().getMouseY();
         setupPicking(camera, x, y, PICK_SIZE, PICK_SIZE);
+
         return !nearestLandscape(x, y) ? Optional.empty() : Optional.of(new LandscapeLocation(patch_hit_x, patch_hit_y));
     }
 

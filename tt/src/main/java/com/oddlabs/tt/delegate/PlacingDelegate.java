@@ -14,7 +14,6 @@ import com.oddlabs.tt.model.BuildingTemplate;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.BuildingSiteScanFilter;
 import com.oddlabs.tt.render.BuildingSiteRenderer;
-import com.oddlabs.tt.render.LandscapeLocation;
 import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.RenderQueues;
@@ -27,6 +26,7 @@ import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -38,7 +38,8 @@ import java.util.logging.Logger;
 public final class PlacingDelegate extends ControllableCameraDelegate {
     private static final Logger logger = Logger.getLogger(PlacingDelegate.class.getName());
     private static final int GRID_RADIUS = 20;
-    private static final LandscapeLocation landscape_hit = new LandscapeLocation();
+    private static final Color.Linear GOOD_PLACEMENT = new Color.Linear(Color.argb4v(0xCC_FF_FF_FF));
+    private static final Color.Linear BAD_PLACEMENT = new Color.Linear(Color.argb4v(0xCC_FF_00_00));
 
     private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
     private final SpriteShader spriteShader = new SpriteShader();
@@ -57,19 +58,19 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
         getViewer().getPicker().pickLocation(getCamera().getState()).ifPresentOrElse(landscape_hit -> {
             int placing_grid_x = landscape_hit.getGridX();
             int placing_grid_y = landscape_hit.getGridY();
-        if (Building.isPlacingLegal(getViewer().getWorld().getUnitGrid(), getTemplate(), placing_grid_x, placing_grid_y)) {
-            var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
-            if (peons.length > 0) {
-                logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
-                getViewer().getPeerHub().getPlayerInterface().placeBuilding(peons, building_index, placing_grid_x, placing_grid_y);
+            if (Building.isPlacingLegal(getViewer().getWorld().getUnitGrid(), getTemplate(), placing_grid_x, placing_grid_y)) {
+                var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
+                if (peons.length > 0) {
+                    logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
+                    getViewer().getPeerHub().getPlayerInterface().placeBuilding(peons, building_index, placing_grid_x, placing_grid_y);
+                } else {
+                    logger.info("placeObject: No peons selected");
+                }
+                logger.info("placeObject: Popping delegate");
+                pop();
             } else {
-                logger.info("placeObject: No peons selected");
+                logger.info("placeObject: Placement illegal");
             }
-            logger.info("placeObject: Popping delegate");
-            pop();
-        } else {
-            logger.info("placeObject: Placement illegal");
-        }
         }, () -> logger.info("placeObject: Pick failed (off map?)"));
     }
 
@@ -136,16 +137,15 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
             spriteShader.setUniform(SpriteShader.Uniforms.MODULATE_COLOR, true);
             spriteShader.setUniform(SpriteShader.Uniforms.ALPHA_TEST_VALUE, 0.5f);
 
-            if (Building.isPlacingLegal(unit_grid, getTemplate(), placing_center_grid_x, placing_center_grid_y))
-                spriteShader.setUniform(SpriteShader.Uniforms.COLOR, 1f, 1f, 1f, .8f);
-            else
-                spriteShader.setUniform(SpriteShader.Uniforms.COLOR, 1f, 0f, 0f, .8f);
+            var placeColor = Building.isPlacingLegal(unit_grid, getTemplate(), placing_center_grid_x, placing_center_grid_y)
+                    ? GOOD_PLACEMENT : BAD_PLACEMENT;
+            spriteShader.setUniform(SpriteShader.Uniforms.COLOR, placeColor);
 
             float z = getViewer().getWorld().getHeightMap().getNearestHeight(center_x, center_y);
 
             modelViewStack.push();
             modelViewStack.translate(center_x, center_y, z);
-            spriteShader.setUniformMatrix4(SpriteShader.Uniforms.MODEL_VIEW_MATRIX, false, modelViewStack.current());
+            spriteShader.setUniform(SpriteShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
             try (var _ = context.withCullMode(CullMode.BACK)) {
                 // Pass 1: Depth Prime (Write Depth, No Color)

@@ -23,7 +23,13 @@ public final class GUIImage extends GUIIcon {
      * @param texture_name The name of the texture file to load.
      */
     public GUIImage(int width, int height, float u1, float v1, float u2, float v2, String texture_name) {
-        this(width, height, u1, v1, u2, v2, Resources.findResource(new TextureFile(texture_name, GL11.GL_RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT)));
+        this(width, height, u1, v1, u2, v2, texture_name, true);
+    }
+
+    public GUIImage(int width, int height, float u1, float v1, float u2, float v2, String texture_name, boolean isSrgb) {
+        this(width, height, u1, v1, u2, v2,
+                Resources.findResource(new TextureFile(texture_name, GL11.GL_RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT,
+                        com.oddlabs.tt.global.Globals.NO_MIPMAP_CUTOFF, 10000, 1.0f, false, false, isSrgb)));
     }
 
     /**

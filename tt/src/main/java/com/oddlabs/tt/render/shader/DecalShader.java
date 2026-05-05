@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render.shader;
 
-public final class DecalShader extends ShaderProgram {
+public final class DecalShader extends ShaderProgram implements FogShader {
 
     public static final class Uniforms {
         public static final String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
@@ -45,6 +45,7 @@ public final class DecalShader extends ShaderProgram {
                     out vec2 v_TexCoord;
                     out vec4 v_Color;
                     out float v_Pattern;
+                    out float v_fogDist;
                     
                     void main() {
                         vec2 localPos = in_Position * in_InstanceSize;
@@ -59,6 +60,7 @@ public final class DecalShader extends ShaderProgram {
                         viewPosition.z += u_DepthBias;
                     
                         gl_Position = u_projectionMatrix * viewPosition;
+                        v_fogDist = length(viewPosition.xyz);
                     
                         // Pass local grid position (-0.5..0.5) to fragment shader
                         v_TexCoord = in_Position;
@@ -71,6 +73,7 @@ public final class DecalShader extends ShaderProgram {
             #version 410 core
             """ +
             GLOBAL_STATE_BLOCK +
+            FOG_FUNCTION +
             """
             
             uniform sampler2D u_texture;
@@ -79,10 +82,13 @@ public final class DecalShader extends ShaderProgram {
             in vec2 v_TexCoord;
             in vec4 v_Color;
             in float v_Pattern;
+            in float v_fogDist;
             
             layout(location = 0) out vec4 out_FragColor;
+            layout(location = 1) out vec4 out_MaskColor;
             
             void main() {
+                vec4 baseColor;
                 if (u_Radial) {
                     // Calculate radial distance from center (0..0.5)
                     // Compensate for the 1.25x larger quad only if in radial mode
@@ -134,20 +140,28 @@ public final class DecalShader extends ShaderProgram {
                     }
                     
                     // Composition: Apply Ring OVER Shadow
-                    float a_r = ringAlpha * 0.8; // 80% opacity for selection rings
-                    float a_s = shadowAlpha;     // 100% opacity for unit shadows
+                    float a_r = ringAlpha * 0.8 * v_Color.a; // 80% opacity for selection rings
+                    float a_s = shadowAlpha * v_Color.a;     // 100% opacity for unit shadows
                     
-                    float finalAlpha = (a_r + a_s * (1.0 - a_r)) * v_Color.a;
+                    float finalAlpha = a_r + a_s * (1.0 - a_r);
                     
-                    // To avoid darkening at edges, we use a division to counteract hardware blending.
-                    // effective RGB should be: v_Color.rgb * a_r
-                    vec3 finalRGB = (finalAlpha > 0.001) ? (v_Color.rgb * a_r) / finalAlpha : v_Color.rgb;
-                    
-                    out_FragColor = vec4(finalRGB, finalAlpha);
+                    // Final output is premultiplied: 
+                    // RGB comes only from the ring (tinted). Shadow is black (adds 0 to RGB).
+                    baseColor = vec4(v_Color.rgb * a_r, finalAlpha);
                 } else {
                     // Standard 2D sampling (Square Building Sites)
-                    out_FragColor = texture(u_texture, v_TexCoord + 0.5) * v_Color;
+                    baseColor = texture(u_texture, v_TexCoord + 0.5) * v_Color;
+                    baseColor.rgb *= baseColor.a; // Premultiply for consistency
                 }
+                
+                float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                // For premultiplied alpha, the fog color must also be weighted by alpha
+                // to correctly blend with the background.
+                vec3 litColor = mix(u_fogColor.rgb * baseColor.a, baseColor.rgb, fogFactor);
+                out_FragColor = vec4(litColor, baseColor.a);
+                
+                // Shadows/Decals NEVER mark the mask buffer.
+                out_MaskColor = vec4(0.0);
             }
             """;
 

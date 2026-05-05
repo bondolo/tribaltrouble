@@ -28,9 +28,9 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
                 float dy = target.getPositionY() - center_y;
                 float a = (dx * dx + dy * dy) / radius_sqr;
                 if (dx == 0f && dy == 0f)
-                    setShadowColor(Color.WHITE);
+                    setShadowColor(Color.WHITE_LINEAR);
                 else
-                    setShadowColor(0f, 1f, 0f, Math.max(0f, 1 - a * a));
+                    setShadowColor(new Color.Linear(0f, 1f, 0f, Math.max(0f, 1 - a * a)));
                 renderShadow(context, renderer, 2f, target.getPositionX(), target.getPositionY());
             }
         }

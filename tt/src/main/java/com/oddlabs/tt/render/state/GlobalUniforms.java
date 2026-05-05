@@ -5,8 +5,7 @@ import com.oddlabs.tt.render.shader.FogShader;
 import com.oddlabs.tt.resource.DistanceFogInfo;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.RadialFogInfo;
-import org.joml.Vector3fc;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 
@@ -25,9 +24,6 @@ public final class GlobalUniforms {
 
     public void update(
             @NonNull CameraState camera,
-            @NonNull Vector3fc lightDir,
-            @NonNull Vector3fc skyAmbient,
-            @NonNull Vector3fc groundAmbient,
             float time
     ) {
         buffer.clear();
@@ -38,38 +34,20 @@ public final class GlobalUniforms {
         // 64: mat4 view (64)
         camera.getModelView().get(64, buffer);
 
-        // 128: vec3 lightDir (16 aligned)
+        // 128: vec4 fogColor (16)
         buffer.position(128);
-        buffer.putFloat(lightDir.x());
-        buffer.putFloat(lightDir.y());
-        buffer.putFloat(lightDir.z());
-        buffer.putFloat(0f); // padding
-
-        // 144: vec3 skyAmbient (16 aligned)
-        buffer.putFloat(skyAmbient.x());
-        buffer.putFloat(skyAmbient.y());
-        buffer.putFloat(skyAmbient.z());
-        buffer.putFloat(0f); // padding
-
-        // 160: vec3 groundAmbient (16 aligned)
-        buffer.putFloat(groundAmbient.x());
-        buffer.putFloat(groundAmbient.y());
-        buffer.putFloat(groundAmbient.z());
-        buffer.putFloat(0f); // padding
-
-        // 176: vec4 fogColor (16)
         FogInfo fog = camera.getFog();
-        Vector4fc color = fog.getColor();
+        Color color = fog.getColor();
         buffer.putFloat(color.x());
         buffer.putFloat(color.y());
         buffer.putFloat(color.z());
         buffer.putFloat(color.w());
 
-        // 192: vec3 fogParams (16 aligned)
-        // 204: float cameraHeight (4) -- Packed tightly after vec3
-        // 208: float fogHeightFactor (4)
-        // 212: float globalTime (4)
-        // 216: int fogMode (4)
+        // 144: vec3 fogParams (16 aligned)
+        // 156: float cameraHeight (4) -- Packed tightly after vec3
+        // 160: float fogHeightFactor (4)
+        // 164: float globalTime (4)
+        // 168: int fogMode (4)
 
         int mode = -1;
         float hf = 0f;
@@ -106,6 +84,6 @@ public final class GlobalUniforms {
         buffer.putFloat(time);
         buffer.putInt(mode);
 
-        buffer.position(224); // End of data (220 used, pad to 224 for 16-byte alignment)
+        buffer.position(176); // End of data (172 used, pad to 176 for 16-byte alignment)
     }
 }

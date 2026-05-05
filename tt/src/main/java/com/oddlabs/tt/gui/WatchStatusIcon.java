@@ -3,12 +3,11 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.ReproduceUnitContainer;
 import com.oddlabs.tt.render.GUIRenderer;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 public final class WatchStatusIcon extends StatusIcon {
-    private static final Vector4fc COLOR = new Vector4f(1f, 1f, 1f, .75f);
+    private static final Color COLOR = new Color.Linear(new Color.Standard(1f, 1f, 1f, .75f));
     private Building building;
 
     public WatchStatusIcon(int label_width, @NonNull IconQuad icon, @NonNull String tooltip) {

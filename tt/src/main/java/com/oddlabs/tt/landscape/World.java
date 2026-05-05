@@ -18,13 +18,11 @@ import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.WorldInfo;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public final class World {
     public static final int GAMESPEED_DONTCARE = -2;
@@ -165,9 +163,8 @@ public final class World {
         animation_manager_real_time = new AnimationManager();
         random = new Random(42);
 
-        Iterator<Vector4fc> eachColor = Arrays.asList((Vector4fc[]) Settings.getSettings().team_colours).iterator();
-        players = Arrays.stream(player_infos)
-                .map(info -> new Player(this, info, eachColor.next()))
+        players = IntStream.range(0, player_infos.length)
+                .mapToObj(i -> new Player(this, player_infos[i], Settings.getSettings().linear_team_colours[i % Settings.getSettings().linear_team_colours.length]))
                 .toArray(Player[]::new);
 
         long time_stop = System.currentTimeMillis();

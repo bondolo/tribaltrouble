@@ -130,6 +130,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return scale_z;
     }
 
+    /** delta color is assumed to be linear */
     public final void forceColorChange(float dr, float dg, float db, float da) {
         for (List<P> particle1 : particles) {
             for (Particle particle : particle1) {

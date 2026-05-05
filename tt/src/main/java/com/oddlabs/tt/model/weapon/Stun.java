@@ -15,8 +15,8 @@ import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
@@ -76,7 +76,7 @@ public final class Stun extends PointEmitterModel implements Magic {
                 .001f, .001f, .5f, (float) Math.PI,
                 -1, 35f,
                 new Vector3f(0f, 0f, 6f), new Vector3f(0f, 0f, -2f),
-                new Vector4f(1f, 1f, 1f, alpha), new Vector4f(0f, 0f, 0f, -alpha / energy),
+                new Color.Standard(1f, 1f, 1f, alpha), new Color.Standard(0f, 0f, 0f, -alpha / energy),
                 new Vector3f(.3f, .3f, .3f), new Vector3f(.025f, .025f, .025f), energy, 1f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 owner.getWorld().getRacesResources().getNoteTextures());

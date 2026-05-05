@@ -23,8 +23,8 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -131,7 +131,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                         getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
                         getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                         new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
-                        new Vector4f(1f, 1f, 1f, energy * fade_speed), new Vector4f(0f, 0f, 0f, -fade_speed),
+                        new Color.Standard(1f, 1f, 1f, energy * fade_speed), new Color.Standard(0f, 0f, 0f, -fade_speed),
                         new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                         getOwner().getWorld().getRacesResources().getWoodFragments());
                 new PointEmitterModel(getOwner().getWorld(), emitter);
@@ -493,7 +493,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 1f, 1f,
                 30, 400f,
                 new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
-                new Vector4f(1f, .8f, .6f, 1f), new Vector4f(0f, 0f, 0f, -1f),
+                new Color.Standard(1f, .8f, .6f, 1f), new Color.Standard(0f, 0f, 0f, -1f),
                 new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 getOwner().getWorld().getRacesResources().getSmokeTextures());
@@ -507,7 +507,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                     getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
                     getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
-                    new Vector4f(1f, 1f, 1f, energy * fade_speed), new Vector4f(0f, 0f, 0f, -fade_speed),
+                    new Color.Standard(1f, 1f, 1f, energy * fade_speed), new Color.Standard(0f, 0f, 0f, -fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                     getOwner().getWorld().getRacesResources().getWoodFragments());
             new PointEmitterModel(getOwner().getWorld(), emitter, getOwner().getWorld().getAnimationManagerRealTime());

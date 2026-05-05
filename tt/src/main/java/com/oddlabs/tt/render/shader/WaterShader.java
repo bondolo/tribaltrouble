@@ -15,7 +15,6 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
         String ENABLE_DETAIL = "u_enableDetail";
         String SCROLL_OFFSET_0 = "u_scrollOffset0";
         String SCROLL_OFFSET_1 = "u_scrollOffset1";
-        String LIGHT_DIR = LitShader.Uniforms.LIGHT_DIR;
         String CAMERA_POS = "u_cameraPos";
         String WATER_HEIGHT = "u_waterHeight";
 
@@ -70,6 +69,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     #version 410 core
                     """ +
                     GLOBAL_STATE_BLOCK +
+                    LIGHTING_CONSTANTS +
                     FOG_FUNCTION +
                     """
                             uniform sampler2D u_texture0;
@@ -116,9 +116,9 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                                 float F0 = 0.02; 
                                 float F = F0 + (1.0 - F0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
                             
-                                vec3 reflectionColor = vec3(0.6, 0.7, 0.8); 
+                                vec3 reflectionColor = vec3(0.3185, 0.4479, 0.6120); // linearized (0.6, 0.7, 0.8)
                                 vec3 waterColor = baseColor.rgb * 0.7; 
-                            
+
                                 vec3 finalRGB = mix(waterColor, reflectionColor, F * 0.6); 
                                 finalRGB += vec3(specular) * 0.4; 
                             

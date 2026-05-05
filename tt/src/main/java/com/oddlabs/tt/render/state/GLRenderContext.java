@@ -9,14 +9,16 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static com.oddlabs.tt.util.GLUtils.checkAndThrow;
 
 /**
- * Concrete implementation of RenderContext using LWJGL OpenGL bindings.
+ * RenderContext implementation for LWJGL OpenGL bindings.
  * Manages OpenGL state transitions and provides shadowing to minimize redundant GL calls.
  */
 public final class GLRenderContext implements RenderContext {
@@ -40,17 +42,17 @@ public final class GLRenderContext implements RenderContext {
     private @NonNull DepthMode currentDepth = DepthMode.NONE;
     private @NonNull CullMode currentCull = CullMode.NONE;
     private int currentDepthFunc = -1;
-    private GLState scissorEnabled = GLState.UNKNOWN;
-    private GLState sampleAlphaToCoverageEnabled = GLState.UNKNOWN;
-    private GLState depthTestEnabled = GLState.UNKNOWN;
-    private GLState depthMaskEnabled = GLState.UNKNOWN;
-    private GLState blendEnabled = GLState.UNKNOWN;
-    private GLState cullFaceEnabled = GLState.UNKNOWN;
+    private @NonNull GLState scissorEnabled = GLState.UNKNOWN;
+    private @NonNull GLState sampleAlphaToCoverageEnabled = GLState.UNKNOWN;
+    private @NonNull GLState depthTestEnabled = GLState.UNKNOWN;
+    private @NonNull GLState depthMaskEnabled = GLState.UNKNOWN;
+    private @NonNull GLState blendEnabled = GLState.UNKNOWN;
+    private @NonNull GLState cullFaceEnabled = GLState.UNKNOWN;
 
-    private GLState maskR = GLState.UNKNOWN;
-    private GLState maskG = GLState.UNKNOWN;
-    private GLState maskB = GLState.UNKNOWN;
-    private GLState maskA = GLState.UNKNOWN;
+    private @NonNull GLState maskR = GLState.UNKNOWN;
+    private @NonNull GLState maskG = GLState.UNKNOWN;
+    private @NonNull GLState maskB = GLState.UNKNOWN;
+    private @NonNull GLState maskA = GLState.UNKNOWN;
 
     private int activeTextureUnit = -1;
     private final int[] boundTextures = new int[8];
@@ -500,31 +502,25 @@ public final class GLRenderContext implements RenderContext {
             return;
         }
 
-        try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
-            java.nio.IntBuffer buffers;
-            boolean hasAttachment0 = false;
-            boolean hasAttachment1 = false;
-
+        try (MemoryStack stack = MemoryStack.stackPush()) {
             stack.push();
-            java.nio.IntBuffer params = stack.mallocInt(1);
+            IntBuffer params = stack.mallocInt(1);
 
             // Probing for color attachments. We initialize params to GL_NONE to be safe.
             params.put(0, GL11.GL_NONE);
             GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
-            hasAttachment0 = params.get(0) != GL11.GL_NONE;
+            var hasAttachment0 = params.get(0) != GL11.GL_NONE;
 
             params.put(0, GL11.GL_NONE);
             GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
-            hasAttachment1 = params.get(0) != GL11.GL_NONE;
+            var hasAttachment1 = params.get(0) != GL11.GL_NONE;
             stack.pop();
 
-            if (mask && hasAttachment0 && hasAttachment1) {
-                buffers = stack.mallocInt(2).put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1);
-            } else if (hasAttachment0) {
-                buffers = stack.mallocInt(1).put(GL30.GL_COLOR_ATTACHMENT0);
-            } else {
-                buffers = stack.mallocInt(1).put(GL11.GL_NONE);
-            }
+            var buffers = mask && hasAttachment0 && hasAttachment1
+                    ? stack.mallocInt(2).put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1)
+                    : hasAttachment0
+                        ? stack.mallocInt(1).put(GL30.GL_COLOR_ATTACHMENT0)
+                        : stack.mallocInt(1).put(GL11.GL_NONE);
 
             buffers.flip();
             // Clear any existing errors before the critical call to isolate the failure
@@ -544,8 +540,8 @@ public final class GLRenderContext implements RenderContext {
             maskState = GLState.FALSE;
             return;
         }
-        try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
-            java.nio.IntBuffer buffers = stack.mallocInt(attachments.length);
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer buffers = stack.mallocInt(attachments.length);
             for (int attachment : attachments) {
                 buffers.put(attachment);
             }
@@ -554,15 +550,14 @@ public final class GLRenderContext implements RenderContext {
             checkAndThrow("glDrawBuffers(int[])");
         }
         // Sync maskState if it matches one of our known configurations
-        if (attachments.length == 2 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0 && attachments[1] == GL30.GL_COLOR_ATTACHMENT1) {
-            maskState = GLState.TRUE;
-        } else if (attachments.length == 1 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0) {
-            maskState = GLState.FALSE;
-        } else if (attachments.length == 1 && attachments[0] == GL11.GL_NONE) {
-            maskState = GLState.FALSE; // Treating GL_NONE as a form of disabled masking for simple FBOs
-        } else {
-            maskState = GLState.UNKNOWN;
-        }
+        // Treating GL_NONE as a form of disabled masking for simple FBOs
+        maskState = attachments.length == 2 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0 && attachments[1] == GL30.GL_COLOR_ATTACHMENT1
+                ? GLState.TRUE
+                : attachments.length == 1 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0
+                    ? GLState.FALSE
+                    : attachments.length == 1 && attachments[0] == GL11.GL_NONE
+                        ? GLState.FALSE
+                        : GLState.UNKNOWN;
     }
 
     // Scoped State Implementations

@@ -2,13 +2,12 @@ package com.oddlabs.tt.render.shader;
 
 import com.oddlabs.tt.render.state.ScopedState;
 import com.oddlabs.tt.resource.NativeResource;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -26,10 +25,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.oddlabs.tt.util.GLUtils.checkGLError;
-
 /**
- * Holds native state for shaders including vertex, fragment and optionally geometry shader.
+ * Holds native state for shaders including vertex, fragment, and optionally geometry shader.
  */
 public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program> implements Shader {
     private static final Logger logger = Logger.getLogger(ShaderProgram.class.getSimpleName());
@@ -45,12 +42,12 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         private final int geometryShaderId;
         private final Map<@NonNull String, @NonNull Integer> uniformLocations = new HashMap<>();
         private final Map<@NonNull String, @NonNull Integer> attributeLocations = new HashMap<>();
-        private final Map<Integer, Integer> intUniforms = new HashMap<>();
-        private final Map<Integer, Float> floatUniforms = new HashMap<>();
-        private final Map<Integer, Vector2fc> vec2Uniforms = new HashMap<>();
-        private final Map<Integer, Vector3fc> vec3Uniforms = new HashMap<>();
-        private final Map<Integer, Vector4fc> vec4Uniforms = new HashMap<>();
-        private final Map<Integer, float[]> mat4Uniforms = new HashMap<>();
+        private final Map<Integer, @NonNull Integer> intUniforms = new HashMap<>();
+        private final Map<Integer, @NonNull Float> floatUniforms = new HashMap<>();
+        private final Map<Integer, @NonNull Vector2fc> vec2Uniforms = new HashMap<>();
+        private final Map<Integer, @NonNull Vector3fc> vec3Uniforms = new HashMap<>();
+        private final Map<Integer, @NonNull Color> colorUniforms = new HashMap<>();
+        private final Map<Integer, float @NonNull []> mat4Uniforms = new HashMap<>();
 
         Program(int vertexShaderId, int fragmentShaderId, int geometryShaderId) {
             this.vertexShaderId = vertexShaderId;
@@ -141,7 +138,20 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         return shaderId;
     }
 
+    private boolean closed = false;
+
+    @Override
+    public void close() {
+        if (!closed) {
+            closed = true;
+            super.close();
+        }
+    }
+
     public @NonNull ScopedState use() {
+        if (closed) {
+            throw new IllegalStateException("Attempting to use a closed ShaderProgram: " + getClass().getName());
+        }
         var active = inUse.compareAndExchange(null, this);
         if (null == active) {
             GL20.glUseProgram(state.programId);
@@ -231,36 +241,42 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public void setUniform(@NonNull String name, float x, float y, float z, float w) {
-        setUniform(name, new Vector4f(x, y, z, w));
+    public void setUniform(@NonNull String name, @NonNull Color value) {
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+        Color lastValue = state.colorUniforms.get(loc);
+        var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
+        if (lastValue != null && lastValue.equals(linearColor)) return;
+        GL20.glUniform4f(loc, linearColor.x(), linearColor.y(), linearColor.z(), linearColor.w());
+        state.colorUniforms.put(loc, linearColor);
+    }
+
+    public void setUniformColor3(@NonNull String name, @NonNull Color value) {
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+
+        // We reuse the colorUniforms cache but only upload 3 components
+        Color lastValue = state.colorUniforms.get(loc);
+        if (lastValue != null && lastValue.equals(value)) return;
+
+        var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
+        GL20.glUniform3f(loc, linearColor.x(), linearColor.y(), linearColor.z());
+        state.colorUniforms.put(loc, linearColor);
     }
 
     @Override
-    public void setUniform(@NonNull String name, float @NonNull [] value) {
-        setUniform(name, new Vector4f(value[0], value[1], value[2], value[3]));
-    }
-
-    public void setUniform(@NonNull String name, @NonNull Vector4fc value) {
-        int loc = getUniformLocation(name);
-        if (loc == -1) return;
-        Vector4fc lastValue = state.vec4Uniforms.get(loc);
-        if (lastValue != null && lastValue.equals(value)) return;
-        GL20.glUniform4f(loc, value.x(), value.y(), value.z(), value.w());
-        state.vec4Uniforms.put(loc, new Vector4f(value));
-    }
-
     public void setUniform(@NonNull String name, @NonNull Matrix4fc matrix) {
-        setUniformMatrix4(name, false, matrix);
+        setUniform(name, false, matrix);
     }
 
-    public void setUniformMatrix4(@NonNull String name, boolean transpose, @NonNull Matrix4fc matrix) {
+    @Override
+    public void setUniform(@NonNull String name, boolean transpose, @NonNull Matrix4fc matrix) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             setUniformMatrix4(name, transpose, matrix.get(stack.mallocFloat(16)));
         }
     }
 
-    @Override
-    public void setUniformMatrix4(@NonNull String name, boolean transpose, @NonNull FloatBuffer matrix) {
+    private void setUniformMatrix4(@NonNull String name, boolean transpose, @NonNull FloatBuffer matrix) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
 

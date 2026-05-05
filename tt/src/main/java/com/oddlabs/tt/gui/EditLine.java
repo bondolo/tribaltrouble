@@ -14,7 +14,6 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.util.Color;
-import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -74,7 +73,8 @@ public class EditLine extends TextField implements Clipped {
         long elapsed = System.currentTimeMillis() - errorFlashStart;
         if (elapsed < 200) {
             float alpha = 0.5f * (1.0f - (elapsed / 200.0f));
-            renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, new Vector4f(1f, 1f, 1f, alpha));
+            var oneLinear = Color.toLinear(1f);
+            renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, new Color.Linear(oneLinear, oneLinear, oneLinear, alpha));
         }
 
         int render_index = isActive() ? index : -1;

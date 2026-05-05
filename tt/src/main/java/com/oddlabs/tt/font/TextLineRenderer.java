@@ -1,21 +1,24 @@
 package com.oddlabs.tt.font;
 
 import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.util.Color;
 import com.oddlabs.util.Quad;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Utility class for rendering single or multiple lines of text with clipping.
+ */
 public final class TextLineRenderer {
 
     private TextLineRenderer() {
         // private constructor for utility class
     }
 
-    public static void render(@NonNull GUIRenderer renderer, @NonNull TextLayout layout, float x, float y, @NonNull Vector4fc color) {
+    public static void render(@NonNull GUIRenderer renderer, @NonNull TextLayout layout, float x, float y, @NonNull Color color) {
         render(renderer, layout, x, y, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, color);
     }
 
-    public static void render(@NonNull GUIRenderer renderer, @NonNull TextLayout layout, float x, float y, float clipLeft, float clipRight, @NonNull Vector4fc color) {
+    public static void render(@NonNull GUIRenderer renderer, @NonNull TextLayout layout, float x, float y, float clipLeft, float clipRight, @NonNull Color color) {
         float currentY = y;
         for (TextLayout.Line line : layout.getLines()) {
             render(renderer, layout.getFont(), line.content(), x, currentY, clipLeft, clipRight, color);
@@ -28,7 +31,8 @@ public final class TextLineRenderer {
      */
     public static float render(@NonNull GUIRenderer renderer, @NonNull Font font, @NonNull CharSequence text,
                                float x, float y, float clipLeft, float clipRight,
-                               @NonNull Vector4fc color) {
+                               @NonNull Color color) {
+        var linearColor = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         return (float) text.codePoints().asDoubleStream().reduce(x, (currentX, codePointAsDouble) -> {
             int codePoint = (int) codePointAsDouble;
 
@@ -74,7 +78,7 @@ public final class TextLineRenderer {
                 }
 
                 if (renderWidth > 0) {
-                    renderer.drawTexture(font.getTexture(), renderX, y, renderWidth, quad.getHeight(), u1, quad.getV1(), u2, quad.getV2(), color);
+                    renderer.drawTexture(font.getTexture(), renderX, y, renderWidth, quad.getHeight(), u1, quad.getV1(), u2, quad.getV2(), linearColor);
                 }
                 return currentX + charAdvance;
             }

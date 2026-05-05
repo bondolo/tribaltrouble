@@ -3,7 +3,7 @@ package com.oddlabs.tt.pathfinder;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.util.DebugRender;
 import com.oddlabs.tt.util.Target;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -111,10 +111,10 @@ public final class UnitGrid {
                 float zf = heightmap.getNearestHeight(xf, yf) + 2f;
                 Region region = getRegion(x, y);
                 if (region == null) {
-                    DebugRender.drawPoint(xf, yf, zf, 3f, 1f, 0f, 0f);
+                    DebugRender.drawPoint(xf, yf, zf, 3f, Color.RED_LINEAR.x(), Color.RED_LINEAR.y(), Color.RED_LINEAR.z());
                 } else {
                     last_region = region;
-                    Vector4fc color = DebugRender.debug_colors[region.hashCode() % DebugRender.debug_colors.length];
+                    Color color = new Color.Linear(DebugRender.debug_colors[region.hashCode() % DebugRender.debug_colors.length]);
                     DebugRender.drawPoint(xf, yf, zf, 3f, color.x(), color.y(), color.z());
                 }
             }
@@ -125,15 +125,19 @@ public final class UnitGrid {
         }
     }
 
-    private void debugRenderQuad(int x, int y) {
+    /**
+     * renders the specified unit grid as a quad
+     * @param color assumed to be a linear color
+     */
+    private void debugRenderQuad(int x, int y, @NonNull Color color) {
         final float OFFSET = 2f;
         final float RADIUS = .5f;
         int s = HeightMap.METERS_PER_UNIT_GRID;
         float xf = (x + .5f) * s;
         float yf = (y + .5f) * s;
         float z = heightmap.getNearestHeight(xf, yf) + OFFSET;
-        DebugRender.drawLine(xf - RADIUS, yf - RADIUS, z, xf + RADIUS, yf + RADIUS, z, 1f, 1f, 0f);
-        DebugRender.drawLine(xf + RADIUS, yf - RADIUS, z, xf - RADIUS, yf + RADIUS, z, 1f, 1f, 0f);
+        DebugRender.drawLine(xf - RADIUS, yf - RADIUS, z, xf + RADIUS, yf + RADIUS, z, color.x(), color.y(), color.z());
+        DebugRender.drawLine(xf + RADIUS, yf - RADIUS, z, xf - RADIUS, yf + RADIUS, z, color.x(), color.y(), color.z());
     }
 
     public @NonNull HeightMap getHeightMap() {
@@ -151,7 +155,7 @@ public final class UnitGrid {
         for (int y = start_y; y < end_y; y++) {
             for (int x = start_x; x < end_x; x++) {
                 if (isGridOccupied(x, y)) {
-                    debugRenderQuad(x, y);
+                    debugRenderQuad(x, y, Color.YELLOW_LINEAR);
                 }
             }
         }

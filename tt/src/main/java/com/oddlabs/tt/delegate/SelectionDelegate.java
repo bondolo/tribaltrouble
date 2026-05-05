@@ -26,7 +26,6 @@ import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.Notification;
 import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.util.Color;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -39,7 +38,7 @@ import java.util.ResourceBundle;
  * It also manages in-game chat, jumping to notifications, and switching to map or observer modes.
  */
 public final class SelectionDelegate extends ControllableCameraDelegate {
-    private static final Vector4fc SELECTION_COLOR = Color.argb4v(0xFF_4C_FF_00);
+    private static final Color SELECTION_COLOR = Color.argb4v(0xFF_4C_FF_00);
     private static final GameAction[] ARMY_CREATES = new GameAction[]{
             GameAction.ARMY_CREATE_0,
             GameAction.ARMY_CREATE_1,

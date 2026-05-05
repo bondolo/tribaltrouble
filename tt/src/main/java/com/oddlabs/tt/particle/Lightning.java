@@ -5,8 +5,8 @@ import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
 import com.oddlabs.tt.render.TextureKey;
+import com.oddlabs.util.Color;
 import org.joml.Vector3fc;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
@@ -26,15 +26,15 @@ public final class Lightning extends Element<Lightning> implements Animated {
     private final @NonNull Vector3fc dst;
     private final float width;
     private final int num_particles;
-    private final @NonNull Vector4fc color;
-    private final @NonNull Vector4fc delta_color;
+    private final @NonNull Color color;
+    private final @NonNull Color delta_color;
     private final @NonNull TextureKey texture;
     private final @NonNull World world;
 
     private final float energy;
 
     public Lightning(@NonNull World world, @NonNull Vector3fc src, @NonNull Vector3fc dst, float width,
-                     int num_particles, @NonNull Vector4fc color, @NonNull Vector4fc delta_color,
+                     int num_particles, @NonNull Color color, @NonNull Color delta_color,
                      @NonNull TextureKey texture, float energy,
                      @NonNull AnimationManager manager) {
         super(world.getElementRoot());
@@ -102,8 +102,8 @@ public final class Lightning extends Element<Lightning> implements Animated {
 
     private void initParticle(@NonNull StretchParticle particle) {
         particle.setSrcWidth(width);
-        particle.setColor(color.x(), color.y(), color.z(), color.w());
-        particle.setDeltaColor(delta_color.x(), delta_color.y(), delta_color.z(), delta_color.w());
+        particle.setColor(color);
+        particle.setDeltaColor(delta_color);
         particle.setRadius(0f, 0f, 0f);
         particle.setGrowthRate(0f, 0f, 0f);
         particle.setEnergy(energy);

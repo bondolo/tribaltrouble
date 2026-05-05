@@ -35,7 +35,7 @@ public final class GUIRoot extends GUIObject {
     private static final Logger logger = Logger.getLogger(GUIRoot.class.getName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GUIRoot.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 

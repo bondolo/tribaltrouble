@@ -104,10 +104,10 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                     #version 410 core
                     """ +
                     GLOBAL_STATE_BLOCK +
+                    LIGHTING_CONSTANTS +
                     FOG_FUNCTION +
                     PERTURB_NORMAL_FUNC +
                     FRAGMENT_LIGHTING_FUNCTION +
-                    COLOR_SPACE_FUNCTIONS +
                     """
                             uniform sampler2D u_texture0;
                             uniform sampler2D u_texture1;
@@ -188,7 +188,7 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
                                 vec3 litColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
-                                out_FragColor = toSRGB(vec4(litColor, finalColor.a));
+                                out_FragColor = vec4(litColor, finalColor.a);
                             }
                             """;
 

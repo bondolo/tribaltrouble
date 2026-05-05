@@ -14,7 +14,6 @@ import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -44,7 +43,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         whiteTexture = new Texture(new GLImage[]{whiteImage}, GL11.GL_RGBA8, GL11.GL_NEAREST, GL11.GL_NEAREST, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
     }
 
-    public void add(@NonNull SpriteList spriteList, int spriteIndex, int animation, float animTicks, int texIndex, boolean respond, boolean blend, boolean depthWrite, boolean depthTest, @NonNull Matrix4f modelMatrix, @NonNull Vector4fc color, @NonNull Vector4fc decalColor) {
+    public void add(@NonNull SpriteList spriteList, int spriteIndex, int animation, float animTicks, int texIndex, boolean respond, boolean blend, boolean depthWrite, boolean depthTest, @NonNull Matrix4f modelMatrix, @NonNull Color color, @NonNull Color decalColor) {
         Sprite sprite = spriteList.getSprite(spriteIndex);
         Sprite.FrameState frameState = sprite.getAnimationState(animation, animTicks);
 
@@ -186,7 +185,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             GL33.glVertexAttribDivisor(tweenLoc, 1);
         }
 
-        void addInstance(int pos1, int norm1, int pos2, int norm2, float tween, @NonNull Matrix4f modelMatrix, @NonNull Vector4fc color, @NonNull Vector4fc decalColor) {
+        void addInstance(int pos1, int norm1, int pos2, int norm2, float tween, @NonNull Matrix4f modelMatrix, @NonNull Color color, @NonNull Color decalColor) {
             if (totalInstances >= capacity) {
                 int newCapacity = capacity * 2;
                 FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity * FLOATS_PER_INSTANCE);

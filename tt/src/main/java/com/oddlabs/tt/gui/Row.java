@@ -1,8 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.render.GUIRenderer;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -10,7 +9,7 @@ public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject
     private final @NonNull C @NonNull [] columns;
     private final @Nullable T content_object;
     private int sort_index;
-    private final Vector4f color = new Vector4f(com.oddlabs.util.Color.TRANSPARENT);
+    private @NonNull Color color = Color.TRANSPARENT_LINEAR;
     private boolean marked = false;
 
     public Row(@NonNull C @NonNull [] columns, @Nullable T content_object) {
@@ -51,8 +50,8 @@ public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject
         return getColumn(sort_index).compareTo(o.getColumn(sort_index));
     }
 
-    public void setColor(@NonNull Vector4fc color) {
-        this.color.set(color);
+    public void setColor(@NonNull Color color) {
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
     }
 
     @Override

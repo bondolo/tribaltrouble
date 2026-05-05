@@ -14,8 +14,8 @@ import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;
+import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
-import org.joml.Vector4fc;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -85,7 +85,7 @@ public final class LightningRenderer implements AutoCloseable {
              var _ = context.withCullMode(CullMode.NONE)) {
 
             Matrix4fc mv = modelViewStack.current();
-            shader.setUniformMatrix4(LightningShader.Uniforms.MODEL_VIEW_MATRIX, false, mv);
+            shader.setUniform(LightningShader.Uniforms.MODEL_VIEW_MATRIX, mv);
 
             shader.setUniform(LightningShader.Uniforms.TEXTURE_0, 0);
 
@@ -110,11 +110,12 @@ public final class LightningRenderer implements AutoCloseable {
         float dst_y = particle.getDstY();
         float dst_z = particle.getDstZ();
 
-        Vector4fc color = particle.getColor();
-        float r = color.x();
-        float g = color.y();
-        float b = color.z();
-        float a = color.w();
+        var color = particle.getColor();
+        var linearColor = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
+        float r = linearColor.x();
+        float g = linearColor.y();
+        float b = linearColor.z();
+        float a = linearColor.w();
 
         float sw = particle.getSrcWidth();
         float dw = particle.getDstWidth();

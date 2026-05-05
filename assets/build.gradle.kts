@@ -1,8 +1,8 @@
 import com.smushytaco.lwjgl_gradle.Module
+import org.gradle.internal.os.OperatingSystem
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
-import org.gradle.internal.os.OperatingSystem
 
 plugins {
     id("com.smushytaco.lwjgl3")
@@ -142,8 +142,8 @@ val convertExternalDecals = convertBatch("convertExternalDecals",
 convertExternalDecals.configure { dependsOn(downloadAssets) }
 
 // 2. GUI Textures
-val convertGui = convertBatch("convertGui", "textures/gui", "gui", "-color", "-flip", "-format", "dds")
-val convertPixelPerfect = convertBatch("convertPixelPerfect", "textures/pixelperfect", "gui", "-color", "-flip", "-format", "dds")
+val convertGui = convertBatch("convertGui", "textures/gui", "gui", "-color", "-flip", "-stb", "-format", "dds")
+val convertPixelPerfect = convertBatch("convertPixelPerfect", "textures/pixelperfect", "gui", "-color", "-flip", "-stb", "-format", "dds")
 
 // 3. Fonts
 val fontInfoDir = layout.buildDirectory.dir("resources/font")
