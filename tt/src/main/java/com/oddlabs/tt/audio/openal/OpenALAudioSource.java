@@ -90,6 +90,7 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         super.close();
     }
 
+    @Override
     public void setDirectFilterGainHF(float gainHF) {
         try {
             if (directFilter == null) {
@@ -284,6 +285,7 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         this.audio_player = audio_player;
     }
 
+    @Override
     public void setAuxiliarySend(int slotId, int filterId) {
         AL11.alSource3i(getSource(), AL_AUXILIARY_SEND_FILTER, slotId, 0, filterId);
         checkALError("alSource3i AL_AUXILIARY_SEND_FILTER");

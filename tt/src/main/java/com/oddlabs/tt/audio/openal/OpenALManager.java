@@ -102,6 +102,16 @@ public final class OpenALManager extends AudioManager {
     }
 
     @Override
+    public boolean isEFXSupported() {
+        return efxManager.isSupported();
+    }
+
+    @Override
+    public int getEFXEffectSlot() {
+        return efxManager.getEffectSlot();
+    }
+
+    @Override
     public boolean isHRTFSupported() {
         return alcIsExtensionPresent(data.device, "ALC_SOFT_HRTF");
     }

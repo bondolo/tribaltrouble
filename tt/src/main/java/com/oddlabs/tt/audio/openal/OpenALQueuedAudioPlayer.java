@@ -17,7 +17,7 @@ import java.nio.IntBuffer;
  */
 final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     private static final int NUM_BUFFERS = 12;
-    private final OpenALAudio audio = new OpenALAudio(NUM_BUFFERS);
+    private final @Nullable OpenALAudio audio;
     private final IntBuffer al_return_buffers = BufferUtils.createIntBuffer(1);
     private final int al_format;
 
@@ -25,9 +25,11 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
         super(source, params, NUM_BUFFERS);
         if (this.ogg_stream == null || this.source == null) {
             this.al_format = AL10.AL_NONE;
+            this.audio = null;
             return;
         }
 
+        this.audio = new OpenALAudio(NUM_BUFFERS);
         this.al_format = Wave.getFormat(channels, Short.SIZE);
 
         IntBuffer al_buffers = audio.getBuffers();
@@ -80,6 +82,8 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     @Override
     public void stop() {
         super.stop();
-        audio.close();
+        if (audio != null) {
+            audio.close();
+        }
     }
 }

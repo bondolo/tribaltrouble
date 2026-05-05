@@ -3,6 +3,7 @@ package com.oddlabs.tt.audio;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Settings;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -34,7 +35,7 @@ public abstract class AudioPlayer implements Animated {
     public static final float AUDIO_DISTANCE_WEAPON_HIT = 75f;
     public static final float AUDIO_DISTANCE_WEAPON_ATTACK = 75f;
     public static final float AUDIO_DISTANCE_TREE_FALL = 80f;
-    public static final float AUDIO_DISTANCE_ARMORY = 60f;
+    public static final float AUDIO_DISTANCE_ARMORY = 120f;
     public static final float AUDIO_DISTANCE_HARVEST = 40f;
     public static final float AUDIO_DISTANCE_CHICKEN = 25f;
 
@@ -58,7 +59,7 @@ public abstract class AudioPlayer implements Animated {
     public static final float AUDIO_GAIN_BLAST_LUR = 1f;
     public static final float AUDIO_GAIN_BLAST_RUMBLE = 1f;
     public static final float AUDIO_GAIN_BLAST_BLAST = 1f;
-    public static final float AUDIO_GAIN_ARMORY = .5f;
+    public static final float AUDIO_GAIN_ARMORY = 1f;
 
     public static final float AUDIO_RADIUS_AMBIENT_FOREST = 1f;
     public static final float AUDIO_RADIUS_AMBIENT_BEACH = 1f;
@@ -80,7 +81,7 @@ public abstract class AudioPlayer implements Animated {
     public static final float AUDIO_RADIUS_BLAST_LUR = 1f;
     public static final float AUDIO_RADIUS_BLAST_RUMBLE = 1f;
     public static final float AUDIO_RADIUS_BLAST_BLAST = 1f;
-    public static final float AUDIO_RADIUS_ARMORY = 4f;
+    public static final float AUDIO_RADIUS_ARMORY = 5f;
 
     /** The volume threshold at which a sound is considered silent (reached at max distance). */
     private static final float SILENCE_THRESHOLD = 0.032f;
@@ -106,9 +107,6 @@ public abstract class AudioPlayer implements Animated {
         source.setRelative(params.relative);
 
         setGain(params.gain);
-        setPos(params.x, params.y, params.z);
-        var state = source.getState();
-        assert state == AudioSource.State.STOPPED || state == AudioSource.State.INITIAL;
 
         // Calculate rolloff so the sound reaches SILENCE_THRESHOLD at params.distance
         float refDist = params.radius;
@@ -122,6 +120,12 @@ public abstract class AudioPlayer implements Animated {
         source.setMinGain(0f);
         source.setMaxGain(1f);
         source.setPitch(params.pitch);
+
+        updateEnvironmentalEffects();
+        setPos(params.x, params.y, params.z);
+
+        var state = source.getState();
+        assert state == AudioSource.State.STOPPED || state == AudioSource.State.INITIAL;
     }
 
     protected final boolean isPlaying() {
@@ -140,8 +144,47 @@ public abstract class AudioPlayer implements Animated {
     }
 
     public final void setPos(float x, float y, float z) {
-        if (playing && source != null)
+        if (playing && source != null) {
             source.setPosition(x, y, z);
+            updateAirAbsorption(x, y, z);
+        }
+    }
+
+    private void updateEnvironmentalEffects() {
+        if (source == null) return;
+
+        // Music and notifications don't get environmental effects/reverb
+        boolean useEFX = parameters.rank != AUDIO_RANK_MUSIC && parameters.rank != AUDIO_RANK_NOTIFICATION;
+
+        if (AudioManager.getManager().isEFXSupported()) {
+            int slot = useEFX ? AudioManager.getManager().getEFXEffectSlot() : 0;
+            source.setAuxiliarySend(slot, 0);
+        }
+    }
+
+    private void updateAirAbsorption(float x, float y, float z) {
+        if (source == null) return;
+        
+        // Music doesn't get muffled by distance
+        if (parameters.rank == AUDIO_RANK_MUSIC || parameters.rank == AUDIO_RANK_NOTIFICATION) {
+            source.setDirectFilterGainHF(1.0f);
+            return;
+        }
+
+        if (AudioManager.getManager().isEFXSupported()) {
+            Vector3fc listener = AudioManager.getManager().getListenerPosition();
+            float dx = x - listener.x();
+            float dy = y - listener.y();
+            float dz = z - listener.z();
+            float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            // Simple air absorption: brighter up close, muffled far away
+            // Clamp to [0.1, 1.0] to avoid total silence in HF
+            float maxDist = parameters.distance != Float.MAX_VALUE ? parameters.distance : 1000f;
+            float gainHF = Math.clamp(1.0f - (dist / maxDist), 0.1f, 1.0f);
+
+            source.setDirectFilterGainHF(gainHF);
+        }
     }
 
     public void stop() {

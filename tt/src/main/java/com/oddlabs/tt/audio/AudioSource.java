@@ -165,6 +165,21 @@ public interface AudioSource extends AutoCloseable {
     void setAudioPlayer(AudioPlayer audioPlayer);
 
     /**
+     * Sets the auxiliary effect slot to send audio to (e.g., for reverb).
+     *
+     * @param slotId   The effect slot ID.
+     * @param filterId The filter ID to apply to the send, or 0 for none.
+     */
+    void setAuxiliarySend(int slotId, int filterId);
+
+    /**
+     * Sets the gain of the direct path high-frequency filter (air absorption).
+     *
+     * @param gainHF The gain value [0.0, 1.0].
+     */
+    void setDirectFilterGainHF(float gainHF);
+
+    /**
      * Closes the audio source and releases its native resources.
      */
     @Override

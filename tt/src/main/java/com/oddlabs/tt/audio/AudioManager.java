@@ -135,16 +135,22 @@ public abstract class AudioManager implements AutoCloseable {
         return false;
     }
 
+    public boolean isEFXSupported() {
+        return false;
+    }
+
+    public int getEFXEffectSlot() {
+        return 0;
+    }
+
     public void stopSources() {
         sound_play_counter--;
+        if (sound_play_counter < 0) sound_play_counter = 0;
         if (sound_play_counter == 0) {
             for (AudioSource source : sources) {
                 int rank = source.getRank();
                 switch (rank) {
-                    case AudioPlayer.AUDIO_RANK_MUSIC -> {
-                        // can't stop the music
-                    }
-                    case AudioPlayer.AUDIO_RANK_AMBIENT -> source.pause();
+                    case AudioPlayer.AUDIO_RANK_MUSIC, AudioPlayer.AUDIO_RANK_AMBIENT -> source.pause();
                     default -> source.stop();
                 }
             }
@@ -181,35 +187,48 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     private void updateAmbientSources() {
-        if (active_ambient != null) {
-            for (AmbientAudioSource anActive_ambient : active_ambient) {
-                if (anActive_ambient != null)
-                    anActive_ambient.setGainTarget(0f);
-            }
-        }
         if (active_ambient == null)
             active_ambient = new AmbientAudioSource[10];
 
         int n = 0;
-
         var listenerPosition = getListenerPosition();
-        for (AudioSource ambient : ambients) {
-            var player = ambient.getAudioPlayer();
+        
+        // Mark all current slots as "potential removals" by setting target to 0
+        for (AmbientAudioSource active : active_ambient) {
+            if (active != null) active.setGainTarget(0f);
+        }
+
+        for (AudioSource ambientSource : ambients) {
+            var player = ambientSource.getAudioPlayer();
             if (player != null && player.isPlaying()) {
-                float[] position = ambient.getPosition();
+                float[] position = ambientSource.getPosition();
                 float dist_sq = (position[0] - listenerPosition.x()) * (position[0] - listenerPosition.x())
                     + (position[1] - listenerPosition.y()) * (position[1] - listenerPosition.y())
                     + (position[2] - listenerPosition.z()) * (position[2] - listenerPosition.z());
+                
                 if (dist_sq < AudioPlayer.AUDIO_DISTANCE_AMBIENT * AudioPlayer.AUDIO_DISTANCE_AMBIENT) {
-                    if (n < active_ambient.length) {
-                        active_ambient[n++] = new AmbientAudioSource(ambient);
-                        active_ambient[n-1].setGainTarget(1f);
+                    // Find if we already have a wrapper for this source
+                    AmbientAudioSource wrapper = null;
+                    int freeSlot = -1;
+                    for (int i = 0; i < active_ambient.length; i++) {
+                        if (active_ambient[i] != null && active_ambient[i].isUsing(ambientSource)) {
+                            wrapper = active_ambient[i];
+                            break;
+                        }
+                        if (active_ambient[i] == null && freeSlot == -1) freeSlot = i;
+                    }
+
+                    if (wrapper == null && freeSlot != -1) {
+                        wrapper = new AmbientAudioSource(ambientSource);
+                        active_ambient[freeSlot] = wrapper;
+                    }
+
+                    if (wrapper != null) {
+                        wrapper.setGainTarget(1f);
                     }
                 }
             }
         }
-        for (int i = n; i < active_ambient.length; i++)
-            active_ambient[i] = null;
     }
 
     public final boolean startPlaying() {
@@ -327,11 +346,32 @@ public abstract class AudioManager implements AutoCloseable {
             }
         }
 
-        if (best_candidate != null && params.rank > lowest_rank) {
+        // Steal source if it's lower priority OR same priority but quieter
+        if (best_candidate != null && (params.rank > lowest_rank || (params.rank == lowest_rank && calculatePerceivedGain(params, listenerPosition) > lowest_perceived_gain))) {
             return best_candidate;
         }
 
         return null;
+    }
+
+    private float calculatePerceivedGain(@NonNull AudioParameters<?> p, @NonNull Vector3fc listenerPosition) {
+        if (p.relative) return p.gain;
+
+        float dx = p.x - listenerPosition.x();
+        float dy = p.y - listenerPosition.y();
+        float dz = p.z - listenerPosition.z();
+        float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        // SILENCE_THRESHOLD from AudioPlayer
+        float silenceThreshold = 0.032f;
+        float refDist = p.radius;
+        float maxDist = p.distance;
+        float rolloff = (maxDist > refDist) 
+                ? (refDist / silenceThreshold - refDist) / (maxDist - refDist) 
+                : 1.0f;
+
+        // AL_INVERSE_DISTANCE_CLAMPED model
+        return p.gain * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
     }
 
     private float calculatePerceivedGain(@NonNull AudioSource source, @NonNull Vector3fc listenerPosition) {
