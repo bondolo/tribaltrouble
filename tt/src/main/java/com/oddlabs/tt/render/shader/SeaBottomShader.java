@@ -61,7 +61,8 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader {
             
                 if (u_detailScale > 0.0001) {
                    vec4 detail = texture(u_texture1, v_texCoordDetail);
-                   color.rgb *= (detail.rgb * 2.0);
+                   // Match LandscapeShader's subtle detail range [0.8, 1.2]
+                   color.rgb *= (detail.rgb * 0.4 + 0.8);
                 }
             
                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);

@@ -98,7 +98,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     @Override
     public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.NONE);
+             var _ = context.withBlendMode(BlendMode.ALPHA);
              var _ = context.withDepthMode(DepthMode.READ_WRITE);
              var _ = context.withCullMode(CullMode.NONE)) {
 
