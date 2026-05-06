@@ -123,12 +123,7 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
         particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter.getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
 
-        var color = particle.getColor();
-        var alpha = Math.min(color.w(), 1.0f);
-        var linearColor = color instanceof Color.Linear linear
-            ? linear
-            : new Color.Linear(Color.toLinear(color.x()), Color.toLinear(color.y()), Color.toLinear(color.z()), 0f);
-        particle_buffer.put(linearColor.x).put(linearColor.y).put(linearColor.z).put(alpha);
+        particle_buffer.put(particle.getColorR()).put(particle.getColorG()).put(particle.getColorB()).put(particle.getColorA());
 
         // UV Info 1: u1, v1, u2, v2
         particle_buffer.put(particle.getU1()).put(particle.getV1()).put(particle.getU2()).put(particle.getV2());

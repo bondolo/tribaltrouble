@@ -110,12 +110,11 @@ public final class LightningRenderer implements AutoCloseable {
         float dst_y = particle.getDstY();
         float dst_z = particle.getDstZ();
 
-        var color = particle.getColor();
-        var linearColor = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
-        float r = linearColor.x();
-        float g = linearColor.y();
-        float b = linearColor.z();
-        float a = linearColor.w();
+        // Color
+        float r = particle.getColorR();
+        float g = particle.getColorG();
+        float b = particle.getColorB();
+        float a = particle.getColorA();
 
         float sw = particle.getSrcWidth();
         float dw = particle.getDstWidth();
