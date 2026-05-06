@@ -47,6 +47,10 @@ public abstract class AudioManager implements AutoCloseable {
     private final @NonNull AudioSource @NonNull [] sources;
     private @Nullable AmbientAudioSource[] active_ambient;
     private float updateTime = 0f;
+
+    /** The interval (in seconds) between ambient sound proximity checks. */
+    private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
+
     private boolean isPlaying = false;
     private float masterGain = 1f;
     private final Vector3f listenerPosition = new Vector3f();
@@ -172,8 +176,8 @@ public abstract class AudioManager implements AutoCloseable {
         }
 
         updateTime += t;
-        if (updateTime >= 2.0f) {
-            updateTime -= 2.0f;
+        if (updateTime >= AMBIENT_UPDATE_INTERVAL) {
+            updateTime -= AMBIENT_UPDATE_INTERVAL;
             updateAmbientSources();
         }
 
@@ -190,7 +194,6 @@ public abstract class AudioManager implements AutoCloseable {
         if (active_ambient == null)
             active_ambient = new AmbientAudioSource[10];
 
-        int n = 0;
         var listenerPosition = getListenerPosition();
         
         // Mark all current slots as "potential removals" by setting target to 0
