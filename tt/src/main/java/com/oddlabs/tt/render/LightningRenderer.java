@@ -23,7 +23,10 @@ import org.lwjgl.opengl.GL15;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 
@@ -72,8 +75,16 @@ public final class LightningRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<@NonNull Lightning> queue, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        if (queue.isEmpty()) return;
+    private final Deque<@NonNull Lightning> activeLightnings = new ArrayDeque<>();
+
+    public void prepare(@NonNull Queue<@NonNull Lightning> queue) {
+        activeLightnings.clear();
+        activeLightnings.addAll(queue);
+        queue.clear();
+    }
+
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+        if (activeLightnings.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
         vbo_offset = 0;
@@ -92,12 +103,12 @@ public final class LightningRenderer implements AutoCloseable {
             vao.bind();
 
             if (Globals.draw_particles) {
-                for (Lightning emitter : queue) {
+                for (Lightning emitter : activeLightnings) {
                     renderInternal(context, render_queues, emitter);
                 }
             }
         } finally {
-            queue.clear();
+            activeLightnings.clear();
             vao.unbind();
         }
     }

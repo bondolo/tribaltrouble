@@ -81,8 +81,15 @@ public final class EmitterRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
-        if (emitters.isEmpty()) return;
+    public void prepare(@NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters, @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
+        if (Globals.draw_particles)
+            for (Emitter<?> emitter : emitters) {
+                collectParticles(render_queues, emitter, state, modelViewStack);
+            }
+    }
+
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
+        if (batches.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
         vbo_offset = 0;
@@ -97,18 +104,13 @@ public final class EmitterRenderer implements AutoCloseable {
 
             context.setActiveTexture(0);
             shader.setUniform(ParticleShader.Uniforms.TEXTURE_0, 0);
-            
+
             context.setActiveTexture(1);
             context.setTexture(1, depthTexture.getHandle());
             shader.setUniform(ParticleShader.Uniforms.DEPTH_MAP, 1);
-            
+
             shader.setUniform(ParticleShader.Uniforms.NEAR_FAR, Globals.VIEW_MIN, Globals.VIEW_MAX);
             shader.setUniform(ParticleShader.Uniforms.SOFT_RANGE, 2.0f); // Adjust default as needed
-
-            for (Emitter<?> emitter : emitters) {
-                if (Globals.draw_particles)
-                    collectParticles(render_queues, emitter, state, modelViewStack, projectionStack);
-            }
 
             flushBatches(context);
         } finally {
@@ -131,7 +133,7 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_buffer.put(particle.getU3()).put(particle.getV3()).put(particle.getU4()).put(particle.getV4());
     }
 
-    private <P extends Particle> void collectParticles(@NonNull RenderQueues render_queues, @NonNull Emitter<P> emitter, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    private <P extends Particle> void collectParticles(@NonNull RenderQueues render_queues, @NonNull Emitter<P> emitter, @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
         TextureKey[] textures = emitter.getTextures();
         List<@NonNull P>[] particles = emitter.getParticles();
         SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();

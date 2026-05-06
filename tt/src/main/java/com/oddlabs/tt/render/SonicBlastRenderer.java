@@ -18,6 +18,10 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -56,8 +60,16 @@ public final class SonicBlastRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Queue<@NonNull SonicBlastEffect> queue, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        if (queue.isEmpty()) return;
+    private final @NonNull Deque<SonicBlastEffect> activeEffects = new ArrayDeque<>();
+
+    public void prepare(@NonNull Queue<@NonNull SonicBlastEffect> queue) {
+        activeEffects.clear();
+        activeEffects.addAll(queue);
+        queue.clear();
+    }
+
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+        if (activeEffects.isEmpty()) return;
 
         try (var _ = shader.use();
              var _ = context.withBlendMode(BlendMode.ADDITIVE);
@@ -72,7 +84,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
             vao.bind();
 
-            for (SonicBlastEffect effect : queue) {
+            for (SonicBlastEffect effect : activeEffects) {
                 if (effect.isDead()) continue;
 
                 modelViewStack.push();
@@ -100,6 +112,8 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
             vao.unbind();
             context.setActiveTexture(0);
+        } finally {
+            activeEffects.clear();
         }
     }
 

@@ -246,6 +246,14 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             element_renderer.visit(world.getElementRoot());
         }
 
+        // Process transient effects (smoke, lightning, fragments) immediately after visitation.
+        if (Globals.process_misc) {
+            var renderState = element_renderer.getRenderState();
+            emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state, modelViewStack);
+            lightningRenderer.prepare(renderState.getLightningQueue());
+            sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
+        }
+
         sprite_sorter.distributeModels();
 
         if (Globals.process_shadows) {
@@ -289,9 +297,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
         // Render transient effects (smoke, lightning) AFTER all other scene objects.
         // This ensures they are depth-tested against the complete scene (including water and blended units).
-        lightningRenderer.render(context, render_queues, element_renderer.getRenderState().getLightningQueue(), frustum_state, modelViewStack, projectionStack);
-        emitterRenderer.render(context, render_queues, element_renderer.getRenderState().getEmitterQueue(), frustum_state, modelViewStack, projectionStack, postProcessor.getDepthCopyTexture());
-        sonicBlastRenderer.render(context, render_queues, element_renderer.getRenderState().getSonicBlastQueue(), frustum_state, modelViewStack, projectionStack);
+        lightningRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
+        emitterRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack, postProcessor.getDepthCopyTexture());
+        sonicBlastRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
 
         // Rally point uses SpriteShader (Mask) -> Enable
         context.setDrawBuffers(true);
