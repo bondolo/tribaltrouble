@@ -1,5 +1,7 @@
 package com.oddlabs.tt.audio;
 
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -139,9 +141,9 @@ public interface AudioSource extends AutoCloseable {
     /**
      * Retrieves the position of the audio source.
      *
-     * @return A float array containing the position (x, y, z).
+     * @return The position (x, y, z).
      */
-    float @NonNull [] getPosition();
+    @NonNull Vector3f getPosition();
 
     /**
      * Gets the priority rank of the audio source.

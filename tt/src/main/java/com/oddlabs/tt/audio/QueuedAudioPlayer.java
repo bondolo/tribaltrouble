@@ -17,14 +17,14 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     private static final Set<QueuedAudioPlayer> queued_players = new CopyOnWriteArraySet<>();
 
     protected final ShortBuffer pcmBuffer = org.lwjgl.BufferUtils.createShortBuffer(PCM_SAMPLES);
-    protected final int channels;
-    protected final @Nullable OGGStream ogg_stream;
+    protected volatile @Nullable OGGStream ogg_stream;
+    protected volatile int channels;
 
     static void stopAll() {
         queued_players.forEach(QueuedAudioPlayer::stop);
     }
 
-    protected QueuedAudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<@NonNull String> params, int numBuffers) throws IOException {
+    protected QueuedAudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<@NonNull String> params, int numBuffers) {
         super(source, params);
         if (!isPlaying() || this.source == null) {
             this.ogg_stream = null;
@@ -32,16 +32,18 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
             return;
         }
 
-        this.ogg_stream = new OGGStream(Utils.makeURL(params.sound));
-        this.channels = ogg_stream.getChannels();
-
-        // Calculate sleep interval based on total queued time across all buffers.
-        // We wait for approximately half of the total buffers to be empty before waking up.
-        long totalSamplesPerChannel = (long) PCM_SAMPLES * numBuffers / channels;
-        long sleepInterval = Math.max(10, (1000L * totalSamplesPerChannel / ogg_stream.getRate()) / 2);
-
         Thread.startVirtualThread(() -> {
             try {
+                this.ogg_stream = new OGGStream(Utils.makeURL(params.sound));
+                this.channels = ogg_stream.getChannels();
+
+                initAsync();
+
+                // Calculate sleep interval based on total queued time across all buffers.
+                // We wait for approximately half of the total buffers to be empty before waking up.
+                long totalSamplesPerChannel = (long) PCM_SAMPLES * numBuffers / channels;
+                long sleepInterval = Math.max(10, (1000L * totalSamplesPerChannel / ogg_stream.getRate()) / 2);
+
                 while(isPlaying()) {
                     try {
                         refill();
@@ -52,8 +54,10 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
                         break;
                     }
                 }
+            } catch (Exception e) {
+                // Failed to load, init, or read. Exit silently.
             } finally {
-                stop();
+                cleanup();
             }
         });
 
@@ -61,18 +65,25 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     }
 
     /** Run by the Refiller thread */
+    protected abstract void initAsync() throws Exception;
+    
+    /** Run by the Refiller thread */
     public abstract void refill() throws IOException;
+
+    /** Run by the Refiller thread */
+    protected abstract void cleanupAsync();
 
     protected int readPCM() {
         pcmBuffer.clear(); // Position 0, Limit PCM_SAMPLES
-        if (ogg_stream == null) return 0;
+        var stream = ogg_stream;
+        if (stream == null) return 0;
 
-        int shortsRead = ogg_stream.read(pcmBuffer);
+        int shortsRead = stream.read(pcmBuffer);
 
         if (shortsRead <= 0 && getParameters().looping) {
             // End of ogg stream reached, but we are looping.
-            ogg_stream.seek(0);
-            shortsRead = ogg_stream.read(pcmBuffer);
+            stream.seek(0);
+            shortsRead = stream.read(pcmBuffer);
         }
 
         if (shortsRead > 0) {
@@ -90,12 +101,17 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
 
     @Override
     public void stop() {
+        super.stop(); // Sets playing = false and stops the source.
         queued_players.remove(this);
-        if (isPlaying()) {
-            if (ogg_stream != null) {
-                ogg_stream.close();
-            }
-            super.stop();
+        // The virtual thread will see playing == false and exit, running its finally block to cleanup.
+    }
+
+    private void cleanup() {
+        OGGStream stream = ogg_stream;
+        ogg_stream = null;
+        if (null != stream) {
+            stream.close();
         }
+        cleanupAsync();
     }
 }

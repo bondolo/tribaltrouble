@@ -19,9 +19,7 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.resource.Resources;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.FloatBuffer;
 import java.util.logging.Logger;
 
 public final class AmbientAudio {
@@ -117,7 +115,7 @@ public final class AmbientAudio {
             float dr = 2f * (float) Math.sqrt(dx * dx + dy * dy) / meters_per_world;
 
             // update placement and gain of ambient forest source
-            ambient_forest.setPos(0f, 0f, heightmap.getNearestHeight(camera.getCurrentX(), camera.getCurrentY()) - camera.getCurrentZ() + 8f);
+            ambient_forest.setPosition(0f, 0f, heightmap.getNearestHeight(camera.getCurrentX(), camera.getCurrentY()) - camera.getCurrentZ() + 8f);
             ambient_forest.setGain(AudioPlayer.AUDIO_GAIN_AMBIENT_FOREST * Math.clamp(1f - dr + 0.5f, 0f, 1f));
 
             // update placement and gain of ambient beach source
@@ -128,11 +126,11 @@ public final class AmbientAudio {
             float beach_y = camera.getCurrentY() * factor;
             float beach_z = heightmap.getNearestHeight(camera.getCurrentX(), camera.getCurrentY()) - camera.getCurrentZ();
             float beach_gain = AudioPlayer.AUDIO_GAIN_AMBIENT_BEACH * Math.clamp(1f - Math.abs(4f * dr - 3.75f), 0f, 1f);
-            ambient_beach.setPos(beach_x, beach_y, beach_z);
+            ambient_beach.setPosition(beach_x, beach_y, beach_z);
             ambient_beach.setGain(beach_gain);
 
             // update placement of ambient wind source
-            ambient_wind.setPos(0f, 0f, Math.max(0f, 50f + GameCamera.MAX_Z - camera.getCurrentZ()));
+            ambient_wind.setPosition(0f, 0f, Math.max(0f, 50f + GameCamera.MAX_Z - camera.getCurrentZ()));
             ambient_wind.setGain(AudioPlayer.AUDIO_GAIN_AMBIENT_WIND);
 
             if (AudioManager.getManager() instanceof OpenALManager alManager) {

@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,13 +52,13 @@ public abstract class AudioManager implements AutoCloseable {
     /** The interval (in seconds) between ambient sound proximity checks. */
     private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
 
-    private boolean isPlaying = false;
+    private volatile boolean isPlaying = false;
     private float masterGain = 1f;
     private final Vector3f listenerPosition = new Vector3f();
     private final Vector3f listenerForward = new Vector3f(0, 0, -1);
     private final Vector3f listenerUp = new Vector3f(0, 1, 0);
 
-    private int sound_play_counter = Settings.getSettings().play_sfx ? 1 : 0;
+    private final AtomicInteger sound_play_counter = new AtomicInteger(Settings.getSettings().play_sfx ? 1 : 0);
 
     /**
      * {@return The singleton AudioManager instance.}
@@ -148,9 +149,7 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     public void stopSources() {
-        sound_play_counter--;
-        if (sound_play_counter < 0) sound_play_counter = 0;
-        if (sound_play_counter == 0) {
+        if (sound_play_counter.decrementAndGet() == 0) {
             for (AudioSource source : sources) {
                 int rank = source.getRank();
                 switch (rank) {
@@ -159,6 +158,7 @@ public abstract class AudioManager implements AutoCloseable {
                 }
             }
         }
+        if (sound_play_counter.intValue() < 0) sound_play_counter.set(0);
     }
 
     public final void resetVolumes() {
@@ -194,36 +194,37 @@ public abstract class AudioManager implements AutoCloseable {
         if (active_ambient == null)
             active_ambient = new AmbientAudioSource[10];
 
-        var listenerPosition = getListenerPosition();
+        var active = active_ambient; // capture local reference
+        var listenerPos = getListenerPosition();
         
         // Mark all current slots as "potential removals" by setting target to 0
-        for (AmbientAudioSource active : active_ambient) {
-            if (active != null) active.setGainTarget(0f);
+        for (AmbientAudioSource a : active) {
+            if (a != null) a.setGainTarget(0f);
         }
+
+        float max_dist_sq = AudioPlayer.AUDIO_DISTANCE_AMBIENT * AudioPlayer.AUDIO_DISTANCE_AMBIENT;
 
         for (AudioSource ambientSource : ambients) {
             var player = ambientSource.getAudioPlayer();
             if (player != null && player.isPlaying()) {
-                float[] position = ambientSource.getPosition();
-                float dist_sq = (position[0] - listenerPosition.x()) * (position[0] - listenerPosition.x())
-                    + (position[1] - listenerPosition.y()) * (position[1] - listenerPosition.y())
-                    + (position[2] - listenerPosition.z()) * (position[2] - listenerPosition.z());
+                Vector3fc position = ambientSource.getPosition();
+                float dist_sq = position.distanceSquared(listenerPos);
                 
-                if (dist_sq < AudioPlayer.AUDIO_DISTANCE_AMBIENT * AudioPlayer.AUDIO_DISTANCE_AMBIENT) {
+                if (dist_sq < max_dist_sq) {
                     // Find if we already have a wrapper for this source
                     AmbientAudioSource wrapper = null;
                     int freeSlot = -1;
-                    for (int i = 0; i < active_ambient.length; i++) {
-                        if (active_ambient[i] != null && active_ambient[i].isUsing(ambientSource)) {
-                            wrapper = active_ambient[i];
+                    for (int i = 0; i < active.length; i++) {
+                        if (active[i] != null && active[i].isUsing(ambientSource)) {
+                            wrapper = active[i];
                             break;
                         }
-                        if (active_ambient[i] == null && freeSlot == -1) freeSlot = i;
+                        if (active[i] == null && freeSlot == -1) freeSlot = i;
                     }
 
                     if (wrapper == null && freeSlot != -1) {
                         wrapper = new AmbientAudioSource(ambientSource);
-                        active_ambient[freeSlot] = wrapper;
+                        active[freeSlot] = wrapper;
                     }
 
                     if (wrapper != null) {
@@ -235,10 +236,10 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     public final boolean startPlaying() {
-        return sound_play_counter > 0;
+        return sound_play_counter.intValue() > 0;
     }
 
-    public final void play() {
+    public final synchronized void play() {
         if (!isPlaying) {
             isPlaying = true;
             for (AudioSource s : sources) {
@@ -255,7 +256,7 @@ public abstract class AudioManager implements AutoCloseable {
         }
     }
 
-    public final void pause() {
+    public final synchronized void pause() {
         if (isPlaying) {
             for (AudioSource s : sources) {
                 s.pause();
@@ -270,7 +271,7 @@ public abstract class AudioManager implements AutoCloseable {
         }
     }
 
-    public final void stop() {
+    public final synchronized void stop() {
         isPlaying = false;
         for (AudioSource s : sources) {
             s.stop();
@@ -303,12 +304,11 @@ public abstract class AudioManager implements AutoCloseable {
         return createPlayer(source, params);
     }
     public void startSources() {
-        if (sound_play_counter == 0) {
+        if (sound_play_counter.getAndIncrement() == 0) {
             for (AudioSource ambient : ambients) {
                 ambient.play();
             }
         }
-        sound_play_counter++;
     }
 
     public void registerAmbient(@NonNull AudioSource source) {
@@ -360,10 +360,8 @@ public abstract class AudioManager implements AutoCloseable {
     private float calculatePerceivedGain(@NonNull AudioParameters<?> p, @NonNull Vector3fc listenerPosition) {
         if (p.relative) return p.gain;
 
-        float dx = p.x - listenerPosition.x();
-        float dy = p.y - listenerPosition.y();
-        float dz = p.z - listenerPosition.z();
-        float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+        float dist_sq = listenerPosition.distanceSquared(p.x, p.y, p.z);
+        float dist = (float) Math.sqrt(dist_sq);
 
         // SILENCE_THRESHOLD from AudioPlayer
         float silenceThreshold = 0.032f;
@@ -384,11 +382,9 @@ public abstract class AudioManager implements AutoCloseable {
         AudioParameters<?> p = player.getParameters();
         if (p.relative) return p.gain;
 
-        float[] pos = source.getPosition();
-        float dx = pos[0] - listenerPosition.x();
-        float dy = pos[1] - listenerPosition.y();
-        float dz = pos[2] - listenerPosition.z();
-        float dist = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+        Vector3fc pos = source.getPosition();
+        float dist_sq = listenerPosition.distanceSquared(pos);
+        float dist = (float) Math.sqrt(dist_sq);
 
         float refDist = source.getDistance();
         float rolloff = source.getRolloff();
@@ -418,8 +414,8 @@ public abstract class AudioManager implements AutoCloseable {
             float max_dist_squared = this_dist_squared;
             for (AudioSource source : sources) {
                 if (source.getRank() == params.rank) {
-                    float[] position = source.getPosition();
-                    float dist_squared = getCamDistSquared(camera_state, position[0], position[1], position[2]);
+                    Vector3fc position = source.getPosition();
+                    float dist_squared = getCamDistSquared(camera_state, position.x(), position.y(), position.z());
                     if (dist_squared > max_dist_squared) {
                         max_dist_squared = dist_squared;
                         best_source = source;
@@ -500,7 +496,7 @@ public abstract class AudioManager implements AutoCloseable {
             source.stop();
         }
 
-        float @NonNull [] getPosition() {
+        @NonNull Vector3f getPosition() {
             return source.getPosition();
         }
 

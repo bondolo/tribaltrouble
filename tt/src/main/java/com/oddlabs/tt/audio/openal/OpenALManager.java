@@ -180,11 +180,7 @@ public final class OpenALManager extends AudioManager {
         if (params.sound instanceof Audio) {
             return new OpenALAudioPlayer(source, (AudioParameters<Audio>) params);
         } else if (params.sound instanceof String) {
-            try {
-                return new OpenALQueuedAudioPlayer(source, (AudioParameters<String>) params);
-            } catch (IOException ex) {
-                throw new IllegalArgumentException("Could not load " + params.sound, ex);
-            }
+            return new OpenALQueuedAudioPlayer(source, (AudioParameters<String>) params);
         } else {
             throw new IllegalArgumentException("Unrecognized audio parameters : " + params.sound.getClass().getSimpleName());
         }

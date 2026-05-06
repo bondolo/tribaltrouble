@@ -4,6 +4,8 @@ import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.resource.NativeResource;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -258,10 +260,10 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
     }
 
     @Override
-    public float @NonNull [] getPosition() {
+    public @NonNull Vector3f getPosition() {
         AL10.alGetSourcefv(getSource(), AL10.AL_POSITION, positionBuffer);
         checkALError("alGetSource AL_POSITION");
-        return new float[]{positionBuffer.get(0), positionBuffer.get(1), positionBuffer.get(2)};
+        return new Vector3f(positionBuffer);
     }
 
     public int getSource() {

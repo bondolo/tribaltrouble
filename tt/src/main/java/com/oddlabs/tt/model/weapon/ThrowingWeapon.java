@@ -180,7 +180,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         deterministic_z = current_z - getWorld().getHeightMap().getNearestHeight(x, y);
 
         reinsert();
-        audio_player.setPos(getPositionX(), getPositionY(), getPositionZ());
+        audio_player.setPosition(getPositionX(), getPositionY(), getPositionZ());
     }
 
     protected void hitTarget(boolean hit, @NonNull Player owner, @NonNull Selectable<?> target) {

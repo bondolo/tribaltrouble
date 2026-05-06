@@ -88,7 +88,7 @@ public abstract class AudioPlayer implements Animated {
 
     protected final @Nullable AudioSource source;
     private final @NonNull AudioParameters<?> parameters;
-    private boolean playing = false;
+    protected volatile boolean playing = false;
 
     private float fadeout_time;
     private float end_gain;
@@ -122,7 +122,7 @@ public abstract class AudioPlayer implements Animated {
         source.setPitch(params.pitch);
 
         updateEnvironmentalEffects();
-        setPos(params.x, params.y, params.z);
+        setPosition(params.x, params.y, params.z);
 
         var state = source.getState();
         assert state == AudioSource.State.STOPPED || state == AudioSource.State.INITIAL;
@@ -143,7 +143,7 @@ public abstract class AudioPlayer implements Animated {
         }
     }
 
-    public final void setPos(float x, float y, float z) {
+    public final void setPosition(float x, float y, float z) {
         if (playing && source != null) {
             source.setPosition(x, y, z);
             updateAirAbsorption(x, y, z);
