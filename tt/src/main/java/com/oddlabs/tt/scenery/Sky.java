@@ -31,6 +31,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
@@ -146,10 +147,12 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         // Create interleaved VBO for the sky
         int num_vertices_sky = subdiv_axis * (subdiv_height - 1) + 1;
         int stride = (3 + 3 + 2 + 2 + 3) * Float.BYTES; // pos, norm, uv0, uv1, color
-        FloatBuffer skyBuffer = BufferUtils.createFloatBuffer(num_vertices_sky * (stride / Float.BYTES));
-        makeSkyVertices(radius, outer_utile, outer_vtile, inner_utile, inner_vtile, origin_x, origin_y, origin_z, skyBuffer);
-        skyBuffer.flip();
-        sky_vbo = new FloatVBO(GL15.GL_STATIC_DRAW, skyBuffer);
+        try (var stack = MemoryStack.stackPush()) {
+            FloatBuffer skyBuffer = stack.mallocFloat(num_vertices_sky * (stride / Float.BYTES));
+            makeSkyVertices(radius, outer_utile, outer_vtile, inner_utile, inner_vtile, origin_x, origin_y, origin_z, skyBuffer);
+            skyBuffer.flip();
+            sky_vbo = new FloatVBO(GL15.GL_STATIC_DRAW, skyBuffer);
+        }
 
         strip_indices = makeSkyStripIndices();
         fan_indices = makeSkyFanIndices();
@@ -418,35 +421,39 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
     private @NonNull ShortVBO @NonNull [] makeSkyStripIndices() {
         ShortVBO[] strip_indices = new ShortVBO[subdiv_height - 2];
-        for (int i = 0; i < strip_indices.length; i++) {
-            int size = subdiv_axis * 2 + 2;
-            ShortBuffer temp = Objects.requireNonNull(BufferUtils.createShortBuffer(size));
-            for (int j = 0; j < subdiv_axis; j++) {
-                temp.put(j * 2, (short) (i * subdiv_axis + j));
-                temp.put(j * 2 + 1, (short) ((i + 1) * subdiv_axis + j));
+        try (var stack = MemoryStack.stackPush()) {
+            for (int i = 0; i < strip_indices.length; i++) {
+                int size = subdiv_axis * 2 + 2;
+                ShortBuffer temp = stack.mallocShort(size);
+                for (int j = 0; j < subdiv_axis; j++) {
+                    temp.put(j * 2, (short) (i * subdiv_axis + j));
+                    temp.put(j * 2 + 1, (short) ((i + 1) * subdiv_axis + j));
+                }
+                temp.put(subdiv_axis * 2, (short) (i * subdiv_axis));
+                temp.put(subdiv_axis * 2 + 1, (short) ((i + 1) * subdiv_axis));
+                strip_indices[i] = new ShortVBO(GL15.GL_STATIC_DRAW, size);
+                temp.rewind();
+                strip_indices[i].put(temp);
             }
-            temp.put(subdiv_axis * 2, (short) (i * subdiv_axis));
-            temp.put(subdiv_axis * 2 + 1, (short) ((i + 1) * subdiv_axis));
-            strip_indices[i] = new ShortVBO(GL15.GL_STATIC_DRAW, size);
-            temp.rewind();
-            strip_indices[i].put(temp);
         }
         return strip_indices;
     }
 
     private @NonNull ShortVBO makeSkyFanIndices() {
         int size = subdiv_axis + 2;
-        ShortBuffer temp = Objects.requireNonNull(BufferUtils.createShortBuffer(size));
-        temp.put(0, (short) (sky_vbo.capacity() / ((3 + 3 + 2 + 2 + 3) * Float.BYTES) - 1));
-        for (int i = 0; i < subdiv_axis; i++) {
-            temp.put(i + 1, (short) ((subdiv_height - 1) * subdiv_axis - i - 1));
-        }
-        temp.put(subdiv_axis + 1, (short) ((subdiv_height - 1) * subdiv_axis - 1));
+        try (var stack = MemoryStack.stackPush()) {
+            ShortBuffer temp = stack.mallocShort(size);
+            temp.put(0, (short) (sky_vbo.capacity() / ((3 + 3 + 2 + 2 + 3) * Float.BYTES) - 1));
+            for (int i = 0; i < subdiv_axis; i++) {
+                temp.put(i + 1, (short) ((subdiv_height - 1) * subdiv_axis - i - 1));
+            }
+            temp.put(subdiv_axis + 1, (short) ((subdiv_height - 1) * subdiv_axis - 1));
 
-        ShortVBO fan_indices = new ShortVBO(GL15.GL_STATIC_DRAW, size);
-        temp.rewind();
-        fan_indices.put(temp);
-        return fan_indices;
+            ShortVBO fan_indices = new ShortVBO(GL15.GL_STATIC_DRAW, size);
+            temp.rewind();
+            fan_indices.put(temp);
+            return fan_indices;
+        }
     }
 
     private @NonNull SkyStitchVertex @NonNull [] makeDomeVertices(@NonNull HeightMap heightmap, int ring_id, int index_offset, float radius, float origin_x, float origin_y) {

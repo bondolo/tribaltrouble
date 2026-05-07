@@ -37,11 +37,9 @@ public abstract class Camera implements Animated {
      */
     private static final float GROUND_CLEARANCE = 1.0f;
 
-    private final IntBuffer viewport = Objects.requireNonNull(BufferUtils.createIntBuffer(16));
     private final Matrix4f proj = new Matrix4f();
     private final CameraState tmp_camera = new CameraState();
 
-    private final int[] viewportArray = new int[4];
     private final Vector3f hit_result = new Vector3f();
 
     private final @Nullable HeightMap heightmap;
@@ -94,9 +92,8 @@ public abstract class Camera implements Animated {
 
     protected final boolean bounce(float x, float y, float z, int width, int height) {
         boolean bounced = false;
-        viewport.clear();
-        viewport.put(0).put(0).put(width).put(height);
-        viewport.flip();
+
+        int[] viewport = {0, 0, width, height};
 
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
@@ -109,7 +106,7 @@ public abstract class Camera implements Animated {
                 tmp_camera.setTargetView(proj);
 
                 Matrix4f combinedMatrix = new Matrix4f(proj).mul(tmp_camera.getModelView());
-                unproject(i * width, j * height, 0f, tmp_camera.getModelView(), combinedMatrix);
+                unproject(i * width, j * height, 0f, tmp_camera.getModelView(), combinedMatrix, viewport);
                 float hit_x = hit_result.x();
                 float hit_y = hit_result.y();
                 float hit_z = hit_result.z();
@@ -141,12 +138,9 @@ public abstract class Camera implements Animated {
         return bounced;
     }
 
-    private void unproject(float winx, float winy, float winz, @NonNull Matrix4f model, @NonNull Matrix4f proj) {
-        // Use an absolute get to avoid changing the buffer's position
-        viewport.get(0, viewportArray, 0, 4);
-
+    private void unproject(float winx, float winy, float winz, @NonNull Matrix4f model, @NonNull Matrix4f proj, int[] viewport) {
         proj.mul(model);
-        proj.unproject(winx, winy, winz, viewportArray, hit_result);
+        proj.unproject(winx, winy, winz, viewport, hit_result);
     }
 
     public final @NonNull CameraState getState() {

@@ -4,14 +4,12 @@ import com.oddlabs.tt.landscape.HeightMap;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
+import org.lwjgl.system.MemoryStack;
 
 /**
  * Provides world-space bounding volumes for collision detection, frustum culling, and spatial sorting.
  */
 public class BoundingBox {
-
-    private static final Vector4f temp_vec = new Vector4f();
-    private static final Vector4f temp_vec2 = new Vector4f();
 
     public float bmin_x = Float.POSITIVE_INFINITY;
     public float bmin_y = Float.POSITIVE_INFINITY;
@@ -169,16 +167,17 @@ public class BoundingBox {
     }
 
     public final void transformBounds(@NonNull Matrix4f matrix) {
-        temp_vec.set(bmin_x, bmin_y, bmin_z, 1f);
-        matrix.transform(temp_vec, temp_vec2);
-        bmin_x = temp_vec2.x;
-        bmin_y = temp_vec2.y;
-        bmin_z = temp_vec2.z;
-        temp_vec.set(bmax_x, bmax_y, bmax_z, 1f);
-        matrix.transform(temp_vec, temp_vec2);
-        bmax_x = temp_vec2.x;
-        bmax_y = temp_vec2.y;
-        bmax_z = temp_vec2.z;
+        Vector4f v = new Vector4f(bmin_x, bmin_y, bmin_z, 1f);
+        matrix.transform(v, v);
+        bmin_x = v.x;
+        bmin_y = v.y;
+        bmin_z = v.z;
+
+        v.set(bmax_x, bmax_y, bmax_z, 1f);
+        matrix.transform(v, v);
+        bmax_x = v.x;
+        bmax_y = v.y;
+        bmax_z = v.z;
         computeCenter();
     }
 

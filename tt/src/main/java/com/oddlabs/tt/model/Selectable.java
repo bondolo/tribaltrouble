@@ -341,7 +341,7 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
 
     public static <T extends Template> Selectable<T> @NonNull [] newArray(int length) {
         //noinspection unchecked
-        return new Selectable[length];
+        return (Selectable<T>[]) new Selectable[length];
     }
 
     public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<T> @NonNull ... selectables) {

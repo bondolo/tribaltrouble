@@ -7,6 +7,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
@@ -123,25 +124,27 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     protected void render(@NonNull GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom, float clip_top) {
         if (this instanceof Clipped) {
             IntBuffer scissor_box;
-            if (GL11.glIsEnabled(GL11.GL_SCISSOR_TEST)) {
-                scissor_box = Objects.requireNonNull(BufferUtils.createIntBuffer(4));
-                GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, scissor_box);
-            } else {
-                scissor_box = null;
-            }
-            renderer.flush();
+            try (var stack = MemoryStack.stackPush()) {
+                if (GL11.glIsEnabled(GL11.GL_SCISSOR_TEST)) {
+                    scissor_box = stack.mallocInt(4);
+                    GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, scissor_box);
+                } else {
+                    scissor_box = null;
+                }
+                renderer.flush();
 
-            float scale = getGlobalScale();
-            renderer.setScissor((int) (getRootX() * scale), (int) (getRootY() * scale),
-                    (int) (getWidth() * scale), (int) (getHeight() * scale));
+                float scale = getGlobalScale();
+                renderer.setScissor((int) (getRootX() * scale), (int) (getRootY() * scale),
+                        (int) (getWidth() * scale), (int) (getHeight() * scale));
 
-            renderClipped(renderer, clip_left, clip_right, clip_bottom, clip_top);
+                renderClipped(renderer, clip_left, clip_right, clip_bottom, clip_top);
 
-            renderer.flush();
-            if (null != scissor_box) {
-                renderer.setScissor(scissor_box.get(0), scissor_box.get(1), scissor_box.get(2), scissor_box.get(3));
-            } else {
-                renderer.clearScissor();
+                renderer.flush();
+                if (null != scissor_box) {
+                    renderer.setScissor(scissor_box.get(0), scissor_box.get(1), scissor_box.get(2), scissor_box.get(3));
+                } else {
+                    renderer.clearScissor();
+                }
             }
         } else {
             renderClipped(renderer, clip_left, clip_right, clip_bottom, clip_top);

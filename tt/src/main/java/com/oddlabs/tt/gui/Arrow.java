@@ -37,10 +37,7 @@ public final class Arrow extends GUIObject {
         setDim(width, height);
     }
 
-    private static final Vector4f point = new Vector4f();
-
-    private @NonNull Vector4f project3DTo2D(float x, float y, float z) {
-        point.set(x, y, z, 1);
+    private @NonNull Vector4f project3DTo2D(@NonNull Vector4f point) {
         gui_root.getDelegate().getCamera().getState().getProjectionModelView().transform(point, point);
         if (point.w < .1f)
             point.w = .1f;
@@ -53,11 +50,9 @@ public final class Arrow extends GUIObject {
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
         int screen_width = gui_root.getWidth();
         int screen_height = gui_root.getHeight();
-        Vector4f result = project3DTo2D(target_x, target_y, target_z);
-        float x = result.x;
-        float y = result.y;
-        float dx = x - screen_width / 2f;
-        float dy = y - screen_height / 2f;
+        Vector4f point = project3DTo2D(new Vector4f(target_x, target_y, target_z, 1));
+        float dx =  point.x - screen_width / 2f;
+        float dy = point.y - screen_height / 2f;
         float dist_sqr = dx * dx + dy * dy;
         if (dist_sqr < 1f) {
             dx = 1f;
@@ -71,7 +66,7 @@ public final class Arrow extends GUIObject {
         float angle = (float) Math.toDegrees(Math.acos(dx));
         if (dy < 0f)
             angle = 360f - angle;
-        float real_t = (x - screen_width / 2f) / dx;
+        float real_t = (point.x - screen_width / 2f) / dx;
         float t = real_t;
         float t_min_x = (-screen_width / 2f) / dx;
         float t_max_x = (screen_width / 2f) / dx;

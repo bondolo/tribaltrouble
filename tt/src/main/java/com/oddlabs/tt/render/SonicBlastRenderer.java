@@ -16,6 +16,7 @@ import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayDeque;
@@ -38,16 +39,18 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
     public SonicBlastRenderer() {
         // Create a simple quad centered at 0,0 on XY plane, scaled to 1x1
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(4 * 5); // 4 verts * (3 pos + 2 uv)
-        float s = 0.5f;
-        // Pos (x,y,z), UV (u,v)
-        buffer.put(-s).put(-s).put(0).put(0).put(0);
-        buffer.put(s).put(-s).put(0).put(1).put(0);
-        buffer.put(-s).put(s).put(0).put(0).put(1);
-        buffer.put(s).put(s).put(0).put(1).put(1);
-        buffer.flip();
+        try (var stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(4 * 5); // 4 verts * (3 pos + 2 uv)
+            float s = 0.5f;
+            // Pos (x,y,z), UV (u,v)
+            buffer.put(-s).put(-s).put(0).put(0).put(0);
+            buffer.put(s).put(-s).put(0).put(1).put(0);
+            buffer.put(-s).put(s).put(0).put(0).put(1);
+            buffer.put(s).put(s).put(0).put(1).put(1);
+            buffer.flip();
 
-        vbo = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
+            vbo = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
+        }
 
         // Utilize procedural generator for ring noise
         this.noiseTextures = new GeneratorNoise(64, 42).generate();

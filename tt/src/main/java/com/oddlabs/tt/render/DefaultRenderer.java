@@ -30,6 +30,7 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryStack;
 
 import java.util.function.Consumer;
 
@@ -215,8 +216,12 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
 
         // Update Global UBO
-        globalUniforms.update(frustum_state, LocalEventQueue.getQueue().getTime());
-        context.updateGlobalState(globalUniforms.getBuffer());
+        try (var stack = MemoryStack.stackPush()) {
+            java.nio.ByteBuffer buf = stack.malloc(256);
+            globalUniforms.update(frustum_state, LocalEventQueue.getQueue().getTime(), buf);
+            buf.flip();
+            context.updateGlobalState(buf);
+        }
 
         ambient.updateSoundListener(frustum_state, world.getHeightMap());
         modelViewStack.current().set(frustum_state.getModelView());

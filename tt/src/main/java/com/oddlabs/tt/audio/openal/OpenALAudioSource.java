@@ -12,6 +12,7 @@ import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.EXTEfx;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -64,7 +65,6 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
     }
 
     private @Nullable AudioPlayer audio_player;
-    private final FloatBuffer positionBuffer = BufferUtils.createFloatBuffer(3);
     private @Nullable OpenALFilter directFilter;
     private float rolloff;
     private float reference_distance;
@@ -260,9 +260,12 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
 
     @Override
     public @NonNull Vector3f getPosition() {
-        AL10.alGetSourcefv(getSource(), AL10.AL_POSITION, positionBuffer);
-        checkALError("alGetSource AL_POSITION");
-        return new Vector3f(positionBuffer);
+        try (var stack = MemoryStack.stackPush()) {
+            FloatBuffer positionBuffer = stack.mallocFloat(3);
+            AL10.alGetSourcefv(getSource(), AL10.AL_POSITION, positionBuffer);
+            checkALError("alGetSource AL_POSITION");
+            return new Vector3f(positionBuffer);
+        }
     }
 
     public int getSource() {

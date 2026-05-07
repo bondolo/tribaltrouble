@@ -8,6 +8,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
@@ -17,7 +18,6 @@ import java.nio.IntBuffer;
 final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     private static final int NUM_BUFFERS = 12;
     private volatile @Nullable OpenALAudio audio;
-    private final IntBuffer al_return_buffers = BufferUtils.createIntBuffer(1);
     private volatile int al_format;
 
     OpenALQueuedAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters<@NonNull String> params) {
@@ -70,15 +70,18 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     public void refill() {
         if (source == null) return;
         int processed = ((OpenALAudioSource) source).processed();
-        while (processed > 0) {
-            ((OpenALAudioSource) source).unqueued(al_return_buffers);
-            int bytes = fillBuffer(al_return_buffers.get(0));
-            if (bytes == 0) {
-                stop();
-                return;
+        try (var stack = MemoryStack.stackPush()) {
+            var al_return_buffers = stack.mallocInt(1);
+            while (processed > 0) {
+                ((OpenALAudioSource) source).unqueued(al_return_buffers);
+                int bytes = fillBuffer(al_return_buffers.get(0));
+                if (bytes == 0) {
+                    stop();
+                    return;
+                }
+                ((OpenALAudioSource) source).queue(al_return_buffers);
+                processed--;
             }
-            ((OpenALAudioSource) source).queue(al_return_buffers);
-            processed--;
         }
 
         if (source.getState() == AudioSource.State.STOPPED && isPlaying()) {

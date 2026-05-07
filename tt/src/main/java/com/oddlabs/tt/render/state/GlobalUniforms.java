@@ -15,17 +15,8 @@ import java.nio.ByteBuffer;
  * Helper class to pack global uniform data into a ByteBuffer according to std140 layout.
  */
 public final class GlobalUniforms {
-    private final ByteBuffer buffer = BufferUtils.createByteBuffer(256);
 
-    public @NonNull ByteBuffer getBuffer() {
-        buffer.flip();
-        return buffer;
-    }
-
-    public void update(
-            @NonNull CameraState camera,
-            float time
-    ) {
+    public void update(@NonNull CameraState camera, float time, @NonNull ByteBuffer buffer) {
         buffer.clear();
 
         // 0: mat4 projection (64)
