@@ -1,7 +1,9 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.AccessorizableModel;
 import com.oddlabs.tt.model.Selectable;
@@ -11,14 +13,37 @@ import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.Resources;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.stream.IntStream;
 
 /**
  * Logic controller for the Sonic Blast magic effect.
  */
 public final class SonicBlast extends AccessorizableModel implements Magic {
+    @SuppressWarnings("unchecked")
+    private static final @NonNull AudioParameters<Audio> [] LUR_AUDIO =
+            (@NonNull AudioParameters<Audio> []) IntStream.rangeClosed(1, 3)
+                    .mapToObj(i -> String.format("/sfx/lur_blast%d.ogg", i))
+                    .map(AudioFile::new)
+                    .map(Resources::findResource)
+                    .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_MAGIC,
+                            AudioPlayer.AUDIO_DISTANCE_MAGIC,
+                            AudioPlayer.AUDIO_GAIN_BLAST_LUR,
+                            AudioPlayer.AUDIO_RADIUS_BLAST_LUR))
+                    .toArray(AudioParameters[]::new);
+    private static final @NonNull AudioParameters<Audio> RUMBLE_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_RUMBLE, AudioPlayer.AUDIO_RANK_MAGIC,
+            AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_BLAST_RUMBLE, AudioPlayer.AUDIO_RADIUS_BLAST_RUMBLE);
+    private static final AudioParameters<Audio> BLAST_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_LURBLAST, AudioPlayer.AUDIO_RANK_MAGIC,
+            AudioPlayer.AUDIO_DISTANCE_MAGIC,
+            AudioPlayer.AUDIO_GAIN_BLAST_BLAST,
+            AudioPlayer.AUDIO_RADIUS_BLAST_BLAST);
+
     private final float hit_radius;
     private final float hit_chance_closest;
     private final float hit_chance_farthest;
@@ -63,18 +88,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
 
         sonicBlastEffect = new SonicBlastEffect(owner.getWorld(), new Vector3f(start_x, start_y, start_z), hit_radius, seconds);
 
-        lur = owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getBlastLurSound(owner.getWorld().getRandom()), start_x, start_y, start_z,
-                AudioPlayer.AUDIO_RANK_MAGIC,
-                AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                AudioPlayer.AUDIO_GAIN_BLAST_LUR,
-                AudioPlayer.AUDIO_RADIUS_BLAST_LUR,
-                1f));
-        rumble = owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getBlastRumbleSound(), start_x, start_y, start_z,
-                AudioPlayer.AUDIO_RANK_MAGIC,
-                AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                AudioPlayer.AUDIO_GAIN_BLAST_RUMBLE,
-                AudioPlayer.AUDIO_RADIUS_BLAST_RUMBLE,
-                1f));
+        lur = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, LUR_AUDIO[owner.getWorld().getRandom().nextInt(LUR_AUDIO.length)]);
+        rumble = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, RUMBLE_AUDIO);
 
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
@@ -89,12 +104,7 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
         if (!first_ring_sent) {
             first_ring_sent = true;
 
-            owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getBlastBlastSound(), start_x, start_y, start_z,
-                    AudioPlayer.AUDIO_RANK_MAGIC,
-                    AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                    AudioPlayer.AUDIO_GAIN_BLAST_BLAST,
-                    AudioPlayer.AUDIO_RADIUS_BLAST_BLAST,
-                    1f));
+            owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, BLAST_AUDIO);
             lur.stop(.3f, Settings.getSettings().sound_gain);
             rumble.stop(.2f, Settings.getSettings().sound_gain);
         }

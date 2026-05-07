@@ -1,6 +1,5 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioSource;
@@ -10,7 +9,6 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 
-import java.io.IOException;
 import java.nio.IntBuffer;
 
 /**
@@ -22,8 +20,8 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     private final IntBuffer al_return_buffers = BufferUtils.createIntBuffer(1);
     private volatile int al_format;
 
-    OpenALQueuedAudioPlayer(@Nullable OpenALAudioSource source, @NonNull AudioParameters<@NonNull String> params) {
-        super(source, params, NUM_BUFFERS);
+    OpenALQueuedAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters<@NonNull String> params) {
+        super(source, x, y, z, params, NUM_BUFFERS);
     }
 
     @Override
@@ -46,7 +44,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
         source.setLooping(false);
         ((OpenALAudioSource) source).queue(al_buffers);
 
-        if (getParameters().music || AudioManager.getManager().startPlaying())
+        if (getParameters().music() || AudioManager.getManager().startPlaying())
             source.play();
     }
 

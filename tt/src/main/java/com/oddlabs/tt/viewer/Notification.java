@@ -34,7 +34,10 @@ public class Notification implements Updatable<TimerAnimation> {
         timer.start();
         this.arrow = new Arrow(world.getHeightMap(), gui_root, center_x, center_y, color, show_always);
         gui_root.addChild(arrow);
-        world.getAudio().newAudio(new AudioParameters<>(sound, 0f, 0f, 0f, AudioPlayer.AUDIO_RANK_NOTIFICATION, AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, .25f, 1f, 1f, false, true));
+        var params = new AudioParameters<>(sound, AudioPlayer.AUDIO_RANK_NOTIFICATION,
+                AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, .25f, 1f,
+                1f, false, true);
+        world.getAudio().newAudio(0f, 0f, 0f, params);
     }
 
     public void remove() {

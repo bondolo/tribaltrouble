@@ -82,21 +82,17 @@ public final class RenderTools {
         float distx = camera_x - box.getCX();
         float disty = camera_y - box.getCY();
         float distz = camera_z - box.getCZ();
-        float dist2 = distx * distx + disty * disty + distz * distz;
-        return dist2;
+        return distx * distx + disty * disty + distz * distz;
     }
 
     static float getCameraDistanceXYSquared(@NonNull BoundingBox box, float camera_x, float camera_y) {
-        float distx = camera_x - box.getCX();
-        float disty = camera_y - box.getCY();
-        float dist2 = distx * distx + disty * disty;
-        return dist2;
+        float dx = camera_x - box.getCX();
+        float dy = camera_y - box.getCY();
+        return dx * dx + dy * dy;
     }
 
     static float getCameraDistanceSquared(@NonNull BoundingBox box, float camera_x, float camera_y, float camera_z) {
-        float distz = camera_z - box.getCZ();
-        float dist2 = getCameraDistanceXYSquared(box, camera_x, camera_y) + distz * distz;
-        return dist2;
+        return getEyeDistanceSquared(box, camera_x, camera_y, camera_z);
     }
 
     public static void draw(@NonNull BoundingBox box) {

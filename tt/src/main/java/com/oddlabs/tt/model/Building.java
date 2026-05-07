@@ -1,5 +1,6 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.gui.BuildSpinner;
@@ -29,6 +30,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,10 +40,15 @@ import java.util.Map;
  */
 public final class Building extends Selectable<BuildingTemplate> implements Occupant {
     private static final float REMOVE_DELAY = 1f / 10f;
-
-    public enum BuildState {
-        START, HALFBUILT, BUILT
-    }
+    private static final AudioParameters<Audio> COLLAPSE_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_BUILDING_CRASH, AudioPlayer.AUDIO_RANK_BUILDING_COLLAPSE,
+            AudioPlayer.AUDIO_DISTANCE_BUILDING_COLLAPSE, AudioPlayer.AUDIO_GAIN_BUILDING_COLLAPSE, AudioPlayer.AUDIO_RADIUS_BUILDING_COLLAPSE);
+    @SuppressWarnings("unchecked")
+    private static final @NonNull AudioParameters<Audio> [] HITS_AUDIO =
+            (@NonNull AudioParameters<Audio> []) Arrays.stream(AudioPlayer.SFX_AXE_CUTTING_WOODS)
+                    .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_WEAPON_HIT,
+                            AudioPlayer.AUDIO_DISTANCE_WEAPON_HIT, AudioPlayer.AUDIO_GAIN_WEAPON_HIT, AudioPlayer.AUDIO_RADIUS_WEAPON_HIT))
+                    .toArray(AudioParameters[]::new);
 
     private static final int PLACING_BORDER = 1;
     private static final int MAX_SUPPLY_COUNT = 200;
@@ -66,6 +73,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     private @NonNull Target rally_point = this;
     private boolean is_training_chieftain = false;
+
+    public enum BuildState {
+        START, HALFBUILT, BUILT
+    }
 
     public Building(@NonNull Player owner, @NonNull BuildingTemplate template, int grid_x, int grid_y) {
         super(owner, template);
@@ -514,7 +525,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
 
         remove_delay = REMOVE_DELAY;
-        getOwner().getWorld().getAudio().newAudio(new AudioParameters<>(getOwner().getWorld().getRacesResources().getBuildingCollapseSound(), getPositionX(), getPositionY(), getPositionZ(), AudioPlayer.AUDIO_RANK_BUILDING_COLLAPSE, AudioPlayer.AUDIO_DISTANCE_BUILDING_COLLAPSE, AudioPlayer.AUDIO_GAIN_BUILDING_COLLAPSE, AudioPlayer.AUDIO_RADIUS_BUILDING_COLLAPSE));
+        getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), COLLAPSE_AUDIO);
         if (getUnitContainer() != null) {
             while (getUnitContainer().getNumSupplies() > 0) {
                 Unit unit = getUnitContainer().exit();
@@ -633,7 +644,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         if (!isDead()) {
             adjustHitPoints(- damage);
             World world = getOwner().getWorld();
-            world.getAudio().newAudio(new AudioParameters<>(world.getRacesResources().getBuildingHitSound(world.getRandom()), getPositionX(), getPositionY(), getPositionZ(), AudioPlayer.AUDIO_RANK_WEAPON_HIT, AudioPlayer.AUDIO_DISTANCE_WEAPON_HIT, AudioPlayer.AUDIO_GAIN_WEAPON_HIT, AudioPlayer.AUDIO_RADIUS_WEAPON_HIT));
+            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), HITS_AUDIO[world.getRandom().nextInt(HITS_AUDIO.length)]);
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();

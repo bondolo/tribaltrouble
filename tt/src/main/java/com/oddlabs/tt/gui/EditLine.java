@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -12,19 +11,24 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
-import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A single-line text input field. Supports basic text editing, cursor navigation,
  * input filtering, and horizontal scrolling for text that exceeds the visual width.
  */
 public class EditLine extends TextField implements Clipped {
+    private static final AudioParameters<Audio> ERROR_SOUND = new AudioParameters<>(
+            AudioPlayer.SFX_CHICKEN_PECK, AudioPlayer.AUDIO_RANK_NOTIFICATION,
+            AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, 0.5f, 1f, 0.5f, false, true);
+    @SuppressWarnings("TimeUnitConversionChecker")
+    private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
     private final Set<@NonNull EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
     private final @NonNull Origin alignment;
     private final @Nullable String allowed_chars;
@@ -34,8 +38,6 @@ public class EditLine extends TextField implements Clipped {
     private int index;
 
     private long errorFlashStart = 0;
-    private static final Audio ERROR_SOUND = Resources.findResource(new AudioFile("/sfx/chicken_peck.ogg"));
-
     public EditLine(int width, int max_chars) {
         this(width, max_chars, Origin.AT_START);
     }
@@ -71,8 +73,9 @@ public class EditLine extends TextField implements Clipped {
         edit_box.render(renderer, 0f, 0f, getWidth(), getHeight(), mode);
 
         long elapsed = System.currentTimeMillis() - errorFlashStart;
-        if (elapsed < 200) {
-            float alpha = 0.5f * (1.0f - (elapsed / 200.0f));
+        if (elapsed < ERROR_DURATION) {
+            var elapsed_percent = 1.0f - ((float) elapsed / ERROR_DURATION);
+            float alpha = 0.5f * elapsed_percent;
             var oneLinear = Color.toLinear(1f);
             renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, new Color.Linear(oneLinear, oneLinear, oneLinear, alpha));
         }
@@ -108,7 +111,7 @@ public class EditLine extends TextField implements Clipped {
     public void triggerError() {
         errorFlashStart = System.currentTimeMillis();
         try {
-            AudioManager.getManager().newAudio(new AudioParameters<>(ERROR_SOUND, 0f, 0f, 0f, AudioPlayer.AUDIO_RANK_NOTIFICATION, AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, 0.5f, 1f, 0.5f, false, true));
+            AudioManager.getManager().newAudio(0f, 0f, 0f, ERROR_SOUND);
         } catch (Exception _) {
             // Ignore audio errors
         }

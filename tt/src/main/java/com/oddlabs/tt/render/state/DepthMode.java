@@ -1,7 +1,5 @@
 package com.oddlabs.tt.render.state;
 
-import org.lwjgl.opengl.GL11;
-
 public enum DepthMode implements Mode {
     NONE {
         @Override

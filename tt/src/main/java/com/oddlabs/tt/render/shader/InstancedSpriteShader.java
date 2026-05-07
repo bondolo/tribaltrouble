@@ -2,6 +2,7 @@ package com.oddlabs.tt.render.shader;
 
 /**
  * Shader for rendering animated 3D sprites using hardware instancing.
+ * Fetches per-frame vertex data from a Texture Buffer Object (TBO).
  */
 public final class InstancedSpriteShader extends ShaderProgram implements FogShader, LitShader {
 
@@ -26,16 +27,16 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
         String TEX_COORD = Shader.TEX_COORD;
 
         // Per-instance attributes
-        String INSTANCE_MODEL_MATRIX = "in_InstanceModelMatrix"; // Occupies 4 locations (3,4,5,6)
-        String INSTANCE_COLOR = "in_InstanceColor"; // Location 7
-        String INSTANCE_DECAL_COLOR = "in_InstanceDecalColor"; // Location 8
+        String INSTANCE_MODEL_MATRIX = "in_InstanceModelMatrix"; // Occupies 4 locations (4,5,6,7)
+        String INSTANCE_COLOR = "in_InstanceColor"; // Location 8
+        String INSTANCE_DECAL_COLOR = "in_InstanceDecalColor"; // Location 9
 
         // Animation attributes
-        String INSTANCE_POS_1 = "in_Pos1"; // Location 9
-        String INSTANCE_NORM_1 = "in_Norm1"; // Location 10
-        String INSTANCE_POS_2 = "in_Pos2"; // Location 11
-        String INSTANCE_NORM_2 = "in_Norm2"; // Location 12
-        String INSTANCE_TWEEN = "in_Tween"; // Location 13
+        String INSTANCE_POS_1 = "in_Pos1"; // Location 10
+        String INSTANCE_NORM_1 = "in_Norm1"; // Location 11
+        String INSTANCE_POS_2 = "in_Pos2"; // Location 12
+        String INSTANCE_NORM_2 = "in_Norm2"; // Location 13
+        String INSTANCE_TWEEN = "in_Tween"; // Location 14
     }
 
     private static final String VERTEX_SHADER = """
@@ -138,9 +139,6 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                             
                                 if (u_desaturate > 0.0) {
                                     float gray = dot(base.rgb, vec3(0.2126, 0.7152, 0.0722));
-                                    // Mix with a very bright "ghostly" target (90% white)
-                                    // We use a lower overall desaturate factor in PlacingDelegate 
-                                    // to keep the building's internal details visible.
                                     vec3 ghostTarget = mix(vec3(gray), vec3(1.0), 0.9);
                                     base.rgb = mix(base.rgb, ghostTarget, u_desaturate);
                                 }
@@ -148,10 +146,8 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                                 vec4 finalColor;
                                 if (u_replaceMode) {
                                     finalColor = base;
-                                    if (finalColor.a <= u_alphaTestValue) discard;
                                 } else if (u_modulateColor) {
                                     finalColor = v_color * base;
-                                    if (finalColor.a <= 0.0) discard;
                                 } else {
                                     // Apply lighting
                                     vec3 normal = normalize(v_viewNormal);
@@ -182,9 +178,9 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                                             out_MaskColor = v_decalColor;
                                         }
                                     }
-                            
-                                    if (finalColor.a <= u_alphaTestValue) discard;
                                 }
+                            
+                                if (finalColor.a <= u_alphaTestValue) discard;
                             
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
                                 vec3 litColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);

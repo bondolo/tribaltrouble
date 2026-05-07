@@ -33,6 +33,10 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.function.Consumer;
 
+/**
+ * The primary world renderer responsible for coordinating the rendering 
+ * of the landscape, units, buildings, and transient effects.
+ */
 public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final @NonNull Picker picker;
     private final @NonNull Water water;

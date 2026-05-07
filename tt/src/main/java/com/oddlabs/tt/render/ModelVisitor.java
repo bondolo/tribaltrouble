@@ -7,6 +7,9 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Visitor interface for applying specific logic to different types of models during world visitation.
+ */
 abstract class ModelVisitor<M extends Model> {
     public void markDetailPoint(@NonNull ElementRenderState<M> render_state) {
         M model = render_state.model;

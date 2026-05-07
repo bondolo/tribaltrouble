@@ -6,6 +6,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
+/**
+ * Procedural texture generator using cellular automata or Worley noise algorithms.
+ */
 public final class Cellular {
     // hitpoint distribution
     public enum Distribution {
@@ -139,7 +142,7 @@ public final class Cellular {
                             case OVAL -> dx * dx * dx + dy * dy * dy;
                             case SQUARE -> dx * dx * dx * dx + dy * dy * dy * dy;
                             case MANHATTAN -> dx + dy;//Math.max(dx, dy);
-                            case EUCLIDEAN -> (float) Math.sqrt(dx * dx + dy * dy);
+                            case EUCLIDEAN -> (float) Math.hypot(dx, dy);
                         };
 
                         // maintain F1, F2, F3 and nearest hit point values

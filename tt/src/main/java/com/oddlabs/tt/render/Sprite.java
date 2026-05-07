@@ -22,6 +22,9 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.function.Supplier;
 
+/**
+ * Represents a single 3D animated sprite, including its textures, vertex data, and animation offsets.
+ */
 public final class Sprite {
     static final int TEXTURE_NORMAL = 0;
     static final int TEXTURE_TEAM = 1;

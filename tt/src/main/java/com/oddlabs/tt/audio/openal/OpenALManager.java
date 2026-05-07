@@ -1,12 +1,11 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.global.Settings;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -171,18 +170,18 @@ public final class OpenALManager extends AudioManager {
     }
 
     @Override
-    protected @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, @NonNull AudioParameters<?> params) {
-        return createPlayer((OpenALAudioSource) source, params);
+    protected @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params) {
+        return createPlayer((OpenALAudioSource) source, x, y, z, params);
     }
 
     @SuppressWarnings("unchecked")
-    private @NonNull AudioPlayer createPlayer(@Nullable OpenALAudioSource source, @NonNull AudioParameters<?> params)  {
-        if (params.sound instanceof Audio) {
-            return new OpenALAudioPlayer(source, (AudioParameters<Audio>) params);
-        } else if (params.sound instanceof String) {
-            return new OpenALQueuedAudioPlayer(source, (AudioParameters<String>) params);
+    private @NonNull AudioPlayer createPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params)  {
+        if (params.sound() instanceof Audio) {
+            return new OpenALAudioPlayer(source, x, y, z, (AudioParameters<Audio>) params);
+        } else if (params.sound() instanceof String) {
+            return new OpenALQueuedAudioPlayer(source, x, y, z, (AudioParameters<String>) params);
         } else {
-            throw new IllegalArgumentException("Unrecognized audio parameters : " + params.sound.getClass().getSimpleName());
+            throw new IllegalArgumentException("Unrecognized audio parameters : " + params.sound().getClass().getSimpleName());
         }
     }
 

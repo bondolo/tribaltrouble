@@ -14,7 +14,6 @@ import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;
-import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
@@ -24,9 +23,7 @@ import org.lwjgl.opengl.GL15;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
-import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 

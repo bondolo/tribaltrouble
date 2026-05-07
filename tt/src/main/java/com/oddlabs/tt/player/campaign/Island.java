@@ -27,6 +27,10 @@ import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Base class for all campaign islands, defining common logic for game setup, 
+ * difficulty scaling, and scenario-specific object placement.
+ */
 public abstract class Island {
     private static final float CAMPAIGN_DIFFICULTY_BONUS = .75f;
 
@@ -139,7 +143,7 @@ public abstract class Island {
         int center = captive.getWorld().getHeightMap().getGridUnitsPerWorld() / 2;
         int dx = center - ox;
         int dy = center - oy;
-        float inv_dist = 1f / (float) Math.sqrt(dx * dx + dy * dy);
+        float inv_dist = 1f / (float) Math.hypot(dx, dy);
         int tx = (int) (ox - 5f * dx * inv_dist);
         int ty = (int) (oy - 5f * dy * inv_dist);
         for (int i = 0; i < peons; i++) {

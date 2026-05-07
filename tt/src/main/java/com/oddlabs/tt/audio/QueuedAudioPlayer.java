@@ -24,8 +24,8 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
         queued_players.forEach(QueuedAudioPlayer::stop);
     }
 
-    protected QueuedAudioPlayer(@Nullable AudioSource source, @NonNull AudioParameters<@NonNull String> params, int numBuffers) {
-        super(source, params);
+    protected QueuedAudioPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<@NonNull String> params, int numBuffers) {
+        super(source, x, y, z, params);
         if (!isPlaying() || this.source == null) {
             this.ogg_stream = null;
             this.channels = 0;
@@ -34,7 +34,7 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
 
         Thread.startVirtualThread(() -> {
             try {
-                this.ogg_stream = new OGGStream(Utils.makeURL(params.sound));
+                this.ogg_stream = new OGGStream(Utils.makeURL(params.sound()));
                 this.channels = ogg_stream.getChannels();
 
                 initAsync();
@@ -80,7 +80,7 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
 
         int shortsRead = stream.read(pcmBuffer);
 
-        if (shortsRead <= 0 && getParameters().looping) {
+        if (shortsRead <= 0 && getParameters().looping()) {
             // End of ogg stream reached, but we are looping.
             stream.seek(0);
             shortsRead = stream.read(pcmBuffer);
@@ -100,10 +100,11 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     }
 
     @Override
-    public void stop() {
+    public @NonNull QueuedAudioPlayer stop() {
         super.stop(); // Sets playing = false and stops the source.
         queued_players.remove(this);
         // The virtual thread will see playing == false and exit, running its finally block to cleanup.
+        return this;
     }
 
     private void cleanup() {

@@ -42,7 +42,7 @@ public abstract class Camera implements Animated {
     private final CameraState tmp_camera = new CameraState();
 
     private final int[] viewportArray = new int[4];
-    private final float[] hit_result_array = new float[3];
+    private final Vector3f hit_result = new Vector3f();
 
     private final @Nullable HeightMap heightmap;
 
@@ -110,9 +110,9 @@ public abstract class Camera implements Animated {
 
                 Matrix4f combinedMatrix = new Matrix4f(proj).mul(tmp_camera.getModelView());
                 unproject(i * width, j * height, 0f, tmp_camera.getModelView(), combinedMatrix);
-                float hit_x = hit_result_array[0];
-                float hit_y = hit_result_array[1];
-                float hit_z = hit_result_array[2];
+                float hit_x = hit_result.x();
+                float hit_y = hit_result.y();
+                float hit_z = hit_result.z();
 
                 float dx1 = hit_x - x;
                 float dy1 = hit_y - y;
@@ -145,13 +145,8 @@ public abstract class Camera implements Animated {
         // Use an absolute get to avoid changing the buffer's position
         viewport.get(0, viewportArray, 0, 4);
 
-        Vector3f tempVector = new Vector3f();
         proj.mul(model);
-        proj.unproject(winx, winy, winz, viewportArray, tempVector);
-
-        hit_result_array[0] = tempVector.x;
-        hit_result_array[1] = tempVector.y;
-        hit_result_array[2] = tempVector.z;
+        proj.unproject(winx, winy, winz, viewportArray, hit_result);
     }
 
     public final @NonNull CameraState getState() {

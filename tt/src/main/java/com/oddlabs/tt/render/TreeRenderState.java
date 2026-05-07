@@ -4,6 +4,9 @@ import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.landscape.TreeSupply;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Tracks the level of detail (LOD) and spatial state for rendering a tree supply element.
+ */
 final class TreeRenderState implements LODObject {
     private final @NonNull TreePicker tree_renderer;
     private TreeSupply tree_supply;

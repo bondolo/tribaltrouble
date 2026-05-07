@@ -286,22 +286,22 @@ public abstract class AudioManager implements AutoCloseable {
         }
     }
 
-    public @NonNull AudioPlayer newAudio(@NonNull CameraState camera_state, @NonNull AudioParameters<?> params) {
-        AudioSource source = getSource(camera_state, params);
-        return newAudio(source, params);
+    public @NonNull AudioPlayer newAudio(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters<?> params) {
+        AudioSource source = getSource(camera_state, x, y, z, params);
+        return newAudio(source, x, y, z, params);
     }
 
-    public @NonNull AudioPlayer newAudio(@NonNull AudioParameters<?> params) {
-        AudioSource source = getSource(params);
-        return newAudio(source, params);
+    public @NonNull AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters<?> params) {
+        AudioSource source = getSource(x, y, z, params);
+        return newAudio(source, x, y, z, params);
     }
 
-    public @NonNull AudioPlayer newAudio(@Nullable AudioSource source, @NonNull AudioParameters<?> params) {
-        if (null != source && params.sound instanceof Audio audio) {
+    public @NonNull AudioPlayer newAudio(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params) {
+        if (null != source && params.sound() instanceof Audio audio) {
             // Bind the audio to the source before creating the player.
             source.setAudio(audio);
         }
-        return createPlayer(source, params);
+        return createPlayer(source, x, y, z, params);
     }
     public void startSources() {
         if (sound_play_counter.getAndIncrement() == 0) {
@@ -320,7 +320,7 @@ public abstract class AudioManager implements AutoCloseable {
         updateAmbientSources();
     }
 
-    private @Nullable AudioSource findSource(@NonNull AudioParameters<?> params) {
+    private @Nullable AudioSource findSource(float x, float y, float z, @NonNull AudioParameters<?> params) {
         float lowest_perceived_gain = Float.MAX_VALUE;
         int lowest_rank = Integer.MAX_VALUE;
         var listenerPosition = getListenerPosition();
@@ -350,29 +350,26 @@ public abstract class AudioManager implements AutoCloseable {
         }
 
         // Steal source if it's lower priority OR same priority but quieter
-        if (best_candidate != null && (params.rank > lowest_rank || (params.rank == lowest_rank && calculatePerceivedGain(params, listenerPosition) > lowest_perceived_gain))) {
+        if (best_candidate != null && (params.rank() > lowest_rank || (params.rank() == lowest_rank && calculatePerceivedGain(x, y, z, params, listenerPosition) > lowest_perceived_gain))) {
             return best_candidate;
         }
 
         return null;
     }
 
-    private float calculatePerceivedGain(@NonNull AudioParameters<?> p, @NonNull Vector3fc listenerPosition) {
-        if (p.relative) return p.gain;
+    private float calculatePerceivedGain(float x, float y, float z, @NonNull AudioParameters<?> p, @NonNull Vector3fc listenerPosition) {
+        if (p.relative()) return p.gain();
 
-        float dist_sq = listenerPosition.distanceSquared(p.x, p.y, p.z);
-        float dist = (float) Math.sqrt(dist_sq);
+        float dist = listenerPosition.distance(x, y, z);
 
-        // SILENCE_THRESHOLD from AudioPlayer
-        float silenceThreshold = 0.032f;
-        float refDist = p.radius;
-        float maxDist = p.distance;
+        float refDist = p.radius();
+        float maxDist = p.distance();
         float rolloff = (maxDist > refDist) 
-                ? (refDist / silenceThreshold - refDist) / (maxDist - refDist) 
+                ? (refDist / AudioPlayer.SILENCE_THRESHOLD - refDist) / (maxDist - refDist)
                 : 1.0f;
 
         // AL_INVERSE_DISTANCE_CLAMPED model
-        return p.gain * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
+        return p.gain() * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
     }
 
     private float calculatePerceivedGain(@NonNull AudioSource source, @NonNull Vector3fc listenerPosition) {
@@ -380,40 +377,38 @@ public abstract class AudioManager implements AutoCloseable {
         if (player == null) return 0f;
 
         AudioParameters<?> p = player.getParameters();
-        if (p.relative) return p.gain;
+        if (p.relative()) return p.gain();
 
-        Vector3fc pos = source.getPosition();
-        float dist_sq = listenerPosition.distanceSquared(pos);
-        float dist = (float) Math.sqrt(dist_sq);
+        float dist = listenerPosition.distance(source.getPosition());
 
         float refDist = source.getDistance();
         float rolloff = source.getRolloff();
 
         // AL_INVERSE_DISTANCE_CLAMPED model
-        return p.gain * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
+        return p.gain() * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
     }
 
-    private @Nullable AudioSource getSource(@NonNull AudioParameters<?> params) {
-        AudioSource best_source = findSource(params);
+    private @Nullable AudioSource getSource(float x, float y, float z, @NonNull AudioParameters<?> params) {
+        AudioSource best_source = findSource(x, y, z, params);
         stopSource(best_source);
         return best_source;
     }
 
-    private @Nullable AudioSource getSource(@NonNull CameraState camera_state, @NonNull AudioParameters<?> params) {
-        float this_dist_squared = params.relative
-                ? params.x * params.x + params.y * params.y + params.z * params.z
-                : getCamDistSquared(camera_state, params.x, params.y, params.z);
+    private @Nullable AudioSource getSource(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters<?> params) {
+        float this_dist_squared = params.relative()
+                ? x * x + y * y + z * z
+                : getCamDistSquared(camera_state, x, y, z);
 
-        if (this_dist_squared > params.distance * params.distance) {
+        if (this_dist_squared > params.distance() * params.distance()) {
             return null;
         }
 
-        AudioSource best_source = findSource(params);
+        AudioSource best_source = findSource(x, y, z, params);
 
         if (best_source == null) {
             float max_dist_squared = this_dist_squared;
             for (AudioSource source : sources) {
-                if (source.getRank() == params.rank) {
+                if (source.getRank() == params.rank()) {
                     Vector3fc position = source.getPosition();
                     float dist_squared = getCamDistSquared(camera_state, position.x(), position.y(), position.z());
                     if (dist_squared > max_dist_squared) {
@@ -441,7 +436,7 @@ public abstract class AudioManager implements AutoCloseable {
         return dx * dx + dy * dy + dz * dz;
     }
 
-    protected abstract @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, @NonNull AudioParameters<?> params);
+    protected abstract @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params);
 
     @Override
     public void close() {
@@ -507,7 +502,7 @@ public abstract class AudioManager implements AutoCloseable {
         void resetVolume() {
             AudioPlayer player = source.getAudioPlayer();
             if (player != null) {
-                float volume = Settings.getSettings().sound_gain * gain * player.getParameters().gain;
+                float volume = Settings.getSettings().sound_gain * gain * player.getParameters().gain();
                 source.setGain(volume);
             }
         }

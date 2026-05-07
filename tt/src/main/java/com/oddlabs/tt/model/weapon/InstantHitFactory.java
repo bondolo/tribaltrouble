@@ -12,6 +12,10 @@ import com.oddlabs.tt.model.UnitTemplate;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * A weapon factory for units that deal damage instantly to their targets 
+ * (e.g., melee units or non-projectile weapons).
+ */
 public final class InstantHitFactory extends WeaponFactory {
     private final @NonNull Audio @NonNull [] sounds;
 
@@ -29,15 +33,14 @@ public final class InstantHitFactory extends WeaponFactory {
             return;
         float dx = target.getPositionX() - src.getPositionX();
         float dy = target.getPositionY() - src.getPositionY();
-        float dir_len_inv = 1f / (float) Math.sqrt(dx * dx + dy * dy);
+        float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
         if (target instanceof Unit) {
             World world = src.getOwner().getWorld();
-            world.getAudio().newAudio(new AudioParameters<>(sounds[world.getRandom().nextInt(sounds.length)], target.getPositionX(), target.getPositionY(), target.getPositionZ(),
-                    AudioPlayer.AUDIO_RANK_DEATH,
-                    AudioPlayer.AUDIO_DISTANCE_DEATH,
-                    AudioPlayer.AUDIO_GAIN_DEATH,
-                    AudioPlayer.AUDIO_RADIUS_DEATH,
-                    1f + (world.getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch()));
+            var params = new AudioParameters<>(
+                    sounds[world.getRandom().nextInt(sounds.length)], AudioPlayer.AUDIO_RANK_DEATH,
+                    AudioPlayer.AUDIO_DISTANCE_DEATH, AudioPlayer.AUDIO_GAIN_DEATH, AudioPlayer.AUDIO_RADIUS_DEATH,
+                    1f + (world.getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch());
+            world.getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }
         target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());
     }

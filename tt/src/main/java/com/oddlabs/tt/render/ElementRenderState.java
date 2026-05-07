@@ -7,6 +7,10 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Tracks the specific rendering properties (position, color, pattern) 
+ * for an individual world element.
+ */
 final class ElementRenderState<M extends Model> implements ModelState<M> {
 
     final @NonNull RenderState render_state;

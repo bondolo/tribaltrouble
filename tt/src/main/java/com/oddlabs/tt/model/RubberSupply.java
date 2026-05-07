@@ -2,6 +2,7 @@ package com.oddlabs.tt.model;
 
 
 import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.landscape.World;
@@ -14,6 +15,8 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Arrays;
+
 /**
  * Represents a rubber resource, visually represented as a chicken.
  */
@@ -24,6 +27,19 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     private static final int INITIAL_SUPPLIES = 1;
     private static final int MAX_MOVE_GRIDS = 5;
+
+    private static final AudioParameters<Audio> CHICKEN_PECK_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_CHICKEN_PECK, AudioPlayer.AUDIO_RANK_CHICKEN,
+            AudioPlayer.AUDIO_DISTANCE_CHICKEN, AudioPlayer.AUDIO_GAIN_CHICKEN_PECK, AudioPlayer.AUDIO_RADIUS_CHICKEN_PECK);
+    private static final AudioParameters<Audio> CHICKEN_DEATH_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_CHICKEN_DEATH, AudioPlayer.AUDIO_RANK_DEATH,
+            AudioPlayer.AUDIO_DISTANCE_DEATH, AudioPlayer.AUDIO_GAIN_CHICKEN_DEATH, AudioPlayer.AUDIO_RADIUS_CHICKEN_DEATH);
+    @SuppressWarnings("unchecked")
+    private static final @NonNull AudioParameters<Audio> [] CHICKEN_IDLE_AUDIO =
+            (@NonNull AudioParameters<Audio> []) Arrays.stream(AudioPlayer.SFX_CHICKEN_IDLES)
+                .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_CHICKEN,
+                        AudioPlayer.AUDIO_DISTANCE_CHICKEN, AudioPlayer.AUDIO_GAIN_CHICKEN_IDLE, AudioPlayer.AUDIO_RADIUS_CHICKEN_IDLE))
+                .toArray(AudioParameters[]::new);
 
     public enum Animation {
         IDLING(1f / (50f / 25f)),
@@ -70,7 +86,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         spawning = true;
         float dx = x - spawn_x;
         float dy = y - spawn_y;
-        float inv_len = 1f / (float) Math.sqrt(dx * dx + dy * dy);
+        float inv_len = 1f / (float) Math.hypot(dx, dy);
         setDirection(dx * inv_len, dy * inv_len);
         setNewAnimation(Animation.FLYING);
     }
@@ -149,7 +165,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public void animate(float t) {
-        if (spawning || path_tracker == null)
+        if (spawning)
             return;
         anim_time += animation.getSpeed() * t;
         if (animation == Animation.FLYING || animation == Animation.RUNNING) {
@@ -159,11 +175,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             if (random < .75) {
                 setNewAnimation(Animation.IDLING);
                 if (random < .05)
-                    getWorld().getAudio().newAudio(new AudioParameters<>(getWorld().getLandscapeResources().getBirdIdleSound(getWorld().getRandom()), getPositionX(), getPositionY(), getPositionZ(),
-                            AudioPlayer.AUDIO_RANK_CHICKEN,
-                            AudioPlayer.AUDIO_DISTANCE_CHICKEN,
-                            AudioPlayer.AUDIO_GAIN_CHICKEN_IDLE,
-                            AudioPlayer.AUDIO_RADIUS_CHICKEN_IDLE));
+                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_IDLE_AUDIO[getWorld().getRandom().nextInt(CHICKEN_IDLE_AUDIO.length)]);
             } else if (random < .85) {
                 // fly
                 int new_grid_x = start_grid_x + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
@@ -173,22 +185,14 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 float move_random = getWorld().getRandom().nextFloat();
                 if (move_random < .25f) {
                     setNewAnimation(Animation.FLYING);
-                    getWorld().getAudio().newAudio(new AudioParameters<>(getWorld().getLandscapeResources().getBirdPeckSound(), getPositionX(), getPositionY(), getPositionZ(),
-                            AudioPlayer.AUDIO_RANK_CHICKEN,
-                            AudioPlayer.AUDIO_DISTANCE_CHICKEN,
-                            AudioPlayer.AUDIO_GAIN_CHICKEN_PECK,
-                            AudioPlayer.AUDIO_RADIUS_CHICKEN_PECK));
+                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_PECK_AUDIO);
                 } else {
                     setNewAnimation(Animation.RUNNING);
                 }
             } else {
                 setNewAnimation(Animation.PECKING);
                 if (random > .98f)
-                    getWorld().getAudio().newAudio(new AudioParameters<>(getWorld().getLandscapeResources().getBirdPeckSound(), getPositionX(), getPositionY(), getPositionZ(),
-                            AudioPlayer.AUDIO_RANK_CHICKEN,
-                            AudioPlayer.AUDIO_DISTANCE_CHICKEN,
-                            AudioPlayer.AUDIO_GAIN_CHICKEN_PECK,
-                            AudioPlayer.AUDIO_RADIUS_CHICKEN_PECK));
+                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_PECK_AUDIO);
 
             }
         }
@@ -219,6 +223,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     @Override
     public int getAnimation() {
         // This method is called during super constructor before field is initialized.
+        //noinspection ConstantValue
         return null != animation ? animation.ordinal() : 0;
     }
 
@@ -232,11 +237,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         if (!is_hit) {
             is_hit = true;
             setNewAnimation(Animation.DYING);
-            getWorld().getAudio().newAudio(new AudioParameters<>(getWorld().getLandscapeResources().getBirdDeathSound(), getPositionX(), getPositionY(), getPositionZ(),
-                    AudioPlayer.AUDIO_RANK_DEATH,
-                    AudioPlayer.AUDIO_DISTANCE_DEATH,
-                    AudioPlayer.AUDIO_GAIN_CHICKEN_DEATH,
-                    AudioPlayer.AUDIO_RADIUS_CHICKEN_DEATH));
+            getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_DEATH_AUDIO);
             group.remove(this);
         }
         return super.hit();

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
@@ -30,12 +29,8 @@ public final class HarvestBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getOwner().getWorld().getAudio().newAudio(new AudioParameters<>(unit.getOwner().getWorld().getRacesResources().getHarvestSound(supply.getClass(), unit.getOwner().getWorld().getRandom()),
-                    unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(),
-                    AudioPlayer.AUDIO_RANK_HARVEST,
-                    AudioPlayer.AUDIO_DISTANCE_HARVEST,
-                    AudioPlayer.AUDIO_GAIN_HARVEST,
-                    AudioPlayer.AUDIO_RADIUS_HARVEST));
+            var params = AudioPlayer.getHarvestSound(supply.getClass(), unit.getOwner().getWorld().getRandom());
+            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
             if (supply.hit()) {
                 unit.getSupplyContainer().increaseSupply(1, supply.getClass());
                 unit.getOwner().harvested(supply.getClass());

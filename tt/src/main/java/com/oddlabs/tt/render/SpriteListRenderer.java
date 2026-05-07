@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Internal renderer that manages sprite list batches for a specific entity type.
+ */
 final class SpriteListRenderer {
     private final @NonNull SpriteList sprite_list;
     private final @NonNull List<@NonNull ModelState<?>> @NonNull [] @NonNull [] render_lists;

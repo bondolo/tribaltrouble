@@ -12,13 +12,13 @@ import org.jspecify.annotations.Nullable;
  */
 final class OpenALAudioPlayer extends AudioPlayer {
 
-    public OpenALAudioPlayer(@Nullable OpenALAudioSource source, @NonNull AudioParameters<Audio> params) {
-        super(source, params);
+    public OpenALAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters<Audio> params) {
+        super(source, x, y, z, params);
         if (this.source == null) {
             return;
         }
 
-        if (params.music || AudioManager.getManager().startPlaying()) {
+        if (params.music() || AudioManager.getManager().startPlaying()) {
             source.play();
         }
     }

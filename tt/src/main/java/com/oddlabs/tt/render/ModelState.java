@@ -7,6 +7,9 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Unified interface for accessing the visual state of renderable world objects.
+ */
 interface ModelState<M extends Model> extends LODObject {
     @NonNull Matrix4f getTransform(@NonNull Matrix4f dest);
 

@@ -31,6 +31,10 @@ import java.util.Map;
  * Specialized renderer that handles high-performance 3D sprite rendering using hardware instancing.
  * Batches sprites by texture and render state to minimize draw calls and state changes.
  */
+/**
+ * Specialized renderer that handles high-performance 3D sprite rendering using hardware instancing.
+ * Batches sprites by texture and render state to minimize draw calls and state changes.
+ */
 public final class InstancedSpriteRenderer implements AutoCloseable {
 
     private final InstancedSpriteShader shader = new InstancedSpriteShader();

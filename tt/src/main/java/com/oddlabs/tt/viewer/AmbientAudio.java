@@ -1,10 +1,10 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.audio.AudioFile;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.openal.EFXManager;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.CameraState;
@@ -16,19 +16,32 @@ import com.oddlabs.tt.landscape.TreeGroup;
 import com.oddlabs.tt.landscape.TreeLeaf;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.resource.Resources;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 
 import java.util.logging.Logger;
 
+/**
+ * Coordinates the playback of ambient environmental sounds, providing 
+ * realistic reverb and attenuation based on camera proximity and terrain features.
+ */
 public final class AmbientAudio {
     private static final Logger logger = Logger.getLogger(AmbientAudio.class.getSimpleName());
-    /**
-     * How many trees make a forest
-     */
+    /** How many trees make a forest */
     private static final int TREES_FOREST_THRESHOLD = 10;
     private static final float CANYON_PROXIMITY_DISTANCE = 30f;
+    private static final AudioParameters<Audio> AMBIENT_FOREST = new AudioParameters<>(
+            AudioPlayer.SFX_AMBIENT_FOREST, AudioPlayer.AUDIO_RANK_AMBIENT,
+            AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_FOREST, AudioPlayer.AUDIO_RADIUS_AMBIENT_FOREST,
+            1f, true, true);
+    private static final AudioParameters<Audio> AMBIENT_BEACH = new AudioParameters<>(
+            AudioPlayer.SFX_AMBIENT_BEACH, AudioPlayer.AUDIO_RANK_AMBIENT,
+            AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_BEACH, AudioPlayer.AUDIO_RADIUS_AMBIENT_BEACH,
+            1f, true, true);
+    private static final AudioParameters<Audio> AMBIENT_WIND = new AudioParameters<>(
+            AudioPlayer.SFX_AMBIENT_WIND, AudioPlayer.AUDIO_RANK_AMBIENT,
+            AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_WIND, AudioPlayer.AUDIO_RADIUS_AMBIENT_WIND,
+            1f, true, true);
 
     private final @NonNull AudioPlayer ambient_forest;
     private final @NonNull AudioPlayer ambient_beach;
@@ -39,15 +52,9 @@ public final class AmbientAudio {
     private final Vector3f u = new Vector3f();
 
     public AmbientAudio(@NonNull AudioImplementation audio_implementation) {
-        var ambient_forest_buffer = Resources.findResource(new AudioFile("/sfx/ambient_forest.ogg"));
-        var ambient_beach_buffer = Resources.findResource(new AudioFile("/sfx/ambient_beach.ogg"));
-        var ambient_wind_buffer = Resources.findResource(new AudioFile("/sfx/ambient_wind.ogg"));
-        ambient_forest = audio_implementation.newAudio(new AudioParameters<>(ambient_forest_buffer, 10000f, 10000f, 10000f, AudioPlayer.AUDIO_RANK_AMBIENT, AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_FOREST, AudioPlayer.AUDIO_RADIUS_AMBIENT_FOREST, 1f, true, true, false));
-        ambient_beach = audio_implementation.newAudio(new AudioParameters<>(ambient_beach_buffer, 10000f, 10000f, 10000f, AudioPlayer.AUDIO_RANK_AMBIENT, AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_BEACH, AudioPlayer.AUDIO_RADIUS_AMBIENT_BEACH, 1f, true, true, false));
-        ambient_wind = audio_implementation.newAudio(new AudioParameters<>(ambient_wind_buffer, 10000f, 10000f, 10000f, AudioPlayer.AUDIO_RANK_AMBIENT, AudioPlayer.AUDIO_DISTANCE_AMBIENT, AudioPlayer.AUDIO_GAIN_AMBIENT_WIND, AudioPlayer.AUDIO_RADIUS_AMBIENT_WIND, 1f, true, true, false));
-        ambient_forest.registerAmbient();
-        ambient_beach.registerAmbient();
-        ambient_wind.registerAmbient();
+        ambient_forest = audio_implementation.newAudio(10000f, 10000f, 10000f, AMBIENT_FOREST).registerAmbient();
+        ambient_beach = audio_implementation.newAudio(10000f, 10000f, 10000f, AMBIENT_BEACH).registerAmbient();
+        ambient_wind = audio_implementation.newAudio(10000f, 10000f, 10000f, AMBIENT_WIND).registerAmbient();
     }
 
     private static int countTrees(@NonNull AbstractTreeGroup node, float x, float y, float radiusSq, int threshold, int currentCount) {
@@ -65,9 +72,9 @@ public final class AmbientAudio {
                     for (TreeSupply tree : leaf.getTrees()) {
                         if (currentCount >= threshold) break;
                         if (!tree.isHidden()) {
-                            float dx = tree.getPositionX() - x;
-                            float dy = tree.getPositionY() - y;
-                            if (dx * dx + dy * dy < radiusSq) {
+                            float ddx = tree.getCX() - x;
+                            float ddy = tree.getCY() - y;
+                            if (ddx * ddx + ddy * ddy < radiusSq) {
                                 currentCount++;
                             }
                         }
@@ -75,9 +82,9 @@ public final class AmbientAudio {
                 }
                 case TreeSupply tree -> {
                     if (!tree.isHidden()) {
-                        float dx = tree.getPositionX() - x;
-                        float dy = tree.getPositionY() - y;
-                        if (dx * dx + dy * dy < radiusSq) {
+                        float ddx = tree.getCX() - x;
+                        float ddy = tree.getCY() - y;
+                        if (ddx * ddx + ddy * ddy < radiusSq) {
                             currentCount++;
                         }
                     }
@@ -94,12 +101,9 @@ public final class AmbientAudio {
     }
 
     public void stop() {
-        ambient_forest.stop();
-        ambient_beach.stop();
-        ambient_wind.stop();
-        ambient_forest.removeAmbient();
-        ambient_beach.removeAmbient();
-        ambient_wind.removeAmbient();
+        ambient_forest.stop().removeAmbient();
+        ambient_beach.stop().removeAmbient();
+        ambient_wind.stop().removeAmbient();
     }
 
     public void updateSoundListener(@NonNull CameraState camera, @NonNull HeightMap heightmap) {

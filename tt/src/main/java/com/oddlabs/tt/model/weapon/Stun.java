@@ -1,7 +1,8 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
@@ -19,10 +20,17 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Arrays;
+
 /**
  * Logic controller for the Stun magic effect.
  */
 public final class Stun extends PointEmitterModel implements Magic {
+    @SuppressWarnings("unchecked")
+    private static final @NonNull AudioParameters<Audio> [] STUN_AUDIO = Arrays.stream(AudioPlayer.SFX_LURBLASTS)
+            .map(audio -> new AudioParameters<>(audio, AudioPlayer.AUDIO_RANK_MAGIC,
+                    AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_STUN_LUR, AudioPlayer.AUDIO_RADIUS_STUN_LUR))
+            .toArray(AudioParameters[]::new);
     private final @NonNull Unit src;
     private final float offset_x;
     private final float offset_y;
@@ -56,12 +64,7 @@ public final class Stun extends PointEmitterModel implements Magic {
         unit_grid.scan(filter, UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src.getPositionY()));
         target_list = filter.getResult();
 
-        sound = owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getStunSound(owner.getWorld().getRandom()), start_x, start_y, z,
-                AudioPlayer.AUDIO_RANK_MAGIC,
-                AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                AudioPlayer.AUDIO_GAIN_STUN_LUR,
-                AudioPlayer.AUDIO_RADIUS_STUN_LUR,
-                1f));
+        sound = owner.getWorld().getAudio().newAudio(start_x, start_y, z, STUN_AUDIO[getWorld().getRandom().nextInt(STUN_AUDIO.length)]);
     }
 
     private static Emitter<?> createEmitter(float offset_x, float offset_y, float offset_z, @NonNull Unit src) {

@@ -1,9 +1,9 @@
 package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
@@ -70,11 +70,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         register();
         reinsert();
 
-        audio_player = getWorld().getAudio().newAudio(new AudioParameters<>(
+        audio_player = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), new AudioParameters<>(
                 throw_sound,
-                getPositionX(),
-                getPositionY(),
-                getPositionZ(),
                 AudioPlayer.AUDIO_RANK_WEAPON_ATTACK,
                 AudioPlayer.AUDIO_DISTANCE_WEAPON_ATTACK,
                 AudioPlayer.AUDIO_GAIN_WEAPON_ATTACK,
@@ -112,7 +109,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         updateTarget();
         float dx = end_x - start_x;
         float dy = end_y - start_y;
-        float len = (float) Math.sqrt(dx * dx + dy * dy);
+        float len = (float) Math.hypot(dx, dy);
         time_limit = (len / getMetersPerSecond()) * getLoftFactor();
         time = 0;
         // current_z is already set to absolute start height
@@ -133,7 +130,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private void updateDirection() {
         float dx = target.getPositionX() - getPositionX();
         float dy = target.getPositionY() - getPositionY();
-        float len = Math.max((float) Math.sqrt(dx * dx + dy * dy), .01f);
+        float len = (float) Math.max(Math.hypot(dx, dy), .01);
         float len_inv = 1f / len;
         dir_x = dx * len_inv;
         dir_y = dy * len_inv;
@@ -193,7 +190,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     protected final void damageTarget(@NonNull Selectable<?> target) {
         if (target instanceof Unit) {
-            getWorld().getAudio().newAudio(new AudioParameters<>(hit_sounds[getWorld().getRandom().nextInt(hit_sounds.length)], target.getPositionX(), target.getPositionY(), target.getPositionZ(),
+            getWorld().getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), new AudioParameters<>(hit_sounds[getWorld().getRandom().nextInt(hit_sounds.length)],
                     AudioPlayer.AUDIO_RANK_DEATH,
                     AudioPlayer.AUDIO_DISTANCE_DEATH,
                     AudioPlayer.AUDIO_GAIN_DEATH,

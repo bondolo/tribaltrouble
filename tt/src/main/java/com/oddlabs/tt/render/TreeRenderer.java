@@ -16,6 +16,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Specialized renderer for forest elements, coordinating the efficient 
+ * drawing of crown and trunk sprite lists using hardware instancing.
+ */
 public final class TreeRenderer extends TreePicker implements SceneRenderer {
     private static final Logger logger = Logger.getLogger(TreeRenderer.class.getName());
     private final InstancedSpriteRenderer instancedSpriteRenderer;

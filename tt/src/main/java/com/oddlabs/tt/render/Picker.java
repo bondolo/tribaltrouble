@@ -43,6 +43,10 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * Handles world element picking and selection by unprojecting screen coordinates 
+ * and performing ray-casting against bounding boxes.
+ */
 public final class Picker implements Updatable<TimerAnimation> {
     private static final int PICK_SIZE = 5;
     private static final int SELECTION_THRESHOLD = 5;
@@ -86,8 +90,8 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final Matrix4f proj = new Matrix4f();
 
     private final IntBuffer viewport = Objects.requireNonNull(BufferUtils.createIntBuffer(16));
-    private final float[] hit_result_array = new float[3];
-    private final float[] dir_vector = new float[3];
+    private final Vector3f hit_result = new Vector3f();
+    private final Vector3f dir_vector = new Vector3f();
 
     private final int[] viewportArray = new int[4];
 
@@ -292,9 +296,9 @@ public final class Picker implements Updatable<TimerAnimation> {
         setupPicking(camera.getState(), x * scale, y * scale, PICK_SIZE, PICK_SIZE);
         if (!nearestLandscape(Math.round(x * scale), Math.round(y * scale)) || patch_hit_z < local_player.getWorld().getHeightMap().getSeaLevelMeters()) {
             float dz = tmp_camera.getCurrentZ() - local_player.getWorld().getHeightMap().getSeaLevelMeters();
-            float factor = dz / dir_vector[2];
-            patch_hit_x = tmp_camera.getCurrentX() - factor * dir_vector[0];
-            patch_hit_y = tmp_camera.getCurrentY() - factor * dir_vector[1];
+            float factor = dz / dir_vector.z();
+            patch_hit_x = tmp_camera.getCurrentX() - factor * dir_vector.x();
+            patch_hit_y = tmp_camera.getCurrentY() - factor * dir_vector.y();
             patch_hit_z = local_player.getWorld().getHeightMap().getSeaLevelMeters();
         }
         int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
@@ -303,28 +307,21 @@ public final class Picker implements Updatable<TimerAnimation> {
     }
 
     private void calcPosAndDir(int pixel_x, int pixel_y) {
-        float pixel_z = 0.5f;
-        unproject(pixel_x, pixel_y, pixel_z, tmp_camera.getProjectionModelView());
-        float hit_x = hit_result_array[0];
-        float hit_y = hit_result_array[1];
-        float hit_z = hit_result_array[2];
+        Vector3f hit2 = new Vector3f();
 
-        pixel_z = 0.1f;
-        unproject(pixel_x, pixel_y, pixel_z, tmp_camera.getProjectionModelView());
+        // Convert viewport buffer to array.
+        viewport.get(0, viewportArray, 0, 4);
 
-        float dx = hit_x - hit_result_array[0];
-        float dy = hit_y - hit_result_array[1];
-        float dz = hit_z - hit_result_array[2];
-        float vec_len_inv = 1f / (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        dir_vector[0] = dx * vec_len_inv;
-        dir_vector[1] = dy * vec_len_inv;
-        dir_vector[2] = dz * vec_len_inv;
+        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 0.5f, viewportArray, hit_result);
+        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 0.1f, viewportArray, hit2);
+
+        hit_result.sub(hit2, dir_vector).normalize();
     }
 
     private boolean nearestLandscape(int pixel_x, int pixel_y) {
         pickLandscape();
         calcPosAndDir(pixel_x, pixel_y);
-        return doNearestLandscape(hit_result_array[0], hit_result_array[1], hit_result_array[2], dir_vector[0], dir_vector[1], dir_vector[2]);
+        return doNearestLandscape(hit_result.x(), hit_result.y(), hit_result.z(), dir_vector.x(), dir_vector.y(), dir_vector.z());
     }
 
     /**
@@ -339,13 +336,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         // Convert viewport buffer to array. The buffer position is reset in setupPicking().
         viewport.get(0, viewportArray, 0, 4);
 
-        Vector3f tempVector = new Vector3f();
-        proj.unproject(winx, winy, winz, viewportArray, tempVector);
-
-        // Store result in the original class field array.
-        hit_result_array[0] = tempVector.x;
-        hit_result_array[1] = tempVector.y;
-        hit_result_array[2] = tempVector.z;
+        proj.unproject(winx, winy, winz, viewportArray, hit_result);
     }
 
     private static float computeTMax(float bmin, float bmax, float c, float d) {

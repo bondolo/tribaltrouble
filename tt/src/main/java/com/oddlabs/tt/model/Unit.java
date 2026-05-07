@@ -170,7 +170,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         float center = getOwner().getWorld().getHeightMap().getMetersPerWorld() / 2f;
         float dx = center - reserved_target.getPositionX();
         float dy = center - reserved_target.getPositionY();
-        float len = (float) Math.sqrt(dx * dx + dy * dy);
+        float len = (float) Math.hypot(dx, dy);
         if (len > 0) {
             setDirection(dx / len, dy / len);
         }
@@ -251,7 +251,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         assert !isDead();
         float dx = target.getPositionX() - getPositionX();
         float dy = target.getPositionY() - getPositionY();
-        float dir_len_inv = 1f / (float) Math.sqrt(dx * dx + dy * dy);
+        float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
         dx *= dir_len_inv;
         dy *= dir_len_inv;
         setDirection(dx, dy);
@@ -392,7 +392,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 						AudioPlayer.AUDIO_RADIUS_DEATH,
 						1f + (World.getRandom().nextFloat() - .5f)*getUnitTemplate().getDeathPitch());
                      */
-                getOwner().getWorld().getAudio().newAudio(new AudioParameters<>(getTemplate().getDeathSound(), getPositionX(), getPositionY(), getPositionZ(),
+                getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), new AudioParameters<>(getTemplate().getDeathSound(),
                         AudioPlayer.AUDIO_RANK_DEATH,
                         AudioPlayer.AUDIO_DISTANCE_DEATH,
                         AudioPlayer.AUDIO_GAIN_DEATH,

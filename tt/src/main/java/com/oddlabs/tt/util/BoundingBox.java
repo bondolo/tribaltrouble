@@ -5,6 +5,9 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Provides world-space bounding volumes for collision detection, frustum culling, and spatial sorting.
+ */
 public class BoundingBox {
 
     private static final Vector4f temp_vec = new Vector4f();
@@ -16,6 +19,7 @@ public class BoundingBox {
     public float bmax_x = Float.NEGATIVE_INFINITY;
     public float bmax_y = Float.NEGATIVE_INFINITY;
     public float bmax_z = Float.NEGATIVE_INFINITY;
+
     private float cx;
     private float cy;
     private float cz;

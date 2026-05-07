@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.Building;
@@ -36,11 +35,7 @@ public final class RepairBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getOwner().getWorld().getAudio().newAudio(new AudioParameters<>(unit.getOwner().getWorld().getRacesResources().getHarvestSound(TreeSupply.class, unit.getOwner().getWorld().getRandom()), unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(),
-                    AudioPlayer.AUDIO_RANK_HARVEST,
-                    AudioPlayer.AUDIO_DISTANCE_HARVEST,
-                    AudioPlayer.AUDIO_GAIN_HARVEST,
-                    AudioPlayer.AUDIO_RADIUS_HARVEST));
+            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), AudioPlayer.getHarvestSound(TreeSupply.class, unit.getOwner().getWorld().getRandom()));
         }
 
         if (anim_time > SECONDS_PER_ANIMATION_CYCLE) {

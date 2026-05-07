@@ -68,7 +68,11 @@ public final class Tutorial {
         info = new LabelBox(text, Skin.getSkin().getEditFont(), 400);
         info.setPos(BORDER_OFFSET, viewer.getGUIRoot().getHeight() - BORDER_OFFSET - info.getHeight());
         viewer.getGUIRoot().addChild(info);
-        viewer.getWorld().getAudio().newAudio(new AudioParameters<>(viewer.getLocalPlayer().getRace().getBuildingNotificationAudio(), 0f, 0f, 0f, AudioPlayer.AUDIO_RANK_NOTIFICATION, AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, .25f, 1f, 1f, false, true));
+        var params = new AudioParameters<>(
+                viewer.getLocalPlayer().getRace().getBuildingNotificationAudio(), AudioPlayer.AUDIO_RANK_NOTIFICATION,
+                AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, .25f, 1f,
+                1f, false, true);
+        viewer.getWorld().getAudio().newAudio(0f, 0f, 0f, params);
         timer = new TimerAnimation(viewer.getAnimationManagerLocal(), _ -> trigger.run(Tutorial.this), trigger.getCheckInterval());
         timer.start();
     }

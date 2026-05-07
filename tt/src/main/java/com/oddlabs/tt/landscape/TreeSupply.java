@@ -13,9 +13,19 @@ import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.stream.Stream;
+
 public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated {
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
+
+    @SuppressWarnings("unchecked")
+    private static final @NonNull AudioParameters<AudioPlayer> [] TREE_FALL_AUDIO =
+            Stream.of(AudioPlayer.SFX_FELLING_TREE,
+                    AudioPlayer.SFX_FELLING_PALMTREE)
+                    .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_TREE_FALL,
+                            AudioPlayer.AUDIO_DISTANCE_TREE_FALL, AudioPlayer.AUDIO_GAIN_TREE_FALL, AudioPlayer.AUDIO_RADIUS_TREE_FALL))
+                    .toArray(AudioParameters[]::new);
 
     private final @NonNull Matrix4f matrix;
     private final @NonNull TreeType tree_type;
@@ -177,7 +187,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         if (isEmpty()) {
             unoccupyTree();
             world.getSupplyManager(getClass()).emptySupply(this);
-            world.getAudio().newAudio(new AudioParameters<>(world.getRacesResources().getTreeFallSound()[tree_type.ordinal() % 2]/* reusing native tree sounds*/, getCX(), getCY(), getCZ(), AudioPlayer.AUDIO_RANK_TREE_FALL, AudioPlayer.AUDIO_DISTANCE_TREE_FALL, AudioPlayer.AUDIO_GAIN_TREE_FALL, AudioPlayer.AUDIO_RADIUS_TREE_FALL));
+            world.getAudio().newAudio(getCX(), getCY(), getCZ(), TREE_FALL_AUDIO[tree_type.ordinal() % 2]);
             world.getAnimationManagerRealTime().registerAnimation(this);
             animation_time = 0f;
         }

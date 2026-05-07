@@ -1,7 +1,8 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.Unit;
@@ -26,6 +27,17 @@ public final class PoisonFog implements Magic {
     private static final float BURST_RADIUS = 2f;
     private static final float GAUSSIAN_LIMIT = 2.5f;
     private static final int MIN_BURSTS_PER_SOUND = 2;
+
+    private static final AudioParameters<Audio> BUBBLING_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_BUBBLING, AudioPlayer.AUDIO_RANK_MAGIC,
+            AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_BUBBLING, AudioPlayer.AUDIO_RADIUS_BUBBLING,
+            1f, true, false);
+
+    private static final AudioParameters<Audio> GAS_AUDIO = new AudioParameters<>(AudioPlayer.SFX_GAS,
+            AudioPlayer.AUDIO_RANK_GAS,
+            AudioPlayer.AUDIO_DISTANCE_MAGIC,
+            AudioPlayer.AUDIO_GAIN_GAS,
+            AudioPlayer.AUDIO_RADIUS_GAS);
 
     private final float hit_radius;
     private final float hit_chance;
@@ -56,12 +68,7 @@ public final class PoisonFog implements Magic {
         start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
         start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
 
-        bubbling_sound = owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getBubblingSound(), start_x, start_y, owner.getWorld().getHeightMap().getNearestHeight(start_x, start_y),
-                AudioPlayer.AUDIO_RANK_MAGIC,
-                AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                AudioPlayer.AUDIO_GAIN_BUBBLING,
-                AudioPlayer.AUDIO_RADIUS_BUBBLING,
-                1f, true, false));
+        bubbling_sound = owner.getWorld().getAudio().newAudio(start_x, start_y, owner.getWorld().getHeightMap().getNearestHeight(start_x, start_y), BUBBLING_AUDIO);
     }
 
     @Override
@@ -76,7 +83,7 @@ public final class PoisonFog implements Magic {
         }
 
         if (bursts * SECONDS_BETWEEN_BURSTS < time) {
-            float gaussian = (float) (GAUSSIAN_LIMIT - Math.abs(Math.max(-GAUSSIAN_LIMIT, Math.min(GAUSSIAN_LIMIT, owner.getWorld().getRandom().nextGaussian())))) / GAUSSIAN_LIMIT;
+            float gaussian = (float) (GAUSSIAN_LIMIT - Math.abs(Math.clamp(owner.getWorld().getRandom().nextGaussian(), -GAUSSIAN_LIMIT, GAUSSIAN_LIMIT))) / GAUSSIAN_LIMIT;
             float r = gaussian * (hit_radius - BURST_RADIUS - 5f);
             float a = owner.getWorld().getRandom().nextFloat() * (float) Math.PI * 2;
             float x = start_x + (float) Math.cos(a) * r;
@@ -97,12 +104,7 @@ public final class PoisonFog implements Magic {
 
             if (bursts % next_sound == 0) {
                 next_sound = MIN_BURSTS_PER_SOUND + owner.getWorld().getRandom().nextInt(5);
-                owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getGasSound(), x, y, z,
-                        AudioPlayer.AUDIO_RANK_GAS,
-                        AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                        AudioPlayer.AUDIO_GAIN_GAS,
-                        AudioPlayer.AUDIO_RADIUS_GAS,
-                        1f));
+                owner.getWorld().getAudio().newAudio(x, y, z, GAS_AUDIO);
             }
             bursts++;
         }
@@ -132,7 +134,6 @@ public final class PoisonFog implements Magic {
 
     @Override
     public void interrupt() {
-        if (bubbling_sound != null)
-            bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
+        bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
     }
 }

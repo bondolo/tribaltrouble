@@ -1,7 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.audio.AudioFile;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.GUIIcons;
@@ -33,7 +32,6 @@ import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.render.TextureKey;
-import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.resource.TextureFile;
 import com.oddlabs.tt.util.Utils;
@@ -41,9 +39,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -75,7 +71,8 @@ public final class RacesResources {
 
     public static final float BUILDING_RING_PHYSICAL_THICKNESS = 0.2f;
 
-    public static final GeneratorHalos DEFAULT_SHADOW_DESC = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION, new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
+    public static final GeneratorHalos DEFAULT_SHADOW_DESC = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION,
+            new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
 
@@ -95,19 +92,6 @@ public final class RacesResources {
     private final @NonNull TextureKey lightning_texture;
     private final @NonNull TextureKey[] note_textures = new TextureKey[8];
     private final @NonNull TextureKey[] star_textures = new TextureKey[1];
-    private final @NonNull Audio @NonNull [] tree_fall_sound;
-    private final @NonNull Audio @NonNull [] building_hit_sound;
-    private final @NonNull Audio gas_sound;
-    private final @NonNull Audio bubbling_sound;
-    private final @NonNull Audio lightning_sound;
-    private final @NonNull Audio cloud_sound;
-    private final @NonNull Audio @NonNull [] stun_sound;
-    private final @NonNull Audio @NonNull [] blast_lur_sound;
-    private final @NonNull Audio blast_rumble_sound;
-    private final @NonNull Audio blast_blast_sound;
-    private final @NonNull Audio armory_sound;
-    private final @NonNull Audio building_collapse_sound;
-    private final Map<@NonNull Class<? extends Supply>, @NonNull Audio[]> harvest_sounds = new HashMap<>();
     private final @NonNull SpriteKey[] wood_fragment_sprites = new SpriteKey[4];
     private final @NonNull SpriteKey[] treasure_sprites = new SpriteKey[6];
     private final @NonNull Race @NonNull [] races;
@@ -150,7 +134,9 @@ public final class RacesResources {
         final float ring_mid = 0.445f;
         final float fadeout = 0.002f;
         final float ring_thickness = BUILDING_RING_PHYSICAL_THICKNESS / shadow_diameter;
-        Supplier<Texture[]> building_shadow_desc = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION, new float[][]{{0.15f, 0.5f}, {0.5f, 0f}}, new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2 + fadeout, 0f}});
+        Supplier<Texture[]> building_shadow_desc = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION,
+                new float[][]{{0.15f, 0.5f}, {0.5f, 0f}},
+                new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2 + fadeout, 0f}});
         ShadowListKey shadow_renderer = queues.registerSelectableShadowList(building_shadow_desc);
         SpriteFile building = new SpriteFile(built_name,
                 Globals.NO_MIPMAP_CUTOFF,
@@ -249,82 +235,7 @@ public final class RacesResources {
                 org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE,
                 org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE));
 
-        Audio death_peon_sound = Resources.findResource(new AudioFile("/sfx/death_peon.ogg"));
-        Audio death_viking1_sound = Resources.findResource(new AudioFile("/sfx/death_viking_warrior1.ogg"));
-        Audio death_viking2_sound = Resources.findResource(new AudioFile("/sfx/death_viking_warrior2.ogg"));
-        Audio death_native1_sound = Resources.findResource(new AudioFile("/sfx/death_native_warrior1.ogg"));
-        Audio death_native2_sound = Resources.findResource(new AudioFile("/sfx/death_native_warrior2.ogg"));
-
-        Audio axe_throw_sound = Resources.findResource(new AudioFile("/sfx/weapon_axe.ogg"));
-        Audio spear_throw_sound = Resources.findResource(new AudioFile("/sfx/weapon_spear.ogg"));
-
-        tree_fall_sound = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/felling_tree.ogg")),
-                Resources.findResource(new AudioFile("/sfx/felling_palmtree.ogg"))
-        };
-
         ProgressForm.progress(1f / num_progress);
-
-        building_hit_sound = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/impact_wood1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_wood2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_wood3.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_wood4.ogg"))
-        };
-
-        gas_sound = Resources.findResource(new AudioFile("/sfx/gas.ogg"));
-        bubbling_sound = Resources.findResource(new AudioFile("/sfx/bubbling.ogg"));
-        lightning_sound = Resources.findResource(new AudioFile("/sfx/flash.ogg"));
-        cloud_sound = Resources.findResource(new AudioFile("/sfx/crackling_cloud.ogg"));
-
-        armory_sound = Resources.findResource(new AudioFile("/sfx/armory.ogg"));
-
-        building_collapse_sound = Resources.findResource(new AudioFile("/sfx/building_crash.ogg"));
-
-        stun_sound = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/lur_stun1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/lur_stun2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/lur_stun3.ogg"))
-        };
-
-        blast_lur_sound = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/lur_blast1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/lur_blast2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/lur_blast3.ogg"))
-        };
-        blast_rumble_sound = Resources.findResource(new AudioFile("/sfx/rumble.ogg"));
-        blast_blast_sound = Resources.findResource(new AudioFile("/sfx/lurblast.ogg"));
-
-        Audio[] tree_cut_sound = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_wood1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_wood2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_wood3.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_wood4.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_wood5.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_wood6.ogg"))
-        };
-
-        Audio[] rock_cut_sound = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_stone1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_stone2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_stone3.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_stone4.ogg")),
-                Resources.findResource(new AudioFile("/sfx/axe_cutting_stone5.ogg"))
-        };
-
-        Audio[] meat_cut_sound = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/impact_meat1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat3.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat4.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat5.ogg"))
-        };
-
-        ProgressForm.progress(1f / num_progress);
-        harvest_sounds.put(TreeSupply.class, tree_cut_sound);
-        harvest_sounds.put(RockSupply.class, rock_cut_sound);
-        harvest_sounds.put(IronSupply.class, rock_cut_sound);
-        harvest_sounds.put(RubberSupply.class, meat_cut_sound);
 
         BuildingTemplate viking_quarters_template = createBuildingTemplate(
                 queues,
@@ -466,50 +377,30 @@ public final class RacesResources {
                 true, true, true, false);
         ProgressForm.progress(1f / num_progress);
 
-        Audio[] unit_hit_sounds = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/impact_meat1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat3.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat4.ogg")),
-                Resources.findResource(new AudioFile("/sfx/impact_meat5.ogg"))
-        };
         WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_ROCK),
-                axe_throw_sound,
-                unit_hit_sounds);
+                AudioPlayer.SFX_WEAPON_AXE,
+                AudioPlayer.SFX_IMPACT_MEATS);
         WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f, THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_IRON),
-                axe_throw_sound,
-                unit_hit_sounds);
+                AudioPlayer.SFX_WEAPON_AXE,
+                AudioPlayer.SFX_IMPACT_MEATS);
         WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_RUBBER),
-                axe_throw_sound,
-                unit_hit_sounds);
+                AudioPlayer.SFX_WEAPON_AXE,
+                AudioPlayer.SFX_IMPACT_MEATS);
         WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_ROCK),
-                spear_throw_sound,
-                unit_hit_sounds);
+                AudioPlayer.SFX_WEAPON_SPEAR,
+                AudioPlayer.SFX_IMPACT_MEATS);
         WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new, 0.75f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_IRON),
-                spear_throw_sound,
-                unit_hit_sounds);
+                AudioPlayer.SFX_WEAPON_SPEAR,
+                AudioPlayer.SFX_IMPACT_MEATS);
         WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class, RubberSpearWeapon::new, 0.95f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_RUBBER),
-                spear_throw_sound,
-                unit_hit_sounds);
-
-        Audio[] native_chieftain_hit_sounds = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/hit3.ogg")),
-                Resources.findResource(new AudioFile("/sfx/hit4.ogg")),
-                Resources.findResource(new AudioFile("/sfx/hit5.ogg")),
-                Resources.findResource(new AudioFile("/sfx/hit6.ogg"))
-        };
-        Audio[] viking_chieftain_hit_sounds = new Audio[]{
-                Resources.findResource(new AudioFile("/sfx/hit1.ogg")),
-                Resources.findResource(new AudioFile("/sfx/hit2.ogg")),
-                Resources.findResource(new AudioFile("/sfx/hit6.ogg")),
-                Resources.findResource(new AudioFile("/sfx/hit7.ogg"))
-        };
+                AudioPlayer.SFX_WEAPON_SPEAR,
+                AudioPlayer.SFX_IMPACT_MEATS);
 
         ProgressForm.progress(1f / num_progress);
         ShadowListKey default_shadow_list = queues.registerSelectableShadowList(DEFAULT_SHADOW_DESC);
@@ -522,7 +413,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                death_viking1_sound,
+                AudioPlayer.SFX_DEATH_VIKING_WARRIORS[0],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -540,7 +431,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                death_viking2_sound,
+                AudioPlayer.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -558,7 +449,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                death_viking2_sound,
+                AudioPlayer.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -576,7 +467,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                death_native1_sound,
+                AudioPlayer.SFX_DEATH_NATIVE_WARRIORS[0],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -594,7 +485,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                death_native2_sound,
+                AudioPlayer.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -612,7 +503,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                death_native2_sound,
+                AudioPlayer.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -625,12 +516,12 @@ public final class RacesResources {
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
-                new InstantHitFactory(1 / 5f, 0f, 11f / 38f, unit_hit_sounds),
+                new InstantHitFactory(1 / 5f, 0f, 11f / 38f, AudioPlayer.SFX_IMPACT_MEATS),
                 queues.register(sprite_list_peon),
                 shadow_diameter_peon,
                 default_shadow_list,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, viking_supply_sprite_lists),
-                death_peon_sound,
+                AudioPlayer.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
                 1f,
@@ -643,12 +534,12 @@ public final class RacesResources {
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
-                new InstantHitFactory(1 / 5f, 0f, 51f / 83f, unit_hit_sounds),
+                new InstantHitFactory(1 / 5f, 0f, 51f / 83f, AudioPlayer.SFX_IMPACT_MEATS),
                 queues.register(sprite_list_native_peon),
                 shadow_diameter_peon,
                 default_shadow_list,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, native_supply_sprite_lists),
-                death_peon_sound,
+                AudioPlayer.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
                 1f,
@@ -661,12 +552,12 @@ public final class RacesResources {
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 119f, viking_chieftain_hit_sounds),
+                new InstantHitFactory(3 / 4f, 0f, 75f / 119f, AudioPlayer.SFX_VIKING_CHIEFTAIN_HITS),
                 queues.register(sprite_list_chieftain),
                 shadow_diameter_chieftain,
                 default_shadow_list,
                 null,
-                death_viking2_sound,
+                AudioPlayer.SFX_DEATH_VIKING_WARRIORS[1],
                 .15f,
                 new float[]{1.7f},
                 1f,
@@ -679,12 +570,12 @@ public final class RacesResources {
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 129f, native_chieftain_hit_sounds),
+                new InstantHitFactory(3 / 4f, 0f, 75f / 129f, AudioPlayer.SFX_NATIVE_CHIEFTAIN_HITS),
                 queues.register(sprite_list_native_chieftain),
                 shadow_diameter_chieftain,
                 default_shadow_list,
                 null,
-                death_native2_sound,
+                AudioPlayer.SFX_DEATH_NATIVE_WARRIORS[1],
                 .15f,
                 new float[]{1.7f},
                 1f,
@@ -716,8 +607,8 @@ public final class RacesResources {
                         Globals.NO_MIPMAP_CUTOFF,
                         true, true, true, false)),
                 icons.getNativeIcons(),
-                Resources.findResource(new AudioFile("/sfx/attacknotify_native.ogg")),
-                Resources.findResource(new AudioFile("/sfx/buildingnotify_native.ogg")),
+                AudioPlayer.SFX_ATTACKNOTIFY_NATIVE,
+                AudioPlayer.SFX_BUILDINGNOTIFY_NATIVE,
                 native_magic,
                 new NativeChieftainAI(),
                 "/music/native.ogg");
@@ -733,8 +624,8 @@ public final class RacesResources {
                         Globals.NO_MIPMAP_CUTOFF,
                         true, true, true, false)),
                 icons.getVikingIcons(),
-                Resources.findResource(new AudioFile("/sfx/attacknotify_viking.ogg")),
-                Resources.findResource(new AudioFile("/sfx/buildingnotify_viking.ogg")),
+                AudioPlayer.SFX_ATTACKNOTIFY_VIKING,
+                AudioPlayer.SFX_BUILDINGNOTIFY_VIKING,
                 viking_magic,
                 new VikingChieftainAI(),
                 "/music/viking.ogg");
@@ -798,59 +689,6 @@ public final class RacesResources {
 
     public @NonNull TextureKey @NonNull [] getStarTextures() {
         return star_textures;
-    }
-
-    public @NonNull Audio getHarvestSound(Class<? extends Supply> key, @NonNull Random random) {
-        Audio[] sounds = harvest_sounds.get(key);
-        return sounds[random.nextInt(sounds.length)];
-    }
-
-    public @NonNull Audio @NonNull [] getTreeFallSound() {
-        return tree_fall_sound;
-    }
-
-    public @NonNull Audio getBuildingHitSound(@NonNull Random random) {
-        return building_hit_sound[random.nextInt(building_hit_sound.length)];
-    }
-
-    public @NonNull Audio getGasSound() {
-        return gas_sound;
-    }
-
-    public @NonNull Audio getBubblingSound() {
-        return bubbling_sound;
-    }
-
-    public @NonNull Audio getLightningSound() {
-        return lightning_sound;
-    }
-
-    public @NonNull Audio getCloudSound() {
-        return cloud_sound;
-    }
-
-    public @NonNull Audio getStunSound(@NonNull Random random) {
-        return stun_sound[random.nextInt(stun_sound.length)];
-    }
-
-    public @NonNull Audio getBlastLurSound(@NonNull Random random) {
-        return blast_lur_sound[random.nextInt(blast_lur_sound.length)];
-    }
-
-    public @NonNull Audio getBlastRumbleSound() {
-        return blast_rumble_sound;
-    }
-
-    public @NonNull Audio getBlastBlastSound() {
-        return blast_blast_sound;
-    }
-
-    public @NonNull Audio getArmorySound() {
-        return armory_sound;
-    }
-
-    public @NonNull Audio getBuildingCollapseSound() {
-        return building_collapse_sound;
     }
 
     public @NonNull Race getRace(int i) {

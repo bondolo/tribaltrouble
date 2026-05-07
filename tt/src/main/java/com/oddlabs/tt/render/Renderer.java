@@ -7,9 +7,9 @@ import com.oddlabs.tt.Main;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.camera.MenuCamera;
 import com.oddlabs.tt.delegate.MainMenu;
 import com.oddlabs.tt.event.LocalEventQueue;
@@ -545,7 +545,7 @@ public final class Renderer implements AutoCloseable {
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio(AudioManager.getManager()::newAudio);
+        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters<?> params) -> AudioManager.getManager().newAudio(x, y, z, params));
 
         Runnable load_task = setupMainMenu(network, gui, true);
 
@@ -942,7 +942,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initMusicPlayer() {
-        music = AudioManager.getManager().newAudio(new AudioParameters<>(music_path));
+        music = AudioManager.getManager().newAudio(0f, 0f, 0f, new AudioParameters<>(music_path));
     }
 
     public void setMusicPath(String music_path, float delay) {

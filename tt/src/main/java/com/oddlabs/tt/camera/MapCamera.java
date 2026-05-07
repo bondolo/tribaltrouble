@@ -11,6 +11,7 @@ import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.RadialFogInfo;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.util.Color;
+import org.joml.Vector2fc;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
@@ -64,10 +65,11 @@ public final class MapCamera extends Camera {
         mapCameraState.setFog(radialFog);
         super(old_camera.getHeightMap(), mapCameraState);
         this.delegate = delegate;
-        float[] target = old_camera.getRotationPoint();
-        float dx = target[0] - original_camera_state.getTargetX();
-        float dy = target[1] - original_camera_state.getTargetY();
-        float dz = getHeightMap().getNearestHeight(target[0], target[1]) - original_camera_state.getTargetZ();
+        Vector2fc target = old_camera.getRotationPoint();
+        float target_z = getHeightMap().getNearestHeight(target.x(), target.y());
+        float dx = target.x() - original_camera_state.getTargetX();
+        float dy = target.y() - original_camera_state.getTargetY();
+        float dz = target_z - original_camera_state.getTargetZ();
         distance_to_landscape = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
 
         setSmoothnessFactor(SMOOTHNESS_FACTOR);

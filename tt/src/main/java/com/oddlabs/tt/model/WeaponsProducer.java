@@ -1,7 +1,8 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -16,6 +17,11 @@ public class WeaponsProducer {
     private static final float BREAK_PROBABILITY = .2f;
 
     private static final Deque<@NonNull BuildProductionContainer> build_list = new ArrayDeque<>();
+
+    private static final AudioParameters<Audio> PRODUCTION_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_ARMORY, AudioPlayer.AUDIO_RANK_ARMORY,
+            AudioPlayer.AUDIO_DISTANCE_ARMORY, AudioPlayer.AUDIO_GAIN_ARMORY, AudioPlayer.AUDIO_RADIUS_ARMORY,
+            1f, true, false);
 
     private final @NonNull Building building;
     private final @NonNull WorkerUnitContainer unit_container;
@@ -65,12 +71,7 @@ public class WeaponsProducer {
 
     private void startSound() {
         if (production_player == null) {
-            production_player = building.getOwner().getWorld().getAudio().newAudio(new AudioParameters<>(building.getOwner().getWorld().getRacesResources().getArmorySound(), building.getPositionX(), building.getPositionY(), building.getPositionZ(),
-                    AudioPlayer.AUDIO_RANK_ARMORY,
-                    AudioPlayer.AUDIO_DISTANCE_ARMORY,
-                    AudioPlayer.AUDIO_GAIN_ARMORY,
-                    AudioPlayer.AUDIO_RADIUS_ARMORY,
-                    1f, true, false));
+            production_player = building.getOwner().getWorld().getAudio().newAudio(building.getPositionX(), building.getPositionY(), building.getPositionZ(), PRODUCTION_AUDIO);
         }
     }
 

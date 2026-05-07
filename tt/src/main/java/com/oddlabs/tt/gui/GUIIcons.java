@@ -13,6 +13,9 @@ import org.w3c.dom.Node;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+/**
+ * Fast lookups for common UI icons used throughout the game's interface.
+ */
 public class GUIIcons {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Icons.class.getName());
 
@@ -149,11 +152,11 @@ public class GUIIcons {
 
                     float dx = x - iconSize / 2.0f + 0.5f;
                     float dy = iconSize / 2.0f - y - 0.5f;
-                    float dist = (float) Math.sqrt(dx * dx + dy * dy);
+                    float dist = (float) Math.hypot(dx, dy);
 
                     float shadowDx = dx - shadowOffset;
                     float shadowDy = dy + shadowOffset; // Lower Right Shadow
-                    float shadowDist = (float) Math.sqrt(shadowDx * shadowDx + shadowDy * shadowDy);
+                    float shadowDist = (float) Math.hypot(shadowDx, shadowDy);
 
                     int finalColor = 0;
 

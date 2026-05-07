@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Top-level renderer for non-instanced 3D sprites, handling simple world elements.
+ */
 public final class SpriteRenderer {
     private final @NonNull SpriteList sprite_list;
     private final @NonNull SpriteListRenderer sprite_list_renderer;

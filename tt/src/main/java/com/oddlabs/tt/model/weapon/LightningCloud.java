@@ -1,7 +1,8 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.PointEmitterModel;
@@ -29,6 +30,15 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private static final float BRIGHTNESS = Color.toLinear(.2f);
     private static final float LIGHTNING_TIME = .1f;
     private static final Color DELTA_COLOR = new Color.Linear(new Color.Standard(0f, 0f, 0f, -1f / LIGHTNING_TIME));
+
+    private static final AudioParameters<Audio> BUBBLING_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_BUBBLING, AudioPlayer.AUDIO_RANK_MAGIC,
+            AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_BUBBLING, AudioPlayer.AUDIO_RADIUS_BUBBLING,
+            1f, true, false);
+    private static final AudioParameters<Audio> CLOUD_AUDIO = new AudioParameters<>(
+            AudioPlayer.SFX_CRACKLING_CLOUD, AudioPlayer.AUDIO_RANK_MAGIC,
+            AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_CLOUD, AudioPlayer.AUDIO_RADIUS_CLOUD,
+            1f, true, false);
 
     private final @NonNull Player owner;
     private final float seconds_per_hit;
@@ -65,12 +75,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         setPosition(start_x, start_y);
         setPositionZ(start_z);
 
-        bubbling_sound = world.getAudio().newAudio(new AudioParameters<>(world.getRacesResources().getBubblingSound(), getPositionX(), getPositionY(), world.getHeightMap().getNearestHeight(getPositionX(), getPositionY()),
-                AudioPlayer.AUDIO_RANK_MAGIC,
-                AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                AudioPlayer.AUDIO_GAIN_BUBBLING,
-                AudioPlayer.AUDIO_RADIUS_BUBBLING,
-                1f, true, false));
+        bubbling_sound = world.getAudio().newAudio(getPositionX(), getPositionY(), world.getHeightMap().getNearestHeight(getPositionX(), getPositionY()), BUBBLING_AUDIO);
     }
 
     private static Emitter<?> createEmitter(@NonNull World world, float offset_x, float offset_y, float offset_z, float seconds_to_live, float seconds_to_init, float height, @NonNull Unit src) {
@@ -89,12 +94,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     @Override
     public void animate(float t) {
         if (first_run) {
-            cloud_sound = owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getCloudSound(), getPositionX(), getPositionY(), getPositionZ(),
-                    AudioPlayer.AUDIO_RANK_MAGIC,
-                    AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                    AudioPlayer.AUDIO_GAIN_CLOUD,
-                    AudioPlayer.AUDIO_RADIUS_CLOUD,
-                    1f, true, false));
+            cloud_sound = owner.getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CLOUD_AUDIO);
             first_run = false;
             bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
         }
@@ -137,11 +137,9 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                 float x = target.getPositionX();
                 float y = target.getPositionY();
                 float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
-                owner.getWorld().getAudio().newAudio(new AudioParameters<>(owner.getWorld().getRacesResources().getLightningSound(), x, y, z,
-                        AudioPlayer.AUDIO_RANK_MAGIC,
-                        AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                        AudioPlayer.AUDIO_GAIN_LIGHTNING,
-                        AudioPlayer.AUDIO_RADIUS_LIGHTNING));
+                owner.getWorld().getAudio().newAudio(x, y, z, new AudioParameters<>(
+                        AudioPlayer.SFX_FLASH, AudioPlayer.AUDIO_RANK_MAGIC,
+                        AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_LIGHTNING, AudioPlayer.AUDIO_RADIUS_LIGHTNING));
                 strike(target);
                 strike(target);
                 prev_target = target;

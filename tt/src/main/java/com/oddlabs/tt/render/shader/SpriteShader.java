@@ -1,7 +1,8 @@
 package com.oddlabs.tt.render.shader;
 
 /**
- * Shader for rendering animated 3D sprites (units, buildings).
+ * Shader for rendering animated 3D sprites (units, buildings) with support 
+ * for lighting, team decals, normal mapping, and environmental fog.
  */
 public final class SpriteShader extends ShaderProgram implements FogShader, LitShader {
 
@@ -103,9 +104,6 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                             
                                 if (u_desaturate > 0.0) {
                                     float gray = dot(base.rgb, vec3(0.2126, 0.7152, 0.0722));
-                                    // Mix with a very bright "ghostly" target (90% white)
-                                    // We use a lower overall desaturate factor in PlacingDelegate 
-                                    // to keep the building's internal details visible.
                                     vec3 ghostTarget = mix(vec3(gray), vec3(1.0), 0.9);
                                     base.rgb = mix(base.rgb, ghostTarget, u_desaturate);
                                 }
