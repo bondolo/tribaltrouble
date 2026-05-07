@@ -18,6 +18,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
 /**
@@ -25,24 +26,16 @@ import java.util.stream.IntStream;
  */
 public final class SonicBlast extends AccessorizableModel implements Magic {
     @SuppressWarnings("unchecked")
-    private static final @NonNull AudioParameters<Audio> [] LUR_AUDIO =
-            (@NonNull AudioParameters<Audio> []) IntStream.rangeClosed(1, 3)
-                    .mapToObj(i -> String.format("/sfx/lur_blast%d.ogg", i))
-                    .map(AudioFile::new)
-                    .map(Resources::findResource)
+    private static final @NonNull AudioParameters<Audio> [] LUR_AUDIO = Arrays.stream(AudioPlayer.SFX_LURBLASTS)
                     .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_MAGIC,
-                            AudioPlayer.AUDIO_DISTANCE_MAGIC,
-                            AudioPlayer.AUDIO_GAIN_BLAST_LUR,
-                            AudioPlayer.AUDIO_RADIUS_BLAST_LUR))
+                            AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_BLAST_LUR, AudioPlayer.AUDIO_RADIUS_BLAST_LUR))
                     .toArray(AudioParameters[]::new);
     private static final @NonNull AudioParameters<Audio> RUMBLE_AUDIO = new AudioParameters<>(
             AudioPlayer.SFX_RUMBLE, AudioPlayer.AUDIO_RANK_MAGIC,
             AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_BLAST_RUMBLE, AudioPlayer.AUDIO_RADIUS_BLAST_RUMBLE);
     private static final AudioParameters<Audio> BLAST_AUDIO = new AudioParameters<>(
             AudioPlayer.SFX_LURBLAST, AudioPlayer.AUDIO_RANK_MAGIC,
-            AudioPlayer.AUDIO_DISTANCE_MAGIC,
-            AudioPlayer.AUDIO_GAIN_BLAST_BLAST,
-            AudioPlayer.AUDIO_RADIUS_BLAST_BLAST);
+            AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_BLAST_BLAST, AudioPlayer.AUDIO_RADIUS_BLAST_BLAST);
 
     private final float hit_radius;
     private final float hit_chance_closest;

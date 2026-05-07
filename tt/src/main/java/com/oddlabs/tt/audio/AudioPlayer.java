@@ -86,10 +86,11 @@ public abstract class AudioPlayer implements Animated {
             RubberSupply.class, SFX_IMPACT_MEATS
     );
 
-    public static @NonNull AudioParameters<Audio> getHarvestSound(Class<? extends Supply> key, @NonNull Random random) {
+    public static @NonNull AudioParameters<Audio> getHarvestSound(@NonNull Class<? extends Supply> key, @NonNull Random random) {
         Audio[] sounds = HARVEST_SOUNDS.get(key);
         var audio = sounds[random.nextInt(sounds.length)];
-        return new AudioParameters<>(audio, AudioPlayer.AUDIO_RANK_HARVEST, AudioPlayer.AUDIO_DISTANCE_HARVEST);
+        return new AudioParameters<>(audio, AudioPlayer.AUDIO_RANK_HARVEST,
+                AudioPlayer.AUDIO_DISTANCE_HARVEST, AudioPlayer.AUDIO_GAIN_HARVEST, AudioPlayer.AUDIO_RADIUS_HARVEST);
     }
 
     public static final int AUDIO_RANK_AMBIENT = 75;

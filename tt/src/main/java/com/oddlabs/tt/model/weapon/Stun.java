@@ -27,7 +27,7 @@ import java.util.Arrays;
  */
 public final class Stun extends PointEmitterModel implements Magic {
     @SuppressWarnings("unchecked")
-    private static final @NonNull AudioParameters<Audio> [] STUN_AUDIO = Arrays.stream(AudioPlayer.SFX_LURBLASTS)
+    private static final @NonNull AudioParameters<Audio> [] STUN_AUDIO = Arrays.stream(AudioPlayer.SFX_LUR_STUNS)
             .map(audio -> new AudioParameters<>(audio, AudioPlayer.AUDIO_RANK_MAGIC,
                     AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_STUN_LUR, AudioPlayer.AUDIO_RADIUS_STUN_LUR))
             .toArray(AudioParameters[]::new);

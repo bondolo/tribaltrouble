@@ -40,6 +40,7 @@ import static org.lwjgl.openal.SOFTHRTF.alcResetDeviceSOFT;
  * Audio Manager implementation using OpenAL
  */
 public final class OpenALManager extends AudioManager {
+    private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final Logger logger = Logger.getLogger(OpenALManager.class.getName());
     private static final int MAX_NUM_SOURCES = 32;
 
@@ -210,9 +211,11 @@ public final class OpenALManager extends AudioManager {
      * @param message A descriptive message for the context of the OpenAL call.
      */
     public static void checkALError(@NonNull String message) {
-        int error = AL10.alGetError();
-        if (error != AL10.AL_NO_ERROR) {
-            logger.log(Level.WARNING, "OpenAL Error (" + message + "): " + errorToString(error), new Throwable("stacktrace"));
+        if (DEBUG) {
+            int error = AL10.alGetError();
+            if (error != AL10.AL_NO_ERROR) {
+                logger.log(Level.WARNING, "OpenAL Error (" + message + "): " + errorToString(error), new Throwable("stacktrace"));
+            }
         }
     }
 

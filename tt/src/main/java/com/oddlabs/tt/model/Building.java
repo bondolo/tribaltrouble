@@ -45,7 +45,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             AudioPlayer.AUDIO_DISTANCE_BUILDING_COLLAPSE, AudioPlayer.AUDIO_GAIN_BUILDING_COLLAPSE, AudioPlayer.AUDIO_RADIUS_BUILDING_COLLAPSE);
     @SuppressWarnings("unchecked")
     private static final @NonNull AudioParameters<Audio> [] HITS_AUDIO =
-            (@NonNull AudioParameters<Audio> []) Arrays.stream(AudioPlayer.SFX_AXE_CUTTING_WOODS)
+            (@NonNull AudioParameters<Audio> []) Arrays.stream(AudioPlayer.SFX_IMPACT_WOODS)
                     .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_WEAPON_HIT,
                             AudioPlayer.AUDIO_DISTANCE_WEAPON_HIT, AudioPlayer.AUDIO_GAIN_WEAPON_HIT, AudioPlayer.AUDIO_RADIUS_WEAPON_HIT))
                     .toArray(AudioParameters[]::new);

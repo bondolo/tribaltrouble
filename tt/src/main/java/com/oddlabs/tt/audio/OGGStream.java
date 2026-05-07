@@ -21,6 +21,7 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
 
     protected static class Decoder extends NativeResource.NativeState {
         // STBVorbis JNI wrapper doesn't appear to correctly hold a reference to the buffer, so we must hold one.
+        @SuppressWarnings("FieldCanBeLocal")
         private final @NonNull ByteBuffer decoderData;
         private final long decoder;
         private final int channels;
