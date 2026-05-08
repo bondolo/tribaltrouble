@@ -17,6 +17,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL40;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.util.Objects;
@@ -65,8 +66,10 @@ public final class PostProcessor implements AutoCloseable {
                 -1.0f, 1.0f,
                 1.0f, 1.0f
         };
-        FloatBuffer buffer = BufferUtils.createFloatBuffer(quadVertices.length).put(quadVertices).flip();
-        this.quadVBO = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
+        try (var stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(quadVertices.length).put(quadVertices).flip();
+            this.quadVBO = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
+        }
 
         int posLoc = shader.getAttributeLocation(PostProcessShader.Attributes.POSITION);
         if (posLoc >= 0) {
@@ -152,6 +155,9 @@ public final class PostProcessor implements AutoCloseable {
             shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, settings.cvd_intensity);
             shader.setUniform(PostProcessShader.Uniforms.HIGH_CONTRAST, settings.high_contrast);
             shader.setUniform(PostProcessShader.Uniforms.CONTRAST_INTENSITY, settings.contrast_intensity);
+            shader.setUniform(PostProcessShader.Uniforms.INVERT_COLORS, settings.invert_colours);
+            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_BRIGHTNESS, settings.contrast_brightness);
+            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_CLARITY, settings.contrast_clarity);
             shader.setUniform(PostProcessShader.Uniforms.TEAM_STENCIL, settings.team_stencil);
             shader.setUniform(PostProcessShader.Uniforms.SCENE_TEXTURE, 0);
             shader.setUniform(PostProcessShader.Uniforms.MASK_TEXTURE, 1);

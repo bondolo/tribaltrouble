@@ -13,6 +13,9 @@ public final class PostProcessShader extends ShaderProgram {
         String CVD_INTENSITY = "u_cvdIntensity";
         String HIGH_CONTRAST = "u_highContrast";
         String CONTRAST_INTENSITY = "u_contrastIntensity";
+        String INVERT_COLORS = "u_invertColors";
+        String CONTRAST_BRIGHTNESS = "u_contrastBrightness";
+        String CONTRAST_CLARITY = "u_contrastClarity";
         String TEAM_STENCIL = "u_teamStencil";
     }
 
@@ -46,13 +49,16 @@ public final class PostProcessShader extends ShaderProgram {
             uniform float u_cvdIntensity;
             uniform bool u_highContrast;
             uniform float u_contrastIntensity;
+            uniform bool u_invertColors;
+            uniform float u_contrastBrightness;
+            uniform float u_contrastClarity;
             uniform bool u_teamStencil;
             
             in vec2 v_texCoord;
             layout(location = 0) out vec4 out_FragColor;
             
             // --- CVD Logic ---
-            // LMS Color Space Matrices (Transposed for GLSL Column-Major)
+            // LMS Colour Space Matrices (Transposed for GLSL Column-Major)
             const mat3 RGB_to_LMS = mat3(
                 17.8824, 3.45565, 0.0299566,
                 43.5161, 27.1554, 0.184309,
@@ -111,36 +117,69 @@ public final class PostProcessShader extends ShaderProgram {
                 return color + correction * u_cvdIntensity;
             }
             
-            // --- High Contrast Logic ---
-            vec3 applyHighContrast(vec3 color) {
-                // Convert to grayscale for luma
-                float luma = dot(color, vec3(0.299, 0.587, 0.114));
-            
-                // Simple contrast curve
-                vec3 highContrast = (color - 0.5) * (1.0 + u_contrastIntensity) + 0.5;
-            
-                // Edge detection could be added here with extra texture samples
-                // For now, boost saturation and value contrast
-                return mix(color, highContrast, u_contrastIntensity);
+            // --- High Contrast & Accessibility Logic ---
+            vec3 applyHighContrast(vec3 color, float maskAlpha) {
+                vec3 result = color;
+                
+                // 1. Edge Clarity (Unsharp Mask)
+                if (u_contrastClarity > 0.01) {
+                    vec2 texelSize = 1.0 / textureSize(u_sceneTexture, 0);
+                    vec3 blurred = vec3(0.0);
+                    // Simple 5-tap box filter for speed
+                    blurred += texture(u_sceneTexture, v_texCoord + vec2(texelSize.x, 0.0)).rgb;
+                    blurred += texture(u_sceneTexture, v_texCoord - vec2(texelSize.x, 0.0)).rgb;
+                    blurred += texture(u_sceneTexture, v_texCoord + vec2(0.0, texelSize.y)).rgb;
+                    blurred += texture(u_sceneTexture, v_texCoord - vec2(0.0, texelSize.y)).rgb;
+                    blurred *= 0.25;
+                    
+                    result += (result - blurred) * u_contrastClarity * 2.0;
+                }
+                
+                // 2. Brightness Offset (Linear)
+                result += u_contrastBrightness;
+                result = clamp(result, 0.0, 1.0);
+                
+                // 3. Luminance-Aware S-Curve Contrast
+                // Pivot at perceptual middle gray (approx 0.18 linear)
+                const float pivot = 0.18;
+                float k = 1.0 + u_contrastIntensity * 4.0; // Boost range up to 5x
+                
+                // Rational Sigmoid: f(x) = x / (1 + |x|)
+                vec3 centered = result - pivot;
+                vec3 sigmoid = (centered * k) / (1.0 + abs(centered * k)) + pivot;
+                
+                // Mix with original to ensure identity at u_contrastIntensity == 0
+                // and to prevent the "white tinge" at low intensities.
+                result = mix(result, sigmoid, u_contrastIntensity);
+                result = clamp(result, 0.0, 1.0);
+                
+                // 4. Smart Inversion
+                if (u_invertColors) {
+                    vec3 inverted = 1.0 - result;
+                    // Protect units (maskAlpha > 0.9) from inversion to maintain team recognition,
+                    // but we still want them to stand out.
+                    result = mix(inverted, result, maskAlpha);
+                }
+                
+                return result;
             }
             
             void main() {
                 vec4 sceneColor = texture(u_sceneTexture, v_texCoord);
+                vec4 mask = texture(u_maskTexture, v_texCoord);
             
-                // 1. Scene color is linear. 
-                // Note: Perceptual math (High Contrast, CVD) now operates on linear values
-                // to support hardware sRGB encoding on the backbuffer.
                 vec3 finalColor = sceneColor.rgb;
-            
-                // 2. Apply High Contrast in linear space
+                
+                // Apply Accessibility Filters
                 if (u_highContrast) {
-                    finalColor = applyHighContrast(finalColor);
+                    // Team units write alpha=1.0 to mask. Non-team is 0.0.
+                    float maskAlpha = u_teamStencil ? mask.a : 0.0;
+                    finalColor = applyHighContrast(finalColor, maskAlpha);
                 }
             
-                // 3. Team Stencil & Border
+                // Team Stencil Overlay (Linear Space)
                 if (u_teamStencil) {
-                    vec4 mask = texture(u_maskTexture, v_texCoord);
-                    // Team objects write alpha=1.0. Clear color is alpha=0.0.
+                    // Team objects write alpha=1.0. Clear colour is alpha=0.0.
                     // We check if it's a team unit (alpha > 0.9).
                     bool isUnit = mask.a > 0.9;
             

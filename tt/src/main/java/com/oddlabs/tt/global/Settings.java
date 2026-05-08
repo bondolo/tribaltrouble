@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
 /**
  * Manages the user's global game settings, persisting them to a file.
  */
+/**
+ * Global game settings and configuration persistence.
+ */
 public final class Settings implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -104,6 +107,9 @@ public final class Settings implements Serializable {
     public float cvd_intensity = 1.0f;
     public boolean high_contrast = false;
     public float contrast_intensity = 0.5f;
+    public boolean invert_colours = false;
+    public float contrast_brightness = 0.0f;
+    public float contrast_clarity = 0.0f;
     public boolean team_stencil = false;
 
     public Color @NonNull [] team_colours = Arrays.stream(DEFAULT_TEAM_COLOURS)
@@ -175,6 +181,9 @@ public final class Settings implements Serializable {
         setProperty(props, "cvd_intensity", cvd_intensity, defaults.cvd_intensity);
         setProperty(props, "high_contrast", high_contrast, defaults.high_contrast);
         setProperty(props, "contrast_intensity", contrast_intensity, defaults.contrast_intensity);
+        setProperty(props, "invert_colours", invert_colours, defaults.invert_colours);
+        setProperty(props, "contrast_brightness", contrast_brightness, defaults.contrast_brightness);
+        setProperty(props, "contrast_clarity", contrast_clarity, defaults.contrast_clarity);
         setProperty(props, "team_stencil", team_stencil, defaults.team_stencil);
         setProperty(props, "team_colours", team_colours, defaults.team_colours);
 
@@ -235,6 +244,9 @@ public final class Settings implements Serializable {
         cvd_intensity = getFloat(props, "cvd_intensity", cvd_intensity);
         high_contrast = getBoolean(props, "high_contrast", high_contrast);
         contrast_intensity = getFloat(props, "contrast_intensity", contrast_intensity);
+        invert_colours = getBoolean(props, "invert_colours", invert_colours);
+        contrast_brightness = getFloat(props, "contrast_brightness", contrast_brightness);
+        contrast_clarity = getFloat(props, "contrast_clarity", contrast_clarity);
         team_stencil = getBoolean(props, "team_stencil", team_stencil);
         team_colours = getColours(props, "team_colours", team_colours);
         updateLinearColors();
