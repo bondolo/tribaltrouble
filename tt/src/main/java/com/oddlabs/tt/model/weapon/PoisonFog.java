@@ -22,7 +22,6 @@ import org.lwjgl.opengl.GL11;
  * Periodically spawns gas bursts and applies damage to units within its radius.
  */
 public final class PoisonFog implements Magic {
-    public static final float OFFSET_Z = 1.1f;
 
     private static final int PARTICLES_PER_BURST = 4;
     private static final float SECONDS_BETWEEN_BURSTS = .15f;
@@ -49,6 +48,7 @@ public final class PoisonFog implements Magic {
     private final @NonNull Player owner;
     private final float start_x;
     private final float start_y;
+    private final float offset_z;
     private final float total_time;
     private final @NonNull AudioPlayer bubbling_sound;
 
@@ -62,6 +62,7 @@ public final class PoisonFog implements Magic {
         this.hit_radius = hit_radius;
         this.hit_chance = hit_chance;
         this.interval = interval;
+        this.offset_z = offset_z;
         total_time = time;
         this.damage = damage;
         this.src = src;
@@ -94,7 +95,7 @@ public final class PoisonFog implements Magic {
             float alpha = 8f;
             float energy = 2f;
 
-            RandomVelocityEmitter emitter = new RandomVelocityEmitter(owner.getWorld(), new Vector3f(x, y, z), OFFSET_Z, owner.getWorld().getRandom().nextFloat() * (float) Math.PI * 2,
+            RandomVelocityEmitter emitter = new RandomVelocityEmitter(owner.getWorld(), new Vector3f(x, y, z), offset_z, owner.getWorld().getRandom().nextFloat() * (float) Math.PI * 2,
                     BURST_RADIUS, 0f, 0f, 0f,
                     PARTICLES_PER_BURST, PARTICLES_PER_BURST,
                     new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f),

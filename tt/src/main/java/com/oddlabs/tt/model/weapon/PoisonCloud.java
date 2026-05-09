@@ -44,7 +44,7 @@ public final class PoisonCloud {
             y = dst_y;
         }
 
-        float z = emitter.getWorld().getHeightMap().getNearestHeight(x, y) + PoisonFog.OFFSET_Z;
+        float z = emitter.getWorld().getHeightMap().getNearestHeight(x, y) + 1.1f;
         float factor = Math.min(1f, time / total_time);
         float scale = START_SCALE + (1f - START_SCALE) * factor;
         emitter.scale(scale, scale, scale);

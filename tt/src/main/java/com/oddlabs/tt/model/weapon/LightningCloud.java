@@ -88,7 +88,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         float alpha = .6f;
         float energy = seconds_to_live + seconds_to_init;
         return new ParametricEmitter(world, new CloudFunction(2.5f, .7f), pos,
-                0f, 0f, .5f, .5f, .2f,
+                0f, offset_z, .5f, .5f, .2f,
                 25, 100f,
                 new Color.Linear(new Color.Standard(.4f, .4f, .4f, alpha)), new Color.Linear(0f, 0f, 0f, -alpha / energy),
                 new Vector3f(3f, 3f, 1f), new Vector3f(0f, 0f, 0f), energy,
