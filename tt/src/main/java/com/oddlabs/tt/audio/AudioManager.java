@@ -2,9 +2,7 @@ package com.oddlabs.tt.audio;
 
 import com.oddlabs.tt.render.Renderer;
 
-import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.global.Settings;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
@@ -31,24 +29,6 @@ public abstract class AudioManager implements AutoCloseable {
     /** The interval (in seconds) between ambient sound proximity checks. */
     private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
 
-    private static final Holder SINGLETON = new Holder();
-
-    private static class Holder {
-        @Nullable
-        final AudioManager manager;
-
-        Holder() {
-            AudioManager instance = null;
-            try {
-                // currently only OpenAL is supported
-                instance = new OpenALManager();
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed to create audio manager", e);
-            }
-            manager = instance;
-        }
-    }
-
     private final Set<@NonNull AudioSource> ambients = new CopyOnWriteArraySet<>();
     private final Set<@NonNull QueuedAudioPlayer> queued_players = new CopyOnWriteArraySet<>();
     private final @NonNull AudioSource @NonNull [] sources;
@@ -63,17 +43,6 @@ public abstract class AudioManager implements AutoCloseable {
     private final Vector3f listenerUp = new Vector3f(0, 1, 0);
 
     private final AtomicInteger sound_play_counter = new AtomicInteger(Renderer.getRenderer().getSettings().play_sfx ? 1 : 0);
-
-    /**
-     * {@return The singleton AudioManager instance.}
-     * @throws IllegalStateException if the audio manager could not be initialized.
-     */
-    public static @NonNull AudioManager getManager() throws IllegalStateException {
-        if (SINGLETON.manager == null) {
-            throw new IllegalStateException("Audio manager is not available. Check logs for initialization errors.");
-        }
-        return SINGLETON.manager;
-    }
 
     protected AudioManager(@NonNull AudioSource @NonNull [] sources) {
         this.sources = sources;

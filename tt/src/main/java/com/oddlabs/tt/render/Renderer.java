@@ -97,6 +97,8 @@ public final class Renderer implements AutoCloseable {
     private final Network network = new Network();
     private final LocalInput localInput = new LocalInput(window);
 
+    private @Nullable AudioManager audioManager;
+
     private AudioPlayer music;
     private @Nullable AudioFile music_path;
     private @Nullable TimerAnimation music_timer;
@@ -127,6 +129,11 @@ public final class Renderer implements AutoCloseable {
     public void close() {
         logger.info("Closing LocalInput...");
         getLocalInput().close();
+        logger.info("Closing AudioManager...");
+        if (audioManager != null) {
+            audioManager.close();
+            audioManager = null;
+        }
         logger.info("Closing Window...");
         window.close();
     }
@@ -144,7 +151,11 @@ public final class Renderer implements AutoCloseable {
     }
 
     public @NonNull AudioManager getAudioManager() {
-        return AudioManager.getManager();
+        AudioManager manager = audioManager;
+        if (null == manager) {
+            throw new IllegalStateException("AudioManager not initialized");
+        }
+        return manager;
     }
 
     public @NonNull LocalEventQueue getEventQueue() {
@@ -863,7 +874,8 @@ public final class Renderer implements AutoCloseable {
         long total_mem = Runtime.getRuntime().maxMemory();
         logger.info("maxMemory = '" + total_mem + "'");
 
-        getAudioManager();
+        // Currently only OpenAL is supported
+        audioManager = new OpenALManager();
 
         try {
             int bpp = 32;
@@ -918,7 +930,10 @@ public final class Renderer implements AutoCloseable {
 //if (System.currentTimeMillis() > 0)
 //throw new LWJGLException("It failed because you asked it to.");
         } catch (Exception e) {
-            getAudioManager().close();
+            if (null != audioManager) {
+                audioManager.close();
+                audioManager = null;
+            }
             failedOpenGL(e);
             throw e;
         }
