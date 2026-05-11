@@ -10,12 +10,12 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.router.SessionInfo;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInterface;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.NotificationManager;
@@ -399,7 +399,7 @@ public final class PeerHub implements Animated, RouterHandler {
 
     public void close() {
         closeNetwork();
-        LocalEventQueue.getQueue().getManager().removeAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
         IO.println("PeerHub closed");
     }
 

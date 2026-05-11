@@ -11,7 +11,6 @@ import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.delegate.GameStatsDelegate;
 import com.oddlabs.tt.delegate.InGameMainMenu;
 import com.oddlabs.tt.delegate.SelectionDelegate;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.ActionButtonPanel;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -154,7 +153,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.delegate = new SelectionDelegate(this, camera);
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
         initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos, world_params.getInitialGameSpeed());
-        LocalEventQueue.getQueue().getManager().registerAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
     }
 
     public @NonNull AnimationManager getAnimationManagerLocal() {
@@ -168,7 +167,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     @Override
     public void close() {
-        LocalEventQueue.getQueue().getManager().removeAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
         peerhub.close();
         ingame_info.close(this);
         Renderer.getRenderer().setCheat(null);

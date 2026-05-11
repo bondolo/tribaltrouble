@@ -1,7 +1,6 @@
 package com.oddlabs.tt.input;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.gui.Cursor;
 import com.oddlabs.tt.gui.CursorType;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -9,6 +8,7 @@ import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.resource.CursorFile;
 import com.oddlabs.tt.resource.Resources;
+import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -65,7 +65,7 @@ public final class PointerInput {
     }
 
     public void setCursorPosition(int x, int y) {
-        if (!LocalEventQueue.getQueue().getDeterministic().isPlayback())
+        if (!Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback())
             inputProvider.setCursorPosition(x, y);
     }
 
@@ -81,7 +81,7 @@ public final class PointerInput {
         //noinspection unchecked
         InputProvider<Long> provider = (InputProvider<Long>) inputProvider;
 
-        var useCursor = LocalEventQueue.getQueue().getDeterministic().isPlayback()
+        var useCursor = Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback()
                 ? debug_cursor : cursor;
         provider.setNativeCursor(useCursor.getCursor());
     }
@@ -107,7 +107,7 @@ public final class PointerInput {
     }
 
     public void poll(@NonNull GUIRoot gui_root) {
-        Deterministic deterministic = LocalEventQueue.getQueue().getDeterministic();
+        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
         inputProvider.pollMouse();
         int accum_x = last_x;
         int accum_y = last_y;

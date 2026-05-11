@@ -3,6 +3,7 @@ package com.oddlabs.tt.camera;
 
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.event.LocalEventQueue;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.landscape.HeightMap;
@@ -148,11 +149,11 @@ public abstract class Camera implements Animated {
     }
 
     public final void disable() {
-        LocalEventQueue.getQueue().getHighPrecisionManager().removeAnimation(this);
+        Renderer.getRenderer().getEventQueue().getHighPrecisionManager().removeAnimation(this);
     }
 
     public void enable() {
-        LocalEventQueue.getQueue().getHighPrecisionManager().registerAnimation(this);
+        Renderer.getRenderer().getEventQueue().getHighPrecisionManager().registerAnimation(this);
     }
 
     public void handleInput(@NonNull InputEvent event) {

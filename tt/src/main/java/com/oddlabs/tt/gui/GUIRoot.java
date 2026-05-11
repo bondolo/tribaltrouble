@@ -4,7 +4,6 @@ import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.delegate.CameraDelegate;
 import com.oddlabs.tt.delegate.ModalDelegate;
 import com.oddlabs.tt.delegate.NullDelegate;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.form.QuitForm;
 import com.oddlabs.tt.form.Status;
 import com.oddlabs.tt.global.Globals;
@@ -369,7 +368,7 @@ public final class GUIRoot extends GUIObject {
                     }
                     if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
                         logger.info("*********************************************************");
-                        LocalEventQueue.getQueue().debugPrintAnimations();
+                        Renderer.getRenderer().getEventQueue().debugPrintAnimations();
                         logger.info("Texture.globalSize() = " + Texture.globalSize());
                         consumed = true;
                     }

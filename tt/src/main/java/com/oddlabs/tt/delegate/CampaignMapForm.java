@@ -286,13 +286,13 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     @Override
     protected void doAdd() {
         super.doAdd();
-        LocalEventQueue.getQueue().getManager().registerAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
     }
 
     @Override
     protected void doRemove() {
         super.doRemove();
-        LocalEventQueue.getQueue().getManager().removeAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
     }
 
     @Override

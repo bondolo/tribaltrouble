@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
@@ -40,7 +39,7 @@ public final class GUI implements Animated {
 
     public void newFade(@Nullable Fadable fadable, @NonNull GUIRoot gui_root, @Nullable UIRenderer renderer) {
         fade = new Fade(fadable, gui_root, renderer);
-        LocalEventQueue.getQueue().getManager().registerAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
     }
 
     public @NonNull GUIRoot createRoot() {
@@ -58,7 +57,7 @@ public final class GUI implements Animated {
     }
 
     void stopFade() {
-        LocalEventQueue.getQueue().getManager().removeAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
         fade = null;
     }
 

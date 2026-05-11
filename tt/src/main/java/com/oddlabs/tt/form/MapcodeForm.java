@@ -1,7 +1,7 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.registration.RegistrationKey;
-import com.oddlabs.tt.event.LocalEventQueue;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.gui.FocusDirection;
@@ -92,7 +92,7 @@ public final class MapcodeForm extends Form {
     private final class RandButtonListener implements MouseClickListener {
         @Override
         public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
-            Random random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick() * (long) LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+            Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
             random.nextInt();
             BigInteger rand_int = new BigInteger(60, random);
             String rand_string = RegistrationKey.createString(rand_int);

@@ -5,7 +5,6 @@ import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.camera.NullCamera;
 import com.oddlabs.tt.delegate.CameraDelegate;
 import com.oddlabs.tt.delegate.NullDelegate;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.gui.Fadable;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIImage;
@@ -128,7 +127,7 @@ public final class ProgressForm {
         delegate.addChild(image);
         delegate.addChild(progress_bar);
         if (show_tip) {
-            Random random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+            Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
             CharSequence tip_string = LOADING_TIPS[random.nextInt(LOADING_TIPS.length)];
             int tip_width = Math.min(gui_root.getWidth() - 10, Skin.getSkin().getEditFont().getWidth(tip_string));
             LabelBox tip = new LabelBox(tip_string, Skin.getSkin().getEditFont(), tip_width);

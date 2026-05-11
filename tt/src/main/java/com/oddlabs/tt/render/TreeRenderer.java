@@ -1,7 +1,6 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.BoundingMode;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.AbstractTreeGroup;
@@ -36,7 +35,7 @@ public final class TreeRenderer extends TreePicker implements SceneRenderer {
     @Override
     public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (!state.inNoDetailMode()) {
-            wave_animation.setTime(LocalEventQueue.getQueue().getTime());
+            wave_animation.setTime(Renderer.getRenderer().getEventQueue().getTime());
         }
 
         if (!Globals.draw_trees || (cheat != null && !cheat.draw_trees)) {

@@ -6,7 +6,6 @@ import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.registration.RegistrationKey;
 import com.oddlabs.tt.delegate.Menu;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.CancelButton;
@@ -283,7 +282,7 @@ public final class TerrainMenu extends Group {
         PulldownButton<Void>[] difficulty_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         race_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         team_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
-        Random random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick() * (long) LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
         random.nextFloat();
         for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
             difficulty_pulldown_menus[i] = new PulldownMenu<>();
@@ -559,7 +558,7 @@ public final class TerrainMenu extends Group {
     }
 
     private void randomize() {
-        Random random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick() * (long) LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
         random.nextInt();
         BigInteger rand_int = new BigInteger(100, random);
         parseBigInteger(rand_int);
@@ -591,7 +590,7 @@ public final class TerrainMenu extends Group {
                 gui_root.addModalForm(new MessageForm(min_name));
                 return false;
             }
-            float random_start_pos = LocalEventQueue.getQueue().getTime() % 1f;
+            float random_start_pos = Renderer.getRenderer().getEventQueue().getTime() % 1f;
             game = new Game(game_name, (byte) pulldown_size.getChosenItemIndex(), (byte) terrain_type.ordinal(), (byte) hills, (byte) vegetation_amount, (byte) supplies_amount, rated, (byte) (pm_gamespeed.getChosenItemIndex() + 1), label_mapcode.getContents(), random_start_pos, Player.DEFAULT_MAX_UNIT_COUNT);
         } else {
             boolean has_enemy = false;

@@ -2,6 +2,7 @@ package com.oddlabs.tt.form;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.event.LocalEventQueue;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -58,7 +59,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     @Override
     public void connected(@NonNull Client client, @NonNull Game game, WorldGenerator generator, int player_slot) {
         if (multiplayer) {
-            Random random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+            Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
             random.nextFloat(); // first one always in same area
             int race = (int) (random.nextFloat() * (RacesResources.getNumRaces() - 1) + .5f);
             int team = player_slot;

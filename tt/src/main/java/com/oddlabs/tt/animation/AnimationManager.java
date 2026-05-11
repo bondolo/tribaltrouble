@@ -135,7 +135,7 @@ public final class AnimationManager {
         }
         long time_diff = current_time - last_frame_time;
         last_frame_time = current_time;
-        Deterministic deterministic = LocalEventQueue.getQueue().getDeterministic();
+        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
         if (time_diff > MAX_STEP_MILLIS && !Objects.requireNonNull(deterministic).isPlayback()) {
             logger.warning("Skipping large time diff: " + time_diff + " ms.");
             time_diff = 0;
@@ -147,7 +147,7 @@ public final class AnimationManager {
         while (execution_time_precision >= ANIMATION_MILLISECONDS_PER_PRECISION_TICK && !Renderer.isFinished()) {
             /*
             // Used for replaying warp control in clientload
-            int tick = LocalEventQueue.getQueue().getHighPrecisionManager().getTick();
+            int tick = Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick();
             for (int i = 0; i < big.length; i++) {
                 if (big[i] == tick)
                     warpTime(com.oddlabs.tt.input.KeyboardInput.LARGE_WARP);
@@ -159,7 +159,7 @@ public final class AnimationManager {
             */
             execution_time_precision -= ANIMATION_MILLISECONDS_PER_PRECISION_TICK;
             execution_time += ANIMATION_MILLISECONDS_PER_PRECISION_TICK;
-            LocalEventQueue.getQueue().tickHighPrecision(ANIMATION_SECONDS_PER_PRECISION_TICK);
+            Renderer.getRenderer().getEventQueue().tickHighPrecision(ANIMATION_SECONDS_PER_PRECISION_TICK);
             while (execution_time >= ANIMATION_MILLISECONDS_PER_TICK && !Renderer.isFinished()) {
                 network.tick();
 
@@ -174,15 +174,15 @@ public final class AnimationManager {
                 }
                 pathfindsPerTick.updateAbsolute(PathFinder.stat_pathfinder_per_frame);
                 PathFinder.stat_pathfinder_per_frame = 0;
-                LocalEventQueue.getQueue().tickLowPrecision(ANIMATION_SECONDS_PER_TICK);
+                Renderer.getRenderer().getEventQueue().tickLowPrecision(ANIMATION_SECONDS_PER_TICK);
                 execution_time -= ANIMATION_MILLISECONDS_PER_TICK;
                 checksum_millisecond_counter += ANIMATION_MILLISECONDS_PER_TICK;
                 if (checksum_millisecond_counter >= ANIMATION_MILLISECONDS_PER_CHECKSUM) {
                     checksum_millisecond_counter -= ANIMATION_MILLISECONDS_PER_CHECKSUM;
-                    int checksum = LocalEventQueue.getQueue().computeChecksum();
+                    int checksum = Renderer.getRenderer().getEventQueue().computeChecksum();
                     int logged_checksum = deterministic.log(checksum);
                     if (checksum != logged_checksum && checksum_complain) {
-                        logger.severe("********** ERROR: Checksum mismatch at tick " + LocalEventQueue.getQueue().getHighPrecisionManager().getTick() + " | checksum = " + checksum + " | logged_checksum = " + logged_checksum + " **********");
+                        logger.severe("********** ERROR: Checksum mismatch at tick " + Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() + " | checksum = " + checksum + " | logged_checksum = " + logged_checksum + " **********");
                         checksum_complain = false;
                     }
                 }
@@ -192,14 +192,14 @@ public final class AnimationManager {
             }
             // Only for debugging
             /*
-			if (LocalEventQueue.getQueue().getHighPrecisionManager().getTick() < 2467619 + 10000)
+			if (Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() < 2467619 + 10000)
 			{
 				execution_time_precision += ANIMATION_MILLISECONDS_PER_PRECISION_TICK;
 				freezeTime();
 			}
 
-			if (LocalEventQueue.getQueue().getHighPrecisionManager().getTick() > 2529461 + 2000) {
-				logger.severe("FORCE QUIT: getHighPrecisionManager().getTick() = " + LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+			if (Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() > 2529461 + 2000) {
+				logger.severe("FORCE QUIT: getHighPrecisionManager().getTick() = " + Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
 				com.oddlabs.tt.Main.shutdown();
 			}*/
         }

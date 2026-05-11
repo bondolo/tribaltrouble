@@ -3,7 +3,6 @@ package com.oddlabs.tt.scenery;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.procedural.GeneratorClouds;
@@ -11,6 +10,7 @@ import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.TextureGenerator;
 import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.MatrixStack;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SceneRenderer;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.render.shader.SeaBottomShader;
@@ -257,7 +257,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     }
 
     private void updateAnimation() {
-        float currentTime = LocalEventQueue.getQueue().getTime();
+        float currentTime = Renderer.getRenderer().getEventQueue().getTime();
         float dt = currentTime - lastTime;
         if (dt < 0 || dt > 1.0f) dt = 0.016f;
         lastTime = currentTime;

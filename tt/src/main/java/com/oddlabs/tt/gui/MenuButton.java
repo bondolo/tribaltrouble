@@ -1,9 +1,9 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.font.TextLineRenderer;
 import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 
 import org.jspecify.annotations.NonNull;
@@ -31,7 +31,7 @@ public final class MenuButton extends ButtonObject {
     }
 
     private void scaleHovered(@NonNull GUIRenderer renderer) {
-        float time = (LocalEventQueue.getQueue().getTime() - start_hover_time) % SECONDS_PER_HOVER_CYCLE;
+        float time = (Renderer.getRenderer().getEventQueue().getTime() - start_hover_time) % SECONDS_PER_HOVER_CYCLE;
         float cycle_position = time / SECONDS_PER_HOVER_CYCLE;
         float scale = 1f + HOVER_SCALE_FACTOR * (float) Math.sin(cycle_position * 2 * Math.PI);
         renderer.getMatrixStack().scale(scale, scale, 1f);
@@ -54,7 +54,7 @@ public final class MenuButton extends ButtonObject {
     @Override
     protected void mouseEntered() {
         if (!isActive()) {
-            start_hover_time = LocalEventQueue.getQueue().getTime() % SECONDS_PER_HOVER_CYCLE;
+            start_hover_time = Renderer.getRenderer().getEventQueue().getTime() % SECONDS_PER_HOVER_CYCLE;
             setFocus();
         }
     }

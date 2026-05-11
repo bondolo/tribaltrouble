@@ -3,7 +3,6 @@ package com.oddlabs.tt.form;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.render.Renderer;
@@ -217,7 +216,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                     slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(i18n("open"));
                     if (new_ai) {
                         team_index = player_slot;
-                        race_index = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick()).nextInt(RacesResources.getNumRaces());
+                        race_index = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick()).nextInt(RacesResources.getNumRaces());
                     }
                     game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race_index, team_index, true, difficulty_index);
                 }

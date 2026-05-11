@@ -1,8 +1,8 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.model.Element;
+import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -44,12 +44,12 @@ public final class LandscapeTargetRespond extends Element<LandscapeTargetRespond
     public void register() {
         super.register();
         time = SECOND_PER_PICK_RESPOND;
-        LocalEventQueue.getQueue().getManager().registerAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
     }
 
     @Override
     public void remove() {
         super.remove();
-        LocalEventQueue.getQueue().getManager().removeAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
     }
 }

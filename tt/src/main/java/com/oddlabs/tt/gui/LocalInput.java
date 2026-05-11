@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputProvider;
@@ -133,7 +132,7 @@ public final class LocalInput implements AutoCloseable {
     }
 
     public boolean audioIsCreated() {
-        return LocalEventQueue.getQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager() != null);
+        return Renderer.getRenderer().getEventQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager() != null);
     }
 
     public @Nullable Path getGameDir() {
@@ -164,7 +163,7 @@ public final class LocalInput implements AutoCloseable {
             lwjgl3InputProvider.initCallbacks();
         }
         pointerInput.loadCursors();
-        Deterministic deterministic = LocalEventQueue.getQueue().getDeterministic();
+        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
         mouse_x = deterministic.log(inputProvider.getMouseX());
         mouse_y = deterministic.log(inputProvider.getMouseY());
     }

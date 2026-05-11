@@ -10,10 +10,10 @@ import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.player.PlayerInfo;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
@@ -50,7 +50,7 @@ public final class Server implements ConnectionListenerInterface {
         this.generator = generator;
         this.register_server = register_server;
         this.ai_names = ai_names;
-        this.random = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick());
+        this.random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
         players = new PlayerSlot[MatchmakingServerInterface.MAX_PLAYERS];
         for (short i = 0; i < players.length; i++) {
             players[i] = new PlayerSlot(i);
@@ -236,7 +236,7 @@ public final class Server implements ConnectionListenerInterface {
         Iterator<ClientConnection> it = getClientIterator();
         while (it.hasNext()) {
             ClientConnection client = it.next();
-            int session_id = new Random(LocalEventQueue.getQueue().getHighPrecisionManager().getTick()).nextInt();
+            int session_id = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick()).nextInt();
             client.getClientInterface().startGame(session_id);
         }
     }

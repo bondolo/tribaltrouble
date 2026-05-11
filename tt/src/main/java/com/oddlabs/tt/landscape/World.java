@@ -4,7 +4,6 @@ import com.oddlabs.tt.render.Renderer;
 
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.AbstractElementNode;
@@ -150,7 +149,7 @@ public final class World {
     }
 
     private World(@NonNull AudioImplementation audio_implementation, @NonNull LandscapeResources landscape_resources, @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params, @NonNull WorldInfo world_info, Landscape.@NonNull TerrainType terrain, @NonNull PlayerInfo @NonNull [] player_infos, @NonNull FogInfo fog) {
-        IO.println("****************** Generating landscape at tick " + LocalEventQueue.getQueue().getHighPrecisionManager().getTick() + " ********************");
+        IO.println("****************** Generating landscape at tick " + Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() + " ********************");
         this.fog = fog;
         this.landscape_resources = landscape_resources;
         this.races_resources = races_resources;

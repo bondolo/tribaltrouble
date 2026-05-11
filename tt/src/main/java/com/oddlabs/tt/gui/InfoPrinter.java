@@ -1,11 +1,11 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
@@ -30,7 +30,7 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
         this.lines = lines;
         this.font = font;
         displayChangedNotify(gui_root.getWidth(), gui_root.getHeight());
-        LocalEventQueue.getQueue().getManager().registerAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
         time = 0;
     }
 
@@ -48,7 +48,7 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
     protected void doRemove() {
         super.doRemove();
         Network.getChatHub().removeListener(this);
-        LocalEventQueue.getQueue().getManager().removeAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.global;
 
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
@@ -142,7 +141,7 @@ public final class Settings implements Serializable {
     }
 
     public void save() {
-        if (LocalEventQueue.getQueue().getDeterministic().isPlayback())
+        if (Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback())
             return;
         Settings defaults = new Settings();
         Properties props = new Properties();

@@ -141,6 +141,10 @@ public final class Renderer implements AutoCloseable {
         return AudioManager.getManager();
     }
 
+    public @NonNull LocalEventQueue getEventQueue() {
+        return LocalEventQueue.getQueue();
+    }
+
     public @NonNull RenderContext getRenderContext() {
         return renderContext;
     }
@@ -513,16 +517,16 @@ public final class Renderer implements AutoCloseable {
             logger.info("last_event_log_path = " + last_event_log_path);
             // Only use when anal debugging
 //			ChecksumLogger.initLogging();
-            LocalEventQueue.getQueue().loadEvents(last_event_log_path, zipped);
+            getRenderer().getEventQueue().loadEvents(last_event_log_path, zipped);
         }
 
         Path event_logs_dir = paths.logDir();
         Path event_log_dir = event_logs_dir.resolve(Long.toString(System.currentTimeMillis()));
         if (settings.save_event_log) {
             setupLogging(event_log_dir, silent);
-            LocalEventQueue.getQueue().setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
+            getRenderer().getEventQueue().setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
         }
-        Deterministic deterministic = LocalEventQueue.getQueue().getDeterministic();
+        Deterministic deterministic = getRenderer().getEventQueue().getDeterministic();
         game_dir = deterministic.log(game_dir);
         event_log_dir = deterministic.log(event_log_dir);
         settings = deterministic.log(settings);
@@ -536,7 +540,7 @@ public final class Renderer implements AutoCloseable {
         Settings.setSettings(settings);
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
-        NetworkSelector network = new NetworkSelector(LocalEventQueue.getQueue().getDeterministic(), LocalEventQueue.getQueue()::getMillis);
+        NetworkSelector network = new NetworkSelector(getRenderer().getEventQueue().getDeterministic(), getRenderer().getEventQueue()::getMillis);
         initNetwork(network);
         Renderer.getLocalInput().settings(game_dir, event_log_dir, settings);
         try {
@@ -554,7 +558,7 @@ public final class Renderer implements AutoCloseable {
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters<?> params) -> getAudioManager().newAudio(x, y, z, params));
+        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters<?> params) -> getRenderer().getAudioManager().newAudio(x, y, z, params));
 
         Runnable load_task = setupMainMenu(network, gui, true);
 
@@ -603,11 +607,11 @@ public final class Renderer implements AutoCloseable {
                         first_frame = false;
                         if (load_task != null) {
                             window.update();
-                            LocalEventQueue.getQueue().getDeterministic().setEnabled(true);
+                            getRenderer().getEventQueue().getDeterministic().setEnabled(true);
                             try {
                                 load_task.run();
                             } finally {
-                                LocalEventQueue.getQueue().getDeterministic().setEnabled(false);
+                                getRenderer().getEventQueue().getDeterministic().setEnabled(false);
                                 renderContext.reset(); // Fix texture bleeding after loading
                             }
                             load_task = null;
@@ -627,7 +631,7 @@ public final class Renderer implements AutoCloseable {
                     }
                 }
             }
-            LocalEventQueue.getQueue().getDeterministic().setEnabled(true);
+            getRenderer().getEventQueue().getDeterministic().setEnabled(true);
             getSettings().save();
         } finally {
             cleanup();
@@ -735,7 +739,7 @@ public final class Renderer implements AutoCloseable {
             logger.log(Level.SEVERE, "Failed to initialize network", e);
             is_network_created = false;
         }
-        return LocalEventQueue.getQueue().getDeterministic().log(is_network_created);
+        return getRenderer().getEventQueue().getDeterministic().log(is_network_created);
     }
 
     public void startMovieRecording() {
@@ -746,14 +750,14 @@ public final class Renderer implements AutoCloseable {
     public void cleanup() {
         logger.info("Cleaning up...");
         logger.info("Disposing LocalEventQueue...");
-        LocalEventQueue.getQueue().close();
+        getRenderer().getEventQueue().close();
         destroyNative();
         logger.fine("Native resources still registered: " + NativeResource.getCount());
         logger.info("Cleanup complete. Exiting");
     }
 
     public @NonNull SerializableDisplayMode getCurrentDisplayMode() {
-        return LocalEventQueue.getQueue().getDeterministic()
+        return getRenderer().getEventQueue().getDeterministic()
                 .log(window.getDisplayMode());
     }
 
@@ -763,7 +767,7 @@ public final class Renderer implements AutoCloseable {
 
     public void toggleFullscreen() {
         try {
-            boolean fs = !window.isFullscreen() && !LocalEventQueue.getQueue().getDeterministic().isPlayback();
+            boolean fs = !window.isFullscreen() && !getRenderer().getEventQueue().getDeterministic().isPlayback();
             window.setFullscreen(fs);
             getSettings().fullscreen = fs;
             resetInput();
@@ -805,7 +809,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void modeSwitched() {
-        SerializableDisplayMode new_mode = LocalEventQueue.getQueue().getDeterministic().log(window.getDisplayMode());
+        SerializableDisplayMode new_mode = getRenderer().getEventQueue().getDeterministic().log(window.getDisplayMode());
         logger.info("Switched mode to " + new_mode);
         getSettings().view_width = new_mode.getWidth();
         getSettings().view_height = new_mode.getHeight();
@@ -884,7 +888,7 @@ public final class Renderer implements AutoCloseable {
                 target_mode = new SerializableDisplayMode(width, height, bpp, freq);
             }
 
-            boolean fs = getSettings().fullscreen && (!LocalEventQueue.getQueue().getDeterministic().isPlayback() || grab_frames);
+            boolean fs = getSettings().fullscreen && (!getRenderer().getEventQueue().getDeterministic().isPlayback() || grab_frames);
             window.create(target_mode, fs);
             setModeToNearest(target_mode);
 

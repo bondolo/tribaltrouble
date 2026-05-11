@@ -2,7 +2,6 @@ package com.oddlabs.tt.input;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LocalInput;
@@ -104,7 +103,7 @@ public final class KeyboardInput {
     }
 
     public void checkMagicKeys(@NonNull InputProvider<?> input) {
-        Deterministic deterministic = LocalEventQueue.getQueue().getDeterministic();
+        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
         if (deterministic.isPlayback()) {
             // During playback the keyboard is used for playback control
             input.pollKeyboard();
@@ -120,7 +119,7 @@ public final class KeyboardInput {
     }
 
     public boolean poll(@NonNull InputProvider<?> input, @NonNull LocalInput localInput, @NonNull GUIRoot gui_root) {
-        Deterministic deterministic = LocalEventQueue.getQueue().getDeterministic();
+        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
         boolean result = false;
         input.pollKeyboard();
         // Update modifiers from raw state to handle lost events or initial state

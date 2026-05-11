@@ -297,7 +297,7 @@ public abstract class AudioPlayer implements Animated {
         this.end_gain = end_gain;
         fadeout_gain = end_gain;
         fadeout_time = delay;
-        LocalEventQueue.getQueue().getManager().registerAnimation(this);
+        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
 
         return this;
     }
@@ -307,7 +307,7 @@ public abstract class AudioPlayer implements Animated {
         fadeout_gain -= t * (end_gain / fadeout_time);
         if (fadeout_gain <= 0) {
             stop();
-            LocalEventQueue.getQueue().getManager().removeAnimation(this);
+            Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
         } else {
             setGain(fadeout_gain);
         }

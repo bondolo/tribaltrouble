@@ -1,8 +1,8 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
@@ -83,7 +83,7 @@ public final class Arrow extends GUIObject {
             renderer.getMatrixStack().push();
             renderer.getMatrixStack().translate(screen_width / 2f + dx * t, screen_height / 2f + dy * t, 0f);
             renderer.getMatrixStack().rotate(angle, 0f, 0f, 1f);
-            float val = (LocalEventQueue.getQueue().getTime() % SECONDS_PER_FLASH) / (SECONDS_PER_FLASH * .5f);
+            float val = (Renderer.getRenderer().getEventQueue().getTime() % SECONDS_PER_FLASH) / (SECONDS_PER_FLASH * .5f);
             if (val > 1f)
                 val = 2f - val;
             val = COLOR_DELTA * val;

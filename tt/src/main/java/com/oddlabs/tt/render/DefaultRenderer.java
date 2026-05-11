@@ -1,7 +1,6 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.BoundingMode;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -218,7 +217,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         // Update Global UBO
         try (var stack = MemoryStack.stackPush()) {
             java.nio.ByteBuffer buf = stack.malloc(256);
-            globalUniforms.update(frustum_state, LocalEventQueue.getQueue().getTime(), buf);
+            globalUniforms.update(frustum_state, Renderer.getRenderer().getEventQueue().getTime(), buf);
             buf.flip();
             context.updateGlobalState(buf);
         }
