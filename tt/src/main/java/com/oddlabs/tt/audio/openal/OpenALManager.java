@@ -3,6 +3,7 @@ package com.oddlabs.tt.audio.openal;
 import com.oddlabs.tt.render.Renderer;
 
 import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -15,12 +16,15 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -48,6 +52,30 @@ public final class OpenALManager extends AudioManager {
 
     private final @NonNull ALData data;
     private final EFXManager efxManager = new EFXManager();
+
+    // Queue for OpenAL cleanup tasks to be executed when this manager's context is current
+    private final java.util.Queue<@NonNull Runnable> alCleanupTasks = new java.util.concurrent.ConcurrentLinkedQueue<>();
+
+    @Override
+    public void enqueueCleanup(@NonNull Runnable task) {
+        alCleanupTasks.add(task);
+    }
+
+    /**
+     * Processes all pending OpenAL cleanup tasks. This method must be called from a thread
+     * that has this manager's OpenAL context current.
+     */
+    private void processALCleanupTasks() {
+        if (ALC10.alcGetCurrentContext() == 0) return;
+        Runnable task;
+        while ((task = alCleanupTasks.poll()) != null) {
+            try {
+                task.run();
+            } catch (Throwable t) {
+                logger.log(Level.SEVERE, "Error during OpenAL cleanup task execution", t);
+            }
+        }
+    }
 
     private record ALData(long device, long context) implements AutoCloseable {
         @Override
@@ -181,8 +209,14 @@ public final class OpenALManager extends AudioManager {
     private @NonNull AudioPlayer createPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params)  {
         if (params.sound() instanceof Audio) {
             return new OpenALAudioPlayer(source, x, y, z, (AudioParameters<Audio>) params);
-        } else if (params.sound() instanceof String) {
-            return new OpenALQueuedAudioPlayer(source, x, y, z, (AudioParameters<String>) params);
+        } else if (params.sound() instanceof AudioFile) {
+            var player = new OpenALQueuedAudioPlayer(source, x, y, z, (AudioParameters<AudioFile>) params);
+            addQueuedPlayer(player);
+            return player;
+        } else if (params.sound() instanceof String location) {
+            var player = new OpenALQueuedAudioPlayer(source, x, y, z, (AudioParameters<AudioFile>) new AudioParameters<>(new AudioFile(location), params.rank(), params.distance(), params.gain(), params.radius(), params.pitch(), params.looping(), params.relative(), params.music()));
+            addQueuedPlayer(player);
+            return player;
         } else {
             throw new IllegalArgumentException("Unrecognized audio parameters : " + params.sound().getClass().getSimpleName());
         }
@@ -194,10 +228,15 @@ public final class OpenALManager extends AudioManager {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
+        if (isClosed()) return;
+        if (!ALC10.alcMakeContextCurrent(data.context)) {
+            logger.warning("Failed to make OpenAL context current for shutdown: " + data.context);
+        }
         try {
             efxManager.cleanup();
             super.close();
+            processALCleanupTasks();
         } finally {
             data.close();
         }
@@ -214,9 +253,14 @@ public final class OpenALManager extends AudioManager {
      */
     public static void checkALError(@NonNull String message) {
         if (DEBUG) {
-            int error = AL10.alGetError();
-            if (error != AL10.AL_NO_ERROR) {
-                logger.log(Level.WARNING, "OpenAL Error (" + message + "): " + errorToString(error), new Throwable("stacktrace"));
+            long context = ALC10.alcGetCurrentContext();
+            if (context != 0) {
+                int error = AL10.alGetError();
+                if (error != AL10.AL_NO_ERROR) {
+                    logger.log(Level.WARNING, "OpenAL Error (" + message + ") [Context: " + context + "]: " + errorToString(error), new Throwable("stacktrace"));
+                }
+            } else {
+                logger.log(Level.WARNING, "OpenAL Error (" + message + "): no current context");
             }
         }
     }

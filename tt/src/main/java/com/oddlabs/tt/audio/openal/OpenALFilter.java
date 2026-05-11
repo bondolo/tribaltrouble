@@ -1,5 +1,7 @@
 package com.oddlabs.tt.audio.openal;
 
+import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
 
 import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
@@ -35,7 +37,7 @@ public final class OpenALFilter extends NativeResource<OpenALFilter.FilterState>
     }
 
     public OpenALFilter() {
-        super(new FilterState());
+        super(new FilterState(), task -> Renderer.getRenderer().getAudioManager().enqueueCleanup(task));
     }
 
     public void setLowPassGain(float gain) {

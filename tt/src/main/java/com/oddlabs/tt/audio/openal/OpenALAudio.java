@@ -1,6 +1,8 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +42,7 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
     }
 
     public OpenALAudio(int num_buffers) {
-        super(new Buffers(num_buffers));
+        super(new Buffers(num_buffers), task -> Renderer.getRenderer().getAudioManager().enqueueCleanup(task));
     }
 
     OpenALAudio(@NonNull URL file) throws IOException {

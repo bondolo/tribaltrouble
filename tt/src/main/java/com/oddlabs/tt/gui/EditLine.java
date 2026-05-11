@@ -11,6 +11,7 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -111,7 +112,7 @@ public class EditLine extends TextField implements Clipped {
     public void triggerError() {
         errorFlashStart = System.currentTimeMillis();
         try {
-            AudioManager.getManager().newAudio(0f, 0f, 0f, ERROR_SOUND);
+            Renderer.getRenderer().getAudioManager().newAudio(0f, 0f, 0f, ERROR_SOUND);
         } catch (Exception _) {
             // Ignore audio errors
         }

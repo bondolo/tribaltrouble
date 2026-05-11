@@ -81,6 +81,8 @@ public abstract class AudioPlayer implements Animated {
     public static final Audio SFX_WEAPON_AXE = Resources.findResource(new AudioFile("/sfx/weapon_axe.ogg"));
     public static final Audio SFX_WEAPON_SPEAR = Resources.findResource(new AudioFile("/sfx/weapon_spear.ogg"));
 
+    public static final AudioFile MUSIC_MENU = new AudioFile("/music/menu.ogg", true);
+
     public static final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull Audio[]> HARVEST_SOUNDS = Map.of(
             TreeSupply.class, SFX_AXE_CUTTING_WOODS,
             RockSupply.class, SFX_AXE_CUTTING_STONES,
@@ -240,8 +242,8 @@ public abstract class AudioPlayer implements Animated {
         // Music and notifications don't get environmental effects/reverb
         boolean useEFX = parameters.rank() != AUDIO_RANK_MUSIC && parameters.rank() != AUDIO_RANK_NOTIFICATION;
 
-        if (AudioManager.getManager().isEFXSupported()) {
-            int slot = useEFX ? AudioManager.getManager().getEFXEffectSlot() : 0;
+        if (Renderer.getRenderer().getAudioManager().isEFXSupported()) {
+            int slot = useEFX ? Renderer.getRenderer().getAudioManager().getEFXEffectSlot() : 0;
             source.setAuxiliarySend(slot, 0);
         }
     }
@@ -255,8 +257,8 @@ public abstract class AudioPlayer implements Animated {
             return;
         }
 
-        if (AudioManager.getManager().isEFXSupported()) {
-            float dist = AudioManager.getManager().getListenerPosition().distance(x, y, z);
+        if (Renderer.getRenderer().getAudioManager().isEFXSupported()) {
+            float dist = Renderer.getRenderer().getAudioManager().getListenerPosition().distance(x, y, z);
 
             // Simple air absorption: brighter up close, muffled far away
             // Clamp to [0.1, 1.0] to avoid total silence in HF
@@ -277,14 +279,16 @@ public abstract class AudioPlayer implements Animated {
     }
 
     public final @NonNull AudioPlayer registerAmbient() {
-        if (source != null)
-            AudioManager.getManager().registerAmbient(source);
+        if (source != null) {
+            Renderer.getRenderer().getAudioManager().registerAmbient(source);
+        }
         return this;
     }
 
     public final @NonNull AudioPlayer removeAmbient() {
-        if (source != null)
-            AudioManager.getManager().removeAmbient(source);
+        if (source != null) {
+            Renderer.getRenderer().getAudioManager().removeAmbient(source);
+        }
 
         return this;
     }

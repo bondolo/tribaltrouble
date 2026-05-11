@@ -114,7 +114,7 @@ public class SoundPanel extends Panel {
         AudioManager manager = null;
         if (audioCreated) {
             try {
-                manager = AudioManager.getManager();
+                manager = Renderer.getRenderer().getAudioManager();
             } catch (Exception e) {
                 // Ignore
             }

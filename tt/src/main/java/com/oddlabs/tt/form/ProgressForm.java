@@ -108,7 +108,7 @@ public final class ProgressForm {
                          int progress_x, int progress_y, int progress_width,
                          boolean show_tip) {
         this.gui = gui;
-        AudioManager.getManager().stopSources();
+        Renderer.getRenderer().getAudioManager().stopSources();
         var gui_root = first_progress ? gui.getGUIRoot() : gui.newFade(load_fadable, null);
         CameraDelegate<NullCamera> delegate = new NullDelegate(gui_root, false);
         gui_root.pushDelegate(delegate);
@@ -142,7 +142,7 @@ public final class ProgressForm {
     }
 
     private static void callback(@NonNull GUI gui, @NonNull LoadCallback callback, boolean first_progress) {
-        Fadable start_sources_fadable = () -> AudioManager.getManager().startSources();
+        Fadable start_sources_fadable = () -> Renderer.getRenderer().getAudioManager().startSources();
 
         GUIRoot client_root = gui.createRoot();
         UIRenderer renderer = callback.load(client_root);

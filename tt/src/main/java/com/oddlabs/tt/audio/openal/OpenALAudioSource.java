@@ -3,6 +3,7 @@ package com.oddlabs.tt.audio.openal;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioSource;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -70,7 +71,7 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
     private float reference_distance;
 
     public OpenALAudioSource() {
-        super(new Source());
+        super(new Source(), task -> Renderer.getRenderer().getAudioManager().enqueueCleanup(task));
     }
 
     @Override

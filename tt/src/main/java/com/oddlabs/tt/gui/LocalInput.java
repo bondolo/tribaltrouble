@@ -11,6 +11,7 @@ import com.oddlabs.tt.input.KeyboardInput;
 import com.oddlabs.tt.input.LWJGL3InputProvider;
 import com.oddlabs.tt.input.Modifier;
 import com.oddlabs.tt.input.PointerInput;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.Window;
 import org.jspecify.annotations.NonNull;
@@ -132,7 +133,7 @@ public final class LocalInput implements AutoCloseable {
     }
 
     public boolean audioIsCreated() {
-        return LocalEventQueue.getQueue().getDeterministic().log(AudioManager.getManager() != null);
+        return LocalEventQueue.getQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager() != null);
     }
 
     public @Nullable Path getGameDir() {

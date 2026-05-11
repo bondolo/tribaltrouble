@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,8 +86,12 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
     protected final @NonNull R state;
 
     public NativeResource(@NonNull R state) {
+        this(state, NativeResource::addGLCleanupTask);
+    }
+
+    protected NativeResource(@NonNull R state, @NonNull Consumer<@NonNull Runnable> cleanupStrategy) {
         this.state = Objects.requireNonNull(state, "state");
-        this.cleanable = cleaner.register(this, () -> NativeResource.addGLCleanupTask(state));
+        this.cleanable = cleaner.register(this, () -> cleanupStrategy.accept(state));
     }
 
     @Override

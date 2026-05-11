@@ -141,7 +141,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         };
         PlayerInfo[] player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toArray(PlayerInfo[]::new);
         WorldInfo world_info = generator.generate(player_infos.length, world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
-        this.world = World.newWorld((float x, float y, float z, @NonNull AudioParameters<?> params) -> AudioManager.getManager().newAudio(camera_state, x, y, z, params), landscape_resources, races_resources, listener, world_params, world_info, generator.getTerrainType(), player_infos, worldFog);
+        this.world = World.newWorld((float x, float y, float z, @NonNull AudioParameters<?> params) -> Renderer.getRenderer().getAudioManager().newAudio(camera_state, x, y, z, params), landscape_resources, races_resources, listener, world_params, world_info, generator.getTerrainType(), player_infos, worldFog);
         this.local_player = world.getPlayers()[player_slot];
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);

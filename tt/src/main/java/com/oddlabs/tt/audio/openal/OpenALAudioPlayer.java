@@ -4,6 +4,7 @@ import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -18,7 +19,7 @@ final class OpenALAudioPlayer extends AudioPlayer {
             return;
         }
 
-        if (params.music() || AudioManager.getManager().startPlaying()) {
+        if (params.music() || Renderer.getRenderer().getAudioManager().startPlaying()) {
             source.play();
         }
     }

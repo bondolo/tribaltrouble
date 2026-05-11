@@ -137,6 +137,10 @@ public final class Renderer implements AutoCloseable {
         return Settings.getSettings();
     }
 
+    public @NonNull AudioManager getAudioManager() {
+        return AudioManager.getManager();
+    }
+
     public @NonNull RenderContext getRenderContext() {
         return renderContext;
     }
@@ -550,7 +554,7 @@ public final class Renderer implements AutoCloseable {
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters<?> params) -> AudioManager.getManager().newAudio(x, y, z, params));
+        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters<?> params) -> getAudioManager().newAudio(x, y, z, params));
 
         Runnable load_task = setupMainMenu(network, gui, true);
 
@@ -575,7 +579,7 @@ public final class Renderer implements AutoCloseable {
 
                 if (first_frame || (window.isVisible() && isActive)) {
                     runGameLoop(network, gui);
-                    AudioManager.getManager().setMasterGain(1f);
+                    getAudioManager().setMasterGain(1f);
                     if (reset_keyboard) {
                         reset_keyboard = false;
                         Renderer.getLocalInput().resetKeyboard();
@@ -614,7 +618,7 @@ public final class Renderer implements AutoCloseable {
                 } else {
                     AnimationManager.freezeTime();
                     reset_keyboard = true;
-                    AudioManager.getManager().setMasterGain(0f);
+                    getAudioManager().setMasterGain(0f);
                     try {
                         TimeUnit.MILLISECONDS.sleep(10);
                     } catch (InterruptedException e) {
@@ -690,7 +694,7 @@ public final class Renderer implements AutoCloseable {
         FogInfo fog_info = generator.getFogInfo();
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = World.loadCommon(render_queues);
-        World world = World.newWorld(AudioManager.getManager()::newAudio, landscape_resources, null, new NotificationListener() {
+        World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null, new NotificationListener() {
         }, world_params, world_info, generator.getTerrainType(), players, fog_info);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
@@ -809,12 +813,12 @@ public final class Renderer implements AutoCloseable {
     }
 
     private static void destroyNative() {
+        logger.info("Closing AudioManager...");
+        getRenderer().getAudioManager().close();
+        logger.info("Renderer Closed.");
+        getRenderer().close();
         logger.info("Clearing Resources...");
         Resources.clearResources();
-        logger.info("Closing AudioManager...");
-        AudioManager.getManager().close();
-        getRenderer().close();
-        logger.info("Renderer Closed.");
     }
 
     public static void dumpWindowInfo() {
@@ -846,7 +850,7 @@ public final class Renderer implements AutoCloseable {
         long total_mem = Runtime.getRuntime().maxMemory();
         logger.info("maxMemory = '" + total_mem + "'");
 
-        AudioManager.getManager();
+        getAudioManager();
 
         try {
             int bpp = 32;
@@ -901,7 +905,7 @@ public final class Renderer implements AutoCloseable {
 //if (System.currentTimeMillis() > 0)
 //throw new LWJGLException("It failed because you asked it to.");
         } catch (Exception e) {
-            AudioManager.getManager().close();
+            getAudioManager().close();
             failedOpenGL(e);
             throw e;
         }
@@ -932,9 +936,9 @@ public final class Renderer implements AutoCloseable {
     public void toggleSound() {
         getSettings().play_sfx = !getSettings().play_sfx;
         if (getSettings().play_sfx)
-            AudioManager.getManager().startSources();
+            getAudioManager().startSources();
         else
-            AudioManager.getManager().stopSources();
+            getAudioManager().stopSources();
     }
 
     public void toggleMusic() {
@@ -951,7 +955,11 @@ public final class Renderer implements AutoCloseable {
         var params =  new AudioParameters<>(music_path, AudioPlayer.AUDIO_RANK_MUSIC,
                 AudioPlayer.AUDIO_DISTANCE_MUSIC, getSettings().music_gain, 1f,
                 1f, true, true, true);
-        music = AudioManager.getManager().newAudio(0f, 0f, 0f, params);
+        music = getAudioManager().newAudio(0f, 0f, 0f, params);
+    }
+
+    public void setMusicPath(@NonNull String music_path_location, float delay) {
+        setMusicPath(new AudioFile(music_path_location), delay);
     }
 
     public void setMusicPath(@NonNull AudioFile music_path, float delay) {

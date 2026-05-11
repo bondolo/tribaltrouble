@@ -111,7 +111,7 @@ public final class AmbientAudio {
     public void updateSoundListener(@NonNull CameraState camera, @NonNull HeightMap heightmap) {
         if (Renderer.getRenderer().getSettings().play_sfx) {
             camera.updateDirectionAndNormal(f, u, s);
-            AudioManager.getManager()
+            Renderer.getRenderer().getAudioManager()
                     .setListenerPosition(camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ())
                     .setListenerOrientation(f, u);
 
@@ -139,7 +139,7 @@ public final class AmbientAudio {
             ambient_wind.setPosition(0f, 0f, Math.max(0f, 50f + GameCamera.MAX_Z - camera.getCurrentZ()));
             ambient_wind.setGain(AudioPlayer.AUDIO_GAIN_AMBIENT_WIND);
 
-            if (AudioManager.getManager() instanceof OpenALManager alManager) {
+            if (Renderer.getRenderer().getAudioManager() instanceof OpenALManager alManager) {
                 EFXManager efx = alManager.getEfxManager();
                 if (efx.isSupported()) {
                     float camZ = camera.getCurrentZ();
