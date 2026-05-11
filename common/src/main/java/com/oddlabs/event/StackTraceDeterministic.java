@@ -1,6 +1,7 @@
 package com.oddlabs.event;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -63,7 +64,7 @@ public final class StackTraceDeterministic extends Deterministic {
     }
 
     @Override
-    protected Object logObject(Object o) {
+    protected <T> @Nullable T logObject(@Nullable T o) {
         logTrace();
         return deterministic.log(o);
     }
