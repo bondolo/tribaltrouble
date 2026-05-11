@@ -1,6 +1,7 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -39,11 +40,11 @@ public final class AccessibilityPanel extends Panel {
         group_contrast.setFixedWidth(GROUP_WIDTH);
         addChild(group_contrast);
 
-        CheckBox cb_high_contrast = new CheckBox(Settings.getSettings().high_contrast, AbstractOptionsMenu.i18n("high_contrast"), AbstractOptionsMenu.i18n("high_contrast_tip"));
+        CheckBox cb_high_contrast = new CheckBox(Renderer.getRenderer().getSettings().high_contrast, AbstractOptionsMenu.i18n("high_contrast"), AbstractOptionsMenu.i18n("high_contrast_tip"));
         group_contrast.addChild(cb_high_contrast);
 
-        CheckBox cb_invert_colors = new CheckBox(Settings.getSettings().invert_colours, AbstractOptionsMenu.i18n("invert_colours"), AbstractOptionsMenu.i18n("invert_colours_tip"));
-        cb_invert_colors.setDisabled(!Settings.getSettings().high_contrast);
+        CheckBox cb_invert_colors = new CheckBox(Renderer.getRenderer().getSettings().invert_colours, AbstractOptionsMenu.i18n("invert_colours"), AbstractOptionsMenu.i18n("invert_colours_tip"));
+        cb_invert_colors.setDisabled(!Renderer.getRenderer().getSettings().high_contrast);
         group_contrast.addChild(cb_invert_colors);
 
         Label label_contrast_intensity = new Label(AbstractOptionsMenu.i18n("contrast_intensity"), Skin.getSkin().getEditFont());
@@ -54,31 +55,31 @@ public final class AccessibilityPanel extends Panel {
         label_contrast_intensity.setDim(label_area_width, label_contrast_intensity.getHeight());
         int contrast_slider_width = GROUP_WIDTH - label_area_width - SLIDER_PADDING - Skin.getSkin().getFormData().objectSpacing();
         
-        Slider slider_contrast = new Slider(contrast_slider_width, 0, 2 * MAX_VALUE, (int) (Settings.getSettings().contrast_intensity * MAX_VALUE));
-        slider_contrast.setDisabled(!Settings.getSettings().high_contrast);
-        label_contrast_intensity.setDisabled(!Settings.getSettings().high_contrast);
+        Slider slider_contrast = new Slider(contrast_slider_width, 0, 2 * MAX_VALUE, (int) (Renderer.getRenderer().getSettings().contrast_intensity * MAX_VALUE));
+        slider_contrast.setDisabled(!Renderer.getRenderer().getSettings().high_contrast);
+        label_contrast_intensity.setDisabled(!Renderer.getRenderer().getSettings().high_contrast);
         group_contrast.addChild(slider_contrast);
 
         Label label_contrast_brightness = new Label(AbstractOptionsMenu.i18n("contrast_brightness"), Skin.getSkin().getEditFont());
         label_contrast_brightness.setDim(label_area_width, label_contrast_brightness.getHeight());
-        label_contrast_brightness.setDisabled(!Settings.getSettings().high_contrast);
+        label_contrast_brightness.setDisabled(!Renderer.getRenderer().getSettings().high_contrast);
         group_contrast.addChild(label_contrast_brightness);
 
-        Slider slider_brightness = new Slider(contrast_slider_width, -MAX_VALUE, MAX_VALUE, (int) (Settings.getSettings().contrast_brightness * 3 * MAX_VALUE));
-        slider_brightness.setDisabled(!Settings.getSettings().high_contrast);
+        Slider slider_brightness = new Slider(contrast_slider_width, -MAX_VALUE, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().contrast_brightness * 3 * MAX_VALUE));
+        slider_brightness.setDisabled(!Renderer.getRenderer().getSettings().high_contrast);
         group_contrast.addChild(slider_brightness);
 
         Label label_contrast_clarity = new Label(AbstractOptionsMenu.i18n("contrast_clarity"), Skin.getSkin().getEditFont());
         label_contrast_clarity.setDim(label_area_width, label_contrast_clarity.getHeight());
-        label_contrast_clarity.setDisabled(!Settings.getSettings().high_contrast);
+        label_contrast_clarity.setDisabled(!Renderer.getRenderer().getSettings().high_contrast);
         group_contrast.addChild(label_contrast_clarity);
 
-        Slider slider_clarity = new Slider(contrast_slider_width, 0, MAX_VALUE, (int) (Settings.getSettings().contrast_clarity * MAX_VALUE));
-        slider_clarity.setDisabled(!Settings.getSettings().high_contrast);
+        Slider slider_clarity = new Slider(contrast_slider_width, 0, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().contrast_clarity * MAX_VALUE));
+        slider_clarity.setDisabled(!Renderer.getRenderer().getSettings().high_contrast);
         group_contrast.addChild(slider_clarity);
 
         cb_high_contrast.addCheckBoxListener(marked -> {
-            Settings.getSettings().high_contrast = marked;
+            Renderer.getRenderer().getSettings().high_contrast = marked;
             cb_invert_colors.setDisabled(!marked);
             slider_contrast.setDisabled(!marked);
             label_contrast_intensity.setDisabled(!marked);
@@ -88,13 +89,13 @@ public final class AccessibilityPanel extends Panel {
             label_contrast_clarity.setDisabled(!marked);
         });
 
-        cb_invert_colors.addCheckBoxListener(marked -> Settings.getSettings().invert_colours = marked);
+        cb_invert_colors.addCheckBoxListener(marked -> Renderer.getRenderer().getSettings().invert_colours = marked);
 
-        slider_contrast.addValueListener(value -> Settings.getSettings().contrast_intensity = (float) value / MAX_VALUE);
+        slider_contrast.addValueListener(value -> Renderer.getRenderer().getSettings().contrast_intensity = (float) value / MAX_VALUE);
 
-        slider_brightness.addValueListener(value -> Settings.getSettings().contrast_brightness = (float) value / (3 * MAX_VALUE));
+        slider_brightness.addValueListener(value -> Renderer.getRenderer().getSettings().contrast_brightness = (float) value / (3 * MAX_VALUE));
 
-        slider_clarity.addValueListener(value -> Settings.getSettings().contrast_clarity = (float) value / MAX_VALUE);
+        slider_clarity.addValueListener(value -> Renderer.getRenderer().getSettings().contrast_clarity = (float) value / MAX_VALUE);
 
         cb_high_contrast.place();
         cb_invert_colors.place(cb_high_contrast, RIGHT_MID);
@@ -126,25 +127,25 @@ public final class AccessibilityPanel extends Panel {
         label_cvd_mode.setDim(label_area_width, label_cvd_mode.getHeight());
         group_cvd.addChild(label_cvd_mode);
         
-        PulldownButton<Void> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, Settings.getSettings().cvd_mode, contrast_slider_width);
+        PulldownButton<Void> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, Renderer.getRenderer().getSettings().cvd_mode, contrast_slider_width);
         group_cvd.addChild(pb_cvd);
 
         Label label_cvd_intensity = new Label(AbstractOptionsMenu.i18n("cvd_intensity"), Skin.getSkin().getEditFont());
         label_cvd_intensity.setDim(label_area_width, label_cvd_intensity.getHeight());
-        label_cvd_intensity.setDisabled(Settings.getSettings().cvd_mode == 0);
+        label_cvd_intensity.setDisabled(Renderer.getRenderer().getSettings().cvd_mode == 0);
         group_cvd.addChild(label_cvd_intensity);
 
         // Support up to 2.0 intensity (40 steps)
-        Slider slider_cvd = new Slider(contrast_slider_width, 0, 2 * MAX_VALUE, (int) (Settings.getSettings().cvd_intensity * MAX_VALUE));
-        slider_cvd.setDisabled(Settings.getSettings().cvd_mode == 0);
+        Slider slider_cvd = new Slider(contrast_slider_width, 0, 2 * MAX_VALUE, (int) (Renderer.getRenderer().getSettings().cvd_intensity * MAX_VALUE));
+        slider_cvd.setDisabled(Renderer.getRenderer().getSettings().cvd_mode == 0);
         group_cvd.addChild(slider_cvd);
 
         pm_cvd.addItemChosenListener((_, index) -> {
-            Settings.getSettings().cvd_mode = index;
+            Renderer.getRenderer().getSettings().cvd_mode = index;
             slider_cvd.setDisabled(index == 0);
             label_cvd_intensity.setDisabled(index == 0);
         });
-        slider_cvd.addValueListener(value -> Settings.getSettings().cvd_intensity = (float) value / MAX_VALUE);
+        slider_cvd.addValueListener(value -> Renderer.getRenderer().getSettings().cvd_intensity = (float) value / MAX_VALUE);
 
         label_cvd_mode.place();
         pb_cvd.place(label_cvd_mode, RIGHT_MID);
@@ -158,10 +159,10 @@ public final class AccessibilityPanel extends Panel {
         addChild(group_team_colours);
 
         PulldownMenu<Void> pm_team = new PulldownMenu<>();
-        for (int i = 0; i < Settings.getSettings().team_colours.length; i++) {
+        for (int i = 0; i < Renderer.getRenderer().getSettings().team_colours.length; i++) {
             String player_str = AbstractOptionsMenu.i18n("player", Integer.toString(i + 1));
             PulldownItem<Void> item = new PulldownItem<>(player_str);
-            item.setLabelColor(Settings.getSettings().team_colours[i]);
+            item.setLabelColor(Renderer.getRenderer().getSettings().team_colours[i]);
             pm_team.addItem(item);
         }
         PulldownButton<Void> pb_team = new PulldownButton<>(gui_root, pm_team, 0, 150);
@@ -201,7 +202,7 @@ public final class AccessibilityPanel extends Panel {
             float hue = slider_hue.getValue();
             int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1.0f, 1.0f);
             var newColour = Color.argb4v((0xFF << 24) | (rgb & 0xFFFFFF));
-            Settings.getSettings().team_colours[teamIndex] = newColour;
+            Renderer.getRenderer().getSettings().team_colours[teamIndex] = newColour;
             colourBox.setColour(newColour);
 
             // Update the pulldown item colour
@@ -211,7 +212,7 @@ public final class AccessibilityPanel extends Panel {
 
         Runnable refreshUI = () -> {
             int index = pm_team.getChosenItemIndex();
-            var currentColour = Settings.getSettings().team_colours[index];
+            var currentColour = Renderer.getRenderer().getSettings().team_colours[index];
             float[] hsb = java.awt.Color.RGBtoHSB((int) (currentColour.x() * 255), (int) (currentColour.y() * 255), (int) (currentColour.z() * 255), null);
             slider_hue.setValue((int) (hsb[0] * 360));
             colourBox.setColour(currentColour);
@@ -224,14 +225,14 @@ public final class AccessibilityPanel extends Panel {
 
         button_reset.addMouseClickListener((_, _, _, _) -> {
             int index = pm_team.getChosenItemIndex();
-            Settings.getSettings().team_colours[index] = new Color.Standard(Settings.DEFAULT_TEAM_COLOURS[index]);
+            Renderer.getRenderer().getSettings().team_colours[index] = new Color.Standard(Settings.DEFAULT_TEAM_COLOURS[index]);
             refreshUI.run();
-            pm_team.getItem(index).setLabelColor(Settings.getSettings().team_colours[index]);
-            pb_team.setLabelColor(Settings.getSettings().team_colours[index]);
+            pm_team.getItem(index).setLabelColor(Renderer.getRenderer().getSettings().team_colours[index]);
+            pb_team.setLabelColor(Renderer.getRenderer().getSettings().team_colours[index]);
         });
 
-        CheckBox cb_team_stencil = new CheckBox(Settings.getSettings().team_stencil, AbstractOptionsMenu.i18n("team_stencil"), AbstractOptionsMenu.i18n("team_stencil_tip"));
-        cb_team_stencil.addCheckBoxListener(marked -> Settings.getSettings().team_stencil = marked);
+        CheckBox cb_team_stencil = new CheckBox(Renderer.getRenderer().getSettings().team_stencil, AbstractOptionsMenu.i18n("team_stencil"), AbstractOptionsMenu.i18n("team_stencil_tip"));
+        cb_team_stencil.addCheckBoxListener(marked -> Renderer.getRenderer().getSettings().team_stencil = marked);
         group_team_colours.addChild(cb_team_stencil);
 
         pb_team.place();

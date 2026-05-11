@@ -15,7 +15,7 @@ public final class Status {
     public void render(@NonNull GUIRenderer renderer) {
         long free_mem = Runtime.getRuntime().freeMemory();
         buf.delete(0, buf.length());
-        if (Settings.getSettings().inDeveloperMode()) {
+        if (Renderer.getRenderer().getSettings().inDeveloperMode()) {
             buf.append("TPF ")
                     .append(Renderer.getTrianglesRendered())
                     .append(" JHeap ")

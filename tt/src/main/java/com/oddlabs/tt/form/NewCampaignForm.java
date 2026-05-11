@@ -3,6 +3,7 @@ package com.oddlabs.tt.form;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.Menu;
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;
@@ -82,7 +83,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         race_pulldown.addItem(new PulldownItem<>(i18n("vikings")));
         race_pulldown.addItem(new PulldownItem<>(i18n("natives")));
         race_pulldown.addItemChosenListener((@NonNull PulldownMenu<Void> menu, int item_index) -> {
-            if (item_index == INDEX_NATIVES && (!Settings.getSettings().has_native_campaign)) {
+            if (item_index == INDEX_NATIVES && (!Renderer.getRenderer().getSettings().has_native_campaign)) {
                 menu.chooseItem(INDEX_VIKINGS);
                 gui_root.addModalForm(new MessageForm(i18n("native_unavailable")));
             }

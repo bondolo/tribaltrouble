@@ -1,5 +1,7 @@
 package com.oddlabs.tt.resource;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.Settings;
@@ -47,7 +49,7 @@ public final class IslandGenerator implements WorldGenerator {
     }
 
     private static int getTexelsPerGridUnit() {
-        int texels_per_grid_unit = Globals.TEXELS_PER_GRID_UNIT / (int) Math.pow(2, Globals.TEXTURE_MIP_SHIFT[Settings.getSettings().graphic_detail]);
+        int texels_per_grid_unit = Globals.TEXELS_PER_GRID_UNIT / (int) Math.pow(2, Globals.TEXTURE_MIP_SHIFT[Renderer.getRenderer().getSettings().graphic_detail]);
         return texels_per_grid_unit;
     }
 

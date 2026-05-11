@@ -1,5 +1,7 @@
 package com.oddlabs.tt.viewer;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioManager;
@@ -107,7 +109,7 @@ public final class AmbientAudio {
     }
 
     public void updateSoundListener(@NonNull CameraState camera, @NonNull HeightMap heightmap) {
-        if (Settings.getSettings().play_sfx) {
+        if (Renderer.getRenderer().getSettings().play_sfx) {
             camera.updateDirectionAndNormal(f, u, s);
             AudioManager.getManager()
                     .setListenerPosition(camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ())

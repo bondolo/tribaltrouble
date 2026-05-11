@@ -33,24 +33,24 @@ public class SoundPanel extends Panel {
         group_music.addChild(label_music_low);
         Label label_music_high = new Label(AbstractOptionsMenu.i18n("high"), Skin.getSkin().getEditFont());
         group_music.addChild(label_music_high);
-        CheckBox cb_music = new CheckBox(Settings.getSettings().play_music, AbstractOptionsMenu.i18n("music"));
+        CheckBox cb_music = new CheckBox(Renderer.getRenderer().getSettings().play_music, AbstractOptionsMenu.i18n("music"));
         group_music.addChild(cb_music);
         Label label_music = new Label(AbstractOptionsMenu.i18n("music_volume"), Skin.getSkin().getEditFont());
         group_music.addChild(label_music);
 
-        Slider slider_music = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Settings.getSettings().music_gain * (MAX_VALUE)));
+        Slider slider_music = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().music_gain * (MAX_VALUE)));
         slider_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !cb_music.isMarked());
         group_music.addChild(slider_music);
 
         cb_music.addCheckBoxListener(marked -> {
-            if (Settings.getSettings().play_music != marked)
+            if (Renderer.getRenderer().getSettings().play_music != marked)
                 Renderer.getRenderer().toggleMusic();
             slider_music.setDisabled(!marked);
-            Settings.getSettings().play_music = marked;
+            Renderer.getRenderer().getSettings().play_music = marked;
         });
         slider_music.addValueListener(value -> {
             float music_gain = (float) value / (MAX_VALUE);
-            Settings.getSettings().music_gain = music_gain;
+            Renderer.getRenderer().getSettings().music_gain = music_gain;
             Renderer.getRenderer().getMusicPlayer().setGain(music_gain);
         });
 
@@ -68,22 +68,22 @@ public class SoundPanel extends Panel {
         group_sound.addChild(label_sound_low);
         Label label_sound_high = new Label(AbstractOptionsMenu.i18n("high"), Skin.getSkin().getEditFont());
         group_sound.addChild(label_sound_high);
-        CheckBox cb_sound = new CheckBox(Settings.getSettings().play_sfx, AbstractOptionsMenu.i18n("sound_effects"));
+        CheckBox cb_sound = new CheckBox(Renderer.getRenderer().getSettings().play_sfx, AbstractOptionsMenu.i18n("sound_effects"));
         group_sound.addChild(cb_sound);
         Label label_sound = new Label(AbstractOptionsMenu.i18n("sound_effects_volume"), Skin.getSkin().getEditFont());
         group_sound.addChild(label_sound);
 
-        Slider slider_sound = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Settings.getSettings().sound_gain * (MAX_VALUE)));
+        Slider slider_sound = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().sound_gain * (MAX_VALUE)));
         slider_sound.setDisabled(!cb_sound.isMarked());
         group_sound.addChild(slider_sound);
 
         cb_sound.addCheckBoxListener(marked -> {
-            if (Settings.getSettings().play_sfx != marked)
+            if (Renderer.getRenderer().getSettings().play_sfx != marked)
                 Renderer.getRenderer().toggleSound();
             slider_sound.setDisabled(!marked);
-            Settings.getSettings().play_sfx = marked;
+            Renderer.getRenderer().getSettings().play_sfx = marked;
         });
-        slider_sound.addValueListener(value -> Settings.getSettings().sound_gain = (float) value / (MAX_VALUE));
+        slider_sound.addValueListener(value -> Renderer.getRenderer().getSettings().sound_gain = (float) value / (MAX_VALUE));
 
         cb_sound.place();
         label_sound.place(cb_sound, BOTTOM_LEFT);
@@ -104,7 +104,7 @@ public class SoundPanel extends Panel {
         pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_speakers")));
         pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_headphones")));
 
-        int initialOutput = Settings.getSettings().headphone_mode ? 1 : 0;
+        int initialOutput = Renderer.getRenderer().getSettings().headphone_mode ? 1 : 0;
         PulldownButton<Void> pb_output = new PulldownButton<>(gui_root, pm_output, initialOutput, 150);
         group_output.addChild(pb_output);
 
@@ -129,7 +129,7 @@ public class SoundPanel extends Panel {
             final AudioManager mgr = manager;
             pm_output.addItemChosenListener((_, index) -> {
                 boolean headphone = (index == 1);
-                Settings.getSettings().headphone_mode = headphone;
+                Renderer.getRenderer().getSettings().headphone_mode = headphone;
                 if (mgr instanceof OpenALManager alManager) {
                     alManager.setHeadphoneMode(headphone);
                 }

@@ -1,5 +1,7 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.Settings;
@@ -242,7 +244,7 @@ public final class Texture extends NativeResource<Texture.NativeTexture> {
     }
 
     private static int getDetailShift(int num_mipmaps) {
-        return Math.min(num_mipmaps - 1, Globals.TEXTURE_MIP_SHIFT[Settings.getSettings().graphic_detail]);
+        return Math.min(num_mipmaps - 1, Globals.TEXTURE_MIP_SHIFT[Renderer.getRenderer().getSettings().graphic_detail]);
     }
 
     private static int getMaxMipmapIndex(int num_mipmaps, int max_mipmap_level, int detail_shift) {

@@ -1,5 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioParameters;
@@ -98,8 +100,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
             first_ring_sent = true;
 
             owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, BLAST_AUDIO);
-            lur.stop(.3f, Settings.getSettings().sound_gain);
-            rumble.stop(.2f, Settings.getSettings().sound_gain);
+            lur.stop(.3f, Renderer.getRenderer().getSettings().sound_gain);
+            rumble.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
         }
 
         sonicBlastEffect.update(t);
@@ -138,8 +140,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
 
     @Override
     public void interrupt() {
-        lur.stop(.2f, Settings.getSettings().sound_gain);
-        rumble.stop(.2f, Settings.getSettings().sound_gain);
+        lur.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
+        rumble.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
         sonicBlastEffect.abort();
     }
 

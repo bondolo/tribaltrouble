@@ -35,15 +35,15 @@ public class LanguagePanel extends Panel {
 
         // Check language logic
         boolean languageFound = false;
-        if (!Settings.getSettings().language.equals("default")) {
+        if (!Renderer.getRenderer().getSettings().language.equals("default")) {
             for (String[] lang : Languages.getLanguages()) {
-                if (Settings.getSettings().language.equals(lang[0])) {
+                if (Renderer.getRenderer().getSettings().language.equals(lang[0])) {
                     languageFound = true;
                     break;
                 }
             }
             if (!languageFound) {
-                Settings.getSettings().language = "default";
+                Renderer.getRenderer().getSettings().language = "default";
             }
         }
 
@@ -51,7 +51,7 @@ public class LanguagePanel extends Panel {
         IconLabel label = new IconLabel(Skin.getSkin().getFlagDefault(), new Label(AbstractOptionsMenu.i18n("system_default"), Skin.getSkin().getMultiColumnComboBoxData().font()));
         Row<Locale, IconLabel> row = new Row<>(new IconLabel[]{label}, Renderer.getRenderer().getDefaultLocale());
         language_list_box.addRow(row);
-        if (Settings.getSettings().language.equals("default"))
+        if (Renderer.getRenderer().getSettings().language.equals("default"))
             selectedLanguage = row;
         String[][] languages = Languages.getLanguages();
         IconQuad[] flags = Languages.getFlags();
@@ -59,7 +59,7 @@ public class LanguagePanel extends Panel {
             label = new IconLabel(flags[i], new Label(languages[i][1], Skin.getSkin().getMultiColumnComboBoxData().font()));
             row = new Row<>(new IconLabel[]{label}, Locale.of(languages[i][0]));
             language_list_box.addRow(row);
-            if (languages[i][0].equals(Settings.getSettings().language))
+            if (languages[i][0].equals(Renderer.getRenderer().getSettings().language))
                 selectedLanguage = row;
         }
 
@@ -67,7 +67,7 @@ public class LanguagePanel extends Panel {
         language_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(@NonNull Locale locale) {
-                Settings.getSettings().language = locale.getVariant().equals("default") ? "default" : locale.getLanguage();
+                Renderer.getRenderer().getSettings().language = locale.getVariant().equals("default") ? "default" : locale.getLanguage();
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("language_change_next_run")));
             }
         });

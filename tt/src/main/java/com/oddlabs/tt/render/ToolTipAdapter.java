@@ -1,5 +1,7 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.gui.GUIIcons;
 import com.oddlabs.tt.gui.IconQuad;
 import com.oddlabs.tt.gui.ToolTipBox;
@@ -34,7 +36,7 @@ final class ToolTipAdapter implements ToolTip {
         tool_tip_box.append(" - ");
         //      tool_tip_box.append(team_tip);
         //      tool_tip_box.append(" ");
-        //      if (Settings.getSettings().inDeveloperMode()) {
+        //      if (Renderer.getRenderer().getSettings().inDeveloperMode()) {
         //          tool_tip_box.append("total_units=");
         //          tool_tip_box.append(unit_count.getNumSupplies());
         //          tool_tip_box.append(" ");
@@ -44,7 +46,7 @@ final class ToolTipAdapter implements ToolTip {
     private void visitSelectable(@NonNull Selectable<?> selectable) {
         assert !selectable.isDead();
         visitPlayer(selectable.getOwner());
-		/*      if (Settings.getSettings().developer_mode) {
+		/*      if (Renderer.getRenderer().getSettings().developer_mode) {
 				if (getCurrentBehaviour() instanceof WalkBehaviour)
 				((WalkBehaviour)getCurrentBehaviour()).appendToolTip(tool_tip_box);
 				else*/
@@ -80,7 +82,7 @@ final class ToolTipAdapter implements ToolTip {
         tool_tip_box.append(building.getTemplate().getName());
         IconQuad[] watch = GUIIcons.getIcons().getWatch();
         tool_tip_box.append(watch[((watch.length - 1) * building.getHitPoints() / building.getTemplate().getMaxHitPoints())]);
-        //      if (getUnitContainer() != null && Settings.getSettings().developer_mode) {
+        //      if (getUnitContainer() != null && Renderer.getRenderer().getSettings().developer_mode) {
         //          tool_tip_box.append(" units_in_building ");
         //          tool_tip_box.append(getUnitContainer().getNumSupplies());
         //      }

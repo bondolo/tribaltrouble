@@ -1,5 +1,7 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.Settings;
@@ -20,7 +22,7 @@ final class SpriteSorter {
     private int used_polys = 0;
 
     public SpriteSorter() {
-        this(Globals.UNIT_HIGH_POLY_COUNT[Settings.getSettings().graphic_detail]);
+        this(Globals.UNIT_HIGH_POLY_COUNT[Renderer.getRenderer().getSettings().graphic_detail]);
     }
 
     private SpriteSorter(int polycount_limit) {

@@ -510,7 +510,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
             float w = maxX - minX;
             float h = maxY - minY;
 
-            float thickness = com.oddlabs.tt.global.Settings.getSettings().high_contrast ? 3.0f : 1.0f;
+            float thickness = Renderer.getRenderer().getSettings().high_contrast ? 3.0f : 1.0f;
 
             // Ensure thickness doesn't exceed half dimensions
             if (thickness > w / 2) thickness = w / 2;

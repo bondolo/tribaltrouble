@@ -1,5 +1,7 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
@@ -168,8 +170,8 @@ public final class Picker implements Updatable<TimerAnimation> {
         if (nearest_pickable != null) {
             if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
                 respond_manager.addResponder(nearest_pickable);
-            if (isNewSetTarget(selection, nearest_pickable, action, Settings.getSettings().aggressive_units))
-                player_interface.setTarget(selection, nearest_pickable, action, Settings.getSettings().aggressive_units);
+            if (isNewSetTarget(selection, nearest_pickable, action, Renderer.getRenderer().getSettings().aggressive_units))
+                player_interface.setTarget(selection, nearest_pickable, action, Renderer.getRenderer().getSettings().aggressive_units);
         } else {
             pickResources();
             final TreeSupply supply = getNearestPick(tree_pick_list, Target.class);
@@ -177,14 +179,14 @@ public final class Picker implements Updatable<TimerAnimation> {
                 //	Target target = (Target)supply;
                 respond_manager.addResponder(supply, () -> supply.changeRespondingTrees(-1));
                 supply.changeRespondingTrees(1);
-                if (isNewSetTarget(selection, supply, action, Settings.getSettings().aggressive_units))
-                    player_interface.setTarget(selection, supply, action, Settings.getSettings().aggressive_units);
+                if (isNewSetTarget(selection, supply, action, Renderer.getRenderer().getSettings().aggressive_units))
+                    player_interface.setTarget(selection, supply, action, Renderer.getRenderer().getSettings().aggressive_units);
             } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
                 new LandscapeTargetRespond(local_player.getWorld(), patch_hit_x, patch_hit_y);
                 int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
                 int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
-                if (isNewLandscapeTarget(selection, grid_x, grid_y, action, Settings.getSettings().aggressive_units))
-                    player_interface.setLandscapeTarget(selection, grid_x, grid_y, action, Settings.getSettings().aggressive_units);
+                if (isNewLandscapeTarget(selection, grid_x, grid_y, action, Renderer.getRenderer().getSettings().aggressive_units))
+                    player_interface.setLandscapeTarget(selection, grid_x, grid_y, action, Renderer.getRenderer().getSettings().aggressive_units);
             }
         }
     }

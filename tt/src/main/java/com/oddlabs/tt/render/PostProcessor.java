@@ -1,5 +1,7 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.render.shader.PostProcessShader;
 import com.oddlabs.tt.render.state.BlendMode;
@@ -150,7 +152,7 @@ public final class PostProcessor implements AutoCloseable {
              var _ = context.withDepthMode(DepthMode.NONE);
              var _ = context.withCullMode(CullMode.NONE)) {
 
-            Settings settings = Settings.getSettings();
+            Settings settings = Renderer.getRenderer().getSettings();
             shader.setUniform(PostProcessShader.Uniforms.CVD_MODE, settings.cvd_mode);
             shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, settings.cvd_intensity);
             shader.setUniform(PostProcessShader.Uniforms.HIGH_CONTRAST, settings.high_contrast);

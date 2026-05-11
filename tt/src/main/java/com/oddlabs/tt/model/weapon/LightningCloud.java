@@ -1,5 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -98,13 +100,13 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         if (first_run) {
             cloud_sound = owner.getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CLOUD_AUDIO);
             first_run = false;
-            bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
+            bubbling_sound.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
         }
         cloud_sound.setPosition(getPositionX(), getPositionY(), getPositionZ());
         seconds_to_live -= t;
         if (seconds_to_live <= 0f) {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-            cloud_sound.stop(.2f, Settings.getSettings().sound_gain);
+            cloud_sound.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
             remove();
         }
         lightning_timer -= t;
@@ -184,7 +186,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
 
     @Override
     public void interrupt() {
-        bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
+        bubbling_sound.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
         remove();
     }
 }

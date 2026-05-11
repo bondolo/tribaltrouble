@@ -1,5 +1,7 @@
 package com.oddlabs.tt.landscape;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.event.LocalEventQueue;
@@ -164,7 +166,7 @@ public final class World {
         random = new Random(42);
 
         players = IntStream.range(0, player_infos.length)
-                .mapToObj(i -> new Player(this, player_infos[i], Settings.getSettings().linear_team_colours[i % Settings.getSettings().linear_team_colours.length]))
+                .mapToObj(i -> new Player(this, player_infos[i], Renderer.getRenderer().getSettings().linear_team_colours[i % Renderer.getRenderer().getSettings().linear_team_colours.length]))
                 .toArray(Player[]::new);
 
         long time_stop = System.currentTimeMillis();

@@ -1,5 +1,7 @@
 package com.oddlabs.tt.audio.openal;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
@@ -82,7 +84,7 @@ public final class OpenALManager extends AudioManager {
         if (alcIsExtensionPresent(device, "ALC_SOFT_HRTF")) {
             attributes = new int[]{
                     ALC_HRTF_SOFT,
-                    Settings.getSettings().headphone_mode ? ALC_TRUE : ALC_FALSE,
+                    Renderer.getRenderer().getSettings().headphone_mode ? ALC_TRUE : ALC_FALSE,
                     0
             };
         }

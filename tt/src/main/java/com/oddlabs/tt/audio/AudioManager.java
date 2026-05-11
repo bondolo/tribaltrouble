@@ -1,5 +1,7 @@
 package com.oddlabs.tt.audio;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Settings;
@@ -24,7 +26,10 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("UnusedReturnValue")
 public abstract class AudioManager implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(AudioManager.class.getName());
+    private static final Logger logger = Logger.getLogger(AudioManager.class.getSimpleName());
+
+    /** The interval (in seconds) between ambient sound proximity checks. */
+    private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
 
     private static final Holder SINGLETON = new Holder();
 
@@ -45,12 +50,11 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     private final Set<@NonNull AudioSource> ambients = new CopyOnWriteArraySet<>();
+    private final Set<@NonNull QueuedAudioPlayer> queued_players = new CopyOnWriteArraySet<>();
     private final @NonNull AudioSource @NonNull [] sources;
     private @Nullable AmbientAudioSource[] active_ambient;
     private float updateTime = 0f;
-
-    /** The interval (in seconds) between ambient sound proximity checks. */
-    private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
+    private volatile boolean closed = false;
 
     private volatile boolean isPlaying = false;
     private float masterGain = 1f;
@@ -58,7 +62,7 @@ public abstract class AudioManager implements AutoCloseable {
     private final Vector3f listenerForward = new Vector3f(0, 0, -1);
     private final Vector3f listenerUp = new Vector3f(0, 1, 0);
 
-    private final AtomicInteger sound_play_counter = new AtomicInteger(Settings.getSettings().play_sfx ? 1 : 0);
+    private final AtomicInteger sound_play_counter = new AtomicInteger(Renderer.getRenderer().getSettings().play_sfx ? 1 : 0);
 
     /**
      * {@return The singleton AudioManager instance.}
@@ -73,6 +77,10 @@ public abstract class AudioManager implements AutoCloseable {
 
     protected AudioManager(@NonNull AudioSource @NonNull [] sources) {
         this.sources = sources;
+    }
+
+    public final boolean isClosed() {
+        return closed;
     }
 
     /**
@@ -170,8 +178,8 @@ public abstract class AudioManager implements AutoCloseable {
         }
     }
 
-    public final void update(float t) {
-        if (!Settings.getSettings().play_sfx || t == 0f) {
+    public final synchronized void update(float t) {
+        if (closed || !Renderer.getRenderer().getSettings().play_sfx || t == 0f) {
             return;
         }
 
@@ -194,7 +202,7 @@ public abstract class AudioManager implements AutoCloseable {
         if (active_ambient == null)
             active_ambient = new AmbientAudioSource[10];
 
-        var active = active_ambient; // capture local reference
+        var active = active_ambient;
         var listenerPos = getListenerPosition();
         
         // Mark all current slots as "potential removals" by setting target to 0
@@ -240,6 +248,7 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     public final synchronized void play() {
+        if (closed) return;
         if (!isPlaying) {
             isPlaying = true;
             for (AudioSource s : sources) {
@@ -257,6 +266,7 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     public final synchronized void pause() {
+        if (closed) return;
         if (isPlaying) {
             for (AudioSource s : sources) {
                 s.pause();
@@ -272,6 +282,7 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     public final synchronized void stop() {
+        if (closed) return;
         isPlaying = false;
         for (AudioSource s : sources) {
             s.stop();
@@ -303,6 +314,7 @@ public abstract class AudioManager implements AutoCloseable {
         }
         return createPlayer(source, x, y, z, params);
     }
+
     public void startSources() {
         if (sound_play_counter.getAndIncrement() == 0) {
             for (AudioSource ambient : ambients) {
@@ -311,13 +323,24 @@ public abstract class AudioManager implements AutoCloseable {
         }
     }
 
-    public void registerAmbient(@NonNull AudioSource source) {
-        ambients.add(source);
+    protected boolean addQueuedPlayer(@NonNull QueuedAudioPlayer player) {
+        return queued_players.add(player);
     }
 
-    public void removeAmbient(@NonNull AudioSource source) {
-        ambients.remove(source);
-        updateAmbientSources();
+    public boolean removeQueuedPlayer(@NonNull QueuedAudioPlayer player) {
+        return queued_players.remove(player);
+    }
+
+    public boolean registerAmbient(@NonNull AudioSource source) {
+        return ambients.add(source);
+    }
+
+    public boolean removeAmbient(@NonNull AudioSource source) {
+        var removed = ambients.remove(source);
+        if (removed) {
+            updateAmbientSources();
+        }
+        return removed;
     }
 
     private @Nullable AudioSource findSource(float x, float y, float z, @NonNull AudioParameters<?> params) {
@@ -388,13 +411,15 @@ public abstract class AudioManager implements AutoCloseable {
         return p.gain() * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
     }
 
-    private @Nullable AudioSource getSource(float x, float y, float z, @NonNull AudioParameters<?> params) {
+    private synchronized @Nullable AudioSource getSource(float x, float y, float z, @NonNull AudioParameters<?> params) {
+        if (closed) return null;
         AudioSource best_source = findSource(x, y, z, params);
         stopSource(best_source);
         return best_source;
     }
 
-    private @Nullable AudioSource getSource(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters<?> params) {
+    private synchronized @Nullable AudioSource getSource(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters<?> params) {
+        if (closed) return null;
         float this_dist_squared = params.relative()
                 ? x * x + y * y + z * z
                 : getCamDistSquared(camera_state, x, y, z);
@@ -436,12 +461,22 @@ public abstract class AudioManager implements AutoCloseable {
         return dx * dx + dy * dy + dz * dz;
     }
 
+    /**
+     * Enqueues a task to be executed when the audio implementation's native context is current.
+     * This is used by native resources (like buffers or sources) to ensure context-safe cleanup.
+     *
+     * @param task The cleanup task to enqueue.
+     */
+    public abstract void enqueueCleanup(@NonNull Runnable task);
+
     protected abstract @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params);
 
     @Override
-    public void close() {
+    public synchronized void close() {
+        if (closed) return;
         logger.info("AudioManager stopping queued players...");
-        QueuedAudioPlayer.stopAll();
+        queued_players.forEach(QueuedAudioPlayer::stop);
+
         logger.info("AudioManager closing sources...");
         for (AudioSource source : sources) {
             try {
@@ -453,6 +488,7 @@ public abstract class AudioManager implements AutoCloseable {
             }
         }
         Arrays.fill(sources, null);
+        closed = true;
         logger.info("AudioManager closed.");
     }
 
@@ -502,7 +538,7 @@ public abstract class AudioManager implements AutoCloseable {
         void resetVolume() {
             AudioPlayer player = source.getAudioPlayer();
             if (player != null) {
-                float volume = Settings.getSettings().sound_gain * gain * player.getParameters().gain();
+                float volume = Renderer.getRenderer().getSettings().sound_gain * gain * player.getParameters().gain();
                 source.setGain(volume);
             }
         }

@@ -226,13 +226,13 @@ public final class GameCamera extends Camera {
 
     private void doPitch(float time_delta) {
         checkKeys();
-        if ((pitch_down && !Settings.getSettings().invert_camera_pitch) ||
-                (pitch_up && Settings.getSettings().invert_camera_pitch)) {
+        if ((pitch_down && !Renderer.getRenderer().getSettings().invert_camera_pitch) ||
+                (pitch_up && Renderer.getRenderer().getSettings().invert_camera_pitch)) {
             getState().setTargetVertAngle(getState().getTargetVertAngle() - time_delta * ANGLE_DELTA);
             checkPosition();
         }
-        if ((pitch_up && !Settings.getSettings().invert_camera_pitch) ||
-                (pitch_down && Settings.getSettings().invert_camera_pitch)) {
+        if ((pitch_up && !Renderer.getRenderer().getSettings().invert_camera_pitch) ||
+                (pitch_down && Renderer.getRenderer().getSettings().invert_camera_pitch)) {
             getState().setTargetVertAngle(getState().getTargetVertAngle() + time_delta * ANGLE_DELTA);
             checkPosition();
         }

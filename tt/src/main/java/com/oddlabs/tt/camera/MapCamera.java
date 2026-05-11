@@ -1,5 +1,7 @@
 package com.oddlabs.tt.camera;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.delegate.SelectionDelegate;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.Label;
@@ -77,7 +79,7 @@ public final class MapCamera extends Camera {
 
     @Override
     public void doAnimate(float t) {
-        float factor = t * 1000f / Math.max(t * 1000f, Settings.getSettings().mapmode_delay * MAP_TIME_FACTOR);
+        float factor = t * 1000f / Math.max(t * 1000f, Renderer.getRenderer().getSettings().mapmode_delay * MAP_TIME_FACTOR);
         float dx;
         float dy;
         float dz;

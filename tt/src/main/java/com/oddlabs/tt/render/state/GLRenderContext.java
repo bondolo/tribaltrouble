@@ -1,5 +1,7 @@
 package com.oddlabs.tt.render.state;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.global.Settings;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -167,7 +169,7 @@ public final class GLRenderContext implements RenderContext {
         setDepthFunc(GL11.GL_LEQUAL);
 
         // Multisample
-        if (Settings.getSettings().view_samples > 0) {
+        if (Renderer.getRenderer().getSettings().view_samples > 0) {
             GL13.glEnable(GL13.GL_MULTISAMPLE);
         } else {
             GL13.glDisable(GL13.GL_MULTISAMPLE);

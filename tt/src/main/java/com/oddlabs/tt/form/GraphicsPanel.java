@@ -35,14 +35,14 @@ public class GraphicsPanel extends Panel {
         // Fullscreen
         Group group_fullscreen = new Group();
         addChild(group_fullscreen);
-        CheckBox cb_fullscreen = new CheckBox(Settings.getSettings().fullscreen, AbstractOptionsMenu.i18n("fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
+        CheckBox cb_fullscreen = new CheckBox(Renderer.getRenderer().getSettings().fullscreen, AbstractOptionsMenu.i18n("fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
         cb_fullscreen.addCheckBoxListener(marked -> {
             DisplayChangeForm display_change_form = new DisplayChangeForm(
                     switch_now -> {
                         if (switch_now) {
                             Renderer.getRenderer().toggleFullscreen();
                         } else {
-                            Settings.getSettings().fullscreen = marked;
+                            Renderer.getRenderer().getSettings().fullscreen = marked;
                         }
                     });
             gui_root.addModalForm(display_change_form);
@@ -62,13 +62,13 @@ public class GraphicsPanel extends Panel {
         updateScaleLabel();
         group_ui_scale.addChild(label_pct);
 
-        int initialValue = Math.clamp((long) (Settings.getSettings().ui_scale * 1000), 0, 1000);
+        int initialValue = Math.clamp((long) (Renderer.getRenderer().getSettings().ui_scale * 1000), 0, 1000);
 
         Slider slider_ui_scale = new Slider(150, 0, 1000, initialValue);
         group_ui_scale.addChild(slider_ui_scale);
 
         slider_ui_scale.addValueListener(value -> {
-            Settings.getSettings().ui_scale = value / 1000f;
+            Renderer.getRenderer().getSettings().ui_scale = value / 1000f;
             updateScaleLabel();
         });
 
@@ -88,7 +88,7 @@ public class GraphicsPanel extends Panel {
         Label label_detail = new Label(AbstractOptionsMenu.i18n("graphical_detail"), labelFont);
         group_detail.addChild(label_detail);
 
-        int initial_detail_value = Settings.getSettings().graphic_detail;
+        int initial_detail_value = Renderer.getRenderer().getSettings().graphic_detail;
         PulldownMenu<Void> pm_detail = new PulldownMenu<>();
         pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("low")));
         pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("medium")));
@@ -99,7 +99,7 @@ public class GraphicsPanel extends Panel {
         options.addCloseListener(() -> {
             int slider_value = pm_detail.getChosenItemIndex();
             if (initial_detail_value != slider_value) {
-                Settings.getSettings().graphic_detail = slider_value;
+                Renderer.getRenderer().getSettings().graphic_detail = slider_value;
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("change_next_run")));
             }
         });

@@ -1,5 +1,7 @@
 package com.oddlabs.tt.window;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.jspecify.annotations.NonNull;
@@ -137,7 +139,7 @@ public final class LWJGL3Window implements Window {
             glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
         }
 
-        Settings settings = Settings.getSettings();
+        Settings settings = Renderer.getRenderer().getSettings();
         if (settings != null && settings.view_samples > 0) {
             glfwWindowHint(GLFW_SAMPLES, settings.view_samples);
         }

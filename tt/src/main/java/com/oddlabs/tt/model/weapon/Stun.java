@@ -1,5 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -146,6 +148,6 @@ public final class Stun extends PointEmitterModel implements Magic {
     @Override
     public void interrupt() {
         emitter.done();
-        sound.stop(.3f, Settings.getSettings().sound_gain);
+        sound.stop(.3f, Renderer.getRenderer().getSettings().sound_gain);
     }
 }

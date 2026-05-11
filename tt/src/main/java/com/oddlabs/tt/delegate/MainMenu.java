@@ -1,5 +1,7 @@
 package com.oddlabs.tt.delegate;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.form.CampaignForm;
@@ -35,7 +37,7 @@ public final class MainMenu extends Menu {
         single_player.addMouseClickListener((_, _, _, _) -> setMenu(new TerrainMenuForm(getNetwork(), getGUIRoot(), MainMenu.this)));
         addChild(single_player);
 
-        if (!Settings.getSettings().hide_multiplayer) {
+        if (!Renderer.getRenderer().getSettings().hide_multiplayer) {
             MenuButton multi_player = new MenuButton(Menu.i18n("multiplayer"), COLOR_NORMAL, COLOR_ACTIVE);
             multi_player.addMouseClickListener((_, _, _, _) -> {
                 if (Network.getMatchmakingClient().isConnected()) {

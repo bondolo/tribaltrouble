@@ -1,5 +1,7 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.landscape.World;
@@ -13,7 +15,7 @@ public final class Plants extends SceneryModel {
 
     @Override
     protected void doRegister() {
-        if (Globals.INSERT_PLANTS[Settings.getSettings().graphic_detail]) {
+        if (Globals.INSERT_PLANTS[Renderer.getRenderer().getSettings().graphic_detail]) {
             register();
             reinsert();
         }

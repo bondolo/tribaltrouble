@@ -1,6 +1,7 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.Group;
@@ -48,7 +49,7 @@ public final class WarningForm extends Form {
         HorizButton ok_button = new OKButton(70);
         addChild(ok_button);
         ok_button.addMouseClickListener((_, _, _, _) -> {
-            Settings.getSettings().warning_no_sound = !show_next_time.isMarked();
+            Renderer.getRenderer().getSettings().warning_no_sound = !show_next_time.isMarked();
             remove();
         });
         // Place objects

@@ -85,7 +85,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                             Origin.AT_START,
                             runnable_next);
                     gui_root.addModalForm(dialog);
-                    Settings.getSettings().has_native_campaign = true;
+                    Renderer.getRenderer().getSettings().has_native_campaign = true;
                 }
             }
 

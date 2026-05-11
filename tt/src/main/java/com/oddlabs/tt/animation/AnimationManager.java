@@ -129,7 +129,7 @@ public final class AnimationManager {
         if (time_frozen && !time_stopped)
             unfreezeTime();
         if (grab_frames) {
-            current_time += Settings.getSettings().frame_grab_milliseconds_per_frame;
+            current_time += Renderer.getRenderer().getSettings().frame_grab_milliseconds_per_frame;
         } else {
             current_time = getSystemTime();
         }

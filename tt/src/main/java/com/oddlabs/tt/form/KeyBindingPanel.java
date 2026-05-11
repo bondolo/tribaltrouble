@@ -95,7 +95,7 @@ public class KeyBindingPanel extends Panel {
     private void updateList() {
         list_box.clear();
         for (GameAction action : GameAction.values()) {
-            if (action.name().startsWith("DEBUG_") && !Settings.getSettings().inDeveloperMode()) {
+            if (action.name().startsWith("DEBUG_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
                 continue;
             }
             if (action.name().startsWith("CHEAT_") && !Renderer.getRenderer().isCheater()) {
@@ -139,7 +139,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void saveMappings() {
-        boolean wasFullscreen = Settings.getSettings().fullscreen;
+        boolean wasFullscreen = Renderer.getRenderer().getSettings().fullscreen;
         if (wasFullscreen) {
             Renderer.getRenderer().toggleFullscreen();
         }
@@ -160,7 +160,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void loadMappings() {
-        boolean wasFullscreen = Settings.getSettings().fullscreen;
+        boolean wasFullscreen = Renderer.getRenderer().getSettings().fullscreen;
         if (wasFullscreen) {
             Renderer.getRenderer().toggleFullscreen();
         }

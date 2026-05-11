@@ -62,7 +62,7 @@ public final class FirstPersonCamera extends Camera {
         int dx = localInput.getMouseX() - last_x;
         int dy = localInput.getMouseY() - last_y;
         getState().setTargetHorizAngle(getState().getTargetHorizAngle() - dx * SCALE_HORIZ);
-        if (Settings.getSettings().invert_camera_pitch)
+        if (Renderer.getRenderer().getSettings().invert_camera_pitch)
             getState().setTargetVertAngle(getState().getTargetVertAngle() - dy * SCALE_VERT);
         else
             getState().setTargetVertAngle(getState().getTargetVertAngle() + dy * SCALE_VERT);

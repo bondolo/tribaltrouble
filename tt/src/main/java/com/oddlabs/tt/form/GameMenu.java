@@ -6,6 +6,7 @@ import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.Diode;
 import com.oddlabs.tt.gui.EditLine;
@@ -412,7 +413,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             ratings[index].place(ready_mark, RIGHT_MID);
         }
         String player_str = i18n("player", Integer.toString(index + 1));
-        Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(Settings.getSettings().team_colours[index]);
+        Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(Renderer.getRenderer().getSettings().team_colours[index]);
         group.addChild(label);
         label.place(pulldown_button, LEFT_MID);
 

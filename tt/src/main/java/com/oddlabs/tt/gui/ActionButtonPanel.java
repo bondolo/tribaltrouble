@@ -1,5 +1,7 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.delegate.CameraDelegate;
@@ -237,14 +239,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
                 new IconQuad[]{race_icons.unitStatusIcon()}, "P");
         quarters_group.addChild(quarters_peon_button);
         quarters_chieftain_button = new ChieftainButton(viewer, player_interface, race_icons.chieftainIcon(), i18n("train_chieftain_tip", "C"));
-//		if (Settings.getSettings().developer_mode) {
+//		if (Renderer.getRenderer().getSettings().developer_mode) {
         quarters_group.addChild(quarters_chieftain_button);
 //		}
         quarters_rally_point_button = new NonFocusIconButton(race_icons.rallyPointIcon(), i18n("rally_point_tip", "R"));
         quarters_group.addChild(quarters_rally_point_button);
         quarters_rally_point_button.addMouseClickListener(this::setRallyPoint);
         quarters_peon_button.place();
-//		if (Settings.getSettings().developer_mode) {
+//		if (Renderer.getRenderer().getSettings().developer_mode) {
         quarters_chieftain_button.place(quarters_peon_button, Placement.BOTTOM_MID);
         quarters_rally_point_button.place(quarters_chieftain_button, Placement.BOTTOM_MID);
 //		} else {

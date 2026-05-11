@@ -1,5 +1,7 @@
 package com.oddlabs.tt.audio;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.global.Settings;
@@ -179,7 +181,7 @@ public abstract class AudioPlayer implements Animated {
     protected AudioPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params) {
         this.parameters = params;
         this.source = source;
-        if (source == null || (!params.music() && !Settings.getSettings().play_sfx)) {
+        if (source == null || (!params.music() && !Renderer.getRenderer().getSettings().play_sfx)) {
             return;
         }
         source.setAudioPlayer(this);
@@ -220,7 +222,7 @@ public abstract class AudioPlayer implements Animated {
 
     public final void setGain(float gain) {
         if (playing && source != null) {
-            var settings = Settings.getSettings();
+            var settings = Renderer.getRenderer().getSettings();
             source.setGain(gain * (parameters.music() ? settings.music_gain : settings.sound_gain));
         }
     }

@@ -1,5 +1,7 @@
 package com.oddlabs.tt.delegate;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.camera.StaticCamera;
 import com.oddlabs.tt.global.Settings;
@@ -106,7 +108,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         }
 
         // If in developer mode
-        if (!Settings.getSettings().inDeveloperMode())
+        if (!Renderer.getRenderer().getSettings().inDeveloperMode())
             return false;
 
         if (actions.contains(GameAction.DEBUG_PRINT_INFO)) {

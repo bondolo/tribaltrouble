@@ -1,5 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
+import com.oddlabs.tt.render.Renderer;
+
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -78,7 +80,7 @@ public final class PoisonFog implements Magic {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         }
         if (first_run) {
-            bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
+            bubbling_sound.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
             first_run = false;
         }
 
@@ -134,6 +136,6 @@ public final class PoisonFog implements Magic {
 
     @Override
     public void interrupt() {
-        bubbling_sound.stop(.2f, Settings.getSettings().sound_gain);
+        bubbling_sound.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
     }
 }

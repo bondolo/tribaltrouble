@@ -113,7 +113,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     public void setToolTipTimer() {
-        tool_tip_timer.setTimerInterval(Settings.getSettings().tooltip_delay * ToolTipBox.MAX_DELAY_SECONDS);
+        tool_tip_timer.setTimerInterval(Renderer.getRenderer().getSettings().tooltip_delay * ToolTipBox.MAX_DELAY_SECONDS);
     }
 
     public void timerUpdate(@NonNull TimerAnimation anim) {
@@ -247,7 +247,7 @@ public final class GUIRoot extends GUIObject {
         float minScale = calculateMinScale(width, height);
         float maxAllowedScale = Math.max(minScale, calculateMaxScale(width, height));
 
-        float current = Math.clamp(Settings.getSettings().ui_scale, 0f, 1f);
+        float current = Math.clamp(Renderer.getRenderer().getSettings().ui_scale, 0f, 1f);
 
         // Interpolate
         float rawTarget = minScale + (current * (maxAllowedScale - minScale));
@@ -282,8 +282,8 @@ public final class GUIRoot extends GUIObject {
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
-                    Settings.getSettings().aggressive_units = !Settings.getSettings().aggressive_units;
-                    info_printer.print(i18n(Settings.getSettings().aggressive_units ? "aggressive_unites_on" : "aggressive_unites_off"));
+                    Renderer.getRenderer().getSettings().aggressive_units = !Renderer.getRenderer().getSettings().aggressive_units;
+                    info_printer.print(i18n(Renderer.getRenderer().getSettings().aggressive_units ? "aggressive_unites_on" : "aggressive_unites_off"));
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {
@@ -298,7 +298,7 @@ public final class GUIRoot extends GUIObject {
                 }
 
                 // Debug Actions (Only those that don't need Viewer)
-                if (Settings.getSettings().inDeveloperMode()) {
+                if (Renderer.getRenderer().getSettings().inDeveloperMode()) {
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
                         Globals.draw_light = !Globals.draw_light;
                         consumed = true;
