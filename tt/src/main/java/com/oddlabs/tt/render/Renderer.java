@@ -11,6 +11,7 @@ import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.MenuCamera;
 import com.oddlabs.tt.delegate.MainMenu;
 import com.oddlabs.tt.event.LocalEventQueue;
@@ -47,6 +48,7 @@ import com.oddlabs.tt.vbo.VBO;
 import com.oddlabs.tt.viewer.AmbientAudio;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.Selection;
+import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
@@ -74,6 +76,8 @@ import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 
 public final class Renderer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
+    private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), "default");
+
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
 
     private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
@@ -81,26 +85,25 @@ public final class Renderer implements AutoCloseable {
     }
 
     private static final Renderer renderer_instance = new Renderer();
-    private final GLRenderContext renderContext = new GLRenderContext();
     private static final StatCounter fps = new StatCounter(10);
     private static int num_triangles_rendered;
-
     private static boolean grab_frames = false;
 
-    private final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), "default");
+    private static volatile boolean finished = false;
+
+    private final Settings settings = new Settings();
+    private final GLRenderContext renderContext = new GLRenderContext();
+    private final Window window = new LWJGL3Window();
+    private final Network network = new Network();
+    private final LocalInput localInput = new LocalInput(window);
 
     private AudioPlayer music;
     private @Nullable AudioFile music_path;
     private @Nullable TimerAnimation music_timer;
 
-    private static volatile boolean finished = false;
-
     private boolean movie_recording_started = false;
     private AmbientAudio ambient;
 
-    private final Window window = new com.oddlabs.tt.window.LWJGL3Window();
-    private final Network network = new Network();
-    private final LocalInput localInput = new LocalInput(window);
 
     private @Nullable Cheat cheat = new Cheat();
 
@@ -137,7 +140,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     public @NonNull Settings getSettings() {
-        return Settings.getSettings();
+        return settings;
     }
 
     public @NonNull AudioManager getAudioManager() {
@@ -515,8 +518,7 @@ public final class Renderer implements AutoCloseable {
                 default -> throw new IllegalArgumentException("Unknown command line flag: " + args[i]);
             }
 
-        // fetch initial settings
-        Settings settings = new Settings();
+        Settings settings = getSettings();
         settings.load(game_dir);
 
         if (eventload || grab_frames) {
@@ -536,15 +538,15 @@ public final class Renderer implements AutoCloseable {
         Deterministic deterministic = getRenderer().getEventQueue().getDeterministic();
         game_dir = deterministic.log(game_dir);
         event_log_dir = deterministic.log(event_log_dir);
-        settings = deterministic.log(settings);
-        String default_language = deterministic.log(Locale.getDefault().getLanguage());
+        deterministic.log(settings);
+        String default_language = deterministic.log(default_locale.getLanguage());
         String language = settings.language;
         if (language.equals("default"))
             language = default_language;
         if (!Languages.hasLanguage(language))
             language = "en";
         Locale.setDefault(Locale.of(language));
-        Settings.setSettings(settings);
+        
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
         NetworkSelector network = new NetworkSelector(getRenderer().getEventQueue().getDeterministic(), getRenderer().getEventQueue()::getMillis);

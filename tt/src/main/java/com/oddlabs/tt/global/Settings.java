@@ -30,8 +30,6 @@ public final class Settings implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static Settings settings;
-
     // event logging
     private static final Logger logger = Logger.getLogger(Settings.class.getName());
 
@@ -126,14 +124,6 @@ public final class Settings implements Serializable {
         linear_team_colours = Arrays.stream(team_colours)
                 .map(Color.Linear::new)
                 .toArray(Color.Linear[]::new);
-    }
-
-    public static void setSettings(Settings new_settings) {
-        settings = new_settings;
-    }
-
-    public static Settings getSettings() {
-        return settings;
     }
 
     public boolean inDeveloperMode() {

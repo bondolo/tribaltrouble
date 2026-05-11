@@ -1,5 +1,6 @@
 package com.oddlabs.tt.audio;
 
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.global.Settings;
 import org.jspecify.annotations.NonNull;
 
@@ -24,7 +25,7 @@ public record AudioParameters<S>(
     }
 
     public AudioParameters(@NonNull S music_path) {
-        this(music_path, AudioPlayer.AUDIO_RANK_MUSIC, AudioPlayer.AUDIO_DISTANCE_MUSIC, Settings.getSettings().music_gain, 1f, 1f, true, true, true);
+        this(music_path, AudioPlayer.AUDIO_RANK_MUSIC, AudioPlayer.AUDIO_DISTANCE_MUSIC, Renderer.getRenderer().getSettings().music_gain, 1f, 1f, true, true, true);
     }
 
     public AudioParameters(@NonNull S sound, int rank, float distance) {
