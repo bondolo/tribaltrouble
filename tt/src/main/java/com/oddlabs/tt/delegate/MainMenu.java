@@ -40,10 +40,10 @@ public final class MainMenu extends Menu {
         if (!Renderer.getRenderer().getSettings().hide_multiplayer) {
             MenuButton multi_player = new MenuButton(Menu.i18n("multiplayer"), COLOR_NORMAL, COLOR_ACTIVE);
             multi_player.addMouseClickListener((_, _, _, _) -> {
-                if (Network.getMatchmakingClient().isConnected()) {
+                if (Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
                     new SelectGameMenu(getNetwork(), getGUIRoot(), MainMenu.this);
                 } else {
-                    Network.getMatchmakingClient().close();
+                    Renderer.getRenderer().getNetwork().getMatchmakingClient().close();
                     new LoginForm(getNetwork(), getGUIRoot(), MainMenu.this);
                 }
             });
@@ -59,7 +59,7 @@ public final class MainMenu extends Menu {
 
         addExitButton();
 
-        if (Network.getMatchmakingClient().isConnected()) {
+        if (Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
             new SelectGameMenu(getNetwork(), getGUIRoot(), this);
         }
     }

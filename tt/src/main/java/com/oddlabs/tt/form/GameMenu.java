@@ -422,13 +422,13 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     @Override
     protected void doAdd() {
         super.doAdd();
-        Network.getChatHub().addListener(this);
+        Renderer.getRenderer().getNetwork().getChatHub().addListener(this);
     }
 
     @Override
     protected void doRemove() {
         super.doRemove();
-        Network.getChatHub().removeListener(this);
+        Renderer.getRenderer().getNetwork().getChatHub().removeListener(this);
     }
 
     @Override

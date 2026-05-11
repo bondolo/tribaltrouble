@@ -259,10 +259,10 @@ public final class PeerHub implements Animated, RouterHandler {
 
     private void doTick(float t) {
         stall_handler.stopStall();
-        if (getFreeQuitTicksLeft(local_player.getWorld()) == 0 && Network.getMatchmakingClient().isConnected())
-            Network.getMatchmakingClient().getInterface().freeQuitStopNotify();
+        if (getFreeQuitTicksLeft(local_player.getWorld()) == 0 && Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().freeQuitStopNotify();
 
-        if (getTick() % TICKS_PER_STATUS_UPDATE == 0 && Network.getMatchmakingClient().isConnected())
+        if (getTick() % TICKS_PER_STATUS_UPDATE == 0 && Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
             sendStatusUpdate();
 
         for (Peer peer : peer_index_to_peer) {
@@ -307,7 +307,7 @@ public final class PeerHub implements Animated, RouterHandler {
             if (peer != null)
                 status[i] = peer.getPlayer().getStatus();
         }
-        Network.getMatchmakingClient().getInterface().updateGameStatus(getTick(), status);
+        Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().updateGameStatus(getTick(), status);
     }
 
     private @NonNull Iterator<Peer> getPeerIterator() {
@@ -344,8 +344,8 @@ public final class PeerHub implements Animated, RouterHandler {
         removePeerFromActiveList(peer);
         String left_game_message = i18n("left_game", peer.getPlayerInfo().getName(), reason);
         receiveChat(SYSTEM_NAME, left_game_message, false);
-        if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0 && Network.getMatchmakingClient().isConnected())
-            Network.getMatchmakingClient().getInterface().gameQuitNotify(peer.getPlayerInfo().getName());
+        if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0 && Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameQuitNotify(peer.getPlayerInfo().getName());
     }
 
     public void sendChat(String text, boolean team_only) {
@@ -372,9 +372,9 @@ public final class PeerHub implements Animated, RouterHandler {
 
     public void receiveChat(@NonNull String name, @NonNull String text, boolean team) {
         if (team)
-            Network.getChatHub().chat(new ChatMessage(name, text, ChatMessage.Type.TEAM));
+            Renderer.getRenderer().getNetwork().getChatHub().chat(new ChatMessage(name, text, ChatMessage.Type.TEAM));
         else
-            Network.getChatHub().chat(new ChatMessage(name, text, ChatMessage.Type.NORMAL));
+            Renderer.getRenderer().getNetwork().getChatHub().chat(new ChatMessage(name, text, ChatMessage.Type.NORMAL));
     }
 
     public void receiveBeacon(float x, float y, @NonNull String owner) {
@@ -413,18 +413,18 @@ public final class PeerHub implements Animated, RouterHandler {
     }
 
     public void leaveGame() {
-        if (Network.getMatchmakingClient().isConnected()) {
+        if (Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
             if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0) {
-                Network.getMatchmakingClient().getInterface().gameQuitNotify(local_player.getPlayerInfo().getName());
+                Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameQuitNotify(local_player.getPlayerInfo().getName());
             } else {
-                Network.getMatchmakingClient().getInterface().gameLostNotify();
+                Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameLostNotify();
             }
         }
     }
 
     public void gameWon() {
-        if (Network.getMatchmakingClient().isConnected()) {
-            Network.getMatchmakingClient().getInterface().gameWonNotify();
+        if (Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameWonNotify();
             waiting_for_ack = true;
         }
     }

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.tt.gui.InfoPrinter;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
@@ -59,19 +60,19 @@ public final class ChatCommand {
         int first_space = firstSpace(text);
         String nick = text.substring(0, first_space);
         String message = text.substring(first_space).trim();
-        if (!Network.getMatchmakingClient().isConnected())
+        if (!Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
             info_printer.print(i18n("not_connected"));
         else
-            Network.getMatchmakingClient().sendPrivateMessage(info_printer.getGUIRoot(), nick, message);
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().sendPrivateMessage(info_printer.getGUIRoot(), nick, message);
     }
 
     private static void getInfo(@NonNull InfoPrinter info_printer, @NonNull String text) {
         int first_space = firstSpace(text);
         String nick = text.substring(0, first_space);
-        if (!Network.getMatchmakingClient().isConnected())
+        if (!Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
             info_printer.print(i18n("not_connected"));
         else
-            Network.getMatchmakingClient().requestInfo(info_printer.getGUIRoot(), nick);
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().requestInfo(info_printer.getGUIRoot(), nick);
     }
 
     public static void ignore(@NonNull InfoPrinter info_printer, @NonNull String text) {

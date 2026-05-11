@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public final class NetworkSelector {
-    private static final long PING_TIMEOUT = 4 * 60 * 1000;
+    private static final long PING_TIMEOUT = TimeUnit.MINUTES.toMillis(4);
     private static final long PING_DELAY = PING_TIMEOUT / 2;
 
     private final @NonNull MonotoneTimeManager time_manager;

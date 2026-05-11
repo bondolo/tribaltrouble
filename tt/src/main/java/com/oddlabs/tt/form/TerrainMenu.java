@@ -141,7 +141,7 @@ public final class TerrainMenu extends Group {
         editline_name = new EditLine(180, Game.MAX_LENGTH);
         if (multiplayer) {
             standard.addChild(label_name);
-            String default_name = i18n("default_name", Network.getMatchmakingClient().getProfile().getNick());
+            String default_name = i18n("default_name", Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getNick());
             label_default_name = new Label(default_name, Skin.getSkin().getEditFont());
             editline_name.append(default_name);
             if (Renderer.isRegistered())
@@ -153,7 +153,7 @@ public final class TerrainMenu extends Group {
         cb_rated = new CheckBox(false, i18n("rated_game"), rated_tip);
         if (multiplayer) {
             standard.addChild(cb_rated);
-            cb_rated.setDisabled(Network.getMatchmakingClient().getProfile() == null || Network.getMatchmakingClient().getProfile().getWins() < GameSession.MIN_WINS_FOR_RANKING);
+            cb_rated.setDisabled(Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile() == null || Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getWins() < GameSession.MIN_WINS_FOR_RANKING);
         }
 
         // gamespeed

@@ -20,6 +20,7 @@ import com.oddlabs.tt.form.WarningForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.GlobalsInit;
 import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Languages;
@@ -69,8 +70,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
+
 public final class Renderer implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(Renderer.class.getName());
+    private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
 
     private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
@@ -96,7 +99,7 @@ public final class Renderer implements AutoCloseable {
     private AmbientAudio ambient;
 
     private final Window window = new com.oddlabs.tt.window.LWJGL3Window();
-
+    private final Network network = new Network();
     private final LocalInput localInput = new LocalInput(window);
 
     private @Nullable Cheat cheat = new Cheat();
@@ -143,6 +146,10 @@ public final class Renderer implements AutoCloseable {
 
     public @NonNull LocalEventQueue getEventQueue() {
         return LocalEventQueue.getQueue();
+    }
+
+    public @NonNull Network getNetwork() {
+        return network;
     }
 
     public @NonNull RenderContext getRenderContext() {
@@ -733,7 +740,7 @@ public final class Renderer implements AutoCloseable {
         boolean is_network_created;
         try {
             network.initSelector();
-            com.oddlabs.util.Utils.tryGetLoopbackAddress();
+            tryGetLoopbackAddress();
             is_network_created = true;
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to initialize network", e);

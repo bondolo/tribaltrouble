@@ -10,6 +10,7 @@ import com.oddlabs.tt.net.ChatCommand;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -148,7 +149,7 @@ public class ChatPanel extends Panel implements ChatListener {
     }
 
     private void refreshMessages() {
-        List<@NonNull String> messages = Network.getMatchmakingClient().getChatRoomHistory();
+        List<@NonNull String> messages = Renderer.getRenderer().getNetwork().getMatchmakingClient().getChatRoomHistory();
         chat_box.clear();
         boolean first = true;
         for (var message : messages) {
@@ -185,7 +186,7 @@ public class ChatPanel extends Panel implements ChatListener {
             String nick = user.getNick();
             switch (item_index) {
                 case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, nick));
-                case PULLDOWN_INDEX_INFO -> Network.getMatchmakingClient().requestInfo(gui_root, nick);
+                case PULLDOWN_INDEX_INFO -> Renderer.getRenderer().getNetwork().getMatchmakingClient().requestInfo(gui_root, nick);
                 case PULLDOWN_INDEX_IGNORE -> {
                     if (ChatCommand.isIgnoring(nick))
                         ChatCommand.unignore(gui_root.getInfoPrinter(), nick);

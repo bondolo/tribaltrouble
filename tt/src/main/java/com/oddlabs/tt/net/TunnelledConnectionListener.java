@@ -7,6 +7,7 @@ import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.HostSequenceID;
+import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -21,7 +22,7 @@ public final class TunnelledConnectionListener extends AbstractConnectionListene
 
     public TunnelledConnectionListener(ConnectionListenerInterface listener_interface) {
         super(listener_interface);
-        Network.getMatchmakingClient().registerTunnelledListener(this);
+        Renderer.getRenderer().getNetwork().getMatchmakingClient().registerTunnelledListener(this);
     }
 
     public void requestTunnelledConnection(@NonNull HostSequenceID address, InetAddress inet_address, InetAddress local_address, Profile profile) {
@@ -55,7 +56,7 @@ public final class TunnelledConnectionListener extends AbstractConnectionListene
     @Override
     public void close() {
         if (open) {
-            Network.getMatchmakingClient().unregisterTunnelledListener(this);
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().unregisterTunnelledListener(this);
             open = false;
         }
     }

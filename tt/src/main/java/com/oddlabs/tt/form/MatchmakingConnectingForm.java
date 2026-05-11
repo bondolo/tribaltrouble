@@ -14,7 +14,7 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.MatchmakingListener;
-import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
@@ -52,8 +52,8 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
         // headline
         compileCanvas();
         centerPos();
-        Network.setMatchmakingListener(this);
-        Network.getMatchmakingClient().login(network, login, login_details);
+        Renderer.getRenderer().getNetwork().setMatchmakingListener(this);
+        Renderer.getRenderer().getNetwork().getMatchmakingClient().login(network, login, login_details);
     }
 
     @Override
@@ -84,7 +84,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
     @Override
     public void doRemove() {
         super.doRemove();
-        Network.setMatchmakingListener(null);
+        Renderer.getRenderer().getNetwork().setMatchmakingListener(null);
     }
 
     @Override
@@ -121,6 +121,6 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
 
     @Override
     protected void doCancel() {
-        Network.getMatchmakingClient().close();
+        Renderer.getRenderer().getNetwork().getMatchmakingClient().close();
     }
 }

@@ -78,8 +78,8 @@ public final class Server implements ConnectionListenerInterface {
         local_listener.close();
         if (tunnelled_listener != null)
             tunnelled_listener.close();
-        if (register_server && Network.getMatchmakingClient().isConnected()) {
-            Network.getMatchmakingClient().getInterface().unregisterGame();
+        if (register_server && Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().unregisterGame();
         }
     }
 
@@ -266,12 +266,12 @@ public final class Server implements ConnectionListenerInterface {
         String name;
         TunnelAddress address;
         if (remote_address instanceof InetAddress) {
-            address = Network.getMatchmakingClient().getLocalAddress();
+            address = Renderer.getRenderer().getNetwork().getMatchmakingClient().getLocalAddress();
             if (register_server) {
                 tunnelled_listener = new TunnelledConnectionListener(this);
-                Network.getMatchmakingClient().getInterface().registerGame(game);
+                Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().registerGame(game);
             }
-            Profile profile = Network.getMatchmakingClient().getProfile();
+            Profile profile = Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile();
             if (profile != null) {
                 name = profile.getNick();
                 rating = profile.getRating();

@@ -16,6 +16,7 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.guievent.RowListener;
 import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
@@ -112,7 +113,7 @@ public final class ProfilesForm extends Form {
 
     @Override
     protected void doCancel() {
-        Network.getMatchmakingClient().close();
+        Renderer.getRenderer().getNetwork().getMatchmakingClient().close();
     }
 
     public void receivedProfiles(Profile @NonNull [] profiles, String last_nick) {
@@ -134,7 +135,7 @@ public final class ProfilesForm extends Form {
     }
 
     private void join(String nick) {
-        Network.getMatchmakingClient().setProfile(nick);
+        Renderer.getRenderer().getNetwork().getMatchmakingClient().setProfile(nick);
         main_menu.setMenuCentered(game_menu);
     }
 
@@ -147,8 +148,8 @@ public final class ProfilesForm extends Form {
             } else {
                 String confirm_str = i18n("confirm_delete", nick);
                 confirm_delete_form = new QuestionForm(confirm_str, (_, _, _, _) -> {
-                    Network.getMatchmakingClient().deleteProfile(nick);
-                    Network.getMatchmakingClient().requestProfiles();
+                    Renderer.getRenderer().getNetwork().getMatchmakingClient().deleteProfile(nick);
+                    Renderer.getRenderer().getNetwork().getMatchmakingClient().requestProfiles();
                 });
                 gui_root.addModalForm(confirm_delete_form);
             }

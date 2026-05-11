@@ -10,6 +10,7 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.WorldParameters;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.UIRenderer;
 import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.viewer.InGameInfo;
@@ -64,9 +65,9 @@ final class WorldStarter implements LoadCallback {
         if (initial_action != null)
             initial_action.run(viewer);
         Participant[] participants = getParticipants(viewer, player_slots);
-        if (Network.getMatchmakingClient().isConnected()) {
+        if (Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
             GameSession game_session = new GameSession(session_id, participants, ingame_info.isRated());
-            Network.getMatchmakingClient().getInterface().gameStartedNotify(game_session);
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
         }
         IO.println("PeerHub created (session_id = " + session_id + ") Player list:");
         return viewer.getRenderer();
