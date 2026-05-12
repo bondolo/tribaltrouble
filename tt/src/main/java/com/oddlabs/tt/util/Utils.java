@@ -51,18 +51,6 @@ public final class Utils {
         return Path.of(System.getProperty("user.dir"));
     }
 
-    public static @NonNull FloatBuffer toBuffer(float @NonNull [] floats) {
-        return BufferUtils.createFloatBuffer(floats.length)
-                .put(floats)
-                .rewind();
-    }
-
-    public static @NonNull ShortBuffer toBuffer(short @NonNull [] shorts) {
-        return BufferUtils.createShortBuffer(shorts.length)
-                .put(shorts)
-                .rewind();
-    }
-
     public static @NonNull ByteBuffer ioResourceToByteBuffer(@NonNull URL url) throws IOException {
         try (InputStream is = url.openStream()) {
             byte[] bytes = is.readAllBytes();

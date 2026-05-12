@@ -19,11 +19,6 @@ public final class FloatVBO extends VBO {
         put(initial_data);
     }
 
-    public FloatVBO(int usage, float @NonNull [] initial_data) {
-        this(usage, initial_data.length);
-        put(initial_data);
-    }
-
     public void vertexAttribPointer(int location, int size, int stride, long offset) {
         bind();
         GL20.glVertexAttribPointer(location, size, GL11.GL_FLOAT, false, stride, offset);
@@ -31,10 +26,6 @@ public final class FloatVBO extends VBO {
 
     public void put(@NonNull FloatBuffer buffer) {
         putSubData(0, buffer);
-    }
-
-    public void put(float @NonNull [] buffer) {
-        putSubData(0, Utils.toBuffer(buffer));
     }
 
     public void putSubData(int index, @NonNull FloatBuffer buffer) {

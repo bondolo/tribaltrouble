@@ -44,10 +44,6 @@ public final class ShortVBO extends VBO {
         buffer.position(buffer.limit());
     }
 
-    public void put(short @NonNull [] buffer) {
-        put(Utils.toBuffer(buffer));
-    }
-
     public void drawElements(int mode, int count, int index) {
         registerTrianglesRendered(mode, count);
         bind();
