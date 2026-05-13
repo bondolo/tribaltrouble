@@ -37,9 +37,10 @@ public final class GUI implements Animated {
         return gui_root;
     }
 
-    public void newFade(@Nullable Fadable fadable, @NonNull GUIRoot gui_root, @Nullable UIRenderer renderer) {
+    public @NonNull GUIRoot newFade(@Nullable Fadable fadable, @NonNull GUIRoot gui_root, @Nullable UIRenderer renderer) {
         fade = new Fade(fadable, gui_root, renderer);
         Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
+        return gui_root;
     }
 
     public @NonNull GUIRoot createRoot() {
