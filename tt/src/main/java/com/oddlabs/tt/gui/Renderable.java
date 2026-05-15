@@ -133,7 +133,7 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
                 }
                 renderer.flush();
 
-                float scale = getGlobalScale();
+                float scale = getPhysicalScale();
                 renderer.setScissor((int) (getRootX() * scale), (int) (getRootY() * scale),
                         (int) (getWidth() * scale), (int) (getHeight() * scale));
 
@@ -263,5 +263,9 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
 
     protected float getGlobalScale() {
         return parent != null ? parent.getGlobalScale() : 1.0f;
+    }
+
+    protected float getPhysicalScale() {
+        return parent != null ? parent.getPhysicalScale() : 1.0f;
     }
 }

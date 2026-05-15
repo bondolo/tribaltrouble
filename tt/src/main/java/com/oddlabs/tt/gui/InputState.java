@@ -182,7 +182,7 @@ public final class InputState {
     }
 
     public void keyTyped(int key_code, int key_codepoint) {
-        var key = Key.fromGlfwCode(key_code);
+        var key = Key.fromSdlCode(key_code);
         if (Key.KEY_UNKNOWN != key || key_codepoint != 0) {
             GUIObject focused = gui_root.getGlobalFocus();
             KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, EnumSet.noneOf(Modifier.class), 1);

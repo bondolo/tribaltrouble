@@ -1,97 +1,60 @@
 package com.oddlabs.tt.window;
 
-import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.input.LWJGL3InputProvider;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.Callbacks;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.sdl.SDL_DisplayMode;
+import org.lwjgl.sdl.SDL_Event;
+import org.lwjgl.sdl.SDL_Rect;
+import org.lwjgl.sdl.SDL_Surface;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.JNI;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.StructBuffer;
 import org.lwjgl.system.macosx.ObjCRuntime;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.lwjgl.glfw.GLFW.GLFW_AUTO_ICONIFY;
-import static org.lwjgl.glfw.GLFW.GLFW_COCOA_RETINA_FRAMEBUFFER;
-import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
-import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
-import static org.lwjgl.glfw.GLFW.GLFW_DECORATED;
-import static org.lwjgl.glfw.GLFW.GLFW_DONT_CARE;
-import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
-import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
-import static org.lwjgl.glfw.GLFW.GLFW_ICONIFIED;
-import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_CORE_PROFILE;
-import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_FORWARD_COMPAT;
-import static org.lwjgl.glfw.GLFW.GLFW_OPENGL_PROFILE;
-import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
-import static org.lwjgl.glfw.GLFW.GLFW_SAMPLES;
-import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
-import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
-import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
-import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
-import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
-import static org.lwjgl.glfw.GLFW.glfwFocusWindow;
-import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
-import static org.lwjgl.glfw.GLFW.glfwGetMonitorContentScale;
-import static org.lwjgl.glfw.GLFW.glfwGetMonitorPhysicalSize;
-import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
-import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
-import static org.lwjgl.glfw.GLFW.glfwGetVideoModes;
-import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
-import static org.lwjgl.glfw.GLFW.glfwGetWindowContentScale;
-import static org.lwjgl.glfw.GLFW.glfwGetWindowMonitor;
-import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
-import static org.lwjgl.glfw.GLFW.glfwIconifyWindow;
-import static org.lwjgl.glfw.GLFW.glfwInit;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
-import static org.lwjgl.glfw.GLFW.glfwPollEvents;
-import static org.lwjgl.glfw.GLFW.glfwRestoreWindow;
-import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowCloseCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowIcon;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowAttrib;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowMonitor;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowSize;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowSizeLimits;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowTitle;
-import static org.lwjgl.glfw.GLFW.glfwShowWindow;
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
-import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
-import static org.lwjgl.glfw.GLFW.glfwTerminate;
-import static org.lwjgl.glfw.GLFW.glfwWindowHint;
+import static org.lwjgl.sdl.SDLError.SDL_GetError;
+import static org.lwjgl.sdl.SDLEvents.*;
+import static org.lwjgl.sdl.SDLInit.SDL_INIT_VIDEO;
+import static org.lwjgl.sdl.SDLInit.SDL_Init;
+import static org.lwjgl.sdl.SDLInit.SDL_Quit;
+import static org.lwjgl.sdl.SDLPixels.SDL_BITSPERPIXEL;
+import static org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888;
+import static org.lwjgl.sdl.SDLProperties.SDL_GetNumberProperty;
+import static org.lwjgl.sdl.SDLStdinc.nSDL_free;
+import static org.lwjgl.sdl.SDLSurface.SDL_CreateSurfaceFrom;
+import static org.lwjgl.sdl.SDLSurface.SDL_DestroySurface;
+import static org.lwjgl.sdl.SDLVideo.*;
 
+/**
+ * SDL 3 based implementation of the Window interface.
+ */
 public final class LWJGL3Window implements Window {
     private static final Logger logger = Logger.getLogger(LWJGL3Window.class.getSimpleName());
     private static final String os = System.getProperty("os.name").toLowerCase();
     private static final boolean isMac = os.contains("mac");
 
+    private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
     private static long objc_msgSend = MemoryUtil.NULL;
@@ -133,197 +96,172 @@ public final class LWJGL3Window implements Window {
     }
 
     private long windowHandle = MemoryUtil.NULL;
+    private long glContext = MemoryUtil.NULL;
     private @NonNull String title = "Tribal Trouble";
     private boolean resized;
     private boolean closeRequested;
-    private boolean isFullscreen;
+    private boolean active;
+    private boolean iconified;
+    private @Nullable LWJGL3InputProvider inputProvider;
+
+    // Use realistic initial defaults to avoid assertion failures in UI code
+    // and ensure scale calculation works correctly before window is created.
+    private int cachedWidth = SerializableDisplayMode.MIN_WIDTH;
+    private int cachedHeight = SerializableDisplayMode.MIN_HEIGHT;
+    private int cachedLogicalWidth = SerializableDisplayMode.MIN_WIDTH;
+    private int cachedLogicalHeight = SerializableDisplayMode.MIN_HEIGHT;
 
     public LWJGL3Window() {
-        ensureGLFW();
+        ensureSDL();
     }
 
-    private static void ensureGLFW() {
+    public void setInputProvider(@Nullable LWJGL3InputProvider inputProvider) {
+        this.inputProvider = inputProvider;
+    }
+
+    private static void ensureSDL() {
         if (initialized.compareAndSet(false, true)) {
-            GLFWErrorCallback.createPrint(System.err).set();
-            if (!glfwInit()) {
+            if (!SDL_Init(SDL_INIT_VIDEO)) {
                 initialized.set(false);
-                throw new IllegalStateException("Unable to initialize GLFW");
+                throw new IllegalStateException("Unable to initialize SDL: " + SDL_GetError());
             }
         }
     }
 
     @Override
     public void create(@NonNull SerializableDisplayMode mode, boolean fullscreen) {
-        this.isFullscreen = fullscreen;
+        logger.log(Level.INFO, "Creating window: " + mode + ", fullscreen: " + fullscreen);
+
+        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
+                : SDL_GetPrimaryDisplay();
+        if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+
+        float scale = getMonitorContentScale().x;
+        Vector2f logical = getLogicalSize((int) (mode.getWidth() / scale), (int) (mode.getHeight() / scale));
+        int width = (int) logical.x;
+        int height = (int) logical.y;
+
+        logger.log(Level.INFO, "Creating window with logical size: " + width + "x" + height + " (from physical: "
+                + mode.getWidth() + "x" + mode.getHeight() + ")");
 
         if (windowHandle != MemoryUtil.NULL) {
             // Reconfigure existing window
-            float scale = getMonitorContentScale().x;
-            int logicalW = (int) (mode.getWidth() / scale);
-            int logicalH = (int) (mode.getHeight() / scale);
-            logger.log(Level.INFO, "Reconfiguring window: " + mode + " (logical: " + logicalW + "x" + logicalH
-                    + "), fullscreen: " + fullscreen + ", scale: " + scale);
-
-            long monitor = (fullscreen && !isMac) ? glfwGetPrimaryMonitor() : MemoryUtil.NULL;
-            int refreshRate = fullscreen ? mode.getFrequency() : GLFW_DONT_CARE;
+            SDL_SetWindowSize(windowHandle, width, height);
 
             if (fullscreen) {
-                if (isMac) {
-                    glfwSetWindowAttrib(windowHandle, GLFW_DECORATED, GLFW_FALSE);
-                    long currentMonitor = getCurrentMonitor();
-                    GLFWVidMode vidmode = glfwGetVideoMode(currentMonitor);
-                    if (vidmode != null) {
-                        glfwSetWindowMonitor(windowHandle, MemoryUtil.NULL, 0, 0, vidmode.width(), vidmode.height(),
-                                GLFW_DONT_CARE);
-                    }
-                    setMacPresentationOptions(10);
-                } else {
-                    glfwSetWindowMonitor(windowHandle, monitor, 0, 0, logicalW, logicalH, refreshRate);
+                // By passing NULL for the mode, SDL3 will automatically pick the best fullscreen 
+                // mode that matches the window's current dimensions.
+                if (!SDL_SetWindowFullscreenMode(windowHandle, null)) {
+                    logger.log(Level.WARNING, "Failed to set fullscreen mode: " + SDL_GetError());
                 }
-            } else {
-                if (isMac) {
-                    glfwSetWindowAttrib(windowHandle, GLFW_DECORATED, GLFW_TRUE);
-                    setMacPresentationOptions(0);
-                }
-                // Windowed mode: center on screen
-                long currentMonitor = getCurrentMonitor();
-                GLFWVidMode vidmode = glfwGetVideoMode(currentMonitor);
-                if (vidmode != null) {
-                    int x = (vidmode.width() - logicalW) / 2;
-                    int y = (vidmode.height() - logicalH) / 2;
-                    glfwSetWindowMonitor(windowHandle, MemoryUtil.NULL, x, y, logicalW, logicalH,
-                            refreshRate);
-                }
+            }
 
-                // After exiting fullscreen, the content scale might have changed (especially on macOS Retina).
-                // Re-calculate logical size with the new scale to avoid 2x sized windows.
-                float newScale = getMonitorContentScale().x;
-                if (newScale != scale) {
-                    logger.log(Level.INFO, "Scale changed from " + scale + " to " + newScale
-                            + " after exiting fullscreen. Adjusting window size.");
-                    scale = newScale;
-                    logicalW = (int) (mode.getWidth() / scale);
-                    logicalH = (int) (mode.getHeight() / scale);
-                    glfwSetWindowSize(windowHandle, logicalW, logicalH);
-
-                    // Re-center
-                    vidmode = glfwGetVideoMode(currentMonitor);
-                    if (vidmode != null) {
-                        glfwSetWindowPos(windowHandle, (vidmode.width() - logicalW) / 2, (vidmode.height() - logicalH)
-                                / 2);
-                    }
-                }
+            if (!SDL_SetWindowFullscreen(windowHandle, fullscreen)) {
+                logger.log(Level.WARNING, "Failed to set fullscreen state to " + fullscreen + ": " + SDL_GetError());
             }
 
             if (!fullscreen) {
-                // Ensure the window size is exactly what we want, in case glfwSetWindowMonitor didn't do it perfectly
-                glfwSetWindowSize(windowHandle, logicalW, logicalH);
+                SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
             }
 
-            glfwSetWindowSizeLimits(windowHandle, (int) (SerializableDisplayMode.MIN_WIDTH / scale),
-                    (int) (SerializableDisplayMode.MIN_HEIGHT / scale),
-                    GLFW_DONT_CARE, GLFW_DONT_CARE);
-
-            glfwFocusWindow(windowHandle);
+            SDL_RaiseWindow(windowHandle);
+            SDL_ShowWindow(windowHandle);
             syncViewport();
-            int[] actualW = new int[1];
-            int[] actualH = new int[1];
-            glfwGetWindowSize(windowHandle, actualW, actualH);
-            logger.log(Level.INFO, "Reconfiguration complete. Logical window size: " + actualW[0] + "x" + actualH[0]
-                    + ", Framebuffer size: " + getWidth() + "x" + getHeight());
+
+            // Fallback: if SDL reported 0, use the requested dimensions
+            if (cachedWidth <= 0) cachedWidth = mode.getWidth();
+            if (cachedHeight <= 0) cachedHeight = mode.getHeight();
             return;
         }
 
-        float scale = getMonitorContentScale().x;
-        int logicalW = (int) (mode.getWidth() / scale);
-        int logicalH = (int) (mode.getHeight() / scale);
-        logger.log(Level.INFO, "Creating window: " + mode + " (logical: " + logicalW + "x" + logicalH
-                + "), fullscreen: " + fullscreen + ", scale: " + scale);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | (DEBUG
+                ? SDL_GL_CONTEXT_DEBUG_FLAG : 0));
 
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
-        if (isMac) {
-            glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
-            if (fullscreen) {
-                glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-                GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-                if (vidmode != null) {
-                    logicalW = vidmode.width();
-                    logicalH = vidmode.height();
+        long flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+        if (fullscreen) {
+            flags |= SDL_WINDOW_FULLSCREEN;
+        }
+
+        windowHandle = SDL_CreateWindow(title, width, height, flags);
+        if (windowHandle == MemoryUtil.NULL) {
+            throw new IllegalStateException("Failed to create the SDL window: " + SDL_GetError());
+        }
+
+        SDL_SetWindowMinimumSize(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT);
+
+        if (!fullscreen) {
+            SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        }
+
+        glContext = SDL_GL_CreateContext(windowHandle);
+        if (glContext == MemoryUtil.NULL) {
+            throw new IllegalStateException("Failed to create the OpenGL context: " + SDL_GetError());
+        }
+
+        SDL_GL_MakeCurrent(windowHandle, glContext);
+        GL.createCapabilities();
+
+        SDL_ShowWindow(windowHandle);
+        SDL_RaiseWindow(windowHandle);
+
+        // Initial state
+        active = true;
+        iconified = false;
+
+        syncViewport();
+
+        // Fallback: if SDL reported 0, use the requested dimensions
+        if (cachedWidth <= 0) cachedWidth = mode.getWidth();
+        if (cachedHeight <= 0) cachedHeight = mode.getHeight();
+    }
+
+    @Override
+    public float getPixelDensity() {
+        if (windowHandle != MemoryUtil.NULL) {
+            return SDL_GetWindowPixelDensity(windowHandle);
+        }
+        int displayID = SDL_GetPrimaryDisplay();
+        SDL_DisplayMode mode = SDL_GetDesktopDisplayMode(displayID);
+        return (mode != null) ? mode.pixel_density() : 1.0f;
+    }
+
+    private @NonNull Vector2f getLogicalSize(int logicalWidth, int logicalHeight) {
+        int width = logicalWidth;
+        int height = logicalHeight;
+
+        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
+                : SDL_GetPrimaryDisplay();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_Rect usableBounds = SDL_Rect.malloc(stack);
+            if (SDL_GetDisplayUsableBounds(displayID, usableBounds)) {
+                // Limit the window size to the usable bounds (screen size minus taskbar/menubar)
+                if (width > usableBounds.w()) {
+                    width = usableBounds.w();
+                }
+                if (height > usableBounds.h()) {
+                    height = usableBounds.h();
                 }
             }
         }
-
-        Settings settings = Renderer.getRenderer().getSettings();
-        if (settings.view_samples > 0) {
-            glfwWindowHint(GLFW_SAMPLES, settings.view_samples);
-        }
-
-        // Request an OpenGL 4.1 Core Profile context
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-
-        long monitor = MemoryUtil.NULL;
-        if (fullscreen && !isMac) {
-            monitor = glfwGetPrimaryMonitor();
-        }
-
-        windowHandle = glfwCreateWindow(logicalW, logicalH, title, monitor, MemoryUtil.NULL);
-        if (windowHandle == MemoryUtil.NULL) {
-            throw new IllegalStateException("Failed to create the GLFW window");
-        }
-
-        glfwSetWindowSizeLimits(windowHandle, (int) (SerializableDisplayMode.MIN_WIDTH / scale),
-                (int) (SerializableDisplayMode.MIN_HEIGHT / scale),
-                GLFW_DONT_CARE, GLFW_DONT_CARE);
-
-        // Center the window if not fullscreen, or position at (0,0) if borderless fullscreen on Mac
-        if (fullscreen && isMac) {
-            glfwSetWindowPos(windowHandle, 0, 0);
-            setMacPresentationOptions(10);
-        } else if (!fullscreen) {
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-            if (vidmode != null) {
-                glfwSetWindowPos(
-                        windowHandle,
-                        (vidmode.width() - logicalW) / 2,
-                        (vidmode.height() - logicalH) / 2
-                );
-            }
-        }
-
-        // Setup callbacks
-        glfwSetFramebufferSizeCallback(windowHandle, (_, fw, fh) -> {
-            this.resized = true;
-            Renderer.getRenderer().getRenderContext().setViewport(0, 0, fw, fh);
-        });
-        glfwSetWindowCloseCallback(windowHandle, (_) -> {
-            setCloseRequested(true);
-            glfwSetWindowShouldClose(windowHandle, false); // Cancel the actual close immediately
-        });
-
-        glfwMakeContextCurrent(windowHandle);
-        GL.createCapabilities();
-
-        // Initial viewport sync
-        syncViewport();
-
-        glfwShowWindow(windowHandle);
-        glfwFocusWindow(windowHandle);
+        return new Vector2f(width, height);
     }
 
     private void syncViewport() {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer fw = stack.mallocInt(1);
-            IntBuffer fh = stack.mallocInt(1);
-            glfwGetFramebufferSize(windowHandle, fw, fh);
-            Renderer.getRenderer().getRenderContext().setViewport(0, 0, fw.get(0), fh.get(0));
-        }
+        if (windowHandle == MemoryUtil.NULL) return;
+        updateCachedDimensions();
+        Renderer.getRenderer().getRenderContext().setViewport(0, 0, cachedWidth, cachedHeight);
     }
 
     @Override
@@ -331,14 +269,16 @@ public final class LWJGL3Window implements Window {
         if (isMac) {
             setMacPresentationOptions(0);
         }
+        if (glContext != MemoryUtil.NULL) {
+            SDL_GL_DestroyContext(glContext);
+            glContext = MemoryUtil.NULL;
+        }
         if (windowHandle != MemoryUtil.NULL) {
-            Callbacks.glfwFreeCallbacks(windowHandle);
-            glfwDestroyWindow(windowHandle);
+            SDL_DestroyWindow(windowHandle);
             windowHandle = MemoryUtil.NULL;
         }
         if (initialized.compareAndSet(true, false)) {
-            glfwTerminate();
-            Objects.requireNonNull(glfwSetErrorCallback(null)).free();
+            SDL_Quit();
         }
     }
 
@@ -349,19 +289,46 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public void update() {
-        glfwSwapBuffers(windowHandle);
+        SDL_GL_SwapWindow(windowHandle);
     }
 
     @Override
     public void pollEvents() {
-        glfwPollEvents();
+        pollEvents(0);
     }
 
     public void pollEvents(int timeoutMs) {
-        if (timeoutMs > 0) {
-            GLFW.glfwWaitEventsTimeout(timeoutMs / 1000.0);
-        } else {
-            glfwPollEvents();
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_Event event = SDL_Event.malloc(stack);
+            boolean hasEvent;
+            if (timeoutMs > 0) {
+                hasEvent = SDL_WaitEventTimeout(event, timeoutMs);
+            } else {
+                hasEvent = SDL_PollEvent(event);
+            }
+
+            while (hasEvent) {
+                if (inputProvider != null) {
+                    inputProvider.processEvent(event);
+                }
+                switch (event.type()) {
+                    case SDL_EVENT_QUIT -> setCloseRequested(true);
+                    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED, SDL_EVENT_WINDOW_RESIZED -> {
+                        syncViewport();
+                        resized = true;
+                    }
+                    case SDL_EVENT_WINDOW_FOCUS_GAINED -> active = true;
+                    case SDL_EVENT_WINDOW_FOCUS_LOST -> active = false;
+                    case SDL_EVENT_WINDOW_MINIMIZED -> iconified = true;
+                    case SDL_EVENT_WINDOW_RESTORED -> iconified = false;
+                    case SDL_EVENT_WINDOW_EXPOSED -> {
+                        // On some platforms, window might be focused but hidden.
+                        // Exposed means it's visible again.
+                        if (iconified) iconified = false;
+                    }
+                }
+                hasEvent = SDL_PollEvent(event);
+            }
         }
     }
 
@@ -380,19 +347,19 @@ public final class LWJGL3Window implements Window {
     @Override
     public boolean isActive() {
         if (isMac) {
-            return isMacAppActive() || glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE;
+            return isMacAppActive() || active;
         }
-        return glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE;
+        return active;
     }
 
     @Override
     public boolean isVisible() {
-        return glfwGetWindowAttrib(windowHandle, GLFW_VISIBLE) == GLFW_TRUE;
+        return (SDL_GetWindowFlags(windowHandle) & SDL_WINDOW_HIDDEN) == 0;
     }
 
     @Override
     public boolean isIconified() {
-        return glfwGetWindowAttrib(windowHandle, GLFW_ICONIFIED) == GLFW_TRUE;
+        return iconified;
     }
 
     @Override
@@ -415,112 +382,125 @@ public final class LWJGL3Window implements Window {
             IntBuffer h = stack.mallocInt(1);
             IntBuffer comp = stack.mallocInt(1);
 
-            // STBImage requires absolute path or relative to CWD.
-            ByteBuffer image = STBImage.stbi_load(imagePath.toString(), w, h, comp, 4);
-            if (image == null) {
+            ByteBuffer pixels = STBImage.stbi_load(imagePath.toString(), w, h, comp, 4);
+            if (pixels == null) {
                 System.err.println("Failed to load icon: " + imagePath + " Reason: " + STBImage.stbi_failure_reason());
                 return;
             }
 
-            GLFWImage.Buffer icons = GLFWImage.malloc(1, stack);
-            icons.position(0);
-            icons.width(w.get(0));
-            icons.height(h.get(0));
-            icons.pixels(image);
+            SDL_Surface surface = SDL_CreateSurfaceFrom(w.get(0), h.get(0), SDL_PIXELFORMAT_ABGR8888, pixels, w.get(0)
+                    * 4);
+            if (surface != null) {
+                SDL_SetWindowIcon(windowHandle, surface);
+                SDL_DestroySurface(surface);
+            }
 
-            glfwSetWindowIcon(windowHandle, icons);
-
-            STBImage.stbi_image_free(image);
+            STBImage.stbi_image_free(pixels);
         }
     }
 
     @Override
     public void restore() {
-        glfwRestoreWindow(windowHandle);
+        SDL_RestoreWindow(windowHandle);
     }
 
     @Override
     public void minimize() {
-        glfwIconifyWindow(windowHandle);
+        SDL_MinimizeWindow(windowHandle);
     }
 
     @Override
     public void show() {
-        glfwShowWindow(windowHandle);
+        SDL_ShowWindow(windowHandle);
     }
 
     @Override
     public void focus() {
-        glfwFocusWindow(windowHandle);
+        if (isMac) {
+            // macOS focus fix: ensure events are flushed before raising window
+            // https://github.com/libsdl-org/SDL/issues/13920
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                SDL_Event event = SDL_Event.malloc(stack);
+                while (SDL_PollEvent(event)) {
+                    if (inputProvider != null) {
+                        inputProvider.processEvent(event);
+                    }
+                    // Handle critical window events during flush
+                    switch (event.type()) {
+                        case SDL_EVENT_QUIT -> setCloseRequested(true);
+                        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED -> resized = true;
+                    }
+                }
+            }
+        }
+        SDL_RaiseWindow(windowHandle);
     }
 
-    /**
-     * Returns the physical framebuffer width in pixels.
-     * Uses {@code glfwGetFramebufferSize}.
-     */
+    private void updateCachedDimensions() {
+        if (windowHandle == MemoryUtil.NULL) return;
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            SDL_GetWindowSizeInPixels(windowHandle, w, h);
+            int fw = w.get(0);
+            int fh = h.get(0);
+            if (fw > 0 && fh > 0) {
+                cachedWidth = fw;
+                cachedHeight = fh;
+            }
+
+            SDL_GetWindowSize(windowHandle, w, h);
+            int lw = w.get(0);
+            int lh = h.get(0);
+            if (lw > 0 && lh > 0) {
+                cachedLogicalWidth = lw;
+                cachedLogicalHeight = lh;
+            }
+        }
+    }
+
     @Override
     public int getWidth() {
-        assert windowHandle != MemoryUtil.NULL;
-        int[] w = new int[1];
-        int[] h = new int[1];
-        glfwGetFramebufferSize(windowHandle, w, h);
-        return w[0];
+        return cachedWidth;
     }
 
-    /**
-     * Returns the physical framebuffer height in pixels.
-     * Uses {@code glfwGetFramebufferSize}.
-     */
     @Override
     public int getHeight() {
-        assert windowHandle != MemoryUtil.NULL;
-        int[] w = new int[1];
-        int[] h = new int[1];
-        glfwGetFramebufferSize(windowHandle, w, h);
-        return h[0];
+        return cachedHeight;
     }
 
-    /**
-     * Returns the logical window width in screen coordinates.
-     * Uses {@code glfwGetWindowSize}.
-     */
     @Override
     public int getLogicalWidth() {
-        assert windowHandle != MemoryUtil.NULL;
-        int[] w = new int[1];
-        int[] h = new int[1];
-        GLFW.glfwGetWindowSize(windowHandle, w, h);
-        return w[0];
+        return cachedLogicalWidth;
     }
 
-    /**
-     * Returns the logical window height in screen coordinates.
-     * Uses {@code glfwGetWindowSize}.
-     */
     @Override
     public int getLogicalHeight() {
-        assert windowHandle != MemoryUtil.NULL;
-        int[] w = new int[1];
-        int[] h = new int[1];
-        GLFW.glfwGetWindowSize(windowHandle, w, h);
-        return h[0];
+        return cachedLogicalHeight;
     }
 
     @Override
     public void setTitle(@NonNull String title) {
         this.title = title;
         if (windowHandle != MemoryUtil.NULL) {
-            glfwSetWindowTitle(windowHandle, title);
+            SDL_SetWindowTitle(windowHandle, title);
         }
     }
 
     @Override
     public void setVSyncEnabled(boolean enabled) {
-        glfwSwapInterval(enabled ? 1 : 0);
+        SDL_GL_SetSwapInterval(enabled ? 1 : 0);
     }
 
     @Override
-    public void setFullscreen(boolean fullscreen) throws Exception {
+    public void setFullscreen(boolean fullscreen) {
+        if (windowHandle != MemoryUtil.NULL) {
+            // Optimization: if we're just toggling the state for the same resolution
+            if (!SDL_SetWindowFullscreen(windowHandle, fullscreen)) {
+                logger.log(Level.WARNING, "Failed to toggle fullscreen: " + SDL_GetError());
+            }
+            return;
+        }
         create(getDisplayMode(), fullscreen);
     }
 
@@ -531,6 +511,12 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public @NonNull List<@NonNull SerializableDisplayMode> getWindowedDisplayModes() {
+        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
+                : SDL_GetPrimaryDisplay();
+        if (displayID == 0) {
+            return List.of();
+        }
+
         int[][] standardResolutions = {
                 {1024, 768}, {1280, 720}, {1280, 800}, {1280, 1024},
                 {1440, 900}, {1600, 900}, {1600, 1200}, {1680, 1050},
@@ -538,26 +524,23 @@ public final class LWJGL3Window implements Window {
                 {3440, 1440}, {3840, 2160}
         };
 
-        long monitor = getCurrentMonitor();
+        float scale = getMonitorContentScale().x;
         int maxW = Integer.MAX_VALUE;
         int maxH = Integer.MAX_VALUE;
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer x = stack.mallocInt(1);
-            IntBuffer y = stack.mallocInt(1);
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            GLFW.glfwGetMonitorWorkarea(monitor, x, y, w, h);
-            maxW = w.get(0);
-            maxH = h.get(0);
+            SDL_Rect usable = SDL_Rect.malloc(stack);
+            if (SDL_GetDisplayUsableBounds(displayID, usable)) {
+                maxW = usable.w();
+                maxH = usable.h();
+            }
         }
 
         final int finalMaxW = maxW;
         final int finalMaxH = maxH;
         var current = getDisplayMode();
-        float scale = getMonitorContentScale().x;
 
-        var modes = Arrays.stream(standardResolutions)
+        List<SerializableDisplayMode> modes = Arrays.stream(standardResolutions)
                 .filter(res -> (res[0] / scale) <= finalMaxW && (res[1] / scale) <= finalMaxH)
                 .map(res -> new SerializableDisplayMode(res[0], res[1], current.getBitsPerPixel(), current
                         .getFrequency()))
@@ -576,28 +559,110 @@ public final class LWJGL3Window implements Window {
                 .toList();
     }
 
+    private @NonNull Vector2f getMonitorPhysicalResolution(int displayID) {
+        SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
+        if (desktop == null) {
+            return new Vector2f(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT);
+        }
+        int maxW = (int) (desktop.w() * desktop.pixel_density());
+        int maxH = (int) (desktop.h() * desktop.pixel_density());
+
+        PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
+        if (pb != null) {
+            int n = pb.remaining();
+            int nativeMaxW = 0;
+            int nativeMaxH = 0;
+            for (int i = 0; i < n; i++) {
+                SDL_DisplayMode mode = SDL_DisplayMode.create(pb.get(i));
+                if (mode.pixel_density() <= 1.0f) {
+                    if (mode.w() > nativeMaxW) {
+                        nativeMaxW = mode.w();
+                    }
+                    if (mode.h() > nativeMaxH) {
+                        nativeMaxH = mode.h();
+                    }
+                }
+            }
+            nSDL_free(pb.address());
+            if (nativeMaxW > 0 && nativeMaxH > 0) {
+                maxW = nativeMaxW;
+                maxH = nativeMaxH;
+            }
+        }
+        return new Vector2f(maxW, maxH);
+    }
+
     @Override
     public @NonNull List<@NonNull SerializableDisplayMode> getAvailableDisplayModes() {
-        long monitor = getCurrentMonitor();
-        float scale = getMonitorContentScale().x;
+        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
+                : SDL_GetPrimaryDisplay();
+        if (displayID == 0) {
+            return List.of();
+        }
 
-        return Optional.ofNullable(monitor != MemoryUtil.NULL ? glfwGetVideoModes(monitor) : null).stream()
-                .flatMap(StructBuffer::stream)
-                .map(m -> {
-                    int bpp = m.redBits() + m.greenBits() + m.blueBits();
-                    if (bpp == 24) bpp = 32;
-                    // Convert to physical pixels
-                    return new SerializableDisplayMode((int) (m.width() * scale), (int) (m.height() * scale), bpp,
-                            m.refreshRate());
-                })
-                .filter(SerializableDisplayMode::isModeValid)
-                .collect(Collectors.toMap(
-                        // Only offer one mode per resolution, the highest bpp and frequency
-                        mode -> (mode.getWidth() << 16) + mode.getHeight(),
-                        Function.identity(),
-                        BinaryOperator.maxBy(Comparator.comparing(SerializableDisplayMode::getBitsPerPixel)
-                                .thenComparing(SerializableDisplayMode::getFrequency))
-                )).values().stream()
+        SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
+        if (desktop == null) {
+            return List.of();
+        }
+
+        // On macOS, SDL3 display modes are returned in logical coordinates, not physical.
+        // Multiplying by pixel_density causes runaway resolution limits.
+        // We will treat the raw SDL_DisplayMode w/h as the target dimensions.
+        int nativeMaxW = desktop.w();
+        int nativeMaxH = desktop.h();
+
+        PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
+        if (pb != null) {
+            int n = pb.remaining();
+            for (int i = 0; i < n; i++) {
+                SDL_DisplayMode mode = SDL_DisplayMode.create(pb.get(i));
+                if (mode.w() > nativeMaxW) nativeMaxW = mode.w();
+                if (mode.h() > nativeMaxH) nativeMaxH = mode.h();
+            }
+        }
+
+        logger.info(String.format(Locale.ROOT, "Display Mode Discovery: Desktop=%dx%d, Density=%.2f, NativeMax=%dx%d",
+                desktop.w(), desktop.h(), desktop.pixel_density(), nativeMaxW, nativeMaxH));
+
+        // Key: width x height, Value: Best mode found for that resolution
+        Map<String, SerializableDisplayMode> resolutionToBestMode = new HashMap<>();
+
+        // Helper to process and potentially add a mode
+        java.util.function.Consumer<SDL_DisplayMode> processMode = (mode) -> {
+            int bpp = SDL_BITSPERPIXEL(mode.format());
+            if (bpp == 24) bpp = 32;
+
+            int width = mode.w();
+            int height = mode.h();
+            int freq = (int) mode.refresh_rate();
+
+            SerializableDisplayMode sMode = new SerializableDisplayMode(width, height, bpp, freq);
+            if (SerializableDisplayMode.isModeValid(sMode)) {
+                String key = width + "x" + height;
+                resolutionToBestMode.merge(key, sMode, (m1, m2) -> {
+                    // Prefer higher frequency
+                    if (m1.getFrequency() != m2.getFrequency()) {
+                        return m1.getFrequency() > m2.getFrequency() ? m1 : m2;
+                    }
+                    // Then higher BPP
+                    return m1.getBitsPerPixel() >= m2.getBitsPerPixel() ? m1 : m2;
+                });
+            }
+        };
+
+        // Add desktop mode
+        processMode.accept(desktop);
+
+        // Add fullscreen modes
+        if (pb != null) {
+            int n = pb.remaining();
+            for (int i = 0; i < n; i++) {
+                processMode.accept(SDL_DisplayMode.create(pb.get(i)));
+            }
+            nSDL_free(pb.address());
+        }
+
+        return resolutionToBestMode.values().stream()
                 .sorted(Comparator.reverseOrder())
                 .toList();
     }
@@ -615,23 +680,21 @@ public final class LWJGL3Window implements Window {
             height = SerializableDisplayMode.MIN_HEIGHT;
         }
 
-        long monitor = windowHandle != MemoryUtil.NULL ? glfwGetWindowMonitor(windowHandle) : MemoryUtil.NULL;
-        if (monitor == MemoryUtil.NULL) monitor = glfwGetPrimaryMonitor();
+        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
+                : SDL_GetPrimaryDisplay();
 
-        GLFWVidMode vidmode = glfwGetVideoMode(monitor);
         int freq = 60;
         int bpp = 32;
-
-        if (vidmode != null) {
-            freq = vidmode.refreshRate();
-            bpp = vidmode.redBits() + vidmode.greenBits() + vidmode.blueBits();
+        SDL_DisplayMode mode = SDL_GetDesktopDisplayMode(displayID);
+        if (mode != null) {
+            freq = (int) mode.refresh_rate();
+            bpp = SDL_BITSPERPIXEL(mode.format());
             if (bpp == 24) bpp = 32;
 
             if (windowHandle == MemoryUtil.NULL) {
-                // Return physical pixels
-                float scale = getMonitorContentScale().x;
-                width = (int) (vidmode.width() * scale);
-                height = (int) (vidmode.height() * scale);
+                // Return dimensions directly without multiplying by density
+                width = mode.w();
+                height = mode.h();
             }
         }
 
@@ -644,8 +707,8 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public void makeCurrent() throws Exception {
-        glfwMakeContextCurrent(windowHandle);
+    public void makeCurrent() {
+        SDL_GL_MakeCurrent(windowHandle, glContext);
     }
 
     public long getHandle() {
@@ -654,55 +717,70 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public boolean isFullscreen() {
-        return isFullscreen;
-    }
-
-    private long getCurrentMonitor() {
-        if (windowHandle != MemoryUtil.NULL) {
-            long monitor = glfwGetWindowMonitor(windowHandle);
-            if (monitor != MemoryUtil.NULL) {
-                return monitor;
-            }
-        }
-        return glfwGetPrimaryMonitor();
+        return windowHandle != MemoryUtil.NULL && (SDL_GetWindowFlags(windowHandle) & SDL_WINDOW_FULLSCREEN) != 0;
     }
 
     @Override
     public @NonNull Vector2f getMonitorPhysicalSize() {
-        long monitor = getCurrentMonitor();
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            glfwGetMonitorPhysicalSize(monitor, w, h);
-            return new Vector2f(w.get(0), h.get(0));
-        }
+        int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
+                : SDL_GetPrimaryDisplay();
+        int props = SDL_GetDisplayProperties(displayID);
+        // SDL 3 property keys for physical dimensions in millimeters
+        long w = SDL_GetNumberProperty(props, "SDL.display.physical_width", 0);
+        long h = SDL_GetNumberProperty(props, "SDL.display.physical_height", 0);
+        return new Vector2f((float) w, (float) h);
     }
 
     @Override
     public @NonNull Vector2f getMonitorContentScale() {
-        long monitor = getCurrentMonitor();
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer x = stack.mallocFloat(1);
-            FloatBuffer y = stack.mallocFloat(1);
-            glfwGetMonitorContentScale(monitor, x, y);
-            return new Vector2f(x.get(0), y.get(0));
+        if (windowHandle != MemoryUtil.NULL) {
+            float scale = SDL_GetWindowDisplayScale(windowHandle);
+            return new Vector2f(scale, scale);
         }
+
+        int displayID = SDL_GetPrimaryDisplay();
+        float contentScale = SDL_GetDisplayContentScale(displayID);
+        if (contentScale <= 0.0f) contentScale = 1.0f;
+
+        return new Vector2f(contentScale, contentScale);
     }
 
     @Override
     public @NonNull Vector2f getWindowContentScale() {
-        if (windowHandle == MemoryUtil.NULL) return new Vector2f(1.0f, 1.0f);
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            FloatBuffer x = stack.mallocFloat(1);
-            FloatBuffer y = stack.mallocFloat(1);
-            glfwGetWindowContentScale(windowHandle, x, y);
-            return new Vector2f(x.get(0), y.get(0));
-        }
+        float scale = (windowHandle == MemoryUtil.NULL) ? 1.0f : SDL_GetWindowDisplayScale(windowHandle);
+        return new Vector2f(scale, scale);
     }
 
-    @Override
-    public float getPixelDensity() {
-        return getWindowContentScale().x;
+    private @Nullable SDL_DisplayMode findMatchingDisplayMode(int displayID,
+            @NonNull SerializableDisplayMode targetMode) {
+        PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
+        if (pb == null) {
+            return null;
+        }
+        try {
+            int n = pb.remaining();
+            long bestMatchAddress = MemoryUtil.NULL;
+            int bestFreqDiff = Integer.MAX_VALUE;
+            for (int i = 0; i < n; i++) {
+                SDL_DisplayMode sdlMode = SDL_DisplayMode.create(pb.get(i));
+                // Match against physical pixels
+                int width = (int) (sdlMode.w() * sdlMode.pixel_density());
+                int height = (int) (sdlMode.h() * sdlMode.pixel_density());
+                if (width == targetMode.getWidth() && height == targetMode.getHeight()) {
+                    int diff = Math.abs((int) sdlMode.refresh_rate() - targetMode.getFrequency());
+                    if (diff < bestFreqDiff) {
+                        bestFreqDiff = diff;
+                        bestMatchAddress = pb.get(i);
+                    }
+                }
+            }
+            if (bestMatchAddress != MemoryUtil.NULL) {
+                return SDL_DisplayMode.create(bestMatchAddress);
+            }
+            return null;
+        } finally {
+            nSDL_free(pb.address());
+        }
     }
 
     private void setMacPresentationOptions(int options) {

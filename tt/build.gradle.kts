@@ -12,11 +12,10 @@ lwjgl {
     // Add LWJGL modules + the correct native artifacts
     implementation(
         Module.CORE,
-        Module.GLFW,
         Module.OPENAL,
         Module.OPENGL,
-        Module.STB,
-        Module.TINYFD)
+        Module.SDL,
+        Module.STB)
 }
 
 application {

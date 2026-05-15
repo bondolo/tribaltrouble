@@ -91,8 +91,8 @@ public class GraphicsPanel extends Panel {
         });
 
         slider_ui_scale.addReleaseListener(() -> {
-            var context = Renderer.getRenderer().getRenderContext();
-            gui_root.displayChanged(context.getViewportWidth(), context.getViewportHeight());
+            var window = Renderer.getRenderer().getWindow();
+            gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
         }
         );
 

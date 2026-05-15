@@ -723,10 +723,10 @@ public final class Renderer implements AutoCloseable {
                     totalWindowUpdateTime += (t7 - t6);
 
                     if (window.wasResized()) {
-                        int width = window.getWidth();
-                        int height = window.getHeight();
-                        getSettings().view_width = width;
-                        getSettings().view_height = height;
+                        int width = window.getLogicalWidth();
+                        int height = window.getLogicalHeight();
+                        getSettings().view_width = window.getWidth();
+                        getSettings().view_height = window.getHeight();
                         initGL();
                         gui.getGUIRoot().displayChanged(width, height);
                     }

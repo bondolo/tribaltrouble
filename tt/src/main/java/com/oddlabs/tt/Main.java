@@ -2,13 +2,19 @@ package com.oddlabs.tt;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.window.LWJGL3Window;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
+import org.lwjgl.sdl.SDLMessageBox;
 
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.lwjgl.sdl.SDLMessageBox.SDL_MESSAGEBOX_ERROR;
+
+/**
+ * Main application entry point for Tribal Trouble.
+ */
 public final class Main {
     private static final Logger logger = Logger.getLogger(Main.class.getName());
     private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
@@ -34,7 +40,13 @@ public final class Main {
                 error_msg = "Error: " + t;
             }
             logger.log(Level.SEVERE, error + ": " + error_msg);
-            TinyFileDialogs.tinyfd_messageBox(error, error_msg.replace("\"", "\\\""), "ok", "error", 1);
+            long window = org.lwjgl.system.MemoryUtil.NULL;
+            try {
+                window = ((LWJGL3Window) Renderer.getRenderer().getWindow()).getHandle();
+            } catch (Exception e) {
+                // Window might not be created yet, ignore
+            }
+            SDLMessageBox.SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, error, error_msg, window);
         }
     }
 
