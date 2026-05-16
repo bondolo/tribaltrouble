@@ -422,7 +422,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
                 velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
                 num_particles, 0f, 2f,
-                Color.WHITE, Color.BLACK,
+                Color.WHITE, Color.TRANSPARENT,
                 new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), time,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, getOwner().getWorld().getRacesResources().getStarTextures());
 

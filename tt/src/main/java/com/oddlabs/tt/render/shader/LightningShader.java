@@ -108,7 +108,7 @@ public final class LightningShader extends ShaderProgram implements FogShader {
                                 float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
                             
                                 // Additive blending: fade to black (multiply by fogFactor)
-                                out_FragColor = vec4(finalColor.rgb * fogFactor, finalColor.a);
+                                out_FragColor = vec4(finalColor.rgb * fogFactor, clamp(finalColor.a, 0.0, 1.0));
                             }
                             """;
 

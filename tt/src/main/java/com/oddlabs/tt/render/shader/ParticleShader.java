@@ -177,7 +177,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                                 if (u_isAdditive > 0.5) {
                                     foggedColor = finalColor.rgb * fogFactor;
                                 }
-                                out_FragColor = vec4(foggedColor, finalColor.a);
+                                out_FragColor = vec4(foggedColor, clamp(finalColor.a, 0.0, 1.0));
                             }
                             """;
 
