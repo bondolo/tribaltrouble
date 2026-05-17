@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.ref.SoftReference;
 
 /**
  * A resource handle for an audio file.
@@ -14,8 +15,10 @@ import java.io.UncheckedIOException;
 public final class AudioFile extends File<Audio> {
     private final boolean streaming;
 
+    private @Nullable SoftReference<Audio> audio;
+
     public AudioFile(@NonNull String location) {
-        this(location, !location.contains("/sfx/"));
+        this(location, location.contains("/music/"));
     }
 
     public AudioFile(@NonNull String location, boolean streaming) {
@@ -24,12 +27,18 @@ public final class AudioFile extends File<Audio> {
     }
 
     @Override
-    public @NonNull Audio get() throws UncheckedIOException {
-        try {
-            return Renderer.getRenderer().getAudioManager().createAudio(getURL());
-        } catch (IOException ex) {
-            throw new UncheckedIOException("Could not load " + this.getURL(), ex);
+    public synchronized @NonNull Audio get() throws UncheckedIOException {
+        Audio audio = null == this.audio ? null : this.audio.get();
+        if (null == audio) {
+            try {
+                audio = Renderer.getRenderer().getAudioManager().createAudio(getURL());
+                this.audio = new SoftReference<>(audio);
+            } catch (IOException ex) {
+                throw new UncheckedIOException("Could not load " + this.getURL(), ex);
+            }
         }
+
+        return audio;
     }
 
     @Override
