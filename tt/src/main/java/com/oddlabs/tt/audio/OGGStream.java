@@ -53,14 +53,21 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
         }
     }
 
-    public OGGStream(@NonNull URL file) throws IOException {
-        super(new Decoder(readAllBytes(file)));
+    public OGGStream(@NonNull URL source) throws IOException {
+        this(source.openStream());
     }
 
-    private static byte[] readAllBytes(@NonNull URL url) throws IOException {
-        try (InputStream is = url.openStream()) {
-             return is.readAllBytes();
+    /** Reads OGG from the stream and in all cases closes the stream */
+    public OGGStream(@NonNull InputStream stream) throws IOException {
+        byte[] bytes;
+        try (stream) {
+            bytes = stream.readAllBytes();
         }
+        this(bytes);
+    }
+
+    public OGGStream(byte @NonNull [] bytes) throws IOException {
+        super(new Decoder(bytes));
     }
 
     public int getChannels() {
