@@ -1,12 +1,13 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.ALC10;
 import org.lwjgl.stb.STBVorbis;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.libc.LibCStdlib;
@@ -28,15 +29,17 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
         private final @NonNull IntBuffer al_buffers;
 
         Buffers(int num_buffers) {
-            al_buffers = org.lwjgl.BufferUtils.createIntBuffer(num_buffers);
+            al_buffers = BufferUtils.createIntBuffer(num_buffers);
             AL10.alGenBuffers(al_buffers);
             checkALError("alGenBuffers " + num_buffers);
         }
 
         @Override
         public void close() {
-            AL10.alDeleteBuffers(al_buffers);
-            checkALError("alDeleteBuffers");
+            if (ALC10.alcGetCurrentContext() != 0) {
+                AL10.alDeleteBuffers(al_buffers);
+                checkALError("alDeleteBuffers");
+            }
             al_buffers.clear();
         }
     }
@@ -67,7 +70,7 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
                 throw new IOException("Failed to decode OGG Vorbis: " + file);
             }
 
-            int format = Wave.getFormat(channels.get(0), 16);
+            int format = Wave.getFormat(channels.get(0), Short.SIZE);
             AL10.alBufferData(bufferId, format, pcm, sampleRate.get(0));
 
             LibCStdlib.free(pcm);

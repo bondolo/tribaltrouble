@@ -2,6 +2,7 @@ package com.oddlabs.tt.audio.openal;
 
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
 
 import java.util.logging.Logger;
@@ -28,6 +29,10 @@ import static org.lwjgl.openal.EXTEfx.alEffecti;
 import static org.lwjgl.openal.EXTEfx.alGenAuxiliaryEffectSlots;
 import static org.lwjgl.openal.EXTEfx.alGenEffects;
 
+/**
+ * Manages OpenAL EFX extension features, including environmental reverb effects.
+ * Handles initialization, blending between reverb presets, and cleanup of EFX resources.
+ */
 public final class EFXManager {
     private static final Logger logger = Logger.getLogger(EFXManager.class.getName());
 
@@ -136,7 +141,7 @@ public final class EFXManager {
      * @param factor Blending factor [0.0 - 1.0]. 0.0 is fully 'from', 1.0 is fully 'to'.
      */
     public void setReverb(@NonNull ReverbType from, @NonNull ReverbType to, float factor) {
-        if (!supported) return;
+        if (!supported || ALC10.alcGetCurrentContext() == 0) return;
         // Small epsilon for factor comparison to avoid redundant GL updates
         if (from == currentFrom && to == currentTo && Math.abs(factor - currentFactor) < 0.005f) return;
 
@@ -165,6 +170,7 @@ public final class EFXManager {
     }
 
     private void applySnapshot(@NonNull ReverbSnapshot s) {
+        if (ALC10.alcGetCurrentContext() == 0) return;
         alEffectf(reverbEffect, AL_EAXREVERB_DENSITY, s.density);
         alEffectf(reverbEffect, AL_EAXREVERB_DIFFUSION, s.diffusion);
         alEffectf(reverbEffect, AL_EAXREVERB_GAIN, s.gain);
@@ -185,7 +191,7 @@ public final class EFXManager {
     }
 
     public void cleanup() {
-        if (supported) {
+        if (supported && ALC10.alcGetCurrentContext() != 0) {
             alDeleteEffects(reverbEffect);
             alDeleteAuxiliaryEffectSlots(effectSlot);
         }

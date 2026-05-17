@@ -3,6 +3,7 @@ package com.oddlabs.tt.audio.openal;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
+import org.lwjgl.openal.ALC10;
 
 import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
 import static org.lwjgl.openal.EXTEfx.AL_FILTER_LOWPASS;
@@ -31,8 +32,10 @@ public final class OpenALFilter extends NativeResource<OpenALFilter.FilterState>
 
         @Override
         public void close() {
-            alDeleteFilters(filterId);
-            checkALError("alDeleteFilters");
+            if (ALC10.alcGetCurrentContext() != 0) {
+                alDeleteFilters(filterId);
+                checkALError("alDeleteFilters");
+            }
         }
     }
 
