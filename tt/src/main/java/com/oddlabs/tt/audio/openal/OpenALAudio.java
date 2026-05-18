@@ -1,6 +1,7 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.util.Utils;
@@ -36,20 +37,20 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
 
         @Override
         public void close() {
-            if (ALC10.alcGetCurrentContext() != 0) {
+            if (ALC10.alcGetCurrentContext() != 0 && al_buffers.limit() > 0) {
                 AL10.alDeleteBuffers(al_buffers);
                 checkALError("alDeleteBuffers");
             }
-            al_buffers.clear();
+            al_buffers.limit(0);
         }
     }
 
-    public OpenALAudio(int num_buffers) {
-        super(new Buffers(num_buffers), task -> Renderer.getRenderer().getAudioManager().enqueueCleanup(task));
+    public OpenALAudio(@NonNull OpenALManager manager, int num_buffers) {
+        super(new Buffers(num_buffers), manager::enqueueCleanup);
     }
 
-    OpenALAudio(@NonNull URL file) throws IOException {
-        this(1);
+    OpenALAudio(@NonNull OpenALManager manager, @NonNull URL file) throws IOException {
+        this(manager, 1);
         try {
             Wave wave = new Wave(file);
             AL10.alBufferData(getBuffer(), wave.getFormat(), wave.getData(), wave.getSampleRate());
@@ -77,11 +78,19 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
         }
     }
 
+    public int getBufferCount() {
+        return state.al_buffers.remaining();
+    }
+
     public @NonNull IntBuffer getBuffers() {
-        return state.al_buffers;
+        return state.al_buffers.duplicate().position(0);
     }
 
     public int getBuffer() {
-        return state.al_buffers.get(0);
+        return getBuffer(0);
+    }
+
+    public int getBuffer(int idx) {
+        return state.al_buffers.get(idx);
     }
 }

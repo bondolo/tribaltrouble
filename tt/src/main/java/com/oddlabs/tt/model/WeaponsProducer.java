@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import org.jspecify.annotations.NonNull;
@@ -16,11 +16,9 @@ public class WeaponsProducer {
     private static final float MAX_BREAK_TIME = .25f;
     private static final float BREAK_PROBABILITY = .2f;
 
-    private static final Deque<@NonNull BuildProductionContainer> build_list = new ArrayDeque<>();
-
-    private static final AudioParameters<Audio> PRODUCTION_AUDIO = new AudioParameters<>(
-            AudioPlayer.SFX_ARMORY, AudioPlayer.AUDIO_RANK_ARMORY,
-            AudioPlayer.AUDIO_DISTANCE_ARMORY, AudioPlayer.AUDIO_GAIN_ARMORY, AudioPlayer.AUDIO_RADIUS_ARMORY,
+    private static final AudioParameters PRODUCTION_AUDIO = new AudioParameters(
+            Assets.SFX_ARMORY, Assets.AUDIO_RANK_ARMORY,
+            Assets.AUDIO_DISTANCE_ARMORY, Assets.AUDIO_GAIN_ARMORY, Assets.AUDIO_RADIUS_ARMORY,
             1f, true, false);
 
     private final @NonNull Building building;
@@ -42,6 +40,7 @@ public class WeaponsProducer {
     }
 
     public final void animate(float t) {
+        Deque<@NonNull BuildProductionContainer> build_list = new ArrayDeque<>();
         for (var production_container : production_containers) {
             if (production_container.getNumSupplies() > 0 && production_container.hasEnoughSupplies()) {
                 build_list.add(production_container);

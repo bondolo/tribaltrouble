@@ -2,7 +2,6 @@ package com.oddlabs.tt.form;
 
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.openal.OpenALManager;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -18,6 +17,9 @@ import com.oddlabs.tt.render.Renderer;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/**
+ * UI panel for adjusting audio settings, including sound effects and music volume.
+ */
 public class SoundPanel extends Panel {
     private static final int SLIDER_WIDTH = 270;
     private static final int MAX_VALUE = 20;
@@ -51,7 +53,7 @@ public class SoundPanel extends Panel {
         slider_music.addValueListener(value -> {
             float music_gain = (float) value / (MAX_VALUE);
             Renderer.getRenderer().getSettings().music_gain = music_gain;
-            Renderer.getRenderer().getMusicPlayer().setGain(music_gain);
+            Renderer.getRenderer().getAudioManager().setMusicGain(music_gain);
         });
 
         cb_music.place();
@@ -83,7 +85,11 @@ public class SoundPanel extends Panel {
             slider_sound.setDisabled(!marked);
             Renderer.getRenderer().getSettings().play_sfx = marked;
         });
-        slider_sound.addValueListener(value -> Renderer.getRenderer().getSettings().sound_gain = (float) value / (MAX_VALUE));
+        slider_sound.addValueListener(value -> {
+            float sound_gain = (float) value / (MAX_VALUE);
+            Renderer.getRenderer().getSettings().sound_gain = sound_gain;
+            Renderer.getRenderer().getAudioManager().setSfxGain(sound_gain);
+        });
 
         cb_sound.place();
         label_sound.place(cb_sound, BOTTOM_LEFT);
@@ -111,28 +117,16 @@ public class SoundPanel extends Panel {
         label_output.place();
         pb_output.place(label_output, RIGHT_MID);
 
-        AudioManager manager = null;
-        if (audioCreated) {
-            try {
-                manager = Renderer.getRenderer().getAudioManager();
-            } catch (Exception e) {
-                // Ignore
-            }
-        }
+        AudioManager manager = Renderer.getRenderer().getAudioManager();
 
-        boolean hrtfSupported = false;
-        if (manager != null) {
-            hrtfSupported = manager.isHRTFSupported();
-        }
+        boolean hrtfSupported = manager.isHRTFSupported();
 
         if (hrtfSupported) {
             final AudioManager mgr = manager;
             pm_output.addItemChosenListener((_, index) -> {
                 boolean headphone = (index == 1);
                 Renderer.getRenderer().getSettings().headphone_mode = headphone;
-                if (mgr instanceof OpenALManager alManager) {
-                    alManager.setHeadphoneMode(headphone);
-                }
+                manager.setHeadphoneMode(headphone);
             });
         } else {
             pb_output.setDisabled(true);

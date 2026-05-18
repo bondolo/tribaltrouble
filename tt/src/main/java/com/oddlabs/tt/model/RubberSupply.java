@@ -2,9 +2,8 @@ package com.oddlabs.tt.model;
 
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.Movable;
 import com.oddlabs.tt.pathfinder.PathTracker;
@@ -28,17 +27,16 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private static final int INITIAL_SUPPLIES = 1;
     private static final int MAX_MOVE_GRIDS = 5;
 
-    private static final AudioParameters<Audio> CHICKEN_PECK_AUDIO = new AudioParameters<>(
-            AudioPlayer.SFX_CHICKEN_PECK, AudioPlayer.AUDIO_RANK_CHICKEN,
-            AudioPlayer.AUDIO_DISTANCE_CHICKEN, AudioPlayer.AUDIO_GAIN_CHICKEN_PECK, AudioPlayer.AUDIO_RADIUS_CHICKEN_PECK);
-    private static final AudioParameters<Audio> CHICKEN_DEATH_AUDIO = new AudioParameters<>(
-            AudioPlayer.SFX_CHICKEN_DEATH, AudioPlayer.AUDIO_RANK_DEATH,
-            AudioPlayer.AUDIO_DISTANCE_DEATH, AudioPlayer.AUDIO_GAIN_CHICKEN_DEATH, AudioPlayer.AUDIO_RADIUS_CHICKEN_DEATH);
-    @SuppressWarnings("unchecked")
-    private static final @NonNull AudioParameters<Audio> [] CHICKEN_IDLE_AUDIO =
-            (@NonNull AudioParameters<Audio> []) Arrays.stream(AudioPlayer.SFX_CHICKEN_IDLES)
-                .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_CHICKEN,
-                        AudioPlayer.AUDIO_DISTANCE_CHICKEN, AudioPlayer.AUDIO_GAIN_CHICKEN_IDLE, AudioPlayer.AUDIO_RADIUS_CHICKEN_IDLE))
+    private static final AudioParameters CHICKEN_PECK_AUDIO = new AudioParameters(
+            Assets.SFX_CHICKEN_PECK, Assets.AUDIO_RANK_CHICKEN,
+            Assets.AUDIO_DISTANCE_CHICKEN, Assets.AUDIO_GAIN_CHICKEN_PECK, Assets.AUDIO_RADIUS_CHICKEN_PECK);
+    private static final AudioParameters CHICKEN_DEATH_AUDIO = new AudioParameters(
+            Assets.SFX_CHICKEN_DEATH, Assets.AUDIO_RANK_DEATH,
+            Assets.AUDIO_DISTANCE_DEATH, Assets.AUDIO_GAIN_CHICKEN_DEATH, Assets.AUDIO_RADIUS_CHICKEN_DEATH);
+    private static final @NonNull AudioParameters [] CHICKEN_IDLE_AUDIO =
+            Arrays.stream(Assets.SFX_CHICKEN_IDLES)
+                .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_CHICKEN,
+                        Assets.AUDIO_DISTANCE_CHICKEN, Assets.AUDIO_GAIN_CHICKEN_IDLE, Assets.AUDIO_RADIUS_CHICKEN_IDLE))
                 .toArray(AudioParameters[]::new);
 
     public enum Animation {

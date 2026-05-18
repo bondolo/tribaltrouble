@@ -17,6 +17,12 @@ public interface AudioSource extends AutoCloseable {
     }
 
     /**
+     * Closes the audio source and releases its native resources.
+     */
+    @Override
+    void close();
+
+    /**
      * {@return the current state of the source}
      */
     @NonNull State getState();
@@ -43,32 +49,32 @@ public interface AudioSource extends AutoCloseable {
     void setGain(float gain);
 
     /**
-     * Sets the minimum gain (volume) of the audio source for relative sources.
+     * Sets the minimum gain (volume) of the audio source.
      *
      * @param gain The gain value. 0 is mute, 1 is full volume.
      */
     void setMinGain(float gain);
 
     /**
-     * Sets the maximum gain (volume) of the audio source for relative sources.
+     * Sets the maximum gain (volume) of the audio source.
      *
      * @param gain The gain value. 0 is mute, 1 is full volume.
      */
     void setMaxGain(float gain);
 
     /**
-     * Sets the rolloff factor of the audio source.for relative sources.
+     * Sets the rolloff factor of the audio source.
      *
      * @param rolloff The rolloff value. 1 is the default.
      */
     void setRolloff(float rolloff);
 
     /**
-     * Sets the minimum gain (volume) of the audio source for relative sources.
+     * Sets the reference distance of the audio source.
      *
-     * @param gain The gain value. 0 is mute, 1 is full volume.
+     * @param distance the reference distance.
      */
-    void setDistance(float gain);
+    void setDistance(float distance);
 
     /**
      * {@return the current rolloff factor}
@@ -131,13 +137,6 @@ public interface AudioSource extends AutoCloseable {
     void rewind();
 
     /**
-     * Gets the current state of the audio source (e.g., playing, stopped, paused).
-     *
-     * @return The state of the source, as defined by the underlying audio library's constants.
-     */
-    int getSourceState();
-
-    /**
      * Retrieves the position of the audio source.
      *
      * @return The position (x, y, z).
@@ -163,7 +162,7 @@ public interface AudioSource extends AutoCloseable {
      *
      * @param audioPlayer The audio player to associate.
      */
-    void setAudioPlayer(AudioPlayer audioPlayer);
+    void setAudioPlayer(@Nullable AudioPlayer audioPlayer);
 
     /**
      * Sets the auxiliary effect slot to send audio to (e.g., for reverb).
@@ -179,10 +178,4 @@ public interface AudioSource extends AutoCloseable {
      * @param gainHF The gain value [0.0, 1.0].
      */
     void setDirectFilterGainHF(float gainHF);
-
-    /**
-     * Closes the audio source and releases its native resources.
-     */
-    @Override
-    void close();
 }

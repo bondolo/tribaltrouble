@@ -1,8 +1,8 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.geometry.AnimationInfo;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.behaviour.DefendController;
 import com.oddlabs.tt.model.behaviour.DieBehaviour;
@@ -383,21 +383,10 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
                 pushController(new DieController(this));
                 forceDecide();
-                    /*
-				new AudioPlayer(getPositionX(), getPositionY(), getPositionZ(),
-						RacesResources.getUnitHitSound(),
-						AudioPlayer.AUDIO_RANK_DEATH,
-						AudioPlayer.AUDIO_DISTANCE_DEATH,
-						AudioPlayer.AUDIO_GAIN_DEATH,
-						AudioPlayer.AUDIO_RADIUS_DEATH,
-						1f + (World.getRandom().nextFloat() - .5f)*getUnitTemplate().getDeathPitch());
-                     */
-                getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), new AudioParameters<>(getTemplate().getDeathSound(),
-                        AudioPlayer.AUDIO_RANK_DEATH,
-                        AudioPlayer.AUDIO_DISTANCE_DEATH,
-                        AudioPlayer.AUDIO_GAIN_DEATH,
-                        AudioPlayer.AUDIO_RADIUS_DEATH,
-                        1f + (getOwner().getWorld().getRandom().nextFloat() - .5f) * getTemplate().getDeathPitch()));
+                var params = new AudioParameters(getTemplate().getDeathSound(), Assets.AUDIO_RANK_DEATH,
+                        Assets.AUDIO_DISTANCE_DEATH, Assets.AUDIO_GAIN_DEATH, Assets.AUDIO_RADIUS_DEATH,
+                        1f + (getOwner().getWorld().getRandom().nextFloat() - .5f) * getTemplate().getDeathPitch());
+                getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
                 setDirection(-direction_x, -direction_y);
                 removeDying();
             }
@@ -411,22 +400,16 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     private @NonNull EmitterAttachedAccessory createStunStar(float time, float velocity) {
-        int num_particles = 5;
-        // The offset is now handled by getRelativeTransform in the accessory, but we still need to provide world coords to the emitter constructor for now.
-        // Actually, we should probably adjust the emitter to be relative too.
-        float x = getTemplate().getStunX();
-        float y = getTemplate().getStunY();
-        float z = getTemplate().getStunZ() + mount_offset;
-
         BalancedParametricEmitter emitter = new BalancedParametricEmitter(getOwner().getWorld(),
                 new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
                 velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
-                num_particles, 0f, 2f,
+                5, 0f, 2f,
                 Color.WHITE, Color.TRANSPARENT,
                 new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), time,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, getOwner().getWorld().getRacesResources().getStarTextures());
 
-        return new EmitterAttachedAccessory(emitter, new Vector3f(x, y, z));
+        var offset = new Vector3f(getTemplate().getStunX(), getTemplate().getStunY(), getTemplate().getStunZ() + mount_offset);
+        return new EmitterAttachedAccessory(emitter, offset);
     }
 
     public boolean canAttack(@NonNull Target target, boolean kill_friendly) {

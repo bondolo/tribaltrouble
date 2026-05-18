@@ -1,8 +1,8 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.Region;
@@ -15,16 +15,18 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.stream.Stream;
 
+/**
+ * A harvestable tree resource in the game world.
+ * Provides wood supplies when harvested by peon units.
+ */
 public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated {
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
 
-    @SuppressWarnings("unchecked")
-    private static final @NonNull AudioParameters<AudioPlayer> [] TREE_FALL_AUDIO =
-            Stream.of(AudioPlayer.SFX_FELLING_TREE,
-                    AudioPlayer.SFX_FELLING_PALMTREE)
-                    .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_TREE_FALL,
-                            AudioPlayer.AUDIO_DISTANCE_TREE_FALL, AudioPlayer.AUDIO_GAIN_TREE_FALL, AudioPlayer.AUDIO_RADIUS_TREE_FALL))
+    private static final @NonNull AudioParameters [] TREE_FALL_AUDIO =
+            Stream.of(Assets.SFX_FELLING_TREE, Assets.SFX_FELLING_PALMTREE)
+                    .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_TREE_FALL,
+                            Assets.AUDIO_DISTANCE_TREE_FALL, Assets.AUDIO_GAIN_TREE_FALL, Assets.AUDIO_RADIUS_TREE_FALL))
                     .toArray(AudioParameters[]::new);
 
     private final @NonNull Matrix4f matrix;

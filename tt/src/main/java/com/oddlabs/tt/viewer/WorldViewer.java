@@ -4,7 +4,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
@@ -54,7 +54,8 @@ import java.util.stream.Collectors;
 
 /**
  * Orchestrates the primary in-game experience, managing the world state, player interactions,
- * rendering, and the user interface for a single player.
+ * rendering, and the user interface for a single player. 
+ * Coordinates camera state and audio listener updates for the game world.
  */
 public final class WorldViewer implements Animated, AutoCloseable {
 
@@ -85,7 +86,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.network = network;
         this.notification_manager = new NotificationManager(gui_root);
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
-        Renderer.getRenderer().setCheat(cheat);
+        var renderer = Renderer.getRenderer();
+        renderer.setCheat(cheat);
         this.animation_manager_local = new AnimationManager();
         final FogInfo worldFog = generator.getFogInfo();
         final CameraState camera_state = new CameraState(worldFog);
@@ -140,7 +142,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         };
         PlayerInfo[] player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toArray(PlayerInfo[]::new);
         WorldInfo world_info = generator.generate(player_infos.length, world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
-        this.world = World.newWorld((float x, float y, float z, @NonNull AudioParameters<?> params) -> Renderer.getRenderer().getAudioManager().newAudio(camera_state, x, y, z, params), landscape_resources, races_resources, listener, world_params, world_info, generator.getTerrainType(), player_infos, worldFog);
+        AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer.getAudioManager().newAudio(camera_state, x, y, z, params);
+        this.world = World.newWorld(audio, landscape_resources, races_resources, listener, world_params, world_info, generator.getTerrainType(), player_infos, worldFog);
         this.local_player = world.getPlayers()[player_slot];
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
@@ -153,7 +156,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.delegate = new SelectionDelegate(this, camera);
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
         initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos, world_params.getInitialGameSpeed());
-        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
+        renderer.getEventQueue().getManager().registerAnimation(this);
     }
 
     public @NonNull AnimationManager getAnimationManagerLocal() {

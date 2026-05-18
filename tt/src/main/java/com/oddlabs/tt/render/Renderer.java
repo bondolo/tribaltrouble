@@ -7,6 +7,7 @@ import com.oddlabs.tt.Main;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
@@ -21,7 +22,6 @@ import com.oddlabs.tt.form.WarningForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.GlobalsInit;
 import com.oddlabs.tt.global.Settings;
-import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Languages;
@@ -30,6 +30,7 @@ import com.oddlabs.tt.landscape.LandscapeResources;
 import com.oddlabs.tt.landscape.NotificationListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.procedural.Landscape;
@@ -74,6 +75,10 @@ import java.util.logging.SimpleFormatter;
 
 import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 
+/**
+ * The main rendering engine and application controller. 
+ * Manages the game loop, window lifecycle, input handling, and audio coordination.
+ */
 public final class Renderer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
     private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), "default");
@@ -537,16 +542,16 @@ public final class Renderer implements AutoCloseable {
             logger.info("last_event_log_path = " + last_event_log_path);
             // Only use when anal debugging
 //			ChecksumLogger.initLogging();
-            getRenderer().getEventQueue().loadEvents(last_event_log_path, zipped);
+            getEventQueue().loadEvents(last_event_log_path, zipped);
         }
 
         Path event_logs_dir = paths.logDir();
         Path event_log_dir = event_logs_dir.resolve(Long.toString(System.currentTimeMillis()));
         if (settings.save_event_log) {
             setupLogging(event_log_dir, silent);
-            getRenderer().getEventQueue().setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
+            getEventQueue().setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
         }
-        Deterministic deterministic = getRenderer().getEventQueue().getDeterministic();
+        Deterministic deterministic = getEventQueue().getDeterministic();
         game_dir = deterministic.log(game_dir);
         event_log_dir = deterministic.log(event_log_dir);
         deterministic.log(settings);
@@ -560,7 +565,7 @@ public final class Renderer implements AutoCloseable {
         
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
-        NetworkSelector network = new NetworkSelector(getRenderer().getEventQueue().getDeterministic(), getRenderer().getEventQueue()::getMillis);
+        NetworkSelector network = new NetworkSelector(getEventQueue().getDeterministic(), getEventQueue()::getMillis);
         initNetwork(network);
         Renderer.getLocalInput().settings(game_dir, event_log_dir, settings);
         try {
@@ -578,7 +583,7 @@ public final class Renderer implements AutoCloseable {
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters<?> params) -> getRenderer().getAudioManager().newAudio(x, y, z, params));
+        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters params) -> getAudioManager().newAudio(x, y, z, params));
 
         Runnable load_task = setupMainMenu(network, gui, true);
 
@@ -603,6 +608,7 @@ public final class Renderer implements AutoCloseable {
 
                 if (first_frame || (window.isVisible() && isActive)) {
                     runGameLoop(network, gui);
+                    getAudioManager().update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
                     getAudioManager().setMasterGain(1f);
                     if (reset_keyboard) {
                         reset_keyboard = false;
@@ -627,11 +633,11 @@ public final class Renderer implements AutoCloseable {
                         first_frame = false;
                         if (load_task != null) {
                             window.update();
-                            getRenderer().getEventQueue().getDeterministic().setEnabled(true);
+                            getEventQueue().getDeterministic().setEnabled(true);
                             try {
                                 load_task.run();
                             } finally {
-                                getRenderer().getEventQueue().getDeterministic().setEnabled(false);
+                                getEventQueue().getDeterministic().setEnabled(false);
                                 renderContext.reset(); // Fix texture bleeding after loading
                             }
                             load_task = null;
@@ -651,7 +657,8 @@ public final class Renderer implements AutoCloseable {
                     }
                 }
             }
-            getRenderer().getEventQueue().getDeterministic().setEnabled(true);
+
+            getEventQueue().getDeterministic().setEnabled(true);
             getSettings().save();
         } finally {
             cleanup();
@@ -725,7 +732,7 @@ public final class Renderer implements AutoCloseable {
         Player local_player = world.getPlayers()[0];
         Selection selection = new Selection(local_player);
         UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info, landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer, selection), selection, generator, modelViewStack, projectionStack);
-        Renderer.getRenderer().setMusicPath("/music/menu.ogg", 0f);
+        Renderer.getRenderer().setMusicPath(Assets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);
         if (first_progress && getRenderer().getSettings().warning_no_sound && !Renderer.getLocalInput().audioIsCreated()) {
@@ -770,14 +777,14 @@ public final class Renderer implements AutoCloseable {
     public void cleanup() {
         logger.info("Cleaning up...");
         logger.info("Disposing LocalEventQueue...");
-        getRenderer().getEventQueue().close();
+        getEventQueue().close();
         destroyNative();
         logger.fine("Native resources still registered: " + NativeResource.getCount());
         logger.info("Cleanup complete. Exiting");
     }
 
     public @NonNull SerializableDisplayMode getCurrentDisplayMode() {
-        return getRenderer().getEventQueue().getDeterministic()
+        return getEventQueue().getDeterministic()
                 .log(window.getDisplayMode());
     }
 
@@ -787,7 +794,7 @@ public final class Renderer implements AutoCloseable {
 
     public void toggleFullscreen() {
         try {
-            boolean fs = !window.isFullscreen() && !getRenderer().getEventQueue().getDeterministic().isPlayback();
+            boolean fs = !window.isFullscreen() && !getEventQueue().getDeterministic().isPlayback();
             window.setFullscreen(fs);
             getSettings().fullscreen = fs;
             resetInput();
@@ -829,7 +836,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void modeSwitched() {
-        SerializableDisplayMode new_mode = getRenderer().getEventQueue().getDeterministic().log(window.getDisplayMode());
+        SerializableDisplayMode new_mode = getEventQueue().getDeterministic().log(window.getDisplayMode());
         logger.info("Switched mode to " + new_mode);
         getSettings().view_width = new_mode.getWidth();
         getSettings().view_height = new_mode.getHeight();
@@ -837,12 +844,13 @@ public final class Renderer implements AutoCloseable {
     }
 
     private static void destroyNative() {
-        logger.info("Closing AudioManager...");
-        getRenderer().getAudioManager().close();
-        logger.info("Renderer Closed.");
-        getRenderer().close();
         logger.info("Clearing Resources...");
         Resources.clearResources();
+
+        logger.info("Closing AudioManager...");
+        getRenderer().getAudioManager().close();
+
+        logger.info("Renderer Closed.");
     }
 
     public static void dumpWindowInfo() {
@@ -875,7 +883,11 @@ public final class Renderer implements AutoCloseable {
         logger.info("maxMemory = '" + total_mem + "'");
 
         // Currently only OpenAL is supported
-        audioManager = new OpenALManager();
+        var audioManager = new OpenALManager(getSettings().headphone_mode);
+        audioManager.setSfxGain(getSettings().sound_gain);
+        audioManager.setMusicGain(getSettings().music_gain);
+        audioManager.setSfxEnabled(getSettings().play_sfx);
+        this.audioManager = audioManager;
 
         try {
             int bpp = 32;
@@ -909,7 +921,7 @@ public final class Renderer implements AutoCloseable {
                 target_mode = new SerializableDisplayMode(width, height, bpp, freq);
             }
 
-            boolean fs = getSettings().fullscreen && (!getRenderer().getEventQueue().getDeterministic().isPlayback() || grab_frames);
+            boolean fs = getSettings().fullscreen && (!getEventQueue().getDeterministic().isPlayback() || grab_frames);
             window.create(target_mode, fs);
             setModeToNearest(target_mode);
 
@@ -959,14 +971,13 @@ public final class Renderer implements AutoCloseable {
             window.setVSyncEnabled(true);
         initGL();
         initVisibleGL();
+
+        getAudioManager().startSources();
     }
 
     public void toggleSound() {
         getSettings().play_sfx = !getSettings().play_sfx;
-        if (getSettings().play_sfx)
-            getAudioManager().startSources();
-        else
-            getAudioManager().stopSources();
+        getAudioManager().setSfxEnabled(getSettings().play_sfx);
     }
 
     public void toggleMusic() {
@@ -974,27 +985,23 @@ public final class Renderer implements AutoCloseable {
         if (getSettings().play_music) {
             initMusicPlayer();
         } else if (music != null) {
-            music.stop(2.5f, getSettings().music_gain);
+            music.stop(2.5f, 1.0f);
         }
     }
 
     private void initMusicPlayer() {
         assert null != music_path && music_path.isStreaming() : "Inappropriate music file";
-        var params =  new AudioParameters<>(music_path, AudioPlayer.AUDIO_RANK_MUSIC,
-                AudioPlayer.AUDIO_DISTANCE_MUSIC, getSettings().music_gain, 1f,
-                1f, true, true, true);
+        var params =  new AudioParameters(music_path, Assets.AUDIO_RANK_MUSIC,
+                Assets.AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
+                1f, true, true);
         music = getAudioManager().newAudio(0f, 0f, 0f, params);
-    }
-
-    public void setMusicPath(@NonNull String music_path_location, float delay) {
-        setMusicPath(new AudioFile(music_path_location), delay);
     }
 
     public void setMusicPath(@NonNull AudioFile music_path, float delay) {
         this.music_path = music_path;
 
         if (music != null && getSettings().play_music) {
-            music.stop(2.5f, getSettings().music_gain);
+            music.stop(2.5f, 1.0f);
         }
         if (getSettings().play_music) {
             if (music_timer != null)

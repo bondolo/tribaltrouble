@@ -1,7 +1,5 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.render.Renderer;
@@ -13,14 +11,19 @@ import org.jspecify.annotations.Nullable;
  */
 final class OpenALAudioPlayer extends AudioPlayer {
 
-    public OpenALAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters<Audio> params) {
+    public OpenALAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters params) {
         super(source, x, y, z, params);
         if (this.source == null) {
             return;
         }
 
-        if (params.music() || Renderer.getRenderer().getAudioManager().startPlaying()) {
+        if (params.audio().isStreaming() || Renderer.getRenderer().getAudioManager().startPlaying()) {
             source.play();
         }
+    }
+
+    @Override
+    protected int getBufferCount() {
+        return 1;
     }
 }

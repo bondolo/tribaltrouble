@@ -1,17 +1,20 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * A template defining the base characteristics and assets for a unit type.
+ */
 public final class UnitTemplate extends Template {
     private final float meters_per_second;
     private final @NonNull WeaponFactory weapon_factory;
     private final @NonNull SpriteKey sprite_renderer;
-    private final UnitSupplyContainerFactory supply_container_factory;
-    private final @NonNull Audio death_sound;
+    private final @NonNull UnitSupplyContainerFactory supply_container_factory;
+    private final @NonNull AudioFile death_sound;
     private final float death_pitch;
     private final float selection_radius;
     private final float selection_height;
@@ -29,8 +32,8 @@ public final class UnitTemplate extends Template {
                         @NonNull SpriteKey sprite_renderer,
                         float shadow_diameter,
                         @NonNull ShadowListKey shadow_renderer,
-                        UnitSupplyContainerFactory supply_container_factory,
-                        @NonNull Audio death_sound,
+                        @NonNull UnitSupplyContainerFactory supply_container_factory,
+                        @NonNull AudioFile death_sound,
                         float death_pitch,
                         float @NonNull [] hit_offset_z,
                         float no_detail_size,
@@ -81,7 +84,7 @@ public final class UnitTemplate extends Template {
         return supply_container_factory;
     }
 
-    public @NonNull Audio getDeathSound() {
+    public @NonNull AudioFile getDeathSound() {
         return death_sound;
     }
 

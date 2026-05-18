@@ -1,17 +1,15 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.render.Renderer;
-
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -29,16 +27,16 @@ public final class PoisonFog implements Magic {
     private static final float GAUSSIAN_LIMIT = 2.5f;
     private static final int MIN_BURSTS_PER_SOUND = 2;
 
-    private static final AudioParameters<Audio> BUBBLING_AUDIO = new AudioParameters<>(
-            AudioPlayer.SFX_BUBBLING, AudioPlayer.AUDIO_RANK_MAGIC,
-            AudioPlayer.AUDIO_DISTANCE_MAGIC, AudioPlayer.AUDIO_GAIN_BUBBLING, AudioPlayer.AUDIO_RADIUS_BUBBLING,
+    private static final AudioParameters BUBBLING_AUDIO = new AudioParameters(
+            Assets.SFX_BUBBLING, Assets.AUDIO_RANK_MAGIC,
+            Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BUBBLING, Assets.AUDIO_RADIUS_BUBBLING,
             1f, true, false);
 
-    private static final AudioParameters<Audio> GAS_AUDIO = new AudioParameters<>(AudioPlayer.SFX_GAS,
-            AudioPlayer.AUDIO_RANK_GAS,
-            AudioPlayer.AUDIO_DISTANCE_MAGIC,
-            AudioPlayer.AUDIO_GAIN_GAS,
-            AudioPlayer.AUDIO_RADIUS_GAS);
+    private static final AudioParameters GAS_AUDIO = new AudioParameters(Assets.SFX_GAS,
+            Assets.AUDIO_RANK_GAS,
+            Assets.AUDIO_DISTANCE_MAGIC,
+            Assets.AUDIO_GAIN_GAS,
+            Assets.AUDIO_RADIUS_GAS);
 
     private final float hit_radius;
     private final float hit_chance;
@@ -81,7 +79,7 @@ public final class PoisonFog implements Magic {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         }
         if (first_run) {
-            bubbling_sound.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
+            bubbling_sound.stop(.2f, 1.0f);
             first_run = false;
         }
 
@@ -137,6 +135,6 @@ public final class PoisonFog implements Magic {
 
     @Override
     public void interrupt() {
-        bubbling_sound.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
+        bubbling_sound.stop(.2f, 1.0f);
     }
 }

@@ -1,7 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.camera.CameraState;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -38,11 +36,15 @@ public abstract class AudioManager implements AutoCloseable {
 
     private volatile boolean isPlaying = false;
     private float masterGain = 1f;
+    private float sfxGain = 1f;
+    private float musicGain = 1f;
+    private boolean sfxEnabled = true;
+
     private final Vector3f listenerPosition = new Vector3f();
     private final Vector3f listenerForward = new Vector3f(0, 0, -1);
     private final Vector3f listenerUp = new Vector3f(0, 1, 0);
 
-    private final AtomicInteger sound_play_counter = new AtomicInteger(Renderer.getRenderer().getSettings().play_sfx ? 1 : 0);
+    private final AtomicInteger sound_play_counter = new AtomicInteger(0);
 
     protected AudioManager(@NonNull AudioSource @NonNull [] sources) {
         this.sources = sources;
@@ -66,6 +68,64 @@ public abstract class AudioManager implements AutoCloseable {
     public float getMasterGain() {
         return masterGain;
     }
+
+    public void setSfxGain(float gain) {
+        this.sfxGain = gain;
+        for (AudioSource source : sources) {
+            AudioPlayer player = source.getAudioPlayer();
+            if (player != null && !player.getParameters().audio().isStreaming()) {
+                player.setGain(player.getParameters().gain());
+            }
+        }
+    }
+
+    public float getSfxGain() {
+        return sfxGain;
+    }
+
+    public void setMusicGain(float gain) {
+        this.musicGain = gain;
+        for (AudioSource source : sources) {
+            AudioPlayer player = source.getAudioPlayer();
+            if (player != null && player.getParameters().audio().isStreaming()) {
+                player.setGain(player.getParameters().gain());
+            }
+        }
+    }
+
+    public float getMusicGain() {
+        return musicGain;
+    }
+
+    public void setSfxEnabled(boolean enabled) {
+        if (this.sfxEnabled == enabled) return;
+        this.sfxEnabled = enabled;
+        if (sound_play_counter.get() > 0) {
+            if (enabled) {
+                for (AudioSource ambient : ambients) {
+                    ambient.play();
+                }
+            } else {
+                for (AudioSource source : sources) {
+                    if (source.getRank() != Assets.AUDIO_RANK_MUSIC) {
+                        source.stop();
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean isSfxEnabled() {
+        return !closed && sfxEnabled;
+    }
+
+    public abstract void setHeadphoneMode(boolean enabled);
+
+    public abstract boolean isHRTFSupported();
+
+    public abstract boolean isEFXSupported();
+
+    public abstract int getEFXEffectSlot();
 
     /**
      * Update the listener orientation using forward and up vectors
@@ -113,24 +173,12 @@ public abstract class AudioManager implements AutoCloseable {
      */
     public abstract @NonNull Audio createAudio(@NonNull URL file) throws IOException;
 
-    public boolean isHRTFSupported() {
-        return false;
-    }
-
-    public boolean isEFXSupported() {
-        return false;
-    }
-
-    public int getEFXEffectSlot() {
-        return 0;
-    }
-
     public void stopSources() {
         if (sound_play_counter.decrementAndGet() == 0) {
             for (AudioSource source : sources) {
                 int rank = source.getRank();
                 switch (rank) {
-                    case AudioPlayer.AUDIO_RANK_MUSIC, AudioPlayer.AUDIO_RANK_AMBIENT -> source.pause();
+                    case Assets.AUDIO_RANK_MUSIC, Assets.AUDIO_RANK_AMBIENT -> source.pause();
                     default -> source.stop();
                 }
             }
@@ -148,18 +196,21 @@ public abstract class AudioManager implements AutoCloseable {
     }
 
     public final synchronized void update(float t) {
-        if (closed || !Renderer.getRenderer().getSettings().play_sfx || t == 0f) {
+        processCleanupTasks();
+        if (closed || t == 0f) {
             return;
         }
 
         updateTime += t;
         if (updateTime >= AMBIENT_UPDATE_INTERVAL) {
             updateTime -= AMBIENT_UPDATE_INTERVAL;
-            updateAmbientSources();
+            if (sfxEnabled) {
+                updateAmbientSources();
+            }
         }
 
         // We only want to play ambient sounds around us at the moment...
-        if (active_ambient != null) {
+        if (sfxEnabled && active_ambient != null) {
             for (AmbientAudioSource anActive_ambient : active_ambient) {
                 if (anActive_ambient != null)
                     anActive_ambient.update(t);
@@ -179,7 +230,7 @@ public abstract class AudioManager implements AutoCloseable {
             if (a != null) a.setGainTarget(0f);
         }
 
-        float max_dist_sq = AudioPlayer.AUDIO_DISTANCE_AMBIENT * AudioPlayer.AUDIO_DISTANCE_AMBIENT;
+        float max_dist_sq = Assets.AUDIO_DISTANCE_AMBIENT * Assets.AUDIO_DISTANCE_AMBIENT;
 
         for (AudioSource ambientSource : ambients) {
             var player = ambientSource.getAudioPlayer();
@@ -212,8 +263,9 @@ public abstract class AudioManager implements AutoCloseable {
         }
     }
 
+    /** {@return true if sound effects are enabled and global mute is not enabled.} */
     public final boolean startPlaying() {
-        return sound_play_counter.intValue() > 0;
+        return sfxEnabled && sound_play_counter.intValue() > 0;
     }
 
     public final synchronized void play() {
@@ -266,28 +318,35 @@ public abstract class AudioManager implements AutoCloseable {
         }
     }
 
-    public @NonNull AudioPlayer newAudio(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters<?> params) {
+    public @NonNull AudioPlayer newAudio(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters params) {
         AudioSource source = getSource(camera_state, x, y, z, params);
         return newAudio(source, x, y, z, params);
     }
 
-    public @NonNull AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters<?> params) {
+    public @NonNull AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params) {
         AudioSource source = getSource(x, y, z, params);
         return newAudio(source, x, y, z, params);
     }
 
-    public @NonNull AudioPlayer newAudio(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params) {
-        if (null != source && params.sound() instanceof Audio audio) {
+    public @NonNull AudioPlayer newAudio(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters params) {
+        if (null != source && !params.audio().isStreaming()) {
             // Bind the audio to the source before creating the player.
-            source.setAudio(audio);
+            source.setAudio(params.audio().get());
         }
         return createPlayer(source, x, y, z, params);
     }
 
     public void startSources() {
         if (sound_play_counter.getAndIncrement() == 0) {
-            for (AudioSource ambient : ambients) {
-                ambient.play();
+            if (sfxEnabled) {
+                for (AudioSource ambient : ambients) {
+                    ambient.play();
+                }
+            }
+            for (AudioSource source : sources) {
+                if (source.getAudioPlayer() != null && source.getRank() == Assets.AUDIO_RANK_MUSIC) {
+                    source.play();
+                }
             }
         }
     }
@@ -312,7 +371,7 @@ public abstract class AudioManager implements AutoCloseable {
         return removed;
     }
 
-    private @Nullable AudioSource findSource(float x, float y, float z, @NonNull AudioParameters<?> params) {
+    private @Nullable AudioSource findSource(float x, float y, float z, @NonNull AudioParameters params) {
         float lowest_perceived_gain = Float.MAX_VALUE;
         int lowest_rank = Integer.MAX_VALUE;
         var listenerPosition = getListenerPosition();
@@ -320,7 +379,7 @@ public abstract class AudioManager implements AutoCloseable {
         AudioSource best_candidate = null;
         for (AudioSource source : sources) {
             var sourceState = source.getState();
-            if ((sourceState == AudioSource.State.INITIAL || sourceState == AudioSource.State.STOPPED) && source.getRank() < AudioPlayer.AUDIO_RANK_AMBIENT) {
+            if ((sourceState == AudioSource.State.INITIAL || sourceState == AudioSource.State.STOPPED) && source.getRank() < Assets.AUDIO_RANK_AMBIENT) {
                 if (source.getAudioPlayer() != null)
                     source.getAudioPlayer().stop();
                 return source;
@@ -349,7 +408,7 @@ public abstract class AudioManager implements AutoCloseable {
         return null;
     }
 
-    private float calculatePerceivedGain(float x, float y, float z, @NonNull AudioParameters<?> p, @NonNull Vector3fc listenerPosition) {
+    private float calculatePerceivedGain(float x, float y, float z, @NonNull AudioParameters p, @NonNull Vector3fc listenerPosition) {
         if (p.relative()) return p.gain();
 
         float dist = listenerPosition.distance(x, y, z);
@@ -368,7 +427,7 @@ public abstract class AudioManager implements AutoCloseable {
         AudioPlayer player = source.getAudioPlayer();
         if (player == null) return 0f;
 
-        AudioParameters<?> p = player.getParameters();
+        AudioParameters p = player.getParameters();
         if (p.relative()) return p.gain();
 
         float dist = listenerPosition.distance(source.getPosition());
@@ -380,14 +439,14 @@ public abstract class AudioManager implements AutoCloseable {
         return p.gain() * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
     }
 
-    private synchronized @Nullable AudioSource getSource(float x, float y, float z, @NonNull AudioParameters<?> params) {
+    private synchronized @Nullable AudioSource getSource(float x, float y, float z, @NonNull AudioParameters params) {
         if (closed) return null;
         AudioSource best_source = findSource(x, y, z, params);
         stopSource(best_source);
         return best_source;
     }
 
-    private synchronized @Nullable AudioSource getSource(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters<?> params) {
+    private synchronized @Nullable AudioSource getSource(@NonNull CameraState camera_state, float x, float y, float z, @NonNull AudioParameters params) {
         if (closed) return null;
         float this_dist_squared = params.relative()
                 ? x * x + y * y + z * z
@@ -438,7 +497,9 @@ public abstract class AudioManager implements AutoCloseable {
      */
     public abstract void enqueueCleanup(@NonNull Runnable task);
 
-    protected abstract @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<?> params);
+    protected abstract void processCleanupTasks();
+
+    protected abstract @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters params);
 
     @Override
     public synchronized void close() {
@@ -458,6 +519,7 @@ public abstract class AudioManager implements AutoCloseable {
         }
         Arrays.fill(sources, null);
         closed = true;
+        processCleanupTasks();
         logger.info("AudioManager closed.");
     }
 
@@ -507,7 +569,7 @@ public abstract class AudioManager implements AutoCloseable {
         void resetVolume() {
             AudioPlayer player = source.getAudioPlayer();
             if (player != null) {
-                float volume = Renderer.getRenderer().getSettings().sound_gain * gain * player.getParameters().gain();
+                float volume = sfxGain * gain * player.getParameters().gain();
                 source.setGain(volume);
             }
         }

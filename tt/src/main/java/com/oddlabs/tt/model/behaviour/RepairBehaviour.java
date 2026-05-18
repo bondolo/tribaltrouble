@@ -1,11 +1,15 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Unit;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Logic for unit repairing behavior.
+ * Manages units moving to damaged buildings and restoring their hit points.
+ */
 public final class RepairBehaviour implements Behaviour {
     private static final int REPAIRS_PER_SUPPLY = 5;
     private static final float SECONDS_PER_ANIMATION_CYCLE = 1f;
@@ -35,7 +39,7 @@ public final class RepairBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), AudioPlayer.getHarvestSound(TreeSupply.class, unit.getOwner().getWorld().getRandom()));
+            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), Assets.getHarvestSound(TreeSupply.class, unit.getOwner().getWorld().getRandom()));
         }
 
         if (anim_time > SECONDS_PER_ANIMATION_CYCLE) {

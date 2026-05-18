@@ -1,8 +1,7 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.gui.BuildSpinner;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
@@ -40,14 +39,13 @@ import java.util.Map;
  */
 public final class Building extends Selectable<BuildingTemplate> implements Occupant {
     private static final float REMOVE_DELAY = 1f / 10f;
-    private static final AudioParameters<Audio> COLLAPSE_AUDIO = new AudioParameters<>(
-            AudioPlayer.SFX_BUILDING_CRASH, AudioPlayer.AUDIO_RANK_BUILDING_COLLAPSE,
-            AudioPlayer.AUDIO_DISTANCE_BUILDING_COLLAPSE, AudioPlayer.AUDIO_GAIN_BUILDING_COLLAPSE, AudioPlayer.AUDIO_RADIUS_BUILDING_COLLAPSE);
-    @SuppressWarnings("unchecked")
-    private static final @NonNull AudioParameters<Audio> [] HITS_AUDIO =
-            (@NonNull AudioParameters<Audio> []) Arrays.stream(AudioPlayer.SFX_IMPACT_WOODS)
-                    .map(rsrc -> new AudioParameters<>(rsrc, AudioPlayer.AUDIO_RANK_WEAPON_HIT,
-                            AudioPlayer.AUDIO_DISTANCE_WEAPON_HIT, AudioPlayer.AUDIO_GAIN_WEAPON_HIT, AudioPlayer.AUDIO_RADIUS_WEAPON_HIT))
+    private static final AudioParameters COLLAPSE_AUDIO = new AudioParameters(
+            Assets.SFX_BUILDING_CRASH, Assets.AUDIO_RANK_BUILDING_COLLAPSE,
+            Assets.AUDIO_DISTANCE_BUILDING_COLLAPSE, Assets.AUDIO_GAIN_BUILDING_COLLAPSE, Assets.AUDIO_RADIUS_BUILDING_COLLAPSE);
+    private static final @NonNull AudioParameters [] HITS_AUDIO =
+            Arrays.stream(Assets.SFX_IMPACT_WOODS)
+                    .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_WEAPON_HIT,
+                            Assets.AUDIO_DISTANCE_WEAPON_HIT, Assets.AUDIO_GAIN_WEAPON_HIT, Assets.AUDIO_RADIUS_WEAPON_HIT))
                     .toArray(AudioParameters[]::new);
 
     private static final int PLACING_BORDER = 1;
@@ -194,12 +192,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         assert !isDead();
         UnitContainer container = getUnitContainer();
         if (canExitTower()) {
-//			Army selection = Selection.singleton.getCurrentSelection();
-            Unit unit = container.exit();
-/*			if (getOwner().isControllable()) {
-				selection.clear();
-				selection.add(unit);
-			}*/
+            container.exit();
         }
     }
 

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.tutorial;
 
 import com.oddlabs.tt.animation.TimerAnimation;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.delegate.TutorialOverDelegate;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.LabelBox;
@@ -13,6 +13,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
+/**
+ * Manages the interactive tutorial system, guiding players through game mechanics.
+ */
 public final class Tutorial {
     private static final int BORDER_OFFSET = 90;
 
@@ -68,9 +71,9 @@ public final class Tutorial {
         info = new LabelBox(text, Skin.getSkin().getEditFont(), 400);
         info.setPos(BORDER_OFFSET, viewer.getGUIRoot().getHeight() - BORDER_OFFSET - info.getHeight());
         viewer.getGUIRoot().addChild(info);
-        var params = new AudioParameters<>(
-                viewer.getLocalPlayer().getRace().getBuildingNotificationAudio(), AudioPlayer.AUDIO_RANK_NOTIFICATION,
-                AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, .25f, 1f,
+        var params = new AudioParameters(
+                viewer.getLocalPlayer().getRace().getBuildingNotificationAudio(), Assets.AUDIO_RANK_NOTIFICATION,
+                Assets.AUDIO_DISTANCE_NOTIFICATION, Assets.AUDIO_GAIN_NOTIFICATION, Assets.AUDIO_RADIUS_NOTIFICATION,
                 1f, false, true);
         viewer.getWorld().getAudio().newAudio(0f, 0f, 0f, params);
         timer = new TimerAnimation(viewer.getAnimationManagerLocal(), _ -> trigger.run(Tutorial.this), trigger.getCheckInterval());

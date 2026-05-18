@@ -2,6 +2,7 @@ package com.oddlabs.tt.util;
 
 import com.oddlabs.tt.global.Globals;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 
 import java.io.FileOutputStream;
@@ -17,11 +18,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.Spliterator;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
+/**
+ * General purpose utility methods for the application.
+ */
 public final class Utils {
     private static final Logger logger = Logger.getLogger(Utils.class.getName());
 
@@ -63,6 +71,37 @@ public final class Utils {
             buffer.flip();
             return buffer;
         }
+    }
+
+    /** {@return a stream of the remaining ints in the provided buffer} */
+    public static @NonNull IntStream toIntStream(@NonNull IntBuffer buffer) {
+        var spliterator = new Spliterator.OfInt() {
+            @Override
+            public @Nullable OfInt trySplit() {
+                // IntBuffers are too general to offer a generic split.
+                return null;
+            }
+
+            @Override
+            public boolean tryAdvance(@NonNull IntConsumer action) {
+                if (buffer.hasRemaining()) {
+                    action.accept(buffer.get());
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public long estimateSize() {
+                return buffer.remaining();
+            }
+
+            @Override
+            public int characteristics() {
+                return ORDERED | SIZED | IMMUTABLE;
+            }
+        };
+        return StreamSupport.intStream(spliterator, false);
     }
 
     public static void saveAsBMP(@NonNull String filename, @NonNull ByteBuffer pixel_data, int width, int height) {

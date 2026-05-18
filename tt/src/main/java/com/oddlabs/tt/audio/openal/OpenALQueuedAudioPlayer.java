@@ -1,68 +1,79 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.AudioFile;
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioSource;
+import com.oddlabs.tt.audio.OGGStream;
 import com.oddlabs.tt.audio.QueuedAudioPlayer;
 import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.IntBuffer;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * OpenAL implementation of {@link QueuedAudioPlayer} using a multi-buffer queue for streaming.
  */
 final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
+    private static final Logger logger = Logger.getLogger(OpenALQueuedAudioPlayer.class.getSimpleName());
     private static final int NUM_BUFFERS = 12;
-    private volatile @Nullable OpenALAudio audio;
     private volatile int al_format;
+    private volatile int al_rate;
 
-    OpenALQueuedAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters<@NonNull AudioFile> params) {
-        super(source, x, y, z, params, NUM_BUFFERS);
+    OpenALQueuedAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters params) {
+        super(source, x, y, z, params);
     }
 
     @Override
-    protected void initAsync(int channels) {
-        if (this.ogg_stream == null || this.source == null || !isPlaying()) {
+    public @NonNull QueuedAudioPlayer stop() {
+        synchronized (this) {
+            this.notifyAll(); // Wake up the filler thread.
+            // The filler thread will see playing == false and exit, running its finally block to cleanup.
+        }
+        return super.stop();
+    }
+
+    @Override
+    protected @Nullable OpenALAudio initAsync(@NonNull OGGStream stream) {
+        if (this.source == null || !isPlaying()) {
             this.al_format = AL10.AL_NONE;
-            this.audio = null;
-            return;
+            return null;
         }
 
-        var audio = new OpenALAudio(NUM_BUFFERS);
-        this.audio = audio;
-        this.al_format = Wave.getFormat(channels, Short.SIZE);
+        this.al_format = Wave.getFormat(stream.getChannels(), Short.SIZE);
+        this.al_rate = stream.getRate();
 
-        IntBuffer al_buffers = audio.getBuffers();
-        for (int i = 0; i < al_buffers.capacity(); i++) {
-            fillBuffer(al_buffers.get(i));
-        }
+        long bufferduration = (long) NUM_BUFFERS * (PCM_SAMPLES / stream.getChannels()) / (al_rate / TimeUnit.SECONDS.toMillis(1));
+        logger.info("Creating OpenAL audio with " + NUM_BUFFERS + " buffers for " + Duration.ofMillis(bufferduration));
+        var audio = new OpenALAudio((OpenALManager) Renderer.getRenderer().getAudioManager(), NUM_BUFFERS);
 
-        // Queued audio does not loop via source setting, it loops internally during buffer refill
-        source.setLooping(false);
-        ((OpenALAudioSource) source).queue(al_buffers);
+        Utils.toIntStream(audio.getBuffers()).forEachOrdered(i -> fillBuffer(i, stream));
 
-        if (getParameters().music() || Renderer.getRenderer().getAudioManager().startPlaying())
-            source.play();
+        ((OpenALAudioSource) source).queue(audio.getBuffers());
+
+        return audio;
+    }
+
+    @Override
+    protected int getBufferCount() {
+        Audio audio = this.audio;
+        assert audio != null : "Audio not initialized";
+        return ((OpenALAudio)audio).getBufferCount();
     }
 
     private void fillBufferFromStream(int al_buffer) {
         if (ALC10.alcGetCurrentContext() == 0) return;
-        // alBufferData copies pcmBuffer.remaining() * 2 bytes of data into the OpenAL buffer.
-        // The internal OpenAL buffer is automatically sized to match this byte count.
-        var stream = ogg_stream;
-        var format = al_format;
-        if (stream != null) {
-            AL10.alBufferData(al_buffer, format, pcmBuffer, stream.getRate());
-        }
+        AL10.alBufferData(al_buffer, al_format, pcmBuffer, al_rate);
     }
 
-    private int fillBuffer(int al_buffer) {
-        int shortsRead = readPCM();
+    private int fillBuffer(int al_buffer, @NonNull OGGStream stream) {
+        int shortsRead = readPCM(stream);
         if (shortsRead > 0) {
             fillBufferFromStream(al_buffer);
         }
@@ -70,7 +81,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     }
 
     @Override
-    public void refill() {
+    public void refill(@NonNull OGGStream stream) {
         if (source == null || !isPlaying() || ALC10.alcGetCurrentContext() == 0) return;
         int processed = ((OpenALAudioSource) source).processed();
         try (var stack = MemoryStack.stackPush()) {
@@ -78,7 +89,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
             while (processed > 0 && isPlaying()) {
                 if (ALC10.alcGetCurrentContext() == 0) return;
                 ((OpenALAudioSource) source).unqueued(al_return_buffers);
-                int bytes = fillBuffer(al_return_buffers.get(0));
+                int bytes = fillBuffer(al_return_buffers.get(0), stream);
                 if (bytes == 0) {
                     stop();
                     return;
@@ -90,16 +101,14 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
             }
         }
 
-        if (isPlaying() && source.getState() == AudioSource.State.STOPPED) {
+        if (isPlaying() && source.getState() != AudioSource.State.PLAYING) {
             source.play();
         }
     }
 
     @Override
-    protected void cleanupAsync() {
-        OpenALAudio toClose = audio;
-        audio = null;
-        if (toClose != null) {
+    protected void cleanupAsync() throws Exception {
+        if (audio instanceof AutoCloseable toClose) {
             toClose.close();
         }
     }

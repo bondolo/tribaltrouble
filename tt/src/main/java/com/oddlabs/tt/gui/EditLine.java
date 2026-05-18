@@ -1,9 +1,7 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.font.Index;
 import com.oddlabs.tt.font.TextLineRenderer;
 import com.oddlabs.tt.guievent.EnterListener;
@@ -25,9 +23,9 @@ import java.util.concurrent.TimeUnit;
  * input filtering, and horizontal scrolling for text that exceeds the visual width.
  */
 public class EditLine extends TextField implements Clipped {
-    private static final AudioParameters<Audio> ERROR_SOUND = new AudioParameters<>(
-            AudioPlayer.SFX_CHICKEN_PECK, AudioPlayer.AUDIO_RANK_NOTIFICATION,
-            AudioPlayer.AUDIO_DISTANCE_NOTIFICATION, 0.5f, 1f, 0.5f, false, true);
+    private static final AudioParameters ERROR_SOUND = new AudioParameters(
+            Assets.SFX_CHICKEN_PECK, Assets.AUDIO_RANK_NOTIFICATION,
+            Assets.AUDIO_DISTANCE_NOTIFICATION, 0.5f, 1f, 0.5f, false, true);
     @SuppressWarnings("TimeUnitConversionChecker")
     private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
     private final Set<@NonNull EnterListener> enter_listeners = new CopyOnWriteArraySet<>();

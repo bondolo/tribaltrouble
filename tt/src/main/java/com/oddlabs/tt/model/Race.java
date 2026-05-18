@@ -1,12 +1,16 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.gui.RaceIcons;
 import com.oddlabs.tt.model.weapon.MagicFactory;
 import com.oddlabs.tt.player.ChieftainAI;
 import com.oddlabs.tt.render.SpriteKey;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Represents a playable race in the game (e.g., Natives or Vikings).
+ * Defines the templates for buildings, units, and magical abilities available to the race.
+ */
 public final class Race {
     public static final int BUILDING_QUARTERS = 0;
     public static final int BUILDING_ARMORY = 1;
@@ -24,21 +28,21 @@ public final class Race {
     private final @NonNull UnitTemplate[] units = new UnitTemplate[5];
     private final @NonNull SpriteKey rally_point;
     private final @NonNull RaceIcons icons;
-    private final @NonNull Audio attack_notification;
-    private final @NonNull Audio building_notification;
+    private final @NonNull AudioFile attack_notification;
+    private final @NonNull AudioFile building_notification;
     private final @NonNull MagicFactory @NonNull [] magic_factory;
     private final @NonNull ChieftainAI chieftain_ai;
-    private final @NonNull String music_path;
+    private final @NonNull AudioFile music_path;
 
     public Race(@NonNull BuildingTemplate quarters, @NonNull BuildingTemplate armory, @NonNull BuildingTemplate tower,
                 @NonNull UnitTemplate warrior_rock, @NonNull UnitTemplate warrior_iron, @NonNull UnitTemplate warrior_rubber,
                 @NonNull UnitTemplate peon, @NonNull UnitTemplate chieftain,
                 @NonNull SpriteKey rally_point,
                 @NonNull RaceIcons icons,
-                @NonNull Audio attack_notification, @NonNull Audio building_notification,
+                @NonNull AudioFile attack_notification, @NonNull AudioFile building_notification,
                 @NonNull MagicFactory @NonNull [] magic_factory,
                 @NonNull ChieftainAI chieftain_ai,
-                @NonNull String music_path) {
+                @NonNull AudioFile music_path) {
         buildings[BUILDING_QUARTERS] = quarters;
         buildings[BUILDING_ARMORY] = armory;
         buildings[BUILDING_TOWER] = tower;
@@ -75,11 +79,11 @@ public final class Race {
         return icons;
     }
 
-    public @NonNull Audio getAttackNotificationAudio() {
+    public @NonNull AudioFile getAttackNotificationAudio() {
         return attack_notification;
     }
 
-    public @NonNull Audio getBuildingNotificationAudio() {
+    public @NonNull AudioFile getBuildingNotificationAudio() {
         return building_notification;
     }
 
@@ -91,7 +95,7 @@ public final class Race {
         return chieftain_ai;
     }
 
-    public @NonNull String getMusicPath() {
+    public @NonNull AudioFile getMusicPath() {
         return music_path;
     }
 }

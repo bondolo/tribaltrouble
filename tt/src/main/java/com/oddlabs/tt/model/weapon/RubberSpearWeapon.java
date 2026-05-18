@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.model.AttackScanFilter;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
@@ -8,11 +8,14 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * A throwing spear weapon made of rubber.
+ */
 public final class RubberSpearWeapon extends DirectedThrowingWeapon {
     private static final float METERS_PER_SECOND = 30; //multiplied by meters/second (in 2D)
     private static final int MAX_BOUNDS_LENGTH = 3;
 
-    public RubberSpearWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull Audio throw_sound, Audio @NonNull [] hit_sounds) {
+    public RubberSpearWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound, @NonNull AudioFile @NonNull [] hit_sounds) {
         super(hit, src, target, sprite_renderer, throw_sound, hit_sounds);
     }
 
@@ -28,8 +31,6 @@ public final class RubberSpearWeapon extends DirectedThrowingWeapon {
         } else
             super.hitTarget(hit, owner, target);
     }
-
-
     @Override
     protected float getMetersPerSecond() {
         return METERS_PER_SECOND;

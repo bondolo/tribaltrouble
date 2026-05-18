@@ -1,10 +1,14 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Logic for unit harvesting behavior.
+ * Manages finding harvestable resources, moving to them, and returning resources to a collection point.
+ */
 public final class HarvestBehaviour implements Behaviour {
     private static final float SECONDS_PER_ANIMATION_CYCLE = 1f;
     private final @NonNull Supply supply;
@@ -29,7 +33,7 @@ public final class HarvestBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            var params = AudioPlayer.getHarvestSound(supply.getClass(), unit.getOwner().getWorld().getRandom());
+            var params = Assets.getHarvestSound(supply.getClass(), unit.getOwner().getWorld().getRandom());
             unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
             if (supply.hit()) {
                 unit.getSupplyContainer().increaseSupply(1, supply.getClass());

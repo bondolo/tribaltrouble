@@ -1,6 +1,7 @@
 package com.oddlabs.tt.audio;
 
 import com.oddlabs.tt.render.Renderer;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -17,70 +18,95 @@ import java.util.logging.Logger;
  */
 public abstract class QueuedAudioPlayer extends AudioPlayer {
     private static final Logger logger = Logger.getLogger(QueuedAudioPlayer.class.getSimpleName());
-    private static final int PCM_SAMPLES = 16384;
+    protected static final int PCM_SAMPLES = 16384;
 
     protected final ShortBuffer pcmBuffer = BufferUtils.createShortBuffer(PCM_SAMPLES);
-    protected volatile @Nullable OGGStream ogg_stream;
 
-    protected QueuedAudioPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters<@NonNull AudioFile> params, int numBuffers) {
+    /**
+     * The audio data that is currently being played.
+     * We can't use audioParams.sound() because we handle buffering ourselves (for now).
+     */
+    protected volatile @Nullable Audio audio;
+
+    protected QueuedAudioPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters params) {
         super(source, x, y, z, params);
         if (!isPlaying() || this.source == null) {
-            this.ogg_stream = null;
             return;
         }
 
-        Thread.startVirtualThread(() -> refiller(params.sound().getURL(), numBuffers));
+        // Queued audio does not loop via source setting, it loops internally during buffer refill
+        source.setLooping(false);
+
+        Thread.startVirtualThread(() -> refiller(params.audio().getURL()));
     }
 
-    private void refiller(@NonNull URL source, int numBuffers) {
-        try {
-            var stream = new OGGStream(source);
+    /** {@return The audio associated with this player.} */
+    @Override
+    protected @NonNull Audio getAudio() {
+        Audio audio = this.audio;
+        if (null == audio) {
+            throw new IllegalStateException("Audio not initialized");
+        }
+        return audio;
+    }
+
+    private void refiller(@NonNull URL source) {
+        try (OGGStream stream = new OGGStream(source)){
+            this.audio = initAsync(stream);
+            if (this.audio == null) {
+                return;
+            }
+
+            if (Renderer.getRenderer().getAudioManager().startPlaying()) {
+                this.source.play();
+            }
+
             int channels = stream.getChannels();
             int rate = stream.getRate();
-            ogg_stream = stream;
-
-            initAsync(channels);
 
             // Calculate the sleep interval based on total queued time across all buffers.
             // We wait for approximately half of the total buffers to be empty before waking up.
-            long totalSamplesPerChannel = (long) PCM_SAMPLES * numBuffers / channels;
+            long totalSamplesPerChannel = (long) PCM_SAMPLES * getBufferCount() / channels;
             long sleepInterval = Math.max(10, (TimeUnit.SECONDS.toMillis(1) * totalSamplesPerChannel / rate) / 2);
 
-            while (isPlaying()) {
-                try {
-                    long start = System.currentTimeMillis();
-                    refill();
-                    var sleep = sleepInterval - (start - System.currentTimeMillis());
-                    if (sleep > 0) {
-                        //noinspection BusyWait
-                        Thread.sleep(sleep);
+            synchronized (this) {
+                while (isPlaying()) {
+                    try {
+                        long start = System.currentTimeMillis();
+                        refill(stream);
+                        var sleep = sleepInterval - (System.currentTimeMillis() - start);
+                        if (sleep > 0) {
+                            QueuedAudioPlayer.this.wait(sleep);
+                        }
+                    } catch (InterruptedException | IOException e) {
+                        break;
                     }
-                } catch (InterruptedException | IOException e) {
-                    break;
                 }
             }
-        } catch (IOException ioe) {
+        } catch(IOException ioe) {
             logger.log(Level.SEVERE, "Failed to read OGG stream " + source, ioe);
-        } catch (Exception _) {
+        } catch(Exception _) {
             // Failed to load, init, or read. Exit silently.
         } finally {
-            cleanup();
+            try {
+                cleanupAsync();
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Failure during cleanup", e);
+            }
         }
     }
 
     /** Run by the Refiller thread */
-    protected abstract void initAsync(int channels) throws Exception;
+    protected abstract @Nullable Audio initAsync(@NonNull OGGStream stream) throws Exception;
     
     /** Run by the Refiller thread */
-    protected abstract void refill() throws IOException;
+    protected abstract void refill(@NonNull OGGStream stream) throws IOException;
 
     /** Run by the Refiller thread */
-    protected abstract void cleanupAsync();
+    protected abstract void cleanupAsync() throws Exception;
 
-    protected int readPCM() {
+    protected int readPCM(@NonNull OGGStream stream) {
         pcmBuffer.clear(); // Position 0, Limit PCM_SAMPLES
-        var stream = ogg_stream;
-        if (stream == null) return 0;
 
         int shortsRead = stream.read(pcmBuffer);
 
@@ -90,15 +116,10 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
             shortsRead = stream.read(pcmBuffer);
         }
 
-        if (shortsRead > 0) {
-            // Explicitly set the buffer's position and limit for OpenAL.
-            // Some native wrappers might not update the buffer position automatically.
-            pcmBuffer.position(0);
-            pcmBuffer.limit(shortsRead);
-        } else {
-            pcmBuffer.position(0);
-            pcmBuffer.limit(0);
-        }
+        // Explicitly set the buffer's position and limit for OpenAL.
+        // Some native wrappers might not update the buffer position automatically.
+        pcmBuffer.position(0);
+        pcmBuffer.limit(shortsRead);
 
         return shortsRead;
     }
@@ -107,18 +128,8 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     public @NonNull QueuedAudioPlayer stop() {
         if (Renderer.getRenderer().getAudioManager().removeQueuedPlayer(this)) {
             super.stop(); // Sets playing = false and stops the source.
-            // The filler thread will see playing == false and exit, running its finally block to cleanup.
         }
 
         return this;
-    }
-
-    private void cleanup() {
-        OGGStream stream = ogg_stream;
-        ogg_stream = null;
-        if (null != stream) {
-            stream.close();
-        }
-        cleanupAsync();
     }
 }
