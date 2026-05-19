@@ -44,6 +44,19 @@ public final class Main {
     }
 
     static void main(@NonNull String @NonNull ... args) {
+        String os_name = System.getProperty("os.name");
+        logger.info("os.name = '" + os_name + "'");
+        String os_arch = System.getProperty("os.arch");
+        logger.info("os.arch = '" + os_arch + "'");
+        String os_version = System.getProperty("os.version");
+        logger.info("os.version = '" + os_version + "'");
+        String java_version = System.getProperty("java.version");
+        logger.info("java.version = '" + java_version + "'");
+        String java_vendor = System.getProperty("java.vendor");
+        logger.info("java.vendor = '" + java_vendor + "'");
+        long total_mem = Runtime.getRuntime().maxMemory();
+        logger.info("maxMemory = '" + total_mem + "'");
+
         int status = 1;
         try {
             logger.info("Starting game....");

@@ -71,9 +71,9 @@ public class Form extends Group {
             w = root.getWidth();
             h = root.getHeight();
         } else {
-            var window = Renderer.getRenderer().getWindow();
-            int physW = window.getWidth();
-            int physH = window.getHeight();
+            var context = Renderer.getRenderer().getRenderContext();
+            int physW = context.getViewportWidth();
+            int physH = context.getViewportHeight();
             float scale = GUIRoot.calculateEffectiveScale(physW, physH);
             w = (int) (physW / scale);
             h = (int) (physH / scale);

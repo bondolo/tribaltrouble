@@ -64,7 +64,7 @@ public final class LandscapeBaker {
                     vec3 srgbBase = pow(baseDiff.rgb, vec3(1.0 / 2.2));
                     vec3 srgbLayer = pow(layerDiff.rgb, vec3(1.0 / 2.2));
                     vec3 srgbMixed = mix(srgbBase, srgbLayer, alpha);
-                    
+            
                     // Convert back to linear for the HDR output
                     out_Diffuse = vec4(pow(srgbMixed, vec3(2.2)), mix(baseDiff.a, layerDiff.a, alpha));
                     out_Normal = mix(baseNorm, layerNorm, alpha);
@@ -83,7 +83,15 @@ public final class LandscapeBaker {
         }
     }
 
-    public WorldInfo.@NonNull Maps bake(int colormapSize, float textureScale, BlendInfo @NonNull [] blendInfos) {
+    private final int colormapSize;
+    private final float textureScale;
+
+    public LandscapeBaker(int colormapSize, float textureScale) {
+        this.colormapSize = colormapSize;
+        this.textureScale = textureScale;
+    }
+
+    public WorldInfo.@NonNull Maps bake(@NonNull BlendInfo @NonNull [] blendInfos) {
         checkGLError("Before bake");
         Texture[] diffuse = new Texture[2];
         Texture[] normal = new Texture[2];
@@ -96,9 +104,11 @@ public final class LandscapeBaker {
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            // Save current viewport
+            // Save current state
             IntBuffer viewport = stack.mallocInt(4);
             GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);
+            int savedFBO = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+            int savedDrawBuffer = GL11.glGetInteger(GL30.GL_DRAW_BUFFER0);
 
             try (FBO fbo = new FBO(colormapSize, colormapSize);
                  BlendShader shader = new BlendShader();
@@ -120,23 +130,23 @@ public final class LandscapeBaker {
                     IntBuffer drawBuffers = stack.mallocInt(2);
                     drawBuffers.put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1).flip();
 
-                    var context = Renderer.getRenderer().getRenderContext();
-
-                    for (int i = 0; i < blendInfos.length; i++) {
-                        BlendInfo info = blendInfos[i];
+                    boolean needsClear = true;
+                    for (BlendInfo info : blendInfos) {
                         int src = current;
                         int dst = 1 - current;
 
-                        fbo.bind(context);
+                        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo.getHandle());
+                        GL11.glViewport(0, 0, colormapSize, colormapSize);
                         fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT0, diffuse[dst]);
                         fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT1, normal[dst]);
-                        context.setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+                        GL30.glDrawBuffers(drawBuffers);
                         fbo.checkStatus();
 
-                        if (i == 0) {
+                        if (needsClear) {
                             // First layer initialization
                             GL11.glClearColor(0, 0, 0, 0);
                             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                            needsClear = false;
                         }
 
                         GL13.glActiveTexture(GL13.GL_TEXTURE0);
@@ -162,10 +172,7 @@ public final class LandscapeBaker {
                     }
                 }
 
-                fbo.unbind();
-
-                // Restore viewport
-                GL11.glViewport(viewport.get(0), viewport.get(1), viewport.get(2), viewport.get(3));
+                GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
 
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, diffuse[current].getHandle());
                 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
@@ -184,6 +191,11 @@ public final class LandscapeBaker {
                 normal[1 - current].close();
 
                 return new WorldInfo.Maps(diffuse[current], normal[current]);
+            } finally {
+                // Restore state
+                GL11.glViewport(viewport.get(0), viewport.get(1), viewport.get(2), viewport.get(3));
+                GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, savedFBO);
+                GL11.glDrawBuffer(savedDrawBuffer);
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.resource;
 
+import com.oddlabs.tt.landscape.LandscapeBaker;
 import com.oddlabs.tt.render.Renderer;
 
 import com.oddlabs.tt.form.ProgressForm;
@@ -84,14 +85,15 @@ public final class IslandGenerator implements WorldGenerator {
         Landscape landscape = new Landscape(num_players, meters_per_world, terrain, detail_prefade, hills, vegetation_amount, supplies_amount, seed, initial_unit_count, random_start_pos);
         Instant time_after = Instant.now();
         IO.println("Landscape created in " + Duration.between(time_before, time_after));
+        time_before = Instant.now();
         BlendInfo[] blend_infos = landscape.getBlendInfos();
         Texture detail = createDetail(landscape.getDetail(), base_level);
-        // int alpha_size = grid_units;
-        // Texture[][] chunk_maps = blendTextures(chunks_per_colormap, blend_infos, alpha_size, Globals.STRUCTURE_SIZE, colormap_size/alpha_size);
 
-        com.oddlabs.tt.landscape.LandscapeBaker baker = new com.oddlabs.tt.landscape.LandscapeBaker();
         float textureScale = meters_per_world * Globals.LANDSCAPE_TEXTURE_SCALE;
-        WorldInfo.Maps maps = baker.bake(colormap_size, textureScale, blend_infos);
+        LandscapeBaker baker = new LandscapeBaker(colormap_size, textureScale);
+        WorldInfo.Maps maps = baker.bake(blend_infos);
+        time_after = Instant.now();
+        IO.println("Landscape baked in " + Duration.between(time_before, time_after));
 
         ProgressForm.progress();
         return new WorldInfo(meters_per_world, landscape.getSeaLevelMeters(),

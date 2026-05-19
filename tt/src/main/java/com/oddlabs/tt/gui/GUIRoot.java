@@ -13,6 +13,7 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.render.SerializableDisplayMode;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.util.GLUtils;
 import com.oddlabs.tt.util.ToolTip;
@@ -236,7 +237,7 @@ public final class GUIRoot extends GUIObject {
 
     public static float calculateMinScale(int width, int height) {
         if (width <= 0 || height <= 0) return 1.0f;
-        float autoScale = Math.min(width / 1280f, height / 1024f);
+        float autoScale = Math.min(width / SerializableDisplayMode.MIN_WIDTH, height / SerializableDisplayMode.MIN_HEIGHT);
         return Math.max(1.0f, autoScale);
     }
 

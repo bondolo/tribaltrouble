@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/**
+ * UI Panel for remapping game actions to keyboard and controller inputs.
+ */
 public class KeyBindingPanel extends Panel {
     private static final int COL_ACTION_WIDTH = 200;
     private static final int COL_BINDINGS_WIDTH = 300;

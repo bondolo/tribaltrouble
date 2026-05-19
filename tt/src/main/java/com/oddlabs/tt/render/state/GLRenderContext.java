@@ -137,8 +137,8 @@ public final class GLRenderContext implements RenderContext {
 
         viewX = -1;
         viewY = -1;
-        viewW = -1;
-        viewH = -1;
+        // Keep viewW and viewH as they are, so getters return valid (if potentially stale) values.
+        // Shadow state update will still be triggered by viewX/viewY being -1.
     }
 
     @Override
@@ -401,6 +401,7 @@ public final class GLRenderContext implements RenderContext {
     public void setViewport(int x, int y, int w, int h) {
         if (viewX == x && viewY == y && viewW == w && viewH == h) return;
         GL11.glViewport(x, y, w, h);
+        checkGLError("glViewport()");
         viewX = x;
         viewY = y;
         viewW = w;

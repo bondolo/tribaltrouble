@@ -45,8 +45,8 @@ public final class GUI implements Animated {
 
     public @NonNull GUIRoot createRoot() {
         GUIRoot gui_root = new GUIRoot(this);
-        var window = Renderer.getRenderer().getWindow();
-        gui_root.displayChanged(window.getWidth(), window.getHeight());
+        var context = Renderer.getRenderer().getRenderContext();
+        gui_root.displayChanged(context.getViewportWidth(), context.getViewportHeight());
         return gui_root;
     }
 
@@ -86,11 +86,9 @@ public final class GUI implements Animated {
         var guiRoot = getGUIRoot();
         CameraState camera = guiRoot.getDelegate().getCamera().getState();
 
-        var renderer_instance = Renderer.getRenderer();
-        var window = renderer_instance.getWindow();
-        RenderContext context = renderer_instance.getRenderContext();
+        RenderContext context = Renderer.getRenderer().getRenderContext();
 
-        camera.setView(guiRoot.multProjection(proj.identity()), window.getWidth(), window.getHeight());
+        camera.setView(guiRoot.multProjection(proj.identity()), context.getViewportWidth(), context.getViewportHeight());
         modelView.set(camera.getModelView());
 
         if (!Globals.frustum_freeze) {

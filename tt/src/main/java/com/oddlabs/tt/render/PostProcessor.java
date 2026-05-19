@@ -62,20 +62,18 @@ public final class PostProcessor implements AutoCloseable {
         this.vao = new VertexArray();
         this.vao.bind();
 
-        float[] quadVertices = {
-                -1.0f, -1.0f,
-                1.0f, -1.0f,
-                -1.0f, 1.0f,
-                1.0f, 1.0f
-        };
         try (var stack = MemoryStack.stackPush()) {
-            FloatBuffer buffer = stack.mallocFloat(quadVertices.length).put(quadVertices).flip();
-            this.quadVBO = new FloatVBO(GL15.GL_STATIC_DRAW, buffer);
+            this.quadVBO = new FloatVBO(GL15.GL_STATIC_DRAW, stack.floats(
+                    -1.0f, -1.0f,
+                    1.0f, -1.0f,
+                    -1.0f, 1.0f,
+                    1.0f, 1.0f
+            ));
         }
 
         int posLoc = shader.getAttributeLocation(PostProcessShader.Attributes.POSITION);
         if (posLoc >= 0) {
-            org.lwjgl.opengl.GL20.glEnableVertexAttribArray(posLoc);
+            GL20.glEnableVertexAttribArray(posLoc);
             quadVBO.vertexAttribPointer(posLoc, 2, 0, 0);
         }
 

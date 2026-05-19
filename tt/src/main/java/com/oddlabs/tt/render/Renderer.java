@@ -197,6 +197,9 @@ public final class Renderer implements AutoCloseable {
         NativeResource.processGLCleanupTasks();
         GLUtils.checkGLError("After Cleanup");
 
+        // Ensure viewport is correct for the main pass
+        renderContext.setViewport(0, 0, window.getWidth(), window.getHeight());
+
         gui.render(ambient);
 
         if (Globals.debugRenderingEnabled()) {
@@ -620,9 +623,10 @@ public final class Renderer implements AutoCloseable {
                     if (window.wasResized()) {
                         int width = window.getWidth();
                         int height = window.getHeight();
-                        getSettings().view_width = width;
-                        getSettings().view_height = height;
-                        renderContext.setViewport(0, 0, width, height);
+                        int logicalW = window.getLogicalWidth();
+                        int logicalH = window.getLogicalHeight();
+                        getSettings().view_width = logicalW;
+                        getSettings().view_height = logicalH;
                         initGL();
                         gui.getGUIRoot().displayChanged(width, height);
                     }
@@ -824,10 +828,10 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void modeSwitchedLater(@NonNull SerializableDisplayMode new_mode) {
-        getSettings().fullscreen = window.isFullscreen();
-        getSettings().new_view_width = new_mode.getWidth();
-        getSettings().new_view_height = new_mode.getHeight();
-        getSettings().new_view_freq = new_mode.getFrequency();
+        settings.fullscreen = window.isFullscreen();
+        settings.new_view_width = new_mode.getWidth();
+        settings.new_view_height = new_mode.getHeight();
+        settings.new_view_freq = new_mode.getFrequency();
     }
 
     private void modeSwitchedNow(@NonNull SerializableDisplayMode new_mode) {
@@ -836,11 +840,11 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void modeSwitched() {
-        SerializableDisplayMode new_mode = getEventQueue().getDeterministic().log(window.getDisplayMode());
+        SerializableDisplayMode new_mode = getCurrentDisplayMode();
         logger.info("Switched mode to " + new_mode);
-        getSettings().view_width = new_mode.getWidth();
-        getSettings().view_height = new_mode.getHeight();
-        getSettings().view_freq = new_mode.getFrequency();
+        settings.view_width = new_mode.getWidth();
+        settings.view_height = new_mode.getHeight();
+        settings.view_freq = new_mode.getFrequency();
     }
 
     private static void destroyNative() {
@@ -869,25 +873,11 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initNative(boolean crashed) throws Exception {
-        String os_name = System.getProperty("os.name");
-        logger.info("os.name = '" + os_name + "'");
-        String os_arch = System.getProperty("os.arch");
-        logger.info("os.arch = '" + os_arch + "'");
-        String os_version = System.getProperty("os.version");
-        logger.info("os.version = '" + os_version + "'");
-        String java_version = System.getProperty("java.version");
-        logger.info("java.version = '" + java_version + "'");
-        String java_vendor = System.getProperty("java.vendor");
-        logger.info("java.vendor = '" + java_vendor + "'");
-        long total_mem = Runtime.getRuntime().maxMemory();
-        logger.info("maxMemory = '" + total_mem + "'");
-
         // Currently only OpenAL is supported
-        var audioManager = new OpenALManager(getSettings().headphone_mode);
-        audioManager.setSfxGain(getSettings().sound_gain);
-        audioManager.setMusicGain(getSettings().music_gain);
-        audioManager.setSfxEnabled(getSettings().play_sfx);
-        this.audioManager = audioManager;
+        this.audioManager = new OpenALManager(getSettings().headphone_mode)
+            .setSfxGain(getSettings().sound_gain)
+            .setMusicGain(getSettings().music_gain)
+            .setSfxEnabled(getSettings().play_sfx);
 
         try {
             int bpp = 32;
@@ -908,14 +898,12 @@ public final class Renderer implements AutoCloseable {
             if (width == -1 || height == -1) {
                 try {
                     SerializableDisplayMode[] modes = window.getAvailableDisplayModes();
-                    if (modes.length > 0) {
-                        target_mode = modes[0];
-                    } else {
-                        target_mode = new SerializableDisplayMode(800, 600, 32, 60);
-                    }
+                    target_mode = modes.length > 0
+                            ? modes[0]
+                            : new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, 32, 60);
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "Failed to get available modes for default selection", e);
-                    target_mode = new SerializableDisplayMode(800, 600, 32, 60);
+                    target_mode = new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, 32, 60);
                 }
             } else {
                 target_mode = new SerializableDisplayMode(width, height, bpp, freq);
@@ -1035,6 +1023,9 @@ public final class Renderer implements AutoCloseable {
         RenderContext context = getRenderer().renderContext;
         VBO.releaseAll(context);
         context.applyDefaults();
+        // Sync viewport with actual window dimensions
+        Window window = getRenderer().window;
+        context.setViewport(0, 0, window.getWidth(), window.getHeight());
     }
 
     public static void clearScreen() {

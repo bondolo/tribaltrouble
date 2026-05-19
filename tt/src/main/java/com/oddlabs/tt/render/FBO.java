@@ -181,13 +181,12 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         return height;
     }
 
-    int getHandle() {
+    public int getHandle() {
         return state.handle;
     }
 
     @Override
     public void close() {
-        Renderer.getRenderer().getRenderContext().invalidateFramebuffer(getHandle());
         super.close();
 
         if (colorTexture != null) {

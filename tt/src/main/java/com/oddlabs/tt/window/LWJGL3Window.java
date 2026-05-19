@@ -79,14 +79,18 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 
 public final class LWJGL3Window implements Window {
     private static final Logger logger = Logger.getLogger(LWJGL3Window.class.getSimpleName());
+    private static final String os = System.getProperty("os.name").toLowerCase();
+    private static final boolean isMac = os.contains("mac");
+
+    private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
     private long windowHandle = MemoryUtil.NULL;
     private @NonNull String title = "Tribal Trouble";
-    private static final AtomicBoolean initialized = new AtomicBoolean(false);
     private boolean resized;
     private boolean closeRequested;
 
     public LWJGL3Window() {
+        ensureGLFW();
     }
 
     private static void ensureGLFW() {
@@ -101,10 +105,11 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public void create(@NonNull SerializableDisplayMode mode, boolean fullscreen) {
-        ensureGLFW();
 
         if (windowHandle != MemoryUtil.NULL) {
             // Reconfigure existing window
+            logger.log(Level.INFO, "Reconfiguring window: " + mode + ", fullscreen: " + fullscreen);
+
             long monitor = fullscreen ? glfwGetPrimaryMonitor() : MemoryUtil.NULL;
             int refreshRate = fullscreen ? mode.getFrequency() : GLFW_DONT_CARE;
 
@@ -125,23 +130,26 @@ public final class LWJGL3Window implements Window {
                 glfwSetWindowSize(windowHandle, mode.getWidth(), mode.getHeight());
             }
 
-            glfwSetWindowSizeLimits(windowHandle, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
+            glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
             glfwFocusWindow(windowHandle);
+            syncViewport();
             return;
         }
+
+        logger.log(Level.INFO, "Creating window: " + mode + ", fullscreen: " + fullscreen);
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
 
-        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        if (isMac) {
             glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
         }
 
         Settings settings = Renderer.getRenderer().getSettings();
-        if (settings != null && settings.view_samples > 0) {
+        if (settings.view_samples > 0) {
             glfwWindowHint(GLFW_SAMPLES, settings.view_samples);
         }
 
@@ -161,7 +169,7 @@ public final class LWJGL3Window implements Window {
             throw new IllegalStateException("Failed to create the GLFW window");
         }
 
-        glfwSetWindowSizeLimits(windowHandle, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
 
         // Center the window if not fullscreen
         if (!fullscreen) {
@@ -176,7 +184,10 @@ public final class LWJGL3Window implements Window {
         }
 
         // Setup callbacks
-        glfwSetFramebufferSizeCallback(windowHandle, (_, _, _) -> this.resized = true);
+        glfwSetFramebufferSizeCallback(windowHandle, (_, fw, fh) -> {
+            this.resized = true;
+            Renderer.getRenderer().getRenderContext().setViewport(0, 0, fw, fh);
+        });
         glfwSetWindowCloseCallback(windowHandle, (_) -> {
             setCloseRequested(true);
             glfwSetWindowShouldClose(windowHandle, false); // Cancel the actual close immediately
@@ -185,8 +196,20 @@ public final class LWJGL3Window implements Window {
         glfwMakeContextCurrent(windowHandle);
         GL.createCapabilities();
 
+        // Initial viewport sync
+        syncViewport();
+
         glfwShowWindow(windowHandle);
         glfwFocusWindow(windowHandle);
+    }
+
+    private void syncViewport() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer fw = stack.mallocInt(1);
+            IntBuffer fh = stack.mallocInt(1);
+            glfwGetFramebufferSize(windowHandle, fw, fh);
+            Renderer.getRenderer().getRenderContext().setViewport(0, 0, fw.get(0), fh.get(0));
+        }
     }
 
     @Override
@@ -256,8 +279,7 @@ public final class LWJGL3Window implements Window {
     public void setIcon(@NonNull Path imagePath) {
         if (windowHandle == MemoryUtil.NULL) return;
 
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("mac")) {
+        if (isMac) {
             return;
         }
 
@@ -377,7 +399,6 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public @NonNull SerializableDisplayMode @NonNull [] getAvailableDisplayModes() {
-        ensureGLFW();
         long monitor = getCurrentMonitor();
         if (monitor == MemoryUtil.NULL) {
             return new SerializableDisplayMode[0];
@@ -406,17 +427,15 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public @NonNull SerializableDisplayMode getDisplayMode() {
-        ensureGLFW();
-
         int width, height;
 
         if (windowHandle != MemoryUtil.NULL) {
-            width = getWidth();
-            height = getHeight();
+            width = getLogicalWidth();
+            height = getLogicalHeight();
         } else {
             // Fallback default
-            width = 1280;
-            height = 1024;
+            width = SerializableDisplayMode.MIN_WIDTH;
+            height = SerializableDisplayMode.MIN_HEIGHT;
         }
 
         long monitor = windowHandle != MemoryUtil.NULL ? glfwGetWindowMonitor(windowHandle) : MemoryUtil.NULL;
@@ -493,7 +512,6 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public @NonNull Vector2f getMonitorPhysicalSize() {
-        ensureGLFW();
         long monitor = getCurrentMonitor();
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer w = stack.mallocInt(1);
@@ -505,7 +523,6 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public @NonNull Vector2f getMonitorContentScale() {
-        ensureGLFW();
         long monitor = getCurrentMonitor();
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer x = stack.mallocFloat(1);
