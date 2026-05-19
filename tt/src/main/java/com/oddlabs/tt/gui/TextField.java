@@ -27,6 +27,34 @@ public abstract class TextField extends GUIObject implements CharSequence {
         this.text.append(text);
     }
 
+    @Override
+    public final @NonNull String toString() {
+        return text.toString();
+    }
+
+    @Override
+    public final char charAt(int i) {
+        return text.charAt(i);
+    }
+
+    @Override
+    public final int length() {
+        return text.length();
+    }
+
+    @Override
+    public final @NonNull CharSequence subSequence(int start, int end) {
+        return text.subSequence(start, end);
+    }
+
+    public final int codePointAt(int index) {
+        return text.codePointAt(index);
+    }
+
+    public final int getTextWidth() {
+        return font.getWidth(text);
+    }
+
     public final @NonNull Font getFont() {
         return font;
     }
@@ -37,35 +65,6 @@ public abstract class TextField extends GUIObject implements CharSequence {
 
     protected final @NonNull StringBuilder getText() {
         return text;
-    }
-
-    @Override
-    public final char charAt(int i) {
-        return text.charAt(i);
-    }
-
-
-    public final int codePointAt(int index) {
-        return text.codePointAt(index);
-    }
-
-    @Override
-    public final int length() {
-        return text.length();
-    }
-
-    public final int getTextWidth() {
-        return font.getWidth(text);
-    }
-
-    @Override
-    public final @NonNull CharSequence subSequence(int start, int end) {
-        return text.subSequence(start, end);
-    }
-
-    @Override
-    public final @NonNull String toString() {
-        return text.toString();
     }
 
     public @NonNull TextField setText(@NonNull CharSequence text) {
