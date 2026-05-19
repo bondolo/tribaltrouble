@@ -67,6 +67,7 @@ public final class Settings implements Serializable {
     public int view_width = -1;
     public int view_height = -1;
     public int view_freq = -1;
+    public int view_samples = 4;
 
     public int new_view_width = view_width;
     public int new_view_height = view_height;
@@ -75,7 +76,6 @@ public final class Settings implements Serializable {
 
     public boolean fullscreen = true;
     public final boolean vsync = true;
-    public int view_samples = 4;
 //	public int view_bpp = 32;
 
     // control

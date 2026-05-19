@@ -4,6 +4,7 @@ import com.oddlabs.tt.render.Renderer;
 
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.render.SerializableDisplayMode;
+import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -491,37 +492,37 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public int[] getMonitorPhysicalSize() {
+    public @NonNull Vector2f getMonitorPhysicalSize() {
         ensureGLFW();
         long monitor = getCurrentMonitor();
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer w = stack.mallocInt(1);
             IntBuffer h = stack.mallocInt(1);
             glfwGetMonitorPhysicalSize(monitor, w, h);
-            return new int[]{w.get(0), h.get(0)};
+            return new Vector2f(w.get(0), h.get(0));
         }
     }
 
     @Override
-    public float[] getMonitorContentScale() {
+    public @NonNull Vector2f getMonitorContentScale() {
         ensureGLFW();
         long monitor = getCurrentMonitor();
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer x = stack.mallocFloat(1);
             FloatBuffer y = stack.mallocFloat(1);
             glfwGetMonitorContentScale(monitor, x, y);
-            return new float[]{x.get(0), y.get(0)};
+            return new Vector2f(x.get(0), y.get(0));
         }
     }
 
     @Override
-    public float[] getWindowContentScale() {
-        if (windowHandle == MemoryUtil.NULL) return new float[]{1.0f, 1.0f};
+    public @NonNull Vector2f getWindowContentScale() {
+        if (windowHandle == MemoryUtil.NULL) return new Vector2f(1.0f, 1.0f);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer x = stack.mallocFloat(1);
             FloatBuffer y = stack.mallocFloat(1);
             glfwGetWindowContentScale(windowHandle, x, y);
-            return new float[]{x.get(0), y.get(0)};
+            return new Vector2f(x.get(0), y.get(0));
         }
     }
 }

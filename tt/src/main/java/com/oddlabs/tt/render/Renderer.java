@@ -932,12 +932,12 @@ public final class Renderer implements AutoCloseable {
             logger.info("Setting icon from: " + iconPath.toAbsolutePath());
             window.setIcon(iconPath);
 
-            int[] physSize = window.getMonitorPhysicalSize();
-            logger.info("Monitor Physical Size: " + physSize[0] + "mm x " + physSize[1] + "mm");
-            float[] monScale = window.getMonitorContentScale();
-            logger.info("Monitor Content Scale: " + monScale[0] + "x, " + monScale[1] + "y");
-            float[] winScale = window.getWindowContentScale();
-            logger.info("Window Content Scale: " + winScale[0] + "x, " + winScale[1] + "y");
+            var physSize = window.getMonitorPhysicalSize();
+            logger.info("Monitor Physical Size: " + (int) physSize.x() + "mm x " + (int) physSize.y() + "mm");
+            var monScale = window.getMonitorContentScale();
+            logger.info("Monitor Content Scale: " + monScale.x() + "x, " + monScale.y() + "y");
+            var winScale = window.getWindowContentScale();
+            logger.info("Window Content Scale: " + winScale.x() + "x, " + winScale.y() + "y");
 
 //if (System.currentTimeMillis() > 0)
 //throw new LWJGLException("It failed because you asked it to.");

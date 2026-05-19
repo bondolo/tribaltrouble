@@ -1,6 +1,7 @@
 package com.oddlabs.tt.window;
 
 import com.oddlabs.tt.render.SerializableDisplayMode;
+import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
 
 public interface Window extends AutoCloseable {
@@ -87,21 +88,21 @@ public interface Window extends AutoCloseable {
     /**
      * Returns the physical size of the monitor in millimeters.
      *
-     * @return int array [widthMM, heightMM]
+     * @return Vector2f [width, height] in mm
      */
-    int[] getMonitorPhysicalSize();
+    @NonNull Vector2f getMonitorPhysicalSize();
 
     /**
      * Returns the content scale of the monitor.
      *
-     * @return float array [xScale, yScale]
+     * @return Vector2f [xScale, yScale]
      */
-    float[] getMonitorContentScale();
+    @NonNull Vector2f getMonitorContentScale();
 
     /**
      * Returns the content scale of the window.
      *
-     * @return float array [xScale, yScale]
+     * @return Vector2f [xScale, yScale]
      */
-    float[] getWindowContentScale();
+    @NonNull Vector2f getWindowContentScale();
 }
