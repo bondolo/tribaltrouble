@@ -77,8 +77,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.emitterRenderer = new EmitterRenderer();
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
-        var window = Renderer.getRenderer().getWindow();
-        this.postProcessor = new PostProcessor(window.getWidth(), window.getHeight());
+        var context = Renderer.getRenderer().getRenderContext();
+        this.postProcessor = new PostProcessor(context.getViewportWidth(), context.getViewportHeight());
         DebugRender.setShaderRenderer(new DebugShaderRenderer(new DebugMeshShader(), modelViewStack, projectionStack));
     }
 

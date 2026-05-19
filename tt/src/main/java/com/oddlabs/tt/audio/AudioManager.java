@@ -69,7 +69,7 @@ public abstract class AudioManager implements AutoCloseable {
         return masterGain;
     }
 
-    public void setSfxGain(float gain) {
+    public @NonNull AudioManager setSfxGain(float gain) {
         this.sfxGain = gain;
         for (AudioSource source : sources) {
             AudioPlayer player = source.getAudioPlayer();
@@ -77,13 +77,15 @@ public abstract class AudioManager implements AutoCloseable {
                 player.setGain(player.getParameters().gain());
             }
         }
+
+        return this;
     }
 
     public float getSfxGain() {
         return sfxGain;
     }
 
-    public void setMusicGain(float gain) {
+    public @NonNull AudioManager setMusicGain(float gain) {
         this.musicGain = gain;
         for (AudioSource source : sources) {
             AudioPlayer player = source.getAudioPlayer();
@@ -91,14 +93,16 @@ public abstract class AudioManager implements AutoCloseable {
                 player.setGain(player.getParameters().gain());
             }
         }
+
+        return this;
     }
 
     public float getMusicGain() {
         return musicGain;
     }
 
-    public void setSfxEnabled(boolean enabled) {
-        if (this.sfxEnabled == enabled) return;
+    public @NonNull AudioManager setSfxEnabled(boolean enabled) {
+        if (this.sfxEnabled == enabled) return this;
         this.sfxEnabled = enabled;
         if (sound_play_counter.get() > 0) {
             if (enabled) {
@@ -113,13 +117,15 @@ public abstract class AudioManager implements AutoCloseable {
                 }
             }
         }
+
+        return this;
     }
 
     public boolean isSfxEnabled() {
         return !closed && sfxEnabled;
     }
 
-    public abstract void setHeadphoneMode(boolean enabled);
+    public abstract @NonNull AudioManager setHeadphoneMode(boolean enabled);
 
     public abstract boolean isHRTFSupported();
 

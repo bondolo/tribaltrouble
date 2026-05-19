@@ -1,8 +1,7 @@
 package com.oddlabs.tt.render.state;
 
 import com.oddlabs.tt.render.Renderer;
-
-import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -395,8 +394,8 @@ public final class GLRenderContext implements RenderContext {
 
     private int viewX = -1;
     private int viewY = -1;
-    private int viewW = -1;
-    private int viewH = -1;
+    private int viewW = SerializableDisplayMode.MIN_WIDTH;
+    private int viewH = SerializableDisplayMode.MIN_HEIGHT;
 
     @Override
     public void setViewport(int x, int y, int w, int h) {

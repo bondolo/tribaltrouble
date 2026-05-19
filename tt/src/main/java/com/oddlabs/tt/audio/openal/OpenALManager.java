@@ -145,7 +145,7 @@ public final class OpenALManager extends AudioManager {
     }
 
     @Override
-    public void setHeadphoneMode(boolean enabled) {
+    public @NonNull AudioManager setHeadphoneMode(boolean enabled) {
         if (isHRTFSupported()) {
             int[] attrs = {ALC_HRTF_SOFT, enabled ? ALC_TRUE : ALC_FALSE, 0};
             if (!alcResetDeviceSOFT(data.device, attrs)) {
@@ -154,6 +154,8 @@ public final class OpenALManager extends AudioManager {
         } else {
             logger.warning("ALC_SOFT_HRTF not supported");
         }
+
+        return this;
     }
 
     private static @NonNull OpenALAudioSource @NonNull [] generateSources(int max) {

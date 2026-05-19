@@ -1,14 +1,11 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.camera.MapCamera;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.LandscapeLeaf;
 import com.oddlabs.tt.landscape.LandscapeTarget;
@@ -33,15 +30,11 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -559,13 +552,13 @@ com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
         return !nearestLandscape(x, y, viewport) ? Optional.empty() : Optional.of(new LandscapeLocation(patch_hit_x, patch_hit_y));
     }
 
-    private void setupPicking(@NonNull CameraState camera, float x_center, float y_center, int width, int height, int[] viewport) {
+    private void setupPicking(@NonNull CameraState camera, float x_center, float y_center, int width, int height, int @NonNull [] viewport) {
         proj.identity();
-        var window = Renderer.getRenderer().getWindow();
+        var context = Renderer.getRenderer().getRenderContext();
         viewport[0] = 0;
         viewport[1] = 0;
-        viewport[2] = window.getWidth();
-        viewport[3] = window.getHeight();
+        viewport[2] = context.getViewportWidth();
+        viewport[3] = context.getViewportHeight();
 
         if (width > 0 && height > 0) {
             Vector3f temp_vector = new Vector3f((viewport[2] - 2 * (x_center - viewport[0])) / width, (viewport[3] - 2 * (y_center - viewport[1])) / height, 0);
