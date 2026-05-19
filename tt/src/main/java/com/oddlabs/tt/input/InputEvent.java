@@ -9,7 +9,7 @@ import java.util.Set;
 public final class InputEvent {
     private final @NonNull Set<@NonNull GameAction> actions;
     private final @NonNull InputPhase phase;
-    private final char character;
+    private final int codepoint;
     private final boolean shiftDown;
     private final boolean controlDown;
     private final boolean altDown;
@@ -25,7 +25,7 @@ public final class InputEvent {
         this.actions = EnumSet.copyOf(actions);
         this.phase = phase;
         this.keyCode = keyboardEvent.keyCode();
-        this.character = keyboardEvent.keyChar();
+        this.codepoint = keyboardEvent.keyCodepoint();
         this.shiftDown = keyboardEvent.shiftDown();
         this.controlDown = keyboardEvent.controlDown();
         this.altDown = keyboardEvent.altDown();
@@ -42,8 +42,8 @@ public final class InputEvent {
         return phase;
     }
 
-    public char getCharacter() {
-        return character;
+    public int getCodepoint() {
+        return codepoint;
     }
 
     public boolean isShiftDown() {

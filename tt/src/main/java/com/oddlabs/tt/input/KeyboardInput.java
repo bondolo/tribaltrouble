@@ -2,7 +2,6 @@ package com.oddlabs.tt.input;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.render.Renderer;
@@ -138,7 +137,7 @@ public final class KeyboardInput {
             int event_key_mods = deterministic.log(input.getEventKeyMods());
             Key event_key = Key.fromGlfwCode(event_key_code);
             boolean event_key_down = deterministic.log(input.getEventKeyState());
-            char event_character = deterministic.log(input.getEventCharacter());
+            int event_codepoint = deterministic.log(input.getEventCodepoint());
             boolean repeat_event = deterministic.log(input.isRepeatEvent());
 
             switch (event_key) {
@@ -166,16 +165,16 @@ public final class KeyboardInput {
 
             // Use passed localInput, not static Renderer
             if (event_key_code == 0 && modifiers.isEmpty()) {
-                gui_root.getInputState().keyTyped(event_key_code, event_character);
+                gui_root.getInputState().keyTyped(event_key_code, event_codepoint);
             } else if (event_key_down) {
-                if (Key.KEY_UNKNOWN != event_key || event_character != 0) {
+                if (Key.KEY_UNKNOWN != event_key || event_codepoint != 0) {
                     localInput.setKeys(event_key, true, modifiers);
-                    gui_root.getInputState().keyPressed(event_key, event_character, modifiers, repeat_event);
+                    gui_root.getInputState().keyPressed(event_key, event_codepoint, modifiers, repeat_event);
                 }
             } else {
-                if (Key.KEY_UNKNOWN != event_key || event_character != 0) {
+                if (Key.KEY_UNKNOWN != event_key || event_codepoint != 0) {
                     localInput.setKeys(event_key, false, modifiers);
-                    gui_root.getInputState().keyReleased(event_key, event_character, modifiers);
+                    gui_root.getInputState().keyReleased(event_key, event_codepoint, modifiers);
                 }
             }
         }

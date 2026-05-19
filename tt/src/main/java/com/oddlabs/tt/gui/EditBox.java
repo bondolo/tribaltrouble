@@ -13,8 +13,8 @@ import org.jspecify.annotations.NonNull;
 public final class EditBox extends TextBox {
     private int index;
 
-    public EditBox(int width, int height, int max_chars) {
-        super(width, height, Skin.getSkin().getEditFont(), max_chars);
+    public EditBox(int width, int height, int max_codepoints) {
+        super(width, height, Skin.getSkin().getEditFont(), max_codepoints);
         index = 0;
     }
 
@@ -43,9 +43,13 @@ public final class EditBox extends TextBox {
             if (event.consumeAction(GameAction.UI_ACTIVATE)) {
                 if (insert(index, '\n')) index++;
             } else if (event.consumeAction(GameAction.UI_NAV_LEFT)) {
-                if (index > 0) index--;
+                if (index > 0) {
+                    index -= Character.charCount(getText().codePointBefore(index));
+                }
             } else if (event.consumeAction(GameAction.UI_NAV_RIGHT)) {
-                if (index < getText().length()) index++;
+                if (index < getText().length()) {
+                    index += Character.charCount(getText().codePointAt(index));
+                }
             } else if (event.consumeAction(GameAction.UI_NAV_UP)) {
                 int currentLine = getTextLayout().getCursorLine(index);
                 if (currentLine > 0) {
@@ -67,13 +71,17 @@ public final class EditBox extends TextBox {
             } else if (event.consumeAction(GameAction.UI_NAV_END)) {
                 index = getTextLayout().getLineEndCharIndex(getTextLayout().getCursorLine(index));
             } else if (event.consumeAction(GameAction.UI_BACKSPACE)) {
-                if (index > 0) delete(--index);
+                if (index > 0) {
+                    int cp = getText().codePointBefore(index);
+                    index -= Character.charCount(cp);
+                    delete(index);
+                }
             } else if (event.consumeAction(GameAction.UI_DELETE)) {
                 if (index < getText().length()) delete(index);
             } else if (!event.isControlDown() && !event.isMetaDown() && !event.isAltDown()) {
-                char key = event.getCharacter();
+                int key = event.getCodepoint();
                 if (key != 0 && !Character.isISOControl(key) && getFont().getQuad(key) != null) {
-                    if (insert(index, key)) index++;
+                    if (insert(index, key)) index += Character.charCount(key);
                 } else {
                     consumed = false;
                 }

@@ -12,6 +12,7 @@ import com.oddlabs.tt.util.GLUtils;
 import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -30,12 +31,11 @@ import java.util.Deque;
  * Supports multi-texturing to batch draw calls across different textures.
  */
 public final class GUIRenderer {
-
     private static final int MAX_QUADS = 2048;
     private static final int VERTICES_PER_QUAD = 4;
     private static final int INDICES_PER_QUAD = 6;
     private static final int MAX_TEXTURES = 8;
-    private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
+    private static final Matrix4fc IDENTITY_MATRIX = new Matrix4f();
 
     private final @NonNull ShaderProgram shader;
     private final MatrixStack matrixStack = new MatrixStack(); // No flush callback
@@ -47,7 +47,7 @@ public final class GUIRenderer {
     private final @NonNull ByteBuffer vertexBuffer;
 
     // Texture batching state
-    private final Texture[] currentTextures = new Texture[MAX_TEXTURES];
+    private final @Nullable Texture[] currentTextures = new Texture[MAX_TEXTURES];
     private int textureCount = 0;
     private int quadCount = 0;
 

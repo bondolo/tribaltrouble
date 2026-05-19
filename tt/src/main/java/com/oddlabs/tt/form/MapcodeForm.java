@@ -41,14 +41,14 @@ public final class MapcodeForm extends Form {
         Label label_seed = new Label(i18n("map_code"), Skin.getSkin().getEditFont());
         editline_seed = new EditLine(200, 12, RegistrationKey.CHAR_TO_WORD + RegistrationKey.LOWER_CASE_CHARS, Origin.AT_START) {
             @Override
-            protected boolean insert(int index, char key) {
-                return super.insert(index, Character.toUpperCase(key));
+            protected boolean insert(int index, int codepoint) {
+                return super.insert(index, Character.toUpperCase(codepoint));
             }
 
             @Override
-            public void append(@NonNull CharSequence text) {
+            public boolean append(@NonNull CharSequence text) {
                 var shifted = text.toString().toUpperCase();
-                super.append(shifted);
+                return super.append(shifted);
             }
         };
         editline_seed.addEnterListener(_ -> done());
@@ -92,7 +92,9 @@ public final class MapcodeForm extends Form {
     private final class RandButtonListener implements MouseClickListener {
         @Override
         public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
-            Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
+            var seed = Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() *
+                    (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick();
+            Random random = new Random(seed);
             random.nextInt();
             BigInteger rand_int = new BigInteger(60, random);
             String rand_string = RegistrationKey.createString(rand_int);

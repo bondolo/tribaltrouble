@@ -37,16 +37,16 @@ public class EditLine extends TextField implements Clipped {
     private int index;
 
     private long errorFlashStart = 0;
-    public EditLine(int width, int max_chars) {
-        this(width, max_chars, Origin.AT_START);
+    public EditLine(int width, int max_codepoints) {
+        this(width, max_codepoints, Origin.AT_START);
     }
 
-    public EditLine(int width, int max_chars, @NonNull Origin alignment) {
-        this(width, max_chars, null, alignment);
+    public EditLine(int width, int max_codepoints, @NonNull Origin alignment) {
+        this(width, max_codepoints, null, alignment);
     }
 
-    public EditLine(int width, int max_chars, @Nullable String allowed_chars, @NonNull Origin alignment) {
-        super(Skin.getSkin().getEditFont(), max_chars);
+    public EditLine(int width, int max_codepoints, @Nullable String allowed_chars, @NonNull Origin alignment) {
+        super(Skin.getSkin().getEditFont(), max_codepoints);
         this.allowed_chars = allowed_chars;
         this.alignment = alignment;
         Box edit_box = Skin.getSkin().getEditBox();
@@ -99,10 +99,10 @@ public class EditLine extends TextField implements Clipped {
     }
 
     @Override
-    protected boolean insert(int index, char key) {
-        boolean result = super.insert(index, key);
+    protected boolean insert(int index, int codepoint) {
+        boolean result = super.insert(index, codepoint);
         if (result) {
-            this.index++;
+            this.index += Character.charCount(codepoint);
         }
         return result;
     }
@@ -129,20 +129,28 @@ public class EditLine extends TextField implements Clipped {
             boolean consumed = true;
 
             if (event.consumeAction(GameAction.UI_NAV_LEFT)) {
-                if (index > 0) index--;
+                if (index > 0) {
+                    index -= Character.charCount(getText().codePointBefore(index));
+                }
             } else if (event.consumeAction(GameAction.UI_NAV_RIGHT)) {
-                if (index < getText().length()) index++;
+                if (index < getText().length()) {
+                    index += Character.charCount(getText().codePointAt(index));
+                }
             } else if (event.consumeAction(GameAction.UI_NAV_HOME)) {
                 index = 0;
             } else if (event.consumeAction(GameAction.UI_NAV_END)) {
                 index = getText().length();
             } else if (event.consumeAction(GameAction.UI_BACKSPACE)) {
-                if (index > 0) delete(--index);
+                if (index > 0) {
+                    int cp = getText().codePointBefore(index);
+                    index -= Character.charCount(cp);
+                    delete(index);
+                }
                 else triggerError();
             } else if (event.consumeAction(GameAction.UI_DELETE)) {
                 if (index < getText().length()) delete(index);
             } else if (!event.isControlDown() && !event.isMetaDown() && !event.isAltDown()) {
-                char c = event.getCharacter();
+                int c = event.getCodepoint();
                 if (c != 0 && !Character.isISOControl(c)) {
                     consumed = insert(index, c);
                     if (!consumed) triggerError();
@@ -162,7 +170,7 @@ public class EditLine extends TextField implements Clipped {
             // Consume printable keys in PRESSED phase to prevent bubbling (e.g. 'D' triggering debug bounds)
             // even if the character hasn't been typed yet (will come in REPEAT phase).
             if (event.getPhase() == InputPhase.PRESSED && !event.isControlDown() && !event.isAltDown() && !event.isMetaDown()) {
-                char c = event.getCharacter();
+                int c = event.getCodepoint();
                 if (c != 0 && !Character.isISOControl(c)) {
                     event.consume();
                     return;
@@ -174,8 +182,8 @@ public class EditLine extends TextField implements Clipped {
     }
 
     @Override
-    public final boolean isAllowed(char ch) {
-        return super.isAllowed(ch) && getFont().getQuad(ch) != null && (allowed_chars == null || allowed_chars.indexOf(ch) != -1);
+    public final boolean isAllowed(int codepoint) {
+        return super.isAllowed(codepoint) && getFont().getQuad(codepoint) != null && (allowed_chars == null || allowed_chars.indexOf(codepoint) != -1);
     }
 
     private void correctOffsetX() {
@@ -250,12 +258,17 @@ public class EditLine extends TextField implements Clipped {
             float bestDx = Float.MAX_VALUE;
 
             var displayText = getDisplayText();
-            for (int i = 0; i <= displayText.length(); i++) {
+            for (int i = 0; i <= displayText.length(); ) {
                 int charX = getRenderedWidth(displayText.subSequence(0, i));
                 float dx = Math.abs(relativeX - charX);
                 if (dx < bestDx) {
                     bestDx = dx;
                     bestIndex = i;
+                }
+                if (i < displayText.length()) {
+                    i += Character.charCount(Character.codePointAt(displayText, i));
+                } else {
+                    break;
                 }
             }
             index = bestIndex;

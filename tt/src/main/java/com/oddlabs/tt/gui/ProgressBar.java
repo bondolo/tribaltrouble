@@ -41,6 +41,7 @@ public final class ProgressBar extends GUIObject {
             ProgressBarData data = Skin.getSkin().getProgressBarData();
             left_margin = data.leftFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
             right_margin = data.rightFill().quad(ModeIconQuads.Mode.NORMAL).getWidth();
+            
             assert width > left_margin + right_margin : "Progress bar too small.";
             setDim(width, data.progressBar().getHeight());
         }
@@ -74,7 +75,7 @@ public final class ProgressBar extends GUIObject {
         ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
         int percentage = (int) (done * 100);
         String string = i18n("loading", percentage);
-        TextLineRenderer.render(renderer, Skin.getSkin().getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.WHITE);
+        TextLineRenderer.render(renderer, Skin.getSkin().getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.WHITE_LINEAR);
     }
 
     @Override

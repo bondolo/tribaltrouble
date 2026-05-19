@@ -46,7 +46,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
         final int action; // GLFW_PRESS, GLFW_RELEASE, GLFW_REPEAT
         final int scancode;
         final int mods;
-        char character;
+        int codepoint;
 
         KeyEvent(int key, int action, int scancode, int mods) {
             this.key = key;
@@ -55,9 +55,9 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
             this.mods = mods;
         }
 
-        KeyEvent(int key, int action, int scancode, int mods, char character) {
+        KeyEvent(int key, int action, int scancode, int mods, int codepoint) {
             this(key, action, scancode, mods);
-            this.character = character;
+            this.codepoint = codepoint;
         }
     }
 
@@ -86,12 +86,12 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
                 if (!keyEvents.isEmpty()) {
                     KeyEvent last = keyEvents.getLast();
                     if (last.action == GLFW_PRESS || last.action == GLFW_REPEAT) {
-                        last.character = (char) codepoint;
+                        last.codepoint = codepoint;
                         return;
                     }
                 }
                 // No matching key event found, add a standalone char event
-                keyEvents.add(new KeyEvent(0, GLFW_PRESS, 0, 0, (char) codepoint));
+                keyEvents.add(new KeyEvent(0, GLFW_PRESS, 0, 0, codepoint));
             }
         });
 
@@ -163,8 +163,8 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
     }
 
     @Override
-    public char getEventCharacter() {
-        return currentKeyEvent != null ? currentKeyEvent.character : 0;
+    public int getEventCodepoint() {
+        return currentKeyEvent != null ? currentKeyEvent.codepoint : 0;
     }
 
     @Override

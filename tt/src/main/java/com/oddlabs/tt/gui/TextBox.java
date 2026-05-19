@@ -13,8 +13,8 @@ public class TextBox extends TextField implements Scrollable, Clipped {
 
     private int offset_y;
 
-    public TextBox(int width, int height, @NonNull Font font, int max_chars) {
-        super(font, max_chars);
+    public TextBox(int width, int height, @NonNull Font font, int max_codepoints) {
+        super(font, max_codepoints);
         setDim(width, height);
         setCanFocus(true);
         offset_y = 0;
@@ -42,9 +42,12 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     }
 
     @Override
-    public final void append(@NonNull CharSequence str) {
-        super.append(str);
-        updateLayout();
+    public final boolean append(@NonNull CharSequence str) {
+        var result = super.append(str);
+        if (result) {
+            updateLayout();
+        }
+        return result;
     }
 
     protected final @NonNull TextLayout getTextLayout() {
