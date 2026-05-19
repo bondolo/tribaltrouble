@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static com.oddlabs.tt.util.GLUtils.checkAndThrow;
+import static com.oddlabs.tt.util.GLUtils.checkGLError;
 
 /**
  * RenderContext implementation for LWJGL OpenGL bindings.
@@ -71,6 +72,7 @@ public final class GLRenderContext implements RenderContext {
 
     @Override
     public void init() {
+        checkGLError("RenderContext.init entry");
         if (globalUbo == 0) {
             this.globalUbo = GL15.glGenBuffers();
             GL15.glBindBuffer(GL31.GL_UNIFORM_BUFFER, globalUbo);
@@ -80,6 +82,7 @@ public final class GLRenderContext implements RenderContext {
         }
         // Synchronize FBO state
         currentFBO = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+        checkGLError("RenderContext.init complete");
     }
 
     @Override
@@ -403,6 +406,16 @@ public final class GLRenderContext implements RenderContext {
         viewY = y;
         viewW = w;
         viewH = h;
+    }
+
+    @Override
+    public int getViewportWidth() {
+        return viewW;
+    }
+
+    @Override
+    public int getViewportHeight() {
+        return viewH;
     }
 
     private int currentVAO = -1;

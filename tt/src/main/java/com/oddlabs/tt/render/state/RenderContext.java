@@ -45,6 +45,10 @@ public interface RenderContext {
 
     void setViewport(int x, int y, int w, int h);
 
+    int getViewportWidth();
+
+    int getViewportHeight();
+
     // VAO
     void bindVertexArray(int vao);
 
