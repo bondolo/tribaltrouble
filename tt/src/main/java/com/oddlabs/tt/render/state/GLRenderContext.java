@@ -537,12 +537,9 @@ public final class GLRenderContext implements RenderContext {
             stack.pop();
 
             var buffers = mask && hasAttachment0 && hasAttachment1
-                    ? stack.mallocInt(2).put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1)
-                    : hasAttachment0
-                        ? stack.mallocInt(1).put(GL30.GL_COLOR_ATTACHMENT0)
-                        : stack.mallocInt(1).put(GL11.GL_NONE);
+                    ? stack.ints(GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1)
+                    : stack.ints(hasAttachment0 ? GL30.GL_COLOR_ATTACHMENT0 : GL11.GL_NONE);
 
-            buffers.flip();
             // Clear any existing errors before the critical call to isolate the failure
             GL11.glGetError();
             GL20.glDrawBuffers(buffers);
@@ -561,12 +558,7 @@ public final class GLRenderContext implements RenderContext {
             return;
         }
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer buffers = stack.mallocInt(attachments.length);
-            for (int attachment : attachments) {
-                buffers.put(attachment);
-            }
-            buffers.flip();
-            GL20.glDrawBuffers(buffers);
+            GL20.glDrawBuffers(stack.ints(attachments));
             checkAndThrow("glDrawBuffers(int[])");
         }
         // Sync maskState if it matches one of our known configurations

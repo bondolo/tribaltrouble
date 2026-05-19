@@ -133,7 +133,9 @@ public final class PostProcessor implements AutoCloseable {
             
             // Explicitly reset per-buffer state to prevent leaking into next pass/frame
             GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_FUNC_ADD);
-            GL20.glDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1});
+            try (var stack = MemoryStack.stackPush()) {
+                GL20.glDrawBuffers(stack.ints(GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1));
+            }
         }
 
         unbindSceneFBO(context);
