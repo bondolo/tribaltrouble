@@ -7,7 +7,7 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 public final class WatchStatusIcon extends StatusIcon {
-    private static final Color COLOR = new Color.Linear(new Color.Standard(1f, 1f, 1f, .75f));
+    private static final Color COLOR = new Color.Linear(Color.argb4v(0xBF_FF_FF_FF));
     private Building building;
 
     public WatchStatusIcon(int label_width, @NonNull IconQuad icon, @NonNull String tooltip) {

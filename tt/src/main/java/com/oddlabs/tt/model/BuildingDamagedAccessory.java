@@ -28,7 +28,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
     
     private static final Vector3fc ZERO_VEC = new Vector3f(0f, 0f, 0f);
     private static final Vector3fc PARTICLE_VELOCITY = new Vector3f(0f, 0f, 5f);
-    private static final Color PARTICLE_BASE_COLOR = new Color.Standard(0.3f, 0.3f, 0.3f, INITIAL_PARTICLE_ALPHA);
+    private static final Color PARTICLE_BASE_COLOR = new Color.Linear(new Color.Standard(0.3f, 0.3f, 0.3f, INITIAL_PARTICLE_ALPHA));
     private static final Vector3fc PARTICLE_RADIUS = new Vector3f(1.5f, 1.5f, 1.5f);
     private static final Vector3fc PARTICLE_GROWTH = new Vector3f(0.6f, 0.6f, 0.6f);
 
@@ -63,7 +63,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
             if (isDamaged) {
                 float energy = MIN_EMITTER_ENERGY + ((1 - (float) hp / startSmoke) * (MAX_EMITTER_ENERGY - MIN_EMITTER_ENERGY));
                 emitter.start();
-                emitter.setDeltaColor(new Color.Standard(0f, 0f, 0f, -INITIAL_PARTICLE_ALPHA / energy));
+                emitter.setDeltaColor(new Color.Linear(0f, 0f, 0f, -INITIAL_PARTICLE_ALPHA / energy));
                 emitter.setEnergy(energy);
             } else {
                 emitter.stop();

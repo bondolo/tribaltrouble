@@ -26,7 +26,7 @@ import java.util.Queue;
  * Specialized renderer for the Sonic Blast expanding ring effect.
  */
 public final class SonicBlastRenderer implements AutoCloseable {
-    private static final Color.Linear BLAST_COLOR = new Color.Linear(new Color.Standard(0.7f, 0.85f, 1.0f, 1.0f));
+    private static final Color.Linear BLAST_COLOR = new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f);
     private static final VertexLayout<SonicBlastShader.Attribute> LAYOUT = new VertexLayout<>(
             SonicBlastShader.Attribute.POSITION,
             SonicBlastShader.Attribute.TEX_COORD

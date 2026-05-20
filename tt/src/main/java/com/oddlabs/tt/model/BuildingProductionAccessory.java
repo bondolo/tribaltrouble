@@ -28,7 +28,7 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
     private static final Vector3fc EMITTER_ACCEL = new Vector3f(0f, 0f, 1.3f);
     private static final Vector3fc EMITTER_ACCEL_OFFSET = new Vector3f(0f, 0f, 0.25f);
     private static final float PARTICLE_DAMPING = 0.7f;
-    private static final Color PARTICLE_COLOR = new Color.Standard(0.35f, 0.35f, 0.35f, EMITTER_ALPHA);
+    private static final Color PARTICLE_COLOR = Color.argb4v(0xBF_59_59_59);
     private static final Vector3fc PARTICLE_RADIUS = new Vector3f(0.3f, 0.3f, 0.3f);
     private static final Vector3fc PARTICLE_GROWTH = new Vector3f(0.5f, 0.5f, 0.5f);
 
@@ -43,7 +43,7 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
                 EMITTER_RADIUS_XY, EMITTER_RADIUS_XY, EMITTER_HEIGHT, ACCELERATION_FACTOR,
                 -1, PARTICLES_PER_SECOND,
                 ZERO_VEC, EMITTER_ACCEL, ACCELERATION_FACTOR,
-                PARTICLE_COLOR, new Color.Standard(0f, 0f, 0f, -EMITTER_ALPHA / EMITTER_ENERGY),
+                PARTICLE_COLOR, new Color.Linear(0f, 0f, 0f, -EMITTER_ALPHA / EMITTER_ENERGY),
                 PARTICLE_RADIUS, PARTICLE_GROWTH, EMITTER_ENERGY, PARTICLE_DAMPING,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 textures, null, textures.length);

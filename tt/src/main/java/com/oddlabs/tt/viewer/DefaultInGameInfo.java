@@ -88,7 +88,7 @@ public class DefaultInGameInfo implements InGameInfo {
         for (Player player : players) {
             PlayerInfo player_info = player.getPlayerInfo();
             var color_floats = player.getColor();
-            Color color = viewer.getPeerHub().isAlive(player) ? color_floats : new Color.Standard(color_floats.x(), color_floats.y(), color_floats.z(), .25f);
+            Color color = viewer.getPeerHub().isAlive(player) ? color_floats : new Color.Linear(color_floats.x(), color_floats.y(), color_floats.z(), .25f);
             Label name = new Label(player_info.getName(), Skin.getSkin().getHeadlineFont())
                     .setColor(color);
             String race_str = RacesResources.getRaceName(player_info.getRace());

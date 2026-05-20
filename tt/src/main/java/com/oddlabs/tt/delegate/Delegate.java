@@ -18,7 +18,7 @@ import org.jspecify.annotations.NonNull;
  * in both 2D and 3D rendering passes.
  */
 public abstract class Delegate extends GUIObject {
-    private static final Color BACKGROUND_ALPHA = new Color.Standard(0f, 0f, 0f, .3f);
+    private static final Color BACKGROUND_ALPHA = Color.argb4v(0x4C_00_00_00);
 
     Delegate() {
         setPos(0, 0);

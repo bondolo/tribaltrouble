@@ -96,7 +96,7 @@ public final class PoisonFog implements Magic {
                     BURST_RADIUS, 0f, 0f, 0f,
                     PARTICLES_PER_BURST, PARTICLES_PER_BURST,
                     new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f),
-                    new Color.Standard(1f, 1f, 1f, alpha), new Color.Standard(0f, 0f, 0f, -alpha / energy),
+                    new Color.Linear(1f, 1f, 1f, alpha), new Color.Linear(0f, 0f, 0f, -alpha / energy),
                     new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                     owner.getWorld().getRacesResources().getPoisonTextures());

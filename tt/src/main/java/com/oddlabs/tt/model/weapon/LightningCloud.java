@@ -28,7 +28,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private static final float SECONDS_BETWEEN_STRIKES = .125f;
     private static final float BRIGHTNESS = Color.toLinear(.2f);
     private static final float LIGHTNING_TIME = .1f;
-    private static final Color DELTA_COLOR = new Color.Linear(new Color.Standard(0f, 0f, 0f, -1f / LIGHTNING_TIME));
+    private static final Color DELTA_COLOR = new Color.Linear(0f, 0f, 0f, -1f / LIGHTNING_TIME);
 
     private static final AudioParameters BUBBLING_AUDIO = new AudioParameters(
             Assets.SFX_BUBBLING, Assets.AUDIO_RANK_MAGIC,

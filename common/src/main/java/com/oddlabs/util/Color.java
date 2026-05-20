@@ -13,6 +13,7 @@ import org.jspecify.annotations.NonNull;
  * <p>Only mutable colors should use concrete Linear/Standard classes.
  */
 public sealed interface Color extends Vector4fc permits Color.Linear, Color.Standard {
+    // ARGB SRGB
     int TRANSPARENT_INT = 0x00_00_00_00;
     int BLACK_INT = 0xFF_00_00_00;
     int WHITE_INT = 0xFF_FF_FF_FF;

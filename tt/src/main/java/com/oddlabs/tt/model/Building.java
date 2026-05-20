@@ -140,7 +140,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                         getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
                         getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                         new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
-                        new Color.Standard(1f, 1f, 1f, energy * fade_speed), new Color.Standard(0f, 0f, 0f, -fade_speed),
+                        new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.Linear(0f, 0f, 0f, -fade_speed),
                         new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                         getOwner().getWorld().getRacesResources().getWoodFragments());
                 new PointEmitterModel(getOwner().getWorld(), emitter);
@@ -497,7 +497,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 1f, 1f,
                 30, 400f,
                 new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
-                new Color.Standard(1f, .8f, .6f, 1f), new Color.Standard(0f, 0f, 0f, -1f),
+                Color.argb4v(0xFF_FF_CC_99), new Color.Linear(0f, 0f, 0f, -1f),
                 new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 getOwner().getWorld().getRacesResources().getSmokeTextures());
@@ -511,7 +511,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                     getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
                     getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
-                    new Color.Standard(1f, 1f, 1f, energy * fade_speed), new Color.Standard(0f, 0f, 0f, -fade_speed),
+                    new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.Linear(0f, 0f, 0f, -fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                     getOwner().getWorld().getRacesResources().getWoodFragments());
             new PointEmitterModel(getOwner().getWorld(), emitter, getOwner().getWorld().getAnimationManagerRealTime());
