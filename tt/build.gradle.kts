@@ -26,7 +26,7 @@ application {
         "--enable-native-access=ALL-UNNAMED",
         "-Dcom.oddlabs.tt.developer=true",
         "-Xms80m", "-Xmx512m"
-        , "-javaagent:/Users/mike/.m2/repository/org/lwjglx/lwjglx-debug/1.0.4/lwjglx-debug-1.0.4.jar=validate;trace;output=trace.log"
+//        , "-javaagent:/Users/mike/.m2/repository/org/lwjglx/lwjglx-debug/1.0.4/lwjglx-debug-1.0.4.jar=validate;trace;output=trace.log"
     )
     if (System.getProperty("os.name").lowercase().contains("mac")) {
         args.add("-XstartOnFirstThread")
