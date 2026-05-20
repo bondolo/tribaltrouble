@@ -52,6 +52,7 @@ public final class World {
     private final @Nullable RacesResources races_resources;
     private final @NonNull LandscapeResources landscape_resources;
     private final @NonNull FogInfo fog;
+    private final Landscape.@NonNull TerrainType terrain;
 
     private int global_checksum;
     private int gamespeed;
@@ -66,23 +67,22 @@ public final class World {
         return new RacesResources(queues);
     }
 
-    public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation, @NonNull LandscapeResources landscape_resources, @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params, @NonNull WorldInfo world_info, Landscape.@NonNull TerrainType terrain, @NonNull PlayerInfo @NonNull [] player_infos, @NonNull FogInfo fog) {
+    public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation, @NonNull LandscapeResources landscape_resources, @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params, @NonNull WorldInfo world_info, @NonNull PlayerInfo @NonNull [] player_infos) {
         ProgressForm.progress();
-        World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener, world_params, world_info, terrain, player_infos, fog);
+        World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener, world_params, world_info, player_infos);
         ProgressForm.progress();
         ProgressForm.progress(1 / 5f);
         ProgressForm.progress();
-        Player[] players = world.getPlayers();
-        for (short i = 0; i < players.length; i++) {
-            Player player = players[i];
-            assert player != null;
-            player.init(world_info.starting_locations()[i]);
-        }
+
         return world;
     }
 
     public com.oddlabs.tt.resource.@NonNull FogInfo getFog() {
         return fog;
+    }
+
+    public Landscape.@NonNull TerrainType getTerrainType() {
+        return terrain;
     }
 
     public @NonNull LandscapeResources getLandscapeResources() {
@@ -146,9 +146,10 @@ public final class World {
         return getAnimationManagerRealTime().getTick();
     }
 
-    private World(@NonNull AudioImplementation audio_implementation, @NonNull LandscapeResources landscape_resources, @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params, @NonNull WorldInfo world_info, Landscape.@NonNull TerrainType terrain, @NonNull PlayerInfo @NonNull [] player_infos, @NonNull FogInfo fog) {
+    private World(@NonNull AudioImplementation audio_implementation, @NonNull LandscapeResources landscape_resources, @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params, @NonNull WorldInfo world_info, @NonNull PlayerInfo @NonNull [] player_infos) {
         IO.println("****************** Generating landscape at tick " + Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() + " ********************");
-        this.fog = fog;
+        this.fog = world_info.fog_info();
+        this.terrain = world_info.terrain();
         this.landscape_resources = landscape_resources;
         this.races_resources = races_resources;
         this.audio_impl = audio_implementation;
@@ -163,8 +164,9 @@ public final class World {
         random = new Random(42);
 
         players = IntStream.range(0, player_infos.length)
-                .mapToObj(i -> new Player(this, player_infos[i], Renderer.getRenderer().getSettings().linear_team_colours[i % Renderer.getRenderer().getSettings().linear_team_colours.length]))
-                .toArray(Player[]::new);
+                .mapToObj(i -> new Player(this, player_infos[i], Renderer.getRenderer().getSettings().linear_team_colours[i % Renderer.getRenderer().getSettings().linear_team_colours.length])
+                        .init(world_info.starting_locations()[i])
+                ).toArray(Player[]::new);
 
         long time_stop = System.currentTimeMillis();
         IO.println("****************** Finished landscape in " + ((time_stop - time_start) / 1000f) + " sec ********************");

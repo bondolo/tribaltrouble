@@ -36,7 +36,6 @@ import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.state.GLRenderContext;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.IslandGenerator;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.resource.Resources;
@@ -714,7 +713,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     private static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui, final boolean first_progress) {
-        final WorldGenerator generator = new IslandGenerator(256, Landscape.TerrainType.NATIVE, Globals.LANDSCAPE_HILLS, Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
+        final WorldGenerator generator = new IslandGenerator(Landscape.TerrainType.NATIVE, 256, Globals.LANDSCAPE_HILLS, Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
         return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root, first_progress, generator), first_progress);
     }
 
@@ -726,16 +725,15 @@ public final class Renderer implements AutoCloseable {
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         PlayerInfo[] players = new PlayerInfo[]{player_info};
         WorldInfo world_info = generator.generate(players.length, world_params.getInitialUnitCount(), 0f);
-        FogInfo fog_info = generator.getFogInfo();
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = World.loadCommon(render_queues);
         World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null, new NotificationListener() {
-        }, world_params, world_info, generator.getTerrainType(), players, fog_info);
+        }, world_params, world_info, players);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
         Player local_player = world.getPlayers()[0];
         Selection selection = new Selection(local_player);
-        UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info, landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer, selection), selection, generator, modelViewStack, projectionStack);
+        UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info, landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer, selection), selection, modelViewStack, projectionStack);
         Renderer.getRenderer().setMusicPath(Assets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);

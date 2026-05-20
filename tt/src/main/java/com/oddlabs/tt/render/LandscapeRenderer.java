@@ -17,7 +17,9 @@ import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.WorldInfo;
+import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.tt.vbo.FloatVBO;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -32,10 +34,10 @@ import java.util.List;
 import java.util.Set;
 
 public final class LandscapeRenderer implements SceneRenderer, Animated {
-
     private final List<@NonNull LandscapeLeaf> render_list = new ArrayList<>();
     private final @NonNull World world;
     private final @NonNull Texture diffuseMap;
+    private final @NonNull Texture normalMap;
     private final @NonNull Texture detailMap;
     private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
@@ -49,6 +51,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     public LandscapeRenderer(@NonNull World world, @NonNull WorldInfo world_info, @NonNull AnimationManager manager) {
         this.world = world;
         this.diffuseMap = world_info.maps().diffuse();
+        this.normalMap = world_info.maps().normal();
         this.detailMap = world_info.detail();
         this.instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2); // Initial capacity
 
@@ -106,8 +109,14 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             shader.setUniform(LandscapeShader.Uniforms.WORLD_SIZE, (float) world.getHeightMap().getMetersPerWorld());
             shader.setUniform(LandscapeShader.Uniforms.DETAIL_SCALE, Globals.LANDSCAPE_DETAIL_REPEAT_RATE);
 
+            Color stdColor = Sky.SEA_BOTTOM_COLOR.get(world.getTerrainType());
+            shader.setUniformColor3(LandscapeShader.Uniforms.SEA_BOTTOM_COLOR, stdColor);
+
             context.setTexture(0, diffuseMap);
             shader.setUniform(LandscapeShader.Uniforms.DIFFUSE_MAP, 0);
+
+            context.setTexture(1, normalMap);
+            shader.setUniform(LandscapeShader.Uniforms.NORMAL_MAP, 1);
 
             context.setTexture(2, detailMap);
             shader.setUniform(LandscapeShader.Uniforms.DETAIL_MAP, 2);

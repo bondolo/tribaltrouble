@@ -15,7 +15,6 @@ import com.oddlabs.tt.render.shader.SpriteShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.GlobalUniforms;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.tt.scenery.Water;
@@ -61,7 +60,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private @Nullable Building selected_building;
 
-    public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull WorldInfo world_info, @NonNull LandscapeRenderer landscape_renderer, @NonNull Picker picker, @NonNull Selection selection, @NonNull WorldGenerator generator, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull WorldInfo world_info, @NonNull LandscapeRenderer landscape_renderer, @NonNull Picker picker, @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
         this.render_queues = render_queues;
@@ -70,10 +69,10 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter, selection);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
         this.landscape_renderer = landscape_renderer;
-        this.sky = new Sky(landscape_renderer, generator.getTerrainType(), world_info.detail());
+        this.sky = new Sky(landscape_renderer, world_info.terrain(), world_info.detail());
         this.modelViewStack = modelViewStack;
         this.projectionStack = projectionStack;
-        this.water = new Water(world.getHeightMap(), generator.getTerrainType(), sky, modelViewStack, projectionStack);
+        this.water = new Water(world.getHeightMap(), world_info.terrain(), sky, modelViewStack, projectionStack);
         this.emitterRenderer = new EmitterRenderer();
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();

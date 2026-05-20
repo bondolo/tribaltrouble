@@ -273,9 +273,11 @@ public final class Player implements PlayerInterface {
         return b;
     }
 
-    public void init(float @NonNull [] starting_location) {
+    public Player init(float @NonNull [] starting_location) {
         this.start_x = starting_location[0];
         this.start_y = starting_location[1];
+
+        return this;
     }
 
     public @Nullable Selectable<?> findNearestEnemy(int start_x, int start_y) {

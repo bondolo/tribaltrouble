@@ -31,7 +31,7 @@ public final class IslandGenerator implements WorldGenerator {
     private final float supplies_amount;
     private final int seed;
 
-    public IslandGenerator(int meters_per_world, Landscape.@NonNull TerrainType terrain, float hills, float vegetation_amount, float supplies_amount, int seed) {
+    public IslandGenerator(Landscape.@NonNull TerrainType terrain, int meters_per_world, float hills, float vegetation_amount, float supplies_amount, int seed) {
         this.hills = hills;
         this.vegetation_amount = vegetation_amount;
         this.supplies_amount = supplies_amount;
@@ -53,18 +53,8 @@ public final class IslandGenerator implements WorldGenerator {
     }
 
     @Override
-    public Landscape.@NonNull TerrainType getTerrainType() {
-        return terrain;
-    }
-
-    @Override
     public int getMetersPerWorld() {
         return meters_per_world;
-    }
-
-    @Override
-    public @NonNull FogInfo getFogInfo() {
-        return Landscape.getFogInfo(terrain, meters_per_world);
     }
 
     @Override
@@ -94,11 +84,12 @@ public final class IslandGenerator implements WorldGenerator {
         IO.println("Landscape baked in " + Duration.between(time_before, time_after));
 
         ProgressForm.progress();
-        return new WorldInfo(meters_per_world, landscape.getSeaLevelMeters(),
+        return new WorldInfo(terrain, meters_per_world, landscape.getSeaLevelMeters(),
                 colormap_size, chunks_per_colormap, null, maps, detail,
                 landscape.getHeight(),
                 landscape.getTrees(), landscape.getPalmtrees(), landscape.getRock(), landscape.getIron(), landscape.getPlants(),
                 landscape.getAccessGrid(), landscape.getBuildGrid(), landscape.getStartingLocations(),
+                Landscape.getFogInfo(terrain, meters_per_world),
                 blend_infos);
     }
 }
