@@ -1,8 +1,6 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.global.Settings;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -13,6 +11,7 @@ import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.ServerMessageBundler;
 import org.jspecify.annotations.NonNull;
 

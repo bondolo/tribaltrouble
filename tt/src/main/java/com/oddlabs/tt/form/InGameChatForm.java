@@ -15,7 +15,6 @@ import com.oddlabs.tt.net.ChatCommand;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.ChatMethod;
-import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;

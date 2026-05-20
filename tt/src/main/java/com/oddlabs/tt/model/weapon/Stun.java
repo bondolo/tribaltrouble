@@ -14,7 +14,6 @@ import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

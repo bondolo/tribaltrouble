@@ -5,7 +5,6 @@ import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.GLIntImage;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 /**
  * A texture generator that produces Perlin noise.

@@ -1,7 +1,5 @@
 package com.oddlabs.tt.delegate;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.form.CampaignForm;
@@ -9,10 +7,9 @@ import com.oddlabs.tt.form.LoginForm;
 import com.oddlabs.tt.form.SelectGameMenu;
 import com.oddlabs.tt.form.TerrainMenuForm;
 import com.oddlabs.tt.form.TutorialForm;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MenuButton;
-import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 /**

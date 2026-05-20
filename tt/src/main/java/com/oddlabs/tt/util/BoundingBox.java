@@ -4,7 +4,6 @@ import com.oddlabs.tt.landscape.HeightMap;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.system.MemoryStack;
 
 /**
  * Provides world-space bounding volumes for collision detection, frustum culling, and spatial sorting.

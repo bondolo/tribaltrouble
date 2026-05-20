@@ -1,7 +1,6 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.tt.font.Font;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;

@@ -1,7 +1,5 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.gui.GUIIcons;
 import com.oddlabs.tt.gui.IconQuad;
 import com.oddlabs.tt.gui.ToolTipBox;

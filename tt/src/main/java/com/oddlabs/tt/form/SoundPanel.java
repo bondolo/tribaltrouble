@@ -1,7 +1,6 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;

@@ -2,20 +2,15 @@ package com.oddlabs.tt.camera;
 
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.event.LocalEventQueue;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.StateChecksum;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.BufferUtils;
-
-import java.nio.IntBuffer;
-import java.util.Objects;
 
 /**
  * The View

@@ -1,8 +1,6 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.event.LocalEventQueue;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -14,6 +12,7 @@ import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;

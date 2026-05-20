@@ -1,6 +1,5 @@
 package com.oddlabs.tt.animation;
 
-import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;

@@ -4,8 +4,6 @@ import com.oddlabs.matchmaking.Login;
 import com.oddlabs.matchmaking.LoginDetails;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.MainMenu;
-import com.oddlabs.tt.global.Settings;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;
@@ -21,6 +19,7 @@ import com.oddlabs.tt.gui.PasswordLine;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.guievent.EnterListener;
 import com.oddlabs.tt.guievent.MouseClickListener;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

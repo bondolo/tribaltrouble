@@ -1,7 +1,6 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.tt.global.Settings;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -15,6 +14,7 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.TitledBorderGroup;
 import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

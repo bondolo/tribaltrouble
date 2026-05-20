@@ -1,10 +1,7 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.resource.GLImage;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.resource.TextureFile;

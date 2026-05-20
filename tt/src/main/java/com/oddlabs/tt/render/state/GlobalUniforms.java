@@ -7,7 +7,6 @@ import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.RadialFogInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
 

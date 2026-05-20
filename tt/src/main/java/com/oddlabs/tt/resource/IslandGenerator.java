@@ -1,13 +1,11 @@
 package com.oddlabs.tt.resource;
 
-import com.oddlabs.tt.landscape.LandscapeBaker;
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.landscape.LandscapeBaker;
 import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

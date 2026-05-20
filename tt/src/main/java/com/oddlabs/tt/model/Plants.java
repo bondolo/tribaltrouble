@@ -1,10 +1,8 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SpriteKey;
 import org.jspecify.annotations.NonNull;
 

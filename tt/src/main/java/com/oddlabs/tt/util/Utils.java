@@ -3,7 +3,6 @@ package com.oddlabs.tt.util;
 import com.oddlabs.tt.global.Globals;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.BufferUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,9 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;

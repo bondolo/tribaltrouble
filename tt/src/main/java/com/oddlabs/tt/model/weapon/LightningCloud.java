@@ -13,7 +13,6 @@ import com.oddlabs.tt.particle.Lightning;
 import com.oddlabs.tt.particle.ParametricEmitter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;

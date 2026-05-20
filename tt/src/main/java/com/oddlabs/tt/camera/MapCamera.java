@@ -1,14 +1,12 @@
 package com.oddlabs.tt.camera;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.delegate.SelectionDelegate;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.RadialFogInfo;
 import com.oddlabs.tt.util.Utils;

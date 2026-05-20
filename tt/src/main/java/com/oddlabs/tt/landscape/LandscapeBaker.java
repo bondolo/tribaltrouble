@@ -1,7 +1,6 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.render.FBO;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.resource.BlendInfo;

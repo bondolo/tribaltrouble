@@ -1,7 +1,5 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.render.shader.PostProcessShader;
 import com.oddlabs.tt.render.state.BlendMode;
@@ -11,7 +9,6 @@ import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.VertexArray;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
@@ -21,7 +18,6 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.FloatBuffer;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Logger;

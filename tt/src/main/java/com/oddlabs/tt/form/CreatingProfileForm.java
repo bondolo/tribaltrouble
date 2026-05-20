@@ -8,7 +8,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.net.ProfileListener;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;

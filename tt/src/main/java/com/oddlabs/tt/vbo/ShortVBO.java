@@ -1,7 +1,6 @@
 package com.oddlabs.tt.vbo;
 
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;

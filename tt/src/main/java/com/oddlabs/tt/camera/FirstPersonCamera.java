@@ -1,6 +1,5 @@
 package com.oddlabs.tt.camera;
 
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.render.Renderer;

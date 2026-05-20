@@ -2,7 +2,6 @@ package com.oddlabs.tt.camera;
 
 import com.oddlabs.tt.delegate.SelectionDelegate;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

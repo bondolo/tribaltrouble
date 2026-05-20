@@ -2,13 +2,12 @@ package com.oddlabs.tt.delegate;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.FirstPersonCamera;
-import com.oddlabs.tt.event.LocalEventQueue;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.gui.CursorType;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

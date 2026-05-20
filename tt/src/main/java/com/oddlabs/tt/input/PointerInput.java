@@ -6,9 +6,9 @@ import com.oddlabs.tt.gui.CursorType;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.CursorFile;
 import com.oddlabs.tt.resource.Resources;
-import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

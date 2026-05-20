@@ -1,10 +1,7 @@
 package com.oddlabs.tt.delegate;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.camera.StaticCamera;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -12,6 +9,7 @@ import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.WorldViewer;

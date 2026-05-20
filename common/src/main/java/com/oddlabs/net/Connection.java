@@ -12,8 +12,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
 
 
 public final class Connection extends AbstractConnection implements Handler, ConnectionPeerInterface {

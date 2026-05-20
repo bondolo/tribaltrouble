@@ -1,8 +1,6 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;

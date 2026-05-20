@@ -1,11 +1,8 @@
 package com.oddlabs.tt.landscape;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.form.ProgressForm;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.model.AbstractElementNode;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Supply;
@@ -17,6 +14,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.RenderQueues;
+import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.WorldInfo;
 import org.jspecify.annotations.NonNull;
