@@ -895,12 +895,12 @@ public final class Renderer implements AutoCloseable {
             int height = crashed ? getSettings().view_height : getSettings().new_view_height;
             int freq = crashed ? getSettings().view_freq : getSettings().new_view_freq;
 
-            if (width == -1 || height == -1) {
+            if (width < SerializableDisplayMode.MIN_WIDTH || height < SerializableDisplayMode.MIN_HEIGHT) {
                 try {
-                    SerializableDisplayMode[] modes = window.getAvailableDisplayModes();
-                    target_mode = modes.length > 0
-                            ? modes[0]
-                            : new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, 32, 60);
+                    var modes = window.getAvailableDisplayModes();
+                    target_mode = modes.isEmpty()
+                            ? new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, 32, 60)
+                            : modes.getFirst();
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "Failed to get available modes for default selection", e);
                     target_mode = new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, 32, 60);

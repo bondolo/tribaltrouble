@@ -5,12 +5,10 @@ import com.oddlabs.util.LinkedList;
 import com.oddlabs.util.ListElementImpl;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
-import java.util.Objects;
 
 /** A renderable component with position, size, and optionally renderable children. */
 public abstract class Renderable<R extends Renderable<R>> extends ListElementImpl<R> {

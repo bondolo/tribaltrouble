@@ -7,7 +7,6 @@ import com.oddlabs.tt.delegate.NullDelegate;
 import com.oddlabs.tt.form.QuitForm;
 import com.oddlabs.tt.form.Status;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

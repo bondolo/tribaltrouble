@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputProvider;

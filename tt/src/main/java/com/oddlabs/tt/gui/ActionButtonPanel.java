@@ -1,7 +1,5 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.render.Renderer;
-
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.delegate.CameraDelegate;

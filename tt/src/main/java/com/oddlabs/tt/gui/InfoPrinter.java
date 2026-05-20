@@ -4,7 +4,6 @@ import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
-import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

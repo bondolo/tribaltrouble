@@ -4,6 +4,8 @@ import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
+
 public interface Window extends AutoCloseable {
     void create(@NonNull SerializableDisplayMode mode, boolean fullscreen);
 
@@ -65,7 +67,7 @@ public interface Window extends AutoCloseable {
 
     void setFullscreen(boolean fullscreen) throws Exception;
 
-    @NonNull SerializableDisplayMode @NonNull [] getAvailableDisplayModes();
+    @NonNull List<@NonNull SerializableDisplayMode> getAvailableDisplayModes();
 
     @NonNull SerializableDisplayMode getDisplayMode();
 

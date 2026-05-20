@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * A GUI group with a bordered background and a title label embedded in the top border.

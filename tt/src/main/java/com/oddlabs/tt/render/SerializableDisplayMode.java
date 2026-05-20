@@ -15,7 +15,7 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
 
     public static final int MIN_WIDTH = 1024;
     public static final int MIN_HEIGHT = 768;
-    public static final int MIN_FREQ = 24; // may also be zero for "unkown"
+    public static final int MIN_FREQ = 24; // may also be zero for "unknown"
     public static final int MIN_BPP = 8;
 
     private static final SerializableDisplayMode DEFAULT_MODE = new SerializableDisplayMode(0, 0, 0, 0);

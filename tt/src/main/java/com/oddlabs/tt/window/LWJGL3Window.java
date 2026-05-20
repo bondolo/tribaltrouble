@@ -14,13 +14,16 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.system.StructBuffer;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -398,19 +401,14 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public @NonNull SerializableDisplayMode @NonNull [] getAvailableDisplayModes() {
+    public @NonNull List<@NonNull SerializableDisplayMode> getAvailableDisplayModes() {
         long monitor = getCurrentMonitor();
-        if (monitor == MemoryUtil.NULL) {
-            return new SerializableDisplayMode[0];
-        }
-        GLFWVidMode.Buffer modes = glfwGetVideoModes(monitor);
 
-        if (modes == null) return new SerializableDisplayMode[0];
-
-        return modes.stream()
+        return Optional.ofNullable(monitor != MemoryUtil.NULL ? glfwGetVideoModes(monitor) : null).stream()
+                .flatMap(StructBuffer::stream)
                 .map(m -> {
                     int bpp = m.redBits() + m.greenBits() + m.blueBits();
-                    if (bpp == 24) bpp = 32; // Assume 32-bit if RGB is 24-bit
+                    if (bpp == 24) bpp = 32;
                     return new SerializableDisplayMode(m.width(), m.height(), bpp, m.refreshRate());
                 })
                 .filter(SerializableDisplayMode::isModeValid)
@@ -422,7 +420,7 @@ public final class LWJGL3Window implements Window {
                                 .thenComparing(SerializableDisplayMode::getFrequency))
                 )).values().stream()
                 .sorted(Comparator.reverseOrder())
-                .toArray(SerializableDisplayMode[]::new);
+                .toList();
     }
 
     @Override
@@ -451,34 +449,7 @@ public final class LWJGL3Window implements Window {
             if (bpp == 24) bpp = 32;
         }
 
-        SerializableDisplayMode current = new SerializableDisplayMode(width, height, bpp, freq);
-
-        // Try to match with available modes to ensure exact equality (for UI selection)
-        try {
-            for (SerializableDisplayMode m : getAvailableDisplayModes()) {
-                if (m.getWidth() == width && m.getHeight() == height && m.getBitsPerPixel() == bpp && m.getFrequency() == freq) {
-                    return m;
-                }
-            }
-            // Relaxed match: just resolution and BPP
-            for (SerializableDisplayMode m : getAvailableDisplayModes()) {
-                if (m.getWidth() == width && m.getHeight() == height && m.getBitsPerPixel() == bpp) {
-                    return m;
-                }
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to match specific display mode", e);
-        }
-
-        try {
-            SerializableDisplayMode[] available = getAvailableDisplayModes();
-            if (available.length > 0) {
-                return available[0];
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to query available display modes", e);
-        }
-        return new SerializableDisplayMode(1280, 1024, 32, 60);
+        return new SerializableDisplayMode(width, height, bpp, freq);
     }
 
     @Override

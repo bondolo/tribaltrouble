@@ -1,6 +1,5 @@
 package com.oddlabs.tt.form;
 
-import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.Form;
@@ -119,19 +118,26 @@ public class GraphicsPanel extends Panel {
         ColumnInfo[] mode_infos = new ColumnInfo[]{new ColumnInfo("", 150)};
 
         MultiColumnComboBox<SerializableDisplayMode> mode_list_box = new MultiColumnComboBox<>(gui_root, mode_infos, 200, false);
-        SerializableDisplayMode[] modes = Renderer.getRenderer().getWindow().getAvailableDisplayModes();
-        SerializableDisplayMode current_mode = Renderer.getRenderer().getCurrentDisplayMode();
+        boolean fullscreen = Renderer.getRenderer().getSettings().fullscreen;
+        var current_mode = Renderer.getRenderer().getCurrentDisplayMode();
+        var modes = Renderer.getRenderer().getWindow().getAvailableDisplayModes();
+
         Row<SerializableDisplayMode, Label> current_row = null;
-        for (int i = 0; i < modes.length; i++) {
-            if (modes[i].getBitsPerPixel() == current_mode.getBitsPerPixel()) {
-                String mode_string = AbstractOptionsMenu.i18n("mode", Integer.toString(modes[i].getWidth()), Integer.toString(modes[i].getHeight()), Integer.toString(modes[i].getFrequency()));
-                Label label = new SortedLabel(mode_string, i, Skin.getSkin().getMultiColumnComboBoxData().font());
-                Row<SerializableDisplayMode, Label> row = new Row<>(new Label[]{label}, modes[i]);
-                mode_list_box.addRow(row);
-                if (modes[i].equals(current_mode))
-                    current_row = row;
+        for (int i = 0; i < modes.size(); i++) {
+            SerializableDisplayMode m = modes.get(i);
+            String mode_string = AbstractOptionsMenu.i18n("mode", m.getWidth(), m.getHeight(), m.getFrequency());
+            Label label = new SortedLabel(mode_string, i, Skin.getSkin().getMultiColumnComboBoxData().font());
+            var row = new Row<>(new Label[]{label}, m);
+            mode_list_box.addRow(row);
+
+            boolean matches = fullscreen
+                    ? m.equals(current_mode)
+                    : (m.getWidth() == current_mode.getWidth() && m.getHeight() == current_mode.getHeight());
+            if (matches) {
+                current_row = row;
             }
         }
+
         if (current_row != null)
             mode_list_box.selectRow(current_row);
         mode_list_box.addRowListener(new RowListener<>() {
