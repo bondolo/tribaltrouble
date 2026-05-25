@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 abstract class ShadowRenderer {
     private final DecalRenderer decalRenderer = new DecalRenderer();
-    private Color color = new Color.Linear(Color.WHITE_LINEAR);
+    private Color color = new Color.Linear(Color.Linear.WHITE);
     private Selectable.@NonNull VisualPattern pattern = Selectable.VisualPattern.NONE;
     private @Nullable Texture currentTexture;
 

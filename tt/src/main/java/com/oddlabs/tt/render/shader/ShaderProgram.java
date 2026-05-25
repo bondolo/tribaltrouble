@@ -247,7 +247,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         Color lastValue = state.colorUniforms.get(loc);
         var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
         if (lastValue != null && lastValue.equals(linearColor)) return;
-        GL20.glUniform4f(loc, linearColor.x(), linearColor.y(), linearColor.z(), linearColor.w());
+        GL20.glUniform4f(loc, linearColor.r(), linearColor.g(), linearColor.b(), linearColor.a());
         state.colorUniforms.put(loc, linearColor);
     }
 
@@ -260,7 +260,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         if (lastValue != null && lastValue.equals(value)) return;
 
         var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
-        GL20.glUniform3f(loc, linearColor.x(), linearColor.y(), linearColor.z());
+        GL20.glUniform3f(loc, linearColor.r(), linearColor.g(), linearColor.b());
         state.colorUniforms.put(loc, linearColor);
     }
 

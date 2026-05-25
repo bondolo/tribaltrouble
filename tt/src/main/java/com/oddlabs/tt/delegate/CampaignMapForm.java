@@ -51,7 +51,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     private boolean initialFocusSet = false;
 
     private float flicker_time;
-    private final Color.Linear mapColor = new Color.Linear(Color.WHITE_LINEAR);
+    private Color.@NonNull Linear mapColor = Color.Linear.WHITE;
 
     public CampaignMapForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Campaign campaign) {
         super(gui_root, new StaticCamera(new CameraState()));
@@ -278,7 +278,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
 
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
-        renderer.drawIcon(campaign.getIcons().getMap(), 0f, 0f, Color.WHITE_LINEAR);
+        renderer.drawIcon(campaign.getIcons().getMap(), 0f, 0f, Color.Linear.WHITE);
     }
 
     @Override
@@ -305,9 +305,9 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         float noise = n1 * 0.4f + n2 * 0.4f + n3 * 0.2f;
         
         // Base linear factor 0.9 (approx 0.95 sRGB) with +/- 10% swing.
-        // This avoids blowing out the bright map center while maintaining visible flicker.
+        // This avoids blowing out the bright map center while maintaining a visible flicker.
         float factor = 0.9f + noise * 0.10f;
-        mapColor.set(factor, factor, factor, 1f);
+        mapColor = new Color.Linear(factor, factor, factor, 1f);
     }
 
     @Override

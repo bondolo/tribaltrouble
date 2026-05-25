@@ -45,7 +45,7 @@ public final class CameraState {
     private int height;
 
     public CameraState() {
-        this(new FogInfo(FogInfo.Mode.NONE, Color.BLACK, 0f));
+        this(new FogInfo(FogInfo.Mode.NONE, Color.Standard.BLACK, 0f));
     }
 
     public CameraState(@NonNull FogInfo fog) {

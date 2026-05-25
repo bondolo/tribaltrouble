@@ -50,7 +50,7 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
     @Override
     protected void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         try (var _ = setupShadows(context, renderer, modelViewStack, projectionStack)) {
-            setShadowColor(Color.WHITE_LINEAR);
+            setShadowColor(Color.Linear.WHITE);
             setPattern(Selectable.VisualPattern.NONE);
             bindShadowTexture(halos[GeneratorHalos.HaloType.SHADOWED.ordinal()]);
             while (!shadowed_list.isEmpty()) {

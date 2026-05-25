@@ -111,11 +111,11 @@ public final class UnitGrid {
                 float zf = heightmap.getNearestHeight(xf, yf) + 2f;
                 Region region = getRegion(x, y);
                 if (region == null) {
-                    DebugRender.drawPoint(xf, yf, zf, 3f, Color.RED_LINEAR.x(), Color.RED_LINEAR.y(), Color.RED_LINEAR.z());
+                    DebugRender.drawPoint(xf, yf, zf, 3f, Color.Linear.RED.r(), Color.Linear.RED.g(), Color.Linear.RED.b());
                 } else {
                     last_region = region;
                     Color color = new Color.Linear(DebugRender.debug_colors[region.hashCode() % DebugRender.debug_colors.length]);
-                    DebugRender.drawPoint(xf, yf, zf, 3f, color.x(), color.y(), color.z());
+                    DebugRender.drawPoint(xf, yf, zf, 3f, color.r(), color.g(), color.b());
                 }
             }
         }
@@ -136,8 +136,8 @@ public final class UnitGrid {
         float xf = (x + .5f) * s;
         float yf = (y + .5f) * s;
         float z = heightmap.getNearestHeight(xf, yf) + OFFSET;
-        DebugRender.drawLine(xf - RADIUS, yf - RADIUS, z, xf + RADIUS, yf + RADIUS, z, color.x(), color.y(), color.z());
-        DebugRender.drawLine(xf + RADIUS, yf - RADIUS, z, xf - RADIUS, yf + RADIUS, z, color.x(), color.y(), color.z());
+        DebugRender.drawLine(xf - RADIUS, yf - RADIUS, z, xf + RADIUS, yf + RADIUS, z, color.r(), color.g(), color.b());
+        DebugRender.drawLine(xf + RADIUS, yf - RADIUS, z, xf - RADIUS, yf + RADIUS, z, color.r(), color.g(), color.b());
     }
 
     public @NonNull HeightMap getHeightMap() {
@@ -155,7 +155,7 @@ public final class UnitGrid {
         for (int y = start_y; y < end_y; y++) {
             for (int x = start_x; x < end_x; x++) {
                 if (isGridOccupied(x, y)) {
-                    debugRenderQuad(x, y, Color.YELLOW_LINEAR);
+                    debugRenderQuad(x, y, Color.Linear.YELLOW);
                 }
             }
         }

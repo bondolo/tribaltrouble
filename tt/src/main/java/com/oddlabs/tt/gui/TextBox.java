@@ -63,7 +63,7 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
         Box edit_box = Skin.getSkin().getEditBox();
         renderBox(renderer, ModeIconQuads.Mode.NORMAL);
-        TextLineRenderer.render(renderer, textLayout, edit_box.getLeftOffset(), getHeight() - edit_box.getBottomOffset() - getFont().getHeight() + offset_y, edit_box.getLeftOffset(), getWidth() - edit_box.getRightOffset(), Color.WHITE);
+        TextLineRenderer.render(renderer, textLayout, edit_box.getLeftOffset(), getHeight() - edit_box.getBottomOffset() - getFont().getHeight() + offset_y, edit_box.getLeftOffset(), getWidth() - edit_box.getRightOffset(), Color.Standard.WHITE);
     }
 
     @Override

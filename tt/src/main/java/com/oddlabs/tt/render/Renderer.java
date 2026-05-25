@@ -1027,7 +1027,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     public static void clearScreen() {
-        GL11.glClearColor(Color.BLACK_LINEAR.x(), Color.BLACK_LINEAR.y(), Color.BLACK_LINEAR.z(), Color.BLACK_LINEAR.w());
+        GL11.glClearColor(Color.Linear.BLACK.r(), Color.Linear.BLACK.g(), Color.Linear.BLACK.b(), Color.Linear.BLACK.a());
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
     }
 

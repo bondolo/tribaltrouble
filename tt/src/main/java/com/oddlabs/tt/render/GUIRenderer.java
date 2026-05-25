@@ -53,7 +53,7 @@ public final class GUIRenderer {
 
     // Modulation stack
     private final Deque<Color> modulationStack = new ArrayDeque<>();
-    private Color currentModulation = Color.WHITE_LINEAR;
+    private Color currentModulation = Color.Linear.WHITE;
 
     private @Nullable RenderContext currentContext;
 
@@ -65,7 +65,7 @@ public final class GUIRenderer {
                 GUIShader.Attribute.TEX_COORD,
                 GUIShader.Attribute.TEX_INDEX
         );
-        this.modulationStack.push(Color.WHITE_LINEAR);
+        this.modulationStack.push(Color.Linear.WHITE);
 
         this.vao = new VertexArray();
         this.vbo = GL15.glGenBuffers();
@@ -130,8 +130,8 @@ public final class GUIRenderer {
 
             matrixStack.clear();
             modulationStack.clear();
-            modulationStack.push(Color.WHITE_LINEAR);
-            currentModulation = Color.WHITE_LINEAR;
+            modulationStack.push(Color.Linear.WHITE);
+            currentModulation = Color.Linear.WHITE;
 
             frameCommands.run();
 
@@ -154,7 +154,7 @@ public final class GUIRenderer {
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y) {
-        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.WHITE_LINEAR);
+        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.Linear.WHITE);
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, @NonNull Color tint) {
@@ -162,7 +162,7 @@ public final class GUIRenderer {
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, float w, float h) {
-        drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.WHITE_LINEAR);
+        drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.Linear.WHITE);
     }
 
     public void drawTexture(@NonNull Texture texture, float x, float y, float w, float h, float u1, float v1, float u2, float v2, @NonNull Color tint) {
@@ -197,10 +197,10 @@ public final class GUIRenderer {
         assert tint instanceof Color.Linear : "Tint must be linear not " + tint.getClass().getSimpleName();
         Matrix4f mat = matrixStack.current();
 
-        float r = tint.x() * currentModulation.x();
-        float g = tint.y() * currentModulation.y();
-        float b = tint.z() * currentModulation.z();
-        float a = tint.w() * currentModulation.w();
+        float r = tint.r() * currentModulation.r();
+        float g = tint.g() * currentModulation.g();
+        float b = tint.b() * currentModulation.b();
+        float a = tint.a() * currentModulation.a();
 
         // Transform vertices on CPU
         float x1 = x;

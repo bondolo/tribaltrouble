@@ -176,7 +176,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         
         Vector3f cloudPos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
         Lightning lightning = new Lightning(owner.getWorld(), cloudPos, new Vector3f(x, y, z), .5f,
-                15, Color.WHITE, DELTA_COLOR,
+                15, Color.Standard.WHITE, DELTA_COLOR,
                 owner.getWorld().getRacesResources().getLightningTexture(), LIGHTNING_TIME,
                 owner.getWorld().getAnimationManagerGameTime());
         lightning.register();

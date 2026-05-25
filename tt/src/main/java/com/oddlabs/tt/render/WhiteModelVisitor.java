@@ -13,12 +13,12 @@ import org.jspecify.annotations.NonNull;
 class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     @Override
     public @NonNull Color getSelectionColor(@NonNull ElementRenderState<M> render_state) {
-        return Color.WHITE_LINEAR;
+        return Color.Linear.WHITE;
     }
 
     @Override
     public @NonNull Color getTeamColor(@NonNull ElementRenderState<M> render_state) {
-        return Color.WHITE_LINEAR;
+        return Color.Linear.WHITE;
     }
 
     @Override

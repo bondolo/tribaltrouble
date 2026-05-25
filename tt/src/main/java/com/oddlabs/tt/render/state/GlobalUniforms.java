@@ -28,10 +28,11 @@ public final class GlobalUniforms {
         buffer.position(128);
         FogInfo fog = camera.getFog();
         Color color = fog.getColor();
-        buffer.putFloat(color.x());
-        buffer.putFloat(color.y());
-        buffer.putFloat(color.z());
-        buffer.putFloat(color.w());
+        assert color instanceof Color.Linear : "Color must be linear, not " + color.getClass().getSimpleName();
+        buffer.putFloat(color.r());
+        buffer.putFloat(color.g());
+        buffer.putFloat(color.b());
+        buffer.putFloat(color.a());
 
         // 144: vec3 fogParams (16 aligned)
         // 156: float cameraHeight (4) -- Packed tightly after vec3

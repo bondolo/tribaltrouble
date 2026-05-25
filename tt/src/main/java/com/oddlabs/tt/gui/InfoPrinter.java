@@ -13,8 +13,8 @@ import java.util.List;
 
 public final class InfoPrinter extends GUIObject implements Animated, ChatListener {
     private static final float SECONDS_PER_TIMEOUT = 8f;
-    private static final Color PRIVATE_COLOR = new Color.Linear(Color.argb4v(0xFF_33_66_FF));
-    private static final Color TEAM_COLOR = new Color.Linear(Color.argb4v(0xFF_4C_7F_FF));
+    private static final Color PRIVATE_COLOR = new Color.Linear(new Color.Standard(0xFF_33_66_FF));
+    private static final Color TEAM_COLOR = new Color.Linear(new Color.Standard(0xFF_4C_7F_FF));
 
     private final @NonNull Font font;
     private final List<@NonNull LabelBox> history = new ArrayList<>();
@@ -71,13 +71,13 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
     }
 
     public void print(@NonNull String text) {
-        print(text, Color.TRANSPARENT_LINEAR);
+        print(text, Color.Linear.TRANSPARENT);
     }
 
     public void print(@NonNull String text, @NonNull Color color) {
         int width = Math.min(font.getWidth(text), getWidth());
         LabelBox label_box = new BackgroundLabelBox(text, font, width);
-        if (color.w() > .2f)
+        if (color.a() > .2f)
             label_box.setColor(color);
         addChild(label_box);
         history.add(label_box);

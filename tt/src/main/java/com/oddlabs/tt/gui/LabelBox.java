@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 public class LabelBox extends TextField implements Comparable<LabelBox>, Clipped {
     private @NonNull TextLayout textLayout;
 
-    private @NonNull Color color = Color.WHITE_LINEAR;
+    private @NonNull Color color = Color.Linear.WHITE;
 
     public LabelBox(@NonNull CharSequence text, @NonNull Font font, int width) {
         super(text, font, Integer.MAX_VALUE);

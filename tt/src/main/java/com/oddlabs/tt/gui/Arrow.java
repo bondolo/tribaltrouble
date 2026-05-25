@@ -88,7 +88,7 @@ public final class Arrow extends GUIObject {
                 val = 2f - val;
             val = COLOR_DELTA * val;
             IconQuad arrow = data.arrow();
-            renderer.drawIcon(arrow, -head_x, -head_y, new Color.Linear(color.x(), color.y(), color.z(), 1f - val));
+            renderer.drawIcon(arrow, -head_x, -head_y, new Color.Linear(color.r(), color.g(), color.b(), 1f - val));
             renderer.getMatrixStack().pop();
         }
     }

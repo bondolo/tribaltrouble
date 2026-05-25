@@ -41,7 +41,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
                 EMITTER_RADIUS_XY, EMITTER_RADIUS_XY, EMITTER_HEIGHT, SPREAD_FACTOR,
                 -1, PARTICLES_PER_SECOND,
                 PARTICLE_VELOCITY, ZERO_VEC,
-                PARTICLE_BASE_COLOR, Color.TRANSPARENT,
+                PARTICLE_BASE_COLOR, Color.Standard.TRANSPARENT,
                 PARTICLE_RADIUS, PARTICLE_GROWTH, 1.5f, .75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 textures);
@@ -63,7 +63,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
             if (isDamaged) {
                 float energy = MIN_EMITTER_ENERGY + ((1 - (float) hp / startSmoke) * (MAX_EMITTER_ENERGY - MIN_EMITTER_ENERGY));
                 emitter.start();
-                emitter.setDeltaColor(new Color.Linear(0f, 0f, 0f, -INITIAL_PARTICLE_ALPHA / energy));
+                emitter.setDeltaColor(new Color.LinearDelta(0f, 0f, 0f, -INITIAL_PARTICLE_ALPHA / energy));
                 emitter.setEnergy(energy);
             } else {
                 emitter.stop();

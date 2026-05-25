@@ -50,7 +50,7 @@ public final class ToolTipBox extends TextField {
 
         box.box().render(renderer, x, y, box_width, ModeIconQuads.Mode.NORMAL);
 
-        TextLineRenderer.render(renderer, getFont(), getText(), x + box.leftOffset(), y + box.bottomOffset(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.WHITE_LINEAR);
+        TextLineRenderer.render(renderer, getFont(), getText(), x + box.leftOffset(), y + box.bottomOffset(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.Linear.WHITE);
         if (icons != null) {
             float render_x = box_width - box.rightOffset() - icons[icons.length - 1].getWidth();
             for (IconQuad icon : icons) {

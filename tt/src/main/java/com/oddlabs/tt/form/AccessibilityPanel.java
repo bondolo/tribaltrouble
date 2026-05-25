@@ -170,7 +170,7 @@ public final class AccessibilityPanel extends Panel {
 
         // Colour Preview Box
         class ColourBox extends GUIObject {
-            private @NonNull Color colour = Color.WHITE;
+            private @NonNull Color colour = Color.Standard.WHITE;
 
              ColourBox() {
                 setDim(20, 20);
@@ -201,7 +201,7 @@ public final class AccessibilityPanel extends Panel {
             int teamIndex = pm_team.getChosenItemIndex();
             float hue = slider_hue.getValue();
             int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1.0f, 1.0f);
-            var newColour = Color.argb4v((0xFF << 24) | (rgb & 0xFFFFFF));
+            var newColour = new Color.Standard((0xFF << 24) | (rgb & 0xFFFFFF));
             Renderer.getRenderer().getSettings().team_colours[teamIndex] = newColour;
             colourBox.setColour(newColour);
 
@@ -213,7 +213,7 @@ public final class AccessibilityPanel extends Panel {
         Runnable refreshUI = () -> {
             int index = pm_team.getChosenItemIndex();
             var currentColour = Renderer.getRenderer().getSettings().team_colours[index];
-            float[] hsb = java.awt.Color.RGBtoHSB((int) (currentColour.x() * 255), (int) (currentColour.y() * 255), (int) (currentColour.z() * 255), null);
+            float[] hsb = java.awt.Color.RGBtoHSB((int) (currentColour.r() * 255), (int) (currentColour.g() * 255), (int) (currentColour.b() * 255), null);
             slider_hue.setValue((int) (hsb[0] * 360));
             colourBox.setColour(currentColour);
         };

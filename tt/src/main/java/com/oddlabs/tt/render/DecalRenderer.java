@@ -176,10 +176,10 @@ public final class DecalRenderer implements AutoCloseable {
         instanceBuffer.put(y);
         instanceBuffer.put(size);
         assert color instanceof Color.Linear : "Color must be linear, not " + color.getClass().getSimpleName();
-        instanceBuffer.put(color.x());
-        instanceBuffer.put(color.y());
-        instanceBuffer.put(color.z());
-        instanceBuffer.put(color.w());
+        instanceBuffer.put(color.r());
+        instanceBuffer.put(color.g());
+        instanceBuffer.put(color.b());
+        instanceBuffer.put(color.a());
         instanceBuffer.put((float) pattern.ordinal());
         instanceCount++;
     }

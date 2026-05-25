@@ -9,7 +9,7 @@ public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject
     private final @NonNull C @NonNull [] columns;
     private final @Nullable T content_object;
     private int sort_index;
-    private @NonNull Color color = Color.TRANSPARENT_LINEAR;
+    private @NonNull Color color = Color.Linear.TRANSPARENT;
     private boolean marked = false;
 
     public Row(@NonNull C @NonNull [] columns, @Nullable T content_object) {
@@ -57,7 +57,7 @@ public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
         var c = marked ? Skin.getSkin().getMultiColumnComboBoxData().colorMarked() : color;
-        if (c.w() >= .2f) {
+        if (c.a() >= .2f) {
             renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), c);
         }
     }

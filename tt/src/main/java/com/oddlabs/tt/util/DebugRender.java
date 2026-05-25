@@ -11,16 +11,16 @@ import java.util.Arrays;
  * Utilities for rendering debug shapes (boxes, lines, spheres, etc.) using a {@link DebugShaderRenderer}.
  */
 public final class DebugRender {
-    private static final Color AXIS_X_COLOR = Color.RED_LINEAR;
-    private static final Color AXIS_Y_COLOR = Color.GREEN_LINEAR;
-    private static final Color AXIS_Z_COLOR = Color.BLUE_LINEAR;
+    private static final Color AXIS_X_COLOR = Color.Linear.RED;
+    private static final Color AXIS_Y_COLOR = Color.Linear.GREEN;
+    private static final Color AXIS_Z_COLOR = Color.Linear.BLUE;
 
     public static final Color[] debug_colors = {
-            new Color.Linear(Color.argb4v(0xFF_7f_1f_1f)), new Color.Linear(Color.argb4v(0xFF_7f_1f_00)), new Color.Linear(Color.argb4v(0xFF_7f_00_1f)), new Color.Linear(Color.argb4v(0xFF_3f_7f_00)),
-            new Color.Linear(Color.argb4v(0xFF_00_1f_1f)), new Color.Linear(Color.argb4v(0xFF_00_1f_00)), new Color.Linear(Color.argb4v(0xFF_00_00_1f)), new Color.Linear(Color.argb4v(0xFF_00_00_00)),
-            new Color.Linear(Color.argb4v(0xFF_00_5f_5f)), new Color.Linear(Color.argb4v(0xFF_00_5f_00)), new Color.Linear(Color.argb4v(0xFF_00_00_5f)), new Color.Linear(Color.argb4v(0xFF_5f_8f_8f)),
-            new Color.Linear(Color.argb4v(0xFF_3f_5f_1f)), new Color.Linear(Color.argb4v(0xFF_5f_5f_8f)), new Color.Linear(Color.argb4v(0xFF_3f_2f_5f)), new Color.Linear(Color.argb4v(0xFF_3f_3f_3f)),
-            new Color.Linear(Color.argb4v(0xFF_5f_1f_1f)), new Color.Linear(Color.argb4v(0xFF_5f_1f_5f)), new Color.Linear(Color.argb4v(0xFF_5f_5f_1f)), new Color.Linear(Color.argb4v(0xFF_5f_5f_5f))
+            new Color.Linear(new Color.Standard(0xFF_7f_1f_1f)), new Color.Linear(new Color.Standard(0xFF_7f_1f_00)), new Color.Linear(new Color.Standard(0xFF_7f_00_1f)), new Color.Linear(new Color.Standard(0xFF_3f_7f_00)),
+            new Color.Linear(new Color.Standard(0xFF_00_1f_1f)), new Color.Linear(new Color.Standard(0xFF_00_1f_00)), new Color.Linear(new Color.Standard(0xFF_00_00_1f)), new Color.Linear(new Color.Standard(0xFF_00_00_00)),
+            new Color.Linear(new Color.Standard(0xFF_00_5f_5f)), new Color.Linear(new Color.Standard(0xFF_00_5f_00)), new Color.Linear(new Color.Standard(0xFF_00_00_5f)), new Color.Linear(new Color.Standard(0xFF_5f_8f_8f)),
+            new Color.Linear(new Color.Standard(0xFF_3f_5f_1f)), new Color.Linear(new Color.Standard(0xFF_5f_5f_8f)), new Color.Linear(new Color.Standard(0xFF_3f_2f_5f)), new Color.Linear(new Color.Standard(0xFF_3f_3f_3f)),
+            new Color.Linear(new Color.Standard(0xFF_5f_1f_1f)), new Color.Linear(new Color.Standard(0xFF_5f_1f_5f)), new Color.Linear(new Color.Standard(0xFF_5f_5f_1f)), new Color.Linear(new Color.Standard(0xFF_5f_5f_5f))
     };
     private static final float CIRCLE_DELTA = (float) java.lang.Math.PI / 2;
     private static final float ANGLE_DELTA = (float) java.lang.Math.PI / 20;
@@ -152,11 +152,11 @@ public final class DebugRender {
     public static void drawAxes(float center, float z) {
         if (null == shaderRenderer) return;
         // X axis - red
-        drawLine(center, center, z, center + 10, center, z, AXIS_X_COLOR.x(), AXIS_X_COLOR.y(), AXIS_X_COLOR.z());
+        drawLine(center, center, z, center + 10, center, z, AXIS_X_COLOR.r(), AXIS_X_COLOR.g(), AXIS_X_COLOR.b());
         // Y axis - green
-        drawLine(center, center, z, center, center + 10, z, AXIS_Y_COLOR.x(), AXIS_Y_COLOR.y(), AXIS_Y_COLOR.z());
+        drawLine(center, center, z, center, center + 10, z, AXIS_Y_COLOR.r(), AXIS_Y_COLOR.g(), AXIS_Y_COLOR.b());
         // Z axis - blue
-        drawLine(center, center, z, center, center, z + 10, AXIS_Z_COLOR.x(), AXIS_Z_COLOR.y(), AXIS_Z_COLOR.z());
+        drawLine(center, center, z, center, center, z + 10, AXIS_Z_COLOR.r(), AXIS_Z_COLOR.g(), AXIS_Z_COLOR.b());
     }
 
     /**

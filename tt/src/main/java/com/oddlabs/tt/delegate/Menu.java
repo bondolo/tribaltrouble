@@ -44,8 +44,8 @@ import java.util.ResourceBundle;
  * It provides common UI elements like the background logo and layout helpers for menu buttons.
  */
 public abstract class Menu extends CameraDelegate<Camera> {
-    static final Color COLOR_NORMAL = Color.WHITE;
-    static final Color COLOR_ACTIVE = Color.argb4v(0xFF_FF_CC_9F);
+    static final Color COLOR_NORMAL = Color.Standard.WHITE;
+    static final Color COLOR_ACTIVE = new Color.Standard(0xFF_FF_CC_9F);
     private static final int MENU_X = 160;
     private static final int OVERLAY_TEXTURE_WIDTH = 1024;
     private static final int OVERLAY_TEXTURE_HEIGHT = 1024;

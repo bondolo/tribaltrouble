@@ -19,7 +19,7 @@ final class AttackNotification extends Notification {
     private boolean active = true;
 
     public AttackNotification(@NonNull Player local_player, @NonNull GUIRoot gui_root, @NonNull Selectable<?> center, @NonNull NotificationManager manager, @NonNull AnimationManager animation_manager) {
-        super(local_player.getWorld(), gui_root, center.getPositionX(), center.getPositionY(), manager, Color.RED, local_player.getRace().getAttackNotificationAudio(), false, animation_manager);
+        super(local_player.getWorld(), gui_root, center.getPositionX(), center.getPositionY(), manager, Color.Standard.RED, local_player.getRace().getAttackNotificationAudio(), false, animation_manager);
     }
 
     public boolean contains(@NonNull Target target) {

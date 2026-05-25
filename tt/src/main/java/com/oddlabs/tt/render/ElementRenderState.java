@@ -17,7 +17,7 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
     private ModelVisitor<M> visitor;
     M model;
     float f;
-    final Color.Linear color = new Color.Linear(Color.WHITE_LINEAR);
+    private Color.@NonNull Linear color = Color.Linear.WHITE;
 
     ElementRenderState(@NonNull RenderState render_state) {
         this.render_state = render_state;
@@ -29,11 +29,11 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
     }
 
     public void setColor(float r, float g, float b, float a) {
-        this.color.set(r, g, b, a);
+        this.color = new Color.Linear(r, g, b, a);
     }
 
     public void resetColor() {
-        color.set(Color.WHITE_LINEAR);
+        this.color = Color.Linear.WHITE;
     }
 
     @Override

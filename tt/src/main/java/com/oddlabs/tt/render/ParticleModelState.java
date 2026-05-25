@@ -8,7 +8,7 @@ import org.joml.Matrix4fc;
 import org.jspecify.annotations.NonNull;
 
 final class ParticleModelState implements ModelState<Particle> {
-    private static final Color NO_SELECTION = Color.TRANSPARENT_LINEAR;
+    private static final Color NO_SELECTION = Color.Linear.TRANSPARENT;
     private final @NonNull Particle particle;
     private final @NonNull Matrix4fc viewMatrix;
 

@@ -75,7 +75,7 @@ public final class ProgressBar extends GUIObject {
         ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
         int percentage = (int) (done * 100);
         String string = i18n("loading", percentage);
-        TextLineRenderer.render(renderer, Skin.getSkin().getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.WHITE_LINEAR);
+        TextLineRenderer.render(renderer, Skin.getSkin().getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.Linear.WHITE);
     }
 
     @Override
@@ -117,7 +117,7 @@ public final class ProgressBar extends GUIObject {
 
         if (width > 0) {
             IconQuad c = center.quad(ModeIconQuads.Mode.NORMAL);
-            renderer.drawTexture(c.getTexture(), left_margin, y, width, c.getHeight(), c.getU1(), c.getV1(), c.getU2(), c.getV2(), Color.WHITE);
+            renderer.drawTexture(c.getTexture(), left_margin, y, width, c.getHeight(), c.getU1(), c.getV1(), c.getU2(), c.getV2(), Color.Standard.WHITE);
             renderer.drawModeIcon(right, ModeIconQuads.Mode.NORMAL, current_pos, y);
         }
     }

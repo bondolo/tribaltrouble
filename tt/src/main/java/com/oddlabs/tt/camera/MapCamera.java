@@ -59,7 +59,7 @@ public final class MapCamera extends Camera {
 
     public MapCamera(@NonNull SelectionDelegate delegate, @NonNull GameCamera old_camera) {
         original_camera_state = old_camera.getState();
-        FogInfo radialFog = new RadialFogInfo(Color.WHITE, 0.25f);
+        FogInfo radialFog = new RadialFogInfo(Color.Standard.WHITE, 0.25f);
         CameraState mapCameraState = new CameraState(radialFog);
         mapCameraState.set(old_camera.getState());
         mapCameraState.setFog(radialFog);
@@ -110,7 +110,7 @@ public final class MapCamera extends Camera {
             float fade = (progress - 0.25f) / 0.75f;
             // Radius shrinks from 1.5x to 1.0x as we ascend
             float radiusScale = 1.5f - (0.5f * fade);
-            getState().setFog(new RadialFogInfo(Color.WHITE, baseDensity * fade, radiusScale));
+            getState().setFog(new RadialFogInfo(Color.Standard.WHITE, baseDensity * fade, radiusScale));
         }
 
         switch (map_mode) {

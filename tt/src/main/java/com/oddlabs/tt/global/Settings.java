@@ -21,9 +21,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Manages the user's global game settings, persisting them to a file.
- */
-/**
  * Global game settings and configuration persistence.
  */
 public final class Settings implements Serializable {
@@ -33,13 +30,13 @@ public final class Settings implements Serializable {
     // event logging
     private static final Logger logger = Logger.getLogger(Settings.class.getName());
 
-    public static final Color[] DEFAULT_TEAM_COLOURS = {
-            Color.argb4v(0xFFFFBF00), /* Orange */
-            Color.argb4v(0xFF007FFF), /* Royal Blue */
-            Color.argb4v(0xFFFF0040), /* Red */
-            Color.argb4v(0xFF00FFBF), /* Teal */
-            Color.argb4v(0xFFBF00FF), /* Purple */
-            Color.argb4v(0xFFBFFF00) /* Lime */
+    public static final Color.Standard[] DEFAULT_TEAM_COLOURS = {
+            new Color.Standard(0xFFFFBF00), /* Orange */
+            new Color.Standard(0xFF007FFF), /* Royal Blue */
+            new Color.Standard(0xFFFF0040), /* Red */
+            new Color.Standard(0xFF00FFBF), /* Teal */
+            new Color.Standard(0xFFBF00FF), /* Purple */
+            new Color.Standard(0xFFBFFF00) /* Lime */
     };
 
     public transient @NonNull Path last_event_log_dir = Path.of("");
@@ -109,9 +106,7 @@ public final class Settings implements Serializable {
     public float contrast_clarity = 0.0f;
     public boolean team_stencil = false;
 
-    public Color @NonNull [] team_colours = Arrays.stream(DEFAULT_TEAM_COLOURS)
-            .map(Color.Standard::new)
-            .toArray(Color[]::new);
+    public Color.@NonNull Standard @NonNull [] team_colours = Arrays.copyOf(DEFAULT_TEAM_COLOURS, DEFAULT_TEAM_COLOURS.length);
 
     public transient Color.Linear @NonNull [] linear_team_colours = Arrays.stream(team_colours)
             .map(Color.Linear::new)
@@ -274,10 +269,10 @@ public final class Settings implements Serializable {
         }
     }
 
-    private void setProperty(@NonNull Properties props, @NonNull String key, @NonNull Color @NonNull [] value, @NonNull Color @NonNull [] defaultValue) {
+    private void setProperty(@NonNull Properties props, @NonNull String key, Color.@NonNull Standard @NonNull [] value, Color.@NonNull Standard @NonNull [] defaultValue) {
         if (!Arrays.equals(value, defaultValue)) {
             String colors = Arrays.stream(value)
-                    .mapToInt(Color::argbi)
+                    .mapToInt(Color.Standard::toInt)
                     .mapToObj(Integer::toHexString)
                     .collect(Collectors.joining(","));
 
@@ -334,19 +329,19 @@ public final class Settings implements Serializable {
         }
     }
 
-    private static @NonNull Color @NonNull [] getColours(@NonNull Properties props, @NonNull String key, @NonNull Color @NonNull [] defaultValue) {
+    private static Color.@NonNull Standard @NonNull [] getColours(@NonNull Properties props, @NonNull String key, Color.@NonNull Standard @NonNull [] defaultValue) {
         String value = props.getProperty(key);
         if (value == null) {
             return defaultValue;
         }
         try {
             String[] hexStrings = value.split(",");
-            Color[] result = new Color[DEFAULT_TEAM_COLOURS.length];
+            Color.Standard[] result = new Color.Standard[DEFAULT_TEAM_COLOURS.length];
             Arrays.setAll(result, i -> {
                 if (i < hexStrings.length) {
                     try {
                         int argb = (int) Long.parseLong(hexStrings[i], 16);
-                        return Color.argb4v(argb);
+                        return new Color.Standard(argb);
                     } catch (NumberFormatException _) {
                         // ignore invalid color constants
                     }

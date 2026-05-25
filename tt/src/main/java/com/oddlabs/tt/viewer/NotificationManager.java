@@ -39,11 +39,11 @@ public final class NotificationManager {
     }
 
     public void newSelectableNotification(@NonNull Selectable<?> s, @NonNull AnimationManager manager, @NonNull Player local_player) {
-        newNotification(manager, local_player, s.getPositionX(), s.getPositionY(), Color.GREEN, false);
+        newNotification(manager, local_player, s.getPositionX(), s.getPositionY(), Color.Standard.GREEN, false);
     }
 
     public void newBeacon(@NonNull AnimationManager manager, @NonNull Player local_player, float x, float y) {
-        newNotification(manager, local_player, x, y, Color.BLUE, true);
+        newNotification(manager, local_player, x, y, Color.Standard.BLUE, true);
     }
 
     private void newNotification(@NonNull AnimationManager manager, @NonNull Player local_player, float x, float y, @NonNull Color color, boolean show_always) {

@@ -21,8 +21,8 @@ public class Particle extends Model {
     private final float v4;
 
     private final Vector3f position = new Vector3f();
-    private final Color.Linear color = new Color.Linear();
-    private final Color.Linear deltaColor = new Color.Linear();
+    private Color.@NonNull Linear color = new Color.Linear(0f, 0f, 0f, 0f);
+    private Color.@NonNull LinearDelta deltaColor = new Color.LinearDelta(0f, 0f, 0f, 0f);
     private final Vector3f growthRate = new Vector3f();
     private final Vector3f radius = new Vector3f();
 
@@ -95,7 +95,7 @@ public class Particle extends Model {
     }
 
     public void update(float t) {
-        color.add(deltaColor.x() * t, deltaColor.y() * t, deltaColor.z() * t, deltaColor.w() * t);
+        color = color.add(deltaColor.mul(t));
         radius.add(growthRate.x() * t, growthRate.y() * t, growthRate.z() * t);
         energy -= t;
     }
@@ -117,12 +117,12 @@ public class Particle extends Model {
     }
 
     final void setColor(@NonNull Color color) {
-        this.color.set(color);
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
     }
 
     /** The provided color is assumed to be linear. */
     final void setColor(float r, float g, float b, float a) {
-        color.set(r, g, b, a);
+        this.color = new Color.Linear(r, g, b, a);
     }
 
     public final @NonNull Color getColor() {
@@ -130,27 +130,27 @@ public class Particle extends Model {
     }
 
     public final float getColorR() {
-        return color.x();
+        return color.r();
     }
 
     public final float getColorG() {
-        return color.y();
+        return color.g();
     }
 
     public final float getColorB() {
-        return color.z();
+        return color.b();
     }
 
     public final float getColorA() {
-        return color.w();
+        return color.a();
     }
 
-    public final @NonNull Color getDeltaColor() {
+    public final Color.@NonNull LinearDelta getDeltaColor() {
         return deltaColor;
     }
 
     public final void setDeltaColor(@NonNull Color color) {
-        deltaColor.set(color);
+        this.deltaColor = color instanceof Color.LinearDelta delta ? delta : new Color.LinearDelta(color);
     }
 
     public final void setEnergy(float energy) {

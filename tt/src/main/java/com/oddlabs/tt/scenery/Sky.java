@@ -51,28 +51,28 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private static final int SKYDOME_DEFAULT_COLOR = 8;
 
     private static final Map<Landscape.TerrainType, @NonNull Color> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, Color.argb4v(0xFF_E5_F2_FF),
-            Landscape.TerrainType.VIKING, Color.argb4v(0xFF_FF_E5_A5)
+            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_E5_F2_FF),
+            Landscape.TerrainType.VIKING, new Color.Standard(0xFF_FF_E5_A5)
     ));
 
     private static final Map<Landscape.TerrainType, Color.@NonNull Linear> SKYDOME_INTENSITY = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, (Color.Linear) Color.WHITE_LINEAR,
+            Landscape.TerrainType.NATIVE, (Color.Linear) Color.Linear.WHITE,
             Landscape.TerrainType.VIKING, new Color.Linear(1.5f, 1f, 1f, 1f)
     ));
 
     private static final Map<Landscape.TerrainType, Color.@NonNull Standard> SKYDOME_GRADIENT = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, Color.argb4v(0xFF_BF_D2_F2),
-            Landscape.TerrainType.VIKING, Color.argb4v(0xFF_99_99_D8)
+            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_BF_D2_F2),
+            Landscape.TerrainType.VIKING, new Color.Standard(0xFF_99_99_D8)
     ));
 
     private static final Map<Landscape.TerrainType, @NonNull Color> TEX_ENV_COLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Linear(Color.argb4v(0xFF_F2_F8_FF)),
-            Landscape.TerrainType.VIKING, new Color.Linear(Color.argb4v(0xFF_FF_F2_CC))
+            Landscape.TerrainType.NATIVE, new Color.Linear(new Color.Standard(0xFF_F2_F8_FF)),
+            Landscape.TerrainType.VIKING, new Color.Linear(new Color.Standard(0xFF_FF_F2_CC))
     ));
 
     public static final Map<Landscape.TerrainType, Color> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Linear(Color.argb4v(0xFF_73_40_99)),
-            Landscape.TerrainType.VIKING, Color.BLACK_LINEAR
+            Landscape.TerrainType.NATIVE, new Color.Linear(new Color.Standard(0xFF_73_40_99)),
+            Landscape.TerrainType.VIKING, Color.Linear.BLACK
     ));
 
     private static final float SKYDOME_OUTER_UTILING = 8f;
@@ -370,9 +370,9 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         // skydome_default_color is authored to be darker in the original game (sRGB space)
         Color.Standard skydome_gradient_const = SKYDOME_GRADIENT.get(terrain);
         Color.Linear skydome_default_linear = new Color.Linear(new Color.Standard(
-                (float) Math.pow(skydome_gradient_const.x, SKYDOME_DEFAULT_COLOR),
-                (float) Math.pow(skydome_gradient_const.y, SKYDOME_DEFAULT_COLOR),
-                (float) Math.pow(skydome_gradient_const.z, SKYDOME_DEFAULT_COLOR),
+                (float) Math.pow(skydome_gradient_const.r(), SKYDOME_DEFAULT_COLOR),
+                (float) Math.pow(skydome_gradient_const.g(), SKYDOME_DEFAULT_COLOR),
+                (float) Math.pow(skydome_gradient_const.b(), SKYDOME_DEFAULT_COLOR),
                 1.0f
         ));
 
@@ -388,17 +388,17 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             alpha = (float) i / (SKYDOME_GRADIENT_LENGTH - 1);
 
             // Interpolation and multiplication now happen in linear space
-            Color.Linear currentLinear = new Color.Linear();
-            currentLinear.x = alpha * skydome_default_linear.x + (1f - alpha) * prevLinear.x * skydome_gradient_const_linear.x;
-            currentLinear.y = alpha * skydome_default_linear.y + (1f - alpha) * prevLinear.y * skydome_gradient_const_linear.y;
-            currentLinear.z = alpha * skydome_default_linear.z + (1f - alpha) * prevLinear.z * skydome_gradient_const_linear.z;
-            currentLinear.w = 1.0f;
+            Color.Linear currentLinear = new Color.Linear(
+                    alpha * skydome_default_linear.r() + (1f - alpha) * prevLinear.r() * skydome_gradient_const_linear.r(),
+                    alpha * skydome_default_linear.g() + (1f - alpha) * prevLinear.g() * skydome_gradient_const_linear.g(),
+                    alpha * skydome_default_linear.b() + (1f - alpha) * prevLinear.b() * skydome_gradient_const_linear.b(),
+                    1.0f);
 
-            skydome_gradient[i] = (Color.Linear) new Color.Linear(currentLinear).mul(skydome_intensity);
+            skydome_gradient[i] = new Color.Linear(currentLinear).mul(skydome_intensity);
             prevLinear = currentLinear;
         }
 
-        skydome_gradient[0] = (Color.Linear) new Color.Linear(initialLinear).mul(skydome_intensity);
+        skydome_gradient[0] = new Color.Linear(initialLinear).mul(skydome_intensity);
         skydome_default_linear.mul(skydome_intensity);
 
         for (int i = 0; i < subdiv_height - 1; i++) {
@@ -416,7 +416,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
                 buffer.put(x * height_coeff / (radius * outer_utile) + 0.5f).put(y * height_coeff / (radius * outer_vtile) + 0.5f); // TexCoord0
                 buffer.put(x * height_coeff / (radius * inner_utile) + 0.5f).put(y * height_coeff / (radius * inner_vtile) + 0.5f); // TexCoord1
                 Color colorVal = i < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[i] : skydome_default_linear;
-                buffer.put(colorVal.x()).put(colorVal.y()).put(colorVal.z()); // Color
+                buffer.put(colorVal.r()).put(colorVal.g()).put(colorVal.b()); // Color
             }
         }
         buffer.put(origin_x).put(origin_y).put(radius + origin_z); // Position
@@ -424,7 +424,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         buffer.put(0.5f).put(0.5f); // TexCoord0
         buffer.put(0.5f).put(0.5f); // TexCoord1
         Color colorVal = subdiv_height - 1 < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[subdiv_height - 1] : skydome_default_linear;
-        buffer.put(colorVal.x()).put(colorVal.y()).put(colorVal.z()); // Color
+        buffer.put(colorVal.r()).put(colorVal.g()).put(colorVal.b()); // Color
     }
 
     private @NonNull ShortVBO @NonNull [] makeSkyStripIndices() {
@@ -502,9 +502,9 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     public static Landscape.@NonNull StructureLayers genSeabottom(Landscape.TerrainType terrain, int size, @NonNull Channel noise8, @NonNull Channel noise256, @NonNull Channel voronoi4, @NonNull Channel voronoi8) {
         Color.Standard color = new Color.Standard(SEA_BOTTOM_COLOR.get(terrain));
         Layer bottom = new Layer(
-                new Channel(size, size).fill(color.x),
-                new Channel(size, size).fill(color.y),
-                new Channel(size, size).fill(color.z)
+                new Channel(size, size).fill(color.r()),
+                new Channel(size, size).fill(color.g()),
+                new Channel(size, size).fill(color.b())
         );
         return new Landscape.StructureLayers(bottom, getFlatNormal(size));
     }

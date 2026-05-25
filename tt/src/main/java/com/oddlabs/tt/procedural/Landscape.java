@@ -35,8 +35,8 @@ public final class Landscape {
     private static final int NUM_PLANT_TYPES = 4;
 
     static final Map<TerrainType,@NonNull Color> FOG_COLOR = new EnumMap<>(Map.of(
-            TerrainType.NATIVE, Color.argb4v(0xFF_A5_BF_FF),
-            TerrainType.VIKING, Color.argb4v(0xFF_33_66_8C)
+            TerrainType.NATIVE, new Color.Standard(0xFF_A5_BF_FF),
+            TerrainType.VIKING, new Color.Standard(0xFF_33_66_8C)
     ));
     private static final float NATIVE_FOG_DENSITY = 0.0012f;
     private static final float VIKING_FOG_DENSITY = 0.0016f;
@@ -44,21 +44,21 @@ public final class Landscape {
     private static final float VIKING_FOG_HEIGHT = 1.4f;
 
     // Native terrain colors (RGB)
-    private static final Color NATIVE_SAND_COLOR = Color.argb4v(0xFF_FF_E6_CC);
-    private static final Color NATIVE_DIRT_COLOR = Color.argb4v(0xFF_FF_B3_80);
-    private static final Color NATIVE_GRASS_COLOR = Color.argb4v(0xFF_33_73_00);
-    private static final Color NATIVE_ROCK_TINT = Color.argb4v(0xFF_FF_CC_99);
+    private static final Color NATIVE_SAND_COLOR = new Color.Standard(0xFF_FF_E6_CC);
+    private static final Color NATIVE_DIRT_COLOR = new Color.Standard(0xFF_FF_B3_80);
+    private static final Color NATIVE_GRASS_COLOR = new Color.Standard(0xFF_33_73_00);
+    private static final Color NATIVE_ROCK_TINT = new Color.Standard(0xFF_FF_CC_99);
 
     // Viking terrain colors (RGB)
-    private static final Color VIKING_GRAVEL_COLOR = Color.argb4v(0xFF_B3_8C_66);
-    private static final Color VIKING_SOIL_COLOR = Color.argb4v(0xFF_A6_80_59);
-    private static final Color VIKING_GRASS_COLOR = Color.argb4v(0xFF_33_73_00); // Same as native, but gets color-shifted
-    private static final Color VIKING_SNOW_COLOR = Color.argb4v(0xFF_F2_F2_F2);
-    private static final Color VIKING_CLIFF_GRASS_TINT = Color.argb4v(0xFF_33_73_00);
+    private static final Color VIKING_GRAVEL_COLOR = new Color.Standard(0xFF_B3_8C_66);
+    private static final Color VIKING_SOIL_COLOR = new Color.Standard(0xFF_A6_80_59);
+    private static final Color VIKING_GRASS_COLOR = new Color.Standard(0xFF_33_73_00); // Same as native, but gets color-shifted
+    private static final Color VIKING_SNOW_COLOR = new Color.Standard(0xFF_F2_F2_F2);
+    private static final Color VIKING_CLIFF_GRASS_TINT = new Color.Standard(0xFF_33_73_00);
 
     // Misc colors
     private static final float DETAIL_GREY = 0.5f;
-    private static final Color BLEND_LIGHTING_COLOR = Color.argb4v(0xFF_FF_E6_99); // 1.0, 0.9, 0.6
+    private static final Color BLEND_LIGHTING_COLOR = new Color.Standard(0xFF_FF_E6_99); // 1.0, 0.9, 0.6
 
     public enum TerrainType {NATIVE, VIKING}
 
@@ -299,7 +299,7 @@ public final class Landscape {
         Channel empty = new Channel(size, size).fill(1f);
         Channel sand_bump1 = noise8.brightness(0.75f);
         Channel sand_bump2 = noise256.brightness(0.15f);
-        Layer sand = new Layer(empty.copy().fill(NATIVE_SAND_COLOR.x()), empty.copy().fill(NATIVE_SAND_COLOR.y()), empty.copy().fill(NATIVE_SAND_COLOR.z()));
+        Layer sand = new Layer(empty.copy().fill(NATIVE_SAND_COLOR.r()), empty.copy().fill(NATIVE_SAND_COLOR.g()), empty.copy().fill(NATIVE_SAND_COLOR.b()));
         Channel bump = sand_bump1.channelAdd(sand_bump2);
         sand.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) sand.saveAsPNG("structure_sand");
@@ -311,7 +311,7 @@ public final class Landscape {
         Channel empty = new Channel(size, size).fill(1f);
         Channel gravel_bump1 = noise8.brightness(0.5f);
         Channel gravel_bump2 = noise256.brightness(0.5f);
-        Layer gravel = new Layer(empty.copy().fill(VIKING_GRAVEL_COLOR.x()), empty.copy().fill(VIKING_GRAVEL_COLOR.y()), empty.copy().fill(VIKING_GRAVEL_COLOR.z()));
+        Layer gravel = new Layer(empty.copy().fill(VIKING_GRAVEL_COLOR.r()), empty.copy().fill(VIKING_GRAVEL_COLOR.g()), empty.copy().fill(VIKING_GRAVEL_COLOR.b()));
         Channel bump = gravel_bump1.channelAdd(gravel_bump2);
         gravel.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) gravel.saveAsPNG("structure_gravel");
@@ -324,7 +324,7 @@ public final class Landscape {
         Channel dirt_bump1 = noise8.brightness(0.8f);
         Channel dirt_bump2 = noise256.brightness(0.1f);
         Channel dirt_bump3 = voronoi32.brightness(0.1f);
-        Layer dirt = new Layer(empty.copy().fill(NATIVE_DIRT_COLOR.x()), empty.copy().fill(NATIVE_DIRT_COLOR.y()), empty.copy().fill(NATIVE_DIRT_COLOR.z()));
+        Layer dirt = new Layer(empty.copy().fill(NATIVE_DIRT_COLOR.r()), empty.copy().fill(NATIVE_DIRT_COLOR.g()), empty.copy().fill(NATIVE_DIRT_COLOR.b()));
         Channel dirt_bump = dirt_bump1.channelAdd(dirt_bump2).channelAdd(dirt_bump3);
         dirt_bump.perturb(noise8, 0.05f);
         dirt.bump(dirt_bump, size / 128f, 0f, 0.5f, 1f, 1f, 1f, 0f, 0f, 0f);
@@ -338,7 +338,7 @@ public final class Landscape {
         Channel soil_bump1 = noise8.brightness(0.8f);
         Channel soil_bump2 = noise256.brightness(0.1f);
         Channel soil_bump3 = voronoi32.brightness(0.1f);
-        Layer soil = new Layer(empty.copy().fill(VIKING_SOIL_COLOR.x()), empty.copy().fill(VIKING_SOIL_COLOR.y()), empty.copy().fill(VIKING_SOIL_COLOR.z()));
+        Layer soil = new Layer(empty.copy().fill(VIKING_SOIL_COLOR.r()), empty.copy().fill(VIKING_SOIL_COLOR.g()), empty.copy().fill(VIKING_SOIL_COLOR.b()));
         Channel soil_bump = soil_bump1.channelAdd(soil_bump2).channelAdd(soil_bump3);
         soil_bump.perturb(noise8, 0.05f);
         soil.bump(soil_bump, size / 128f, 0f, 0.5f, 1f, 1f, 1f, 0f, 0f, 0f);
@@ -351,7 +351,7 @@ public final class Landscape {
     private static @NonNull StructureLayers genGrass(int size, @NonNull Color grassColor, @NonNull Channel noise8, @NonNull Channel noise256) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel grass_bump = noise8.copy().rotate(90).channelAdd(noise256.brightness(0.02f));
-        Layer grass = new Layer(empty.copy().fill(grassColor.x()), empty.copy().fill(grassColor.y()), empty.copy().fill(grassColor.z()));
+        Layer grass = new Layer(empty.copy().fill(grassColor.r()), empty.copy().fill(grassColor.g()), empty.copy().fill(grassColor.b()));
         grass.r.channelAdd(noise8.brightness(0.2f));
         grass.bump(grass_bump, size / 512f, 0f, 0.4f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) grass.saveAsPNG("structure_grass");
@@ -381,7 +381,7 @@ public final class Landscape {
         rock.toHSV();
         rock.r = noise8.copy().dynamicRange(0.05f, 0.1f);
         rock.toRGB();
-        rock.layerBlend(rubble.multiply(NATIVE_ROCK_TINT.x(), NATIVE_ROCK_TINT.y(), NATIVE_ROCK_TINT.z()), noise8.gamma8().invert().contrast(4f));
+        rock.layerBlend(rubble.multiply(NATIVE_ROCK_TINT.r(), NATIVE_ROCK_TINT.g(), NATIVE_ROCK_TINT.b()), noise8.gamma8().invert().contrast(4f));
         rock.layerBlend(grass.multiply(0.5f), noise8.rotate(90).multiply(0.5f)); // grass tint
         rock.bump(rock_bump, size / 384f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f);
         rock.gamma2().multiply(0.9f);
@@ -402,7 +402,7 @@ public final class Landscape {
         cliff.g.multiply(0.75f);
         cliff.toRGB();
         cliff.layerBlend(rubble, noise8.gamma8().invert().contrast(4f));
-        cliff.layerBlend(grass.multiply(VIKING_CLIFF_GRASS_TINT.x(), VIKING_CLIFF_GRASS_TINT.y(), VIKING_CLIFF_GRASS_TINT.z()), noise8.rotate(90).multiply(0.75f));
+        cliff.layerBlend(grass.multiply(VIKING_CLIFF_GRASS_TINT.r(), VIKING_CLIFF_GRASS_TINT.g(), VIKING_CLIFF_GRASS_TINT.b()), noise8.rotate(90).multiply(0.75f));
         cliff.bump(cliff_bump, size / 384f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f);
         cliff.gamma2().multiply(0.9f);
         if (DEBUG) cliff.saveAsPNG("structure_cliff");
@@ -414,7 +414,7 @@ public final class Landscape {
         Channel empty = new Channel(size, size).fill(1f);
         Channel snow_bump1 = noise8.brightness(0.75f);
         Channel snow_bump2 = noise256.brightness(0.25f);
-        Layer snow = new Layer(empty.copy().fill(VIKING_SNOW_COLOR.x()), empty.copy().fill(VIKING_SNOW_COLOR.y()), empty.copy().fill(VIKING_SNOW_COLOR.z()));
+        Layer snow = new Layer(empty.copy().fill(VIKING_SNOW_COLOR.r()), empty.copy().fill(VIKING_SNOW_COLOR.g()), empty.copy().fill(VIKING_SNOW_COLOR.b()));
         Channel bump = snow_bump1.channelAdd(snow_bump2);
         snow.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) snow.saveAsPNG("structure_snow");
