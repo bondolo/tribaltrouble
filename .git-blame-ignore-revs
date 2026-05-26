@@ -1,2 +1,4 @@
 # Style: Reformat codebase with IntelliJ formatter
 3888c8717da5ff41b245fa8557981e4e1d745169
+# Style: Conservative reformat codebase with spotless JDT formatter
+6114bbb589e2b4f9a9e4c2ddd4b80b726e47f4f8

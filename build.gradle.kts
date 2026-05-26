@@ -6,7 +6,7 @@ plugins {
     id("net.ltgt.errorprone") version "5.1.0" apply false
     id("net.ltgt.nullaway") version "3.0.0" apply false
     id("com.smushytaco.lwjgl3") version "1.0.2" apply false
-    id("com.diffplug.spotless") version "7.0.4" apply false
+    id("com.diffplug.spotless") version "8.5.1" apply false
 }
 
 allprojects {
@@ -21,6 +21,7 @@ subprojects {
 
     configure<SpotlessExtension> {
         java {
+            ratchetFrom("origin/master")
             target("src/**/*.java")
             eclipse().configFile(rootProject.file("intellij-java-style.xml"))
             removeUnusedImports()
