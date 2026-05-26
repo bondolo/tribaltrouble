@@ -213,7 +213,7 @@ public final class LoadDeterministic extends Deterministic {
         @Override
         public int read(byte @NonNull [] b, int off, int len) throws IOException {
             var remaining = len;
-            while(remaining-- > 0) {
+            while (remaining-- > 0) {
                 b[off++] = log((byte) 0);
             }
 

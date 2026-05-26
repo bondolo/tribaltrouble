@@ -8,7 +8,8 @@ public final class WorldParameters {
     private final int max_unit_count;
     private final int initial_game_speed;
 
-    public WorldParameters(int initial_game_speed, @NonNull String map_code, int initial_unit_count, int max_unit_count) {
+    public WorldParameters(int initial_game_speed, @NonNull String map_code, int initial_unit_count,
+            int max_unit_count) {
         this.map_code = map_code;
         this.initial_unit_count = initial_unit_count;
         this.max_unit_count = max_unit_count;

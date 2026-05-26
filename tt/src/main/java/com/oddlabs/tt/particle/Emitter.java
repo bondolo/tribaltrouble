@@ -41,9 +41,9 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     @SuppressWarnings("unchecked")
     public Emitter(@NonNull World world, @NonNull Vector3f position,
-                   int src_blend_func, int dst_blend_func,
-                   @NonNull TextureKey @Nullable [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers,
-                   int types, int remaining_particles, float particles_per_second) {
+            int src_blend_func, int dst_blend_func,
+            @NonNull TextureKey @Nullable [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers,
+            int types, int remaining_particles, float particles_per_second) {
         this.world = world;
         this.position = position;
         this.src_blend_func = src_blend_func;
@@ -82,6 +82,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     /**
      * Returns true if there are any particles currently active in this emitter.
+     *
      * @return true if there are active particles.
      */
     public final boolean hasActiveParticles() {
@@ -134,7 +135,8 @@ public abstract class Emitter<P extends Particle> implements Animated {
     public final void forceColorChange(float dr, float dg, float db, float da) {
         for (List<P> particle1 : particles) {
             for (Particle particle : particle1) {
-                particle.setColor(particle.getColorR() + dr, particle.getColorG() + dg, particle.getColorB() + db, particle.getColorA() + da);
+                particle.setColor(particle.getColorR() + dr, particle.getColorG() + dg, particle.getColorB() + db,
+                        particle.getColorA() + da);
             }
         }
     }
@@ -188,6 +190,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     /**
      * Subclasses must implement this to initialize and add new particles.
+     *
      * @param count Requested number of particles to spawn (usually 1 based on updateSpawning loop).
      * @return The actual number of particles spawned.
      */
@@ -203,6 +206,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     /**
      * Returns true if the emitter has finished spawning and all its particles have died.
+     *
      * @return true if the emitter is finished.
      */
     public final boolean isFinished() {

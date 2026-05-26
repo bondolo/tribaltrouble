@@ -34,12 +34,14 @@ public class SoundPanel extends Panel {
         group_music.addChild(label_music_low);
         Label label_music_high = new Label(AbstractOptionsMenu.i18n("high"), Skin.getSkin().getEditFont());
         group_music.addChild(label_music_high);
-        CheckBox cb_music = new CheckBox(Renderer.getRenderer().getSettings().play_music, AbstractOptionsMenu.i18n("music"));
+        CheckBox cb_music = new CheckBox(Renderer.getRenderer().getSettings().play_music, AbstractOptionsMenu.i18n(
+                "music"));
         group_music.addChild(cb_music);
         Label label_music = new Label(AbstractOptionsMenu.i18n("music_volume"), Skin.getSkin().getEditFont());
         group_music.addChild(label_music);
 
-        Slider slider_music = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().music_gain * (MAX_VALUE)));
+        Slider slider_music = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer()
+                .getSettings().music_gain * (MAX_VALUE)));
         slider_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !cb_music.isMarked());
         group_music.addChild(slider_music);
 
@@ -69,12 +71,14 @@ public class SoundPanel extends Panel {
         group_sound.addChild(label_sound_low);
         Label label_sound_high = new Label(AbstractOptionsMenu.i18n("high"), Skin.getSkin().getEditFont());
         group_sound.addChild(label_sound_high);
-        CheckBox cb_sound = new CheckBox(Renderer.getRenderer().getSettings().play_sfx, AbstractOptionsMenu.i18n("sound_effects"));
+        CheckBox cb_sound = new CheckBox(Renderer.getRenderer().getSettings().play_sfx, AbstractOptionsMenu.i18n(
+                "sound_effects"));
         group_sound.addChild(cb_sound);
         Label label_sound = new Label(AbstractOptionsMenu.i18n("sound_effects_volume"), Skin.getSkin().getEditFont());
         group_sound.addChild(label_sound);
 
-        Slider slider_sound = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().sound_gain * (MAX_VALUE)));
+        Slider slider_sound = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer()
+                .getSettings().sound_gain * (MAX_VALUE)));
         slider_sound.setDisabled(!cb_sound.isMarked());
         group_sound.addChild(slider_sound);
 

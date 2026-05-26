@@ -35,7 +35,7 @@ public final class ProfilesForm extends Form {
     private final @NonNull GUIRoot gui_root;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ProfilesForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 

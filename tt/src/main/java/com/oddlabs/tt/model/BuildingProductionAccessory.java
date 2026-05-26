@@ -23,7 +23,7 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
     private static final float ACCELERATION_FACTOR = 0.1f;
     private static final float PARTICLES_PER_SECOND = 15.0f;
     private static final float IDLE_STOP_THRESHOLD = 0.3f;
-    
+
     private static final Vector3fc ZERO_VEC = new Vector3f(0f, 0f, 0f);
     private static final Vector3fc EMITTER_ACCEL = new Vector3f(0f, 0f, 1.3f);
     private static final Vector3fc EMITTER_ACCEL_OFFSET = new Vector3f(0f, 0f, 0.25f);
@@ -36,9 +36,10 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
     private final @NonNull Vector3fc chimneyOffset;
     private float idleTimer = 0f;
 
-    public BuildingProductionAccessory(@NonNull Building building, @NonNull Vector3fc chimneyOffset, @NonNull TextureKey @NonNull [] textures) {
+    public BuildingProductionAccessory(@NonNull Building building, @NonNull Vector3fc chimneyOffset,
+            @NonNull TextureKey @NonNull [] textures) {
         this.chimneyOffset = chimneyOffset;
-        
+
         this.emitter = new RandomAccelerationEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f), 0f,
                 EMITTER_RADIUS_XY, EMITTER_RADIUS_XY, EMITTER_HEIGHT, ACCELERATION_FACTOR,
                 -1, PARTICLES_PER_SECOND,
@@ -75,7 +76,7 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
                     emitter.stop();
                 }
             }
-            
+
             return isProducing || !emitter.isFinished();
         }
         return false;

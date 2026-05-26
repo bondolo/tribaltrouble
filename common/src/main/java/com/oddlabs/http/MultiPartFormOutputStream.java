@@ -20,11 +20,11 @@ import java.nio.charset.StandardCharsets;
 /**
  * <code>MultiPartFormOutputStream</code> is used to write
  * "multipart/form-data" to a <code>java.net.URLConnection</code> for
- * POSTing.  This is primarily for file uploading to HTTP servers.
+ * POSTing. This is primarily for file uploading to HTTP servers.
  *
  * @since JDK1.3
  *
- * <a href="http://forum.java.sun.com/thread.jsp?forum=31&thread=451245">...</a>
+ *        <a href="http://forum.java.sun.com/thread.jsp?forum=31&thread=451245">...</a>
  */
 public class MultiPartFormOutputStream {
 
@@ -50,11 +50,11 @@ public class MultiPartFormOutputStream {
 
     /**
      * Creates a new <code>MultiPartFormOutputStream</code> object using
-     * the specified output stream and boundary.  The boundary is required
+     * the specified output stream and boundary. The boundary is required
      * to be created before using this method, as described in the
      * description for the <code>getContentType(String)</code> method.
      * The boundary is only checked for <code>null</code> or empty string,
-     * but it is recommended to be at least 6 characters.  (Or use the
+     * but it is recommended to be at least 6 characters. (Or use the
      * static createBoundary() method to create one.)
      *
      * @param os       the output stream
@@ -148,7 +148,7 @@ public class MultiPartFormOutputStream {
     }
 
     /**
-     * Writes a string field value.  If the value is null, an empty string
+     * Writes a string field value. If the value is null, an empty string
      * is sent ("").
      *
      * @param name  the field name (required)
@@ -159,12 +159,12 @@ public class MultiPartFormOutputStream {
         if (value == null) {
             value = "";
         }
-		/*
-		   --boundary\r\n
-		   Content-Disposition: form-data; name="<fieldName>"\r\n
-		   \r\n
-		   <value>\r\n
-		 */
+        /*
+           --boundary\r\n
+           Content-Disposition: form-data; name="<fieldName>"\r\n
+           \r\n
+           <value>\r\n
+         */
         // write boundary
         out.writeBytes(PREFIX);
         out.writeBytes(boundary);
@@ -180,7 +180,7 @@ public class MultiPartFormOutputStream {
     }
 
     /**
-     * Writes a file's contents.  If the file is null, does not exist, or
+     * Writes a file's contents. If the file is null, does not exist, or
      * is a directory, a <code>java.lang.IllegalArgumentException</code>
      * will be thrown.
      *
@@ -199,7 +199,8 @@ public class MultiPartFormOutputStream {
         writeFile(name, mimeType, file.getCanonicalPath(), new FileInputStream(file));
     }
 
-    private void writeFileHeader(@NonNull String name, @Nullable String mimeType, @NonNull String fileName) throws IOException {
+    private void writeFileHeader(@NonNull String name, @Nullable String mimeType, @NonNull String fileName)
+            throws IOException {
         out.writeBytes(PREFIX);
         out.writeBytes(boundary);
         out.writeBytes(NEWLINE);
@@ -214,7 +215,7 @@ public class MultiPartFormOutputStream {
     }
 
     /**
-     * Writes an input stream's contents.  If the input stream is null, a
+     * Writes an input stream's contents. If the input stream is null, a
      * <code>java.lang.IllegalArgumentException</code> will be thrown.
      *
      * @param name     the field name
@@ -223,17 +224,18 @@ public class MultiPartFormOutputStream {
      * @param is       the input stream
      * @throws IOException on input/output errors
      */
-    public void writeFile(String name, @Nullable String mimeType, @NonNull String fileName, @NonNull InputStream is) throws IOException {
+    public void writeFile(String name, @Nullable String mimeType, @NonNull String fileName, @NonNull InputStream is)
+            throws IOException {
         if (fileName.isEmpty()) {
             throw new IllegalArgumentException("File name cannot be null or empty.");
         }
-		/*
-		   --boundary\r\n
-		   Content-Disposition: form-data; name="<fieldName>"; filename="<filename>"\r\n
-		   Content-Type: <mime-type>\r\n
-		   \r\n
-		   <file-data>\r\n
-		 */
+        /*
+           --boundary\r\n
+           Content-Disposition: form-data; name="<fieldName>"; filename="<filename>"\r\n
+           Content-Type: <mime-type>\r\n
+           \r\n
+           <file-data>\r\n
+         */
         // write boundary
         writeFileHeader(name, mimeType, fileName);
         try (is) {
@@ -249,8 +251,8 @@ public class MultiPartFormOutputStream {
     }
 
     /**
-     * Writes the given bytes.  The bytes are assumed to be the contents
-     * of a file, and will be sent as such.  If the data is null, a
+     * Writes the given bytes. The bytes are assumed to be the contents
+     * of a file, and will be sent as such. If the data is null, a
      * <code>java.lang.IllegalArgumentException</code> will be thrown.
      *
      * @param name     the field name
@@ -259,17 +261,18 @@ public class MultiPartFormOutputStream {
      * @param data     the file data
      * @throws IOException on input/output errors
      */
-    public void writeFile(String name, String mimeType, @NonNull String fileName, byte @NonNull [] data) throws IOException {
+    public void writeFile(String name, String mimeType, @NonNull String fileName, byte @NonNull [] data)
+            throws IOException {
         if (fileName.isEmpty()) {
             throw new IllegalArgumentException("File name cannot be null or empty.");
         }
-		/*
-		   --boundary\r\n
-		   Content-Disposition: form-data; name="<fieldName>"; filename="<filename>"\r\n
-		   Content-Type: <mime-type>\r\n
-		   \r\n
-		   <file-data>\r\n
-		 */
+        /*
+           --boundary\r\n
+           Content-Disposition: form-data; name="<fieldName>"; filename="<filename>"\r\n
+           Content-Type: <mime-type>\r\n
+           \r\n
+           <file-data>\r\n
+         */
         // write boundary
         writeFileHeader(name, mimeType, fileName);
         // write content
@@ -279,7 +282,7 @@ public class MultiPartFormOutputStream {
     }
 
     /**
-     * Flushes the stream.  Actually, this method does nothing, as the only
+     * Flushes the stream. Actually, this method does nothing, as the only
      * write methods are highly specialized and automatically flush.
      *
      * @throws IOException on input/output errors
@@ -317,7 +320,7 @@ public class MultiPartFormOutputStream {
 
     /**
      * Creates a new <code>java.net.URLConnection</code> object from the
-     * specified <code>java.net.URL</code>.  This is a convenience method
+     * specified <code>java.net.URL</code>. This is a convenience method
      * which will set the <code>doInput</code>, <code>doOutput</code>,
      * <code>useCaches</code> and <code>defaultUseCaches</code> fields to
      * the appropriate settings in the correct order.
@@ -352,12 +355,12 @@ public class MultiPartFormOutputStream {
     /**
      * Gets the content type string suitable for the
      * <code>java.net.URLConnection</code> which includes the multipart
-     * boundary string.  <br>
+     * boundary string. <br>
      * <br>
      * This method is static because, due to the nature of the
      * <code>java.net.URLConnection</code> class, once the output stream
      * for the connection is acquired, it's too late to set the content
-     * type (or any other request parameter).  So one has to create a
+     * type (or any other request parameter). So one has to create a
      * multipart boundary string first before using this class, such as
      * with the <code>createBoundary()</code> method.
      *

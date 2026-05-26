@@ -17,23 +17,23 @@ import java.util.stream.Stream;
 public final class VikingCampaign extends Campaign {
     public static final int MAX_UNITS = 46;
     private static final int[] INITIAL_STATES = new int[]{
-/*
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE};
-*/
+            /*
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE};
+            */
             CampaignState.ISLAND_AVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE,
@@ -50,18 +50,19 @@ public final class VikingCampaign extends Campaign {
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE};
 
-    private final @NonNull Island [] islands = Stream.<Function<VikingCampaign, Island>>of(
+    private final @NonNull Island[] islands = Stream.<Function<VikingCampaign, Island>>of(
             VikingIsland0::new, VikingIsland1::new, VikingIsland2::new, VikingIsland3::new, VikingIsland4::new,
             VikingIsland5::new, VikingIsland6::new, VikingIsland7::new, VikingIsland8::new, VikingIsland9::new,
             VikingIsland10::new, VikingIsland11::new, VikingIsland12::new, VikingIsland13::new, VikingIsland14::new)
-                .map(c -> c.apply(this))
-                .toArray(Island[]::new);
+            .map(c -> c.apply(this))
+            .toArray(Island[]::new);
 
     public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
         this(network, gui_root, new CampaignState(INITIAL_STATES));
     }
 
-    public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull CampaignState campaign_state) {
+    public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
+            @NonNull CampaignState campaign_state) {
         super(campaign_state);
         if (getState().getCurrentIsland() == -1) {
             startIsland(network, gui_root, 0);

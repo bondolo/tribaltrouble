@@ -106,7 +106,8 @@ public final class Settings implements Serializable {
     public float contrast_clarity = 0.0f;
     public boolean team_stencil = false;
 
-    public Color.@NonNull Standard @NonNull [] team_colours = Arrays.copyOf(DEFAULT_TEAM_COLOURS, DEFAULT_TEAM_COLOURS.length);
+    public Color.@NonNull Standard @NonNull [] team_colours = Arrays.copyOf(DEFAULT_TEAM_COLOURS,
+            DEFAULT_TEAM_COLOURS.length);
 
     public transient Color.Linear @NonNull [] linear_team_colours = Arrays.stream(team_colours)
             .map(Color.Linear::new)
@@ -245,7 +246,8 @@ public final class Settings implements Serializable {
         }
     }
 
-    private void setProperty(@NonNull Properties props, @NonNull String key, @NonNull String value, String defaultValue) {
+    private void setProperty(@NonNull Properties props, @NonNull String key, @NonNull String value,
+            String defaultValue) {
         if (!value.equals(defaultValue)) {
             props.setProperty(key, value);
         }
@@ -269,7 +271,8 @@ public final class Settings implements Serializable {
         }
     }
 
-    private void setProperty(@NonNull Properties props, @NonNull String key, Color.@NonNull Standard @NonNull [] value, Color.@NonNull Standard @NonNull [] defaultValue) {
+    private void setProperty(@NonNull Properties props, @NonNull String key, Color.@NonNull Standard @NonNull [] value,
+            Color.@NonNull Standard @NonNull [] defaultValue) {
         if (!Arrays.equals(value, defaultValue)) {
             String colors = Arrays.stream(value)
                     .mapToInt(Color.Standard::toInt)
@@ -298,7 +301,8 @@ public final class Settings implements Serializable {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException _) {
-            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value '" + defaultValue + "'.");
+            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value '"
+                    + defaultValue + "'.");
             return defaultValue;
         }
     }
@@ -311,7 +315,8 @@ public final class Settings implements Serializable {
         try {
             return Float.parseFloat(value);
         } catch (NumberFormatException _) {
-            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value '" + defaultValue + "'.");
+            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value '"
+                    + defaultValue + "'.");
             return defaultValue;
         }
     }
@@ -324,12 +329,14 @@ public final class Settings implements Serializable {
         try {
             return Path.of(value);
         } catch (InvalidPathException _) {
-            logger.warning("Invalid path for setting '" + key + "': '" + value + "'. Using default value '" + defaultValue + "'.");
+            logger.warning("Invalid path for setting '" + key + "': '" + value + "'. Using default value '"
+                    + defaultValue + "'.");
             return defaultValue;
         }
     }
 
-    private static Color.@NonNull Standard @NonNull [] getColours(@NonNull Properties props, @NonNull String key, Color.@NonNull Standard @NonNull [] defaultValue) {
+    private static Color.@NonNull Standard @NonNull [] getColours(@NonNull Properties props, @NonNull String key,
+            Color.@NonNull Standard @NonNull [] defaultValue) {
         String value = props.getProperty(key);
         if (value == null) {
             return defaultValue;
@@ -351,7 +358,8 @@ public final class Settings implements Serializable {
 
             return result;
         } catch (Exception e) {
-            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value + "'. Using default value. Error: " + e);
+            logger.warning("WARNING: Invalid value for setting '" + key + "': '" + value
+                    + "'. Using default value. Error: " + e);
             return defaultValue;
         }
     }

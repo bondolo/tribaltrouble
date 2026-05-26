@@ -16,7 +16,8 @@ public final class GlobalsInit {
         for (; texture_max < Globals.MAX_TEXTURE_SIZE; texture_min = texture_max, texture_max <<= 1) {
             if (texture_max >= size) break;
         }
-        return size + texture_min * (Globals.TEXTURE_WEIGHT - 1.0f) - texture_max * Globals.TEXTURE_WEIGHT > 0 ? texture_max : texture_min;
+        return size + texture_min * (Globals.TEXTURE_WEIGHT - 1.0f) - texture_max * Globals.TEXTURE_WEIGHT > 0
+                ? texture_max : texture_min;
     }
 
     private static void initTextureSize() {
@@ -24,7 +25,7 @@ public final class GlobalsInit {
         int max_size = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
         IO.println("Maximum texture size " + max_size);
         Globals.MAX_TEXTURE_SIZE = max_size;
-        for (tex_pow = 0; max_size != 1; max_size >>= 1, tex_pow++) ;
+        for (tex_pow = 0; max_size != 1; max_size >>= 1, tex_pow++);
         Globals.MAX_TEXTURE_POWER = tex_pow;
 
         Globals.TEXTURE_SIZES = new int[Globals.MAX_TEXTURE_SIZE];

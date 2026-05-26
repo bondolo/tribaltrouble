@@ -85,7 +85,8 @@ final class Session {
             } else
                 client_checksum = client.getChecksums().removeFirst();
             if (client_checksum != best_checksum[0]) {
-                logger.log(Level.WARNING, "Kicking client because of checksum error: {0} != {1}", new Object[]{client_checksum, best_checksum[0]});
+                logger.log(Level.WARNING, "Kicking client because of checksum error: {0} != {1}", new Object[]{
+                        client_checksum, best_checksum[0]});
                 clients_to_be_kicked.add(client);
             }
         });

@@ -41,8 +41,11 @@ public class FogInfo {
         return enabled;
     }
 
-    /** Get the base color of the fog.
-     * @return Linear color */
+    /**
+     * Get the base color of the fog.
+     *
+     * @return Linear color
+     */
     public @NonNull Color getColor() {
         return color;
     }

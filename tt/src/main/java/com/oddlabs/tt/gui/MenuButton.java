@@ -22,7 +22,8 @@ public final class MenuButton extends ButtonObject {
         this(caption, Skin.getSkin().getHeadlineFont(), color_normal, color_active);
     }
 
-    private MenuButton(@NonNull CharSequence text, @NonNull Font font, @NonNull Color color_normal, @NonNull Color color_active) {
+    private MenuButton(@NonNull CharSequence text, @NonNull Font font, @NonNull Color color_normal,
+            @NonNull Color color_active) {
         super(font);
         setDim(font.getWidth(text), font.getHeight());
         this.text = text;
@@ -47,7 +48,8 @@ public final class MenuButton extends ButtonObject {
             scaleHovered(renderer);
         } else c = isDisabled() ? Label.DISABLED_COLOR : color_normal;
 
-        TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, c);
+        TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f, Float.NEGATIVE_INFINITY,
+                Float.POSITIVE_INFINITY, c);
         renderer.getMatrixStack().pop();
     }
 

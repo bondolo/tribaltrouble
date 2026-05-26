@@ -51,8 +51,8 @@ public class PulldownItem<T> extends ButtonObject {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.NORMAL
                 : isActive() || isHovered()
-                  ? ModeIconQuads.Mode.ACTIVE
-                  : ModeIconQuads.Mode.NORMAL;
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
         item.render(renderer, 0f, 0f, getWidth(), getHeight(), skinMode);
     }
 

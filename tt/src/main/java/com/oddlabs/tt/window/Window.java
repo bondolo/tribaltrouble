@@ -67,9 +67,11 @@ public interface Window extends AutoCloseable {
 
     void setFullscreen(boolean fullscreen) throws Exception;
 
-    @NonNull List<@NonNull SerializableDisplayMode> getAvailableDisplayModes();
+    @NonNull
+    List<@NonNull SerializableDisplayMode> getAvailableDisplayModes();
 
-    @NonNull SerializableDisplayMode getDisplayMode();
+    @NonNull
+    SerializableDisplayMode getDisplayMode();
 
     void setDisplayMode(@NonNull SerializableDisplayMode mode) throws Exception;
 
@@ -92,19 +94,22 @@ public interface Window extends AutoCloseable {
      *
      * @return Vector2f [width, height] in mm
      */
-    @NonNull Vector2f getMonitorPhysicalSize();
+    @NonNull
+    Vector2f getMonitorPhysicalSize();
 
     /**
      * Returns the content scale of the monitor.
      *
      * @return Vector2f [xScale, yScale]
      */
-    @NonNull Vector2f getMonitorContentScale();
+    @NonNull
+    Vector2f getMonitorContentScale();
 
     /**
      * Returns the content scale of the window.
      *
      * @return Vector2f [xScale, yScale]
      */
-    @NonNull Vector2f getWindowContentScale();
+    @NonNull
+    Vector2f getWindowContentScale();
 }

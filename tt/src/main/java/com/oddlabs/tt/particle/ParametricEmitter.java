@@ -35,12 +35,13 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     private float energy;
 
     public ParametricEmitter(@NonNull World world, @NonNull ParametricFunction function, @NonNull Vector3f position,
-                             float area_xy, float area_z, float velocity_u, float velocity_v, float velocity_random_margin,
-                             int num_particles, float particles_per_second,
-                             @NonNull Color color, @NonNull Color delta_color,
-                             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
-                             int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
-        super(world, position, src_blend_func, dst_blend_func, textures, null, textures.length, num_particles, particles_per_second);
+            float area_xy, float area_z, float velocity_u, float velocity_v, float velocity_random_margin,
+            int num_particles, float particles_per_second,
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
+            int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
+        super(world, position, src_blend_func, dst_blend_func, textures, null, textures.length, num_particles,
+                particles_per_second);
         this.function = function;
         this.area_xy = area_xy;
         this.area_z = area_z;
@@ -115,19 +116,21 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {
-            initiated += initParticle(function, velocity_u, velocity_v, color, delta_color, particle_radius, growth_rate, energy);
+            initiated += initParticle(function, velocity_u, velocity_v, color, delta_color, particle_radius,
+                    growth_rate, energy);
         }
         return initiated;
     }
 
     protected int initParticle(@NonNull ParametricFunction function,
-                               float velocity_u, float velocity_v,
-                               @NonNull Color color, @NonNull Color delta_color,
-                               @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
-                               float energy) {
+            float velocity_u, float velocity_v,
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
+            float energy) {
 
         Vector3f offset = randomOffset(area_xy, area_xy, area_z);
-        ParametricParticle particle = new ParametricParticle(getWorld(), function, random.nextFloat() * (float) Math.PI * 2f, random.nextFloat() * (float) Math.PI * 2f,
+        ParametricParticle particle = new ParametricParticle(getWorld(), function, random.nextFloat() * (float) Math.PI
+                * 2f, random.nextFloat() * (float) Math.PI * 2f,
                 offset.x(), offset.y(), offset.z());
         offset = randomOffset(velocity_random_margin, velocity_random_margin, 0f);
         particle.setVelocity(velocity_u + offset.x(), velocity_v + offset.y());

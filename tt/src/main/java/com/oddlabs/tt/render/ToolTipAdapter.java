@@ -44,10 +44,10 @@ final class ToolTipAdapter implements ToolTip {
     private void visitSelectable(@NonNull Selectable<?> selectable) {
         assert !selectable.isDead();
         visitPlayer(selectable.getOwner());
-		/*      if (Renderer.getRenderer().getSettings().developer_mode) {
-				if (getCurrentBehaviour() instanceof WalkBehaviour)
-				((WalkBehaviour)getCurrentBehaviour()).appendToolTip(tool_tip_box);
-				else*/
+        /*      if (Renderer.getRenderer().getSettings().developer_mode) {
+        		if (getCurrentBehaviour() instanceof WalkBehaviour)
+        		((WalkBehaviour)getCurrentBehaviour()).appendToolTip(tool_tip_box);
+        		else*/
         //tool_tip_box.append(getPrimaryController().getClass().getName());
         //}
     }
@@ -60,7 +60,8 @@ final class ToolTipAdapter implements ToolTip {
             case Building building -> visitBuilding(building);
             case Supply supply -> visitSupply(supply);
             case SceneryModel scenery -> visitSceneryModel(scenery);
-            default -> {}
+            default -> {
+            }
         }
     }
 
@@ -79,7 +80,8 @@ final class ToolTipAdapter implements ToolTip {
         visitSelectable(building);
         tool_tip_box.append(building.getTemplate().getName());
         IconQuad[] watch = GUIIcons.getIcons().getWatch();
-        tool_tip_box.append(watch[((watch.length - 1) * building.getHitPoints() / building.getTemplate().getMaxHitPoints())]);
+        tool_tip_box.append(watch[((watch.length - 1) * building.getHitPoints() / building.getTemplate()
+                .getMaxHitPoints())]);
         //      if (getUnitContainer() != null && Renderer.getRenderer().getSettings().developer_mode) {
         //          tool_tip_box.append(" units_in_building ");
         //          tool_tip_box.append(getUnitContainer().getNumSupplies());
@@ -104,8 +106,8 @@ final class ToolTipAdapter implements ToolTip {
         } else if (unit.getOwner() == local_player && c instanceof GatherController<?> gc) {
             tool_tip_box.append(GUIIcons.getIcons().getToolTipIcon(gc.getSupplyType()));
         }
-		/*      if (getCurrentBehaviour() instanceof WalkBehaviour)
-				((WalkBehaviour)getCurrentBehaviour()).appendToolTip(tool_tip_box);*/
+        /*      if (getCurrentBehaviour() instanceof WalkBehaviour)
+        		((WalkBehaviour)getCurrentBehaviour()).appendToolTip(tool_tip_box);*/
 
     }
 }

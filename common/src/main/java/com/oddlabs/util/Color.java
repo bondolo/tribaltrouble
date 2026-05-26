@@ -35,8 +35,11 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
     }
 
     float r();
+
     float g();
+
     float b();
+
     float a();
 
     default void get(int offset, @NonNull FloatBuffer dest) {
@@ -60,10 +63,10 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
         public Linear(@NonNull Color color) {
             this(
-                color instanceof Standard ? toLinear(color.r()) : color.r(),
-                color instanceof Standard ? toLinear(color.g()) : color.g(),
-                color instanceof Standard ? toLinear(color.b()) : color.b(),
-                color.a()
+                    color instanceof Standard ? toLinear(color.r()) : color.r(),
+                    color instanceof Standard ? toLinear(color.g()) : color.g(),
+                    color instanceof Standard ? toLinear(color.b()) : color.b(),
+                    color.a()
             );
         }
 
@@ -99,10 +102,10 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
         public Standard(@NonNull Color color) {
             this(
-                color instanceof Linear ? toStandard(color.r()) : color.r(),
-                color instanceof Linear ? toStandard(color.g()) : color.g(),
-                color instanceof Linear ? toStandard(color.b()) : color.b(),
-                color.a()
+                    color instanceof Linear ? toStandard(color.r()) : color.r(),
+                    color instanceof Linear ? toStandard(color.g()) : color.g(),
+                    color instanceof Linear ? toStandard(color.b()) : color.b(),
+                    color.a()
             );
         }
 
@@ -110,11 +113,11 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
          * @param color The 32-bit ARGB integer color.
          */
         public Standard(int color) {
-           this(
-            ((color >> 16) & 0xFF) / NORMALIZE_8_BIT,
-            ((color >> 8) & 0xFF) / NORMALIZE_8_BIT,
-            (color & 0xFF) / NORMALIZE_8_BIT,
-            ((color >> 24) & 0xFF) / NORMALIZE_8_BIT);
+            this(
+                    ((color >> 16) & 0xFF) / NORMALIZE_8_BIT,
+                    ((color >> 8) & 0xFF) / NORMALIZE_8_BIT,
+                    (color & 0xFF) / NORMALIZE_8_BIT,
+                    ((color >> 24) & 0xFF) / NORMALIZE_8_BIT);
         }
 
         public int toInt() {

@@ -64,80 +64,80 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
             FOG_FUNCTION +
             PERTURB_NORMAL_FUNC +
             """
-            uniform sampler2D u_DiffuseMap;
-            uniform sampler2D u_NormalMap;
-            uniform sampler2D u_DetailMap;
-            uniform sampler2D u_HeightMap;
-            uniform vec3 u_SeaBottomColor;
+                    uniform sampler2D u_DiffuseMap;
+                    uniform sampler2D u_NormalMap;
+                    uniform sampler2D u_DetailMap;
+                    uniform sampler2D u_HeightMap;
+                    uniform vec3 u_SeaBottomColor;
 
-            in vec2 v_texCoord0;
-            in vec2 v_texCoordColormap;
-            in vec2 v_texCoord1;
-            in float v_fogDist;
-            in vec3 v_viewPosition;
+                    in vec2 v_texCoord0;
+                    in vec2 v_texCoordColormap;
+                    in vec2 v_texCoord1;
+                    in float v_fogDist;
+                    in vec3 v_viewPosition;
 
-            layout(location = 0) out vec4 out_FragColor;
+                    layout(location = 0) out vec4 out_FragColor;
 
-            void main() {
-                vec4 diffuseColor = texture(u_DiffuseMap, v_texCoordColormap);
-                vec4 detailColor = texture(u_DetailMap, v_texCoord1);
-                vec4 normalMapVal = texture(u_NormalMap, v_texCoordColormap);
+                    void main() {
+                        vec4 diffuseColor = texture(u_DiffuseMap, v_texCoordColormap);
+                        vec4 detailColor = texture(u_DetailMap, v_texCoord1);
+                        vec4 normalMapVal = texture(u_NormalMap, v_texCoordColormap);
 
-                // Calculate edge blend factor (ranges from 0.0 at the edge to 1.0 at 2% inside the world)
-                float distToEdgeX = min(v_texCoordColormap.x, 1.0 - v_texCoordColormap.x);
-                float distToEdgeY = min(v_texCoordColormap.y, 1.0 - v_texCoordColormap.y);
-                float distToEdge = min(distToEdgeX, distToEdgeY);
-                float edgeBlend = smoothstep(0.0, 0.02, distToEdge);
+                        // Calculate edge blend factor (ranges from 0.0 at the edge to 1.0 at 2% inside the world)
+                        float distToEdgeX = min(v_texCoordColormap.x, 1.0 - v_texCoordColormap.x);
+                        float distToEdgeY = min(v_texCoordColormap.y, 1.0 - v_texCoordColormap.y);
+                        float distToEdge = min(distToEdgeX, distToEdgeY);
+                        float edgeBlend = smoothstep(0.0, 0.02, distToEdge);
 
-                // Blend diffuse color to linear sea bottom color, and normal map alpha (specular intensity) to 0.0
-                diffuseColor.rgb = mix(u_SeaBottomColor, diffuseColor.rgb, edgeBlend);
-                normalMapVal.a = mix(0.0, normalMapVal.a, edgeBlend);
+                        // Blend diffuse color to linear sea bottom color, and normal map alpha (specular intensity) to 0.0
+                        diffuseColor.rgb = mix(u_SeaBottomColor, diffuseColor.rgb, edgeBlend);
+                        normalMapVal.a = mix(0.0, normalMapVal.a, edgeBlend);
 
-                // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space)
-                vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
-                srgbDiffuse *= (detailColor.rgb * 0.4 + 0.8);
-                diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
+                        // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space)
+                        vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
+                        srgbDiffuse *= (detailColor.rgb * 0.4 + 0.8);
+                        diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
 
-                // Compute view-space normal from heightmap slope
-                float h_plus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(1, 0)).r;
-                float h_minus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(-1, 0)).r;
-                float h_plus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, 1)).r;
-                float h_minus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, -1)).r;
-                // Mathematically accurate normal (each texel spacing represents 2.0 meters, making 4.0 meters between plus and minus samples)
-                vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
-            
-                // Smoothly blend worldNormal to flat (0,0,1) near the world edges to match the seabottom normal
-                worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
+                        // Compute view-space normal from heightmap slope
+                        float h_plus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(1, 0)).r;
+                        float h_minus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(-1, 0)).r;
+                        float h_plus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, 1)).r;
+                        float h_minus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, -1)).r;
+                        // Mathematically accurate normal (each texel spacing represents 2.0 meters, making 4.0 meters between plus and minus samples)
+                        vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
 
-                vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
+                        // Smoothly blend worldNormal to flat (0,0,1) near the world edges to match the seabottom normal
+                        worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
 
-                // Perturb using normal map
-                vec3 baseNormal = perturbNormal(viewNormal, normalize(v_viewPosition), v_texCoordColormap, normalMapVal.rgb);
-                // Blend baseNormal back to the flat viewNormal near the boundary to eliminate TBN/derivative mismatches
-                baseNormal = normalize(mix(viewNormal, baseNormal, edgeBlend));
+                        vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
 
-                // Micro-detail normal perturbation from detail map color (adds tactile depth up close)
-                vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * 0.08);
+                        // Perturb using normal map
+                        vec3 baseNormal = perturbNormal(viewNormal, normalize(v_viewPosition), v_texCoordColormap, normalMapVal.rgb);
+                        // Blend baseNormal back to the flat viewNormal near the boundary to eliminate TBN/derivative mismatches
+                        baseNormal = normalize(mix(viewNormal, baseNormal, edgeBlend));
 
-                // Dynamic specular (Blinn-Phong) & rim lighting
-                vec3 viewDir = normalize(-v_viewPosition);
-                vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
-                vec3 halfDir = normalize(lightDir + viewDir);
-                float spec = pow(max(dot(normal, halfDir), 0.0), 32.0);
-                vec3 specular = (normalMapVal.a * 0.15) * spec * vec3(1.0);
+                        // Micro-detail normal perturbation from detail map color (adds tactile depth up close)
+                        vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * 0.08);
 
-                float rim = 1.0 - max(dot(viewDir, normal), 0.0);
-                rim = smoothstep(0.8, 1.0, rim);
-                vec3 rimLight = rim * u_globalAmbient * 0.25;
+                        // Dynamic specular (Blinn-Phong) & rim lighting
+                        vec3 viewDir = normalize(-v_viewPosition);
+                        vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
+                        vec3 halfDir = normalize(lightDir + viewDir);
+                        float spec = pow(max(dot(normal, halfDir), 0.0), 32.0);
+                        vec3 specular = (normalMapVal.a * 0.15) * spec * vec3(1.0);
 
-                float exposure = 1.1;
-                vec3 litColor = diffuseColor.rgb * (1.0 + rimLight * exposure) + specular * exposure;
+                        float rim = 1.0 - max(dot(viewDir, normal), 0.0);
+                        rim = smoothstep(0.8, 1.0, rim);
+                        vec3 rimLight = rim * u_globalAmbient * 0.25;
 
-                float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                vec3 finalColor = mix(u_fogColor.rgb, litColor, fogFactor);
-                out_FragColor = vec4(finalColor, diffuseColor.a);
-            }
-            """;
+                        float exposure = 1.1;
+                        vec3 litColor = diffuseColor.rgb * (1.0 + rimLight * exposure) + specular * exposure;
+
+                        float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                        vec3 finalColor = mix(u_fogColor.rgb, litColor, fogFactor);
+                        out_FragColor = vec4(finalColor, diffuseColor.a);
+                    }
+                    """;
 
     public LandscapeShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);

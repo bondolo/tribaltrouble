@@ -53,7 +53,8 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     private ConfigurationListener configuration_listener;
 
     //	public Client(int host_id, int gametype, boolean rated, int start_speed, String map_code, int initial_unit_count, Runnable initial_action, float random_start_pos, int max_unit_count) {
-    public Client(Runnable cleanup_action, @NonNull NetworkSelector network, GUI gui, int host_id, WorldParameters world_params, InGameInfo ingame_info, WorldInitAction initial_action) {
+    public Client(Runnable cleanup_action, @NonNull NetworkSelector network, GUI gui, int host_id,
+            WorldParameters world_params, InGameInfo ingame_info, WorldInitAction initial_action) {
         this.cleanup_action = cleanup_action;
         this.network = network;
         this.gui = gui;
@@ -63,7 +64,8 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
         if (host_id != -1)
             this.connection = new TunnelledConnection(host_id, this);
         else
-            this.connection = new Connection(network, new InetSocketAddress(Utils.getLoopbackAddress(), Globals.NET_PORT), this);
+            this.connection = new Connection(network, new InetSocketAddress(Utils.getLoopbackAddress(),
+                    Globals.NET_PORT), this);
         gameserver_interface = (GameServerInterface) ARMIEvent.createProxy(connection, GameServerInterface.class);
 
         this.unit_infos = new UnitInfo[MatchmakingServerInterface.MAX_PLAYERS];
@@ -91,7 +93,8 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     @Override
     public void chat(int player_slot, @Nullable String chat) {
         if (chat != null && player_slot >= 0 && player_slot < player_slots.length)
-            Renderer.getRenderer().getNetwork().getChatHub().chat(new ChatMessage(player_slots[player_slot].getInfo().getName(), chat, ChatMessage.Type.GAME_MENU));
+            Renderer.getRenderer().getNetwork().getChatHub().chat(new ChatMessage(player_slots[player_slot].getInfo()
+                    .getName(), chat, ChatMessage.Type.GAME_MENU));
     }
 
     @Override
@@ -126,7 +129,8 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
         close();
         this.session_id = session_id;
         getConfigurationListener().gameStarted();
-        ProgressForm.setProgressForm(network, gui, new WorldStarter(network, session_id, generator, world_params, player_slots, unit_infos, player_slot, ingame_info, initial_action));
+        ProgressForm.setProgressForm(network, gui, new WorldStarter(network, session_id, generator, world_params,
+                player_slots, unit_infos, player_slot, ingame_info, initial_action));
     }
 
     @Override

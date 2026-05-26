@@ -48,7 +48,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NewCampaignForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -61,7 +61,8 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     private final PulldownMenu<Void> difficulty_pulldown = new PulldownMenu<>();
     private @NonNull CampaignState @Nullable [] campaign_states;
 
-    public NewCampaignForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu, @NonNull CampaignForm campaign_form) {
+    public NewCampaignForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu,
+            @NonNull CampaignForm campaign_form) {
         this.network = network;
         this.gui_root = gui_root;
         this.main_menu = main_menu;
@@ -183,7 +184,8 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
             case 0 -> CampaignState.DIFFICULTY_EASY;
             case 1 -> CampaignState.DIFFICULTY_NORMAL;
             case 2 -> CampaignState.DIFFICULTY_HARD;
-            default -> throw new IllegalArgumentException("unexpected difficulty: " + difficulty_pulldown.getChosenItemIndex());
+            default -> throw new IllegalArgumentException("unexpected difficulty: " + difficulty_pulldown
+                    .getChosenItemIndex());
         };
         campaign.getState().setDifficulty(difficulty);
         new_states[new_states.length - 1] = campaign.getState();

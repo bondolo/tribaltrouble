@@ -33,11 +33,10 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private static final AudioParameters CHICKEN_DEATH_AUDIO = new AudioParameters(
             Assets.SFX_CHICKEN_DEATH, Assets.AUDIO_RANK_DEATH,
             Assets.AUDIO_DISTANCE_DEATH, Assets.AUDIO_GAIN_CHICKEN_DEATH, Assets.AUDIO_RADIUS_CHICKEN_DEATH);
-    private static final @NonNull AudioParameters [] CHICKEN_IDLE_AUDIO =
-            Arrays.stream(Assets.SFX_CHICKEN_IDLES)
-                .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_CHICKEN,
-                        Assets.AUDIO_DISTANCE_CHICKEN, Assets.AUDIO_GAIN_CHICKEN_IDLE, Assets.AUDIO_RADIUS_CHICKEN_IDLE))
-                .toArray(AudioParameters[]::new);
+    private static final @NonNull AudioParameters[] CHICKEN_IDLE_AUDIO = Arrays.stream(Assets.SFX_CHICKEN_IDLES)
+            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_CHICKEN,
+                    Assets.AUDIO_DISTANCE_CHICKEN, Assets.AUDIO_GAIN_CHICKEN_IDLE, Assets.AUDIO_RADIUS_CHICKEN_IDLE))
+            .toArray(AudioParameters[]::new);
 
     public enum Animation {
         IDLING(1f / (50f / 25f)),
@@ -72,7 +71,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private boolean spawning;
     private float offset_z;
 
-    public RubberSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y, float x, float y, float rotation, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
+    public RubberSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y,
+            float x, float y, float rotation, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
         super(world, sprite_renderer, size, grid_x, grid_y, x, y, rotation, INITIAL_SUPPLIES, false);
         this.path_tracker = new PathTracker(world.getUnitGrid(), this);
         this.group = group;
@@ -80,7 +80,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         start_grid_y = grid_y;
         this.spawn_x = spawn_x;
         this.spawn_y = spawn_y;
-        this.spawn_z = offset_z = world.getRandom().nextFloat() * (MAX_TREE_FALL_HEIGHT - MIN_TREE_FALL_HEIGHT) + MIN_TREE_FALL_HEIGHT;
+        this.spawn_z = offset_z = world.getRandom().nextFloat() * (MAX_TREE_FALL_HEIGHT - MIN_TREE_FALL_HEIGHT)
+                + MIN_TREE_FALL_HEIGHT;
         spawning = true;
         float dx = x - spawn_x;
         float dy = y - spawn_y;
@@ -173,7 +174,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             if (random < .75) {
                 setNewAnimation(Animation.IDLING);
                 if (random < .05)
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_IDLE_AUDIO[getWorld().getRandom().nextInt(CHICKEN_IDLE_AUDIO.length)]);
+                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                            CHICKEN_IDLE_AUDIO[getWorld().getRandom().nextInt(CHICKEN_IDLE_AUDIO.length)]);
             } else if (random < .85) {
                 // fly
                 int new_grid_x = start_grid_x + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);

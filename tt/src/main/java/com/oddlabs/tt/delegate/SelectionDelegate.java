@@ -81,7 +81,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
 
     public SelectionDelegate(@NonNull WorldViewer viewer, @NonNull GameCamera camera) {
         super(viewer, camera);
-        String observer_mode = Utils.getBundleString(ResourceBundle.getBundle(SelectionDelegate.class.getName()), "observer_mode");
+        String observer_mode = Utils.getBundleString(ResourceBundle.getBundle(SelectionDelegate.class.getName()),
+                "observer_mode");
         this.observer_label = new Label(observer_mode, Skin.getSkin().getHeadlineFont());
         this.game_camera = (GameCamera) getCamera();
         displayChangedNotify(getGUIRoot().getWidth(), getGUIRoot().getHeight());
@@ -145,7 +146,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                         Notification n = getViewer().getNotificationManager().getLatestNotification();
                         if (n != null) {
                             if (getCamera() instanceof GameCamera)
-                                getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), n.getX(), n.getY()));
+                                getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), n
+                                        .getX(), n.getY()));
                             else if (getCamera() instanceof MapCamera)
                                 ((MapCamera) getCamera()).mapGoto(n.getX(), n.getY(), true);
                         }
@@ -163,7 +165,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                                 var set = getViewer().getSelection().getCurrentSelection().getSet();
                                 if (!set.isEmpty()) {
                                     var s = set.iterator().next();
-                                    getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), s.getPositionX(), s.getPositionY()));
+                                    getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), s
+                                            .getPositionX(), s.getPositionY()));
                                 }
                             }
                         }
@@ -325,7 +328,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         if (target != null && getCamera() instanceof GameCamera) {
             getViewer().getSelection().clearSelection();
             getViewer().getSelection().getCurrentSelection().add(target);
-            getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), target.getPositionX(), target.getPositionY()));
+            getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), target.getPositionX(),
+                    target.getPositionY()));
         }
     }
 
@@ -351,7 +355,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         }
     }
 
-    private void updateSelection(@NonNull List<@NonNull Selectable<UnitTemplate>> friendly_units, Selectable<BuildingTemplate> friendly_building, Selectable<?> enemy) {
+    private void updateSelection(@NonNull List<@NonNull Selectable<UnitTemplate>> friendly_units, Selectable<
+            BuildingTemplate> friendly_building, Selectable<?> enemy) {
         Army current_selection = getViewer().getSelection().getCurrentSelection();
         Selectable<?> first = current_selection.getSet().iterator().next();
         if (first instanceof Building || first.getOwner() != getViewer().getLocalPlayer()) {
@@ -378,7 +383,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         }
     }
 
-    private void replaceSelection(@NonNull List<Selectable<UnitTemplate>> friendly_units, @Nullable Selectable<BuildingTemplate> friendly_building, @Nullable Selectable<?> enemy) {
+    private void replaceSelection(@NonNull List<Selectable<UnitTemplate>> friendly_units, @Nullable Selectable<
+            BuildingTemplate> friendly_building, @Nullable Selectable<?> enemy) {
         Army current_selection = getViewer().getSelection().getCurrentSelection();
         current_selection.clear();
         if (!friendly_units.isEmpty()) {
@@ -397,7 +403,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         if (button == MouseButton.LEFT && !map_mode && !observer) {
             if (selection) {
                 selection = false;
-                Selectable<?>[] picked = getViewer().getPicker().pickBoxed(getViewer().getGUIRoot().getDelegate().getCamera().getState(), selection_x1, selection_y1, selection_x2, selection_y2, clicks);
+                Selectable<?>[] picked = getViewer().getPicker().pickBoxed(getViewer().getGUIRoot().getDelegate()
+                        .getCamera().getState(), selection_x1, selection_y1, selection_x2, selection_y2, clicks);
                 List<Selectable<UnitTemplate>> friendly_units = new ArrayList<>();
                 Selectable<BuildingTemplate> friendly_building = null;
                 Selectable<?> enemy = null;
@@ -409,13 +416,15 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                             else if (selectable instanceof Unit unit)
                                 friendly_units.add(unit);
                             else
-                                throw new IllegalArgumentException("Unknown Selectable type for friendly unit: " + selectable.getClass().getName());
+                                throw new IllegalArgumentException("Unknown Selectable type for friendly unit: "
+                                        + selectable.getClass().getName());
                         } else {
                             enemy = selectable;
                         }
                     }
                 }
-                if (Renderer.getLocalInput().isShiftDownCurrently() && getViewer().getSelection().getCurrentSelection().size() > 0)
+                if (Renderer.getLocalInput().isShiftDownCurrently() && getViewer().getSelection().getCurrentSelection()
+                        .size() > 0)
                     updateSelection(friendly_units, friendly_building, enemy);
                 else
                     replaceSelection(friendly_units, friendly_building, enemy);
@@ -446,7 +455,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
     }
 
     @Override
-    public void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x, int absolute_y) {
+    public void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
+            int absolute_y) {
         if (!map_mode) {
             if (!observer) {
                 if (button == MouseButton.LEFT) {
@@ -479,7 +489,9 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                     case RIGHT -> {
                         Army selection = getViewer().getSelection().getCurrentSelection();
                         if (selection.size() > 0 && selection.containsAbility(Abilities.TARGET)) {
-                            getViewer().getPicker().pickTarget(selection, getViewer().getGUIRoot().getDelegate().getCamera().getState(), getViewer().getPeerHub().getPlayerInterface(), x, y, Action.DEFAULT);
+                            getViewer().getPicker().pickTarget(selection, getViewer().getGUIRoot().getDelegate()
+                                    .getCamera().getState(), getViewer().getPeerHub().getPlayerInterface(), x, y,
+                                    Action.DEFAULT);
                         }
                     }
                     default -> super.mousePressed(button, x, y);

@@ -6,5 +6,7 @@ public interface Fadable extends Runnable {
     void fadingDone();
 
     @Override
-    default void run() { fadingDone();}
+    default void run() {
+        fadingDone();
+    }
 }

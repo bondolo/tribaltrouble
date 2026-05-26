@@ -8,7 +8,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Tracks the specific rendering properties (position, color, pattern) 
+ * Tracks the specific rendering properties (position, color, pattern)
  * for an individual world element.
  */
 final class ElementRenderState<M extends Model> implements ModelState<M> {
@@ -95,7 +95,8 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
         return visitor.getEyeDistanceSquared(this);
     }
 
-    @NonNull SpriteRenderer getRenderer(@NonNull SpriteKey key) {
+    @NonNull
+    SpriteRenderer getRenderer(@NonNull SpriteKey key) {
         return render_state.getRenderQueues().getRenderer(key);
     }
 }

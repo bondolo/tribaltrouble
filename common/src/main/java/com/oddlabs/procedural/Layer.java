@@ -745,7 +745,8 @@ public final class Layer {
         return this;
     }
 
-    public @NonNull Layer bump(@NonNull Channel bumpmap, float lx, float ly, float shadow, float light_r, float light_g, float light_b, float ambient_r, float ambient_g, float ambient_b) {
+    public @NonNull Layer bump(@NonNull Channel bumpmap, float lx, float ly, float shadow, float light_r, float light_g,
+            float light_b, float ambient_r, float ambient_g, float ambient_b) {
         assert bumpmap.getWidth() == width && bumpmap.getHeight() == height : "bumpmap size does not match layer size";
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -753,13 +754,17 @@ public final class Layer {
                 float ny = bumpmap.getPixelWrap(x, y + 1) - bumpmap.getPixelWrap(x, y - 1);
                 float brightness = nx * lx + ny * ly;
                 if (brightness >= 0) {
-                    putPixelClip(x, y, (r.getPixel(x, y) + brightness * light_r) * (bumpmap.getPixel(x, y) * shadow + 1 - shadow),
+                    putPixelClip(x, y, (r.getPixel(x, y) + brightness * light_r) * (bumpmap.getPixel(x, y) * shadow + 1
+                            - shadow),
                             (g.getPixel(x, y) + brightness * light_g) * (bumpmap.getPixel(x, y) * shadow + 1 - shadow),
                             (b.getPixel(x, y) + brightness * light_b) * (bumpmap.getPixel(x, y) * shadow + 1 - shadow));
                 } else {
-                    putPixelClip(x, y, (r.getPixel(x, y) + brightness * (1 - ambient_r)) * (bumpmap.getPixel(x, y) * shadow + 1 - shadow),
-                            (g.getPixel(x, y) + brightness * (1 - ambient_g)) * (bumpmap.getPixel(x, y) * shadow + 1 - shadow),
-                            (b.getPixel(x, y) + brightness * (1 - ambient_b)) * (bumpmap.getPixel(x, y) * shadow + 1 - shadow));
+                    putPixelClip(x, y, (r.getPixel(x, y) + brightness * (1 - ambient_r)) * (bumpmap.getPixel(x, y)
+                            * shadow + 1 - shadow),
+                            (g.getPixel(x, y) + brightness * (1 - ambient_g)) * (bumpmap.getPixel(x, y) * shadow + 1
+                                    - shadow),
+                            (b.getPixel(x, y) + brightness * (1 - ambient_b)) * (bumpmap.getPixel(x, y) * shadow + 1
+                                    - shadow));
                 }
             }
         }
@@ -788,7 +793,8 @@ public final class Layer {
         return this;
     }
 
-    public @NonNull Layer bumpSpecular(@NonNull Channel bumpmap, float lx, float ly, float lz, float shadow, float light_r, float light_g, float light_b, int specular) {
+    public @NonNull Layer bumpSpecular(@NonNull Channel bumpmap, float lx, float ly, float lz, float shadow,
+            float light_r, float light_g, float light_b, int specular) {
         assert bumpmap.getWidth() == width && bumpmap.getHeight() == height : "bumpmap size does not match layer size";
         float lnorm = (float) Math.sqrt(lx * lx + ly * ly + lz * lz);
         float nz = 4 * (1f / Math.min(width, height));
@@ -1038,7 +1044,8 @@ public final class Layer {
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     if (a.getPixel(x, y) == 0) {
-                        putPixel(x, y, layer.r.getPixel(x, y), layer.g.getPixel(x, y), layer.b.getPixel(x, y), layer.a.getPixel(x, y));
+                        putPixel(x, y, layer.r.getPixel(x, y), layer.g.getPixel(x, y), layer.b.getPixel(x, y), layer.a
+                                .getPixel(x, y));
                     } else if (layer.a.getPixel(x, y) == 0) {
                     } else {
                         alpha = 1f - (1f - a.getPixel(x, y)) * (1f - layer.a.getPixel(x, y));

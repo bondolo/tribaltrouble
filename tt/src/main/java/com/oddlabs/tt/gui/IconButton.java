@@ -32,8 +32,8 @@ public class IconButton extends ButtonObject {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isHovered() || isActive()
-                  ? ModeIconQuads.Mode.ACTIVE
-                  : ModeIconQuads.Mode.NORMAL;
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
 
         renderer.drawModeIcon(icon, skinMode, 0, 0);
     }

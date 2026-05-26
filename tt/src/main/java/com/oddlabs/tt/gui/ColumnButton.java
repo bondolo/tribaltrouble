@@ -12,7 +12,8 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
     private boolean sorted_descending;
     private boolean pressed = false;
 
-    ColumnButton(@NonNull RadioButtonGroup group, @NonNull RowCollection<T> rows, @NonNull ColumnInfo info, int column_index, boolean sorted_descending) {
+    ColumnButton(@NonNull RadioButtonGroup group, @NonNull RowCollection<T> rows, @NonNull ColumnInfo info,
+            int column_index, boolean sorted_descending) {
         super(column_index == 0, group);
         this.rows = rows;
         this.column_index = column_index;
@@ -56,10 +57,10 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isHovered() && pressed
-                  ? ModeIconQuads.Mode.ACTIVE
-                  : isActive()
-                    ? ModeIconQuads.Mode.ACTIVE
-                    : ModeIconQuads.Mode.NORMAL;
+                        ? ModeIconQuads.Mode.ACTIVE
+                : isActive()
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
 
         var data = Skin.getSkin().getMultiColumnComboBoxData();
         Horizontal buttonHorizontal = skinMode == ModeIconQuads.Mode.ACTIVE && isHovered() && pressed

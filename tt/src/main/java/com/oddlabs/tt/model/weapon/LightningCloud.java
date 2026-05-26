@@ -57,7 +57,9 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private boolean lighted = false;
     private boolean first_run = true;
 
-    public LightningCloud(@NonNull World world, float offset_x, float offset_y, float offset_z, float seconds_to_live, float seconds_per_hit, float seconds_to_init, float meters_per_second, float hit_chance, int damage, float height, @NonNull Unit src) {
+    public LightningCloud(@NonNull World world, float offset_x, float offset_y, float offset_z, float seconds_to_live,
+            float seconds_per_hit, float seconds_to_init, float meters_per_second, float hit_chance, int damage,
+            float height, @NonNull Unit src) {
         super(world, createEmitter(world, offset_x, offset_y, offset_z, seconds_to_live, seconds_to_init, height, src));
         this.seconds_to_live = seconds_to_live;
 
@@ -74,10 +76,12 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         setPosition(start_x, start_y);
         setPositionZ(start_z);
 
-        bubbling_sound = world.getAudio().newAudio(getPositionX(), getPositionY(), world.getHeightMap().getNearestHeight(getPositionX(), getPositionY()), BUBBLING_AUDIO);
+        bubbling_sound = world.getAudio().newAudio(getPositionX(), getPositionY(), world.getHeightMap()
+                .getNearestHeight(getPositionX(), getPositionY()), BUBBLING_AUDIO);
     }
 
-    private static Emitter<?> createEmitter(@NonNull World world, float offset_x, float offset_y, float offset_z, float seconds_to_live, float seconds_to_init, float height, @NonNull Unit src) {
+    private static Emitter<?> createEmitter(@NonNull World world, float offset_x, float offset_y, float offset_z,
+            float seconds_to_live, float seconds_to_init, float height, @NonNull Unit src) {
         float start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
         float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         Vector3f pos = new Vector3f(start_x, start_y, world.getHeightMap().getNearestHeight(start_x, start_y) + height);
@@ -87,7 +91,8 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         return new ParametricEmitter(world, new CloudFunction(2.5f, .7f), pos,
                 0f, offset_z, .5f, .5f, .2f,
                 25, 100f,
-                new Color.Linear(new Color.Standard(.4f, .4f, .4f, alpha)), new Color.Linear(0f, 0f, 0f, -alpha / energy),
+                new Color.Linear(new Color.Standard(.4f, .4f, .4f, alpha)), new Color.Linear(0f, 0f, 0f, -alpha
+                        / energy),
                 new Vector3f(3f, 3f, 1f), new Vector3f(0f, 0f, 0f), energy,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, world.getRacesResources().getSmokeTextures());
     }
@@ -95,7 +100,8 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     @Override
     public void animate(float t) {
         if (first_run) {
-            cloud_sound = owner.getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CLOUD_AUDIO);
+            cloud_sound = owner.getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                    CLOUD_AUDIO);
             first_run = false;
             bubbling_sound.stop(.2f, 1.0f);
         }
@@ -116,9 +122,11 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
 
         if (hit_timer > seconds_per_hit) {
             if (target == null) {
-                target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid.toGridCoordinate(getPositionY()), prev_target);
+                target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid.toGridCoordinate(
+                        getPositionY()), prev_target);
                 if (target == null) {
-                    target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid.toGridCoordinate(getPositionY()), null);
+                    target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid
+                            .toGridCoordinate(getPositionY()), null);
                     if (target == null) {
                         super.animate(t);
                         return;
@@ -132,7 +140,8 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
             dx /= dist;
             dy /= dist;
             if (dist < meters_per_second * t) {
-                if (!target.isDead() && owner.getWorld().getRandom().nextFloat() < hit_chance * (1 - target.getDefenseChance())) {
+                if (!target.isDead() && owner.getWorld().getRandom().nextFloat() < hit_chance * (1 - target
+                        .getDefenseChance())) {
                     target.hit(damage, dx, dy, owner);
                 }
                 float x = target.getPositionX();
@@ -156,11 +165,12 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                 setPositionZ(z);
                 reinsert();
             }
-        } else if (prev_target != null && strike_counter < NUM_STRIKES - 1 && hit_timer > (strike_counter + 1) * SECONDS_BETWEEN_STRIKES) {
-            strike(prev_target);
-            strike(prev_target);
-            strike_counter++;
-        }
+        } else if (prev_target != null && strike_counter < NUM_STRIKES - 1 && hit_timer > (strike_counter + 1)
+                * SECONDS_BETWEEN_STRIKES) {
+                    strike(prev_target);
+                    strike(prev_target);
+                    strike_counter++;
+                }
         super.animate(t);
     }
 
@@ -173,7 +183,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         float x = target.getPositionX();
         float y = target.getPositionY();
         float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
-        
+
         Vector3f cloudPos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
         Lightning lightning = new Lightning(owner.getWorld(), cloudPos, new Vector3f(x, y, z), .5f,
                 15, Color.Standard.WHITE, DELTA_COLOR,

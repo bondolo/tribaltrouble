@@ -37,10 +37,12 @@ public final class Utils {
             return i18n(key, args);
         }
 
-        @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args);
+        @NonNull
+        String i18n(@NonNull String key, @NonNull Object @NonNull... args);
     }
 
-    public static @NonNull String getBundleString(@NonNull ResourceBundle bundle, @NonNull String key, Object... object_array) {
+    public static @NonNull String getBundleString(@NonNull ResourceBundle bundle, @NonNull String key,
+            Object... object_array) {
         return MessageFormat.format(bundle.getString(key), object_array);
     }
 

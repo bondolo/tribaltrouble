@@ -111,13 +111,16 @@ public final class Utils {
         }
     }
 
-    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url) throws IOException, ClassNotFoundException {
+    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url) throws IOException,
+            ClassNotFoundException {
         return tryLoadObject(clazz, url, false);
     }
 
-    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url, boolean zipped) throws IOException, ClassNotFoundException {
+    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url, boolean zipped) throws IOException,
+            ClassNotFoundException {
         try (InputStream urlStream = url.openStream()) {
-            try (InputStream input_stream = zipped ? new GZIPInputStream(urlStream) : new BufferedInputStream(urlStream)) {
+            try (InputStream input_stream = zipped ? new GZIPInputStream(urlStream) : new BufferedInputStream(
+                    urlStream)) {
                 try (ObjectInputStream obj_stream = new ObjectInputStream(input_stream)) {
                     T obj = clazz.cast(obj_stream.readObject());
                     return obj;

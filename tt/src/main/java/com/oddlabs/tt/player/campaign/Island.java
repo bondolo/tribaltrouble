@@ -28,7 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Base class for all campaign islands, defining common logic for game setup, 
+ * Base class for all campaign islands, defining common logic for game setup,
  * difficulty scaling, and scenario-specific object placement.
  */
 public abstract class Island {
@@ -54,7 +54,9 @@ public abstract class Island {
         world_viewer.getGUIRoot().addModalForm(form);
     }
 
-    protected final @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, int meters_per_world, Landscape.@NonNull TerrainType terrain, float hills, float vegetation_amount, float supplies_amount, int seed, int campaign_num, int initial_units, String[] ai_names) {
+    protected final @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
+            int meters_per_world, Landscape.@NonNull TerrainType terrain, float hills, float vegetation_amount,
+            float supplies_amount, int seed, int campaign_num, int initial_units, String[] ai_names) {
         InGameInfo ingame_info = new CampaignInGameInfo(campaign);
         WorldInitAction init_action = (@NonNull WorldViewer viewer) -> {
             world_viewer = viewer;
@@ -87,14 +89,14 @@ public abstract class Island {
                     }
                 }
                 default ->
-                        throw new IllegalArgumentException("unexpected difficulty: " + campaign.getState().getDifficulty());
+                    throw new IllegalArgumentException("unexpected difficulty: " + campaign.getState().getDifficulty());
             }
             start();
             new DefeatTrigger(world_viewer, campaign, viewer.getLocalPlayer().getChieftain());
         };
         return Menu.startNewGame(network, gui_root, null, new WorldParameters(Game.GAMESPEED_NORMAL,
-                        "Campaign" + campaign_num, initial_units,
-                        Player.DEFAULT_MAX_UNIT_COUNT),
+                "Campaign" + campaign_num, initial_units,
+                Player.DEFAULT_MAX_UNIT_COUNT),
                 ingame_info,
                 init_action,
                 null, meters_per_world, terrain, hills, vegetation_amount, supplies_amount, seed, ai_names);
@@ -137,7 +139,8 @@ public abstract class Island {
         unit.setTarget(tower, Action.DEFAULT, false);
     }
 
-    protected final void placePrisoners(@NonNull Player captive, @NonNull Player enemy, int peons, int rock_warriors, int iron_warriors, int rubber_warriors, boolean chieftain) {
+    protected final void placePrisoners(@NonNull Player captive, @NonNull Player enemy, int peons, int rock_warriors,
+            int iron_warriors, int rubber_warriors, boolean chieftain) {
         int ox = UnitGrid.toGridCoordinate(enemy.getStartX());
         int oy = UnitGrid.toGridCoordinate(enemy.getStartY());
         int center = captive.getWorld().getHeightMap().getGridUnitsPerWorld() / 2;
@@ -163,7 +166,8 @@ public abstract class Island {
                     null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
         }
         if (chieftain) {
-            captive.setActiveChieftain(new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
+            captive.setActiveChieftain(new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(
+                    ty),
                     null, captive.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN)));
         }
     }
@@ -188,7 +192,8 @@ public abstract class Island {
             return;
 
         enemy.getQuarters().removeSupplies(Unit.class);
-        enemy.getArmory().fillSupplies(Unit.class, enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer().getNumSupplies());
+        enemy.getArmory().fillSupplies(Unit.class, enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer()
+                .getNumSupplies());
         enemy.getArmory().fillSupplies(IronAxeWeapon.class, Integer.MAX_VALUE);
     }
 

@@ -17,7 +17,8 @@ import org.jspecify.annotations.NonNull;
 /**
  * Base {@link Model} class for all projectile weapons that are thrown through the world.
  */
-public abstract sealed class ThrowingWeapon extends Model implements Animated permits RotatingThrowingWeapon, DirectedThrowingWeapon {
+public abstract sealed class ThrowingWeapon extends Model implements Animated permits RotatingThrowingWeapon,
+        DirectedThrowingWeapon {
     /**
      * Multiplier for projectile arc exaggeration.
      */
@@ -55,14 +56,17 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
      */
     private float deterministic_z;
 
-    public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound, @NonNull AudioFile @NonNull [] hit_sounds) {
+    public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target,
+            @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound,
+            @NonNull AudioFile @NonNull [] hit_sounds) {
         super(src.getOwner().getWorld());
         this.sprite_renderer = sprite_renderer;
         this.src = src;
         this.hit = hit;
         this.hit_sounds = hit_sounds;
 
-        setPosition(src.getPositionX() + OFFSET_X * src.getDirectionX() - OFFSET_Y * src.getDirectionY(), src.getPositionY() + OFFSET_X * src.getDirectionY() - OFFSET_Y * src.getDirectionX());
+        setPosition(src.getPositionX() + OFFSET_X * src.getDirectionX() - OFFSET_Y * src.getDirectionY(), src
+                .getPositionY() + OFFSET_X * src.getDirectionY() - OFFSET_Y * src.getDirectionX());
         deterministic_z = OFFSET_Z + src.getMountOffset();
         current_z = getWorld().getHeightMap().getNearestHeight(getPositionX(), getPositionY()) + deterministic_z;
 
@@ -92,7 +96,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     @Override
     public @NonNull String toString() {
-        return "ThrowingWeapon: start_x = " + start_x + " | start_y = " + start_y + " | end_x = " + end_x + " | end_y = " + end_y + " | target = " + target + "  " + super.toString();
+        return "ThrowingWeapon: start_x = " + start_x + " | start_y = " + start_y + " | end_x = " + end_x
+                + " | end_y = " + end_y + " | target = " + target + "  " + super.toString();
     }
 
     protected final void setTarget(@NonNull Selectable<?> target) {
@@ -188,9 +193,11 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     protected final void damageTarget(@NonNull Selectable<?> target) {
         if (target instanceof Unit) {
-            var params = new AudioParameters(hit_sounds[getWorld().getRandom().nextInt(hit_sounds.length)], Assets.AUDIO_RANK_WEAPON_HIT,
+            var params = new AudioParameters(hit_sounds[getWorld().getRandom().nextInt(hit_sounds.length)],
+                    Assets.AUDIO_RANK_WEAPON_HIT,
                     Assets.AUDIO_DISTANCE_WEAPON_HIT, Assets.AUDIO_GAIN_WEAPON_HIT, Assets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + (getWorld().getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch());
+                    1f + (getWorld().getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate())
+                            .getDeathPitch());
             getWorld().getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }
         target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());

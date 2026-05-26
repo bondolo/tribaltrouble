@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
 public final class ConvertToBinary {
-    void main(@NonNull String @NonNull ... args) {
+    void main(@NonNull String @NonNull... args) {
         if (args.length != 3)
             throw new IllegalArgumentException("Invalid number of arguments : <xml_file> <src_dir> <build_dir>");
         Path xml_file = Path.of(args[0]);
@@ -71,7 +71,8 @@ public final class ConvertToBinary {
 
     private static boolean isModified(@NonNull Path src, @NonNull Path dest) {
         try {
-            return !Files.exists(dest) || Files.getLastModifiedTime(dest).compareTo(Files.getLastModifiedTime(src)) <= 0;
+            return !Files.exists(dest) || Files.getLastModifiedTime(dest).compareTo(Files.getLastModifiedTime(src))
+                    <= 0;
         } catch (IOException e) {
             return true;
         }
@@ -169,11 +170,13 @@ public final class ConvertToBinary {
                     AnimObjectInfo current = anim_object_infos[i];
                     Map<String, float[]>[] animation_map = AnimationLoader.loadAnimation(current.getFile());
                     assert animations[i] == null;
-                    animations[i] = Optimizer.convertToAnimation(skeleton.getBoneRoot(), skeleton.getInitialPose(), animation_map, current.getType(), current.getWPC(), current.getName());
+                    animations[i] = Optimizer.convertToAnimation(skeleton.getBoneRoot(), skeleton.getInitialPose(),
+                            animation_map, current.getType(), current.getWPC(), current.getName());
                 }
             } else {
                 float[][] identity_frame = {{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0}};
-                animations = new AnimationInfo[]{new AnimationInfo(identity_frame, AnimationInfo.AnimationType.LOOP, 1f, "identity")};
+                animations = new AnimationInfo[]{new AnimationInfo(identity_frame, AnimationInfo.AnimationType.LOOP, 1f,
+                        "identity")};
                 name_to_bone_map = null;
             }
             SpriteInfo[] sprite_models = new SpriteInfo[model_object_infos.length];
@@ -181,7 +184,8 @@ public final class ConvertToBinary {
                 ModelObjectInfo current = model_object_infos[i];
                 ModelInfo model_info = MeshLoader.loadMesh(current.getFile(), name_to_bone_map, scale);
                 assert sprite_models[i] == null;
-                sprite_models[i] = Optimizer.convertToSprite(current.getTextures(), model_info, current.getClearColor());
+                sprite_models[i] = Optimizer.convertToSprite(current.getTextures(), model_info, current
+                        .getClearColor());
             }
             write(new Object[]{sprite_models, animations}, build_file);
         }

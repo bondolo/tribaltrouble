@@ -68,7 +68,7 @@ public final class EmitterRenderer implements AutoCloseable {
         vao.bind();
         particle_vbo.bind();
         VERTEX_LAYOUT.bind(shader);
-        
+
         // Configure all attributes as instance attributes
         for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
             int loc = shader.getAttributeLocation(attr.getName());
@@ -76,18 +76,20 @@ public final class EmitterRenderer implements AutoCloseable {
                 GL33.glVertexAttribDivisor(loc, 1);
             }
         }
-        
+
         vao.unbind();
     }
 
-    public void prepare(@NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters, @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
+    public void prepare(@NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters,
+            @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
         if (Globals.draw_particles)
             for (Emitter<?> emitter : emitters) {
                 collectParticles(render_queues, emitter, state, modelViewStack);
             }
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
         if (batches.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
@@ -95,9 +97,8 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_vbo.orphan();
 
         vao.bind();
-        try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.ALPHA);
-             var _ = context.withDepthMode(DepthMode.READ_ONLY)) {
+        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
+                DepthMode.READ_ONLY)) {
 
             shader.setUniform(ParticleShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
@@ -122,9 +123,11 @@ public final class EmitterRenderer implements AutoCloseable {
 
     private <P extends Particle> void renderParticle(@NonNull P particle, @NonNull Emitter<P> emitter) {
         particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
-        particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter.getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
+        particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter
+                .getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
 
-        particle_buffer.put(particle.getColorR()).put(particle.getColorG()).put(particle.getColorB()).put(particle.getColorA());
+        particle_buffer.put(particle.getColorR()).put(particle.getColorG()).put(particle.getColorB()).put(particle
+                .getColorA());
 
         // UV Info 1: u1, v1, u2, v2
         particle_buffer.put(particle.getU1()).put(particle.getV1()).put(particle.getU2()).put(particle.getV2());
@@ -132,7 +135,8 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_buffer.put(particle.getU3()).put(particle.getV3()).put(particle.getU4()).put(particle.getV4());
     }
 
-    private <P extends Particle> void collectParticles(@NonNull RenderQueues render_queues, @NonNull Emitter<P> emitter, @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
+    private <P extends Particle> void collectParticles(@NonNull RenderQueues render_queues, @NonNull Emitter<P> emitter,
+            @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
         TextureKey[] textures = emitter.getTextures();
         List<@NonNull P>[] particles = emitter.getParticles();
         SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
@@ -165,7 +169,7 @@ public final class EmitterRenderer implements AutoCloseable {
             context.setTexture(0, key.texture().getHandle());
             context.setBlendFunc(key.srcBlend(), key.dstBlend());
             shader.setUniform(ParticleShader.Uniforms.IS_ADDITIVE, key.dstBlend() == GL11.GL_ONE ? 1.0f : 0.0f);
-            
+
             particle_buffer.clear();
             int particleCount = 0;
 
@@ -176,7 +180,8 @@ public final class EmitterRenderer implements AutoCloseable {
         }
     }
 
-    private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, int floatsPerParticle, int particleCount) {
+    private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, int floatsPerParticle,
+            int particleCount) {
         var particles = batch.particles();
         var emitter = batch.emitter();
 
@@ -206,7 +211,7 @@ public final class EmitterRenderer implements AutoCloseable {
         int stride = VERTEX_LAYOUT.getStride();
         int floatsPerParticle = stride / Float.BYTES;
         particle_vbo.putSubData(vbo_offset * floatsPerParticle, particle_buffer);
-        
+
         // Shifting attribute pointers to account for vbo_offset since we use instanced rendering
         for (ParticleShader.Attribute attr : ParticleShader.Attribute.values()) {
             int loc = shader.getAttributeLocation(attr.getName());

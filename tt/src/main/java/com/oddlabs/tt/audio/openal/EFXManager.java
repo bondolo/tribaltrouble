@@ -51,21 +51,23 @@ public final class EFXManager implements AutoCloseable {
 
     // Reverb Snapshot record for parameter interpolation
     private record ReverbSnapshot(
-            float density,
-            float diffusion,
-            float gain,
-            float gainHF,
-            float decayTime,
-            float reflectionsGain,
-            float reflectionsDelay,
-            float lateReverbDelay,
-            float airAbsorption
+                                  float density,
+                                  float diffusion,
+                                  float gain,
+                                  float gainHF,
+                                  float decayTime,
+                                  float reflectionsGain,
+                                  float reflectionsDelay,
+                                  float lateReverbDelay,
+                                  float airAbsorption
     ) {
         static final ReverbSnapshot NONE = new ReverbSnapshot(0f, 0f, 0f, 0f, 0.1f, 0f, 0f, 0f, 0.994f);
-        static final ReverbSnapshot GENERIC = new ReverbSnapshot(0.1f, 0.1f, 0.05f, 0.1f, 0.3f, 0.05f, 0.02f, 0.0f, 0.994f);
+        static final ReverbSnapshot GENERIC = new ReverbSnapshot(0.1f, 0.1f, 0.05f, 0.1f, 0.3f, 0.05f, 0.02f, 0.0f,
+                0.994f);
         static final ReverbSnapshot FOREST = new ReverbSnapshot(0.1f, 0.1f, 0.15f, 0.2f, 0.4f, 0.1f, 0.02f, 0.0f, 0.9f);
         static final ReverbSnapshot VALLEY = new ReverbSnapshot(0.2f, 0.3f, 0.4f, 0.5f, 1.2f, 0.3f, 0.1f, 0.1f, 0.994f);
-        static final ReverbSnapshot UNDERWATER = new ReverbSnapshot(1.0f, 0.1f, 0.8f, 0.1f, 1.2f, 0.01f, 0.01f, 0.0f, 0.9f);
+        static final ReverbSnapshot UNDERWATER = new ReverbSnapshot(1.0f, 0.1f, 0.8f, 0.1f, 1.2f, 0.01f, 0.01f, 0.0f,
+                0.9f);
 
         static ReverbSnapshot get(@NonNull ReverbType type) {
             return switch (type) {

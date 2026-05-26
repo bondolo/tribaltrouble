@@ -22,7 +22,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.logging.Logger;
 
 /**
- * Coordinates the playback of ambient environmental sounds, providing 
+ * Coordinates the playback of ambient environmental sounds, providing
  * realistic reverb and attenuation based on camera proximity and terrain features.
  */
 public final class AmbientAudio {
@@ -57,7 +57,8 @@ public final class AmbientAudio {
         ambient_wind = audio_implementation.newAudio(10000f, 10000f, 10000f, AMBIENT_WIND).registerAmbient();
     }
 
-    private static int countTrees(@NonNull AbstractTreeGroup node, float x, float y, float radiusSq, int threshold, int currentCount) {
+    private static int countTrees(@NonNull AbstractTreeGroup node, float x, float y, float radiusSq, int threshold,
+            int currentCount) {
         if (currentCount >= threshold) return currentCount;
 
         if (intersects(node, x, y, radiusSq)) {
@@ -123,7 +124,8 @@ public final class AmbientAudio {
         float dr = 2f * (float) Math.sqrt(dx * dx + dy * dy) / meters_per_world;
 
         // update placement and gain of ambient forest source
-        ambient_forest.setPosition(0f, 0f, heightmap.getNearestHeight(camera.getCurrentX(), camera.getCurrentY()) - camera.getCurrentZ() + 8f);
+        ambient_forest.setPosition(0f, 0f, heightmap.getNearestHeight(camera.getCurrentX(), camera.getCurrentY())
+                - camera.getCurrentZ() + 8f);
         ambient_forest.setGain(Assets.AUDIO_GAIN_AMBIENT_FOREST * Math.clamp(1f - dr + 0.5f, 0f, 1f));
 
         // update placement and gain of ambient beach source

@@ -104,10 +104,10 @@ final class Icons {
         int top = getInt(q, "top");
         int right = getInt(q, "right");
         int bottom = getInt(q, "bottom");
-        
+
         float texW = texture.getWidth();
         float texH = texture.getHeight();
-        
+
         // Apply a half-texel inset to UVs to prevent atlas bleeding with GL_LINEAR filtering.
         // We only apply this if the quad has sufficient size to avoid flipping UVs.
         float insetU = (right - left) >= 1 ? 0.5f : 0.0f;

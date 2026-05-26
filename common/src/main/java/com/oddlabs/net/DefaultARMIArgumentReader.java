@@ -8,7 +8,8 @@ import java.io.ObjectInputStream;
 
 public class DefaultARMIArgumentReader implements ARMIArgumentReader {
     @Override
-    public @Nullable Object readArgument(@NonNull Class<?> type, @NonNull ByteBufferInputStream in) throws IOException, ClassNotFoundException {
+    public @Nullable Object readArgument(@NonNull Class<?> type, @NonNull ByteBufferInputStream in) throws IOException,
+            ClassNotFoundException {
         if (type.equals(char.class)) {
             return in.buffer().getChar();
         } else if (type.equals(byte.class)) {

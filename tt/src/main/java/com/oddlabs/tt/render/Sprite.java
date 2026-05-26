@@ -68,7 +68,11 @@ public final class Sprite {
         this.respond_texture = null;
     }
 
-    public Sprite(@NonNull SpriteInfo sprite_info, AnimationInfo @NonNull [] animations, boolean alpha, boolean lighted, boolean culled, boolean modulate_color, boolean max_alpha, int mipmap_cutoff, BoundingBox[] bounds, float[] cpw_array, AnimationInfo.AnimationType @NonNull [] type_array, int[] animation_length_array, @NonNull ShortBuffer all_indices, @NonNull FloatBuffer all_texcoords, @NonNull FloatBuffer all_vertices_and_normals) {
+    public Sprite(@NonNull SpriteInfo sprite_info, AnimationInfo @NonNull [] animations, boolean alpha, boolean lighted,
+            boolean culled, boolean modulate_color, boolean max_alpha, int mipmap_cutoff, BoundingBox[] bounds,
+            float[] cpw_array, AnimationInfo.AnimationType @NonNull [] type_array, int[] animation_length_array,
+            @NonNull ShortBuffer all_indices, @NonNull FloatBuffer all_texcoords,
+            @NonNull FloatBuffer all_vertices_and_normals) {
         this.culled = culled;
         this.alpha = alpha;
         this.lighted = lighted;
@@ -90,7 +94,8 @@ public final class Sprite {
 
         float[][][] tmp_vertices = new float[animations.length][][];
         float[][][] tmp_normals = new float[animations.length][][];
-        expandAnimation(animations, tmp_vertices, tmp_normals, sprite_info.getVertices(), sprite_info.getNormals(), sprite_info.getSkinNames(), sprite_info.getSkinWeights(), bounds);
+        expandAnimation(animations, tmp_vertices, tmp_normals, sprite_info.getVertices(), sprite_info.getNormals(),
+                sprite_info.getSkinNames(), sprite_info.getSkinWeights(), bounds);
 
         clear_color = sprite_info.getClearColor();
 
@@ -129,7 +134,9 @@ public final class Sprite {
         return num_triangles;
     }
 
-    private void expandAnimation(AnimationInfo @NonNull [] animations, float[][][] tmp_vertices, float[][][] tmp_normals, float[] initial_pose_vertices, float[] initial_pose_normals, byte[][] skin_names, float[][] skin_weights, BoundingBox[] bounding_boxes) {
+    private void expandAnimation(AnimationInfo @NonNull [] animations, float[][][] tmp_vertices,
+            float[][][] tmp_normals, float[] initial_pose_vertices, float[] initial_pose_normals, byte[][] skin_names,
+            float[][] skin_weights, BoundingBox[] bounding_boxes) {
         int num_bones = animations[0].getFrames()[0].length / 12;
         Matrix4f[] frame_bones = new Matrix4f[num_bones];
         for (int bone = 0; bone < frame_bones.length; bone++) {
@@ -152,10 +159,14 @@ public final class Sprite {
                     for (int bone = 0; bone < num_bones; bone++) {
                         int offset = bone * 12;
                         frame_bones[bone].set(
-                                frame_animation[offset + 0], frame_animation[offset + 4], frame_animation[offset + 8], 0.0f,
-                                frame_animation[offset + 1], frame_animation[offset + 5], frame_animation[offset + 9], 0.0f,
-                                frame_animation[offset + 2], frame_animation[offset + 6], frame_animation[offset + 10], 0.0f,
-                                frame_animation[offset + 3], frame_animation[offset + 7], frame_animation[offset + 11], 1.0f
+                                frame_animation[offset + 0], frame_animation[offset + 4], frame_animation[offset + 8],
+                                0.0f,
+                                frame_animation[offset + 1], frame_animation[offset + 5], frame_animation[offset + 9],
+                                0.0f,
+                                frame_animation[offset + 2], frame_animation[offset + 6], frame_animation[offset + 10],
+                                0.0f,
+                                frame_animation[offset + 3], frame_animation[offset + 7], frame_animation[offset + 11],
+                                1.0f
                         );
                     }
                     float[] frame_normals = tmp_normals[anim][frame];
@@ -190,7 +201,8 @@ public final class Sprite {
                             result_ny += temp.y * weight;
                             result_nz += temp.z * weight;
                         }
-                        float vec_len_inv = 1f / (float) Math.sqrt(result_nx * result_nx + result_ny * result_ny + result_nz * result_nz);
+                        float vec_len_inv = 1f / (float) Math.sqrt(result_nx * result_nx + result_ny * result_ny
+                                + result_nz * result_nz);
                         result_nx *= vec_len_inv;
                         result_ny *= vec_len_inv;
                         result_nz *= vec_len_inv;
@@ -214,26 +226,32 @@ public final class Sprite {
         }
     }
 
-    private static Texture @NonNull [] getTextureForName(@NonNull String texture_name, int color_format, int mipmap_cutoff, boolean max_alpha) {
+    private static Texture @NonNull [] getTextureForName(@NonNull String texture_name, int color_format,
+            int mipmap_cutoff, boolean max_alpha) {
         if (texture_name.startsWith(GENERATOR_STRING)) {
             String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
             try {
                 Class<?> generator_class = Class.forName(generator_class_name);
-                Supplier<Texture[]> descriptor = (Supplier<Texture[]>) generator_class.getDeclaredConstructor().newInstance();
+                Supplier<Texture[]> descriptor = (Supplier<Texture[]>) generator_class.getDeclaredConstructor()
+                        .newInstance();
                 return Resources.findResource(descriptor);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |
-                     InvocationTargetException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
+                     | InvocationTargetException e) {
                 throw new IllegalStateException("Failed to instantiate texture generator: " + generator_class_name, e);
             }
         } else {
             int wrapMode = GL11.GL_REPEAT;
             String lowerName = texture_name.toLowerCase();
-            if (lowerName.contains("leaf") || lowerName.contains("plant") || lowerName.contains("crown") || lowerName.contains("branch") || lowerName.contains("foliage") || lowerName.contains("bush")) {
+            if (lowerName.contains("leaf") || lowerName.contains("plant") || lowerName.contains("crown") || lowerName
+                    .contains("branch") || lowerName.contains("foliage") || lowerName.contains("bush")) {
                 wrapMode = GL12.GL_CLAMP_TO_EDGE;
             }
-            boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica") || lowerName.contains("team");
+            boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica")
+                    || lowerName.contains("team");
             boolean isSrgb = !isData;
-            return new Texture[]{Resources.findResource(new TextureFile("/textures/models/" + texture_name, color_format, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, wrapMode, wrapMode, mipmap_cutoff, 100000, 0.1f, max_alpha, isData, isSrgb))};
+            return new Texture[]{Resources.findResource(new TextureFile("/textures/models/" + texture_name,
+                    color_format, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, wrapMode, wrapMode, mipmap_cutoff,
+                    100000, 0.1f, max_alpha, isData, isSrgb))};
         }
     }
 
@@ -242,14 +260,16 @@ public final class Sprite {
     }
 
     public boolean hasBumpMap(int tex_index) {
-        return textures.length > tex_index && textures[tex_index].length > TEXTURE_BUMP && textures[tex_index][TEXTURE_BUMP] != null;
+        return textures.length > tex_index && textures[tex_index].length > TEXTURE_BUMP
+                && textures[tex_index][TEXTURE_BUMP] != null;
     }
 
     public int getNumTextures() {
         return textures.length;
     }
 
-    public void setupShaderUniforms(@NonNull RenderContext context, @NonNull SpriteShader shader, int tex_index, boolean respond) {
+    public void setupShaderUniforms(@NonNull RenderContext context, @NonNull SpriteShader shader, int tex_index,
+            boolean respond) {
         context.setTexture(0, textures[tex_index][TEXTURE_NORMAL]);
         shader.setUniform(SpriteShader.Uniforms.TEXTURE_0, 0);
 
@@ -282,7 +302,8 @@ public final class Sprite {
         }
     }
 
-    public void renderShader(@NonNull SpriteShader shader, int animation, float anim_ticks, @NonNull SpriteList sprite_list) {
+    public void renderShader(@NonNull SpriteShader shader, int animation, float anim_ticks,
+            @NonNull SpriteList sprite_list) {
         VertexArray vao = sprite_list.getVAO();
         if (vao == null) {
             sprite_list.initVAO(shader);
@@ -327,7 +348,8 @@ public final class Sprite {
     public @NonNull FrameState getAnimationState(int animation, float anim_ticks) {
         if (cpw_array == null) {
             // Static mesh (quad or non-animated)
-            int offset = buffer_indices != null && buffer_indices.length > animation ? buffer_indices[animation] / 3 : 0;
+            int offset = buffer_indices != null && buffer_indices.length > animation ? buffer_indices[animation] / 3
+                    : 0;
             // For quad, layout is [Pos][Norm]. N=4.
             // Vertices 12 floats (4*3). Normals 12 floats.
             // PosOffset = 0. NormOffset = 4.

@@ -28,7 +28,8 @@ public final class NotificationManager {
         return latest_notification;
     }
 
-    public void newAttackNotification(@NonNull AnimationManager manager, @NonNull Selectable<?> target, @NonNull Player local_player) {
+    public void newAttackNotification(@NonNull AnimationManager manager, @NonNull Selectable<?> target,
+            @NonNull Player local_player) {
         for (AttackNotification current : attack_notifies) {
             if (current.contains(target)) {
                 current.restartTimer();
@@ -38,7 +39,8 @@ public final class NotificationManager {
         addNotification(new AttackNotification(local_player, gui_root, target, this, manager), attack_notifies);
     }
 
-    public void newSelectableNotification(@NonNull Selectable<?> s, @NonNull AnimationManager manager, @NonNull Player local_player) {
+    public void newSelectableNotification(@NonNull Selectable<?> s, @NonNull AnimationManager manager,
+            @NonNull Player local_player) {
         newNotification(manager, local_player, s.getPositionX(), s.getPositionY(), Color.Standard.GREEN, false);
     }
 
@@ -46,8 +48,10 @@ public final class NotificationManager {
         newNotification(manager, local_player, x, y, Color.Standard.BLUE, true);
     }
 
-    private void newNotification(@NonNull AnimationManager manager, @NonNull Player local_player, float x, float y, @NonNull Color color, boolean show_always) {
-        addNotification(new Notification(local_player.getWorld(), gui_root, x, y, this, color, local_player.getRace().getBuildingNotificationAudio(), show_always, manager), notifies);
+    private void newNotification(@NonNull AnimationManager manager, @NonNull Player local_player, float x, float y,
+            @NonNull Color color, boolean show_always) {
+        addNotification(new Notification(local_player.getWorld(), gui_root, x, y, this, color, local_player.getRace()
+                .getBuildingNotificationAudio(), show_always, manager), notifies);
     }
 
     private <N extends @NonNull Notification> void addNotification(N notification, @NonNull List<N> list) {

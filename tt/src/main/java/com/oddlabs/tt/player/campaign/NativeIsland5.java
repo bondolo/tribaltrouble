@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
 public final class NativeIsland5 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland5.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -35,7 +35,8 @@ public final class NativeIsland5 extends Island {
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(network, gui_root, 512, Landscape.TerrainType.VIKING, 1f, 1f, 1f, 4, 5, NativeCampaign.MAX_UNITS, ai_names);
+        GameNetwork game_network = startNewGame(network, gui_root, 512, Landscape.TerrainType.VIKING, 1f, 1f, 1f, 4, 5,
+                NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
                 RacesResources.RACE_NATIVES,

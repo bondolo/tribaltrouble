@@ -32,8 +32,10 @@ public class GeneralPanel extends Panel {
         // Invert camera
         Group group_invert_camera = new Group();
         addChild(group_invert_camera);
-        CheckBox cb_invert_camera = new CheckBox(Renderer.getRenderer().getSettings().invert_camera_pitch, AbstractOptionsMenu.i18n("invert_camera"), AbstractOptionsMenu.i18n("invert_camera_tip"));
-        cb_invert_camera.addCheckBoxListener(marked -> Renderer.getRenderer().getSettings().invert_camera_pitch = marked);
+        CheckBox cb_invert_camera = new CheckBox(Renderer.getRenderer().getSettings().invert_camera_pitch,
+                AbstractOptionsMenu.i18n("invert_camera"), AbstractOptionsMenu.i18n("invert_camera_tip"));
+        cb_invert_camera.addCheckBoxListener(marked -> Renderer.getRenderer().getSettings().invert_camera_pitch
+                = marked);
         group_invert_camera.addChild(cb_invert_camera);
         cb_invert_camera.place();
         group_invert_camera.compileCanvas();
@@ -41,8 +43,11 @@ public class GeneralPanel extends Panel {
         // Aggressive units
         Group group_aggressive_units = new Group();
         addChild(group_aggressive_units);
-        CheckBox cb_aggressive_units = new CheckBox(Renderer.getRenderer().getSettings().aggressive_units, AbstractOptionsMenu.i18n("aggressive_units"), AbstractOptionsMenu.i18n("aggressive_units_tip", "Ctrl-A"));
-        cb_aggressive_units.addCheckBoxListener(marked -> Renderer.getRenderer().getSettings().aggressive_units = marked);
+        CheckBox cb_aggressive_units = new CheckBox(Renderer.getRenderer().getSettings().aggressive_units,
+                AbstractOptionsMenu.i18n("aggressive_units"), AbstractOptionsMenu.i18n("aggressive_units_tip",
+                        "Ctrl-A"));
+        cb_aggressive_units.addCheckBoxListener(marked -> Renderer.getRenderer().getSettings().aggressive_units
+                = marked);
         group_aggressive_units.addChild(cb_aggressive_units);
         cb_aggressive_units.place();
         group_aggressive_units.compileCanvas();
@@ -50,15 +55,18 @@ public class GeneralPanel extends Panel {
         // Mapmode delay
         Group group_mapmode = new Group();
         addChild(group_mapmode);
-        Label label_mapmode_headline = new Label(AbstractOptionsMenu.i18n("map_mode_delay"), Skin.getSkin().getEditFont());
+        Label label_mapmode_headline = new Label(AbstractOptionsMenu.i18n("map_mode_delay"), Skin.getSkin()
+                .getEditFont());
         group_mapmode.addChild(label_mapmode_headline);
         Label label_mapmode_none = new Label(AbstractOptionsMenu.i18n("delay_none"), Skin.getSkin().getEditFont());
         group_mapmode.addChild(label_mapmode_none);
         Label label_mapmode_high = new Label(AbstractOptionsMenu.i18n("delay_high"), Skin.getSkin().getEditFont());
         group_mapmode.addChild(label_mapmode_high);
-        Slider slider_mapmode = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().mapmode_delay * MAX_VALUE));
+        Slider slider_mapmode = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer()
+                .getSettings().mapmode_delay * MAX_VALUE));
         group_mapmode.addChild(slider_mapmode);
-        slider_mapmode.addValueListener(value -> Renderer.getRenderer().getSettings().mapmode_delay = (float) value / (MAX_VALUE));
+        slider_mapmode.addValueListener(value -> Renderer.getRenderer().getSettings().mapmode_delay = (float) value
+                / (MAX_VALUE));
         label_mapmode_headline.place();
         label_mapmode_none.place(label_mapmode_headline, BOTTOM_LEFT);
         slider_mapmode.place(label_mapmode_none, RIGHT_MID);
@@ -68,13 +76,15 @@ public class GeneralPanel extends Panel {
         // Tooltip delay
         Group group_tooltip = new Group();
         addChild(group_tooltip);
-        Label label_tooltip_headline = new Label(AbstractOptionsMenu.i18n("tool_tip_delay"), Skin.getSkin().getEditFont());
+        Label label_tooltip_headline = new Label(AbstractOptionsMenu.i18n("tool_tip_delay"), Skin.getSkin()
+                .getEditFont());
         group_tooltip.addChild(label_tooltip_headline);
         Label label_tooltip_none = new Label(AbstractOptionsMenu.i18n("delay_none"), Skin.getSkin().getEditFont());
         group_tooltip.addChild(label_tooltip_none);
         Label label_tooltip_high = new Label(AbstractOptionsMenu.i18n("delay_high"), Skin.getSkin().getEditFont());
         group_tooltip.addChild(label_tooltip_high);
-        Slider slider_tooltip = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer().getSettings().tooltip_delay * MAX_VALUE));
+        Slider slider_tooltip = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (Renderer.getRenderer()
+                .getSettings().tooltip_delay * MAX_VALUE));
         group_tooltip.addChild(slider_tooltip);
         slider_tooltip.addValueListener(value -> {
             Renderer.getRenderer().getSettings().tooltip_delay = (float) value / (MAX_VALUE);

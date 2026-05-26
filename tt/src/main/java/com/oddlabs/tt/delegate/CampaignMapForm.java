@@ -38,7 +38,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     private static final float BASE_HEIGHT = 600f;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignMapForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -296,14 +296,14 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     @Override
     public void animate(float t) {
         flicker_time += t;
-        
+
         // Multi-frequency wave for organic flickering (simulating an oil lamp).
         float n1 = (float) Math.sin(flicker_time * 1.8);
         float n2 = (float) Math.sin(flicker_time * 4.7);
         float n3 = (float) Math.sin(flicker_time * 9.3);
-        
+
         float noise = n1 * 0.4f + n2 * 0.4f + n3 * 0.2f;
-        
+
         // Base linear factor 0.9 (approx 0.95 sRGB) with +/- 10% swing.
         // This avoids blowing out the bright map center while maintaining a visible flicker.
         float factor = 0.9f + noise * 0.10f;
@@ -311,7 +311,8 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     }
 
     @Override
-    protected void render(@NonNull GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom, float clip_top) {
+    protected void render(@NonNull GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
+            float clip_top) {
         renderer.getMatrixStack().push();
         renderer.getMatrixStack().scale(scale_x, scale_y, 1f);
         renderer.pushModulation(mapColor);

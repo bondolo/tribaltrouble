@@ -26,7 +26,8 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     private volatile int al_format;
     private volatile int al_rate;
 
-    OpenALQueuedAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters params) {
+    OpenALQueuedAudioPlayer(@Nullable OpenALAudioSource source, float x, float y, float z,
+            @NonNull AudioParameters params) {
         super(source, x, y, z, params);
     }
 
@@ -49,7 +50,8 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
         this.al_format = Wave.getFormat(stream.getChannels(), Short.SIZE);
         this.al_rate = stream.getRate();
 
-        long bufferduration = (long) NUM_BUFFERS * (PCM_SAMPLES / stream.getChannels()) / (al_rate / TimeUnit.SECONDS.toMillis(1));
+        long bufferduration = (long) NUM_BUFFERS * (PCM_SAMPLES / stream.getChannels()) / (al_rate / TimeUnit.SECONDS
+                .toMillis(1));
         logger.info("Creating OpenAL audio with " + NUM_BUFFERS + " buffers for " + Duration.ofMillis(bufferduration));
         var audio = new OpenALAudio((OpenALManager) Renderer.getRenderer().getAudioManager(), NUM_BUFFERS);
 
@@ -64,7 +66,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer {
     protected int getBufferCount() {
         Audio audio = this.audio;
         assert audio != null : "Audio not initialized";
-        return ((OpenALAudio)audio).getBufferCount();
+        return ((OpenALAudio) audio).getBufferCount();
     }
 
     private void fillBufferFromStream(int al_buffer) {

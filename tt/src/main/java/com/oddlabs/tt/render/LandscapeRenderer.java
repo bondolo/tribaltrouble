@@ -75,23 +75,28 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         doPrepareAll(camera, visible_override, render_list);
     }
 
-    private void doPrepareAll(@NonNull CameraState camera, final boolean visible_override, @NonNull Collection<LandscapeLeaf> result) {
+    private void doPrepareAll(@NonNull CameraState camera, final boolean visible_override, @NonNull Collection<
+            LandscapeLeaf> result) {
         traverse(world.getPatchRoot(), camera, visible_override, result);
     }
 
-    private void traverse(@NonNull AbstractPatchGroup node, @NonNull CameraState camera, boolean visible_override, @NonNull Collection<LandscapeLeaf> result) {
+    private void traverse(@NonNull AbstractPatchGroup node, @NonNull CameraState camera, boolean visible_override,
+            @NonNull Collection<LandscapeLeaf> result) {
         switch (node) {
             case PatchGroup group -> {
                 RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
-                if (visible_override || (frustum_state = RenderTools.inFrustum(group, camera.getFrustum())) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-                    boolean next_visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
+                if (visible_override || (frustum_state = RenderTools.inFrustum(group, camera.getFrustum()))
+                        != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                    boolean next_visible_override = visible_override || frustum_state
+                            == RenderTools.FrustumIntersection.ALL_INSIDE;
                     for (AbstractPatchGroup child : group.children()) {
                         traverse(child, camera, next_visible_override, result);
                     }
                 }
             }
             case LandscapeLeaf leaf -> {
-                if (visible_override || RenderTools.inFrustum(leaf, camera.getFrustum()) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                if (visible_override || RenderTools.inFrustum(leaf, camera.getFrustum())
+                        != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
                     result.add(leaf);
                 }
             }
@@ -99,11 +104,10 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     }
 
     @Override
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.ALPHA);
-             var _ = context.withDepthMode(DepthMode.READ_WRITE);
-             var _ = context.withCullMode(CullMode.NONE)) {
+    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack,
+            @NonNull MatrixStack projectionStack) {
+        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
+                DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {
 
             // Set VTF Uniforms
             shader.setUniform(LandscapeShader.Uniforms.WORLD_SIZE, (float) world.getHeightMap().getMetersPerWorld());
@@ -184,7 +188,8 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     }
 
     // Shadow rendering supported
-    void renderShadow(@NonNull ShaderProgram shader, int patch_x, int patch_y, int start_x, int start_y, int end_x, int end_y) {
+    void renderShadow(@NonNull ShaderProgram shader, int patch_x, int patch_y, int start_x, int start_y, int end_x,
+            int end_y) {
         // Legacy shadow rendering (non-instanced for now as it renders specific sub-regions)
         // Would need to update shader to support instance attribute if we wanted to batch this too
         // But shadow rendering usually uses a specific projection/program

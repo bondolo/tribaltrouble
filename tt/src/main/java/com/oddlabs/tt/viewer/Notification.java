@@ -26,7 +26,9 @@ public class Notification implements Updatable<TimerAnimation> {
     private final @NonNull TimerAnimation timer;
     private final @NonNull Arrow arrow;
 
-    public Notification(@NonNull World world, @NonNull GUIRoot gui_root, float x, float y, @NonNull NotificationManager manager, @NonNull Color color, @NonNull AudioFile sound, boolean show_always, @NonNull AnimationManager animation_manager) {
+    public Notification(@NonNull World world, @NonNull GUIRoot gui_root, float x, float y,
+            @NonNull NotificationManager manager, @NonNull Color color, @NonNull AudioFile sound, boolean show_always,
+            @NonNull AnimationManager animation_manager) {
         this.center_x = x;
         this.center_y = y;
         this.manager = manager;

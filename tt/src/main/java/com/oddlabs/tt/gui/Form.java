@@ -105,7 +105,8 @@ public class Form extends Group {
     }
 
     @Override
-    public final void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x, int abs_y) {
+    public final void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
+            int abs_y) {
         if (drag)
             setPos(getX() + rel_x, getY() + rel_y);
     }
@@ -203,12 +204,13 @@ public class Form extends Group {
     private static final class DragListener implements MouseMotionListener {
         private final Form owner;
 
-         DragListener(Form owner) {
+        DragListener(Form owner) {
             this.owner = owner;
         }
 
         @Override
-        public void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x, int abs_y) {
+        public void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
+                int abs_y) {
             owner.mouseDragged(button, x, y, rel_x, rel_y, abs_x, abs_y);
         }
 

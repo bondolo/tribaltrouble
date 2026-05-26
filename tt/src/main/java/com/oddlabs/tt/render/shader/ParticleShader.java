@@ -76,110 +76,109 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
             """ +
             GLOBAL_STATE_BLOCK +
             """
-            
-            layout(location = 0) in vec3 in_CenterPosition;
-            layout(location = 1) in vec3 in_Size;
-            layout(location = 2) in vec4 in_Color;
-            layout(location = 3) in vec4 in_UvCoords1;
-            layout(location = 4) in vec4 in_UvCoords2;
-            
-            uniform mat4 u_modelViewMatrix;
-            
-            out vec2 v_texCoord;
-            out vec4 v_color;
-            out float v_fogDist;
-            out vec3 v_viewPos;
-            
-            void main() {
-                vec3 center = in_CenterPosition;
-                vec3 radius = in_Size;
-                v_color = in_Color;
-            
-                mat4 mv = u_modelViewMatrix;
-                vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
-                vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
-            
-                vec3 r_plus_up = (right + up) * radius;
-                vec3 r_minus_up = (right - up) * radius;
-            
-                vec4 viewCenter = mv * vec4(center, 1.0);
-                v_fogDist = length(viewCenter.xyz);
 
-                vec3 p;
-                if (gl_VertexID == 0) {
-                    // Bottom-left
-                    p = center - r_plus_up;
-                    v_texCoord = in_UvCoords1.xy;
-                } else if (gl_VertexID == 1) {
-                    // Bottom-right
-                    p = center + r_minus_up;
-                    v_texCoord = in_UvCoords1.zw;
-                } else if (gl_VertexID == 2) {
-                    // Top-left
-                    p = center - r_minus_up;
-                    v_texCoord = in_UvCoords2.zw;
-                } else {
-                    // Top-right
-                    p = center + r_plus_up;
-                    v_texCoord = in_UvCoords2.xy;
-                }
-                
-                vec4 viewPosition = mv * vec4(p, 1.0);
-                v_viewPos = viewPosition.xyz;
-                gl_Position = u_projectionMatrix * viewPosition;
-            }
-            """;
+                    layout(location = 0) in vec3 in_CenterPosition;
+                    layout(location = 1) in vec3 in_Size;
+                    layout(location = 2) in vec4 in_Color;
+                    layout(location = 3) in vec4 in_UvCoords1;
+                    layout(location = 4) in vec4 in_UvCoords2;
 
-    private static final String FRAGMENT_SHADER =
+                    uniform mat4 u_modelViewMatrix;
+
+                    out vec2 v_texCoord;
+                    out vec4 v_color;
+                    out float v_fogDist;
+                    out vec3 v_viewPos;
+
+                    void main() {
+                        vec3 center = in_CenterPosition;
+                        vec3 radius = in_Size;
+                        v_color = in_Color;
+
+                        mat4 mv = u_modelViewMatrix;
+                        vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
+                        vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
+
+                        vec3 r_plus_up = (right + up) * radius;
+                        vec3 r_minus_up = (right - up) * radius;
+
+                        vec4 viewCenter = mv * vec4(center, 1.0);
+                        v_fogDist = length(viewCenter.xyz);
+
+                        vec3 p;
+                        if (gl_VertexID == 0) {
+                            // Bottom-left
+                            p = center - r_plus_up;
+                            v_texCoord = in_UvCoords1.xy;
+                        } else if (gl_VertexID == 1) {
+                            // Bottom-right
+                            p = center + r_minus_up;
+                            v_texCoord = in_UvCoords1.zw;
+                        } else if (gl_VertexID == 2) {
+                            // Top-left
+                            p = center - r_minus_up;
+                            v_texCoord = in_UvCoords2.zw;
+                        } else {
+                            // Top-right
+                            p = center + r_plus_up;
+                            v_texCoord = in_UvCoords2.xy;
+                        }
+
+                        vec4 viewPosition = mv * vec4(p, 1.0);
+                        v_viewPos = viewPosition.xyz;
+                        gl_Position = u_projectionMatrix * viewPosition;
+                    }
+                    """;
+
+    private static final String FRAGMENT_SHADER = """
+            #version 410 core
+            """ +
+            GLOBAL_STATE_BLOCK +
+            FOG_FUNCTION +
             """
-                    #version 410 core
-                    """ +
-                    GLOBAL_STATE_BLOCK +
-                    FOG_FUNCTION +
-                    """
-                            uniform sampler2D u_texture0;
-                            uniform sampler2D u_depthMap;
-                            uniform float u_isAdditive;
-                            uniform vec2 u_nearFar;
-                            uniform float u_softRange;
-                            
-                            in vec2 v_texCoord;
-                            in vec4 v_color;
-                            in float v_fogDist;
-                            in vec3 v_viewPos;
-                            
-                            layout(location = 0) out vec4 out_FragColor;
-                            
-                            float getLinearDepth(float depth) {
-                                float z = depth * 2.0 - 1.0;
-                                return (2.0 * u_nearFar.x * u_nearFar.y) / (u_nearFar.y + u_nearFar.x - z * (u_nearFar.y - u_nearFar.x));
-                            }
-                            
-                            void main() {
-                                vec4 texColor = texture(u_texture0, v_texCoord);
-                                vec4 finalColor = v_color * texColor;
-                            
-                                if (finalColor.a <= 0.0) {
-                                    discard;
-                                }
+                    uniform sampler2D u_texture0;
+                    uniform sampler2D u_depthMap;
+                    uniform float u_isAdditive;
+                    uniform vec2 u_nearFar;
+                    uniform float u_softRange;
 
-                                // Soft Particles (Depth Fading)
-                                if (u_softRange > 0.0) {
-                                    vec2 screenUV = gl_FragCoord.xy / textureSize(u_depthMap, 0).xy;
-                                    float sceneDepth = getLinearDepth(texture(u_depthMap, screenUV).r);
-                                    float particleDepth = -v_viewPos.z; // view-space Z is negative
-                                    float depthDiff = sceneDepth - particleDepth;
-                                    finalColor.a *= clamp(depthDiff / u_softRange, 0.0, 1.0);
-                                }
-                            
-                                float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                                vec3 foggedColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
-                                if (u_isAdditive > 0.5) {
-                                    foggedColor = finalColor.rgb * fogFactor;
-                                }
-                                out_FragColor = vec4(foggedColor, clamp(finalColor.a, 0.0, 1.0));
-                            }
-                            """;
+                    in vec2 v_texCoord;
+                    in vec4 v_color;
+                    in float v_fogDist;
+                    in vec3 v_viewPos;
+
+                    layout(location = 0) out vec4 out_FragColor;
+
+                    float getLinearDepth(float depth) {
+                        float z = depth * 2.0 - 1.0;
+                        return (2.0 * u_nearFar.x * u_nearFar.y) / (u_nearFar.y + u_nearFar.x - z * (u_nearFar.y - u_nearFar.x));
+                    }
+
+                    void main() {
+                        vec4 texColor = texture(u_texture0, v_texCoord);
+                        vec4 finalColor = v_color * texColor;
+
+                        if (finalColor.a <= 0.0) {
+                            discard;
+                        }
+
+                        // Soft Particles (Depth Fading)
+                        if (u_softRange > 0.0) {
+                            vec2 screenUV = gl_FragCoord.xy / textureSize(u_depthMap, 0).xy;
+                            float sceneDepth = getLinearDepth(texture(u_depthMap, screenUV).r);
+                            float particleDepth = -v_viewPos.z; // view-space Z is negative
+                            float depthDiff = sceneDepth - particleDepth;
+                            finalColor.a *= clamp(depthDiff / u_softRange, 0.0, 1.0);
+                        }
+
+                        float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                        vec3 foggedColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
+                        if (u_isAdditive > 0.5) {
+                            foggedColor = finalColor.rgb * fogFactor;
+                        }
+                        out_FragColor = vec4(foggedColor, clamp(finalColor.a, 0.0, 1.0));
+                    }
+                    """;
 
     public ParticleShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);

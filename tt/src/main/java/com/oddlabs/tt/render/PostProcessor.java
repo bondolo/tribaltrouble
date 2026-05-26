@@ -42,11 +42,12 @@ public final class PostProcessor implements AutoCloseable {
         this.currentHeight = height;
         this.shader = new PostProcessShader();
         this.sceneFBO = FBO.createSceneFBO(width, height);
-        
+
         // Depth Copy FBO (for Soft Particles)
         this.depthCopyFBO = new FBO(width, height);
         this.depthCopyFBO.bind();
-        Texture depthCopy = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST, GL11.GL_NEAREST, GL12.GL_CLAMP_TO_EDGE);
+        Texture depthCopy = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST, GL11.GL_NEAREST,
+                GL12.GL_CLAMP_TO_EDGE);
         this.depthCopyFBO.attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthCopy);
         // This FBO has no color attachment
         GL11.glDrawBuffer(GL11.GL_NONE);
@@ -81,7 +82,7 @@ public final class PostProcessor implements AutoCloseable {
         this.currentWidth = width;
         this.currentHeight = height;
         sceneFBO.resize(width, height);
-        
+
         depthCopyFBO.resize(width, height);
         depthCopyFBO.bind();
         // Since resize() in FBO.java doesn't handle custom depth-only FBOs cleanly yet,
@@ -89,7 +90,7 @@ public final class PostProcessor implements AutoCloseable {
         GL11.glDrawBuffer(GL11.GL_NONE);
         GL11.glReadBuffer(GL11.GL_NONE);
         depthCopyFBO.unbind();
-        
+
         return true;
     }
 
@@ -109,7 +110,8 @@ public final class PostProcessor implements AutoCloseable {
         sceneFBO.unbind(context);
     }
 
-    public void renderComposite(@NonNull RenderContext context, @NonNull Consumer<@NonNull RenderContext> guiRenderCallback) {
+    public void renderComposite(@NonNull RenderContext context, @NonNull Consumer<
+            @NonNull RenderContext> guiRenderCallback) {
         // 1. Render GUI into the Scene FBO (on top of the 3D scene)
         bindSceneFBO(context);
 
@@ -119,14 +121,14 @@ public final class PostProcessor implements AutoCloseable {
         try (var _ = context.withBlendMode(BlendMode.CUSTOM)) {
             context.setBlend(true);
             GL40.glBlendFunci(0, GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            
+
             // Mask RGB: Wipe background unit color as GUI becomes opaque
             // Mask Alpha: Use MAX to prevent marker (0.5) from accumulating to 1.0
             GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_MAX);
             GL40.glBlendFunci(1, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
             guiRenderCallback.accept(context);
-            
+
             // Explicitly reset per-buffer state to prevent leaking into next pass/frame
             GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_FUNC_ADD);
             try (var stack = MemoryStack.stackPush()) {
@@ -143,10 +145,8 @@ public final class PostProcessor implements AutoCloseable {
         context.setDrawBuffers(false); // Ensure only back buffer is active for FBO 0
         context.clear(true, true);
 
-        try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.NONE);
-             var _ = context.withDepthMode(DepthMode.NONE);
-             var _ = context.withCullMode(CullMode.NONE)) {
+        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
+                DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
 
             Settings settings = Renderer.getRenderer().getSettings();
             shader.setUniform(PostProcessShader.Uniforms.CVD_MODE, settings.cvd_mode);

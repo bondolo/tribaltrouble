@@ -29,7 +29,9 @@ public final class GLRenderContext implements RenderContext {
     };
 
     private enum GLState {
-        UNKNOWN, FALSE, TRUE;
+        UNKNOWN,
+        FALSE,
+        TRUE;
 
         static GLState from(boolean value) {
             return value ? TRUE : FALSE;
@@ -528,11 +530,13 @@ public final class GLRenderContext implements RenderContext {
 
             // Probing for color attachments. We initialize params to GL_NONE to be safe.
             params.put(0, GL11.GL_NONE);
-            GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
+            GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
             var hasAttachment0 = params.get(0) != GL11.GL_NONE;
 
             params.put(0, GL11.GL_NONE);
-            GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
+            GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
             var hasAttachment1 = params.get(0) != GL11.GL_NONE;
             stack.pop();
 
@@ -543,7 +547,8 @@ public final class GLRenderContext implements RenderContext {
             // Clear any existing errors before the critical call to isolate the failure
             GL11.glGetError();
             GL20.glDrawBuffers(buffers);
-            checkAndThrow("glDrawBuffers(" + mask + ") FBO=" + currentFBO + " (att0=" + hasAttachment0 + ", att1=" + hasAttachment1 + ")");
+            checkAndThrow("glDrawBuffers(" + mask + ") FBO=" + currentFBO + " (att0=" + hasAttachment0 + ", att1="
+                    + hasAttachment1 + ")");
         }
         maskState = newState;
     }
@@ -563,13 +568,14 @@ public final class GLRenderContext implements RenderContext {
         }
         // Sync maskState if it matches one of our known configurations
         // Treating GL_NONE as a form of disabled masking for simple FBOs
-        maskState = attachments.length == 2 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0 && attachments[1] == GL30.GL_COLOR_ATTACHMENT1
+        maskState = attachments.length == 2 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0 && attachments[1]
+                == GL30.GL_COLOR_ATTACHMENT1
                 ? GLState.TRUE
                 : attachments.length == 1 && attachments[0] == GL30.GL_COLOR_ATTACHMENT0
-                    ? GLState.FALSE
-                    : attachments.length == 1 && attachments[0] == GL11.GL_NONE
                         ? GLState.FALSE
-                        : GLState.UNKNOWN;
+                : attachments.length == 1 && attachments[0] == GL11.GL_NONE
+                        ? GLState.FALSE
+                : GLState.UNKNOWN;
     }
 
     @Override

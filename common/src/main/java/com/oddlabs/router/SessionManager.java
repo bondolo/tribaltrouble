@@ -23,15 +23,18 @@ final class SessionManager {
         this.time_manager = time_manager;
     }
 
-    @NonNull Session get(SessionID session_id, @NonNull SessionInfo session_info, int client_id) {
+    @NonNull
+    Session get(SessionID session_id, @NonNull SessionInfo session_info, int client_id) {
         Session session = id_to_session.get(session_id);
         if (session == null) {
             session = new Session(logger, session_id, session_info, this);
             id_to_session.put(session_id, session);
             logger.log(Level.INFO, "Creating session: {0}", session);
         } else {
-            if (!session.info.equals(session_info) || session.hasClient(client_id) || client_id >= session_info.num_participants)
-                throw new RuntimeException("SessionInfo mismatch " + session.info + " != " + session_info + " client_id = " + client_id);
+            if (!session.info.equals(session_info) || session.hasClient(client_id) || client_id
+                    >= session_info.num_participants)
+                throw new RuntimeException("SessionInfo mismatch " + session.info + " != " + session_info
+                        + " client_id = " + client_id);
         }
         return session;
     }
@@ -128,7 +131,8 @@ final class SessionManager {
 
         @Override
         public int compareTo(@NonNull Timeout other) {
-            int diff = Long.compare(next_timeout, other.next_timeout);;
+            int diff = Long.compare(next_timeout, other.next_timeout);
+            ;
             if (diff != 0)
                 return diff;
             else

@@ -51,11 +51,11 @@ public final class PocketList<T> {
         reset();
     }
 
-/*	private final void check() {
-		for (int i = 0; i < pockets.length; i++)
-			assert pockets[i].isEmpty(): min_list_index + " " + max_list_index + " " + i;
-	}
-*/
+    /*	private final void check() {
+    		for (int i = 0; i < pockets.length; i++)
+    			assert pockets[i].isEmpty(): min_list_index + " " + max_list_index + " " + i;
+    	}
+    */
 
     public boolean isEmpty() {
         return size == 0;

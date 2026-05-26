@@ -41,7 +41,8 @@ public final class LightningRenderer implements AutoCloseable {
             LightningShader.Attribute.COLOR
     );
 
-    private final @NonNull FloatBuffer particle_buffer = Objects.requireNonNull(BufferUtils.createFloatBuffer(MAX_PARTICLES * VERTICES_PER_PARTICLE * FLOATS_PER_VERTEX));
+    private final @NonNull FloatBuffer particle_buffer = Objects.requireNonNull(BufferUtils.createFloatBuffer(
+            MAX_PARTICLES * VERTICES_PER_PARTICLE * FLOATS_PER_VERTEX));
     private final @NonNull FloatVBO particle_vbo = new FloatVBO(GL15.GL_STREAM_DRAW, particle_buffer.capacity());
     private final @NonNull ShortVBO particle_ibo;
 
@@ -52,15 +53,16 @@ public final class LightningRenderer implements AutoCloseable {
     public LightningRenderer() {
         shader = new LightningShader();
 
-        ShortBuffer iboBuffer = Objects.requireNonNull(BufferUtils.createShortBuffer(MAX_PARTICLES * INDICES_PER_PARTICLE));
+        ShortBuffer iboBuffer = Objects.requireNonNull(BufferUtils.createShortBuffer(MAX_PARTICLES
+                * INDICES_PER_PARTICLE));
         for (int i = 0; i < MAX_PARTICLES; i++) {
             int offset = i * VERTICES_PER_PARTICLE;
             // First quad
             iboBuffer.put((short) (offset + 0)).put((short) (offset + 1)).put((short) (offset + 2))
-                     .put((short) (offset + 2)).put((short) (offset + 3)).put((short) (offset + 0));
+                    .put((short) (offset + 2)).put((short) (offset + 3)).put((short) (offset + 0));
             // Second quad
             iboBuffer.put((short) (offset + 4)).put((short) (offset + 5)).put((short) (offset + 6))
-                     .put((short) (offset + 6)).put((short) (offset + 7)).put((short) (offset + 4));
+                    .put((short) (offset + 6)).put((short) (offset + 7)).put((short) (offset + 4));
         }
         iboBuffer.flip();
         particle_ibo = new ShortVBO(GL15.GL_STATIC_DRAW, iboBuffer);
@@ -80,17 +82,16 @@ public final class LightningRenderer implements AutoCloseable {
         queue.clear();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (activeLightnings.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
         vbo_offset = 0;
         particle_vbo.orphan();
 
-        try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.ADDITIVE);
-             var _ = context.withDepthMode(DepthMode.READ_ONLY);
-             var _ = context.withCullMode(CullMode.NONE)) {
+        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
+                DepthMode.READ_ONLY); var _ = context.withCullMode(CullMode.NONE)) {
 
             Matrix4fc mv = modelViewStack.current();
             shader.setUniform(LightningShader.Uniforms.MODEL_VIEW_MATRIX, mv);
@@ -144,7 +145,8 @@ public final class LightningRenderer implements AutoCloseable {
         particle_buffer.put(x).put(y).put(z).put(u).put(v).put(r).put(g).put(b).put(a);
     }
 
-    private void renderInternal(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull Lightning lightning) {
+    private void renderInternal(@NonNull RenderContext context, @NonNull RenderQueues render_queues,
+            @NonNull Lightning lightning) {
         context.setTexture(0, render_queues.getTexture(lightning.getTexture()));
 
         particle_buffer.clear();
@@ -171,7 +173,8 @@ public final class LightningRenderer implements AutoCloseable {
             vbo_offset = 0;
         }
         particle_vbo.putSubData(vbo_offset * VERTICES_PER_PARTICLE * FLOATS_PER_VERTEX, particle_buffer);
-        GL11.glDrawElements(GL11.GL_TRIANGLES, count * INDICES_PER_PARTICLE, GL11.GL_UNSIGNED_SHORT, (long) vbo_offset * INDICES_PER_PARTICLE * Short.BYTES);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, count * INDICES_PER_PARTICLE, GL11.GL_UNSIGNED_SHORT, (long) vbo_offset
+                * INDICES_PER_PARTICLE * Short.BYTES);
         vbo_offset += count;
     }
 

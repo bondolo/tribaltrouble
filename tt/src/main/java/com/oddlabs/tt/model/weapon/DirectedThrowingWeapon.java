@@ -9,8 +9,11 @@ import org.jspecify.annotations.NonNull;
 /**
  * A base class for weapons that are thrown in a specific direction (e.g., spears).
  */
-public abstract sealed class DirectedThrowingWeapon extends ThrowingWeapon permits RockSpearWeapon, IronSpearWeapon, RubberSpearWeapon {
-    public DirectedThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound, @NonNull AudioFile @NonNull [] hit_sounds) {
+public abstract sealed class DirectedThrowingWeapon extends ThrowingWeapon permits RockSpearWeapon, IronSpearWeapon,
+        RubberSpearWeapon {
+    public DirectedThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target,
+            @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound,
+            @NonNull AudioFile @NonNull [] hit_sounds) {
         super(hit, src, target, sprite_renderer, throw_sound, hit_sounds);
     }
 
@@ -23,4 +26,3 @@ public abstract sealed class DirectedThrowingWeapon extends ThrowingWeapon permi
         return 1.05f;
     }
 }
-

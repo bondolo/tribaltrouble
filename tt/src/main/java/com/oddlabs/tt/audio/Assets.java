@@ -32,7 +32,7 @@ public class Assets {
     public static final AudioFile SFX_BUILDINGNOTIFY_VIKING = new AudioFile("/sfx/buildingnotify_viking.ogg");
     public static final AudioFile SFX_BUILDING_CRASH = new AudioFile("/sfx/building_crash.ogg");
     public static final AudioFile SFX_CHICKEN_DEATH = new AudioFile("/sfx/chicken_death.ogg");
-    public static final @NonNull AudioFile [] SFX_CHICKEN_IDLES = IntStream.rangeClosed(1, 4)
+    public static final @NonNull AudioFile[] SFX_CHICKEN_IDLES = IntStream.rangeClosed(1, 4)
             .mapToObj(i -> String.format("/sfx/chicken_idle%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
     public static final AudioFile SFX_CHICKEN_PECK = new AudioFile("/sfx/chicken_peck.ogg");
@@ -69,18 +69,19 @@ public class Assets {
             .mapToObj(i -> String.format("/sfx/impact_wood%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
     public static final AudioFile SFX_LURBLAST = new AudioFile("/sfx/lurblast.ogg");
-    public static final @NonNull AudioFile [] SFX_LURBLASTS = IntStream.rangeClosed(1, 3)
+    public static final @NonNull AudioFile[] SFX_LURBLASTS = IntStream.rangeClosed(1, 3)
             .mapToObj(i -> String.format("/sfx/lur_blast%d.ogg", i)).map(AudioFile::new).toArray(AudioFile[]::new);
     public static final @NonNull AudioFile @NonNull [] SFX_LUR_STUNS = IntStream.rangeClosed(1, 3)
             .mapToObj(i -> String.format("/sfx/lur_stun%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
 
-    public static final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull AudioFile[]> SFX_HARVEST_SOUNDS = Map.of(
-            TreeSupply.class, SFX_AXE_CUTTING_WOODS,
-            RockSupply.class, SFX_AXE_CUTTING_STONES,
-            IronSupply.class, SFX_AXE_CUTTING_STONES,
-            RubberSupply.class, SFX_IMPACT_MEATS
-    );
+    public static final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull AudioFile[]> SFX_HARVEST_SOUNDS = Map
+            .of(
+                    TreeSupply.class, SFX_AXE_CUTTING_WOODS,
+                    RockSupply.class, SFX_AXE_CUTTING_STONES,
+                    IronSupply.class, SFX_AXE_CUTTING_STONES,
+                    RubberSupply.class, SFX_IMPACT_MEATS
+            );
 
     // Music
     public static final AudioFile MUSIC_MENU = new AudioFile("/music/menu.ogg");
@@ -165,7 +166,8 @@ public class Assets {
     public static final float AUDIO_RADIUS_BLAST_BLAST = 1f;
     public static final float AUDIO_RADIUS_ARMORY = 5f;
 
-    public static @NonNull AudioParameters getHarvestSound(@NonNull Class<? extends Supply> key, @NonNull Random random) {
+    public static @NonNull AudioParameters getHarvestSound(@NonNull Class<? extends Supply> key,
+            @NonNull Random random) {
         AudioFile[] sounds = SFX_HARVEST_SOUNDS.get(key);
         var audioFile = sounds[random.nextInt(sounds.length)];
         return new AudioParameters(audioFile, AUDIO_RANK_HARVEST,

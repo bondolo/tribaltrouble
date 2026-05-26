@@ -75,16 +75,17 @@ import java.util.logging.SimpleFormatter;
 import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 
 /**
- * The main rendering engine and application controller. 
+ * The main rendering engine and application controller.
  * Manages the game loop, window lifecycle, input handling, and audio coordination.
  */
 public final class Renderer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
-    private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(), "default");
+    private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault()
+            .getCountry(), "default");
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -249,7 +250,7 @@ public final class Renderer implements AutoCloseable {
      *
      * @param property name of the system property
      * @return Path to a directory or null if filesystem operations don't
-     * generally seem to work.
+     *         generally seem to work.
      */
     public static @Nullable Path getPropertyPath(@NonNull String property) {
         String propertyValue;
@@ -291,7 +292,7 @@ public final class Renderer implements AutoCloseable {
      * directory.
      *
      * @return Path to a directory or null if filesystem operations don't
-     * generally seem to work.
+     *         generally seem to work.
      */
     public static @Nullable Path getUserHomePath() {
         return getPropertyPath("user.home");
@@ -503,7 +504,7 @@ public final class Renderer implements AutoCloseable {
         return new GamePaths(dataDir, logDir);
     }
 
-    public void run(@NonNull String @NonNull ... args) throws IOException {
+    public void run(@NonNull String @NonNull... args) throws IOException {
         Instant start_time = Instant.now();
         logger.info("CWD: " + System.getProperty("user.dir"));
         boolean first_frame = true;
@@ -518,22 +519,22 @@ public final class Renderer implements AutoCloseable {
         boolean silent = false;
         for (int i = 0; i < args.length; i++)
             switch (args[i]) {
-                case "--grabframes" -> grab_frames = true;
-                case "--eventload" -> {
-                    eventload = true;
-                    i++;
-                    switch (args[i]) {
-                        case "zipped":
-                            zipped = true;
-                            break;
-                        case "normal":
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
-                    }
+            case "--grabframes" -> grab_frames = true;
+            case "--eventload" -> {
+                eventload = true;
+                i++;
+                switch (args[i]) {
+                    case "zipped":
+                        zipped = true;
+                        break;
+                    case "normal":
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
                 }
-                case "--silent" -> silent = true;
-                default -> throw new IllegalArgumentException("Unknown command line flag: " + args[i]);
+            }
+            case "--silent" -> silent = true;
+            default -> throw new IllegalArgumentException("Unknown command line flag: " + args[i]);
             }
 
         Settings settings = getSettings();
@@ -564,7 +565,7 @@ public final class Renderer implements AutoCloseable {
         if (!Languages.hasLanguage(language))
             language = "en";
         Locale.setDefault(Locale.of(language));
-        
+
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
         NetworkSelector network = new NetworkSelector(getEventQueue().getDeterministic(), getEventQueue()::getMillis);
@@ -585,7 +586,8 @@ public final class Renderer implements AutoCloseable {
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters params) -> getAudioManager().newAudio(x, y, z, params));
+        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters params) -> getAudioManager()
+                .newAudio(x, y, z, params));
 
         Runnable load_task = setupMainMenu(network, gui, true);
 
@@ -712,12 +714,16 @@ public final class Renderer implements AutoCloseable {
         setupMainMenu(network, gui, false);
     }
 
-    private static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui, final boolean first_progress) {
-        final WorldGenerator generator = new IslandGenerator(Landscape.TerrainType.NATIVE, 256, Globals.LANDSCAPE_HILLS, Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
-        return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root, first_progress, generator), first_progress);
+    private static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui,
+            final boolean first_progress) {
+        final WorldGenerator generator = new IslandGenerator(Landscape.TerrainType.NATIVE, 256, Globals.LANDSCAPE_HILLS,
+                Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
+        return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root,
+                first_progress, generator), first_progress);
     }
 
-    private static @NonNull UIRenderer finishMainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, boolean first_progress, @NonNull WorldGenerator generator) {
+    private static @NonNull UIRenderer finishMainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
+            boolean first_progress, @NonNull WorldGenerator generator) {
         AnimationManager.freezeTime();
         PlayerInfo player_info = new PlayerInfo(0, 0, "");
         MatrixStack modelViewStack = new MatrixStack();
@@ -727,19 +733,24 @@ public final class Renderer implements AutoCloseable {
         WorldInfo world_info = generator.generate(players.length, world_params.getInitialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = World.loadCommon(render_queues);
-        World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null, new NotificationListener() {
-        }, world_params, world_info, players);
+        World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null,
+                new NotificationListener() {
+                }, world_params, world_info, players);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
         Player local_player = world.getPlayers()[0];
         Selection selection = new Selection(local_player);
-        UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info, landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer, selection), selection, modelViewStack, projectionStack);
+        UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info,
+                landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer,
+                        selection), selection, modelViewStack, projectionStack);
         Renderer.getRenderer().setMusicPath(Assets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);
-        if (first_progress && getRenderer().getSettings().warning_no_sound && !Renderer.getLocalInput().audioIsCreated()) {
+        if (first_progress && getRenderer().getSettings().warning_no_sound && !Renderer.getLocalInput()
+                .audioIsCreated()) {
             ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
-            gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n("sound_not_available_message")));
+            gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
+                    "sound_not_available_message")));
         }
         if (!initNetwork(network)) {
 //			if (true) {
@@ -750,11 +761,11 @@ public final class Renderer implements AutoCloseable {
         }
         // We'll leave out the reporting, since checksum errors can happen when a peer is disconnected halfway through it's EOT
         // broadcast
-		/*		if (Globals.checksum_error_in_last_game) {
-				Globals.checksum_error_in_last_game = false;
-				ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
-				GUIRoot.getGUIRoot().addModalForm(new QuestionForm(i18n("checksum_error_message"), new BugReportListener()));
-				}*/
+        /*		if (Globals.checksum_error_in_last_game) {
+        		Globals.checksum_error_in_last_game = false;
+        		ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
+        		GUIRoot.getGUIRoot().addModalForm(new QuestionForm(i18n("checksum_error_message"), new BugReportListener()));
+        		}*/
         return renderer;
     }
 
@@ -858,13 +869,20 @@ public final class Renderer implements AutoCloseable {
     public static void dumpWindowInfo() {
         try {
             GLUtils.checkGLError("Pre-dumpWindowInfo");
-            int r = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT, GL30.GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE);
-            int g = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT, GL30.GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE);
-            int b = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT, GL30.GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE);
-            int a = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT, GL30.GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE);
-            int depth = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH, GL30.GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE);
-            int stencil = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL30.GL_STENCIL, GL30.GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE);
-            logger.info("Window Info: r=" + r + " g=" + g + " b=" + b + " a=" + a + " depth=" + depth + " stencil=" + stencil);
+            int r = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE);
+            int g = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE);
+            int b = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE);
+            int a = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE);
+            int depth = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE);
+            int stencil = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL30.GL_STENCIL,
+                    GL30.GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE);
+            logger.info("Window Info: r=" + r + " g=" + g + " b=" + b + " a=" + a + " depth=" + depth + " stencil="
+                    + stencil);
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to dump window info", e);
         }
@@ -873,9 +891,9 @@ public final class Renderer implements AutoCloseable {
     private void initNative(boolean crashed) throws Exception {
         // Currently only OpenAL is supported
         this.audioManager = new OpenALManager(getSettings().headphone_mode)
-            .setSfxGain(getSettings().sound_gain)
-            .setMusicGain(getSettings().music_gain)
-            .setSfxEnabled(getSettings().play_sfx);
+                .setSfxGain(getSettings().sound_gain)
+                .setMusicGain(getSettings().music_gain)
+                .setSfxEnabled(getSettings().play_sfx);
 
         try {
             int bpp = 32;
@@ -897,11 +915,13 @@ public final class Renderer implements AutoCloseable {
                 try {
                     var modes = window.getAvailableDisplayModes();
                     target_mode = modes.isEmpty()
-                            ? new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, 32, 60)
+                            ? new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH,
+                                    SerializableDisplayMode.MIN_HEIGHT, 32, 60)
                             : modes.getFirst();
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "Failed to get available modes for default selection", e);
-                    target_mode = new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, 32, 60);
+                    target_mode = new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH,
+                            SerializableDisplayMode.MIN_HEIGHT, 32, 60);
                 }
             } else {
                 target_mode = new SerializableDisplayMode(width, height, bpp, freq);
@@ -948,7 +968,8 @@ public final class Renderer implements AutoCloseable {
         int num_combined_tex_units = GL11.glGetInteger(GL20.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
         logger.info("GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: " + num_combined_tex_units);
         if (num_combined_tex_units < 8) {
-            throw new IllegalStateException("Number of combined texture image units " + num_combined_tex_units + " is less than the required 8.");
+            throw new IllegalStateException("Number of combined texture image units " + num_combined_tex_units
+                    + " is less than the required 8.");
         }
 
         resetInput();
@@ -977,7 +998,7 @@ public final class Renderer implements AutoCloseable {
 
     private void initMusicPlayer() {
         assert null != music_path && music_path.isStreaming() : "Inappropriate music file";
-        var params =  new AudioParameters(music_path, Assets.AUDIO_RANK_MUSIC,
+        var params = new AudioParameters(music_path, Assets.AUDIO_RANK_MUSIC,
                 Assets.AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
                 1f, true, true);
         music = getAudioManager().newAudio(0f, 0f, 0f, params);
@@ -1027,7 +1048,8 @@ public final class Renderer implements AutoCloseable {
     }
 
     public static void clearScreen() {
-        GL11.glClearColor(Color.Linear.BLACK.r(), Color.Linear.BLACK.g(), Color.Linear.BLACK.b(), Color.Linear.BLACK.a());
+        GL11.glClearColor(Color.Linear.BLACK.r(), Color.Linear.BLACK.g(), Color.Linear.BLACK.b(), Color.Linear.BLACK
+                .a());
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
     }
 

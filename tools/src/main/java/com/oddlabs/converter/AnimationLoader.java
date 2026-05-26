@@ -43,8 +43,7 @@ public final class AnimationLoader {
                     assert frame_index >= 0;
                     anim_infos_map.put(frame_index, parseFrame(frame));
                 });
-        @SuppressWarnings("unchecked")
-        var anim_infos = (Map<String, float[]>[]) new Map[anim_infos_map.size()];
+        @SuppressWarnings("unchecked") var anim_infos = (Map<String, float[]>[]) new Map[anim_infos_map.size()];
         anim_infos_map.keySet().forEach(frame_index_obj -> {
             Map<String, float[]> frame = anim_infos_map.get(frame_index_obj);
             int index = frame_index_obj;

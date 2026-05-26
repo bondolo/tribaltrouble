@@ -12,7 +12,9 @@ import org.jspecify.annotations.NonNull;
 public final class IronSpearWeapon extends DirectedThrowingWeapon {
     private static final float METERS_PER_SECOND = 25f; //multiplied by meters/second (in 2D)
 
-    public IronSpearWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target, @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound, @NonNull AudioFile @NonNull [] hit_sounds) {
+    public IronSpearWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target,
+            @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound,
+            @NonNull AudioFile @NonNull [] hit_sounds) {
         super(hit, src, target, sprite_renderer, throw_sound, hit_sounds);
     }
 

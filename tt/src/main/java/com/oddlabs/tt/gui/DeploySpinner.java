@@ -16,12 +16,15 @@ public final class DeploySpinner extends IconSpinner {
     private int num_orders = 0;
     private int order_size = 0;
 
-    public DeploySpinner(@NonNull WorldViewer viewer, @NonNull PlayerInterface player_interface, @NonNull ModeIconQuads icon_quad, @NonNull String tool_tip, @NonNull IconQuad @Nullable [] tool_tip_icons, @NonNull String shortcut_key) {
+    public DeploySpinner(@NonNull WorldViewer viewer, @NonNull PlayerInterface player_interface,
+            @NonNull ModeIconQuads icon_quad, @NonNull String tool_tip, @NonNull IconQuad @Nullable [] tool_tip_icons,
+            @NonNull String shortcut_key) {
         super(viewer, icon_quad, tool_tip, tool_tip_icons, shortcut_key);
         this.player_interface = player_interface;
     }
 
-    public void setContainers(@NonNull Building current_building, @NonNull DeployType deploy_type, @Nullable Class<?> supply_type) {
+    public void setContainers(@NonNull Building current_building, @NonNull DeployType deploy_type, @Nullable Class<
+            ?> supply_type) {
         this.current_building = current_building;
         this.deploy_type = deploy_type;
         this.supply_type = supply_type;
@@ -88,11 +91,11 @@ public final class DeploySpinner extends IconSpinner {
                 if (amount > num_units + getOrderDiff()) {
                     amount = num_units + getOrderDiff();
                 }
-				/*
-				if (supply_type != null && amount > num_supplies + getOrderDiff()) {
-					amount = num_supplies + getOrderDiff();
-				}
-				*/
+                /*
+                if (supply_type != null && amount > num_supplies + getOrderDiff()) {
+                	amount = num_supplies + getOrderDiff();
+                }
+                */
                 order_size -= amount;
                 num_orders -= amount;
             }

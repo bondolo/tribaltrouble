@@ -25,7 +25,7 @@ import java.util.Arrays;
  * Logic controller for the Stun magic effect.
  */
 public final class Stun extends PointEmitterModel implements Magic {
-    private static final @NonNull AudioParameters [] STUN_AUDIO = Arrays.stream(Assets.SFX_LUR_STUNS)
+    private static final @NonNull AudioParameters[] STUN_AUDIO = Arrays.stream(Assets.SFX_LUR_STUNS)
             .map(audio -> new AudioParameters(audio, Assets.AUDIO_RANK_MAGIC,
                     Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_STUN_LUR, Assets.AUDIO_RADIUS_STUN_LUR))
             .toArray(AudioParameters[]::new);
@@ -41,7 +41,8 @@ public final class Stun extends PointEmitterModel implements Magic {
 
     private final @NonNull Iterable<? extends Selectable<?>> target_list;
 
-    public Stun(float offset_x, float offset_y, float offset_z, float hit_radius, float stun_time_closest, float stun_time_farthest, @NonNull Unit src) {
+    public Stun(float offset_x, float offset_y, float offset_z, float hit_radius, float stun_time_closest,
+            float stun_time_farthest, @NonNull Unit src) {
         super(src.getOwner().getWorld(), createEmitter(offset_x, offset_y, offset_z, src));
         this.src = src;
         this.offset_x = offset_x;
@@ -56,13 +57,16 @@ public final class Stun extends PointEmitterModel implements Magic {
         float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         float z = src.getPositionZ() + offset_z;
 
-        var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable.genericClass());
+        var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable
+                .genericClass());
 //		FindOccupantFilter filter = new FindOccupantFilter(src.getPositionX(), src.getPositionY(), hit_radius, src, Unit.class);
         UnitGrid unit_grid = owner.getWorld().getUnitGrid();
-        unit_grid.scan(filter, UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src.getPositionY()));
+        unit_grid.scan(filter, UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src
+                .getPositionY()));
         target_list = filter.getResult();
 
-        sound = owner.getWorld().getAudio().newAudio(start_x, start_y, z, STUN_AUDIO[getWorld().getRandom().nextInt(STUN_AUDIO.length)]);
+        sound = owner.getWorld().getAudio().newAudio(start_x, start_y, z, STUN_AUDIO[getWorld().getRandom().nextInt(
+                STUN_AUDIO.length)]);
     }
 
     private static Emitter<?> createEmitter(float offset_x, float offset_y, float offset_z, @NonNull Unit src) {
@@ -129,7 +133,7 @@ public final class Stun extends PointEmitterModel implements Magic {
         if (logic_timer > 1.5f) {
             emitter.done();
         }
-        
+
         super.animate(t);
     }
 

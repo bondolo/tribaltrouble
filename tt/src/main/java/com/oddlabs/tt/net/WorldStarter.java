@@ -32,7 +32,9 @@ final class WorldStarter implements LoadCallback {
     private final @Nullable WorldInitAction initial_action;
     private final int session_id;
 
-    WorldStarter(NetworkSelector network, int session_id, WorldGenerator generator, WorldParameters world_params, PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info, @Nullable WorldInitAction initial_action) {
+    WorldStarter(NetworkSelector network, int session_id, WorldGenerator generator, WorldParameters world_params,
+            PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
+            @Nullable WorldInitAction initial_action) {
         this.initial_action = initial_action;
         this.session_id = session_id;
         this.world_params = world_params;
@@ -61,7 +63,8 @@ final class WorldStarter implements LoadCallback {
         assert corrected_player_slot != -1;
         PlayerSlot[] player_slots = player_slot_list.toArray(new PlayerSlot[0]);
         UnitInfo[] corrected_unit_infos = unit_info_list.toArray(new UnitInfo[0]);
-        WorldViewer viewer = new WorldViewer(network, gui_root, world_params, ingame_info, generator, player_slots, corrected_unit_infos, corrected_player_slot, new SessionID(session_id));
+        WorldViewer viewer = new WorldViewer(network, gui_root, world_params, ingame_info, generator, player_slots,
+                corrected_unit_infos, corrected_player_slot, new SessionID(session_id));
         if (initial_action != null)
             initial_action.run(viewer);
         Participant[] participants = getParticipants(viewer, player_slots);
@@ -73,7 +76,8 @@ final class WorldStarter implements LoadCallback {
         return viewer.getRenderer();
     }
 
-    private static @NonNull Participant @NonNull [] getParticipants(@NonNull WorldViewer viewer, @NonNull PlayerSlot @NonNull [] player_slots) {
+    private static @NonNull Participant @NonNull [] getParticipants(@NonNull WorldViewer viewer,
+            @NonNull PlayerSlot @NonNull [] player_slots) {
         List<Participant> participant_list = new ArrayList<>();
         Player[] players = viewer.getWorld().getPlayers();
         for (short i = 0; i < players.length; i++) {
@@ -85,7 +89,8 @@ final class WorldStarter implements LoadCallback {
                 host_id = player_slots[i].getAddress().getHostID();
             else
                 host_id = -1;
-            Participant p = new Participant(host_id, player.getPlayerInfo().getName(), player.getPlayerInfo().getTeam(), player.getPlayerInfo().getRace());
+            Participant p = new Participant(host_id, player.getPlayerInfo().getName(), player.getPlayerInfo().getTeam(),
+                    player.getPlayerInfo().getRace());
             participant_list.add(p);
         }
         Participant[] participants = new Participant[participant_list.size()];

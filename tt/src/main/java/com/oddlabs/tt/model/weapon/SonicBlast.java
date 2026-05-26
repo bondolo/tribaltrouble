@@ -22,10 +22,10 @@ import java.util.Arrays;
  * Logic controller for the Sonic Blast magic effect.
  */
 public final class SonicBlast extends AccessorizableModel implements Magic {
-    private static final @NonNull AudioParameters [] LUR_AUDIO = Arrays.stream(Assets.SFX_LURBLASTS)
-                    .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_MAGIC,
-                            Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BLAST_LUR, Assets.AUDIO_RADIUS_BLAST_LUR))
-                    .toArray(AudioParameters[]::new);
+    private static final @NonNull AudioParameters[] LUR_AUDIO = Arrays.stream(Assets.SFX_LURBLASTS)
+            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_MAGIC,
+                    Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BLAST_LUR, Assets.AUDIO_RADIUS_BLAST_LUR))
+            .toArray(AudioParameters[]::new);
     private static final AudioParameters RUMBLE_AUDIO = new AudioParameters(
             Assets.SFX_RUMBLE, Assets.AUDIO_RANK_MAGIC,
             Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BLAST_RUMBLE, Assets.AUDIO_RADIUS_BLAST_RUMBLE);
@@ -52,7 +52,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
 
     private boolean first_ring_sent = false;
 
-    public SonicBlast(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance_closest, float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, @NonNull Unit src) {
+    public SonicBlast(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance_closest,
+            float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, @NonNull Unit src) {
         super(src.getOwner().getWorld());
         this.hit_radius = hit_radius;
         this.hit_chance_closest = hit_chance_closest;
@@ -70,14 +71,18 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
         setPositionZ(start_z);
         register();
 
-        var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable.genericClass());
+        var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable
+                .genericClass());
         UnitGrid unit_grid = owner.getWorld().getUnitGrid();
-        unit_grid.scan(filter, UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src.getPositionY()));
+        unit_grid.scan(filter, UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src
+                .getPositionY()));
         blast_targets = filter.getResult();
 
-        sonicBlastEffect = new SonicBlastEffect(owner.getWorld(), new Vector3f(start_x, start_y, start_z), hit_radius, seconds);
+        sonicBlastEffect = new SonicBlastEffect(owner.getWorld(), new Vector3f(start_x, start_y, start_z), hit_radius,
+                seconds);
 
-        lur = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, LUR_AUDIO[owner.getWorld().getRandom().nextInt(LUR_AUDIO.length)]);
+        lur = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, LUR_AUDIO[owner.getWorld().getRandom()
+                .nextInt(LUR_AUDIO.length)]);
         rumble = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, RUMBLE_AUDIO);
 
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
@@ -111,9 +116,11 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
             float squared_dist = dx * dx + dy * dy;
             if (squared_dist < squared_radius) {
                 if (!s.isDead()) {
-                    float hit_chance = calculateValueFromCurrentRadius(current_radius, hit_chance_closest, hit_chance_farthest);
+                    float hit_chance = calculateValueFromCurrentRadius(current_radius, hit_chance_closest,
+                            hit_chance_farthest);
                     if (owner.getWorld().getRandom().nextFloat() < hit_chance * (1 - s.getDefenseChance())) {
-                        int damage = (int) calculateValueFromCurrentRadius(current_radius, damage_closest, damage_farthest);
+                        int damage = (int) calculateValueFromCurrentRadius(current_radius, damage_closest,
+                                damage_farthest);
                         float inv_dist = 1f / ((float) Math.sqrt(squared_dist));
                         s.hit(damage, dx * inv_dist, dy * inv_dist, owner);
                     }

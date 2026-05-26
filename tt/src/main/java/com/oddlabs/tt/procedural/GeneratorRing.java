@@ -41,7 +41,8 @@ public final class GeneratorRing extends TextureGenerator {
             } else if (radius >= gradient_list[index_max][0]) {
                 value = gradient_list[index_max][1];
             } else {
-                float fraction = (radius - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index - 1][0]);
+                float fraction = (radius - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index
+                        - 1][0]);
                 value = Tools.interpolateLinear(gradient_list[index - 1][1], gradient_list[index][1], fraction);
             }
             channel.putPixel(i, 0, value);
@@ -57,9 +58,10 @@ public final class GeneratorRing extends TextureGenerator {
 
         // Ring only: Red channel for DecalShader
         Layer layer = new Layer(channel_ring.copy(), channel_black.copy(), channel_black.copy(), channel_white.copy());
-        
+
         Texture[] textures = new Texture[1];
-        textures[0] = new Texture(new GLImage[]{new GLIntImage(layer)}, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
+        textures[0] = new Texture(new GLImage[]{new GLIntImage(layer)}, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
+                GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
         return textures;
     }
 

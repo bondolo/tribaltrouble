@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 
 /**
  * Orchestrates the primary in-game experience, managing the world state, player interactions,
- * rendering, and the user interface for a single player. 
+ * rendering, and the user interface for a single player.
  * Coordinates camera state and audio listener updates for the game world.
  */
 public final class WorldViewer implements Animated, AutoCloseable {
@@ -79,7 +79,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final @NonNull AnimationManager animation_manager_local;
     private final @NonNull Cheat cheat;
 
-    public WorldViewer(@NonNull NetworkSelector network, final @NonNull GUIRoot gui_root, @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info, @NonNull WorldGenerator generator, PlayerSlot @NonNull [] player_slots, UnitInfo[] unit_infos, short player_slot, SessionID session_id) {
+    public WorldViewer(@NonNull NetworkSelector network, final @NonNull GUIRoot gui_root,
+            @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info, @NonNull WorldGenerator generator,
+            PlayerSlot @NonNull [] player_slots, UnitInfo[] unit_infos, short player_slot, SessionID session_id) {
         this.world_params = world_params;
         this.ingame_info = ingame_info;
         this.network = network;
@@ -98,7 +100,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         NotificationListener listener = new NotificationListener() {
             @Override
             public void gamespeedChanged(int speed) {
-                gui_root.getInfoPrinter().print(Utils.getBundleString(PeerHub.bundle, "changed_to_" + GAMESPEED_STRINGS[speed]));
+                gui_root.getInfoPrinter().print(Utils.getBundleString(PeerHub.bundle, "changed_to_"
+                        + GAMESPEED_STRINGS[speed]));
                 Globals.gamespeed = speed;
             }
 
@@ -106,7 +109,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
             public void playerGamespeedChanged() {
                 String result = Arrays.stream(world.getPlayers())
                         .filter(p -> World.isValidGamespeed(p.getPreferredGamespeed()))
-                        .map(p -> p.getPlayerInfo().getName() + ": " + ServerMessageBundler.getGamespeedString(p.getPreferredGamespeed()))
+                        .map(p -> p.getPlayerInfo().getName() + ": " + ServerMessageBundler.getGamespeedString(p
+                                .getPreferredGamespeed()))
                         .collect(Collectors.joining(", "));
                 if (!result.isEmpty() && isMultiplayer())
                     gui_root.getInfoPrinter().print(result);
@@ -139,22 +143,30 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
         };
         PlayerInfo[] player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toArray(PlayerInfo[]::new);
-        WorldInfo world_info = generator.generate(player_infos.length, world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
+        WorldInfo world_info = generator.generate(player_infos.length, world_params.getInitialUnitCount(), ingame_info
+                .getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
-        AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer.getAudioManager().newAudio(camera_state, x, y, z, params);
-        this.world = World.newWorld(audio, landscape_resources, races_resources, listener, world_params, world_info, player_infos);
+        AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
+                .getAudioManager().newAudio(camera_state, x, y, z, params);
+        this.world = World.newWorld(audio, landscape_resources, races_resources, listener, world_params, world_info,
+                player_infos);
         this.local_player = world.getPlayers()[player_slot];
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
-        this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer, selection);
-        this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker, selection, modelViewStack, projectionStack);
+        this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
+                selection);
+        this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker,
+                selection, modelViewStack, projectionStack);
         this.gui_root = gui_root;
-        this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(), local_player, player_slots, network, gui_root, notification_manager, distributable_table, session_id, new ViewerStallHandler(this));
+        this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
+                local_player, player_slots, network, gui_root, notification_manager, distributable_table, session_id,
+                new ViewerStallHandler(this));
         this.camera = new GameCamera(this, camera_state);
         this.panel = new ActionButtonPanel(this, camera);
         this.delegate = new SelectionDelegate(this, camera);
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
-        initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos, world_params.getInitialGameSpeed());
+        initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos, world_params
+                .getInitialGameSpeed());
         renderer.getEventQueue().getManager().registerAnimation(this);
     }
 
@@ -201,7 +213,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return local_player;
     }
 
-    private void initPlayer(@NonNull ResourceBundle bundle, float[] starting_location, @NonNull PlayerSlot slot, @NonNull Player player, @NonNull UnitInfo unit_info, int initial_gamespeed) {
+    private void initPlayer(@NonNull ResourceBundle bundle, float[] starting_location, @NonNull PlayerSlot slot,
+            @NonNull Player player, @NonNull UnitInfo unit_info, int initial_gamespeed) {
         if (slot.getType() == PlayerSlot.AI) {
             AI ai = switch (slot.getAIDifficulty()) {
                 case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_NORMAL);
@@ -224,23 +237,31 @@ public final class WorldViewer implements Animated, AutoCloseable {
             player.setPreferredGamespeed(initial_gamespeed);
             int i = 0;
             for (int j = 0; j < unit_info.numPeons(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
+                        .getUnitTemplate(Race.UNIT_PEON));
             }
             for (int j = 0; j < unit_info.numRockWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
+                        .getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
             }
             for (int j = 0; j < unit_info.numIronWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
+                        .getUnitTemplate(Race.UNIT_WARRIOR_IRON));
             }
             for (int j = 0; j < unit_info.numRubberWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
+                        .getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
             }
             if (unit_info.hasChieftain()) {
                 Unit chieftain;
                 if (player.getRace().getChieftainAI() instanceof VikingChieftainAI)
-                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle, "chieftain_name"), false);
+                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player
+                            .getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle,
+                                    "chieftain_name"), false);
                 else if (player.getRace().getChieftainAI() instanceof NativeChieftainAI)
-                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle, "native_chieftain_name"), false);
+                    chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player
+                            .getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle,
+                                    "native_chieftain_name"), false);
                 else
                     throw new IllegalStateException("Unknown chieftain AI: " + player.getRace().getChieftainAI());
                 chieftain.increaseMagicEnergy(0, 1000);
@@ -251,7 +272,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         }
     }
 
-    private void initPlayers(float[][] starting_locations, PlayerSlot @NonNull [] slots, Player[] players, UnitInfo[] unit_infos, int initial_gamespeed) {
+    private void initPlayers(float[][] starting_locations, PlayerSlot @NonNull [] slots, Player[] players,
+            UnitInfo[] unit_infos, int initial_gamespeed) {
         ResourceBundle bundle = ResourceBundle.getBundle(Player.class.getName());
         for (int i = 0; i < slots.length; i++) {
             initPlayer(bundle, starting_locations[i], slots[i], players[i], unit_infos[i], initial_gamespeed);

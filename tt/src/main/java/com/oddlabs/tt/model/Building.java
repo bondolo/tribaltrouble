@@ -41,26 +41,30 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private static final float REMOVE_DELAY = 1f / 10f;
     private static final AudioParameters COLLAPSE_AUDIO = new AudioParameters(
             Assets.SFX_BUILDING_CRASH, Assets.AUDIO_RANK_BUILDING_COLLAPSE,
-            Assets.AUDIO_DISTANCE_BUILDING_COLLAPSE, Assets.AUDIO_GAIN_BUILDING_COLLAPSE, Assets.AUDIO_RADIUS_BUILDING_COLLAPSE);
-    private static final @NonNull AudioParameters [] HITS_AUDIO =
-            Arrays.stream(Assets.SFX_IMPACT_WOODS)
-                    .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_WEAPON_HIT,
-                            Assets.AUDIO_DISTANCE_WEAPON_HIT, Assets.AUDIO_GAIN_WEAPON_HIT, Assets.AUDIO_RADIUS_WEAPON_HIT))
-                    .toArray(AudioParameters[]::new);
+            Assets.AUDIO_DISTANCE_BUILDING_COLLAPSE, Assets.AUDIO_GAIN_BUILDING_COLLAPSE,
+            Assets.AUDIO_RADIUS_BUILDING_COLLAPSE);
+    private static final @NonNull AudioParameters[] HITS_AUDIO = Arrays.stream(Assets.SFX_IMPACT_WOODS)
+            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_WEAPON_HIT,
+                    Assets.AUDIO_DISTANCE_WEAPON_HIT, Assets.AUDIO_GAIN_WEAPON_HIT, Assets.AUDIO_RADIUS_WEAPON_HIT))
+            .toArray(AudioParameters[]::new);
 
     private static final int PLACING_BORDER = 1;
     private static final int MAX_SUPPLY_COUNT = 200;
 
     @SuppressWarnings({"unchecked"})
-    public static final Cost COST_ROCK_WEAPON = new Cost(new Class[]{TreeSupply.class, RockSupply.class}, new int[]{2, 1});
+    public static final Cost COST_ROCK_WEAPON = new Cost(new Class[]{TreeSupply.class, RockSupply.class}, new int[]{2,
+            1});
     @SuppressWarnings({"unchecked"})
-    public static final Cost COST_IRON_WEAPON = new Cost(new Class[]{TreeSupply.class, IronSupply.class}, new int[]{2, 1});
+    public static final Cost COST_IRON_WEAPON = new Cost(new Class[]{TreeSupply.class, IronSupply.class}, new int[]{2,
+            1});
     @SuppressWarnings({"unchecked"})
-    public static final Cost COST_RUBBER_WEAPON = new Cost(new Class[]{TreeSupply.class, RockSupply.class, IronSupply.class, RubberSupply.class}, new int[]{2, 1, 1, 1});
+    public static final Cost COST_RUBBER_WEAPON = new Cost(new Class[]{TreeSupply.class, RockSupply.class,
+            IronSupply.class, RubberSupply.class}, new int[]{2, 1, 1, 1});
 
     private final Map<@NonNull Class<?>, @NonNull SupplyContainer> supply_containers = new HashMap<>();
     private final Map<@NonNull Class<?>, @NonNull BuildProductionContainer> build_containers = new HashMap<>();
-    private final Map<@NonNull DeployType, @NonNull DeployContainer> deploy_containers = new EnumMap<>(DeployType.class);
+    private final Map<@NonNull DeployType, @NonNull DeployContainer> deploy_containers = new EnumMap<>(
+            DeployType.class);
 
     private @Nullable ChieftainContainer chieftain_container = null;
     private @Nullable WeaponsProducer weapons_producer = null;
@@ -73,7 +77,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private boolean is_training_chieftain = false;
 
     public enum BuildState {
-        START, HALFBUILT, BUILT
+        START,
+        HALFBUILT,
+        BUILT
     }
 
     public Building(@NonNull Player owner, @NonNull BuildingTemplate template, int grid_x, int grid_y) {
@@ -84,9 +90,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         setPosition(x, y);
         pushController(new NullController(this));
 
-        addAccessory(new BuildingDamagedAccessory(this, getHitOffsetZ(), owner.getWorld().getRacesResources().getDamageSmokeTextures()));
+        addAccessory(new BuildingDamagedAccessory(this, getHitOffsetZ(), owner.getWorld().getRacesResources()
+                .getDamageSmokeTextures()));
 
-        addAccessory(new BuildingProductionAccessory(this, getTemplate().getChimney(), owner.getWorld().getRacesResources().getSmokeTextures()));
+        addAccessory(new BuildingProductionAccessory(this, getTemplate().getChimney(), owner.getWorld()
+                .getRacesResources().getSmokeTextures()));
     }
 
     public boolean hasRallyPoint() {
@@ -136,11 +144,13 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 float energy = 3f;
                 float fade_speed = 2.5f;
 
-                RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f,
+                RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(
+                        getPositionX(), getPositionY(), getPositionZ()), 0f,
                         getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
                         getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                         new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
-                        new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f, -fade_speed),
+                        new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f,
+                                -fade_speed),
                         new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                         getOwner().getWorld().getRacesResources().getWoodFragments());
                 new PointEmitterModel(getOwner().getWorld(), emitter);
@@ -184,7 +194,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     public boolean canExitTower() {
-        return !isDead() && getAbilities().hasAbilities(Abilities.ATTACK) && getUnitContainer().getNumSupplies() > 0 && getOwner().canExitTowers() &&
+        return !isDead() && getAbilities().hasAbilities(Abilities.ATTACK) && getUnitContainer().getNumSupplies() > 0
+                && getOwner().canExitTowers() &&
                 !(((MountUnitContainer) getUnitContainer()).getUnit().getCurrentController() instanceof StunController);
     }
 
@@ -231,7 +242,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     public boolean canBuildChieftain() {
-        return !isDead() && chieftain_container != null && getOwner().canBuildChieftains() && !getOwner().hasActiveChieftain() && !getOwner().isTrainingChieftain();
+        return !isDead() && chieftain_container != null && getOwner().canBuildChieftains() && !getOwner()
+                .hasActiveChieftain() && !getOwner().isTrainingChieftain();
     }
 
     public boolean canStopChieftain() {
@@ -322,6 +334,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private void adjustHitPoints(int amount) {
         setHitPoints(hit_points + amount);
     }
+
     private void setHitPoints(int new_hit_points) {
         hit_points = Math.clamp(new_hit_points, 0, getTemplate().getMaxHitPoints());
     }
@@ -371,7 +384,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                             this,
                             COST_IRON_WEAPON,
                             80f);
-                    BuildProductionContainer rubber_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
+                    BuildProductionContainer rubber_axe_weapon = new BuildProductionContainer(
+                            BuildSpinner.INFINITE_LIMIT,
                             rubber_weapon_container,
                             this,
                             COST_RUBBER_WEAPON,
@@ -379,22 +393,35 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                     build_containers.put(RockAxeWeapon.class, rock_axe_weapon);
                     build_containers.put(IronAxeWeapon.class, iron_axe_weapon);
                     build_containers.put(RubberAxeWeapon.class, rubber_axe_weapon);
-                    BuildProductionContainer[] production_containers = new BuildProductionContainer[]{rock_axe_weapon, iron_axe_weapon, rubber_axe_weapon};
+                    BuildProductionContainer[] production_containers = new BuildProductionContainer[]{rock_axe_weapon,
+                            iron_axe_weapon, rubber_axe_weapon};
 
-                    weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer(), production_containers);
+                    weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer(),
+                            production_containers);
 
-                    deploy_containers.put(DeployType.ROCK_WARRIOR, new DeployContainer(this, 1f, DeployType.ROCK_WARRIOR, RockAxeWeapon.class));
-                    deploy_containers.put(DeployType.IRON_WARRIOR, new DeployContainer(this, 1.5f, DeployType.IRON_WARRIOR, IronAxeWeapon.class));
-                    deploy_containers.put(DeployType.RUBBER_WARRIOR, new DeployContainer(this, 2f, DeployType.RUBBER_WARRIOR, RubberAxeWeapon.class));
+                    deploy_containers.put(DeployType.ROCK_WARRIOR, new DeployContainer(this, 1f,
+                            DeployType.ROCK_WARRIOR, RockAxeWeapon.class));
+                    deploy_containers.put(DeployType.IRON_WARRIOR, new DeployContainer(this, 1.5f,
+                            DeployType.IRON_WARRIOR, IronAxeWeapon.class));
+                    deploy_containers.put(DeployType.RUBBER_WARRIOR, new DeployContainer(this, 2f,
+                            DeployType.RUBBER_WARRIOR, RubberAxeWeapon.class));
                     deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
-                    deploy_containers.put(DeployType.PEON_HARVEST_TREE, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_TREE, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_TREE, new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_TREE, TreeSupply.class));
-                    deploy_containers.put(DeployType.PEON_HARVEST_ROCK, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_ROCK, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_ROCK, new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_ROCK, RockSupply.class));
-                    deploy_containers.put(DeployType.PEON_HARVEST_IRON, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_IRON, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_IRON, new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_IRON, IronSupply.class));
-                    deploy_containers.put(DeployType.PEON_HARVEST_RUBBER, new DeployContainer(this, .5f, DeployType.PEON_HARVEST_RUBBER, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_RUBBER, new DeployContainer(this, .5f, DeployType.PEON_TRANSPORT_RUBBER, RubberSupply.class));
+                    deploy_containers.put(DeployType.PEON_HARVEST_TREE, new DeployContainer(this, .5f,
+                            DeployType.PEON_HARVEST_TREE, null));
+                    deploy_containers.put(DeployType.PEON_TRANSPORT_TREE, new DeployContainer(this, .5f,
+                            DeployType.PEON_TRANSPORT_TREE, TreeSupply.class));
+                    deploy_containers.put(DeployType.PEON_HARVEST_ROCK, new DeployContainer(this, .5f,
+                            DeployType.PEON_HARVEST_ROCK, null));
+                    deploy_containers.put(DeployType.PEON_TRANSPORT_ROCK, new DeployContainer(this, .5f,
+                            DeployType.PEON_TRANSPORT_ROCK, RockSupply.class));
+                    deploy_containers.put(DeployType.PEON_HARVEST_IRON, new DeployContainer(this, .5f,
+                            DeployType.PEON_HARVEST_IRON, null));
+                    deploy_containers.put(DeployType.PEON_TRANSPORT_IRON, new DeployContainer(this, .5f,
+                            DeployType.PEON_TRANSPORT_IRON, IronSupply.class));
+                    deploy_containers.put(DeployType.PEON_HARVEST_RUBBER, new DeployContainer(this, .5f,
+                            DeployType.PEON_HARVEST_RUBBER, null));
+                    deploy_containers.put(DeployType.PEON_TRANSPORT_RUBBER, new DeployContainer(this, .5f,
+                            DeployType.PEON_TRANSPORT_RUBBER, RubberSupply.class));
                 } else if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
                     chieftain_container = new ChieftainContainer(this);
                     deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
@@ -403,13 +430,15 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
     }
 
-    public static boolean isPlacingLegal(@NonNull UnitGrid unit_grid, @NonNull BuildingTemplate template, int grid_x, int grid_y) {
+    public static boolean isPlacingLegal(@NonNull UnitGrid unit_grid, @NonNull BuildingTemplate template, int grid_x,
+            int grid_y) {
         return doIsPlacingLegal(unit_grid, grid_x, grid_y, template.getPlacingSize());
     }
 
     public boolean isPlacingLegal() {
         return !isDead() && getOwner().canBuild(getTemplate().getTemplateID()) &&
-                doIsPlacingLegal(getUnitGrid(), getGridX(), getGridY(), getTemplate().getPlacingSize() - PLACING_BORDER);
+                doIsPlacingLegal(getUnitGrid(), getGridX(), getGridY(), getTemplate().getPlacingSize()
+                        - PLACING_BORDER);
     }
 
     public boolean isPlaced() {
@@ -435,7 +464,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 int current_grid_x = grid_x + x - (size - 1);
                 int current_grid_y = grid_y + y - (size - 1);
                 if (current_grid_x >= unit_grid.getGridSize() || current_grid_y >= unit_grid.getGridSize() ||
-                        current_grid_x < 0 || current_grid_y < 0 || unit_grid.isGridOccupied(current_grid_x, current_grid_y))
+                        current_grid_x < 0 || current_grid_y < 0 || unit_grid.isGridOccupied(current_grid_x,
+                                current_grid_y))
                     return false;
             }
         }
@@ -447,8 +477,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return getAbilities().hasAbilities(Abilities.ATTACK)
                 ? AttackScanFilter.Priority.TOWER
                 : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
-                  ? AttackScanFilter.Priority.ARMORY
-                  : AttackScanFilter.Priority.QUARTERS;
+                        ? AttackScanFilter.Priority.ARMORY
+                : AttackScanFilter.Priority.QUARTERS;
     }
 
     @Override
@@ -493,7 +523,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @Override
     protected void removeDying() {
 
-        RandomVelocityEmitter collapse_emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f, 0f,
+        RandomVelocityEmitter collapse_emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(
+                getPositionX(), getPositionY(), getPositionZ()), 0f, 0f,
                 getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 1f, 1f,
                 30, 400f,
                 new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
@@ -501,13 +532,15 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 getOwner().getWorld().getRacesResources().getSmokeTextures());
-        new PointEmitterModel(getOwner().getWorld(), collapse_emitter, getOwner().getWorld().getAnimationManagerRealTime());
+        new PointEmitterModel(getOwner().getWorld(), collapse_emitter, getOwner().getWorld()
+                .getAnimationManagerRealTime());
 
         {
             float energy = 3f;
             float fade_speed = 2.5f;
 
-            RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(getPositionX(), getPositionY(), getPositionZ()), 0f,
+            RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(
+                    getPositionX(), getPositionY(), getPositionZ()), 0f,
                     getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
                     getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
@@ -561,7 +594,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return build_points == max_points
                 ? BuildState.BUILT
                 : (float) build_points / max_points < .5
-                  ? BuildState.START : BuildState.HALFBUILT;
+                        ? BuildState.START : BuildState.HALFBUILT;
     }
 
     @Override
@@ -582,7 +615,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         old_landscape_heights = new float[height_points][height_points];
         for (int y = 0; y < height_points; y++) {
             for (int x = 0; x < height_points; x++) {
-                float old_height = getOwner().getWorld().getHeightMap().getWrappedHeight(offset_x + x + PLACING_BORDER, offset_y + y + PLACING_BORDER);
+                float old_height = getOwner().getWorld().getHeightMap().getWrappedHeight(offset_x + x + PLACING_BORDER,
+                        offset_y + y + PLACING_BORDER);
                 old_landscape_heights[y][x] = old_height;
                 total_height += old_height;
             }
@@ -591,7 +625,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         float new_height = total_height / (height_points * height_points);
         for (int y = 0; y < height_points; y++) {
             for (int x = 0; x < height_points; x++) {
-                getOwner().getWorld().getHeightMap().editHeight(offset_x + x + PLACING_BORDER, offset_y + y + PLACING_BORDER, new_height);
+                getOwner().getWorld().getHeightMap().editHeight(offset_x + x + PLACING_BORDER, offset_y + y
+                        + PLACING_BORDER, new_height);
             }
         }
     }
@@ -602,7 +637,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         int offset_y = getGridY() - (size - 1);
         for (int y = 0; y < old_landscape_heights.length; y++) {
             for (int x = 0; x < old_landscape_heights[y].length; x++) {
-                getOwner().getWorld().getHeightMap().editHeight(offset_x + x + PLACING_BORDER, offset_y + y + PLACING_BORDER, old_landscape_heights[y][x]);
+                getOwner().getWorld().getHeightMap().editHeight(offset_x + x + PLACING_BORDER, offset_y + y
+                        + PLACING_BORDER, old_landscape_heights[y][x]);
             }
         }
     }
@@ -635,9 +671,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     public void hit(int damage, float dir_x, float dir_y, @NonNull Player owner) {
         super.hit(damage, dir_x, dir_y, owner);
         if (!isDead()) {
-            adjustHitPoints(- damage);
+            adjustHitPoints(-damage);
             World world = getOwner().getWorld();
-            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), HITS_AUDIO[world.getRandom().nextInt(HITS_AUDIO.length)]);
+            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), HITS_AUDIO[world.getRandom()
+                    .nextInt(HITS_AUDIO.length)]);
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();
@@ -673,11 +710,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return getAbilities().hasAbilities(Abilities.REPRODUCE)
                 ? getUnitContainer().getNumSupplies()
                 : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
-                  ? getUnitContainer().getNumSupplies() +
-                getSupplyContainer(RockAxeWeapon.class).getNumSupplies() +
-                    getSupplyContainer(IronAxeWeapon.class).getNumSupplies() * 3 +
-                    getSupplyContainer(RubberAxeWeapon.class).getNumSupplies() * 8
-                  : 0;
+                        ? getUnitContainer().getNumSupplies() +
+                                getSupplyContainer(RockAxeWeapon.class).getNumSupplies() +
+                                getSupplyContainer(IronAxeWeapon.class).getNumSupplies() * 3 +
+                                getSupplyContainer(RubberAxeWeapon.class).getNumSupplies() * 8
+                : 0;
     }
 
     public void printDebugInfo() {

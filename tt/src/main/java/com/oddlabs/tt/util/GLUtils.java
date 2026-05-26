@@ -25,7 +25,8 @@ public final class GLUtils {
             do {
                 filename = SCREENSHOT_DEFAULT + "000000";
                 String number = "" + i;
-                filename = System.getProperty("user.home") + File.separator + filename.substring(0, filename.length() - number.length()) + number + ".bmp";
+                filename = System.getProperty("user.home") + File.separator + filename.substring(0, filename.length()
+                        - number.length()) + number + ".bmp";
                 file = new File(filename);
                 i++;
             } while (file.exists());
@@ -38,7 +39,8 @@ public final class GLUtils {
             int width = int_buf.get(2) - int_buf.get(0);
             int height = int_buf.get(3) - int_buf.get(1);
             GLImage pixel_data = new GLIntImage(width, height, GL11.GL_RGBA);
-            GL11.glReadPixels(int_buf.get(0), int_buf.get(1), int_buf.get(2), int_buf.get(3), pixel_data.getGLFormat(), pixel_data.getGLType(), pixel_data.getPixels());
+            GL11.glReadPixels(int_buf.get(0), int_buf.get(1), int_buf.get(2), int_buf.get(3), pixel_data.getGLFormat(),
+                    pixel_data.getGLType(), pixel_data.getPixels());
             com.oddlabs.util.Utils.flip(pixel_data.getPixels(), width * 4, height);
             pixel_data.saveAsBMP(filename);
         }
@@ -53,7 +55,8 @@ public final class GLUtils {
             GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, mipmap_level, GL11.GL_TEXTURE_HEIGHT, int_buf);
             int height = int_buf.get(0);
             GLImage pixel_data = new GLIntImage(width, height, GL11.GL_RGBA);
-            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, mipmap_level, pixel_data.getGLFormat(), pixel_data.getGLType(), pixel_data.getPixels());
+            GL11.glGetTexImage(GL11.GL_TEXTURE_2D, mipmap_level, pixel_data.getGLFormat(), pixel_data.getGLType(),
+                    pixel_data.getPixels());
             //		swizzleColors(pixel_data.getPixels());
             com.oddlabs.util.Utils.flip(pixel_data.getPixels(), width * 4, height);
             pixel_data.saveAsPNG(filename);
@@ -71,7 +74,8 @@ public final class GLUtils {
         if (DEBUG) {
             int error;
             while ((error = GL11.glGetError()) != GL11.GL_NO_ERROR) {
-                logger.log(Level.WARNING, "OpenGL Error (" + message + "): " + errorToString(error), new Throwable("stacktrace"));
+                logger.log(Level.WARNING, "OpenGL Error (" + message + "): " + errorToString(error), new Throwable(
+                        "stacktrace"));
                 if (errors == null) errors = new ArrayList<>();
                 errors.add(error);
             }

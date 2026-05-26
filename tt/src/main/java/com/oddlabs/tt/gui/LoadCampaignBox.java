@@ -19,7 +19,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class LoadCampaignBox extends GUIObject implements DeterministicSerializerLoopbackInterface<CampaignState[]> {
+public final class LoadCampaignBox extends GUIObject implements DeterministicSerializerLoopbackInterface<
+        CampaignState[]> {
     private static final Logger logger = Logger.getLogger(LoadCampaignBox.class.getSimpleName());
     public static final Path SAVEGAMES_FILE_NAME = Path.of("savegames");
 
@@ -32,7 +33,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     private final @NonNull GUIRoot gui_root;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -52,8 +53,10 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         refresh();
     }
 
-    public static <T> void saveSavegames(@NonNull CampaignState @NonNull [] states, @NonNull DeterministicSerializerLoopbackInterface<T> callback) {
-        DeterministicSerializer.save(Renderer.getRenderer().getEventQueue().getDeterministic(), states, getSaveSavegamesFile(), callback);
+    public static <T> void saveSavegames(@NonNull CampaignState @NonNull [] states,
+            @NonNull DeterministicSerializerLoopbackInterface<T> callback) {
+        DeterministicSerializer.save(Renderer.getRenderer().getEventQueue().getDeterministic(), states,
+                getSaveSavegamesFile(), callback);
     }
 
     private static @NonNull Path getSaveSavegamesFile() {
@@ -61,7 +64,8 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     }
 
     public static <T> void loadSavegames(@NonNull DeterministicSerializerLoopbackInterface<T> callback) {
-        DeterministicSerializer.load(Renderer.getRenderer().getEventQueue().getDeterministic(), getLoadSavegamesFile(), callback);
+        DeterministicSerializer.load(Renderer.getRenderer().getEventQueue().getDeterministic(), getLoadSavegamesFile(),
+                callback);
     }
 
     private static @NonNull Path getLoadSavegamesFile() {
@@ -99,10 +103,12 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
             };
             Row<CampaignState, Label> row = new Row<>(
                     new Label[]{
-                            new Label(campaign_state.getName(), Skin.getSkin().getMultiColumnComboBoxData().font(), WIDTH_NAME - box.getLeftOffset() - 1),
+                            new Label(campaign_state.getName(), Skin.getSkin().getMultiColumnComboBoxData().font(),
+                                    WIDTH_NAME - box.getLeftOffset() - 1),
                             new Label(race, Skin.getSkin().getMultiColumnComboBoxData().font(), WIDTH_RACE),
                             new Label(difficulty, Skin.getSkin().getMultiColumnComboBoxData().font(), WIDTH_DIFFICULTY),
-                            new DateLabel(campaign_state.getDate(), Skin.getSkin().getMultiColumnComboBoxData().font(), WIDTH_DATE - box.getRightOffset() + 1)
+                            new DateLabel(campaign_state.getDate(), Skin.getSkin().getMultiColumnComboBoxData().font(),
+                                    WIDTH_DATE - box.getRightOffset() + 1)
                     }, campaign_state);
             list_box.addRow(row);
         }

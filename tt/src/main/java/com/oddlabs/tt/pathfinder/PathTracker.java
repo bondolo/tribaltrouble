@@ -7,9 +7,8 @@ import com.oddlabs.tt.util.DebugRender;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-/// Tracks and manages unit pathfinding through the game world.
-/// Combines high-level region pathfinding with low-level grid navigation
-/// and smooth Bézier curve movement.
+/// Tracks and manages unit pathfinding through the game world. Combines high-level region pathfinding with low-level
+/// grid navigation and smooth Bézier curve movement.
 ///
 /// Debug visualization (`UNIT_GRID` mode) shows:
 /// * Red line: Grid-based path (step-by-step navigation)
@@ -17,15 +16,18 @@ import org.jspecify.annotations.Nullable;
 /// * White line: Bézier curve (smooth movement)
 public final class PathTracker {
     public enum State {
-        OK, OK_INTERRUPTIBLE, DONE, SOFTBLOCKED, BLOCKED
+        OK,
+        OK_INTERRUPTIBLE,
+        DONE,
+        SOFTBLOCKED,
+        BLOCKED
     }
 
     private static final int REGION_SEARCH_TRIES = 4;
 
     private final BezierPath bezier_path = new BezierPath();
     private final @NonNull UnitGrid unit_grid;
-    private @NonNull
-    final Movable unit;
+    private @NonNull final Movable unit;
 
     private @Nullable RegionNode region_path;
     private @Nullable Region target_region;
@@ -111,7 +113,8 @@ public final class PathTracker {
     private @Nullable PathTracker getNextDeadlocked() {
         Occupant occupant = getNextOccupantUnchecked();
         if (occupant != unit && occupant instanceof Movable next) {
-            if (next.isMoving() && (next.getTracker().state == State.SOFTBLOCKED || next.getTracker().state == State.BLOCKED)) {
+            if (next.isMoving() && (next.getTracker().state == State.SOFTBLOCKED || next.getTracker().state
+                    == State.BLOCKED)) {
                 return next.getTracker();
             }
         }
@@ -210,7 +213,8 @@ public final class PathTracker {
             region_path = null;
     }
 
-    private @Nullable GridPathNode findPathToNextRegion(int src_x, int src_y, @Nullable RegionNode next_region_node, boolean allow_secondary_targets) {
+    private @Nullable GridPathNode findPathToNextRegion(int src_x, int src_y, @Nullable RegionNode next_region_node,
+            boolean allow_secondary_targets) {
         Region next_region = null;
         Region next_next_region;
         if (next_region_node != null) {
@@ -220,7 +224,8 @@ public final class PathTracker {
                 next_next_region = next_next_region_node.getRegion();
                 int region_x = next_next_region.getGridX();
                 int region_y = next_next_region.getGridY();
-                return PathFinder.findPathGrid(unit_grid, next_region, next_next_region, src_x, src_y, region_x, region_y, null, 0, allow_secondary_targets);
+                return PathFinder.findPathGrid(unit_grid, next_region, next_next_region, src_x, src_y, region_x,
+                        region_y, null, 0, allow_secondary_targets);
             }
         }
         return tracker_algorithm.findPathGrid(target_region, next_region, src_x, src_y, allow_secondary_targets);

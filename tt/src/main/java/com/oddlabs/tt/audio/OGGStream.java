@@ -89,7 +89,8 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
      * @return The number of short values written to the buffer.
      */
     public int read(@NonNull ShortBuffer buffer) {
-        assert buffer.position() == 0 && buffer.hasRemaining() : "Buffer must have remaining space and be at position 0";
+        assert buffer.position() == 0 && buffer.hasRemaining()
+                : "Buffer must have remaining space and be at position 0";
         int samplesPerChannelRequest = buffer.remaining() / state.channels;
         int samplesRead = STBVorbis.stb_vorbis_get_samples_short_interleaved(state.decoder, state.channels, buffer);
         buffer.position(samplesRead * state.channels);

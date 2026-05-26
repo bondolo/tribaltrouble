@@ -27,14 +27,15 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
     private final MainMenu main_menu;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(MatchmakingConnectingForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final GUIRoot gui_root;
     private final @NonNull NetworkSelector network;
 
-    public MatchmakingConnectingForm(@NonNull NetworkSelector network, GUIRoot gui_root, Form parent_form, MainMenu main_menu, Login login, LoginDetails login_details) {
+    public MatchmakingConnectingForm(@NonNull NetworkSelector network, GUIRoot gui_root, Form parent_form,
+            MainMenu main_menu, Login login, LoginDetails login_details) {
         this.parent_form = parent_form;
         this.main_menu = main_menu;
         this.gui_root = gui_root;
@@ -103,7 +104,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
             case MatchmakingClientInterface.USER_ERROR_INVALID_EMAIL -> i18n("user_error_invalid_email");
             case MatchmakingClientInterface.USERNAME_ERROR_ALREADY_EXISTS -> i18n("username_error_already_exists");
             case MatchmakingClientInterface.USERNAME_ERROR_INVALID_CHARACTERS ->
-                    i18n("username_error_invalid_characters");
+                i18n("username_error_invalid_characters");
             case MatchmakingClientInterface.USERNAME_ERROR_TOO_LONG -> i18n("username_error_too_long");
             case MatchmakingClientInterface.USERNAME_ERROR_TOO_SHORT -> i18n("username_error_too_short");
             default -> throw new IllegalArgumentException("Unknown error code: " + error_code);

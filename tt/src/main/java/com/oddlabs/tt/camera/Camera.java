@@ -134,7 +134,8 @@ public abstract class Camera implements Animated {
         return bounced;
     }
 
-    private void unproject(float winx, float winy, float winz, @NonNull Matrix4f model, @NonNull Matrix4f proj, int[] viewport) {
+    private void unproject(float winx, float winy, float winz, @NonNull Matrix4f model, @NonNull Matrix4f proj,
+            int[] viewport) {
         proj.mul(model);
         proj.unproject(winx, winy, winz, viewport, hit_result);
     }

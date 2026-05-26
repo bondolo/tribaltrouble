@@ -63,7 +63,9 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
         Box edit_box = Skin.getSkin().getEditBox();
         renderBox(renderer, ModeIconQuads.Mode.NORMAL);
-        TextLineRenderer.render(renderer, textLayout, edit_box.getLeftOffset(), getHeight() - edit_box.getBottomOffset() - getFont().getHeight() + offset_y, edit_box.getLeftOffset(), getWidth() - edit_box.getRightOffset(), Color.Standard.WHITE);
+        TextLineRenderer.render(renderer, textLayout, edit_box.getLeftOffset(), getHeight() - edit_box.getBottomOffset()
+                - getFont().getHeight() + offset_y, edit_box.getLeftOffset(), getWidth() - edit_box.getRightOffset(),
+                Color.Standard.WHITE);
     }
 
     @Override
@@ -76,7 +78,8 @@ public class TextBox extends TextField implements Scrollable, Clipped {
         offset_y = Math.max(new_offset, 0);
 
         Box edit_box = Skin.getSkin().getEditBox();
-        int max_offset_y = Math.max(0, textLayout.getTextHeight() - (getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset()));
+        int max_offset_y = Math.max(0, textLayout.getTextHeight() - (getHeight() - edit_box.getBottomOffset() - edit_box
+                .getTopOffset()));
         offset_y = Math.min(offset_y, max_offset_y);
         scroll_bar.update();
     }

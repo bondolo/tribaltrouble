@@ -21,8 +21,8 @@ public final class Diode extends GUIObject {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : lit
-                  ? ModeIconQuads.Mode.ACTIVE
-                  : ModeIconQuads.Mode.NORMAL;
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
 
         renderer.drawModeIcon(Skin.getSkin().getDiode(), skinMode, 0, 0);
     }

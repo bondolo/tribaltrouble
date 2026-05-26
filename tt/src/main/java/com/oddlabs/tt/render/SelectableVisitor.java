@@ -30,7 +30,8 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
     public final @NonNull Color getSelectionColor(@NonNull ElementRenderState<S> render_state) {
         Player local_player = render_state.render_state.getLocalPlayer();
         S model = render_state.getModel();
-        return model.getSelectionColor(local_player, render_state.render_state.isSelected(model), render_state.render_state.isHovered(model));
+        return model.getSelectionColor(local_player, render_state.render_state.isSelected(model),
+                render_state.render_state.isHovered(model));
     }
 
     @Override

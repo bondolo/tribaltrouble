@@ -29,7 +29,8 @@ public class WeaponsProducer {
     private boolean producing;
     private @Nullable AudioPlayer production_player;
 
-    public WeaponsProducer(@NonNull Building building, @NonNull WorkerUnitContainer unit_container, @NonNull BuildProductionContainer @NonNull [] production_containers) {
+    public WeaponsProducer(@NonNull Building building, @NonNull WorkerUnitContainer unit_container,
+            @NonNull BuildProductionContainer @NonNull [] production_containers) {
         this.building = building;
         this.unit_container = unit_container;
         this.production_containers = production_containers;
@@ -70,7 +71,8 @@ public class WeaponsProducer {
 
     private void startSound() {
         if (production_player == null) {
-            production_player = building.getOwner().getWorld().getAudio().newAudio(building.getPositionX(), building.getPositionY(), building.getPositionZ(), PRODUCTION_AUDIO);
+            production_player = building.getOwner().getWorld().getAudio().newAudio(building.getPositionX(), building
+                    .getPositionY(), building.getPositionZ(), PRODUCTION_AUDIO);
         }
     }
 

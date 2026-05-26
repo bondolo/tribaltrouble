@@ -25,7 +25,8 @@ public interface AudioSource extends AutoCloseable {
     /**
      * {@return the current state of the source}
      */
-    @NonNull State getState();
+    @NonNull
+    State getState();
 
     /**
      * Sets the audio associated with this audio source.
@@ -141,7 +142,8 @@ public interface AudioSource extends AutoCloseable {
      *
      * @return The position (x, y, z).
      */
-    @NonNull Vector3f getPosition();
+    @NonNull
+    Vector3f getPosition();
 
     /**
      * Gets the priority rank of the audio source.
@@ -155,7 +157,8 @@ public interface AudioSource extends AutoCloseable {
      *
      * @return The associated AbstractAudioPlayer.
      */
-    @Nullable AudioPlayer getAudioPlayer();
+    @Nullable
+    AudioPlayer getAudioPlayer();
 
     /**
      * Associates an audio player with this source.

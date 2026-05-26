@@ -47,7 +47,8 @@ public class LanguagePanel extends Panel {
         }
 
         Row<Locale, IconLabel> selectedLanguage = null;
-        IconLabel label = new IconLabel(Skin.getSkin().getFlagDefault(), new Label(AbstractOptionsMenu.i18n("system_default"), Skin.getSkin().getMultiColumnComboBoxData().font()));
+        IconLabel label = new IconLabel(Skin.getSkin().getFlagDefault(), new Label(AbstractOptionsMenu.i18n(
+                "system_default"), Skin.getSkin().getMultiColumnComboBoxData().font()));
         Row<Locale, IconLabel> row = new Row<>(new IconLabel[]{label}, Renderer.getRenderer().getDefaultLocale());
         language_list_box.addRow(row);
         if (Renderer.getRenderer().getSettings().language.equals("default"))
@@ -55,7 +56,8 @@ public class LanguagePanel extends Panel {
         String[][] languages = Languages.getLanguages();
         IconQuad[] flags = Languages.getFlags();
         for (int i = 0; i < languages.length; i++) {
-            label = new IconLabel(flags[i], new Label(languages[i][1], Skin.getSkin().getMultiColumnComboBoxData().font()));
+            label = new IconLabel(flags[i], new Label(languages[i][1], Skin.getSkin().getMultiColumnComboBoxData()
+                    .font()));
             row = new Row<>(new IconLabel[]{label}, Locale.of(languages[i][0]));
             language_list_box.addRow(row);
             if (languages[i][0].equals(Renderer.getRenderer().getSettings().language))
@@ -66,7 +68,8 @@ public class LanguagePanel extends Panel {
         language_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(@NonNull Locale locale) {
-                Renderer.getRenderer().getSettings().language = locale.getVariant().equals("default") ? "default" : locale.getLanguage();
+                Renderer.getRenderer().getSettings().language = locale.getVariant().equals("default") ? "default"
+                        : locale.getLanguage();
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("language_change_next_run")));
             }
         });

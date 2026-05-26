@@ -131,7 +131,8 @@ public final class LocalInput implements AutoCloseable {
     }
 
     public boolean audioIsCreated() {
-        return Renderer.getRenderer().getEventQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager() != null);
+        return Renderer.getRenderer().getEventQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager()
+                != null);
     }
 
     public @Nullable Path getGameDir() {
@@ -146,7 +147,8 @@ public final class LocalInput implements AutoCloseable {
         setSettings(game_dir, event_log_dir, revision, settings);
     }
 
-    public void setSettings(@NonNull Path game_dir, @NonNull Path event_log_dir, int revision, @NonNull Settings settings) {
+    public void setSettings(@NonNull Path game_dir, @NonNull Path event_log_dir, int revision,
+            @NonNull Settings settings) {
         logger.config("revision = " + revision);
         this.game_dir = game_dir;
         this.revision = revision;

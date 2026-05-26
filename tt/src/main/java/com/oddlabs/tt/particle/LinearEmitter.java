@@ -38,14 +38,15 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private float energy;
 
     protected LinearEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
-                            float emitter_radius, float emitter_height,
-                            int num_particles, float particles_per_second,
-                            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                            @NonNull Color color, @NonNull Color delta_color,
-                            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
-                            int src_blend_func, int dst_blend_func,
-                            @NonNull TextureKey @NonNull [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers, int types) {
-        super(world, position, src_blend_func, dst_blend_func, textures, sprite_renderers, types, num_particles, particles_per_second);
+            float emitter_radius, float emitter_height,
+            int num_particles, float particles_per_second,
+            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
+            int src_blend_func, int dst_blend_func,
+            @NonNull TextureKey @NonNull [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers, int types) {
+        super(world, position, src_blend_func, dst_blend_func, textures, sprite_renderers, types, num_particles,
+                particles_per_second);
         this.offset_z = offset_z;
         this.emitter_radius = emitter_radius;
         this.emitter_height = emitter_height;
@@ -97,7 +98,8 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
                 float landscape_z = getWorld().getHeightMap().getNearestHeight(x, y);
                 if (z < landscape_z + particle.getRadiusZ() + offset_z) {
                     particle.setPos(x, y, landscape_z + particle.getRadiusZ() + offset_z);
-                    particle.setVelocity(particle.getVelocityX() * friction, particle.getVelocityY() * friction, -particle.getVelocityZ() * friction);
+                    particle.setVelocity(particle.getVelocityX() * friction, particle.getVelocityY() * friction,
+                            -particle.getVelocityZ() * friction);
                 }
 
                 x = particle.getPosX();
@@ -126,16 +128,17 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {
-            initiated += initParticle(getPosition(), velocity, acceleration, color, delta_color, particle_radius, growth_rate, energy);
+            initiated += initParticle(getPosition(), velocity, acceleration, color, delta_color, particle_radius,
+                    growth_rate, energy);
         }
         return initiated;
     }
 
     protected abstract int initParticle(@NonNull Vector3f position,
-                                        @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                                        @NonNull Color color, @NonNull Color delta_color,
-                                        @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
-                                        float energy);
+            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
+            float energy);
 
     protected final @NonNull Vector3f randomPosition() {
         float r = emitter_radius * (float) (1 - random.nextGaussian());

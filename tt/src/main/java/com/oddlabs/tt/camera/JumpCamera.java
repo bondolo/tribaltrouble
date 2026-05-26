@@ -6,7 +6,7 @@ import org.joml.Vector2fc;
 import org.jspecify.annotations.NonNull;
 
 /**
- * A specialized camera that performs a transition jump from one camera 
+ * A specialized camera that performs a transition jump from one camera
  * state to another, typically used for cinematic or focal transitions.
  */
 public final class JumpCamera extends Camera {
@@ -31,7 +31,8 @@ public final class JumpCamera extends Camera {
         this(delegate, old_camera, x, y, DEFAULT_METERS_PER_SECOND, DEFAULT_MAX_SECONDS);
     }
 
-    public JumpCamera(@NonNull JumpDelegate delegate, @NonNull GameCamera old_camera, float x, float y, float meters_per_second, float max_seconds) {
+    public JumpCamera(@NonNull JumpDelegate delegate, @NonNull GameCamera old_camera, float x, float y,
+            float meters_per_second, float max_seconds) {
         super(old_camera.getHeightMap(), old_camera.getState());
         this.delegate = delegate;
         delegate.getViewer().getPicker().pickRotate(old_camera);
@@ -40,7 +41,8 @@ public final class JumpCamera extends Camera {
         float dx_to_landscape = target.x() - getState().getTargetX();
         float dy_to_landscape = target.y() - getState().getTargetY();
         float dz_to_landscape = target_z - getState().getTargetZ();
-        float distance_to_landscape = (float) Math.sqrt(dx_to_landscape * dx_to_landscape + dy_to_landscape * dy_to_landscape + dz_to_landscape * dz_to_landscape);
+        float distance_to_landscape = (float) Math.sqrt(dx_to_landscape * dx_to_landscape + dy_to_landscape
+                * dy_to_landscape + dz_to_landscape * dz_to_landscape);
 
         float dir_x = dx_to_landscape / distance_to_landscape;
         float dir_y = dy_to_landscape / distance_to_landscape;
@@ -76,6 +78,7 @@ public final class JumpCamera extends Camera {
         temp_z += z_speed * t;
         getState().setTargetZ(temp_z);
         z_speed += z_accel * t;
-        bounce(getState().getTargetX(), getState().getTargetY(), getState().getTargetZ(), delegate.getGUIRoot().getWidth(), delegate.getGUIRoot().getHeight());
+        bounce(getState().getTargetX(), getState().getTargetY(), getState().getTargetZ(), delegate.getGUIRoot()
+                .getWidth(), delegate.getGUIRoot().getHeight());
     }
 }

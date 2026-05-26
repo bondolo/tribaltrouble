@@ -27,7 +27,7 @@ public final class ChatCommand {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ChatCommand.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -35,7 +35,8 @@ public final class ChatCommand {
         return filterCommand(info_printer, Collections.emptyMap(), text);
     }
 
-    public static boolean filterCommand(@NonNull InfoPrinter info_printer, @NonNull Map<String, ChatMethod> custom_commands, @NonNull String text) {
+    public static boolean filterCommand(@NonNull InfoPrinter info_printer, @NonNull Map<String,
+            ChatMethod> custom_commands, @NonNull String text) {
         if (!text.startsWith("/"))
             return false;
         int fist_space = firstSpace(text);
@@ -63,7 +64,8 @@ public final class ChatCommand {
         if (!Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
             info_printer.print(i18n("not_connected"));
         else
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().sendPrivateMessage(info_printer.getGUIRoot(), nick, message);
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().sendPrivateMessage(info_printer.getGUIRoot(),
+                    nick, message);
     }
 
     private static void getInfo(@NonNull InfoPrinter info_printer, @NonNull String text) {

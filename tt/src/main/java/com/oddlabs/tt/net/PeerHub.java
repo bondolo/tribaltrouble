@@ -37,7 +37,7 @@ public final class PeerHub implements Animated, RouterHandler {
     private static final String ROUTER_ADDRESS = "127.0.0.1";
     public static final ResourceBundle bundle = ResourceBundle.getBundle(PeerHub.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -77,7 +77,10 @@ public final class PeerHub implements Animated, RouterHandler {
 
 //private int ignore_peer = -1;
 
-    public PeerHub(@NonNull AnimationManager manager, boolean is_multiplayer, boolean is_rated, @NonNull Player local_player, PlayerSlot[] player_slots, @NonNull NetworkSelector network, GUIRoot gui_root, NotificationManager notification_manager, DistributableTable distributable_table, SessionID session_id, StallHandler stall_handler) {
+    public PeerHub(@NonNull AnimationManager manager, boolean is_multiplayer, boolean is_rated,
+            @NonNull Player local_player, PlayerSlot[] player_slots, @NonNull NetworkSelector network, GUIRoot gui_root,
+            NotificationManager notification_manager, DistributableTable distributable_table, SessionID session_id,
+            StallHandler stall_handler) {
         this.stall_handler = stall_handler;
         this.is_rated = is_rated;
         this.local_player = local_player;
@@ -91,10 +94,11 @@ public final class PeerHub implements Animated, RouterHandler {
         Player[] players = local_player.getWorld().getPlayers();
         int local_peer_index = -1;
         if (!is_multiplayer) {
-            this.router = new Router(network, com.oddlabs.util.Utils.getLoopbackAddress(), 0, Logger.getAnonymousLogger(), (IOException e) -> {
-                //					PeerHub.this.routerFailed(e);
-                throw new IllegalStateException("Local router failed", e);
-            });
+            this.router = new Router(network, com.oddlabs.util.Utils.getLoopbackAddress(), 0, Logger
+                    .getAnonymousLogger(), (IOException e) -> {
+                        //					PeerHub.this.routerFailed(e);
+                        throw new IllegalStateException("Local router failed", e);
+                    });
             this.router_client = new RouterClient(network, this, router.getPort());
         } else {
             this.router = null;
@@ -108,8 +112,10 @@ public final class PeerHub implements Animated, RouterHandler {
             }
             IO.println("index " + i + " contains player " + player);
             final int peer_index = peer_index_to_peer_list.size();
-            ARMIEventWriter router_handler = (ARMIEvent event) -> router_client.getInterface().relayEventTo(peer_index, event);
-            PeerHubInterface peer_interface = (PeerHubInterface) ARMIEvent.createProxy(router_handler, PeerHubInterface.class);
+            ARMIEventWriter router_handler = (ARMIEvent event) -> router_client.getInterface().relayEventTo(peer_index,
+                    event);
+            PeerHubInterface peer_interface = (PeerHubInterface) ARMIEvent.createProxy(router_handler,
+                    PeerHubInterface.class);
             Peer peer = new Peer(this, peer_index, player, argument_reader, peer_interface);
             ARMIEventWriter peer_broker;
             if (player == local_player) {
@@ -123,11 +129,13 @@ public final class PeerHub implements Animated, RouterHandler {
         peer_index_to_peer_list.toArray(peer_index_to_peer);
         this.num_participants = peer_index_to_peer.length;
         ARMIEventWriter game_router_handler = router_client.getInterface()::relayGameStateEvent;
-        this.player_interface = (PlayerInterface) ARMIEvent.createProxy(game_router_handler, new GameArgumentWriter(distributable_table), PlayerInterface.class);
+        this.player_interface = (PlayerInterface) ARMIEvent.createProxy(game_router_handler, new GameArgumentWriter(
+                distributable_table), PlayerInterface.class);
         ARMIEventWriter hub_router_handler = router_client.getInterface()::relayEvent;
         this.peerhubs_interface = (PeerHubInterface) ARMIEvent.createProxy(hub_router_handler, PeerHubInterface.class);
         manager.registerAnimation(this);
-        router_client.connect(session_id, new SessionInfo(num_participants, MILLISECONDS_PER_HEARTBEAT), local_peer_index);
+        router_client.connect(session_id, new SessionInfo(num_participants, MILLISECONDS_PER_HEARTBEAT),
+                local_peer_index);
     }
 
     @Override
@@ -140,7 +148,8 @@ public final class PeerHub implements Animated, RouterHandler {
     @Override
     public void heartbeat(int millis) {
         if (millis < server_millis) {
-            routerFailed(new IOException("Invalid time received: " + millis + " (tick currently at " + getTick() + ")"));
+            routerFailed(new IOException("Invalid time received: " + millis + " (tick currently at " + getTick()
+                    + ")"));
             return;
         }
         server_millis = millis;
@@ -163,7 +172,8 @@ public final class PeerHub implements Animated, RouterHandler {
     @Override
     public void receiveGameStateEvent(int client_id, int millis, ARMIEvent event) {
         if (millis < server_millis) {
-            routerFailed(new IOException("Invalid time received for event: " + millis + " (tick currently at " + getTick() + ")"));
+            routerFailed(new IOException("Invalid time received for event: " + millis + " (tick currently at "
+                    + getTick() + ")"));
             return;
         }
         Peer peer = getPeerFromClientID(client_id);
@@ -259,10 +269,12 @@ public final class PeerHub implements Animated, RouterHandler {
 
     private void doTick(float t) {
         stall_handler.stopStall();
-        if (getFreeQuitTicksLeft(local_player.getWorld()) == 0 && Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
+        if (getFreeQuitTicksLeft(local_player.getWorld()) == 0 && Renderer.getRenderer().getNetwork()
+                .getMatchmakingClient().isConnected())
             Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().freeQuitStopNotify();
 
-        if (getTick() % TICKS_PER_STATUS_UPDATE == 0 && Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
+        if (getTick() % TICKS_PER_STATUS_UPDATE == 0 && Renderer.getRenderer().getNetwork().getMatchmakingClient()
+                .isConnected())
             sendStatusUpdate();
 
         for (Peer peer : peer_index_to_peer) {
@@ -344,8 +356,10 @@ public final class PeerHub implements Animated, RouterHandler {
         removePeerFromActiveList(peer);
         String left_game_message = i18n("left_game", peer.getPlayerInfo().getName(), reason);
         receiveChat(SYSTEM_NAME, left_game_message, false);
-        if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0 && Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameQuitNotify(peer.getPlayerInfo().getName());
+        if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0 && Renderer.getRenderer().getNetwork()
+                .getMatchmakingClient().isConnected())
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameQuitNotify(peer
+                    .getPlayerInfo().getName());
     }
 
     public void sendChat(String text, boolean team_only) {
@@ -415,7 +429,8 @@ public final class PeerHub implements Animated, RouterHandler {
     public void leaveGame() {
         if (Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
             if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0) {
-                Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameQuitNotify(local_player.getPlayerInfo().getName());
+                Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameQuitNotify(local_player
+                        .getPlayerInfo().getName());
             } else {
                 Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameLostNotify();
             }

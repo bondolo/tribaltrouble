@@ -14,7 +14,8 @@ public class PanelTab extends GUIObject {
         PanelData data = Skin.getSkin().getPanelData();
         Font font = Skin.getSkin().getButtonFont();
         label = new Label(caption, font);
-        label.setPos(data.leftCaptionOffset(), (data.tab().getHeight() - font.getHeight()) / 2 + data.bottomCaptionOffset());
+        label.setPos(data.leftCaptionOffset(), (data.tab().getHeight() - font.getHeight()) / 2 + data
+                .bottomCaptionOffset());
         addChild(label);
         setDim(data.leftCaptionOffset() + label.getWidth() + data.rightCaptionOffset(), data.tab().getHeight());
         setCanFocus(true);
@@ -32,8 +33,8 @@ public class PanelTab extends GUIObject {
         return isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isActive() || selected
-                  ? ModeIconQuads.Mode.ACTIVE
-                  : ModeIconQuads.Mode.NORMAL;
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
     }
 
     @Override

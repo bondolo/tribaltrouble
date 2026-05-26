@@ -55,7 +55,8 @@ public abstract class Model extends Element<Model> {
             float y = getPositionY();
             float z = getPositionZ();
             float error = getZError();
-            setBounds(unit_bounds.bmin_x + x, unit_bounds.bmax_x + x, unit_bounds.bmin_y + y, unit_bounds.bmax_y + y, unit_bounds.bmin_z + z - error, unit_bounds.bmax_z + z + error);
+            setBounds(unit_bounds.bmin_x + x, unit_bounds.bmax_x + x, unit_bounds.bmin_y + y, unit_bounds.bmax_y + y,
+                    unit_bounds.bmin_z + z - error, unit_bounds.bmax_z + z + error);
         }
     }
 

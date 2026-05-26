@@ -31,8 +31,8 @@ public final class AnimationManager {
     public static final StatCounter pathfindsPerTick = new StatCounter(100);
 
     private static final StatCounter frameTime = new StatCounter(10);
-    private static final MonotoneTimeManager timeSource =
-            new MonotoneTimeManager(() -> TimeUnit.NANOSECONDS.toMillis(System.nanoTime()));
+    private static final MonotoneTimeManager timeSource = new MonotoneTimeManager(() -> TimeUnit.NANOSECONDS.toMillis(
+            System.nanoTime()));
 
     private static long current_time;
     private static long last_frame_time;
@@ -162,7 +162,8 @@ public final class AnimationManager {
                 network.tick();
 
                 Renderer.getLocalInput().poll(gui.getGUIRoot());
-                if (deterministic.log(Renderer.getRenderer().getWindow().isOpen() && Renderer.getRenderer().getWindow().isCloseRequested())) {
+                if (deterministic.log(Renderer.getRenderer().getWindow().isOpen() && Renderer.getRenderer().getWindow()
+                        .isCloseRequested())) {
                     Renderer.getRenderer().getWindow().setCloseRequested(false);
                     if (gui.getGUIRoot().isShowingQuitForm()) {
                         Renderer.shutdown();
@@ -180,7 +181,9 @@ public final class AnimationManager {
                     int checksum = Renderer.getRenderer().getEventQueue().computeChecksum();
                     int logged_checksum = deterministic.log(checksum);
                     if (checksum != logged_checksum && checksum_complain) {
-                        logger.severe("********** ERROR: Checksum mismatch at tick " + Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() + " | checksum = " + checksum + " | logged_checksum = " + logged_checksum + " **********");
+                        logger.severe("********** ERROR: Checksum mismatch at tick " + Renderer.getRenderer()
+                                .getEventQueue().getHighPrecisionManager().getTick() + " | checksum = " + checksum
+                                + " | logged_checksum = " + logged_checksum + " **********");
                         checksum_complain = false;
                     }
                 }
@@ -190,16 +193,16 @@ public final class AnimationManager {
             }
             // Only for debugging
             /*
-			if (Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() < 2467619 + 10000)
-			{
-				execution_time_precision += ANIMATION_MILLISECONDS_PER_PRECISION_TICK;
-				freezeTime();
-			}
+            if (Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() < 2467619 + 10000)
+            {
+            	execution_time_precision += ANIMATION_MILLISECONDS_PER_PRECISION_TICK;
+            	freezeTime();
+            }
 
-			if (Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() > 2529461 + 2000) {
-				logger.severe("FORCE QUIT: getHighPrecisionManager().getTick() = " + Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
-				com.oddlabs.tt.Main.shutdown();
-			}*/
+            if (Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() > 2529461 + 2000) {
+            	logger.severe("FORCE QUIT: getHighPrecisionManager().getTick() = " + Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
+            	com.oddlabs.tt.Main.shutdown();
+            }*/
         }
         deterministic.setEnabled(false);
     }

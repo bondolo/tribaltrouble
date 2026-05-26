@@ -34,7 +34,8 @@ public final class TextureProcessor {
         DATA_LINEAR
     }
 
-    public record SourceTarget(@NonNull Path source, @NonNull Path target) {}
+    public record SourceTarget(@NonNull Path source, @NonNull Path target) {
+    }
 
     private TextureProcessor() {
     }
@@ -42,7 +43,8 @@ public final class TextureProcessor {
     /**
      * Processes a single file to a specific output file.
      */
-    public static void processFile(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile) throws IOException {
+    public static void processFile(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile)
+            throws IOException {
         String basisuPath = System.getProperty("basisu.path");
         UsageMode usageMode = determineMode(infile, operations);
 
@@ -62,7 +64,7 @@ public final class TextureProcessor {
     }
 
     private static void processWithBasisu(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile,
-                                          @NonNull String basisuPath, @NonNull UsageMode usageMode) throws IOException {
+            @NonNull String basisuPath, @NonNull UsageMode usageMode) throws IOException {
         Path workDir = Files.createTempDirectory("basisu_work");
         try {
             // copy input to workDir to have a clean, known name
@@ -120,7 +122,7 @@ public final class TextureProcessor {
 
             execute(compressCmd, workDir);
 
-            // Step 2: Unpack to standard DDS. 
+            // Step 2: Unpack to standard DDS.
             // We force BC1/BC3 output to ensure maximum compatibility with older GL drivers.
             List<String> unpackCmd = new ArrayList<>();
             unpackCmd.add(basisuPath);
@@ -192,14 +194,16 @@ public final class TextureProcessor {
     /**
      * Processes all PNG files in a directory into an output directory.
      */
-    public static void processBatch(@NonNull Path inputDir, @NonNull List<@NonNull String> operations, @NonNull Path outputDir) throws IOException {
+    public static void processBatch(@NonNull Path inputDir, @NonNull List<@NonNull String> operations,
+            @NonNull Path outputDir) throws IOException {
         Files.createDirectories(outputDir);
         try (Stream<Path> stream = Files.list(inputDir)) {
             processFiles(stream, operations, outputDir);
         }
     }
 
-    public static void processFiles(@NonNull Stream<Path> stream, @NonNull List<@NonNull String> operations, @NonNull Path outputDir) throws IOException {
+    public static void processFiles(@NonNull Stream<Path> stream, @NonNull List<@NonNull String> operations,
+            @NonNull Path outputDir) throws IOException {
         String format = "dds";
         // Check for -format in operations
         for (int i = 0; i < operations.size(); i++) {
@@ -223,31 +227,35 @@ public final class TextureProcessor {
         }
     }
 
-    public static void processFiles(@NonNull Stream<@NonNull SourceTarget> stream, @NonNull List<String> operations) throws IOException {
+    public static void processFiles(@NonNull Stream<@NonNull SourceTarget> stream, @NonNull List<String> operations)
+            throws IOException {
         try {
             stream.filter(st -> {
-                    try {
-                        // check if target is absent or if the source file is newer than the target
-                        return !Files.exists(st.target) || Files.getLastModifiedTime(st.source).compareTo(Files.getLastModifiedTime(st.target)) >= 0;
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                })
-                .parallel()
-                .forEach(st -> {
-                    try {
-                        IO.println("Batch processing: " + st.source.getFileName() + " -> " + st.target.getFileName());
-                        processFile(st.source, operations, st.target);
-                    } catch (IOException e) {
-                        throw new UncheckedIOException("Failed to process " + st.source, e);
-                    }
-                });
+                try {
+                    // check if target is absent or if the source file is newer than the target
+                    return !Files.exists(st.target) || Files.getLastModifiedTime(st.source).compareTo(Files
+                            .getLastModifiedTime(st.target)) >= 0;
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            })
+                    .parallel()
+                    .forEach(st -> {
+                        try {
+                            IO.println("Batch processing: " + st.source.getFileName() + " -> " + st.target
+                                    .getFileName());
+                            processFile(st.source, operations, st.target);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException("Failed to process " + st.source, e);
+                        }
+                    });
         } catch (UncheckedIOException uioe) {
             throw uioe.getCause();
         }
     }
 
-    private static Layer @NonNull [] applyOperations(@NonNull Iterator<String> args, Layer @NonNull [] images, @NonNull Path infile) {
+    private static Layer @NonNull [] applyOperations(@NonNull Iterator<String> args, Layer @NonNull [] images,
+            @NonNull Path infile) {
         UsageMode usageMode = inferUsageFromName(infile);
         while (args.hasNext()) {
             String op = args.next();
@@ -274,7 +282,7 @@ public final class TextureProcessor {
     }
 
     private static Layer @NonNull [] applyOperation(@NonNull String op, @NonNull Iterator<String> args,
-                                                     Layer @NonNull [] images, @NonNull UsageMode usageMode) {
+            Layer @NonNull [] images, @NonNull UsageMode usageMode) {
         boolean isData = usageMode == UsageMode.DATA_LINEAR;
 
         switch (op) {
@@ -450,7 +458,8 @@ public final class TextureProcessor {
                             }
                             blockBuffer.flip();
 
-                            long compressedBlockAddr = MemoryUtil.memAddress(compressedBuffer) + (long) (by * numBlocksX + bx) * blockSize;
+                            long compressedBlockAddr = MemoryUtil.memAddress(compressedBuffer) + (long) (by * numBlocksX
+                                    + bx) * blockSize;
                             STBDXT.nstb_compress_dxt_block(
                                     compressedBlockAddr,
                                     MemoryUtil.memAddress(blockBuffer),

@@ -27,7 +27,7 @@ public final class ChatLine extends EditLine {
     @Override
     protected void handleInput(@NonNull InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
-            if (catch_tab && event.getCodepoint() == Character.toCodePoint( '\0', '\t')) {
+            if (catch_tab && event.getCodepoint() == Character.toCodePoint('\0', '\t')) {
                 tabComplete(getText());
                 event.consume();
                 return;

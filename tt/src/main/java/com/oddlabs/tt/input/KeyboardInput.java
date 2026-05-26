@@ -65,7 +65,8 @@ public final class KeyboardInput {
     private boolean checkMagicKey(boolean event_key_down, @NonNull Key event_key, boolean playback, boolean repeat) {
         boolean control_down = left_control_down || right_control_down;
         boolean shift_down = left_shift_down || right_shift_down;
-        boolean keys_enabled = Renderer.getRenderer().getSettings().inDeveloperMode() && control_down && shift_down && !repeat;
+        boolean keys_enabled = Renderer.getRenderer().getSettings().inDeveloperMode() && control_down && shift_down
+                && !repeat;
         if (event_key_down && (keys_enabled || playback)) {
             // check for special events that shouldn't generate events
             switch (event_key) {
@@ -149,7 +150,8 @@ public final class KeyboardInput {
                 case RALT -> right_alt_down = event_key_down;
                 case LSUPER -> left_meta_down = event_key_down;
                 case RSUPER -> right_meta_down = event_key_down;
-                default -> { }
+                default -> {
+                }
                 // Other keys are not tracked as dedicated boolean flags here.
                 // They are processed into the actions set below.
             }

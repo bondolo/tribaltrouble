@@ -24,16 +24,16 @@ public final class Status {
             buf.append(total_jheap)
                     .append("M) globj ")
                     .append(NativeResource.getCount());
-/*			float x = gui_root.getLandscapeLocationX();
-			float y = gui_root.getLandscapeLocationY();
-			if (UnitGrid.getGrid() != null) {
-				int grid_x = UnitGrid.getGrid().toGridCoordinate(x);
-				int grid_y = UnitGrid.getGrid().toGridCoordinate(y);
-				buf.append(" X ");
-				    .append(grid_x,);
-				    .append(" Y ")
-				    .append(grid_y);
-			}*/
+            /*			float x = gui_root.getLandscapeLocationX();
+            			float y = gui_root.getLandscapeLocationY();
+            			if (UnitGrid.getGrid() != null) {
+            				int grid_x = UnitGrid.getGrid().toGridCoordinate(x);
+            				int grid_y = UnitGrid.getGrid().toGridCoordinate(y);
+            				buf.append(" X ");
+            				    .append(grid_x,);
+            				    .append(" Y ")
+            				    .append(grid_y);
+            			}*/
         }
         buf.append(" FPS ")
                 .append(Math.round(1000f / Renderer.getFPS()))
@@ -41,6 +41,7 @@ public final class Status {
                 .append(Math.round(Renderer.getFPS()))
                 .append(" ms/frame)");
 
-        TextLineRenderer.render(renderer, Skin.getSkin().getEditFont(), buf, 0, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Color.Standard.WHITE);
+        TextLineRenderer.render(renderer, Skin.getSkin().getEditFont(), buf, 0, 0, Float.NEGATIVE_INFINITY,
+                Float.POSITIVE_INFINITY, Color.Standard.WHITE);
     }
 }

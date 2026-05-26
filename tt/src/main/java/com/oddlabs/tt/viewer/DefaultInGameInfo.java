@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
+
 public class DefaultInGameInfo implements InGameInfo {
     private static final ResourceBundle terrain_menu_bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
     private boolean replay_island_flag;
@@ -42,11 +43,13 @@ public class DefaultInGameInfo implements InGameInfo {
     }
 
     @Override
-    public void addGameOverGUI(@NonNull WorldViewer viewer, @NonNull GameStatsDelegate delegate, int header_y, @NonNull Group group) {
+    public void addGameOverGUI(@NonNull WorldViewer viewer, @NonNull GameStatsDelegate delegate, int header_y,
+            @NonNull Group group) {
         addGameOverGUI(viewer, delegate, header_y, group, true);
     }
 
-    protected final void addGameOverGUI(final @NonNull WorldViewer viewer, final @NonNull GameStatsDelegate delegate, int header_y, @NonNull Group group, boolean replay) {
+    protected final void addGameOverGUI(final @NonNull WorldViewer viewer, final @NonNull GameStatsDelegate delegate,
+            int header_y, @NonNull Group group, boolean replay) {
         String map_code_str = GameStatsDelegate.i18n("map_code", viewer.getParameters().getMapcode());
         Label map_code = new Label(map_code_str, Skin.getSkin().getEditFont());
         delegate.addChild(map_code);
@@ -88,13 +91,15 @@ public class DefaultInGameInfo implements InGameInfo {
         for (Player player : players) {
             PlayerInfo player_info = player.getPlayerInfo();
             var color_floats = player.getColor();
-            Color color = viewer.getPeerHub().isAlive(player) ? color_floats : new Color.Linear(color_floats.r(), color_floats.g(), color_floats.b(), .25f);
+            Color color = viewer.getPeerHub().isAlive(player) ? color_floats : new Color.Linear(color_floats.r(),
+                    color_floats.g(), color_floats.b(), .25f);
             Label name = new Label(player_info.getName(), Skin.getSkin().getHeadlineFont())
                     .setColor(color);
             String race_str = RacesResources.getRaceName(player_info.getRace());
             Label race = new Label(race_str, Skin.getSkin().getHeadlineFont())
                     .setColor(color);
-            String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.getTeam() + 1));
+            String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.getTeam()
+                    + 1));
             Label team = new Label(team_str, Skin.getSkin().getHeadlineFont())
                     .setColor(color);
             names.addChild(name);
@@ -146,7 +151,8 @@ public class DefaultInGameInfo implements InGameInfo {
 
     @Override
     public final void abort(@NonNull WorldViewer viewer) {
-        viewer.getGUIRoot().pushDelegate(new GameStatsDelegate(viewer, viewer.getGUIRoot().getDelegate().getCamera(), Menu.i18n("game_aborted")));
+        viewer.getGUIRoot().pushDelegate(new GameStatsDelegate(viewer, viewer.getGUIRoot().getDelegate().getCamera(),
+                Menu.i18n("game_aborted")));
     }
 
     @Override

@@ -83,7 +83,7 @@ public final class TextLayout {
 
         int charIndexInLine = 0;
         float currentWidth = 0;
-        for (int i = 0; i < targetLine.content().length(); ) {
+        for (int i = 0; i < targetLine.content().length();) {
             int cp = Character.codePointAt(targetLine.content(), i);
             float charWidth = font.getWidth(new String(Character.toChars(cp)));
             if (x >= currentWidth && x < currentWidth + charWidth) {

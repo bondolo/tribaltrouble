@@ -9,7 +9,8 @@ import java.util.Random;
 public final class IFS {
     public final @NonNull Channel channel;
 
-    public IFS(int width, int height, int maxpoints, int seed, float @NonNull [] @NonNull [] @NonNull [] transformations, float[] probabilities) {
+    public IFS(int width, int height, int maxpoints, int seed,
+            float @NonNull [] @NonNull [] @NonNull [] transformations, float[] probabilities) {
         channel = new Channel(width, height);
         Random random = new Random(seed);
 
@@ -33,8 +34,11 @@ public final class IFS {
             // loop transformations
             for (int t = 0; t < transformations.length; t++) {
                 if (p < probabilities[t]) {
-                    x_coord = (transformations[t][2][0] - transformations[t][3][0]) * x_coord + (transformations[t][2][0] - transformations[t][1][0]) * y_coord + transformations[t][0][0];
-                    y_coord = (transformations[t][2][1] - transformations[t][3][1]) * x_temp + (transformations[t][2][1] - transformations[t][1][1]) * y_coord + transformations[t][0][1];
+                    x_coord = (transformations[t][2][0] - transformations[t][3][0]) * x_coord
+                            + (transformations[t][2][0] - transformations[t][1][0]) * y_coord
+                            + transformations[t][0][0];
+                    y_coord = (transformations[t][2][1] - transformations[t][3][1]) * x_temp + (transformations[t][2][1]
+                            - transformations[t][1][1]) * y_coord + transformations[t][0][1];
                     break;
                 }
             }

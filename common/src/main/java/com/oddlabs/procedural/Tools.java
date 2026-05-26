@@ -62,16 +62,16 @@ public final class Tools {
         return x >= 0 && x < 0.5
                 ? 0.5f * (float) Math.sqrt(2 * x)
                 : x >= 0.5f && x <= 1f
-                  ? 1f - 0.5f * (float) Math.sqrt(-2 * x + 2)
-                  : 0;
+                        ? 1f - 0.5f * (float) Math.sqrt(-2 * x + 2)
+                : 0;
     }
 
     public static float gaussify(float x, float exponent) {
         return x >= 0 && x < 0.5
                 ? 0.5f * (float) Math.pow(2 * x, exponent)
                 : x >= 0.5f && x <= 1f
-                  ? 1f - 0.5f * (float) Math.pow(-2 * x + 2, exponent)
-                  : 0;
+                        ? 1f - 0.5f * (float) Math.pow(-2 * x + 2, exponent)
+                : 0;
     }
 
     public static float gain(float gain, float x) {

@@ -68,13 +68,12 @@ public final class SonicBlastRenderer implements AutoCloseable {
         queue.clear();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (activeEffects.isEmpty()) return;
 
-        try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.ADDITIVE);
-             var _ = context.withDepthMode(DepthMode.NONE);
-             var _ = context.withCullMode(CullMode.NONE)) {
+        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
+                DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
 
             shader.setUniformColor3(SonicBlastShader.Uniforms.COLOR, BLAST_COLOR);
 
@@ -103,7 +102,8 @@ public final class SonicBlastRenderer implements AutoCloseable {
                 shader.setUniform(SonicBlastShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
                 shader.setUniform(SonicBlastShader.Uniforms.TIME, effect.getTime());
                 shader.setUniform(SonicBlastShader.Uniforms.MAX_RADIUS, visualRadius);
-                shader.setUniform(SonicBlastShader.Uniforms.EXPANSION_SPEED, visualRadius / Math.max(effect.getDuration(), 0.001f));
+                shader.setUniform(SonicBlastShader.Uniforms.EXPANSION_SPEED, visualRadius / Math.max(effect
+                        .getDuration(), 0.001f));
 
                 GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
 

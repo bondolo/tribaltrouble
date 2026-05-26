@@ -13,12 +13,15 @@ import org.jspecify.annotations.Nullable;
 public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
     /**
      * Returns the sprite to render, or null if this accessory is rendered via other means (e.g. emitters).
+     *
      * @return The sprite renderer.
      */
-    @Nullable SpriteKey getSpriteRenderer();
+    @Nullable
+    SpriteKey getSpriteRenderer();
 
     /**
      * Returns true if the accessory should currently be drawn.
+     *
      * @param parent The model this accessory is attached to.
      * @return visibility status.
      */
@@ -26,7 +29,8 @@ public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
 
     /**
      * Provides the transform relative to the parent's position.
-     * @param dest The matrix to populate with the relative transform.
+     *
+     * @param dest   The matrix to populate with the relative transform.
      * @param parent The model this accessory is attached to.
      */
     void getRelativeTransform(@NonNull Matrix4f dest, @NonNull AccessorizableModel parent);

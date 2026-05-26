@@ -30,7 +30,7 @@ public abstract class AudioPlayer implements Animated {
         }
         source.setAudioPlayer(this);
         playing = true;
-        
+
         source.setLooping(params.looping());
         source.setRelative(params.relative());
 
@@ -39,8 +39,8 @@ public abstract class AudioPlayer implements Animated {
         // Calculate rolloff so the sound reaches SILENCE_THRESHOLD at params.distance
         float refDist = params.radius();
         float maxDist = params.distance();
-        float rolloff = (maxDist > refDist) 
-                ? (refDist / SILENCE_THRESHOLD - refDist) / (maxDist - refDist) 
+        float rolloff = (maxDist > refDist)
+                ? (refDist / SILENCE_THRESHOLD - refDist) / (maxDist - refDist)
                 : 1.0f;
 
         source.setRolloff(rolloff);
@@ -70,12 +70,15 @@ public abstract class AudioPlayer implements Animated {
     }
 
     /** {@return The number of buffers allocated for this player} */
-    protected int getBufferCount() { return 0; }
+    protected int getBufferCount() {
+        return 0;
+    }
 
     public final void setGain(float gain) {
         if (playing && source != null) {
             AudioManager audioManager = Renderer.getRenderer().getAudioManager();
-            source.setGain(gain * (parameters.audio().isStreaming() ? audioManager.getMusicGain() : audioManager.getSfxGain()));
+            source.setGain(gain * (parameters.audio().isStreaming() ? audioManager.getMusicGain() : audioManager
+                    .getSfxGain()));
         }
     }
 
@@ -90,7 +93,8 @@ public abstract class AudioPlayer implements Animated {
         if (source == null) return;
 
         // Music and notifications don't get environmental effects/reverb
-        boolean useEFX = parameters.rank() != Assets.AUDIO_RANK_MUSIC && parameters.rank() != Assets.AUDIO_RANK_NOTIFICATION;
+        boolean useEFX = parameters.rank() != Assets.AUDIO_RANK_MUSIC && parameters.rank()
+                != Assets.AUDIO_RANK_NOTIFICATION;
 
         if (Renderer.getRenderer().getAudioManager().isEFXSupported()) {
             int slot = useEFX ? Renderer.getRenderer().getAudioManager().getEFXEffectSlot() : 0;
@@ -100,7 +104,7 @@ public abstract class AudioPlayer implements Animated {
 
     private void updateAirAbsorption(float x, float y, float z) {
         if (source == null) return;
-        
+
         // Music doesn't get muffled by distance
         if (parameters.rank() == Assets.AUDIO_RANK_MUSIC || parameters.rank() == Assets.AUDIO_RANK_NOTIFICATION) {
             source.setDirectFilterGainHF(1.0f);

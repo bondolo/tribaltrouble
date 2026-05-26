@@ -33,7 +33,7 @@ import org.lwjgl.system.MemoryStack;
 import java.util.function.Consumer;
 
 /**
- * The primary world renderer responsible for coordinating the rendering 
+ * The primary world renderer responsible for coordinating the rendering
  * of the landscape, units, buildings, and transient effects.
  */
 public final class DefaultRenderer implements UIRenderer, AutoCloseable {
@@ -60,13 +60,16 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private @Nullable Building selected_building;
 
-    public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull WorldInfo world_info, @NonNull LandscapeRenderer landscape_renderer, @NonNull Picker picker, @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues,
+            @NonNull WorldInfo world_info, @NonNull LandscapeRenderer landscape_renderer, @NonNull Picker picker,
+            @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
         this.render_queues = render_queues;
         this.picker = picker;
         this.selection = selection;
-        this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter, selection);
+        this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
+                selection);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
         this.landscape_renderer = landscape_renderer;
         this.sky = new Sky(landscape_renderer, world_info.terrain(), world_info.detail());
@@ -106,10 +109,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private static final SpriteShader spriteShader = new SpriteShader(); // For rally point
 
     private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state,
-                                    @NonNull Target rally_point, @NonNull SpriteKey rally_sprite,
-                                    @NonNull Color teamColor) {
-        try (var _ = spriteShader.use();
-             var _ = context.withBlendMode(BlendMode.ALPHA)) {
+            @NonNull Target rally_point, @NonNull SpriteKey rally_sprite,
+            @NonNull Color teamColor) {
+        try (var _ = spriteShader.use(); var _ = context.withBlendMode(BlendMode.ALPHA)) {
 
             SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);
             Sprite sprite = rally_point_renderer.getSpriteList().getSprite(0);
@@ -197,7 +199,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     }
 
     @Override
-    public void render(@NonNull RenderContext context, @NonNull AmbientAudio ambient, @NonNull CameraState frustum_state, @NonNull GUIRoot gui_root) {
+    public void render(@NonNull RenderContext context, @NonNull AmbientAudio ambient,
+            @NonNull CameraState frustum_state, @NonNull GUIRoot gui_root) {
         treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
 
@@ -283,7 +286,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             render_queues.renderNoDetail();
         }
 
-        gui_root.getDelegate().render3D(landscape_renderer, render_queues, frustum_state, modelViewStack, projectionStack);
+        gui_root.getDelegate().render3D(landscape_renderer, render_queues, frustum_state, modelViewStack,
+                projectionStack);
 
         if (Globals.debugRenderingEnabled()) {
             renderDebugElements(frustum_state);
@@ -305,7 +309,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         // Render transient effects (smoke, lightning) AFTER all other scene objects.
         // This ensures they are depth-tested against the complete scene (including water and blended units).
         lightningRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
-        emitterRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack, postProcessor.getDepthCopyTexture());
+        emitterRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack, postProcessor
+                .getDepthCopyTexture());
         sonicBlastRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
 
         // Rally point uses SpriteShader (Mask) -> Enable

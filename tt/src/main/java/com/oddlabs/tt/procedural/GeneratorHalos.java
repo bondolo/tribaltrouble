@@ -23,7 +23,8 @@ public final class GeneratorHalos extends TextureGenerator {
     private final float @NonNull [] @NonNull [] shadow_parms;
     private final float @NonNull [] @NonNull [] ring_parms;
 
-    public GeneratorHalos(int size, float @NonNull [] @NonNull [] shadow_parms, float @NonNull [] @NonNull [] ring_parms) {
+    public GeneratorHalos(int size, float @NonNull [] @NonNull [] shadow_parms,
+            float @NonNull [] @NonNull [] ring_parms) {
         this.size = size;
         this.shadow_parms = shadow_parms;
         this.ring_parms = ring_parms;
@@ -48,7 +49,8 @@ public final class GeneratorHalos extends TextureGenerator {
             } else if (radius >= gradient_list[index_max][0]) {
                 value = gradient_list[index_max][1];
             } else {
-                float fraction = (radius - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index - 1][0]);
+                float fraction = (radius - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index
+                        - 1][0]);
                 value = smooth
                         ? Tools.interpolateSmooth(gradient_list[index - 1][1], gradient_list[index][1], fraction)
                         : Tools.interpolateLinear(gradient_list[index - 1][1], gradient_list[index][1], fraction);
@@ -70,19 +72,22 @@ public final class GeneratorHalos extends TextureGenerator {
         // Green = Shadow Alpha
         // Blue  = 0
         // Alpha = 1 (Solid)
-        
+
         Layer[] layers = new Layer[2];
-        
+
         // SHADOWED: Just the shadow in Green channel
-        layers[HaloType.SHADOWED.ordinal()] = new Layer(channel_black.copy(), channel_shadow.copy(), channel_black.copy(), channel_white.copy());
+        layers[HaloType.SHADOWED.ordinal()] = new Layer(channel_black.copy(), channel_shadow.copy(), channel_black
+                .copy(), channel_white.copy());
 
         // SELECTED: Ring in Red, Shadow in Green
-        layers[HaloType.SELECTED.ordinal()] = new Layer(channel_ring.copy(), channel_shadow.copy(), channel_black.copy(), channel_white.copy());
+        layers[HaloType.SELECTED.ordinal()] = new Layer(channel_ring.copy(), channel_shadow.copy(), channel_black
+                .copy(), channel_white.copy());
 
         Texture[] textures = new Texture[layers.length];
         for (int i = 0; i < layers.length; i++) {
             if (Landscape.DEBUG) new GLIntImage(layers[i]).saveAsPNG("generator_halos_" + i);
-            textures[i] = new Texture(new GLImage[]{new GLIntImage(layers[i])}, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
+            textures[i] = new Texture(new GLImage[]{new GLIntImage(layers[i])}, GL11.GL_RGBA8, GL11.GL_LINEAR,
+                    GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
         }
         return textures;
     }

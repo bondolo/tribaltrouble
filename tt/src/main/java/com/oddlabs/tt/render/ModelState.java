@@ -11,15 +11,20 @@ import org.jspecify.annotations.Nullable;
  * Unified interface for accessing the visual state of renderable world objects.
  */
 interface ModelState<M extends Model> extends LODObject {
-    @NonNull Matrix4f getTransform(@NonNull Matrix4f dest);
+    @NonNull
+    Matrix4f getTransform(@NonNull Matrix4f dest);
 
-    @NonNull Color getTeamColor();
+    @NonNull
+    Color getTeamColor();
 
-    @NonNull Color getSelectionColor();
+    @NonNull
+    Color getSelectionColor();
 
-    @NonNull Color getColor();
+    @NonNull
+    Color getColor();
 
     Selectable.@NonNull VisualPattern getPattern();
 
-    @Nullable M getModel();
+    @Nullable
+    M getModel();
 }

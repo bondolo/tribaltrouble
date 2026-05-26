@@ -27,7 +27,8 @@ public final class RenderQueues implements AutoCloseable {
 
     private final List<@NonNull SpriteRenderer> sprite_list_lookup = new ArrayList<>();
     private final List<@NonNull ShadowListRenderer> shadow_renderer_lookup = new ArrayList<>();
-    private final Map<@NonNull Supplier<@NonNull Texture @NonNull []>, @NonNull ShadowListKey> desc_to_shadow_key = new HashMap<>();
+    private final Map<@NonNull Supplier<@NonNull Texture @NonNull []>, @NonNull ShadowListKey> desc_to_shadow_key
+            = new HashMap<>();
     private final List<@NonNull Texture> texture_lookup = new ArrayList<>();
     private final InstancedSpriteRenderer spriteRenderer = new InstancedSpriteRenderer();
 
@@ -47,7 +48,8 @@ public final class RenderQueues implements AutoCloseable {
         return key;
     }
 
-    @NonNull Texture getTexture(@NonNull TextureKey key) {
+    @NonNull
+    Texture getTexture(@NonNull TextureKey key) {
         return texture_lookup.get(key.getKey());
     }
 
@@ -59,7 +61,8 @@ public final class RenderQueues implements AutoCloseable {
         return register(desc, renderer);
     }
 
-    private @NonNull ShadowListKey register(@NonNull Supplier<@NonNull Texture @NonNull []> desc, @NonNull ShadowListRenderer renderer) {
+    private @NonNull ShadowListKey register(@NonNull Supplier<@NonNull Texture @NonNull []> desc,
+            @NonNull ShadowListRenderer renderer) {
         int index = shadow_renderer_lookup.size();
         shadow_renderer_lookup.add(renderer);
         ShadowListKey key = new ShadowListKey(index);
@@ -72,7 +75,8 @@ public final class RenderQueues implements AutoCloseable {
         return key != null ? key : register(desc, new SelectableShadowRenderer(desc));
     }
 
-    @NonNull ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {
+    @NonNull
+    ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {
         return shadow_renderer_lookup.get(key.getKey());
     }
 
@@ -118,17 +122,20 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    void renderAll(@NonNull RenderContext context, @NonNull CameraState camera_state, @NonNull MatrixStack projectionStack) {
+    void renderAll(@NonNull RenderContext context, @NonNull CameraState camera_state,
+            @NonNull MatrixStack projectionStack) {
         sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
-    void renderPlants(@NonNull RenderContext context, @NonNull CameraState camera_state, @NonNull MatrixStack projectionStack) {
+    void renderPlants(@NonNull RenderContext context, @NonNull CameraState camera_state,
+            @NonNull MatrixStack projectionStack) {
         plant_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
-    void renderBlends(@NonNull RenderContext context, @NonNull CameraState camera_state, @NonNull MatrixStack projectionStack) {
+    void renderBlends(@NonNull RenderContext context, @NonNull CameraState camera_state,
+            @NonNull MatrixStack projectionStack) {
         blend_sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
@@ -139,7 +146,8 @@ public final class RenderQueues implements AutoCloseable {
         blend_sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
     }
 
-    void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
             shadowListRenderer.renderShadows(context, renderer, modelViewStack, projectionStack);
         }
@@ -148,7 +156,8 @@ public final class RenderQueues implements AutoCloseable {
     @Override
     public void close() {
         spriteRenderer.close();
-        for (SpriteList spriteList : sprite_list_lookup.stream().map(SpriteRenderer::getSpriteList).distinct().toList()) {
+        for (SpriteList spriteList : sprite_list_lookup.stream().map(SpriteRenderer::getSpriteList).distinct()
+                .toList()) {
             spriteList.close();
         }
         shadow_renderer_lookup.forEach(ShadowListRenderer::close);

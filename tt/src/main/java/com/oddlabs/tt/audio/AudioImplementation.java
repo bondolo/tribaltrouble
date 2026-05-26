@@ -7,5 +7,6 @@ import org.jspecify.annotations.NonNull;
  */
 @FunctionalInterface
 public interface AudioImplementation {
-    @NonNull AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params);
+    @NonNull
+    AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params);
 }

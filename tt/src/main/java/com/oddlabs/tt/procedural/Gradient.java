@@ -19,7 +19,8 @@ public final class Gradient {
 
     public final @NonNull Channel channel;
 
-    public Gradient(int width, int height, float @NonNull [] @NonNull [] gradient_list, @NonNull Orientation orientation, @NonNull Interpolation interpolation) {
+    public Gradient(int width, int height, float @NonNull [] @NonNull [] gradient_list,
+            @NonNull Orientation orientation, @NonNull Interpolation interpolation) {
         channel = new Channel(width, height);
         float x_coord = 0;
         int index = 0;
@@ -37,9 +38,13 @@ public final class Gradient {
                     } else {
                         value = switch (interpolation) {
                             case LINEAR ->
-                                Tools.interpolateLinear(gradient_list[index - 1][1], gradient_list[index][1], (x_coord - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index - 1][0]));
+                                Tools.interpolateLinear(gradient_list[index - 1][1], gradient_list[index][1], (x_coord
+                                        - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index
+                                                - 1][0]));
                             case SMOOTH ->
-                                Tools.interpolateSmooth(gradient_list[index - 1][1], gradient_list[index][1], (x_coord - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index - 1][0]));
+                                Tools.interpolateSmooth(gradient_list[index - 1][1], gradient_list[index][1], (x_coord
+                                        - gradient_list[index - 1][0]) / (gradient_list[index][0] - gradient_list[index
+                                                - 1][0]));
                         };
                     }
                 }

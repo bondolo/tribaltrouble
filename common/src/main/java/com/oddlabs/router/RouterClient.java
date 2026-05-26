@@ -30,13 +30,15 @@ final class RouterClient implements ConnectionInterface {
         this.connection = conn;
         this.logger = logger;
         this.client_interface = (RouterClientInterface) ARMIEvent.createProxy(conn, RouterClientInterface.class);
-        this.current_interface = new Interface(RouterInterface.class, (RouterInterface) (SessionID session_id, SessionInfo session_info, int client_id1) -> {
+        this.current_interface = new Interface(RouterInterface.class, (RouterInterface) (SessionID session_id,
+                SessionInfo session_info, int client_id1) -> {
             Session session1 = session_manager.get(session_id, session_info, client_id1);
             doLogin(session1, session_info, client_id1);
         });
     }
 
-    @NonNull List<Integer> getChecksums() {
+    @NonNull
+    List<Integer> getChecksums() {
         return checksums;
     }
 
@@ -56,7 +58,8 @@ final class RouterClient implements ConnectionInterface {
         client_interface.heartbeat(millis);
     }
 
-    @NonNull RouterClientInterface getInterface() {
+    @NonNull
+    RouterClientInterface getInterface() {
         return client_interface;
     }
 
@@ -101,14 +104,15 @@ final class RouterClient implements ConnectionInterface {
     private void doChecksum(int checksum) {
         checksums.add(checksum);
         session.checksum();
-/*		if (!session.checksum()) {
-			doError(true, new IOException("Checksum mismatch"));
-		}*/
+        /*		if (!session.checksum()) {
+        			doError(true, new IOException("Checksum mismatch"));
+        		}*/
     }
 
     private void doRelayGameStateEvent(final ARMIEvent event) {
         final int next_tick = session.getNextTick();
-        session.visit((RouterClient client) -> client.client_interface.receiveGameStateEvent(client_id, next_tick, event));
+        session.visit((RouterClient client) -> client.client_interface.receiveGameStateEvent(client_id, next_tick,
+                event));
     }
 
     private void doRelayEvent(final ARMIEvent event) {
@@ -145,7 +149,8 @@ final class RouterClient implements ConnectionInterface {
         if (session != null) {
             logger.log(Level.INFO, "Removing client: {0}", this);
             session.removePlayer(this);
-            session.visit((RouterClient client) -> client.client_interface.playerDisconnected(client_id, checksum_error));
+            session.visit((RouterClient client) -> client.client_interface.playerDisconnected(client_id,
+                    checksum_error));
         }
     }
 

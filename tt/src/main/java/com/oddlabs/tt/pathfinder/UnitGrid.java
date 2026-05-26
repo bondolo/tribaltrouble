@@ -23,7 +23,8 @@ public final class UnitGrid {
         return x >= 0 && y >= 0 && x < occupants.length && y < occupants.length && filter.filter(x, y, occupants[y][x]);
     }
 
-    public @Nullable Target @NonNull [] findGridTargets(int center_grid_x, int center_grid_y, int num_targets, boolean grid_targets_only) {
+    public @Nullable Target @NonNull [] findGridTargets(int center_grid_x, int center_grid_y, int num_targets,
+            boolean grid_targets_only) {
         FindTargetsFilter filter = new FindTargetsFilter(num_targets, occupants.length, grid_targets_only);
         scan(filter, center_grid_x, center_grid_y);
         return filter.getTargets();
@@ -91,7 +92,8 @@ public final class UnitGrid {
     }
 
     public void freeGrid(int grid_x, int grid_y, Occupant occupant) {
-        assert occupants[grid_y][grid_x] == occupant : occupant + " trying to free " + grid_x + " " + grid_y + " where " + occupants[grid_y][grid_x] + " is.";
+        assert occupants[grid_y][grid_x] == occupant : occupant + " trying to free " + grid_x + " " + grid_y + " where "
+                + occupants[grid_y][grid_x] + " is.";
         occupants[grid_y][grid_x] = null;
     }
 
@@ -111,10 +113,12 @@ public final class UnitGrid {
                 float zf = heightmap.getNearestHeight(xf, yf) + 2f;
                 Region region = getRegion(x, y);
                 if (region == null) {
-                    DebugRender.drawPoint(xf, yf, zf, 3f, Color.Linear.RED.r(), Color.Linear.RED.g(), Color.Linear.RED.b());
+                    DebugRender.drawPoint(xf, yf, zf, 3f, Color.Linear.RED.r(), Color.Linear.RED.g(), Color.Linear.RED
+                            .b());
                 } else {
                     last_region = region;
-                    Color color = new Color.Linear(DebugRender.debug_colors[region.hashCode() % DebugRender.debug_colors.length]);
+                    Color color = new Color.Linear(DebugRender.debug_colors[region.hashCode()
+                            % DebugRender.debug_colors.length]);
                     DebugRender.drawPoint(xf, yf, zf, 3f, color.r(), color.g(), color.b());
                 }
             }
@@ -127,6 +131,7 @@ public final class UnitGrid {
 
     /**
      * renders the specified unit grid as a quad
+     *
      * @param color assumed to be a linear color
      */
     private void debugRenderQuad(int x, int y, @NonNull Color color) {

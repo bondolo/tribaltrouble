@@ -155,14 +155,16 @@ public final class InputState {
         int scaledY = Math.round(y / scale);
 
         if (drag_obj != null)
-            drag_obj.mouseDraggedAll(button, scaledX, scaledY, scaledX - drag_x, scaledY - drag_y, scaledX - absolute_drag_x, scaledY - absolute_drag_y);
+            drag_obj.mouseDraggedAll(button, scaledX, scaledY, scaledX - drag_x, scaledY - drag_y, scaledX
+                    - absolute_drag_x, scaledY - absolute_drag_y);
         drag_x = scaledX;
         drag_y = scaledY;
     }
 
     private boolean clickedSameArea() {
         var localInput = Renderer.getLocalInput();
-        return Math.abs(localInput.getMouseX() - clicked_x) < DOUBLE_CLICK_THRESHOLD && Math.abs(localInput.getMouseY() - clicked_y) < DOUBLE_CLICK_THRESHOLD;
+        return Math.abs(localInput.getMouseX() - clicked_x) < DOUBLE_CLICK_THRESHOLD && Math.abs(localInput.getMouseY()
+                - clicked_y) < DOUBLE_CLICK_THRESHOLD;
     }
 
     private void stopDoubleClickTimer() {
@@ -190,7 +192,8 @@ public final class InputState {
         }
     }
 
-    public void keyPressed(@NonNull Key key, int key_codepoint, @NonNull Set<@NonNull Modifier> modifiers, boolean repeat) {
+    public void keyPressed(@NonNull Key key, int key_codepoint, @NonNull Set<@NonNull Modifier> modifiers,
+            boolean repeat) {
         GUIObject focused = gui_root.getGlobalFocus();
         resetKeyTimer();
         if (!repeat && (key_event == null

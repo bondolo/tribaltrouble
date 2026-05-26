@@ -13,13 +13,14 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A weapon factory for units that deal damage instantly to their targets 
+ * A weapon factory for units that deal damage instantly to their targets
  * (e.g., melee units or non-projectile weapons).
  */
 public final class InstantHitFactory extends WeaponFactory {
     private final @NonNull AudioFile @NonNull [] sounds;
 
-    public InstantHitFactory(float hit_chance, float range, float release_ratio, @NonNull AudioFile @NonNull [] sounds) {
+    public InstantHitFactory(float hit_chance, float range, float release_ratio,
+            @NonNull AudioFile @NonNull [] sounds) {
         super(hit_chance, range, release_ratio);
         this.sounds = sounds;
     }

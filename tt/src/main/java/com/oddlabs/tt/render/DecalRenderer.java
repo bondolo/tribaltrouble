@@ -123,7 +123,8 @@ public final class DecalRenderer implements AutoCloseable {
         return radial;
     }
 
-    public @NonNull ScopedState setup(@NonNull RenderContext context, @NonNull LandscapeRenderer landscape, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public @NonNull ScopedState setup(@NonNull RenderContext context, @NonNull LandscapeRenderer landscape,
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         var shaderUseState = shader.use();
 
         shader.setUniform(DecalShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
@@ -162,7 +163,8 @@ public final class DecalRenderer implements AutoCloseable {
      *
      * @param color is assumed to be linear
      */
-    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size, @NonNull Color color, Selectable.@NonNull VisualPattern pattern) {
+    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size,
+            @NonNull Color color, Selectable.@NonNull VisualPattern pattern) {
         if (currentTexture != texture) {
             flush(context);
             currentTexture = texture;

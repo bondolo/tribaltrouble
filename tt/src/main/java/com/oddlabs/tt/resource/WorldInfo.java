@@ -11,7 +11,8 @@ public record WorldInfo(Landscape.@NonNull TerrainType terrain, int meters_per_w
                         int texels_per_colormap, int chunks_per_colormap,
                         @NonNull Texture @Nullable [] @NonNull [] colormaps, Maps maps, @NonNull Texture detail,
                         float @NonNull [] heightmap, @NonNull List<int @NonNull []> trees,
-                        @NonNull List<int @NonNull[]> palm_trees, @NonNull List<int @NonNull []> rocks, @NonNull List<int @NonNull[]> iron,
+                        @NonNull List<int @NonNull []> palm_trees, @NonNull List<int @NonNull []> rocks, @NonNull List<
+                                int @NonNull []> iron,
                         float @NonNull [] @NonNull [] plants, boolean @NonNull [] @NonNull [] access_grid,
                         byte @NonNull [] @NonNull [] build_grid, float @NonNull [] @NonNull [] starting_locations,
                         @NonNull FogInfo fog_info,

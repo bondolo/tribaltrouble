@@ -52,7 +52,8 @@ public final class RacesResources {
     public static final int QUARTERS_SIZE = 5;
     public static final int ARMORY_SIZE = 5;
     public static final int TOWER_SIZE = 3;
-    public static final int MAX_BUILDING_SIZE = IntStream.of(QUARTERS_SIZE, ARMORY_SIZE, TOWER_SIZE).max().orElseThrow();
+    public static final int MAX_BUILDING_SIZE = IntStream.of(QUARTERS_SIZE, ARMORY_SIZE, TOWER_SIZE).max()
+            .orElseThrow();
     public static final int QUARTERS_HIT_POINTS = 200;
     public static final int ARMORY_HIT_POINTS = 200;
     public static final int TOWER_HIT_POINTS = 100;
@@ -76,11 +77,11 @@ public final class RacesResources {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private static final @NonNull String [] race_names = {
+    private static final @NonNull String[] race_names = {
             i18n("natives"),
             i18n("vikings")
     };
@@ -136,7 +137,8 @@ public final class RacesResources {
         final float ring_thickness = BUILDING_RING_PHYSICAL_THICKNESS / shadow_diameter;
         Supplier<Texture[]> building_shadow_desc = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION,
                 new float[][]{{0.15f, 0.5f}, {0.5f, 0f}},
-                new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2 + fadeout, 0f}});
+                new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {
+                        ring_mid + ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2 + fadeout, 0f}});
         ShadowListKey shadow_renderer = queues.registerSelectableShadowList(building_shadow_desc);
         SpriteFile building = new SpriteFile(built_name,
                 Globals.NO_MIPMAP_CUTOFF,
@@ -265,7 +267,8 @@ public final class RacesResources {
                 5f, 1f,
                 22f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
-                new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO | Abilities.TARGET),
+                new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO
+                        | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
                 0f, 2.25f, 10f,
                 .25f, -2.8f, 13.1f,
@@ -316,7 +319,8 @@ public final class RacesResources {
                 5f, 1f,
                 16f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
-                new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO | Abilities.TARGET),
+                new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO
+                        | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
                 0f, -.4f, 12f,
                 0f, -1f, 11.5f,
@@ -377,27 +381,33 @@ public final class RacesResources {
                 true, true, true, false);
         ProgressForm.progress(1f / num_progress);
 
-        WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 29f / 58f,
+        WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f,
+                THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_ROCK),
                 Assets.SFX_WEAPON_AXE,
                 Assets.SFX_IMPACT_MEATS);
-        WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f, THROW_RANGE, 29f / 58f,
+        WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f,
+                THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_IRON),
                 Assets.SFX_WEAPON_AXE,
                 Assets.SFX_IMPACT_MEATS);
-        WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 29f / 58f,
+        WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new,
+                0.95f, THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_RUBBER),
                 Assets.SFX_WEAPON_AXE,
                 Assets.SFX_IMPACT_MEATS);
-        WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, 46f / 100f,
+        WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new,
+                0.5f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_ROCK),
                 Assets.SFX_WEAPON_SPEAR,
                 Assets.SFX_IMPACT_MEATS);
-        WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new, 0.75f, THROW_RANGE, 46f / 100f,
+        WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new,
+                0.75f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_IRON),
                 Assets.SFX_WEAPON_SPEAR,
                 Assets.SFX_IMPACT_MEATS);
-        WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class, RubberSpearWeapon::new, 0.95f, THROW_RANGE, 46f / 100f,
+        WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class,
+                RubberSpearWeapon::new, 0.95f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_RUBBER),
                 Assets.SFX_WEAPON_SPEAR,
                 Assets.SFX_IMPACT_MEATS);
@@ -586,12 +596,15 @@ public final class RacesResources {
                 40);
 
         MagicFactory[] native_magic = new MagicFactory[NUM_MAGIC];
-        native_magic[INDEX_MAGIC_POISON] = new PoisonFogFactory(0.9f, 0f, 0.55f, 26f, .5f, 2f, 20f, 10, 5f, 80f / 224f, 163f / 224f);
-        native_magic[INDEX_MAGIC_LIGHTNING] = new LightningCloudFactory(0.9f, 0f, 0.55f, 22f, 1f, 8f, 1f, 30, 18f, 5f, 80f / 224f, 163f / 224f);
+        native_magic[INDEX_MAGIC_POISON] = new PoisonFogFactory(0.9f, 0f, 0.55f, 26f, .5f, 2f, 20f, 10, 5f, 80f / 224f,
+                163f / 224f);
+        native_magic[INDEX_MAGIC_LIGHTNING] = new LightningCloudFactory(0.9f, 0f, 0.55f, 22f, 1f, 8f, 1f, 30, 18f, 5f,
+                80f / 224f, 163f / 224f);
 
         MagicFactory[] viking_magic = new MagicFactory[NUM_MAGIC];
         viking_magic[INDEX_MAGIC_STUN] = new StunFactory(2.57f, 0f, 3.8f, 36f, 30f, 10f, 6f, 57f / 159f, 100f / 159f);
-        viking_magic[INDEX_MAGIC_BLAST] = new SonicBlastFactory(2.57f, 0f, 3.8f, 36f, 17f, 2f, 150, 30, .8f, 6f, 57f / 159f, 100f / 159f);
+        viking_magic[INDEX_MAGIC_BLAST] = new SonicBlastFactory(2.57f, 0f, 3.8f, 36f, 17f, 2f, 150, 30, .8f, 6f, 57f
+                / 159f, 100f / 159f);
 
         ProgressForm.progress(1f / num_progress);
         GUIIcons icons = GUIIcons.getIcons();

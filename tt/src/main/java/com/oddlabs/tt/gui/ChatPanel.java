@@ -44,7 +44,8 @@ public class ChatPanel extends Panel implements ChatListener {
         return Utils.getBundleString(getBundle(), key);
     }
 
-    public ChatPanel(@NonNull GUIRoot gui_root, @NonNull ChatRoomInfo info, int compare_width, int compare_height, int button_width, @NonNull EnterListener chat_listener, @NonNull MouseClickListener leave_listener) {
+    public ChatPanel(@NonNull GUIRoot gui_root, @NonNull ChatRoomInfo info, int compare_width, int compare_height,
+            int button_width, @NonNull EnterListener chat_listener, @NonNull MouseClickListener leave_listener) {
         super(getI18N("chat"));
         this.gui_root = gui_root;
         FormData fdata = Skin.getSkin().getFormData();
@@ -54,10 +55,13 @@ public class ChatPanel extends Panel implements ChatListener {
         Label label_headline = new Label(info.name(), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
-        int edit_line_height = edata.getBottomOffset() + edata.getTopOffset() + Skin.getSkin().getEditFont().getHeight();
-        int height = compare_height - pdata.getTopOffset() - pdata.getBottomOffset() - edit_line_height - label_headline.getHeight() - 2 * fdata.objectSpacing();
+        int edit_line_height = edata.getBottomOffset() + edata.getTopOffset() + Skin.getSkin().getEditFont()
+                .getHeight();
+        int height = compare_height - pdata.getTopOffset() - pdata.getBottomOffset() - edit_line_height - label_headline
+                .getHeight() - 2 * fdata.objectSpacing();
         int user_list_height = (height - Skin.getSkin().getFormData().objectSpacing()) / 2;//- Skin.getSkin().editFont().getHeight();
-        user_list_width = 2 * button_width + 2 * fdata.objectSpacing() - Skin.getSkin().getScrollBarData().scrollBar().getWidth();
+        user_list_width = 2 * button_width + 2 * fdata.objectSpacing() - Skin.getSkin().getScrollBarData().scrollBar()
+                .getWidth();
 
         ColumnInfo[] lobby_infos = new ColumnInfo[]{
                 new ColumnInfo(getI18N("lobby"), user_list_width)};
@@ -76,7 +80,8 @@ public class ChatPanel extends Panel implements ChatListener {
         lobby_pulldown_menu.addItemChosenListener(new PulldownListener(lobby_users_list_box));
         lobby_users_list_box.setPulldownMenu(lobby_pulldown_menu);
 
-        ChatRoomUserDoubleClickedListener lobby_double_clicked = new ChatRoomUserDoubleClickedListener(lobby_pulldown_menu);
+        ChatRoomUserDoubleClickedListener lobby_double_clicked = new ChatRoomUserDoubleClickedListener(
+                lobby_pulldown_menu);
         lobby_users_list_box.addRowListener(lobby_double_clicked);
 
         PulldownMenu<ChatRoomUser> playing_pulldown_menu = new PulldownMenu<>();
@@ -86,7 +91,8 @@ public class ChatPanel extends Panel implements ChatListener {
         playing_pulldown_menu.addItemChosenListener(new PulldownListener(playing_users_list_box));
         playing_users_list_box.setPulldownMenu(playing_pulldown_menu);
 
-        ChatRoomUserDoubleClickedListener playing_double_clicked = new ChatRoomUserDoubleClickedListener(playing_pulldown_menu);
+        ChatRoomUserDoubleClickedListener playing_double_clicked = new ChatRoomUserDoubleClickedListener(
+                playing_pulldown_menu);
         playing_users_list_box.addRowListener(playing_double_clicked);
 
         int width = compare_width - pdata.getLeftOffset() - pdata.getRightOffset() - lobby_users_list_box.getWidth();
@@ -124,8 +130,10 @@ public class ChatPanel extends Panel implements ChatListener {
             lobby_users_list_box.clear();
             playing_users_list_box.clear();
             for (ChatRoomUser user : users) {
-                int label_width = user_list_width - (Skin.getSkin().getMultiColumnComboBoxData().box().getLeftOffset() + Skin.getSkin().getMultiColumnComboBoxData().box().getRightOffset());
-                Label label = new Label(user.getNick(), Skin.getSkin().getMultiColumnComboBoxData().font(), label_width);
+                int label_width = user_list_width - (Skin.getSkin().getMultiColumnComboBoxData().box().getLeftOffset()
+                        + Skin.getSkin().getMultiColumnComboBoxData().box().getRightOffset());
+                Label label = new Label(user.getNick(), Skin.getSkin().getMultiColumnComboBoxData().font(),
+                        label_width);
                 Row<ChatRoomUser, Label> row = new Row<>(new Label[]{label}, user);
                 if (!user.isPlaying()) {
                     lobby_users_list_box.addRow(row);
@@ -148,7 +156,8 @@ public class ChatPanel extends Panel implements ChatListener {
     }
 
     private void refreshMessages() {
-        List<@NonNull String> messages = Renderer.getRenderer().getNetwork().getMatchmakingClient().getChatRoomHistory();
+        List<@NonNull String> messages = Renderer.getRenderer().getNetwork().getMatchmakingClient()
+                .getChatRoomHistory();
         chat_box.clear();
         boolean first = true;
         for (var message : messages) {
@@ -175,7 +184,7 @@ public class ChatPanel extends Panel implements ChatListener {
     private final class PulldownListener implements ItemChosenListener<@NonNull ChatRoomUser> {
         private final MultiColumnComboBox<ChatRoomUser> box;
 
-         PulldownListener(MultiColumnComboBox<@NonNull ChatRoomUser> box) {
+        PulldownListener(MultiColumnComboBox<@NonNull ChatRoomUser> box) {
             this.box = box;
         }
 
@@ -185,7 +194,8 @@ public class ChatPanel extends Panel implements ChatListener {
             String nick = user.getNick();
             switch (item_index) {
                 case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, nick));
-                case PULLDOWN_INDEX_INFO -> Renderer.getRenderer().getNetwork().getMatchmakingClient().requestInfo(gui_root, nick);
+                case PULLDOWN_INDEX_INFO -> Renderer.getRenderer().getNetwork().getMatchmakingClient().requestInfo(
+                        gui_root, nick);
                 case PULLDOWN_INDEX_IGNORE -> {
                     if (ChatCommand.isIgnoring(nick))
                         ChatCommand.unignore(gui_root.getInfoPrinter(), nick);
@@ -201,7 +211,7 @@ public class ChatPanel extends Panel implements ChatListener {
     private final class ChatRoomUserDoubleClickedListener implements RowListener<@NonNull ChatRoomUser> {
         private final @NonNull PulldownMenu<@NonNull ChatRoomUser> menu;
 
-         ChatRoomUserDoubleClickedListener(@NonNull PulldownMenu<@NonNull ChatRoomUser> menu) {
+        ChatRoomUserDoubleClickedListener(@NonNull PulldownMenu<@NonNull ChatRoomUser> menu) {
             this.menu = menu;
         }
 

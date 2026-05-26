@@ -49,11 +49,13 @@ public final class GameSession implements Serializable {
     public boolean equals(@Nullable Object other) {
         if (!(other instanceof GameSession other_game))
             return false;
-        return other_game.session_id == session_id && Arrays.equals(other_game.participants, participants) && rated == other_game.rated;
+        return other_game.session_id == session_id && Arrays.equals(other_game.participants, participants) && rated
+                == other_game.rated;
     }
 
     public boolean validate() {
-        return participants != null && participants.length <= MatchmakingServerInterface.MAX_PLAYERS && participants.length >= MatchmakingServerInterface.MIN_PLAYERS &&
+        return participants != null && participants.length <= MatchmakingServerInterface.MAX_PLAYERS
+                && participants.length >= MatchmakingServerInterface.MIN_PLAYERS &&
                 validateTeams();
     }
 

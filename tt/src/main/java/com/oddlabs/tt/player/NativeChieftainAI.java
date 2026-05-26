@@ -36,20 +36,22 @@ public final class NativeChieftainAI extends ChieftainAI {
         if (chieftain.getMagicProgress(RacesResources.INDEX_MAGIC_POISON) < 1)
             return;
 
-        float hit_radius = chieftain.getOwner().getRace().getMagicFactory(RacesResources.INDEX_MAGIC_POISON).getHitRadius();
+        float hit_radius = chieftain.getOwner().getRace().getMagicFactory(RacesResources.INDEX_MAGIC_POISON)
+                .getHitRadius();
         int num_enemy_units = numEnemyUnits(chieftain.getOwner());
         int num_enemy_units_close = getNumEnemyUnitsClose(chieftain, hit_radius);
         int num_friendly_units_close = getNumFriendlyUnitsClose(chieftain, hit_radius);
         if (2 * num_friendly_units_close < num_enemy_units_close
                 && (num_enemy_units_close >= NUM_UNITS_FOR_POISON
-                || (num_enemy_units < NUM_UNITS_FOR_POISON && num_enemy_units_close > 1)
-                || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
+                        || (num_enemy_units < NUM_UNITS_FOR_POISON && num_enemy_units_close > 1)
+                        || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
             chieftain.doMagic(RacesResources.INDEX_MAGIC_POISON, false);
         }
     }
 
     private int getNumEnemyUnitsClose(@NonNull Unit chieftain, float hit_radius) {
-        var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain, Unit.class);
+        var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
+                Unit.class);
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
         long num_enemy_units_close = StreamSupport.stream(filter.getResult().spliterator(), false)
                 .filter(Selectable::isAlive)
@@ -63,7 +65,8 @@ public final class NativeChieftainAI extends ChieftainAI {
     }
 
     private int getNumFriendlyUnitsClose(@NonNull Unit chieftain, float hit_radius) {
-        var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain, Selectable.genericClass());
+        var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
+                Selectable.genericClass());
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
         long num_friendly_units_close = StreamSupport.stream(filter.getResult().spliterator(), false)
                 .filter(Selectable::isAlive)

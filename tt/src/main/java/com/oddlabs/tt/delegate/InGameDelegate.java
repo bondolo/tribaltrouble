@@ -39,7 +39,8 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
 
         if (actions.contains(GameAction.CHEAT_1)) {
             // F1 creates a peon at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
+                    .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_PEON));
@@ -48,7 +49,8 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         }
         if (actions.contains(GameAction.CHEAT_2)) {
             // F2 creates a rock warrior at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
+                    .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
@@ -57,7 +59,8 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         }
         if (actions.contains(GameAction.CHEAT_3)) {
             // F3 creates an iron warrior at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
+                    .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
@@ -66,7 +69,8 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         }
         if (actions.contains(GameAction.CHEAT_4)) {
             // F4 creates a chicken warrior at the center of the view unless the player already has maximum units.
-            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer.getParameters().getMaxUnitCount()) {
+            if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
+                    .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
@@ -75,7 +79,8 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         }
         if (actions.contains(GameAction.CHEAT_5)) {
             // F5 creates a chieftain at the center of the view unless the player already has one or is training one
-            if (pickLocation.isPresent() && !viewer.getLocalPlayer().hasActiveChieftain() && !viewer.getLocalPlayer().isTrainingChieftain()) {
+            if (pickLocation.isPresent() && !viewer.getLocalPlayer().hasActiveChieftain() && !viewer.getLocalPlayer()
+                    .isTrainingChieftain()) {
                 var location = pickLocation.get();
                 Unit chieftain = new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN));

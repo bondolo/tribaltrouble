@@ -20,22 +20,24 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
     private static final float INITIAL_PARTICLE_ALPHA = 3.0f;
     private static final float MIN_EMITTER_ENERGY = 3.0f;
     private static final float MAX_EMITTER_ENERGY = 5.0f;
-    
+
     private static final float EMITTER_RADIUS_XY = 0.01f;
     private static final float EMITTER_HEIGHT = 0.5f;
     private static final float SPREAD_FACTOR = 0.7f;
     private static final float PARTICLES_PER_SECOND = 25.0f;
-    
+
     private static final Vector3fc ZERO_VEC = new Vector3f(0f, 0f, 0f);
     private static final Vector3fc PARTICLE_VELOCITY = new Vector3f(0f, 0f, 5f);
-    private static final Color PARTICLE_BASE_COLOR = new Color.Linear(new Color.Standard(0.3f, 0.3f, 0.3f, INITIAL_PARTICLE_ALPHA));
+    private static final Color PARTICLE_BASE_COLOR = new Color.Linear(new Color.Standard(0.3f, 0.3f, 0.3f,
+            INITIAL_PARTICLE_ALPHA));
     private static final Vector3fc PARTICLE_RADIUS = new Vector3f(1.5f, 1.5f, 1.5f);
     private static final Vector3fc PARTICLE_GROWTH = new Vector3f(0.6f, 0.6f, 0.6f);
 
     private final @NonNull LinearEmitter emitter;
     private final float hitOffsetZ;
 
-    public BuildingDamagedAccessory(@NonNull Building building, float hitOffsetZ, @NonNull TextureKey @NonNull [] textures) {
+    public BuildingDamagedAccessory(@NonNull Building building, float hitOffsetZ,
+            @NonNull TextureKey @NonNull [] textures) {
         this.hitOffsetZ = hitOffsetZ;
         this.emitter = new RandomVelocityEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f), 0f, 0f,
                 EMITTER_RADIUS_XY, EMITTER_RADIUS_XY, EMITTER_HEIGHT, SPREAD_FACTOR,
@@ -61,14 +63,15 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
             boolean isDamaged = !building.isDead() && building.isComplete() && hp < startSmoke;
 
             if (isDamaged) {
-                float energy = MIN_EMITTER_ENERGY + ((1 - (float) hp / startSmoke) * (MAX_EMITTER_ENERGY - MIN_EMITTER_ENERGY));
+                float energy = MIN_EMITTER_ENERGY + ((1 - (float) hp / startSmoke) * (MAX_EMITTER_ENERGY
+                        - MIN_EMITTER_ENERGY));
                 emitter.start();
                 emitter.setDeltaColor(new Color.LinearDelta(0f, 0f, 0f, -INITIAL_PARTICLE_ALPHA / energy));
                 emitter.setEnergy(energy);
             } else {
                 emitter.stop();
             }
-            
+
             return isDamaged || !emitter.isFinished();
         }
         return false;

@@ -28,7 +28,8 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
      */
     protected volatile @Nullable Audio audio;
 
-    protected QueuedAudioPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters params) {
+    protected QueuedAudioPlayer(@Nullable AudioSource source, float x, float y, float z,
+            @NonNull AudioParameters params) {
         super(source, x, y, z, params);
         if (!isPlaying() || this.source == null) {
             return;
@@ -51,7 +52,7 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     }
 
     private void refiller(@NonNull URL source) {
-        try (OGGStream stream = new OGGStream(source)){
+        try (OGGStream stream = new OGGStream(source)) {
             this.audio = initAsync(stream);
             if (this.audio == null) {
                 return;
@@ -83,9 +84,9 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
                     }
                 }
             }
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             logger.log(Level.SEVERE, "Failed to read OGG stream " + source, ioe);
-        } catch(Exception _) {
+        } catch (Exception _) {
             // Failed to load, init, or read. Exit silently.
         } finally {
             try {
@@ -98,7 +99,7 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
 
     /** Run by the Refiller thread */
     protected abstract @Nullable Audio initAsync(@NonNull OGGStream stream) throws Exception;
-    
+
     /** Run by the Refiller thread */
     protected abstract void refill(@NonNull OGGStream stream) throws IOException;
 

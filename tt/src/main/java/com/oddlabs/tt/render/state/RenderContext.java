@@ -18,9 +18,13 @@ public interface RenderContext {
 
     // Low-level state
     void setDepthTest(boolean enabled);
+
     void setDepthMask(boolean enabled);
+
     void setBlend(boolean enabled);
+
     void setCullFace(boolean enabled);
+
     void setCullFaceMode(int mode);
 
     // Depth Func
@@ -58,8 +62,11 @@ public interface RenderContext {
     void bindFramebuffer(int target, int framebuffer);
 
     void invalidateTexture(int handle);
+
     void invalidateBuffer(int handle);
+
     void invalidateFramebuffer(int handle);
+
     void invalidateVertexArray(int handle);
 
     default void bindBuffer(int target, @Nullable VBO vbo) {
@@ -73,27 +80,36 @@ public interface RenderContext {
 
     // Scoped State (Try-with-resources)
     // These return a Closeable that restores the PREVIOUS state.
-    @NonNull ScopedState withBlendMode(@NonNull BlendMode mode);
+    @NonNull
+    ScopedState withBlendMode(@NonNull BlendMode mode);
 
-    @NonNull ScopedState withDepthMode(@NonNull DepthMode mode);
+    @NonNull
+    ScopedState withDepthMode(@NonNull DepthMode mode);
 
-    @NonNull ScopedState withCullMode(@NonNull CullMode mode);
+    @NonNull
+    ScopedState withCullMode(@NonNull CullMode mode);
 
-    @NonNull ScopedState withSampleAlphaToCoverage(boolean enabled);
+    @NonNull
+    ScopedState withSampleAlphaToCoverage(boolean enabled);
 
-    @NonNull ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a);
+    @NonNull
+    ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a);
 
-    @NonNull ScopedState withDepthFunc(int func);
+    @NonNull
+    ScopedState withDepthFunc(int func);
 
-    @NonNull ScopedState withDrawBuffers(boolean mask);
+    @NonNull
+    ScopedState withDrawBuffers(boolean mask);
 
-    @NonNull ScopedState withFramebufferSrgb(boolean enabled);
+    @NonNull
+    ScopedState withFramebufferSrgb(boolean enabled);
 
     // UBO Management
     void updateGlobalState(java.nio.@NonNull ByteBuffer data);
 
     // Custom State
     void setBlendFunc(int src, int dst);
+
     void setBlendEquation(int equation);
 
     /**

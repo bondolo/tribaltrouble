@@ -56,7 +56,8 @@ public final class KeyManager {
         }
     }
 
-    public static @NonNull Cipher createCipher(int cipher_mode, @NonNull KeyAgreement key_agreement, PublicKey public_key) throws InvalidKeyException, IOException, InvalidAlgorithmParameterException {
+    public static @NonNull Cipher createCipher(int cipher_mode, @NonNull KeyAgreement key_agreement,
+            PublicKey public_key) throws InvalidKeyException, IOException, InvalidAlgorithmParameterException {
         try {
             key_agreement.doPhase(public_key, true);
             SecretKey secret_key = key_agreement.generateSecret("DESede");
@@ -68,7 +69,8 @@ public final class KeyManager {
         }
     }
 
-    public static PrivateKey readPrivateKey(byte @NonNull [] encoded_private_key, @NonNull String algorithm) throws InvalidKeySpecException {
+    public static PrivateKey readPrivateKey(byte @NonNull [] encoded_private_key, @NonNull String algorithm)
+            throws InvalidKeySpecException {
         try {
             KeyFactory key_factory = KeyFactory.getInstance(algorithm);
             KeySpec key_spec = new PKCS8EncodedKeySpec(encoded_private_key);
@@ -78,7 +80,8 @@ public final class KeyManager {
         }
     }
 
-    public static PublicKey readPublicKey(byte @NonNull [] encoded_public_key, @NonNull String algorithm) throws InvalidKeySpecException {
+    public static PublicKey readPublicKey(byte @NonNull [] encoded_public_key, @NonNull String algorithm)
+            throws InvalidKeySpecException {
         try {
             KeyFactory key_factory = KeyFactory.getInstance(algorithm);
             KeySpec key_spec = new X509EncodedKeySpec(encoded_public_key);
@@ -111,7 +114,8 @@ public final class KeyManager {
         }
     }
 
-    public static @NonNull Cipher createPasswordCipherFromPassword(char[] password, int mode) throws IOException, GeneralSecurityException {
+    public static @NonNull Cipher createPasswordCipherFromPassword(char[] password, int mode) throws IOException,
+            GeneralSecurityException {
         PBEKeySpec pbeKeySpec;
         PBEParameterSpec pbeParamSpec;
         SecretKeyFactory keyFac;
@@ -145,7 +149,8 @@ public final class KeyManager {
         return pbeCipher;
     }
 
-    public static @NonNull Cipher createPasswordCipher(String pass_prompt, int mode) throws IOException, GeneralSecurityException {
+    public static @NonNull Cipher createPasswordCipher(String pass_prompt, int mode) throws IOException,
+            GeneralSecurityException {
         return createPasswordCipherFromPassword(readPassword(pass_prompt, System.in), mode);
     }
 

@@ -44,10 +44,10 @@ public final class ArrowButton extends ButtonObject {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isPressed() && isHovered()
-                  ? ModeIconQuads.Mode.ACTIVE
-                  : isActive()
-                    ? ModeIconQuads.Mode.ACTIVE // Active state for button
-                    : ModeIconQuads.Mode.NORMAL;
+                        ? ModeIconQuads.Mode.ACTIVE
+                : isActive()
+                        ? ModeIconQuads.Mode.ACTIVE // Active state for button
+                : ModeIconQuads.Mode.NORMAL;
 
         var quad_to_render_button = (!isDisabled() && isPressed() && isHovered() ? pressed : unpressed);
 

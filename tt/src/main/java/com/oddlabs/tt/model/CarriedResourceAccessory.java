@@ -31,9 +31,9 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     public boolean isVisible(@NonNull AccessorizableModel parent) {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         return unit.getAbilities().hasAbilities(Abilities.BUILD) &&
-               supply_container != null &&
-               supply_container.getSupplyType() != null &&
-               supply_container.getNumSupplies() > 0;
+                supply_container != null &&
+                supply_container.getSupplyType() != null &&
+                supply_container.getNumSupplies() > 0;
     }
 
     @Override

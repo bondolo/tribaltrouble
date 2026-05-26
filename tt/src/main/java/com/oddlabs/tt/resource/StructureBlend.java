@@ -12,11 +12,13 @@ public final class StructureBlend extends BlendInfo {
     private final @NonNull Texture normal_map;
 
     private @NonNull Texture createStructureMap(GLIntImage structure_image) {
-        return new Texture(new GLIntImage[]{structure_image}, GL21.GL_SRGB8, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+        return new Texture(new GLIntImage[]{structure_image}, GL21.GL_SRGB8, GL11.GL_LINEAR, GL11.GL_LINEAR,
+                GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
     private @NonNull Texture createNormalMap(GLIntImage normal_image) {
-        return new Texture(new GLIntImage[]{normal_image}, GL11.GL_RGB, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+        return new Texture(new GLIntImage[]{normal_image}, GL11.GL_RGB, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT,
+                GL11.GL_REPEAT);
     }
 
     public StructureBlend(GLIntImage structure_image, GLIntImage normal_image, @NonNull GLByteImage alpha_image) {

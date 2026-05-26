@@ -124,7 +124,8 @@ public final class LWJGL3Window implements Window {
                 if (vidmode != null) {
                     int x = (vidmode.width() - mode.getWidth()) / 2;
                     int y = (vidmode.height() - mode.getHeight()) / 2;
-                    glfwSetWindowMonitor(windowHandle, MemoryUtil.NULL, x, y, mode.getWidth(), mode.getHeight(), refreshRate);
+                    glfwSetWindowMonitor(windowHandle, MemoryUtil.NULL, x, y, mode.getWidth(), mode.getHeight(),
+                            refreshRate);
                 }
             }
 
@@ -132,7 +133,8 @@ public final class LWJGL3Window implements Window {
                 glfwSetWindowSize(windowHandle, mode.getWidth(), mode.getHeight());
             }
 
-            glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
+            glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT,
+                    GLFW_DONT_CARE, GLFW_DONT_CARE);
 
             glfwFocusWindow(windowHandle);
             syncViewport();
@@ -171,7 +173,8 @@ public final class LWJGL3Window implements Window {
             throw new IllegalStateException("Failed to create the GLFW window");
         }
 
-        glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT, GLFW_DONT_CARE, GLFW_DONT_CARE);
+        glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT,
+                GLFW_DONT_CARE, GLFW_DONT_CARE);
 
         // Center the window if not fullscreen
         if (!fullscreen) {

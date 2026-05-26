@@ -34,9 +34,9 @@ public final class Lightning extends Element<Lightning> implements Animated {
     private final float energy;
 
     public Lightning(@NonNull World world, @NonNull Vector3fc src, @NonNull Vector3fc dst, float width,
-                     int num_particles, @NonNull Color color, @NonNull Color delta_color,
-                     @NonNull TextureKey texture, float energy,
-                     @NonNull AnimationManager manager) {
+            int num_particles, @NonNull Color color, @NonNull Color delta_color,
+            @NonNull TextureKey texture, float energy,
+            @NonNull AnimationManager manager) {
         super(world.getElementRoot());
         this.world = world;
         this.src = src;

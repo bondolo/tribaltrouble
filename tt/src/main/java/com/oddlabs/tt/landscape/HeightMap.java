@@ -34,7 +34,9 @@ public final class HeightMap {
     private final World world_instance;
     private final com.oddlabs.tt.render.@NonNull Texture heightTexture;
 
-    public HeightMap(World world_instance, int meters_per_world, float sea_level_meters, int texels_per_colormap, int chunks_per_colormap, float @NonNull [] world, List<int[]> trees, boolean[][] access_grid, byte[][] build_grid) {
+    public HeightMap(World world_instance, int meters_per_world, float sea_level_meters, int texels_per_colormap,
+            int chunks_per_colormap, float @NonNull [] world, List<int[]> trees, boolean[][] access_grid,
+            byte[][] build_grid) {
         this.world = world;
         this.world_instance = world_instance;
         this.trees = trees;
@@ -51,7 +53,8 @@ public final class HeightMap {
         quadtree_min_level = (int) (Math.log(chunks_per_colormap) / Math.log(2));
         patches_per_chunk = meters_per_chunk / getMetersPerPatch();
 
-        int texels_per_colormap_noborder = texels_per_colormap - 2 * Globals.TEXELS_PER_CHUNK_BORDER * chunks_per_colormap;
+        int texels_per_colormap_noborder = texels_per_colormap - 2 * Globals.TEXELS_PER_CHUNK_BORDER
+                * chunks_per_colormap;
         float meters_per_texel = (float) getMetersPerWorld() / texels_per_colormap_noborder;
         meters_per_chunk_border = meters_per_texel * Globals.TEXELS_PER_CHUNK_BORDER;
         chunk_tex_scale = 1f / (meters_per_chunk + 2f * meters_per_chunk_border);
@@ -59,7 +62,9 @@ public final class HeightMap {
         landscape_leaves = new LandscapeLeaf[getPatchesPerWorld()][getPatchesPerWorld()];
 
         // Create Height Texture
-        heightTexture = new com.oddlabs.tt.render.Texture(world, grid_units_per_world, grid_units_per_world, org.lwjgl.opengl.GL30.GL_R32F, org.lwjgl.opengl.GL11.GL_LINEAR, org.lwjgl.opengl.GL11.GL_LINEAR, org.lwjgl.opengl.GL11.GL_REPEAT);
+        heightTexture = new com.oddlabs.tt.render.Texture(world, grid_units_per_world, grid_units_per_world,
+                org.lwjgl.opengl.GL30.GL_R32F, org.lwjgl.opengl.GL11.GL_LINEAR, org.lwjgl.opengl.GL11.GL_LINEAR,
+                org.lwjgl.opengl.GL11.GL_REPEAT);
     }
 
     public com.oddlabs.tt.render.@NonNull Texture getHeightTexture() {
@@ -146,7 +151,8 @@ public final class HeightMap {
                 x2, y2, getWrappedHeight(x2, y2), plane);
     }
 
-    private static void makePlaneVector(float h1x, float h1y, float h1z, float h2x, float h2y, float h2z, float h3x, float h3y, float h3z, @NonNull Vector3f plane) {
+    private static void makePlaneVector(float h1x, float h1y, float h1z, float h2x, float h2y, float h2z, float h3x,
+            float h3y, float h3z, @NonNull Vector3f plane) {
         float v1x = h2x - h1x;
         float v1y = h2y - h1y;
         float v1z = h2z - h1z;
@@ -167,7 +173,8 @@ public final class HeightMap {
         return plane.x * x + plane.y * y + plane.z;
     }
 
-    private static float doPlane(float x, float y, float h1x, float h1y, float h1z, float h2x, float h2y, float h2z, float h3x, float h3y, float h3z) {
+    private static float doPlane(float x, float y, float h1x, float h1y, float h1z, float h2x, float h2y, float h2z,
+            float h3x, float h3y, float h3z) {
         makePlaneVector(h1x, h1y, h1z, h2x, h2y, h2z, h3x, h3y, h3z, plane);
         return planeHeight(x, y, plane);
     }
@@ -275,8 +282,8 @@ public final class HeightMap {
         int patch_x0 = (patch_x1 - (x_border ? 1 : 0) + patches_per_world) % patches_per_world;
         int patch_y0 = (patch_y1 - (y_border ? 1 : 0) + patches_per_world) % patches_per_world;
 
-        for (int y = patch_y0; ; y = (y + 1) % patches_per_world) {
-            for (int x = patch_x0; ; x = (x + 1) % patches_per_world) {
+        for (int y = patch_y0;; y = (y + 1) % patches_per_world) {
+            for (int x = patch_x0;; x = (x + 1) % patches_per_world) {
                 landscape_leaves[y][x].editHeight(height);
                 if (x == patch_x1) break;
             }

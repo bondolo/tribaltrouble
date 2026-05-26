@@ -44,7 +44,8 @@ public final class Server implements ConnectionListenerInterface {
     private int state = NEGOTIATING;
     private final boolean register_server;
 
-    public Server(@NonNull NetworkSelector network, Game game, InetAddress ip, WorldGenerator generator, boolean register_server, String[] ai_names) {
+    public Server(@NonNull NetworkSelector network, Game game, InetAddress ip, WorldGenerator generator,
+            boolean register_server, String[] ai_names) {
         this.local_listener = new ConnectionListener(network, ip, Globals.NET_PORT, this);
         this.game = game;
         this.generator = generator;
@@ -55,10 +56,10 @@ public final class Server implements ConnectionListenerInterface {
         for (short i = 0; i < players.length; i++) {
             players[i] = new PlayerSlot(i);
             players[i].setReady(i != 0);
-/*			players[i] = new PlayerInfo(i%max_teams);
-			players[i].setType(PlayerSlot.OPEN);
-			players[i].setRace((int)(random.nextFloat()*(RacesResources.getNumRaces() - 1) + .5f));
-			players[i].setReady(i != 0);*/
+            /*			players[i] = new PlayerInfo(i%max_teams);
+            			players[i].setType(PlayerSlot.OPEN);
+            			players[i].setRace((int)(random.nextFloat()*(RacesResources.getNumRaces() - 1) + .5f));
+            			players[i].setReady(i != 0);*/
         }
     }
 
@@ -175,7 +176,8 @@ public final class Server implements ConnectionListenerInterface {
         broadcastInits();
     }
 
-    public void setPlayerSlot(@NonNull PlayerSlot client_slot, int slot, int type, int race, int team, boolean ready, int ai_difficulty) {
+    public void setPlayerSlot(@NonNull PlayerSlot client_slot, int slot, int type, int race, int team, boolean ready,
+            int ai_difficulty) {
         if (!PlayerSlot.isValidType(type) || !RacesResources.isValidRace(race))
             return;
         if (!canControlSlot(client_slot, slot) || (client_slot.getSlot() == slot && type != PlayerSlot.HUMAN))
@@ -192,7 +194,8 @@ public final class Server implements ConnectionListenerInterface {
             name = player_slot.getInfo().getName();
         }
         PlayerInfo player_info = new PlayerInfo(team, race, name);
-        boolean reset_ready = player_slot.getInfo() == null || type != player_slot.getType() || ai_difficulty != player_slot.getAIDifficulty() || !player_info.equals(player_slot.getInfo());
+        boolean reset_ready = player_slot.getInfo() == null || type != player_slot.getType() || ai_difficulty
+                != player_slot.getAIDifficulty() || !player_info.equals(player_slot.getInfo());
         player_slot.setType(type);
         player_slot.setAIDifficulty(ai_difficulty);
         player_slot.setInfo(player_info);
@@ -236,7 +239,8 @@ public final class Server implements ConnectionListenerInterface {
         Iterator<ClientConnection> it = getClientIterator();
         while (it.hasNext()) {
             ClientConnection client = it.next();
-            int session_id = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick()).nextInt();
+            int session_id = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick())
+                    .nextInt();
             client.getClientInterface().startGame(session_id);
         }
     }
@@ -257,7 +261,8 @@ public final class Server implements ConnectionListenerInterface {
                 (remote_address instanceof InetAddress address && !address.isLoopbackAddress()) ||
                 (remote_address instanceof TunnelIdentifier identifier && game != null && game.isRated() &&
                         identifier.profile().getWins() < GameSession.MIN_WINS_FOR_RANKING)) {
-            IO.println("rejecting incoming connection since state = " + state + " | locateAvailableSlot() = " + available_slot + " remote_address = " + remote_address);
+            IO.println("rejecting incoming connection since state = " + state + " | locateAvailableSlot() = "
+                    + available_slot + " remote_address = " + remote_address);
             connection_listener.rejectConnection();
             return;
         }
@@ -287,7 +292,8 @@ public final class Server implements ConnectionListenerInterface {
         int max_teams = MatchmakingServerInterface.MAX_PLAYERS;
         if (game != null && game.isRated())
             max_teams = 2;
-        PlayerInfo player_info = new PlayerInfo(available_slot % max_teams, random.nextInt(RacesResources.getNumRaces()), name);
+        PlayerInfo player_info = new PlayerInfo(available_slot % max_teams, random.nextInt(RacesResources
+                .getNumRaces()), name);
         player_slot.setRating(rating);
         player_slot.setType(PlayerSlot.HUMAN);
         player_slot.setAddress(address);

@@ -11,11 +11,13 @@ public non-sealed interface Supply extends Occupant, ModelToolTip {
 
     boolean hit();
 
-    @NonNull Supply respawn();
+    @NonNull
+    Supply respawn();
 
     void animateSpawn(float t, float progress);
 
     void spawnComplete();
 
-    @NonNull World getWorld();
+    @NonNull
+    World getWorld();
 }

@@ -29,7 +29,8 @@ public class KeyBindingDialog extends Form {
     private final @NonNull Consumer<List<InputBinding>> onBindingChosen;
     private final @NonNull GUIRoot guiRoot;
 
-    public KeyBindingDialog(@NonNull GUIRoot guiRoot, @NonNull GameAction action, @NonNull Consumer<@NonNull List<@NonNull InputBinding>> onBindingChosen) {
+    public KeyBindingDialog(@NonNull GUIRoot guiRoot, @NonNull GameAction action, @NonNull Consumer<@NonNull List<
+            @NonNull InputBinding>> onBindingChosen) {
         this.guiRoot = guiRoot;
         this.action = action;
         this.onBindingChosen = onBindingChosen;
@@ -89,7 +90,8 @@ public class KeyBindingDialog extends Form {
                 return;
             }
 
-            boolean isModifierKey = (key == Key.LSHIFT || key == Key.RSHIFT || key == Key.LCONTROL || key == Key.RCONTROL || key == Key.LALT || key == Key.RALT || key == Key.LSUPER || key == Key.RSUPER);
+            boolean isModifierKey = (key == Key.LSHIFT || key == Key.RSHIFT || key == Key.LCONTROL || key
+                    == Key.RCONTROL || key == Key.LALT || key == Key.RALT || key == Key.LSUPER || key == Key.RSUPER);
 
             if (!isModifierKey && key != null && key != Key.KEY_UNKNOWN) {
                 var modifiers = EnumSet.noneOf(Modifier.class);

@@ -8,7 +8,8 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
-public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply, RubberSupply, RockSupply {
+public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply, RubberSupply,
+        RockSupply {
     private static final float SPAWN_OFFSET_Z = -2f;
 
     private final @NonNull SpriteKey sprite_renderer;
@@ -25,7 +26,8 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     private int hit_counter = 0;
 
     @SuppressWarnings("unchecked")
-    public SupplyModel(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y, float x, float y, float rotation, int num_supplies, boolean increase_count) {
+    public SupplyModel(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y,
+            float x, float y, float rotation, int num_supplies, boolean increase_count) {
         super(world);
         this.sprite_renderer = sprite_renderer;
         this.size = size;

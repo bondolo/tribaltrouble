@@ -33,8 +33,10 @@ public final class PointerInput {
     public void loadCursors() {
         debug_cursor = Resources.findResource(new CursorFile("/textures/gui/pointer_clientload_32_8.png", 2, 2));
         cursors.put(CursorType.NORMAL, Resources.findResource(new CursorFile("/textures/gui/pointer_32_8.png", 2, 2)));
-        cursors.put(CursorType.TARGET, Resources.findResource(new CursorFile("/textures/gui/pointer_target_32_8.png", 14, 14)));
-        cursors.put(CursorType.TEXT, Resources.findResource(new CursorFile("/textures/gui/pointer_text_32_8.png", 6, 11)));
+        cursors.put(CursorType.TARGET, Resources.findResource(new CursorFile("/textures/gui/pointer_target_32_8.png",
+                14, 14)));
+        cursors.put(CursorType.TEXT, Resources.findResource(new CursorFile("/textures/gui/pointer_text_32_8.png", 6,
+                11)));
         cursors.put(CursorType.DEBUG, debug_cursor);
         cursors.put(CursorType.NULL, Cursor.NULL_CURSOR);
     }

@@ -31,7 +31,8 @@ import java.util.logging.Logger;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
-public final class CampaignForm extends Form implements DeterministicSerializerLoopbackInterface<@NonNull CampaignState[]> {
+public final class CampaignForm extends Form implements DeterministicSerializerLoopbackInterface<
+        @NonNull CampaignState[]> {
     private static final Logger logger = Logger.getLogger(CampaignForm.class.getSimpleName());
 
     private final @NonNull HorizButton button_vikings;
@@ -40,7 +41,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     private final @NonNull LoadCampaignBox load_campaign_box;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -58,8 +59,8 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         button_delete.setDisabled(true);
 
         button_vikings = new HorizButton(i18n("new"), 120);
-        button_vikings.addMouseClickListener((_, _, _, _) ->
-                main_menu.setMenu(new NewCampaignForm(network, gui_root, main_menu, CampaignForm.this)));
+        button_vikings.addMouseClickListener((_, _, _, _) -> main_menu.setMenu(new NewCampaignForm(network, gui_root,
+                main_menu, CampaignForm.this)));
 
         button_load = new HorizButton(i18n("load"), 120);
         button_load.setDisabled(true);
@@ -166,8 +167,8 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         CampaignState state = load_campaign_box.getSelected();
         if (state != null) {
             String confirm_str = i18n("confirm_delete", state.getName());
-            gui_root.addModalForm(new QuestionForm(confirm_str, (_, _, _, _) ->
-                    LoadCampaignBox.loadSavegames(CampaignForm.this)));
+            gui_root.addModalForm(new QuestionForm(confirm_str, (_, _, _, _) -> LoadCampaignBox.loadSavegames(
+                    CampaignForm.this)));
         }
     }
 }

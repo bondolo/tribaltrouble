@@ -34,7 +34,7 @@ public final class GUIRoot extends GUIObject {
     private static final Logger logger = Logger.getLogger(GUIRoot.class.getName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GUIRoot.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -100,7 +100,8 @@ public final class GUIRoot extends GUIObject {
     /**
      * {@return the currently focused control}
      */
-    @NonNull GUIObject getGlobalFocus() {
+    @NonNull
+    GUIObject getGlobalFocus() {
         return global_focus;
     }
 
@@ -112,7 +113,8 @@ public final class GUIRoot extends GUIObject {
     }
 
     public void setToolTipTimer() {
-        tool_tip_timer.setTimerInterval(Renderer.getRenderer().getSettings().tooltip_delay * ToolTipBox.MAX_DELAY_SECONDS);
+        tool_tip_timer.setTimerInterval(Renderer.getRenderer().getSettings().tooltip_delay
+                * ToolTipBox.MAX_DELAY_SECONDS);
     }
 
     public void timerUpdate(@NonNull TimerAnimation anim) {
@@ -236,7 +238,8 @@ public final class GUIRoot extends GUIObject {
 
     public static float calculateMinScale(int width, int height) {
         if (width <= 0 || height <= 0) return 1.0f;
-        float autoScale = Math.min(width / SerializableDisplayMode.MIN_WIDTH, height / SerializableDisplayMode.MIN_HEIGHT);
+        float autoScale = Math.min(width / SerializableDisplayMode.MIN_WIDTH, height
+                / SerializableDisplayMode.MIN_HEIGHT);
         return Math.max(1.0f, autoScale);
     }
 
@@ -281,8 +284,10 @@ public final class GUIRoot extends GUIObject {
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
-                    Renderer.getRenderer().getSettings().aggressive_units = !Renderer.getRenderer().getSettings().aggressive_units;
-                    info_printer.print(i18n(Renderer.getRenderer().getSettings().aggressive_units ? "aggressive_unites_on" : "aggressive_unites_off"));
+                    Renderer.getRenderer().getSettings().aggressive_units = !Renderer.getRenderer()
+                            .getSettings().aggressive_units;
+                    info_printer.print(i18n(Renderer.getRenderer().getSettings().aggressive_units
+                            ? "aggressive_unites_on" : "aggressive_unites_off"));
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {
@@ -412,7 +417,8 @@ public final class GUIRoot extends GUIObject {
         }
     }
 
-    @NonNull GUIObject getCurrentGUIObject() {
+    @NonNull
+    GUIObject getCurrentGUIObject() {
         return current_gui_object;
     }
 
@@ -471,7 +477,8 @@ public final class GUIRoot extends GUIObject {
         float zNear = Globals.VIEW_MIN;
         float zFar = Globals.VIEW_MAX;
 
-        Matrix4f perspectiveMatrix = new Matrix4f().perspective((float) Math.toRadians(fovy), (float) getWidth() / getHeight(), zNear, zFar);
+        Matrix4f perspectiveMatrix = new Matrix4f().perspective((float) Math.toRadians(fovy), (float) getWidth()
+                / getHeight(), zNear, zFar);
         return matrix.mul(perspectiveMatrix);
     }
 

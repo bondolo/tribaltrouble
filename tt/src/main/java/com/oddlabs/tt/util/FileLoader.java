@@ -40,7 +40,8 @@ public final class FileLoader implements FileLoaderInterface {
     }
 
     public void load() {
-        if (Renderer.getRenderer().getEventQueue().getDeterministic().log(file_channel == null || !file_channel.isOpen()))
+        if (Renderer.getRenderer().getEventQueue().getDeterministic().log(file_channel == null || !file_channel
+                .isOpen()))
             return;
         buffer.clear();
         IOException exception;

@@ -97,7 +97,8 @@ public final class SpriteList implements AutoCloseable {
             }
         }
 
-        FloatBuffer all_vertices_and_normals = Objects.requireNonNull(BufferUtils.createFloatBuffer(vert_and_normal_buffer_size));
+        FloatBuffer all_vertices_and_normals = Objects.requireNonNull(BufferUtils.createFloatBuffer(
+                vert_and_normal_buffer_size));
 
         float[] cpw_array = new float[animation_infos.length];
         type_array = new AnimationInfo.AnimationType[animation_infos.length];

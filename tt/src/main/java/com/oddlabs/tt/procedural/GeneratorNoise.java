@@ -21,11 +21,13 @@ public final class GeneratorNoise extends TextureGenerator {
 
     @Override
     public @NonNull Texture @NonNull [] generate() {
-        Perlin perlin = new Perlin(size, size, 4, 4, 0.5f, 4, seed, Perlin.Interpolation.SMOOTH, Perlin.Summation.NORMAL);
+        Perlin perlin = new Perlin(size, size, 4, 4, 0.5f, 4, seed, Perlin.Interpolation.SMOOTH,
+                Perlin.Summation.NORMAL);
         Layer layer = perlin.toLayer();
-        
+
         return new Texture[]{
-                new Texture(new GLIntImage(layer), GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT),
+                new Texture(new GLIntImage(layer), GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT,
+                        GL11.GL_REPEAT),
         };
     }
 

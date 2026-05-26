@@ -112,13 +112,13 @@ public final class GUIRenderer {
         vao.unbind();
     }
 
-    public void renderFrame(@NonNull RenderContext context, float width, float height, @NonNull Runnable frameCommands) {
+    public void renderFrame(@NonNull RenderContext context, float width, float height,
+            @NonNull Runnable frameCommands) {
         GLUtils.checkGLError("Before GUI Render");
         this.currentContext = context;
 
-        try (var _ = shader.use();
-             var _ = context.withDepthMode(DepthMode.NONE);
-             var _ = context.withCullMode(CullMode.NONE)) {
+        try (var _ = shader.use(); var _ = context.withDepthMode(DepthMode.NONE); var _ = context.withCullMode(
+                CullMode.NONE)) {
 
             projectionMatrix.identity().ortho(0, width, 0, height, -1, 1);
             shader.setUniform(GUIShader.Uniforms.PROJECTION_MATRIX, projectionMatrix);
@@ -146,7 +146,8 @@ public final class GUIRenderer {
             flush();
         }
         // Use -1 for "no texture"
-        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color instanceof Color.Linear linear ? linear : new Color.Linear(color));
+        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color instanceof Color.Linear linear ? linear : new Color.Linear(
+                color));
     }
 
     public void drawModeIcon(@NonNull ModeIconQuads iconQuad, ModeIconQuads.@NonNull Mode skinMode, float x, float y) {
@@ -154,24 +155,29 @@ public final class GUIRenderer {
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y) {
-        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.Linear.WHITE);
+        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad
+                .getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.Linear.WHITE);
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, @NonNull Color tint) {
-        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), tint);
+        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad
+                .getV1(), iconQuad.getU2(), iconQuad.getV2(), tint);
     }
 
     public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, float w, float h) {
-        drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.Linear.WHITE);
+        drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad
+                .getV2(), Color.Linear.WHITE);
     }
 
-    public void drawTexture(@NonNull Texture texture, float x, float y, float w, float h, float u1, float v1, float u2, float v2, @NonNull Color tint) {
+    public void drawTexture(@NonNull Texture texture, float x, float y, float w, float h, float u1, float v1, float u2,
+            float v2, @NonNull Color tint) {
         if (quadCount >= MAX_QUADS) {
             flush();
         }
 
         float texIndex = getTextureIndex(texture);
-        putQuad(x, y, w, h, u1, v1, u2, v2, texIndex, tint instanceof Color.Linear linear ? linear : new Color.Linear(tint));
+        putQuad(x, y, w, h, u1, v1, u2, v2, texIndex, tint instanceof Color.Linear linear ? linear : new Color.Linear(
+                tint));
     }
 
     private float getTextureIndex(@NonNull Texture texture) {
@@ -193,7 +199,8 @@ public final class GUIRenderer {
     /**
      * @param tint Assumed to be a linear color.
      */
-    private void putQuad(float x, float y, float w, float h, float u1, float v1, float u2, float v2, float texIndex, @NonNull Color tint) {
+    private void putQuad(float x, float y, float w, float h, float u1, float v1, float u2, float v2, float texIndex,
+            @NonNull Color tint) {
         assert tint instanceof Color.Linear : "Tint must be linear not " + tint.getClass().getSimpleName();
         Matrix4f mat = matrixStack.current();
 

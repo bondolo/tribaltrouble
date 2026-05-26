@@ -66,7 +66,8 @@ public interface Shader {
 
     void setUniform(@NonNull String name, float x, float y, float z);
 
-    /** set the named uniform to the specified color.
+    /**
+     * set the named uniform to the specified color.
      *
      * @param color should be in linear space but is converted if necessary
      */
@@ -76,4 +77,3 @@ public interface Shader {
 
     void setUniform(@NonNull String name, boolean transpose, @NonNull Matrix4fc matrix);
 }
-

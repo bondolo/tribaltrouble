@@ -55,7 +55,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(MainMenu.class.getName());
 
-    public static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    public static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -82,7 +82,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
         clearChildren();
         int screen_width = getGUIRoot().getWidth();
         int screen_height = getGUIRoot().getHeight();
-        overlay = new GUIImage(screen_width, screen_height, 0f, 0f, (float) OVERLAY_IMAGE_WIDTH / OVERLAY_TEXTURE_WIDTH, (float) OVERLAY_IMAGE_HEIGHT / OVERLAY_TEXTURE_HEIGHT, OVERLAY_TEXTURE_NAME);
+        overlay = new GUIImage(screen_width, screen_height, 0f, 0f, (float) OVERLAY_IMAGE_WIDTH / OVERLAY_TEXTURE_WIDTH,
+                (float) OVERLAY_IMAGE_HEIGHT / OVERLAY_TEXTURE_HEIGHT, OVERLAY_TEXTURE_NAME);
         overlay.setPos(0, 0);
         addChild(overlay);
 
@@ -263,9 +264,11 @@ public abstract class Menu extends CameraDelegate<Camera> {
         }
     }
 
-    public final @NonNull GameNetwork joinGame(@NonNull NetworkSelector network, GUI gui, int host_id, boolean rated, int gamespeed, @NonNull String map_code, SelectGameMenu owner, float random_start_pos, int max_unit_count) {
+    public final @NonNull GameNetwork joinGame(@NonNull NetworkSelector network, GUI gui, int host_id, boolean rated,
+            int gamespeed, @NonNull String map_code, SelectGameMenu owner, float random_start_pos, int max_unit_count) {
         GUIRoot gui_root = getGUIRoot();
-        Client client = new Client(null, network, gui, host_id, new WorldParameters(gamespeed, map_code, Player.INITIAL_UNIT_COUNT,
+        Client client = new Client(null, network, gui, host_id, new WorldParameters(gamespeed, map_code,
+                Player.INITIAL_UNIT_COUNT,
                 max_unit_count),
                 new MultiplayerInGameInfo(random_start_pos, rated),
                 new DefaultWorldInitAction());
@@ -276,12 +279,17 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, SelectGameMenu owner, WorldParameters world_params, @NonNull InGameInfo ingame_info, WorldInitAction init_action, Game game, int meters_per_world, Landscape.@NonNull TerrainType terrain, float hills, float vegetation_amount, float supplies_amount, int seed, String[] ai_names) {
+    public static @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
+            SelectGameMenu owner, WorldParameters world_params, @NonNull InGameInfo ingame_info,
+            WorldInitAction init_action, Game game, int meters_per_world, Landscape.@NonNull TerrainType terrain,
+            float hills, float vegetation_amount, float supplies_amount, int seed, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
-        WorldGenerator generator = new IslandGenerator(terrain, meters_per_world, hills, vegetation_amount, supplies_amount, seed);
+        WorldGenerator generator = new IslandGenerator(terrain, meters_per_world, hills, vegetation_amount,
+                supplies_amount, seed);
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
         final Server server = new Server(network, game, address, generator, multiplayer, ai_names);
-        Client client = new Client(server::close, network, gui_root.getGUI(), -1, world_params, ingame_info, init_action);
+        Client client = new Client(server::close, network, gui_root.getGUI(), -1, world_params, ingame_info,
+                init_action);
         GameNetwork game_network = new GameNetwork(server, client);
         ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, multiplayer);
         client.setConfigurationListener(connecting_form);

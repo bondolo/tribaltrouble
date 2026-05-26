@@ -25,10 +25,12 @@ public final class Wave {
             AudioFormat audio_format = ais.getFormat();
             format = getFormat(audio_format.getChannels(), audio_format.getSampleSizeInBits());
 
-            byte[] temp_buffer = new byte[audio_format.getChannels() * (int) ais.getFrameLength() * audio_format.getSampleSizeInBits() / 8];
+            byte[] temp_buffer = new byte[audio_format.getChannels() * (int) ais.getFrameLength() * audio_format
+                    .getSampleSizeInBits() / 8];
             int read = 0;
             int total = 0;
-            while ((total < temp_buffer.length) && (read = ais.read(temp_buffer, total, temp_buffer.length - total)) != -1) {
+            while ((total < temp_buffer.length) && (read = ais.read(temp_buffer, total, temp_buffer.length - total))
+                    != -1) {
                 total += read;
             }
 
@@ -53,7 +55,8 @@ public final class Wave {
         } else if (channels == 2 && sample_size_in_bits == 16) {
             return AL10.AL_FORMAT_STEREO16;
         } else {
-            throw new IllegalArgumentException("Unsupported wave format channels=" + channels + " sample_size_in_bits=" + sample_size_in_bits);
+            throw new IllegalArgumentException("Unsupported wave format channels=" + channels + " sample_size_in_bits="
+                    + sample_size_in_bits);
         }
     }
 

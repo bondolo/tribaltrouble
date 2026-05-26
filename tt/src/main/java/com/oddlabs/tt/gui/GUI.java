@@ -37,7 +37,8 @@ public final class GUI implements Animated {
         return gui_root;
     }
 
-    public @NonNull GUIRoot newFade(@Nullable Fadable fadable, @NonNull GUIRoot gui_root, @Nullable UIRenderer renderer) {
+    public @NonNull GUIRoot newFade(@Nullable Fadable fadable, @NonNull GUIRoot gui_root,
+            @Nullable UIRenderer renderer) {
         fade = new Fade(fadable, gui_root, renderer);
         Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
         return gui_root;
@@ -72,7 +73,8 @@ public final class GUI implements Animated {
         return current_root;
     }
 
-    @Nullable Fade getFade() {
+    @Nullable
+    Fade getFade() {
         return fade;
     }
 
@@ -88,7 +90,8 @@ public final class GUI implements Animated {
 
         RenderContext context = Renderer.getRenderer().getRenderContext();
 
-        camera.setView(guiRoot.multProjection(proj.identity()), context.getViewportWidth(), context.getViewportHeight());
+        camera.setView(guiRoot.multProjection(proj.identity()), context.getViewportWidth(), context
+                .getViewportHeight());
         modelView.set(camera.getModelView());
 
         if (!Globals.frustum_freeze) {
@@ -123,14 +126,17 @@ public final class GUI implements Animated {
 
     private void renderGUI(@NonNull RenderContext context) {
         GUIRoot guiRoot = getGUIRoot();
-        
+
         // If we are rendering directly to the back buffer (e.g. loading screen),
-        // we must set the correct blend mode here. 
+        // we must set the correct blend mode here.
         // During gameplay, PostProcessor.renderComposite sets per-buffer blend modes.
-        try (var _ = (renderer == null || renderer.isClosed()) ? context.withBlendMode(BlendMode.PREMULTIPLIED) : (ScopedState) () -> {}) {
+        try (var _ = (renderer == null || renderer.isClosed()) ? context.withBlendMode(BlendMode.PREMULTIPLIED)
+                : (ScopedState) () -> {
+                }) {
             guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
                 guiRoot.render(guiRenderer);
-                guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null && renderer.isCheater());
+                guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null
+                        && renderer.isCheater());
             });
         }
     }

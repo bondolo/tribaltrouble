@@ -52,7 +52,8 @@ public final class MapCamera extends Camera {
     private final @NonNull SelectionDelegate delegate;
     private final @NonNull CameraState original_camera_state;
     private final float distance_to_landscape;
-    private final Label label = new Label(Utils.getBundleString(ResourceBundle.getBundle(MapCamera.class.getName()), "map_mode"), Skin.getSkin().getHeadlineFont());
+    private final Label label = new Label(Utils.getBundleString(ResourceBundle.getBundle(MapCamera.class.getName()),
+            "map_mode"), Skin.getSkin().getHeadlineFont());
 
     private @NonNull MapMode map_mode = MapMode.TO_MAP;
     private float fogTime = 0f;
@@ -77,7 +78,8 @@ public final class MapCamera extends Camera {
 
     @Override
     public void doAnimate(float t) {
-        float factor = t * 1000f / Math.max(t * 1000f, Renderer.getRenderer().getSettings().mapmode_delay * MAP_TIME_FACTOR);
+        float factor = t * 1000f / Math.max(t * 1000f, Renderer.getRenderer().getSettings().mapmode_delay
+                * MAP_TIME_FACTOR);
         float dx;
         float dy;
         float dz;
@@ -164,7 +166,8 @@ public final class MapCamera extends Camera {
             case TO_MAP -> {
             }
             case IN_MAP -> {
-                label.setPos((delegate.getGUIRoot().getWidth() - label.getWidth()) / 2, delegate.getGUIRoot().getHeight() - label.getHeight());
+                label.setPos((delegate.getGUIRoot().getWidth() - label.getWidth()) / 2, delegate.getGUIRoot()
+                        .getHeight() - label.getHeight());
                 delegate.addChild(label);
                 getState().setNoDetailMode(true);
             }
@@ -209,7 +212,8 @@ public final class MapCamera extends Camera {
 
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (event.consumeAction(GameAction.CAMERA_MAP_MODE)) {
-                changeMode((map_mode == MapMode.TO_MAP || map_mode == MapMode.IN_MAP) ? MapMode.FROM_MAP : MapMode.TO_MAP);
+                changeMode((map_mode == MapMode.TO_MAP || map_mode == MapMode.IN_MAP) ? MapMode.FROM_MAP
+                        : MapMode.TO_MAP);
                 event.consume();
             }
         }

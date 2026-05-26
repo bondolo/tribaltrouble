@@ -72,7 +72,7 @@ public final class TerrainMenu extends Group {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -119,7 +119,8 @@ public final class TerrainMenu extends Group {
     }
 
     @SuppressWarnings("unchecked")
-    public TerrainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
+    public TerrainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @Nullable Menu main_menu,
+            boolean multiplayer, @Nullable TerrainMenuListener owner) {
         this.network = network;
         this.main_menu = main_menu;
         this.multiplayer = multiplayer;
@@ -139,7 +140,8 @@ public final class TerrainMenu extends Group {
         editline_name = new EditLine(180, Game.MAX_LENGTH);
         if (multiplayer) {
             standard.addChild(label_name);
-            String default_name = i18n("default_name", Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getNick());
+            String default_name = i18n("default_name", Renderer.getRenderer().getNetwork().getMatchmakingClient()
+                    .getProfile().getNick());
             label_default_name = new Label(default_name, Skin.getSkin().getEditFont());
             editline_name.append(default_name);
             if (Renderer.isRegistered())
@@ -151,7 +153,9 @@ public final class TerrainMenu extends Group {
         cb_rated = new CheckBox(false, i18n("rated_game"), rated_tip);
         if (multiplayer) {
             standard.addChild(cb_rated);
-            cb_rated.setDisabled(Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile() == null || Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getWins() < GameSession.MIN_WINS_FOR_RANKING);
+            cb_rated.setDisabled(Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile() == null
+                    || Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getWins()
+                            < GameSession.MIN_WINS_FOR_RANKING);
         }
 
         // gamespeed
@@ -208,8 +212,10 @@ public final class TerrainMenu extends Group {
         Label label_terrain_type = new Label(i18n("terrain_type"), Skin.getSkin().getEditFont());
         group_terrain_type.addChild(label_terrain_type);
         pm_terrain_type = new PulldownMenu<>();
-        pm_terrain_type.addItem(new PulldownItem<>(ServerMessageBundler.getTerrainTypeString(Game.TERRAIN_TYPE_NATIVE)));
-        pm_terrain_type.addItem(new PulldownItem<>(ServerMessageBundler.getTerrainTypeString(Game.TERRAIN_TYPE_VIKING)));
+        pm_terrain_type.addItem(new PulldownItem<>(ServerMessageBundler.getTerrainTypeString(
+                Game.TERRAIN_TYPE_NATIVE)));
+        pm_terrain_type.addItem(new PulldownItem<>(ServerMessageBundler.getTerrainTypeString(
+                Game.TERRAIN_TYPE_VIKING)));
         var pb_terrain_type = new PulldownButton<>(gui_root, pm_terrain_type, 0, 150);
         group_terrain_type.addChild(pb_terrain_type);
         label_terrain_type.place();
@@ -280,7 +286,8 @@ public final class TerrainMenu extends Group {
         PulldownButton<Void>[] difficulty_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         race_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         team_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
-        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
+        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick()
+                * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
         random.nextFloat();
         for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
             difficulty_pulldown_menus[i] = new PulldownMenu<>();
@@ -556,7 +563,8 @@ public final class TerrainMenu extends Group {
     }
 
     private void randomize() {
-        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
+        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick()
+                * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
         random.nextInt();
         BigInteger rand_int = new BigInteger(100, random);
         parseBigInteger(rand_int);
@@ -589,11 +597,15 @@ public final class TerrainMenu extends Group {
                 return false;
             }
             float random_start_pos = Renderer.getRenderer().getEventQueue().getTime() % 1f;
-            game = new Game(game_name, (byte) pulldown_size.getChosenItemIndex(), (byte) terrain_type.ordinal(), (byte) hills, (byte) vegetation_amount, (byte) supplies_amount, rated, (byte) (pm_gamespeed.getChosenItemIndex() + 1), label_mapcode.getContents(), random_start_pos, Player.DEFAULT_MAX_UNIT_COUNT);
+            game = new Game(game_name, (byte) pulldown_size.getChosenItemIndex(), (byte) terrain_type.ordinal(),
+                    (byte) hills, (byte) vegetation_amount, (byte) supplies_amount, rated, (byte) (pm_gamespeed
+                            .getChosenItemIndex() + 1), label_mapcode.getContents(), random_start_pos,
+                    Player.DEFAULT_MAX_UNIT_COUNT);
         } else {
             boolean has_enemy = false;
             for (int i = 1; i < race_pulldown_menus.length; i++) {
-                if (isChosen(difficulty_pulldown_menus[i]) && team_pulldown_menus[i].getChosenItemIndex() != team_pulldown_menus[0].getChosenItemIndex()) {
+                if (isChosen(difficulty_pulldown_menus[i]) && team_pulldown_menus[i].getChosenItemIndex()
+                        != team_pulldown_menus[0].getChosenItemIndex()) {
                     has_enemy = true;
                     break;
                 }
@@ -611,9 +623,12 @@ public final class TerrainMenu extends Group {
         if (multiplayer)
             menu = (SelectGameMenu) owner;
         int gametype;
-        IO.println("hills = " + hills / (float) SLIDER_MAX_VALUE + " | vegetation_amount = " + vegetation_amount / (float) SLIDER_MAX_VALUE + " | supplies_amount = " + supplies_amount / (float) SLIDER_MAX_VALUE + " | seed = " + seed * seed);
+        IO.println("hills = " + hills / (float) SLIDER_MAX_VALUE + " | vegetation_amount = " + vegetation_amount
+                / (float) SLIDER_MAX_VALUE + " | supplies_amount = " + supplies_amount / (float) SLIDER_MAX_VALUE
+                + " | seed = " + seed * seed);
         String ai_string = i18n("ai");
-        InGameInfo ingame_info = multiplayer ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated()) : new DefaultInGameInfo();
+        InGameInfo ingame_info = multiplayer ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
+                : new DefaultInGameInfo();
         GameNetwork game_network = Menu.startNewGame(network, gui_root,
                 menu,
                 new WorldParameters(multiplayer ? game.getGamespeed() : Globals.gamespeed,
@@ -628,12 +643,16 @@ public final class TerrainMenu extends Group {
                 vegetation_amount / (float) SLIDER_MAX_VALUE,
                 supplies_amount / (float) SLIDER_MAX_VALUE,
                 seed * seed,
-                new String[]{ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"});
-        game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, race_pulldown_menus[0].getChosenItemIndex(), team_pulldown_menus[0].getChosenItemIndex(), !multiplayer, PlayerSlot.AI_NONE);
+                new String[]{ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4",
+                        ai_string + "5"});
+        game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, race_pulldown_menus[0]
+                .getChosenItemIndex(), team_pulldown_menus[0].getChosenItemIndex(), !multiplayer, PlayerSlot.AI_NONE);
         if (!multiplayer) {
             for (int i = 1; i < race_pulldown_menus.length; i++) {
                 if (isChosen(difficulty_pulldown_menus[i]))
-                    game_network.getClient().getServerInterface().setPlayerSlot(i, PlayerSlot.AI, race_pulldown_menus[i].getChosenItemIndex(), team_pulldown_menus[i].getChosenItemIndex(), true, difficulty_pulldown_menus[i].getChosenItemIndex());
+                    game_network.getClient().getServerInterface().setPlayerSlot(i, PlayerSlot.AI, race_pulldown_menus[i]
+                            .getChosenItemIndex(), team_pulldown_menus[i].getChosenItemIndex(), true,
+                            difficulty_pulldown_menus[i].getChosenItemIndex());
             }
             game_network.getClient().getServerInterface().startServer();
             IO.println("Start server");
@@ -661,7 +680,7 @@ public final class TerrainMenu extends Group {
     private final class DisableListener implements ItemChosenListener<Void> {
         final int i;
 
-         DisableListener(int i) {
+        DisableListener(int i) {
             this.i = i;
         }
 

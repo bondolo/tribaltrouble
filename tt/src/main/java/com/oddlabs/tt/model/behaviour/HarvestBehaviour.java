@@ -34,7 +34,8 @@ public final class HarvestBehaviour implements Behaviour {
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
             var params = Assets.getHarvestSound(supply.getClass(), unit.getOwner().getWorld().getRandom());
-            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
+            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
+                    .getPositionZ(), params);
             if (supply.hit()) {
                 unit.getSupplyContainer().increaseSupply(1, supply.getClass());
                 unit.getOwner().harvested(supply.getClass());

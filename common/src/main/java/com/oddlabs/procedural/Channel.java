@@ -417,8 +417,11 @@ public final class Channel {
         return new Channel[]{channel1, channel2, channel3, channel4};
     }
 
-    public @NonNull Channel quadJoin(@NonNull Channel channel1, @NonNull Channel channel2, @NonNull Channel channel3, @NonNull Channel channel4) {
-        assert channel1.width == channel2.width && channel2.width == channel3.width && channel3.width == channel4.width && channel1.height == channel2.height && channel2.height == channel3.height && channel3.height == channel4.height : "channels must be same size";
+    public @NonNull Channel quadJoin(@NonNull Channel channel1, @NonNull Channel channel2, @NonNull Channel channel3,
+            @NonNull Channel channel4) {
+        assert channel1.width == channel2.width && channel2.width == channel3.width && channel3.width == channel4.width
+                && channel1.height == channel2.height && channel2.height == channel3.height && channel3.height
+                        == channel4.height : "channels must be same size";
         assert width == channel1.width << 1 && height == channel1.height << 1 : "size mismatch";
         Channel channel = new Channel(channel1.width << 1, channel1.height << 1);
         channel.place(channel1, 0, 0);
@@ -797,17 +800,22 @@ public final class Channel {
         float[] filter_pixels = filter.getPixels();
         for (int y = 1; y < new_height - 1; y++) {
             for (int x = 1; x < new_width - 1; x++) {
-                channel.putPixel(x, y, filter_pixels[y * new_width + (x - 1)] + filter_pixels[y * new_width + (x + 1)] + filter_pixels[(y - 1) * new_width + x] + filter_pixels[(y + 1) * new_width + x]);
+                channel.putPixel(x, y, filter_pixels[y * new_width + (x - 1)] + filter_pixels[y * new_width + (x + 1)]
+                        + filter_pixels[(y - 1) * new_width + x] + filter_pixels[(y + 1) * new_width + x]);
             }
         }
 
         // fix edges
         int max = new_width - 1;
         for (int i = 0; i < max; i++) {
-            channel.putPixel(0, i, filter.getPixelWrap(-1, i) + filter.getPixelWrap(1, i) + filter.getPixelWrap(0, i - 1) + filter.getPixelWrap(0, i + 1));
-            channel.putPixel(i, 0, filter.getPixelWrap(i, -1) + filter.getPixelWrap(i, 1) + filter.getPixelWrap(i - 1, 0) + filter.getPixelWrap(i + 1, 0));
-            channel.putPixel(max, i, filter.getPixelWrap(max - 1, i) + filter.getPixelWrap(max + 1, i) + filter.getPixelWrap(max, i - 1) + filter.getPixelWrap(max, i + 1));
-            channel.putPixel(i, max, filter.getPixelWrap(i, max - 1) + filter.getPixelWrap(i, max + 1) + filter.getPixelWrap(i - 1, max) + filter.getPixelWrap(i + 1, max));
+            channel.putPixel(0, i, filter.getPixelWrap(-1, i) + filter.getPixelWrap(1, i) + filter.getPixelWrap(0, i
+                    - 1) + filter.getPixelWrap(0, i + 1));
+            channel.putPixel(i, 0, filter.getPixelWrap(i, -1) + filter.getPixelWrap(i, 1) + filter.getPixelWrap(i - 1,
+                    0) + filter.getPixelWrap(i + 1, 0));
+            channel.putPixel(max, i, filter.getPixelWrap(max - 1, i) + filter.getPixelWrap(max + 1, i) + filter
+                    .getPixelWrap(max, i - 1) + filter.getPixelWrap(max, i + 1));
+            channel.putPixel(i, max, filter.getPixelWrap(i, max - 1) + filter.getPixelWrap(i, max + 1) + filter
+                    .getPixelWrap(i - 1, max) + filter.getPixelWrap(i + 1, max));
         }
         pixels = channel.getPixels();
         width = new_width;
@@ -878,7 +886,8 @@ public final class Channel {
     public @NonNull Channel xsine(int frequency) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                pixels[y * width + x] = (float) Math.sin(2 * Math.PI * (((float) x / width) * frequency + pixels[y * width + x]));
+                pixels[y * width + x] = (float) Math.sin(2 * Math.PI * (((float) x / width) * frequency + pixels[y
+                        * width + x]));
             }
         }
         return this.dynamicRange();
@@ -896,8 +905,10 @@ public final class Channel {
                 int y_coord_lo = (int) Math.floor(y_coord);
                 int y_coord_hi = y_coord_lo + 1;
                 float y_frac = y_coord - y_coord_lo;
-                float val1 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_lo), getPixelWrap(x_coord_hi, y_coord_lo), x_frac);
-                float val2 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_hi), getPixelWrap(x_coord_hi, y_coord_hi), x_frac);
+                float val1 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_lo), getPixelWrap(x_coord_hi,
+                        y_coord_lo), x_frac);
+                float val2 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_hi), getPixelWrap(x_coord_hi,
+                        y_coord_hi), x_frac);
                 channel.putPixel(x, y, Tools.interpolateLinear(val1, val2, y_frac));
             }
         }
@@ -917,8 +928,10 @@ public final class Channel {
                 int y_coord_lo = (int) Math.floor(y_coord);
                 int y_coord_hi = y_coord_lo + 1;
                 float y_frac = y_coord - y_coord_lo;
-                float val1 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_lo), getPixelWrap(x_coord_hi, y_coord_lo), x_frac);
-                float val2 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_hi), getPixelWrap(x_coord_hi, y_coord_hi), x_frac);
+                float val1 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_lo), getPixelWrap(x_coord_hi,
+                        y_coord_lo), x_frac);
+                float val2 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_hi), getPixelWrap(x_coord_hi,
+                        y_coord_hi), x_frac);
                 channel.putPixel(x, y, Tools.interpolateLinear(val1, val2, y_frac));
             }
         }
@@ -957,7 +970,8 @@ public final class Channel {
         }
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                pixels[y * width + x] = filter.getPixelWrap(x - 1, y) + filter.getPixelWrap(x + 1, y) + filter.getPixelWrap(x, y - 1) + filter.getPixelWrap(x, y + 1);
+                pixels[y * width + x] = filter.getPixelWrap(x - 1, y) + filter.getPixelWrap(x + 1, y) + filter
+                        .getPixelWrap(x, y - 1) + filter.getPixelWrap(x, y + 1);
             }
         }
         return this;
@@ -1339,7 +1353,8 @@ public final class Channel {
         return new int[]{-1, -1};
     }
 
-    public @NonNull Channel bump(@NonNull Channel bumpmap, float lx, float ly, float shadow, float light, float ambient) {
+    public @NonNull Channel bump(@NonNull Channel bumpmap, float lx, float ly, float shadow, float light,
+            float ambient) {
         assert bumpmap.getWidth() == width && bumpmap.getHeight() == height : "bumpmap does not match channel size";
         Channel channel = new Channel(width, height);
         float ambient_inv = 1 - ambient;
@@ -1360,7 +1375,8 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel bumpSpecular(@NonNull Channel bumpmap, float lx, float ly, float lz, float shadow, float light, int specular) {
+    public @NonNull Channel bumpSpecular(@NonNull Channel bumpmap, float lx, float ly, float lz, float shadow,
+            float light, int specular) {
         assert bumpmap.getWidth() == width && bumpmap.getHeight() == height : "bumpmap size does not match layer size";
         float lnorm = (float) Math.sqrt(lx * lx + ly * ly + lz * lz);
         float nz = 4 * (1f / Math.min(width, height));
@@ -1469,7 +1485,8 @@ public final class Channel {
     }
 
     public @NonNull Channel fftInv(@NonNull Channel magni, @NonNull Channel phase) {
-        assert magni.width == magni.height && phase.width == phase.height && magni.width == phase.width : "both images must be square and same size";
+        assert magni.width == magni.height && phase.width == phase.height && magni.width == phase.width
+                : "both images must be square and same size";
         int size = magni.width;
         assert Utils.isPowerOf2(size) : "size must be power of 2";
 
@@ -1741,7 +1758,8 @@ public final class Channel {
         for (int y = y_offset; y < y_offset + sprite.getHeight(); y++) {
             for (int x = x_offset; x < x_offset + sprite.getWidth(); x++) {
                 float alpha_val = alpha.getPixel(x - x_offset, y - y_offset);
-                putPixelWrap(x, y, alpha_val * sprite.getPixelWrap(x - x_offset, y - y_offset) + (1 - alpha_val) * getPixelWrap(x, y));
+                putPixelWrap(x, y, alpha_val * sprite.getPixelWrap(x - x_offset, y - y_offset) + (1 - alpha_val)
+                        * getPixelWrap(x, y));
             }
         }
         return this;

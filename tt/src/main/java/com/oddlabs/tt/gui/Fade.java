@@ -45,6 +45,7 @@ final class Fade {
 
     void render(@NonNull GUIRenderer guiRenderer) {
         var alpha = (float) Math.sin(Math.PI * time / FADE_TIME);
-        guiRenderer.drawColoredQuad(0, 0, gui_root.getWidth(), gui_root.getHeight(), new Color.Linear(0f, 0f, 0f, alpha));
+        guiRenderer.drawColoredQuad(0, 0, gui_root.getWidth(), gui_root.getHeight(), new Color.Linear(0f, 0f, 0f,
+                alpha));
     }
 }

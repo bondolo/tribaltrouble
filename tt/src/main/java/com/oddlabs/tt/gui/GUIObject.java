@@ -329,7 +329,8 @@ public abstract class GUIObject extends Renderable<GUIObject> {
         return bestCandidate;
     }
 
-    private boolean isBetterCandidate(@Nullable GUIObject current, @NonNull GUIObject candidate, @Nullable GUIObject bestSoFar, @NonNull FocusDirection dir) {
+    private boolean isBetterCandidate(@Nullable GUIObject current, @NonNull GUIObject candidate,
+            @Nullable GUIObject bestSoFar, @NonNull FocusDirection dir) {
         if (current == candidate) return false;
 
         return switch (dir) {
@@ -353,7 +354,8 @@ public abstract class GUIObject extends Renderable<GUIObject> {
         };
     }
 
-    private boolean isBetterDirectionalCandidate(@Nullable GUIObject current, @NonNull GUIObject candidate, @Nullable GUIObject bestSoFar, @NonNull FocusDirection dir) {
+    private boolean isBetterDirectionalCandidate(@Nullable GUIObject current, @NonNull GUIObject candidate,
+            @Nullable GUIObject bestSoFar, @NonNull FocusDirection dir) {
         if (current == null) {
             //  default to reading order first element.
             return isBetterCandidate(null, candidate, bestSoFar, FocusDirection.FORWARD);
@@ -524,7 +526,8 @@ public abstract class GUIObject extends Renderable<GUIObject> {
             parent.mouseScrolledAll(amount);
     }
 
-    final void mouseDraggedAll(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x, int absolute_y) {
+    final void mouseDraggedAll(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y,
+            int absolute_x, int absolute_y) {
         if (disabled)
             return;
         mouseDragged(button, x, y, relative_x, relative_y, absolute_x, absolute_y);
@@ -535,7 +538,8 @@ public abstract class GUIObject extends Renderable<GUIObject> {
         }
     }
 
-    protected void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x, int absolute_y) {
+    protected void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y,
+            int absolute_x, int absolute_y) {
         // do not send this to parents, because it would move the form if unstopped
     }
 

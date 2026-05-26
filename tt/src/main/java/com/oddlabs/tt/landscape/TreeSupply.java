@@ -23,11 +23,11 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
 
-    private static final @NonNull AudioParameters [] TREE_FALL_AUDIO =
-            Stream.of(Assets.SFX_FELLING_TREE, Assets.SFX_FELLING_PALMTREE)
-                    .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_TREE_FALL,
-                            Assets.AUDIO_DISTANCE_TREE_FALL, Assets.AUDIO_GAIN_TREE_FALL, Assets.AUDIO_RADIUS_TREE_FALL))
-                    .toArray(AudioParameters[]::new);
+    private static final @NonNull AudioParameters[] TREE_FALL_AUDIO = Stream.of(Assets.SFX_FELLING_TREE,
+            Assets.SFX_FELLING_PALMTREE)
+            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_TREE_FALL,
+                    Assets.AUDIO_DISTANCE_TREE_FALL, Assets.AUDIO_GAIN_TREE_FALL, Assets.AUDIO_RADIUS_TREE_FALL))
+            .toArray(AudioParameters[]::new);
 
     private final @NonNull Matrix4f matrix;
     private final @NonNull TreeType tree_type;
@@ -45,7 +45,9 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private float scale = 1f;
     private int hit_counter = 0;
 
-    public TreeSupply(@NonNull World world, @Nullable AbstractTreeGroup parent, float x, float y, int grid_x, int grid_y, int grid_size, float size, @NonNull Matrix4f matrix, @NonNull TreeType tree_type, float @NonNull [] vertices) {
+    public TreeSupply(@NonNull World world, @Nullable AbstractTreeGroup parent, float x, float y, int grid_x,
+            int grid_y, int grid_size, float size, @NonNull Matrix4f matrix, @NonNull TreeType tree_type,
+            float @NonNull [] vertices) {
         super(parent);
         this.world = world;
         this.x = x;

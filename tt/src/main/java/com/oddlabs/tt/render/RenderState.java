@@ -68,13 +68,15 @@ final class RenderState {
     private boolean visible_override;
     private @Nullable CameraState camera;
 
-    public RenderState(@NonNull Player local_player, @NonNull SpriteSorter sprite_sorter, @NonNull RenderQueues render_queues, @NonNull Picker picker, @Nullable Selection selection) {
+    public RenderState(@NonNull Player local_player, @NonNull SpriteSorter sprite_sorter,
+            @NonNull RenderQueues render_queues, @NonNull Picker picker, @Nullable Selection selection) {
         this.local_player = local_player;
         this.selection = selection;
         this.picker = picker;
         this.sprite_sorter = sprite_sorter;
         this.render_queues = render_queues;
-        ShadowListKey key = render_queues.registerRespondRenderer(new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}}));
+        ShadowListKey key = render_queues.registerRespondRenderer(new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION,
+                new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}}));
         this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(key);
         this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(
                 render_queues.registerSelectableShadowList(RacesResources.DEFAULT_SHADOW_DESC));
@@ -100,8 +102,10 @@ final class RenderState {
             case SupplyModel model -> visitSupplyModel(model);
             case Plants plants -> visitPlants(plants);
             case SceneryModel model -> visitSceneryModel(model);
-            case DirectedThrowingWeapon weapon -> addToRenderList(getCachedState(directed_weapon_model_visitor, weapon));
-            case RotatingThrowingWeapon weapon -> addToRenderList(getCachedState(rotating_weapon_model_visitor, weapon));
+            case DirectedThrowingWeapon weapon -> addToRenderList(getCachedState(directed_weapon_model_visitor,
+                    weapon));
+            case RotatingThrowingWeapon weapon -> addToRenderList(getCachedState(rotating_weapon_model_visitor,
+                    weapon));
             case AccessorizableModel model -> visitAccessorizableModel(model);
             default -> throw new UnsupportedOperationException("element has no rendering defined " + element);
         }
@@ -113,26 +117,33 @@ final class RenderState {
             case PointEmitterModel emitterModel -> {
                 emitter_queue.add(emitterModel.getEmitter());
                 float z_offset = getVisuallyCorrectHeight(emitterModel.getPositionX(), emitterModel.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>(){}, emitterModel, z_offset);
+                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
+                        AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>() {
+                        }, emitterModel, z_offset);
                 visitAccessories(emitterModel, state);
             }
             case SonicBlast blast -> {
                 // SonicBlast logic itself is a model, but its visuals are handled by the sonic_blast_queue
                 sonic_blast_queue.add(blast.getSonicBlastEffect());
                 float z_offset = getVisuallyCorrectHeight(blast.getPositionX(), blast.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>(){}, blast, z_offset);
+                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
+                        AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>() {
+                        }, blast, z_offset);
                 visitAccessories(blast, state);
             }
             default -> {
                 // If it's a generic accessorizable model, we still want to visit its accessories
                 float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>(){}, model, z_offset);
+                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
+                        AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>() {
+                        }, model, z_offset);
                 visitAccessories(model, state);
             }
         }
     }
 
-    @NonNull Player getLocalPlayer() {
+    @NonNull
+    Player getLocalPlayer() {
         return local_player;
     }
 
@@ -140,11 +151,13 @@ final class RenderState {
         return picker.getRespondManager().isResponding(target);
     }
 
-    @NonNull RenderQueues getRenderQueues() {
+    @NonNull
+    RenderQueues getRenderQueues() {
         return render_queues;
     }
 
-    @NonNull MatrixStack getModelViewStack() {
+    @NonNull
+    MatrixStack getModelViewStack() {
         return model_view_stack;
     }
 
@@ -182,9 +195,11 @@ final class RenderState {
             Unit unit = render_state.model;
             super.markDetailPolygon(render_state, detail);
             UnitSupplyContainer supply_container = unit.getSupplyContainer();
-            if (!render_state.render_state.isPicking() && unit.getAbilities().hasAbilities(Abilities.BUILD) && supply_container.getSupplyType() != null) {
+            if (!render_state.render_state.isPicking() && unit.getAbilities().hasAbilities(Abilities.BUILD)
+                    && supply_container.getSupplyType() != null) {
                 if (supply_container.getNumSupplies() > 0) {
-                    SpriteRenderer supply_sprite = render_state.getRenderer(supply_container.getSupplySpriteRenderer(supply_container.getSupplyType()));
+                    SpriteRenderer supply_sprite = render_state.getRenderer(supply_container.getSupplySpriteRenderer(
+                            supply_container.getSupplyType()));
                     supply_sprite.addToRenderList(detail, render_state, false);
                 }
             }
@@ -193,20 +208,23 @@ final class RenderState {
 
     private void visitUnit(final @NonNull Unit unit) {
         float z_offset = getVisuallyCorrectHeight(unit.getPositionX(), unit.getPositionY()) + unit.getOffsetZ();
-        visitSelectable(unit_visitor, unit, z_offset, unit.getTemplate().getSelectionRadius(), unit.getTemplate().getSelectionHeight());
+        visitSelectable(unit_visitor, unit, z_offset, unit.getTemplate().getSelectionRadius(), unit.getTemplate()
+                .getSelectionHeight());
     }
 
     private <M extends Model> @NonNull ElementRenderState<M> doGetCachedState() {
         return (ElementRenderState<M>) render_state_cache.get();
     }
 
-    private @NonNull <M extends Model> ModelState<M> getCachedState(@NonNull ModelVisitor<M> visitor, @NonNull M model) {
+    private @NonNull <M extends Model> ModelState<M> getCachedState(@NonNull ModelVisitor<M> visitor,
+            @NonNull M model) {
         ElementRenderState<M> state = doGetCachedState();
         state.setup(visitor, model);
         return state;
     }
 
-    private @NonNull <M extends Model> ModelState<M> getCachedState(@NonNull ModelVisitor<M> visitor, @NonNull M model, float dist_squared) {
+    private @NonNull <M extends Model> ModelState<M> getCachedState(@NonNull ModelVisitor<M> visitor, @NonNull M model,
+            float dist_squared) {
         ElementRenderState<M> state = doGetCachedState();
         state.setup(visitor, model, dist_squared);
         return state;
@@ -214,8 +232,11 @@ final class RenderState {
 
     private static final BoundingBox picking_selection_box = new BoundingBox();
 
-    private static boolean pickingInFrustum(@NonNull Selectable<?> selectable, float[][] frustum, float z_offset, float selection_radius, float selection_height) {
-        picking_selection_box.setBounds(-selection_radius + selectable.getPositionX(), selection_radius + selectable.getPositionX(), -selection_radius + selectable.getPositionY(), selection_radius + selectable.getPositionY(), z_offset, z_offset + selection_height);
+    private static boolean pickingInFrustum(@NonNull Selectable<?> selectable, float[][] frustum, float z_offset,
+            float selection_radius, float selection_height) {
+        picking_selection_box.setBounds(-selection_radius + selectable.getPositionX(), selection_radius + selectable
+                .getPositionX(), -selection_radius + selectable.getPositionY(), selection_radius + selectable
+                        .getPositionY(), z_offset, z_offset + selection_height);
         return RenderTools.inFrustum(picking_selection_box, frustum) != RenderTools.FrustumIntersection.ALL_OUTSIDE;
     }
 
@@ -227,15 +248,19 @@ final class RenderState {
         return selection != null && selection.getCurrentSelection().contains(selectable);
     }
 
-    private <S extends Selectable<?>> void visitSelectable(@NonNull ModelVisitor<S> visitor, @NonNull S selectable, float z_offset, float selection_radius, float selection_height) {
-        boolean in_view = !picking || (selectable.isEnabled() && (visible_override || pickingInFrustum(selectable, camera.getFrustum(), z_offset, selection_radius, selection_height)));
+    private <S extends Selectable<?>> void visitSelectable(@NonNull ModelVisitor<S> visitor, @NonNull S selectable,
+            float z_offset, float selection_radius, float selection_height) {
+        boolean in_view = !picking || (selectable.isEnabled() && (visible_override || pickingInFrustum(selectable,
+                camera.getFrustum(), z_offset, selection_radius, selection_height)));
         if (in_view) {
             Player owner = selectable.getOwnerNoCheck();
-            boolean point_on_map = !local_player.isEnemy(owner) || (!owner.teamHasBuilding() && PeerHub.getFreeQuitTimeLeft(local_player.getWorld()) < 0f);
+            boolean point_on_map = !local_player.isEnemy(owner) || (!owner.teamHasBuilding() && PeerHub
+                    .getFreeQuitTimeLeft(local_player.getWorld()) < 0f);
             ElementRenderState<S> state = (ElementRenderState<S>) getCachedState(visitor, selectable, z_offset);
             SpriteSorter.DetailMode sort_status = addToRenderList(state, point_on_map);
             if (!picking && selectable.isEnabled() && sort_status == SpriteSorter.DetailMode.POLYGON) {
-                SelectableShadowRenderer shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(selectable.getTemplate().getSelectableShadowRenderer());
+                SelectableShadowRenderer shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(
+                        selectable.getTemplate().getSelectableShadowRenderer());
                 if (isHovered(selectable) || isSelected(selectable)) {
                     shadow_renderer.addToSelectionList(state);
                 } else {
@@ -246,13 +271,15 @@ final class RenderState {
         }
     }
 
-    private <M extends AccessorizableModel> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<M> parentState) {
+    private <M extends AccessorizableModel> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<
+            M> parentState) {
         model.getAttachedAccessories().stream()
                 .filter(accessory -> accessory.isVisible(model))
                 .forEach(accessory -> visitAccessory(accessory, parentState));
     }
 
-    private <M extends AccessorizableModel> void visitAccessory(@NonNull Accessory accessory, @NonNull ElementRenderState<M> parentState) {
+    private <M extends AccessorizableModel> void visitAccessory(@NonNull Accessory accessory,
+            @NonNull ElementRenderState<M> parentState) {
         if (picking) return;
 
         switch (accessory) {
@@ -282,7 +309,8 @@ final class RenderState {
         }
     }
 
-    private <M extends AccessorizableModel> void updateEmitterWorldPosition(@NonNull Emitter<?> emitter, @NonNull Accessory accessory, @NonNull ElementRenderState<M> parentState) {
+    private <M extends AccessorizableModel> void updateEmitterWorldPosition(@NonNull Emitter<?> emitter,
+            @NonNull Accessory accessory, @NonNull ElementRenderState<M> parentState) {
         // Get parent world transform (pos and rot)
         parentState.getTransform(temp_matrix);
 
@@ -322,7 +350,8 @@ final class RenderState {
 
     private void visitBuilding(final @NonNull Building building) {
         float z_offset = getVisuallyCorrectHeight(building.getPositionX(), building.getPositionY());
-        visitSelectable(building_visitor, building, z_offset, getBuildingSelectionRadius(building), getBuildingSelectionHeight(building));
+        visitSelectable(building_visitor, building, z_offset, getBuildingSelectionRadius(building),
+                getBuildingSelectionHeight(building));
     }
 
     SpriteSorter.@NonNull DetailMode addToRenderList(@NonNull LODObject model) {
@@ -419,45 +448,50 @@ final class RenderState {
 
     private void visitPlants(final @NonNull Plants plants) {
         if (!picking && Globals.draw_plants) {
-            float camera_dist_sqr = RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ());
+            float camera_dist_sqr = RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera
+                    .getCurrentY(), camera.getCurrentZ());
             if (camera_dist_sqr <= PLANTS_CUT_DIST * PLANTS_CUT_DIST)
                 addToRenderList(getCachedState(plants_model_visitor, plants, camera_dist_sqr));
         }
     }
 
-    private static final ModelVisitor<DirectedThrowingWeapon> directed_weapon_model_visitor = new WhiteModelVisitor<>() {
-        @Override
-        public void getTransform(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state, @NonNull Matrix4f dest) {
-            DirectedThrowingWeapon model = render_state.getModel();
-            float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-            float pitchRad = (float) Math.toRadians(model.getAngle());
-            dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
-                    .rotate(yawRad, 0f, 0f, 1f)
-                    .rotate(-pitchRad, 0f, 1f, 0f);
-        }
+    private static final ModelVisitor<DirectedThrowingWeapon> directed_weapon_model_visitor
+            = new WhiteModelVisitor<>() {
+                @Override
+                public void getTransform(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state,
+                        @NonNull Matrix4f dest) {
+                    DirectedThrowingWeapon model = render_state.getModel();
+                    float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
+                    float pitchRad = (float) Math.toRadians(model.getAngle());
+                    dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
+                            .rotate(yawRad, 0f, 0f, 1f)
+                            .rotate(-pitchRad, 0f, 1f, 0f);
+                }
 
-        @Override
-        public @NonNull Color getTeamColor(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state) {
-            return render_state.getModel().getSrc().getOwner().getColor();
-        }
-    };
+                @Override
+                public @NonNull Color getTeamColor(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state) {
+                    return render_state.getModel().getSrc().getOwner().getColor();
+                }
+            };
 
-    private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor = new WhiteModelVisitor<>() {
-        @Override
-        public void getTransform(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state, @NonNull Matrix4f dest) {
-            RotatingThrowingWeapon model = render_state.getModel();
-            float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-            float spinRad = (float) Math.toRadians(model.getAngle());
-            dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
-                    .rotate(yawRad, 0f, 0f, 1f)
-                    .rotate(spinRad, 0f, 1f, 0f);
-        }
+    private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor
+            = new WhiteModelVisitor<>() {
+                @Override
+                public void getTransform(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state,
+                        @NonNull Matrix4f dest) {
+                    RotatingThrowingWeapon model = render_state.getModel();
+                    float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
+                    float spinRad = (float) Math.toRadians(model.getAngle());
+                    dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
+                            .rotate(yawRad, 0f, 0f, 1f)
+                            .rotate(spinRad, 0f, 1f, 0f);
+                }
 
-        @Override
-        public @NonNull Color getTeamColor(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state) {
-            return render_state.getModel().getSrc().getOwner().getColor();
-        }
-    };
+                @Override
+                public @NonNull Color getTeamColor(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state) {
+                    return render_state.getModel().getSrc().getOwner().getColor();
+                }
+            };
 
     public @NonNull Queue<@NonNull Emitter<?>> getEmitterQueue() {
         return emitter_queue;

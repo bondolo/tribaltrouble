@@ -219,7 +219,7 @@ public final class InputManager {
         def(GameAction.DEBUG_DUMP_ANIMATIONS, Key.F1);
     }
 
-    private static void def(@NonNull GameAction action, @NonNull Key key, @NonNull Modifier @NonNull ... modifiers) {
+    private static void def(@NonNull GameAction action, @NonNull Key key, @NonNull Modifier @NonNull... modifiers) {
         Set<Modifier> modSet = EnumSet.noneOf(Modifier.class);
         Collections.addAll(modSet, modifiers);
         DEFAULT_BINDINGS.computeIfAbsent(action, k -> new CopyOnWriteArraySet<>())

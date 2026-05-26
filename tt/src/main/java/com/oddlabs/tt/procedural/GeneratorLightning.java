@@ -13,13 +13,16 @@ public final class GeneratorLightning extends TextureGenerator {
 
     @Override
     public Texture @NonNull [] generate() {
-        Channel gradient = new Gradient(TEXTURE_SIZE, 1, new float[][]{{0f, 0f}, {.47f, .25f}, {.5f, 1f}, {.53f, .25f}, {1f, 0f}}, Gradient.Orientation.HORIZONTAL, Gradient.Interpolation.SMOOTH).toChannel();
-        Layer layer = new Layer(new Channel(TEXTURE_SIZE, 1).fill(1f), new Channel(TEXTURE_SIZE, 1).fill(1f), gradient.copy(), gradient.copy());
+        Channel gradient = new Gradient(TEXTURE_SIZE, 1, new float[][]{{0f, 0f}, {.47f, .25f}, {.5f, 1f}, {.53f, .25f},
+                {1f, 0f}}, Gradient.Orientation.HORIZONTAL, Gradient.Interpolation.SMOOTH).toChannel();
+        Layer layer = new Layer(new Channel(TEXTURE_SIZE, 1).fill(1f), new Channel(TEXTURE_SIZE, 1).fill(1f), gradient
+                .copy(), gradient.copy());
         GLIntImage img = new GLIntImage(layer);
 
         if (Landscape.DEBUG) img.saveAsPNG("generator_lightning");
         return new Texture[]{
-                new Texture(img, Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT),
+                new Texture(img, Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                        GL11.GL_REPEAT, GL11.GL_REPEAT),
         };
     }
 

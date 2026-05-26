@@ -18,16 +18,16 @@ import java.util.stream.Stream;
 public final class NativeCampaign extends Campaign {
     public static final int MAX_UNITS = 41;
     private static final int[] INITIAL_STATES = new int[]{
-/*
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE,
-		CampaignState.ISLAND_AVAILABLE};
-*/
+            /*
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE,
+            		CampaignState.ISLAND_AVAILABLE};
+            */
             CampaignState.ISLAND_AVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE,
@@ -37,9 +37,9 @@ public final class NativeCampaign extends Campaign {
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_HIDDEN};
 
-    private final @NonNull Island [] islands = Stream.<Function<Campaign,Island>>of(
-                    NativeIsland0::new, NativeIsland1::new, NativeIsland2::new, NativeIsland3::new,
-                    NativeIsland4::new, NativeIsland5::new, NativeIsland6::new, NativeIsland7::new)
+    private final @NonNull Island[] islands = Stream.<Function<Campaign, Island>>of(
+            NativeIsland0::new, NativeIsland1::new, NativeIsland2::new, NativeIsland3::new,
+            NativeIsland4::new, NativeIsland5::new, NativeIsland6::new, NativeIsland7::new)
             .map(constructor -> constructor.apply(this))
             .toArray(Island[]::new);
 

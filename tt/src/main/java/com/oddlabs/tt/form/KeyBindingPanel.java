@@ -69,10 +69,11 @@ public class KeyBindingPanel extends Panel {
         addChild(button_group);
 
         HorizButton btn_reset = new HorizButton(AbstractOptionsMenu.i18n("btn_reset_all"), 100);
-        btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(AbstractOptionsMenu.i18n("confirm_reset_all"), (_, _, _, _) -> {
-            Renderer.getLocalInput().getInputManager().resetToDefaults();
-            updateList();
-        })));
+        btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(AbstractOptionsMenu.i18n(
+                "confirm_reset_all"), (_, _, _, _) -> {
+                    Renderer.getLocalInput().getInputManager().resetToDefaults();
+                    updateList();
+                })));
         button_group.addChild(btn_reset);
 
         HorizButton btn_save = new HorizButton(AbstractOptionsMenu.i18n("btn_save_bindings"), 100);
@@ -114,7 +115,8 @@ public class KeyBindingPanel extends Panel {
             Label l2;
 
             if (bindings.isEmpty()) {
-                l2 = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), Skin.getSkin().getMultiColumnComboBoxData().font(), COL_BINDINGS_WIDTH);
+                l2 = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), Skin.getSkin()
+                        .getMultiColumnComboBoxData().font(), COL_BINDINGS_WIDTH);
             } else {
                 boolean isMac = System.getProperty("os.name", "").toLowerCase().contains("mac");
                 String bindingStr = bindings.stream().map(b -> {
@@ -146,7 +148,8 @@ public class KeyBindingPanel extends Panel {
             Renderer.getRenderer().toggleFullscreen();
         }
 
-        String path = TinyFileDialogs.tinyfd_saveFileDialog(AbstractOptionsMenu.i18n("dialog_save_bindings"), "", null, AbstractOptionsMenu.i18n("json_files"));
+        String path = TinyFileDialogs.tinyfd_saveFileDialog(AbstractOptionsMenu.i18n("dialog_save_bindings"), "", null,
+                AbstractOptionsMenu.i18n("json_files"));
         if (path != null) {
             String json = Renderer.getLocalInput().getInputManager().exportBindings();
             try {
@@ -167,7 +170,8 @@ public class KeyBindingPanel extends Panel {
             Renderer.getRenderer().toggleFullscreen();
         }
 
-        String path = TinyFileDialogs.tinyfd_openFileDialog(AbstractOptionsMenu.i18n("dialog_load_bindings"), "", null, AbstractOptionsMenu.i18n("json_files"), false);
+        String path = TinyFileDialogs.tinyfd_openFileDialog(AbstractOptionsMenu.i18n("dialog_load_bindings"), "", null,
+                AbstractOptionsMenu.i18n("json_files"), false);
         if (path != null) {
             try {
                 String json = Files.readString(Path.of(path));
@@ -184,7 +188,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private static final class InvertedLabel extends Label {
-         InvertedLabel(@NonNull String text, @NonNull Font font, int width) {
+        InvertedLabel(@NonNull String text, @NonNull Font font, int width) {
             super(text, font, width, Origin.AT_MIDDLE);
             setColor(Color.Standard.BLACK);
         }

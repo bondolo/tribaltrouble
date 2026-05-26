@@ -19,6 +19,7 @@ public abstract class AccessorizableModel extends Model {
 
     /**
      * Ticks all animated accessories. Should be called by subclasses in their animate methods.
+     *
      * @param t time delta since last frame.
      */
     protected final void animateAccessories(float t) {

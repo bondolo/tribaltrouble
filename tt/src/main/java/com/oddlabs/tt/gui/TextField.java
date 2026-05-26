@@ -11,7 +11,8 @@ import org.jspecify.annotations.NonNull;
 public abstract class TextField extends GUIObject implements CharSequence {
     private final @NonNull StringBuilder text;
     private final @NonNull Font font;
-    /** This is the maximum number of codepoints that can be stored in the text field.
+    /**
+     * This is the maximum number of codepoints that can be stored in the text field.
      * Note that this may differ from the number of bytes, characters, and graphemes.
      */
     private final int max_codepoints;

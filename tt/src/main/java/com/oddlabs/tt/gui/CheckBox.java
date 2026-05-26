@@ -24,8 +24,10 @@ public final class CheckBox extends GUIObject implements ToolTip {
         this.tool_tip = tool_tip;
         Label label = new Label(text, Skin.getSkin().getEditFont());
         addChild(label);
-        label.setPos(Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getWidth(), (Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);
-        setDim(Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getHeight());
+        label.setPos(Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getWidth(), (Skin.getSkin()
+                .getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);
+        setDim(Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), Skin
+                .getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getHeight());
         setCanFocus(true);
     }
 
@@ -70,18 +72,18 @@ public final class CheckBox extends GUIObject implements ToolTip {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isActive()
-                  ? ModeIconQuads.Mode.ACTIVE
-                  : ModeIconQuads.Mode.NORMAL;
+                        ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL;
 
         // When marked, active, pressed, and hovered, it should show the unmarked state
         // When unmarked, active, pressed, and hovered, it should show the marked state
         ModeIconQuads quad_to_render = isMarked()
                 ? (skinMode == ModeIconQuads.Mode.ACTIVE && pressed && isHovered()
-                   ? Skin.getSkin().getCheckBoxUnmarked()
-                   : Skin.getSkin().getCheckBoxMarked())
+                        ? Skin.getSkin().getCheckBoxUnmarked()
+                        : Skin.getSkin().getCheckBoxMarked())
                 : (skinMode == ModeIconQuads.Mode.ACTIVE && pressed && isHovered()
-                   ? Skin.getSkin().getCheckBoxMarked()
-                   : Skin.getSkin().getCheckBoxUnmarked());
+                        ? Skin.getSkin().getCheckBoxMarked()
+                        : Skin.getSkin().getCheckBoxUnmarked());
 
         renderer.drawModeIcon(quad_to_render, skinMode, 0, 0);
     }
@@ -94,11 +96,11 @@ public final class CheckBox extends GUIObject implements ToolTip {
     }
 
     void checked(boolean marked) {
-/*
-		GUIObject parent = (GUIObject)getParent();
-		if (parent != null)
-			parent.checkedAll(marked);
-*/
+        /*
+        		GUIObject parent = (GUIObject)getParent();
+        		if (parent != null)
+        			parent.checkedAll(marked);
+        */
     }
 
     public void addCheckBoxListener(@NonNull CheckBoxListener listener) {

@@ -85,8 +85,8 @@ public final class OpenALManager extends AudioManager {
         }
 
         int[] attributes = headphoneMode && alcIsExtensionPresent(device, "ALC_SOFT_HRTF")
-            ? new int[]{ ALC_HRTF_SOFT, ALC_TRUE, 0 }
-            : new int[]{0};
+                ? new int[]{ALC_HRTF_SOFT, ALC_TRUE, 0}
+                : new int[]{0};
 
         long context = alcCreateContext(device, attributes);
         if (context == 0) {
@@ -160,13 +160,13 @@ public final class OpenALManager extends AudioManager {
 
     private static @NonNull OpenALAudioSource @NonNull [] generateSources(int max) {
         return Stream.generate(() -> {
-                    try {
-                        return new OpenALAudioSource();
-                    } catch (Exception _) {
-                        // If source generation fails, stop trying to create more
-                        return null;
-                    }
-                }).takeWhile(Objects::nonNull)
+            try {
+                return new OpenALAudioSource();
+            } catch (Exception _) {
+                // If source generation fails, stop trying to create more
+                return null;
+            }
+        }).takeWhile(Objects::nonNull)
                 .limit(max)
                 .toArray(OpenALAudioSource[]::new);
     }
@@ -202,11 +202,13 @@ public final class OpenALManager extends AudioManager {
     }
 
     @Override
-    protected @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z, @NonNull AudioParameters params) {
+    protected @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z,
+            @NonNull AudioParameters params) {
         return createPlayer((OpenALAudioSource) source, x, y, z, params);
     }
 
-    private @NonNull AudioPlayer createPlayer(@Nullable OpenALAudioSource source, float x, float y, float z, @NonNull AudioParameters params)  {
+    private @NonNull AudioPlayer createPlayer(@Nullable OpenALAudioSource source, float x, float y, float z,
+            @NonNull AudioParameters params) {
         if (!params.audio().isStreaming()) {
             return new OpenALAudioPlayer(source, x, y, z, params);
         } else {
@@ -251,7 +253,8 @@ public final class OpenALManager extends AudioManager {
             if (context != 0) {
                 int error = AL10.alGetError();
                 if (error != AL10.AL_NO_ERROR) {
-                    logger.log(Level.WARNING, "OpenAL Error (" + message + ") [Context: " + context + "]: " + errorToString(error), new Throwable("stacktrace"));
+                    logger.log(Level.WARNING, "OpenAL Error (" + message + ") [Context: " + context + "]: "
+                            + errorToString(error), new Throwable("stacktrace"));
                 }
             } else {
                 logger.log(Level.WARNING, "OpenAL Error (" + message + "): no current context");

@@ -37,6 +37,7 @@ public class EditLine extends TextField implements Clipped {
     private int index;
 
     private long errorFlashStart = 0;
+
     public EditLine(int width, int max_codepoints) {
         this(width, max_codepoints, Origin.AT_START);
     }
@@ -68,7 +69,8 @@ public class EditLine extends TextField implements Clipped {
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
         Box edit_box = Skin.getSkin().getEditBox();
-        var mode = isDisabled() ? ModeIconQuads.Mode.DISABLED : (isActive() ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL);
+        var mode = isDisabled() ? ModeIconQuads.Mode.DISABLED : (isActive() ? ModeIconQuads.Mode.ACTIVE
+                : ModeIconQuads.Mode.NORMAL);
         edit_box.render(renderer, 0f, 0f, getWidth(), getHeight(), mode);
 
         long elapsed = System.currentTimeMillis() - errorFlashStart;
@@ -76,7 +78,8 @@ public class EditLine extends TextField implements Clipped {
             var elapsed_percent = 1.0f - ((float) elapsed / ERROR_DURATION);
             float alpha = 0.5f * elapsed_percent;
             var oneLinear = Color.toLinear(1f);
-            renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, new Color.Linear(oneLinear, oneLinear, oneLinear, alpha));
+            renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, new Color.Linear(oneLinear, oneLinear,
+                    oneLinear, alpha));
         }
 
         int render_index = isActive() ? index : -1;
@@ -91,10 +94,12 @@ public class EditLine extends TextField implements Clipped {
 
     protected void renderText(@NonNull GUIRenderer renderer, @NonNull Box box, int offset_x, int render_index) {
         var displayText = getDisplayText();
-        TextLineRenderer.render(renderer, getFont(), displayText, box.getLeftOffset() + offset_x, box.getBottomOffset(), box.getLeftOffset() + 1, getWidth() - box.getRightOffset() - 1, Color.Standard.WHITE);
+        TextLineRenderer.render(renderer, getFont(), displayText, box.getLeftOffset() + offset_x, box.getBottomOffset(),
+                box.getLeftOffset() + 1, getWidth() - box.getRightOffset() - 1, Color.Standard.WHITE);
         if (render_index != -1) {
             int cursorX = getRenderedWidth(displayText.subSequence(0, render_index));
-            Index.renderIndex(renderer, box.getLeftOffset() + offset_x + cursorX, box.getBottomOffset(), getFont(), Color.Standard.WHITE);
+            Index.renderIndex(renderer, box.getLeftOffset() + offset_x + cursorX, box.getBottomOffset(), getFont(),
+                    Color.Standard.WHITE);
         }
     }
 
@@ -145,8 +150,7 @@ public class EditLine extends TextField implements Clipped {
                     int cp = getText().codePointBefore(index);
                     index -= Character.charCount(cp);
                     delete(index);
-                }
-                else triggerError();
+                } else triggerError();
             } else if (event.consumeAction(GameAction.UI_DELETE)) {
                 if (index < getText().length()) delete(index);
             } else if (!event.isControlDown() && !event.isMetaDown() && !event.isAltDown()) {
@@ -169,7 +173,8 @@ public class EditLine extends TextField implements Clipped {
 
             // Consume printable keys in PRESSED phase to prevent bubbling (e.g. 'D' triggering debug bounds)
             // even if the character hasn't been typed yet (will come in REPEAT phase).
-            if (event.getPhase() == InputPhase.PRESSED && !event.isControlDown() && !event.isAltDown() && !event.isMetaDown()) {
+            if (event.getPhase() == InputPhase.PRESSED && !event.isControlDown() && !event.isAltDown() && !event
+                    .isMetaDown()) {
                 int c = event.getCodepoint();
                 if (c != 0 && !Character.isISOControl(c)) {
                     event.consume();
@@ -183,7 +188,8 @@ public class EditLine extends TextField implements Clipped {
 
     @Override
     public final boolean isAllowed(int codepoint) {
-        return super.isAllowed(codepoint) && getFont().getQuad(codepoint) != null && (allowed_chars == null || allowed_chars.indexOf(codepoint) != -1);
+        return super.isAllowed(codepoint) && getFont().getQuad(codepoint) != null && (allowed_chars == null
+                || allowed_chars.indexOf(codepoint) != -1);
     }
 
     private void correctOffsetX() {
@@ -258,7 +264,7 @@ public class EditLine extends TextField implements Clipped {
             float bestDx = Float.MAX_VALUE;
 
             var displayText = getDisplayText();
-            for (int i = 0; i <= displayText.length(); ) {
+            for (int i = 0; i <= displayText.length();) {
                 int charX = getRenderedWidth(displayText.subSequence(0, i));
                 float dx = Math.abs(relativeX - charX);
                 if (dx < bestDx) {

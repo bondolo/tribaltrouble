@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-/* http://home.comcast.net/~tom_forsyth/papers/fast_vert_cache_opt.html*/
+/* http://home.comcast.net/~tom_forsyth/papers/fast_vert_cache_opt.html */
 public final class IndexListOptimizer {
     private static final int LRU_SIZE = 32;
     private static final float INITIAL_SCORE = .7f;
@@ -22,8 +22,8 @@ public final class IndexListOptimizer {
     private static final float VALENCE_BOOST_POWER = .5f;
 
     public static void optimize(@NonNull ShortBuffer buffer) {
-/*System.out.println("buffer:");
-dumpBuffer(buffer);*/
+        /*System.out.println("buffer:");
+        dumpBuffer(buffer);*/
         Index[] lru = new Index[LRU_SIZE];
         Map<Short, Index> indices = new LinkedHashMap<>();
         Set<Triangle> triangles = new LinkedHashSet<>();
@@ -105,8 +105,8 @@ dumpBuffer(buffer);*/
         }
         assert !buffer.hasRemaining() : buffer.remaining();
         buffer.position(old_position);
-/*System.out.println("optimized buffer:");
-dumpBuffer(buffer);*/
+        /*System.out.println("optimized buffer:");
+        dumpBuffer(buffer);*/
     }
 
     private static void dumpBuffer(@NonNull ShortBuffer buffer) {
@@ -140,19 +140,20 @@ dumpBuffer(buffer);*/
             score += VALENCE_BOOST_SCALE * (float) Math.pow(triangle_list.size(), -VALENCE_BOOST_POWER);
         }
 
-         void add(Triangle triangle) {
+        void add(Triangle triangle) {
 //			assert !triangle_list.contains(triangle);
             triangle_list.add(triangle);
         }
 
-         void remove(Triangle triangle) {
+        void remove(Triangle triangle) {
             boolean success = triangle_list.remove(triangle);
             assert success;
         }
 
         @Override
         public @NonNull String toString() {
-            return "[index = " + index + " score = " + score + " round = " + round_added + " num_triangles = " + triangle_list.size() + "]";
+            return "[index = " + index + " score = " + score + " round = " + round_added + " num_triangles = "
+                    + triangle_list.size() + "]";
         }
     }
 
@@ -172,7 +173,7 @@ dumpBuffer(buffer);*/
                         score += indices[i].score;
                 }
         */
-         float getScore() {
+        float getScore() {
             float score = 0;
             for (Index indice : indices) {
                 score += indice.score;
@@ -180,13 +181,13 @@ dumpBuffer(buffer);*/
             return score;
         }
 
-         void remove() {
+        void remove() {
             for (Index indice : indices) {
                 indice.remove(this);
             }
         }
 
-         void addToBuffer(@NonNull ShortBuffer buffer) {
+        void addToBuffer(@NonNull ShortBuffer buffer) {
             for (Index indice : indices) {
                 buffer.put(indice.index);
             }

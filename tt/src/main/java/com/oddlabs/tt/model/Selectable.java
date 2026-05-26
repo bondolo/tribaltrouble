@@ -21,8 +21,9 @@ import java.util.List;
  * Represents a {@link Model} that can be selected, commanded, and augmented with accessories.
  * Base class for both {@link Unit} and {@link Building}.
  */
-public abstract sealed class Selectable<T extends Template> extends AccessorizableModel implements Target, Animated, ModelToolTip permits Unit, Building {
-    
+public abstract sealed class Selectable<T extends Template> extends AccessorizableModel implements Target, Animated,
+        ModelToolTip permits Unit, Building {
+
     public enum VisualPattern {
         NONE(Color.Standard.TRANSPARENT, Color.Standard.TRANSPARENT),
         FRIENDLY(Color.Standard.GREEN, Color.Standard.DARK_GREEN),
@@ -147,7 +148,8 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
         return isCloseEnough(getUnitGrid(), max_dist, getGridX(), getGridY(), target);
     }
 
-    public static boolean isCloseEnough(@NonNull UnitGrid unit_grid, float max_dist, int grid_x, int grid_y, @NonNull Target target) {
+    public static boolean isCloseEnough(@NonNull UnitGrid unit_grid, float max_dist, int grid_x, int grid_y,
+            @NonNull Target target) {
         if (max_dist == 0f && target instanceof Occupant occupant) {
             return isAdjacent(unit_grid, grid_x, grid_y, occupant);
         } else {
@@ -195,7 +197,7 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
         decide();
     }
 
-    public final void pushControllers(@NonNull Controller @NonNull ... controllers) {
+    public final void pushControllers(@NonNull Controller @NonNull... controllers) {
         assert !isDead();
         controller_stack.addAll(Arrays.asList(controllers));
         decide();
@@ -263,7 +265,8 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
 
     public final void setGridPosition(int grid_x, int grid_y) {
         assert !isDead();
-        assert owner.getWorld().getHeightMap().isGridInside(grid_x, grid_y) : grid_x + " " + grid_y + " " + this.grid_x + " " + this.grid_y;
+        assert owner.getWorld().getHeightMap().isGridInside(grid_x, grid_y) : grid_x + " " + grid_y + " " + this.grid_x
+                + " " + this.grid_y;
         this.grid_x = grid_x;
         this.grid_y = grid_y;
     }
@@ -281,8 +284,8 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
         return owner == localPlayer
                 ? isBuilding ? VisualPattern.FRIENDLY_BUILDING : VisualPattern.FRIENDLY
                 : localPlayer.isEnemy(owner)
-                    ? isBuilding ? VisualPattern.ENEMY_BUILDING : VisualPattern.ENEMY
-                    : isBuilding ? VisualPattern.NEUTRAL_BUILDING : VisualPattern.NEUTRAL;
+                        ? isBuilding ? VisualPattern.ENEMY_BUILDING : VisualPattern.ENEMY
+                : isBuilding ? VisualPattern.NEUTRAL_BUILDING : VisualPattern.NEUTRAL;
     }
 
     public final @NonNull Color getSelectionColor(@NonNull Player localPlayer, boolean selected, boolean hovered) {
@@ -290,8 +293,8 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
         return selected
                 ? pattern.selectedColor
                 : hovered
-                  ? pattern.hoveredColor
-                  : owner.getColor();
+                        ? pattern.hoveredColor
+                : owner.getColor();
     }
 
     @Override
@@ -302,10 +305,10 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
 
     @Override
     public final void updateChecksum(@NonNull StateChecksum checksum) {
-/*		checksum.update(getGridX());
-		checksum.update(getGridY());
-		checksum.update(getPositionX());
-		checksum.update(getPositionY());*/
+        /*		checksum.update(getGridX());
+        		checksum.update(getGridY());
+        		checksum.update(getPositionX());
+        		checksum.update(getPositionY());*/
     }
 
     protected final void disable() {
@@ -344,7 +347,8 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
         return (Selectable<T>[]) new Selectable[length];
     }
 
-    public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<T> @NonNull ... selectables) {
+    public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<
+            T> @NonNull... selectables) {
         return selectables;
     }
 }

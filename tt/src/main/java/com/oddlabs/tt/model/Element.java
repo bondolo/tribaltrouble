@@ -28,7 +28,7 @@ public abstract class Element<T extends Element<T>> extends BoundingBox implemen
         this.element_root = element_root;
     }
 
-    protected abstract @NonNull T self() ;
+    protected abstract @NonNull T self();
 
     public void register() {
         node_parent = element_root.insertElement(self());
@@ -88,6 +88,7 @@ public abstract class Element<T extends Element<T>> extends BoundingBox implemen
 
     /**
      * Returns true if the element is finished and can be removed from the world.
+     *
      * @return true if the element is finished.
      */
     public boolean isFinished() {

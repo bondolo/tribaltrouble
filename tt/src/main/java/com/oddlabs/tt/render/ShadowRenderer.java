@@ -13,7 +13,8 @@ abstract class ShadowRenderer {
     private Selectable.@NonNull VisualPattern pattern = Selectable.VisualPattern.NONE;
     private @Nullable Texture currentTexture;
 
-    protected @NonNull ScopedState setupShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    protected @NonNull ScopedState setupShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         var decalState = decalRenderer.setup(context, renderer, modelViewStack, projectionStack);
 
         return () -> {
@@ -39,7 +40,8 @@ abstract class ShadowRenderer {
         decalRenderer.setRadial(radial);
     }
 
-    protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer, float shadow_size, float f_x, float f_y) {
+    protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
+            float shadow_size, float f_x, float f_y) {
         if (currentTexture != null) {
             // Only increase quad size for radial (procedural) halos to provide padding for throb/animations.
             float size = decalRenderer.isRadial() ? shadow_size * 1.25f : shadow_size;

@@ -34,7 +34,8 @@ public class GraphicsPanel extends Panel {
         // Fullscreen
         Group group_fullscreen = new Group();
         addChild(group_fullscreen);
-        CheckBox cb_fullscreen = new CheckBox(Renderer.getRenderer().getSettings().fullscreen, AbstractOptionsMenu.i18n("fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
+        CheckBox cb_fullscreen = new CheckBox(Renderer.getRenderer().getSettings().fullscreen, AbstractOptionsMenu.i18n(
+                "fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
         cb_fullscreen.addCheckBoxListener(marked -> {
             DisplayChangeForm display_change_form = new DisplayChangeForm(
                     switch_now -> {
@@ -72,9 +73,9 @@ public class GraphicsPanel extends Panel {
         });
 
         slider_ui_scale.addReleaseListener(() -> {
-                    var context = Renderer.getRenderer().getRenderContext();
-                    gui_root.displayChanged(context.getViewportWidth(), context.getViewportHeight());
-                }
+            var context = Renderer.getRenderer().getRenderContext();
+            gui_root.displayChanged(context.getViewportWidth(), context.getViewportHeight());
+        }
         );
 
         label_ui_scale.place();
@@ -117,7 +118,8 @@ public class GraphicsPanel extends Panel {
 
         ColumnInfo[] mode_infos = new ColumnInfo[]{new ColumnInfo("", 150)};
 
-        MultiColumnComboBox<SerializableDisplayMode> mode_list_box = new MultiColumnComboBox<>(gui_root, mode_infos, 200, false);
+        MultiColumnComboBox<SerializableDisplayMode> mode_list_box = new MultiColumnComboBox<>(gui_root, mode_infos,
+                200, false);
         boolean fullscreen = Renderer.getRenderer().getSettings().fullscreen;
         var current_mode = Renderer.getRenderer().getCurrentDisplayMode();
         var modes = Renderer.getRenderer().getWindow().getAvailableDisplayModes();

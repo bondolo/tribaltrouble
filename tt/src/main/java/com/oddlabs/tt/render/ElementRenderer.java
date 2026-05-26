@@ -17,12 +17,14 @@ final class ElementRenderer<T extends Element<T>> {
 
     private boolean visible_override;
 
-    ElementRenderer(@NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull Picker picker, boolean picking, @NonNull SpriteSorter sprite_sorter, Selection selection) {
+    ElementRenderer(@NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull Picker picker,
+            boolean picking, @NonNull SpriteSorter sprite_sorter, Selection selection) {
         this.picking = picking;
         this.render_state = new RenderState(local_player, sprite_sorter, render_queues, picker, selection);
     }
 
-    @NonNull RenderState getRenderState() {
+    @NonNull
+    RenderState getRenderState() {
         return render_state;
     }
 
@@ -46,7 +48,8 @@ final class ElementRenderer<T extends Element<T>> {
                         visit(child);
                     }
                 }
-                case ElementLeaf<T> _ -> {}
+                case ElementLeaf<T> _ -> {
+                }
             }
 
             T model = node.getModels().getFirst();

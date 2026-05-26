@@ -86,7 +86,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(SelectGameMenu.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull ... args) {
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -98,7 +98,8 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         this(network, gui_root, main_menu, 0);
     }
 
-    public SelectGameMenu(NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu, int panel_index) {
+    public SelectGameMenu(NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu,
+            int panel_index) {
         this.main_menu = main_menu;
         this.gui_root = gui_root;
         this.network = network;
@@ -255,13 +256,16 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     }
 
     private @NonNull ChatPanel createChatRoomPanel(@NonNull ChatRoomInfo info) {
-        ChatPanel panel = new ChatPanel(gui_root, info, chat_room_list_panel.getWidth(), chat_room_list_panel.getHeight(), BUTTON_WIDTH_SHORT, new SendChatListener(), (_, _, _, _) -> leaveChatRoom());
+        ChatPanel panel = new ChatPanel(gui_root, info, chat_room_list_panel.getWidth(), chat_room_list_panel
+                .getHeight(), BUTTON_WIDTH_SHORT, new SendChatListener(), (_, _, _, _) -> leaveChatRoom());
         Renderer.getRenderer().getNetwork().getChatHub().addListener(panel);
         return panel;
     }
 
-    public void createGameMenu(@NonNull GameNetwork game_network, @NonNull Game game, WorldGenerator generator, int player_slot) {
-        game_panel = new GameMenu(game_network, gui_root, this, game, generator, player_slot, game_list_panel.getWidth(), game_list_panel.getHeight(), BUTTON_WIDTH);
+    public void createGameMenu(@NonNull GameNetwork game_network, @NonNull Game game, WorldGenerator generator,
+            int player_slot) {
+        game_panel = new GameMenu(game_network, gui_root, this, game, generator, player_slot, game_list_panel
+                .getWidth(), game_list_panel.getHeight(), BUTTON_WIDTH);
         setGameMenu(game_panel);
         game_network.getClient().setConfigurationListener(game_panel);
     }
@@ -407,7 +411,8 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private void updateChatRoomListGUI() {
         Font combofont = Skin.getSkin().getMultiColumnComboBoxData().font();
         for (ChatRoomEntry chat_room_info : chat_rooms) {
-            String users_and_max = i18n("users_and_max", chat_room_info.getNumJoined(), MatchmakingServerInterface.MAX_ROOM_USERS);
+            String users_and_max = i18n("users_and_max", chat_room_info.getNumJoined(),
+                    MatchmakingServerInterface.MAX_ROOM_USERS);
             Row<ChatRoomEntry, Label> row = new Row<>(new Label[]{
                     new Label(chat_room_info.getName(), combofont, room_name_size),
                     new Label(users_and_max, combofont)},
@@ -436,12 +441,14 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         if (Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile() != null) {
             if (selected_game != null) {
                 boolean rated = selected_game.getGame().isRated();
-                if (rated && Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getWins() < GameSession.MIN_WINS_FOR_RANKING) {
+                if (rated && Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getWins()
+                        < GameSession.MIN_WINS_FOR_RANKING) {
                     String min_wins = i18n("min_wins", GameSession.MIN_WINS_FOR_RANKING);
                     gui_root.addModalForm(new MessageForm(min_wins));
                 } else {
                     Game game = selected_game.getGame();
-                    main_menu.joinGame(network, gui_root.getGUI(), selected_game.getHostID(), game.isRated(), game.getGamespeed(), game.getMapcode(), this, game.getRandomStartPos(), game.getMaxUnitCount());
+                    main_menu.joinGame(network, gui_root.getGUI(), selected_game.getHostID(), game.isRated(), game
+                            .getGamespeed(), game.getMapcode(), this, game.getRandomStartPos(), game.getMaxUnitCount());
                 }
             }
         }
@@ -543,7 +550,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private final class PulldownListener implements ItemChosenListener<GameHost> {
         private final @NonNull MultiColumnComboBox<GameHost> box;
 
-         PulldownListener(@NonNull MultiColumnComboBox<GameHost> box) {
+        PulldownListener(@NonNull MultiColumnComboBox<GameHost> box) {
             this.box = box;
         }
 
@@ -552,9 +559,9 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
             GameHost host = box.getRightClickedRowData();
             switch (item_index) {
                 case 0 -> //Join
-                        joinGame(host);
+                    joinGame(host);
                 case 1 -> //Info
-                        gui_root.addModalForm(new GameInfoForm(host.getGame()));
+                    gui_root.addModalForm(new GameInfoForm(host.getGame()));
                 default -> throw new IllegalArgumentException("Unexpected action " + item_index);
             }
             box.setFocus();

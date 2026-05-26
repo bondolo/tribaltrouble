@@ -89,19 +89,27 @@ public final class TextureFile extends File<Texture> {
         this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, Globals.NO_MIPMAP_CUTOFF, 10000, 1.0f);
     }
 
-    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t, int max_mipmap_level, int base_fadeout_level, float fadeout_factor) {
-        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level, fadeout_factor, false);
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor) {
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level,
+                fadeout_factor, false);
     }
 
-    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t, int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha) {
-        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level, fadeout_factor, max_alpha, false);
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha) {
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level,
+                fadeout_factor, max_alpha, false);
     }
 
-    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t, int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data) {
-        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level, fadeout_factor, max_alpha, is_data, !is_data);
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data) {
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level,
+                fadeout_factor, max_alpha, is_data, !is_data);
     }
 
-    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t, int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data, boolean is_srgb) {
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data,
+            boolean is_srgb) {
         super(locateTexture(location));
         this.is_dxt = getURL().toString().endsWith(".dds");
         this.internal_format = internal_format;
@@ -124,7 +132,8 @@ public final class TextureFile extends File<Texture> {
                 .map(Optional::get)
                 .findFirst()
                 .orElseThrow(() -> {
-                    String msg = "Failed to locate texture: " + location + " (tried extensions: " + Arrays.toString(EXTENSIONS) + ")";
+                    String msg = "Failed to locate texture: " + location + " (tried extensions: " + Arrays.toString(
+                            EXTENSIONS) + ")";
                     logger.log(Level.SEVERE, msg);
                     return new IllegalArgumentException(msg);
                 });
@@ -181,23 +190,27 @@ public final class TextureFile extends File<Texture> {
     public int getInternalFormat() {
         if (is_dxt) {
             return switch (getDXTImage().getFourCC()) {
-                case DXTImage.FOURCC_DXT1 -> (is_srgb && !is_data) ? EXTTextureSRGB.GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-                case DXTImage.FOURCC_DXT5 -> (is_srgb && !is_data) ? EXTTextureSRGB.GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                case DXTImage.FOURCC_DXT1 -> (is_srgb && !is_data) ? EXTTextureSRGB.GL_COMPRESSED_SRGB_S3TC_DXT1_EXT
+                        : EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+                case DXTImage.FOURCC_DXT5 -> (is_srgb && !is_data)
+                        ? EXTTextureSRGB.GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
+                        : EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
                 default -> {
-                    String msg = "Unsupported DXT format (FourCC): " + Integer.toHexString(getDXTImage().getFourCC()) + " for texture: " + getURL();
+                    String msg = "Unsupported DXT format (FourCC): " + Integer.toHexString(getDXTImage().getFourCC())
+                            + " for texture: " + getURL();
                     logger.severe(msg);
                     throw new IllegalArgumentException(msg);
                 }
             };
         }
-        
+
         if (is_srgb && !is_data) {
             if (internal_format == GL11.GL_RGB || internal_format == GL11.GL_RGB8) return GL21.GL_SRGB8;
             if (internal_format == GL11.GL_RGBA || internal_format == GL11.GL_RGBA8) return GL21.GL_SRGB8_ALPHA8;
             if (internal_format == GL13.GL_COMPRESSED_RGB) return EXTTextureSRGB.GL_COMPRESSED_SRGB_EXT;
             if (internal_format == GL13.GL_COMPRESSED_RGBA) return EXTTextureSRGB.GL_COMPRESSED_SRGB_ALPHA_EXT;
         }
-        
+
         return internal_format;
     }
 

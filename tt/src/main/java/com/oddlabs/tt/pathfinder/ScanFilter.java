@@ -6,9 +6,9 @@ public interface ScanFilter {
     int getMaxRadius();
 
     /**
-     *  Scan and filter using the provided occupant
+     * Scan and filter using the provided occupant
      *
-      * @return true if scan should stop otherwise true to continue scan
+     * @return true if scan should stop otherwise true to continue scan
      */
     boolean filter(int grid_x, int grid_y, Occupant occ);
 }

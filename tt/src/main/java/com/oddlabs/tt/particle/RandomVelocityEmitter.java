@@ -26,13 +26,13 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     private float y_angle = 0;
 
     private RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z, float uv_angle,
-                                  float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
-                                  int num_particles, float particles_per_second,
-                                  @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                                  @NonNull Color color, @NonNull Color delta_color,
-                                  @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
-                                  int src_blend_func, int dst_blend_func,
-                                  TextureKey @NonNull [] textures, SpriteKey[] sprite_renderers, int types) {
+            float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
+            int num_particles, float particles_per_second,
+            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
+            int src_blend_func, int dst_blend_func,
+            TextureKey @NonNull [] textures, SpriteKey[] sprite_renderers, int types) {
         super(world, position,
                 offset_z,
                 emitter_radius,
@@ -61,13 +61,13 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     }
 
     public RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z, float uv_angle,
-                                 float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
-                                 int num_particles, float particles_per_second,
-                                 @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                                 @NonNull Color color, @NonNull Color delta_color,
-                                 @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
-                                 int src_blend_func, int dst_blend_func,
-                                 TextureKey @NonNull [] textures) {
+            float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
+            int num_particles, float particles_per_second,
+            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
+            int src_blend_func, int dst_blend_func,
+            TextureKey @NonNull [] textures) {
         this(world, position,
                 offset_z,
                 uv_angle,
@@ -93,12 +93,12 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     }
 
     public RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
-                                 float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
-                                 int num_particles, float particles_per_second,
-                                 @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                                 @NonNull Color color, @NonNull Color delta_color,
-                                 @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
-                                 SpriteKey @NonNull [] sprite_renderers) {
+            float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
+            int num_particles, float particles_per_second,
+            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
+            SpriteKey @NonNull [] sprite_renderers) {
         this(world, position,
                 offset_z,
                 0f,
@@ -125,9 +125,9 @@ public final class RandomVelocityEmitter extends LinearEmitter {
 
     @Override
     protected int initParticle(@NonNull Vector3f position, @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-                               @NonNull Color color, @NonNull Color delta_color,
-                               @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
-                               float energy) {
+            @NonNull Color color, @NonNull Color delta_color,
+            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
+            float energy) {
         randomizeVelocity();
 
         LinearParticle particle = new LinearParticle(getWorld(), uv_angle);
