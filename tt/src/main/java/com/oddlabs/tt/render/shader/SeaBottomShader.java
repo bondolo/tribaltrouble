@@ -74,12 +74,21 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                         }
 
                         vec3 viewDir = normalize(-v_viewPosition);
+                        vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
+                        float diff = dot(normal, lightDir) * 0.5 + 0.5;
+                        diff = diff * diff;
+
+                        // Hemispheric Ambient (flat Z=1.0 for horizontal sea bottom)
+                        float skyWeight = 1.0;
+                        vec3 ambient = mix(u_groundAmbient, u_globalAmbient, skyWeight);
+
                         float rim = 1.0 - max(dot(viewDir, normal), 0.0);
                         rim = smoothstep(0.8, 1.0, rim);
                         vec3 rimLight = rim * u_globalAmbient * 0.25;
 
                         float exposure = 1.1;
-                        vec3 litColor = color.rgb * (1.0 + rimLight * exposure);
+                        vec3 lightFactor = (ambient + diff * vec3(1.0) + rimLight) * exposure;
+                        vec3 litColor = color.rgb * lightFactor;
 
                         float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(mix(u_fogColor.rgb, litColor, fogFactor), color.a);

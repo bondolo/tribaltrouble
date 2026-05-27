@@ -130,8 +130,17 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         rim = smoothstep(0.8, 1.0, rim);
                         vec3 rimLight = rim * u_globalAmbient * 0.25;
 
+                        // Hemispheric Ambient (mix based on normal Z in World Space)
+                        float skyWeight = clamp(worldNormal.z * 0.5 + 0.5, 0.0, 1.0);
+                        vec3 ambient = mix(u_groundAmbient, u_globalAmbient, skyWeight);
+
+                        // Wrap Lighting (Half-Lambert)
+                        float diff = dot(normal, lightDir) * 0.5 + 0.5;
+                        diff = diff * diff;
+
                         float exposure = 1.1;
-                        vec3 litColor = diffuseColor.rgb * (1.0 + rimLight * exposure) + specular * exposure;
+                        vec3 lightFactor = (ambient + diff * vec3(1.0) + rimLight) * exposure;
+                        vec3 litColor = diffuseColor.rgb * lightFactor + specular * exposure;
 
                         float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
                         vec3 finalColor = mix(u_fogColor.rgb, litColor, fogFactor);
