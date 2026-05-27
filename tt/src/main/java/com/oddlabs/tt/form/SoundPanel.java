@@ -117,8 +117,17 @@ public class SoundPanel extends Panel {
         PulldownButton<Void> pb_output = new PulldownButton<>(gui_root, pm_output, initialOutput, 150);
         group_output.addChild(pb_output);
 
+        CheckBox cb_visual_alerts = new CheckBox(Renderer.getRenderer().getSettings().sound_emojis,
+                AbstractOptionsMenu.i18n("sound_emojis"),
+                AbstractOptionsMenu.i18n("sound_emojis_tip"));
+        group_output.addChild(cb_visual_alerts);
+        cb_visual_alerts.addCheckBoxListener(marked -> {
+            Renderer.getRenderer().getSettings().sound_emojis = marked;
+        });
+
         label_output.place();
         pb_output.place(label_output, RIGHT_MID);
+        cb_visual_alerts.place(label_output, BOTTOM_LEFT);
 
         AudioManager manager = Renderer.getRenderer().getAudioManager();
 

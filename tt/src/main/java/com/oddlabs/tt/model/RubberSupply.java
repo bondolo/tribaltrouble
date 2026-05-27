@@ -13,6 +13,7 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
+import com.oddlabs.tt.model.VisualSoundAccessory;
 
 import java.util.Arrays;
 
@@ -91,6 +92,11 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     }
 
     @Override
+    public @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources) {
+        return resources.getRubberStatusSprite();
+    }
+
+    @Override
     protected float getZError() {
         return getLandscapeError();
     }
@@ -164,6 +170,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public void animate(float t) {
+        animateAccessories(t);
         if (spawning)
             return;
         anim_time += animation.getSpeed() * t;
@@ -173,9 +180,16 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             float random = getWorld().getRandom().nextFloat();
             if (random < .75) {
                 setNewAnimation(Animation.IDLING);
-                if (random < .05)
+                if (random < .05) {
                     getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
                             CHICKEN_IDLE_AUDIO[getWorld().getRandom().nextInt(CHICKEN_IDLE_AUDIO.length)]);
+                    RacesResources racesResources = getWorld().getRacesResources();
+                    if (racesResources != null) {
+                        addAccessory(new VisualSoundAccessory(racesResources.getSpeechEmojiSprite(),
+                                VisualSoundAccessory.DURATION_CHICKEN_CLUCK,
+                                Assets.AUDIO_DISTANCE_CHICKEN));
+                    }
+                }
             } else if (random < .85) {
                 // fly
                 int new_grid_x = start_grid_x + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
@@ -238,6 +252,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             is_hit = true;
             setNewAnimation(Animation.DYING);
             getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_DEATH_AUDIO);
+            RacesResources racesResources = getWorld().getRacesResources();
+            if (racesResources != null) {
+                addAccessory(new VisualSoundAccessory(getStatusSprite(racesResources),
+                        VisualSoundAccessory.DURATION_CHICKEN_DEATH,
+                        Assets.AUDIO_DISTANCE_DEATH));
+            }
             group.remove(this);
         }
         return super.hit();

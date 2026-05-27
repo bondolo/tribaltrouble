@@ -35,14 +35,14 @@ public final class Sprite {
     private final int num_triangles;
     private final int num_vertices;
     private final float @Nullable [] clear_color;
-    private final int @NonNull [] buffer_indices;
+    private final int @Nullable [] buffer_indices;
     final boolean alpha;
     final boolean lighted;
     final boolean culled;
     final boolean modulate_color;
     private final float @Nullable [] cpw_array;
     private final int @Nullable [] animation_length_array;
-    private final AnimationInfo.AnimationType @NonNull [] type_array;
+    private final AnimationInfo.@NonNull AnimationType @Nullable [] type_array;
     final @Nullable Texture respond_texture;
     final int indices_offset;
     final int texcoords_offset;
@@ -56,21 +56,21 @@ public final class Sprite {
         this.num_triangles = num_triangles;
         this.indices_offset = indices_offset;
         this.texcoords_offset = 0;
-        this.clear_color = null;
-        this.buffer_indices = null;
-        this.alpha = false;
+        this.clear_color = new float[]{1f, 1f, 1f, 1f};
+        this.buffer_indices = new int[]{0};
+        this.alpha = true;
         this.lighted = false;
-        this.culled = true;
+        this.culled = false;
         this.modulate_color = modulate_color;
         this.cpw_array = null;
-        this.animation_length_array = null;
-        this.type_array = null;
+        this.animation_length_array = new int[]{1};
+        this.type_array = new AnimationInfo.AnimationType[]{AnimationInfo.AnimationType.LOOP};
         this.respond_texture = null;
     }
 
     public Sprite(@NonNull SpriteInfo sprite_info, AnimationInfo @NonNull [] animations, boolean alpha, boolean lighted,
             boolean culled, boolean modulate_color, boolean max_alpha, int mipmap_cutoff, BoundingBox[] bounds,
-            float[] cpw_array, AnimationInfo.AnimationType @NonNull [] type_array, int[] animation_length_array,
+            float @Nullable [] cpw_array, AnimationInfo.AnimationType @NonNull [] type_array, int @Nullable [] animation_length_array,
             @NonNull ShortBuffer all_indices, @NonNull FloatBuffer all_texcoords,
             @NonNull FloatBuffer all_vertices_and_normals) {
         this.culled = culled;
@@ -232,8 +232,8 @@ public final class Sprite {
             String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
             try {
                 Class<?> generator_class = Class.forName(generator_class_name);
-                Supplier<Texture[]> descriptor = (Supplier<Texture[]>) generator_class.getDeclaredConstructor()
-                        .newInstance();
+                @SuppressWarnings("unchecked") Supplier<Texture[]> descriptor =
+                        (Supplier<Texture[]>) generator_class.getDeclaredConstructor().newInstance();
                 return Resources.findResource(descriptor);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
                      | InvocationTargetException e) {

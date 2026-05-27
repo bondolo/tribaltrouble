@@ -3,6 +3,8 @@ package com.oddlabs.tt.model.behaviour;
 import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.model.RacesResources;
+import com.oddlabs.tt.model.VisualSoundAccessory;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -36,6 +38,14 @@ public final class HarvestBehaviour implements Behaviour {
             var params = Assets.getHarvestSound(supply.getClass(), unit.getOwner().getWorld().getRandom());
             unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
                     .getPositionZ(), params);
+
+            RacesResources racesResources = unit.getOwner().getWorld().getRacesResources();
+            if (racesResources != null) {
+                unit.addAccessory(new VisualSoundAccessory(supply.getStatusSprite(racesResources),
+                        VisualSoundAccessory.DURATION_HARVEST,
+                        Assets.AUDIO_DISTANCE_HARVEST));
+            }
+
             if (supply.hit()) {
                 unit.getSupplyContainer().increaseSupply(1, supply.getClass());
                 unit.getOwner().harvested(supply.getClass());

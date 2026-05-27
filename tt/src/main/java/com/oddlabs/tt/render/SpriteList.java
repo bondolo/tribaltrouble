@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public final class SpriteList implements AutoCloseable {
-    private static final @NonNull SpriteList QUAD_INSTANCE = new SpriteList();
+    private static final @NonNull SpriteList QUAD_INSTANCE = new SpriteList(new float[]{0, 0, 1, 0, 1, 1, 0, 1});
 
     private final @NonNull BoundingBox @NonNull [] bounds;
     private final @NonNull Sprite @NonNull [] sprites;
@@ -41,15 +41,23 @@ public final class SpriteList implements AutoCloseable {
         return QUAD_INSTANCE;
     }
 
-    private SpriteList() {
+    public static @NonNull SpriteList createQuadInstance(float u1, float v1, float u2, float v2) {
+        return new SpriteList(new float[]{u1, v1, u2, v1, u2, v2, u1, v2});
+    }
+
+    private SpriteList(float[] quad_texcoords) {
         // Private constructor for the quad instance
         this.bounds = new BoundingBox[]{new BoundingBox()};
         this.type_array = new AnimationInfo.AnimationType[]{AnimationInfo.AnimationType.LOOP};
         this.animation_names = new String[]{"default"};
 
-        float[] quad_vertices = {-0.5f, -0.5f, 0f, 0.5f, -0.5f, 0f, 0.5f, 0.5f, 0f, -0.5f, 0.5f, 0f};
+        float[] quad_vertices = {
+                -0.5f, -0.5f, 0f,
+                0.5f, -0.5f, 0f,
+                0.5f, 0.5f, 0f,
+                -0.5f, 0.5f, 0f
+        };
         float[] quad_normals = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
-        float[] quad_texcoords = {0, 0, 1, 0, 1, 1, 0, 1};
         short[] quad_indices = {0, 1, 2, 0, 2, 3};
 
         FloatBuffer vertAndNormBuf = BufferUtils.createFloatBuffer(quad_vertices.length + quad_normals.length);

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.particle.Emitter;
 import com.oddlabs.tt.render.SpriteKey;
 import org.joml.Matrix4f;
@@ -26,7 +27,7 @@ public final class EmitterAttachedAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent) {
+    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
         if (parent instanceof Selectable<?> selectable) {
             return !selectable.isDead();
         }

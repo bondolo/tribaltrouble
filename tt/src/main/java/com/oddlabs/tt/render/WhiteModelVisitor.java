@@ -11,6 +11,13 @@ import org.jspecify.annotations.NonNull;
  * Used as a base for custom visitors or for temporary visual effects.
  */
 class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
+    private static final WhiteModelVisitor<Model> INSTANCE = new WhiteModelVisitor<>();
+
+    @NonNull
+    public static <M extends Model> WhiteModelVisitor<M> getInstance() {
+        return (WhiteModelVisitor<M>) INSTANCE;
+    }
+
     @Override
     public @NonNull Color getSelectionColor(@NonNull ElementRenderState<M> render_state) {
         return Color.Linear.WHITE;

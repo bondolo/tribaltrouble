@@ -8,9 +8,12 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
-public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply, RubberSupply,
+public abstract sealed class SupplyModel extends AccessorizableModel implements Supply, Target permits IronSupply, RubberSupply,
         RockSupply {
     private static final float SPAWN_OFFSET_Z = -2f;
+
+    @Override
+    public abstract @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources);
 
     private final @NonNull SpriteKey sprite_renderer;
 

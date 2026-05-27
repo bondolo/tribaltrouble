@@ -48,6 +48,16 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
     }
 
     @Override
+    public int getAnimation() {
+        return model.getAnimation();
+    }
+
+    @Override
+    public float getAnimationTicks() {
+        return model.getAnimationTicks();
+    }
+
+    @Override
     public @NonNull Color getTeamColor() {
         return visitor.getTeamColor(this);
     }

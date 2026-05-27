@@ -6,6 +6,7 @@ import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +18,20 @@ import java.util.function.Consumer;
 public final class SpriteRenderer {
     private final @NonNull SpriteList sprite_list;
     private final @NonNull SpriteListRenderer sprite_list_renderer;
-    private final int tex_index;
+    private final @NonNull Texture @NonNull [] textures;
+    private final @Nullable Texture @NonNull [] team_textures;
+    private final @Nullable Texture @NonNull [] bump_textures;
     private final List<@NonNull ModelState<?>> no_detail_render_list = new ArrayList<>();
     private final @NonNull InstancedSpriteRenderer instancedSpriteRenderer;
     private final Matrix4f tempMatrix = new Matrix4f();
 
-    public SpriteRenderer(@NonNull SpriteList sprite_list, int tex_index,
+    public SpriteRenderer(@NonNull SpriteList sprite_list, @NonNull Texture @NonNull [] textures,
+            @Nullable Texture @NonNull [] team_textures, @Nullable Texture @NonNull [] bump_textures,
             @NonNull InstancedSpriteRenderer spriteRenderer) {
         this.sprite_list = sprite_list;
-        this.tex_index = tex_index;
+        this.textures = textures;
+        this.team_textures = team_textures;
+        this.bump_textures = bump_textures;
         this.instancedSpriteRenderer = spriteRenderer;
         sprite_list_renderer = new SpriteListRenderer(sprite_list, spriteRenderer);
     }
@@ -42,9 +48,9 @@ public final class SpriteRenderer {
         int index = detail.ordinal();
         index = Math.min(sprite_list.getNumSprites() - 1, index);
         if (respond) {
-            sprite_list_renderer.addToRespondRenderList(model, index, tex_index);
+            sprite_list_renderer.addToRespondRenderList(model, index);
         } else {
-            sprite_list_renderer.addToRenderList(model, index, tex_index);
+            sprite_list_renderer.addToRenderList(model, index);
         }
     }
 
@@ -60,7 +66,7 @@ public final class SpriteRenderer {
 
     public void getAllPicks(@NonNull Consumer<@NonNull Target> picks) {
         for (int i = 0; i < sprite_list.getNumSprites(); i++) {
-            sprite_list_renderer.getAllPicks(picks, i, tex_index);
+            sprite_list_renderer.getAllPicks(picks, i);
         }
         for (ModelState<?> model : no_detail_render_list) {
             picks.accept((Target) model.getModel());
@@ -70,7 +76,7 @@ public final class SpriteRenderer {
 
     public void renderAll() {
         for (int i = 0; i < sprite_list.getNumSprites(); i++) {
-            sprite_list_renderer.renderAll(i, tex_index);
+            sprite_list_renderer.renderAll(i, textures[i], team_textures[i], bump_textures[i]);
         }
     }
 
@@ -88,8 +94,8 @@ public final class SpriteRenderer {
                 tempMatrix.identity().translation(x, y, z + 0.1f).scale(r * 2);
                 // Quads don't have animation, so pass 0, 0f
                 // Disable depth test for no-detail sprites (overlays). Enable blend. No Depth Write.
-                instancedSpriteRenderer.add(quadList, 0, 0, 0f, 0, false, true, false, false, tempMatrix, model
-                        .getTeamColor(), Color.Linear.TRANSPARENT);
+                instancedSpriteRenderer.add(quadList, 0, 0, 0f, instancedSpriteRenderer.getWhiteTexture(), null,
+                        null, false, true, false, false, tempMatrix, model.getTeamColor(), Color.Linear.TRANSPARENT);
             }
         }
         clearRenderLists();

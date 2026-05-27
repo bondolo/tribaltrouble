@@ -105,6 +105,7 @@ public final class Settings implements Serializable {
     public float contrast_brightness = 0.0f;
     public float contrast_clarity = 0.0f;
     public boolean team_stencil = false;
+    public boolean sound_emojis = true;
 
     public Color.@NonNull Standard @NonNull [] team_colours = Arrays.copyOf(DEFAULT_TEAM_COLOURS,
             DEFAULT_TEAM_COLOURS.length);
@@ -170,6 +171,7 @@ public final class Settings implements Serializable {
         setProperty(props, "contrast_brightness", contrast_brightness, defaults.contrast_brightness);
         setProperty(props, "contrast_clarity", contrast_clarity, defaults.contrast_clarity);
         setProperty(props, "team_stencil", team_stencil, defaults.team_stencil);
+        setProperty(props, "sound_emojis", sound_emojis, defaults.sound_emojis);
         setProperty(props, "team_colours", team_colours, defaults.team_colours);
 
         Renderer.getLocalInput().getInputManager().saveBindings(props);
@@ -233,6 +235,7 @@ public final class Settings implements Serializable {
         contrast_brightness = getFloat(props, "contrast_brightness", contrast_brightness);
         contrast_clarity = getFloat(props, "contrast_clarity", contrast_clarity);
         team_stencil = getBoolean(props, "team_stencil", team_stencil);
+        sound_emojis = getBoolean(props, "sound_emojis", sound_emojis);
         team_colours = getColours(props, "team_colours", team_colours);
         updateLinearColors();
 

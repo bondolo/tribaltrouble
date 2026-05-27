@@ -82,14 +82,24 @@ public final class TreeRenderer extends TreePicker implements SceneRenderer {
         SpriteList crownList = tree.crown();
         SpriteList trunkList = tree.trunk();
 
+        Sprite crownSprite = crownList.getSprite(0);
+        Texture crownTexture = crownSprite.textures[0][Sprite.TEXTURE_NORMAL];
+        Texture crownTeam = crownSprite.textures[0][Sprite.TEXTURE_TEAM];
+        Texture crownBump = crownSprite.hasBumpMap(0) ? crownSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
+
+        Sprite trunkSprite = trunkList.getSprite(0);
+        Texture trunkTexture = trunkSprite.textures[0][Sprite.TEXTURE_NORMAL];
+        Texture trunkTeam = trunkSprite.textures[0][Sprite.TEXTURE_TEAM];
+        Texture trunkBump = trunkSprite.hasBumpMap(0) ? trunkSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
+
         for (TreeSupply supply : render_list) {
             prepareMatrix(supply);
             // Render Crown (Sprite 0). Blend = false, DepthWrite = true for opaque trees.
-            instancedSpriteRenderer.add(crownList, 0, 0, 0f, 0, respond, false, true, true, tempMatrix,
-                    Color.Standard.WHITE, Color.Standard.WHITE);
+            instancedSpriteRenderer.add(crownList, 0, 0, 0f, crownTexture, crownTeam, crownBump, respond, false,
+                    true, true, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
             // Render Trunk (Sprite 0). Blend = false, DepthWrite = true.
-            instancedSpriteRenderer.add(trunkList, 0, 0, 0f, 0, respond, false, true, true, tempMatrix,
-                    Color.Standard.WHITE, Color.Standard.WHITE);
+            instancedSpriteRenderer.add(trunkList, 0, 0, 0f, trunkTexture, trunkTeam, trunkBump, respond, false,
+                    true, true, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
         }
         render_list.clear();
     }

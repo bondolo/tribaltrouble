@@ -1,5 +1,6 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.particle.LinearEmitter;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.render.SpriteKey;
@@ -56,7 +57,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent) {
+    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
         if (parent instanceof Building building) {
             int startSmoke = building.getTemplate().getMaxHitPoints() / 2;
             int hp = building.getHitPoints();

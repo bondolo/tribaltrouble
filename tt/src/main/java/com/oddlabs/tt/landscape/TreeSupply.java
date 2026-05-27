@@ -3,10 +3,12 @@ package com.oddlabs.tt.landscape;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
+import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -70,6 +72,11 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         if (world.getUnitGrid().getOccupant(grid_x, grid_y) == null)
             occupyTree();
         world.getSupplyManager(getClass()).newSupply();
+    }
+
+    @Override
+    public @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources) {
+        return resources.getTreeStatusSprite();
     }
 
     @Override

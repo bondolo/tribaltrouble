@@ -39,9 +39,12 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
+import com.oddlabs.tt.procedural.DynamicEmojiGenerator;
+import com.oddlabs.tt.render.SpriteList;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 /**
@@ -76,6 +79,7 @@ public final class RacesResources {
             new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
+    private static final Logger logger = Logger.getLogger(RacesResources.class.getSimpleName());
 
     private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
@@ -96,6 +100,15 @@ public final class RacesResources {
     private final @NonNull SpriteKey[] wood_fragment_sprites = new SpriteKey[4];
     private final @NonNull SpriteKey[] treasure_sprites = new SpriteKey[6];
     private final @NonNull Race @NonNull [] races;
+
+    private final @NonNull SpriteKey gravestone_emoji_sprite;
+    private final @NonNull SpriteKey speech_emoji_sprite;
+    private final @NonNull SpriteKey saw_emoji_sprite;
+    private final @NonNull SpriteKey hammer_emoji_sprite;
+    private final @NonNull SpriteKey tree_status_sprite;
+    private final @NonNull SpriteKey rock_status_sprite;
+    private final @NonNull SpriteKey iron_status_sprite;
+    private final @NonNull SpriteKey rubber_status_sprite;
 
     public static boolean isValidRace(int race) {
         return race == RACE_NATIVES || race == RACE_VIKINGS;
@@ -676,8 +689,55 @@ public final class RacesResources {
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
 
+        logger.info("RacesResources: beginning emoji sprite registration");
+        gravestone_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
+                queues.registerTexture(new DynamicEmojiGenerator("🪦"), 0));
+        speech_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
+                queues.registerTexture(new DynamicEmojiGenerator("💬"), 0));
+        saw_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
+                queues.registerTexture(new DynamicEmojiGenerator("🪚"), 0));
+        hammer_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
+                queues.registerTexture(new DynamicEmojiGenerator("🔨"), 0));
+
+        tree_status_sprite = queues.registerIconSprite(icons.getTreeStatusIcon());
+        rock_status_sprite = queues.registerIconSprite(icons.getRockStatusIcon());
+        iron_status_sprite = queues.registerIconSprite(icons.getIronStatusIcon());
+        rubber_status_sprite = queues.registerIconSprite(icons.getRubberStatusIcon());
+
         ProgressForm.progress(1f / num_progress);
         ProgressForm.progress(1f / num_progress);
+    }
+
+    public @NonNull SpriteKey getGravestoneEmojiSprite() {
+        return gravestone_emoji_sprite;
+    }
+
+    public @NonNull SpriteKey getSpeechEmojiSprite() {
+        return speech_emoji_sprite;
+    }
+
+    public @NonNull SpriteKey getSawEmojiSprite() {
+        return saw_emoji_sprite;
+    }
+
+    public @NonNull SpriteKey getHammerEmojiSprite() {
+        return hammer_emoji_sprite;
+    }
+
+    public @NonNull SpriteKey getTreeStatusSprite() {
+        return tree_status_sprite;
+    }
+
+    public @NonNull SpriteKey getRockStatusSprite() {
+        return rock_status_sprite;
+    }
+
+    public @NonNull SpriteKey getIronStatusSprite() {
+        return iron_status_sprite;
+    }
+
+    public @NonNull SpriteKey getRubberStatusSprite() {
+        return rubber_status_sprite;
     }
 
     public @NonNull TextureKey @NonNull [] getSmokeTextures() {

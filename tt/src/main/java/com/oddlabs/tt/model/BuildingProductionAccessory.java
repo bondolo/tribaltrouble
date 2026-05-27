@@ -1,5 +1,6 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.particle.LinearEmitter;
 import com.oddlabs.tt.particle.RandomAccelerationEmitter;
 import com.oddlabs.tt.render.SpriteKey;
@@ -58,7 +59,7 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent) {
+    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
         if (parent instanceof Building building) {
             // Only armories have production smoke
             if (!building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {

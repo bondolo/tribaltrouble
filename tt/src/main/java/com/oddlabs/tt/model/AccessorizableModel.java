@@ -23,9 +23,14 @@ public abstract class AccessorizableModel extends Model {
      * @param t time delta since last frame.
      */
     protected final void animateAccessories(float t) {
-        for (var accessory : attached_accessories) {
+        var it = attached_accessories.iterator();
+        while (it.hasNext()) {
+            Accessory accessory = it.next();
             if (accessory instanceof AnimatedAccessory animated) {
                 animated.animate(t);
+            }
+            if (accessory.isExpired()) {
+                it.remove();
             }
         }
     }

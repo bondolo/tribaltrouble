@@ -15,6 +15,7 @@ import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -27,10 +28,6 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Specialized renderer that handles high-performance 3D sprite rendering using hardware instancing.
- * Batches sprites by texture and render state to minimize draw calls and state changes.
- */
 /**
  * Specialized renderer that handles high-performance 3D sprite rendering using hardware instancing.
  * Batches sprites by texture and render state to minimize draw calls and state changes.
@@ -48,13 +45,19 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
     }
 
-    public void add(@NonNull SpriteList spriteList, int spriteIndex, int animation, float animTicks, int texIndex,
+    public @NonNull Texture getWhiteTexture() {
+        return whiteTexture;
+    }
+
+    public void add(@NonNull SpriteList spriteList, int spriteIndex, int animation, float animTicks,
+            @NonNull Texture texture, @Nullable Texture teamTexture, @Nullable Texture bumpTexture,
             boolean respond, boolean blend, boolean depthWrite, boolean depthTest, @NonNull Matrix4f modelMatrix,
             @NonNull Color color, @NonNull Color decalColor) {
         Sprite sprite = spriteList.getSprite(spriteIndex);
         Sprite.FrameState frameState = sprite.getAnimationState(animation, animTicks);
 
-        BatchKey key = new BatchKey(spriteList, spriteIndex, texIndex, respond, blend, depthWrite, depthTest);
+        BatchKey key = new BatchKey(spriteList, spriteIndex, texture, teamTexture, bumpTexture, respond, blend,
+                depthWrite, depthTest);
         RenderBatch batch = batches.computeIfAbsent(key, RenderBatch::new);
         batch.addInstance(frameState.pos1(), frameState.norm1(), frameState.pos2(), frameState.norm2(), frameState
                 .tween(), modelMatrix, color, decalColor);
@@ -100,7 +103,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         whiteTexture.close();
     }
 
-    private record BatchKey(@NonNull SpriteList spriteList, int spriteIndex, int texIndex, boolean respond,
+    private record BatchKey(@NonNull SpriteList spriteList, int spriteIndex, @NonNull Texture texture,
+                            @Nullable Texture teamTexture, @Nullable Texture bumpTexture, boolean respond,
                             boolean blend, boolean depthWrite, boolean depthTest) {
     }
 
@@ -298,11 +302,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
         private void setupTextures(@NonNull RenderContext context, @NonNull InstancedSpriteShader shader,
                 @NonNull Sprite sprite, Texture whiteTexture, @NonNull RenderState state) {
-            Texture texture = (sprite.textures.length > key.texIndex && sprite.textures[key.texIndex].length > 0
-                    && sprite.textures[key.texIndex][0] != null)
-                            ? sprite.textures[key.texIndex][0] : whiteTexture;
-
-            context.setTexture(0, texture);
+            context.setTexture(0, key.texture);
             shader.setUniform(InstancedSpriteShader.Uniforms.TEXTURE_0, 0);
 
             boolean useLighting = Globals.draw_light && sprite.lighted;
@@ -317,10 +317,9 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             } else {
                 shader.setUniform(InstancedSpriteShader.Uniforms.MODULATE_COLOR, false);
                 shader.setUniform(InstancedSpriteShader.Uniforms.ALPHA_TEST_VALUE, key.respond ? 0.5f : 0.1f);
-                if (sprite.hasTeamDecal() || key.respond) {
+                if (key.teamTexture != null || key.respond) {
                     shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_TEAM_COLOR, true);
-                    Texture teamTexture = key.respond ? sprite.respond_texture
-                            : sprite.textures[key.texIndex][Sprite.TEXTURE_TEAM];
+                    Texture teamTexture = key.respond ? sprite.respond_texture : key.teamTexture;
                     context.setTexture(1, teamTexture);
                     shader.setUniform(InstancedSpriteShader.Uniforms.TEXTURE_1, 1);
                 } else {
@@ -328,9 +327,9 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 }
             }
 
-            if (sprite.hasBumpMap(key.texIndex)) {
+            if (key.bumpTexture != null) {
                 shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_NORMAL_MAP, true);
-                context.setTexture(2, sprite.textures[key.texIndex][Sprite.TEXTURE_BUMP]);
+                context.setTexture(2, key.bumpTexture);
                 shader.setUniform(InstancedSpriteShader.Uniforms.NORMAL_MAP, 2);
             } else {
                 shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_NORMAL_MAP, false);

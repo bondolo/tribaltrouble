@@ -41,6 +41,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -117,26 +118,23 @@ final class RenderState {
             case PointEmitterModel emitterModel -> {
                 emitter_queue.add(emitterModel.getEmitter());
                 float z_offset = getVisuallyCorrectHeight(emitterModel.getPositionX(), emitterModel.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
-                        AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>() {
-                        }, emitterModel, z_offset);
+                ElementRenderState<PointEmitterModel> state = (ElementRenderState<PointEmitterModel>) getCachedState(
+                        WhiteModelVisitor.getInstance(), emitterModel, z_offset);
                 visitAccessories(emitterModel, state);
             }
             case SonicBlast blast -> {
                 // SonicBlast logic itself is a model, but its visuals are handled by the sonic_blast_queue
                 sonic_blast_queue.add(blast.getSonicBlastEffect());
                 float z_offset = getVisuallyCorrectHeight(blast.getPositionX(), blast.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
-                        AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>() {
-                        }, blast, z_offset);
+                ElementRenderState<SonicBlast> state = (ElementRenderState<SonicBlast>) getCachedState(
+                        WhiteModelVisitor.getInstance(), blast, z_offset);
                 visitAccessories(blast, state);
             }
             default -> {
                 // If it's a generic accessorizable model, we still want to visit its accessories
                 float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
-                        AccessorizableModel>) getCachedState(new WhiteModelVisitor<AccessorizableModel>() {
-                        }, model, z_offset);
+                ElementRenderState<AccessorizableModel> state = (ElementRenderState<AccessorizableModel>) getCachedState(
+                        WhiteModelVisitor.getInstance(), model, z_offset);
                 visitAccessories(model, state);
             }
         }
@@ -273,9 +271,13 @@ final class RenderState {
 
     private <M extends AccessorizableModel> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<
             M> parentState) {
-        model.getAttachedAccessories().stream()
-                .filter(accessory -> accessory.isVisible(model))
-                .forEach(accessory -> visitAccessory(accessory, parentState));
+        List<Accessory> accessories = model.getAttachedAccessories();
+        for (int i = 0; i < accessories.size(); i++) {
+            Accessory accessory = accessories.get(i);
+            if (accessory != null && accessory.isVisible(model, camera)) {
+                visitAccessory(accessory, parentState);
+            }
+        }
     }
 
     private <M extends AccessorizableModel> void visitAccessory(@NonNull Accessory accessory,
@@ -407,10 +409,11 @@ final class RenderState {
 
     private void visitRubberSupply(final @NonNull RubberSupply model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
-        ModelState<RubberSupply> state = getCachedState(rubber_model_visitor, model, z_offset);
+        ElementRenderState<RubberSupply> state = (ElementRenderState<RubberSupply>) getCachedState(rubber_model_visitor, model, z_offset);
         addToRenderList(state);
         if (!picking && !model.isHit())
             default_shadow_renderer.addToShadowList(state);
+        visitAccessories(model, state);
     }
 
     private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {

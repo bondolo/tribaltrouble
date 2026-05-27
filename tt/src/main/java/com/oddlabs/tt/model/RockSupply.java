@@ -13,6 +13,11 @@ public final class RockSupply extends SupplyModel {
     }
 
     @Override
+    public @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources) {
+        return resources.getRockStatusSprite();
+    }
+
+    @Override
     public @NonNull Supply respawn() {
         return new RockSupply(getWorld(), getSpriteRenderer(), getSize(), getGridX(), getGridY(), getPositionX(),
                 getPositionY(), 0, false);

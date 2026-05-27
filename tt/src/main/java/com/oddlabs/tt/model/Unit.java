@@ -32,6 +32,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+import com.oddlabs.tt.model.VisualSoundAccessory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -387,6 +388,16 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 // stats
                 owner.unitKilled();
                 getOwner().unitLost();
+
+                // Clear all accessories on death (supply, harvesting emojis, stun stars, etc.)
+                getAttachedAccessories().clear();
+
+                RacesResources racesResources = getOwner().getWorld().getRacesResources();
+                if (racesResources != null) {
+                    addAccessory(new VisualSoundAccessory(racesResources.getGravestoneEmojiSprite(),
+                            VisualSoundAccessory.DURATION_UNIT_DEATH,
+                            Assets.AUDIO_DISTANCE_DEATH));
+                }
 
                 pushController(new DieController(this));
                 forceDecide();

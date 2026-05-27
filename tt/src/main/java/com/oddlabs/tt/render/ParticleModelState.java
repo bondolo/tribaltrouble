@@ -23,6 +23,16 @@ final class ParticleModelState implements ModelState<Particle> {
     }
 
     @Override
+    public int getAnimation() {
+        return 0;
+    }
+
+    @Override
+    public float getAnimationTicks() {
+        return 0f;
+    }
+
+    @Override
     public @NonNull Color getTeamColor() {
         return particle.getColor();
     }

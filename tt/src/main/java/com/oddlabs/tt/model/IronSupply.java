@@ -13,6 +13,11 @@ public final class IronSupply extends SupplyModel {
     }
 
     @Override
+    public @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources) {
+        return resources.getIronStatusSprite();
+    }
+
+    @Override
     public @NonNull Supply respawn() {
         return new IronSupply(getWorld(), getSpriteRenderer(), getSize(), getGridX(), getGridY(), getPositionX(),
                 getPositionY(), 0, false);

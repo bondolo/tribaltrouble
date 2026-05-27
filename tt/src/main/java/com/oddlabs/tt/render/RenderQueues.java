@@ -87,7 +87,22 @@ public final class RenderQueues implements AutoCloseable {
     public @NonNull SpriteKey register(@NonNull SpriteFile sprite_file, int tex_index) {
         int index = sprite_list_lookup.size();
         SpriteList sprite_list = Resources.findResource(sprite_file);
-        SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, tex_index, spriteRenderer);
+
+        Texture[] textures = new Texture[sprite_list.getNumSprites()];
+        Texture[] team_textures = new Texture[sprite_list.getNumSprites()];
+        Texture[] bump_textures = new Texture[sprite_list.getNumSprites()];
+
+        for (int i = 0; i < sprite_list.getNumSprites(); i++) {
+            Sprite sprite = sprite_list.getSprite(i);
+            textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_NORMAL];
+            team_textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_TEAM];
+            if (sprite.hasBumpMap(tex_index)) {
+                bump_textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_BUMP];
+            }
+        }
+
+        SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, textures, team_textures, bump_textures,
+                spriteRenderer);
         sprite_list_lookup.add(sprite_renderer);
         registerSpriteRenderer(sprite_renderer, sprite_file.getLocation());
         AnimationInfo.AnimationType[] animation_types = sprite_list.getAnimationTypes();
@@ -97,6 +112,32 @@ public final class RenderQueues implements AutoCloseable {
 
     public @NonNull SpriteRenderer getRenderer(@NonNull SpriteKey key) {
         return sprite_list_lookup.get(key.getKey());
+    }
+
+    public @NonNull SpriteKey registerDynamicSprite(@NonNull SpriteList sprite_list, @NonNull Texture texture) {
+        int index = sprite_list_lookup.size();
+
+        Texture[] textures = new Texture[sprite_list.getNumSprites()];
+        Arrays.fill(textures, texture);
+        Texture[] team_textures = new Texture[sprite_list.getNumSprites()];
+        Texture[] bump_textures = new Texture[sprite_list.getNumSprites()];
+
+        SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, textures, team_textures, bump_textures,
+                spriteRenderer);
+        sprite_list_lookup.add(sprite_renderer);
+        registerSpriteRenderer(sprite_renderer, "dynamic_emoji");
+        AnimationInfo.AnimationType[] animation_types = sprite_list.getAnimationTypes();
+        int[] type_array = Arrays.stream(animation_types).mapToInt(Enum::ordinal).toArray();
+        return new SpriteKey(index, sprite_list.getBounds(), type_array);
+    }
+
+    public @NonNull SpriteKey registerDynamicSprite(@NonNull SpriteList sprite_list, @NonNull TextureKey texture_key) {
+        return registerDynamicSprite(sprite_list, getTexture(texture_key));
+    }
+
+    public @NonNull SpriteKey registerIconSprite(com.oddlabs.tt.gui.@NonNull IconQuad icon) {
+        SpriteList sprite_list = SpriteList.createQuadInstance(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2());
+        return registerDynamicSprite(sprite_list, icon.getTexture());
     }
 
     public @NonNull InstancedSpriteRenderer getInstancedRenderer() {
@@ -122,7 +163,7 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    void renderAll(@NonNull RenderContext context, @NonNull CameraState camera_state,
+    public void renderAll(@NonNull RenderContext context, @NonNull CameraState camera_state,
             @NonNull MatrixStack projectionStack) {
         sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);

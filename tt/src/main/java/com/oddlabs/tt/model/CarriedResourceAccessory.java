@@ -1,5 +1,6 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.render.SpriteKey;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -28,7 +29,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent) {
+    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         return unit.getAbilities().hasAbilities(Abilities.BUILD) &&
                 supply_container != null &&

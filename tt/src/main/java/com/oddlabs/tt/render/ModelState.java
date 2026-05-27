@@ -14,6 +14,10 @@ interface ModelState<M extends Model> extends LODObject {
     @NonNull
     Matrix4f getTransform(@NonNull Matrix4f dest);
 
+    int getAnimation();
+
+    float getAnimationTicks();
+
     @NonNull
     Color getTeamColor();
 
