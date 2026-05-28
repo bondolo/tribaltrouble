@@ -20,8 +20,8 @@ import java.util.logging.Logger;
  */
 public final class DynamicEmojiGenerator extends TextureGenerator {
     private static final Logger logger = Logger.getLogger(DynamicEmojiGenerator.class.getName());
-    private static final int TEXT_SIZE = 24;
-    private static final int TEXTURE_SIZE = 32;
+    private static final int TEXT_SIZE = 48;
+    private static final int TEXTURE_SIZE = 64;
     private static final List<String> EMOJI_FONT_NAMES = List.of("Apple Color Emoji", "Segoe UI Emoji",
             "Noto Color Emoji", "Google Sans", "Arial");
     private static final List<@NonNull Font> EMOJI_FONTS = EMOJI_FONT_NAMES.stream()
