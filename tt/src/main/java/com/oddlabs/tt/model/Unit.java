@@ -32,7 +32,6 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
-import com.oddlabs.tt.model.VisualSoundAccessory;
 
 import java.util.ArrayList;
 import java.util.Arrays;

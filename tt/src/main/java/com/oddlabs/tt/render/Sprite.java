@@ -70,7 +70,8 @@ public final class Sprite {
 
     public Sprite(@NonNull SpriteInfo sprite_info, AnimationInfo @NonNull [] animations, boolean alpha, boolean lighted,
             boolean culled, boolean modulate_color, boolean max_alpha, int mipmap_cutoff, BoundingBox[] bounds,
-            float @Nullable [] cpw_array, AnimationInfo.AnimationType @NonNull [] type_array, int @Nullable [] animation_length_array,
+            float @Nullable [] cpw_array, AnimationInfo.AnimationType @NonNull [] type_array,
+            int @Nullable [] animation_length_array,
             @NonNull ShortBuffer all_indices, @NonNull FloatBuffer all_texcoords,
             @NonNull FloatBuffer all_vertices_and_normals) {
         this.culled = culled;
@@ -232,8 +233,8 @@ public final class Sprite {
             String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
             try {
                 Class<?> generator_class = Class.forName(generator_class_name);
-                @SuppressWarnings("unchecked") Supplier<Texture[]> descriptor =
-                        (Supplier<Texture[]>) generator_class.getDeclaredConstructor().newInstance();
+                @SuppressWarnings("unchecked") Supplier<Texture[]> descriptor = (Supplier<Texture[]>) generator_class
+                        .getDeclaredConstructor().newInstance();
                 return Resources.findResource(descriptor);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
                      | InvocationTargetException e) {

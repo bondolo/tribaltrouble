@@ -51,8 +51,8 @@ public final class RepairBehaviour implements Behaviour {
                         ? racesResources.getSawEmojiSprite()
                         : racesResources.getHammerEmojiSprite();
                 unit.addAccessory(new VisualSoundAccessory(selectedSprite,
-                            VisualSoundAccessory.DURATION_REPAIR,
-                            Assets.AUDIO_DISTANCE_HARVEST));
+                        VisualSoundAccessory.DURATION_REPAIR,
+                        Assets.AUDIO_DISTANCE_HARVEST));
             }
         }
 

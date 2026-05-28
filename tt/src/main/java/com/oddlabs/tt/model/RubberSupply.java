@@ -13,7 +13,6 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.model.VisualSoundAccessory;
 
 import java.util.Arrays;
 

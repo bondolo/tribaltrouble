@@ -133,8 +133,9 @@ final class RenderState {
             default -> {
                 // If it's a generic accessorizable model, we still want to visit its accessories
                 float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<AccessorizableModel>) getCachedState(
-                        WhiteModelVisitor.getInstance(), model, z_offset);
+                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
+                        AccessorizableModel>) getCachedState(
+                                WhiteModelVisitor.getInstance(), model, z_offset);
                 visitAccessories(model, state);
             }
         }
@@ -409,7 +410,8 @@ final class RenderState {
 
     private void visitRubberSupply(final @NonNull RubberSupply model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
-        ElementRenderState<RubberSupply> state = (ElementRenderState<RubberSupply>) getCachedState(rubber_model_visitor, model, z_offset);
+        ElementRenderState<RubberSupply> state = (ElementRenderState<RubberSupply>) getCachedState(rubber_model_visitor,
+                model, z_offset);
         addToRenderList(state);
         if (!picking && !model.isHit())
             default_shadow_renderer.addToShadowList(state);

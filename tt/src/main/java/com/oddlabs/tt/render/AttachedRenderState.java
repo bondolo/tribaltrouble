@@ -38,9 +38,12 @@ final class AttachedRenderState implements ModelState<Model> {
                 float ty = dest.m31();
                 float tz = dest.m32();
 
-                float sx = (float) Math.sqrt(dest.m00() * dest.m00() + dest.m01() * dest.m01() + dest.m02() * dest.m02());
-                float sy = (float) Math.sqrt(dest.m10() * dest.m10() + dest.m11() * dest.m11() + dest.m12() * dest.m12());
-                float sz = (float) Math.sqrt(dest.m20() * dest.m20() + dest.m21() * dest.m21() + dest.m22() * dest.m22());
+                float sx = (float) Math.sqrt(dest.m00() * dest.m00() + dest.m01() * dest.m01() + dest.m02() * dest
+                        .m02());
+                float sy = (float) Math.sqrt(dest.m10() * dest.m10() + dest.m11() * dest.m11() + dest.m12() * dest
+                        .m12());
+                float sz = (float) Math.sqrt(dest.m20() * dest.m20() + dest.m21() * dest.m21() + dest.m22() * dest
+                        .m22());
 
                 dest.translation(tx, ty, tz);
 

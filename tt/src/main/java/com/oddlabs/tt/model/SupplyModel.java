@@ -8,8 +8,8 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
-public abstract sealed class SupplyModel extends AccessorizableModel implements Supply, Target permits IronSupply, RubberSupply,
-        RockSupply {
+public abstract sealed class SupplyModel extends AccessorizableModel implements Supply, Target permits IronSupply,
+        RubberSupply, RockSupply {
     private static final float SPAWN_OFFSET_Z = -2f;
 
     @Override

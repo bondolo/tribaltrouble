@@ -36,7 +36,8 @@ public final class DynamicEmojiGenerator extends TextureGenerator {
     public DynamicEmojiGenerator(int codepoint) {
         this.codepoint = codepoint;
         this.glIntImage = new GLIntImage(TEXTURE_SIZE, TEXTURE_SIZE, GL11.GL_RGBA);
-        this.worker = Thread.startVirtualThread(() -> renderEmoji(new String(Character.toChars(codepoint)), glIntImage));
+        this.worker = Thread.startVirtualThread(() -> renderEmoji(new String(Character.toChars(codepoint)),
+                glIntImage));
     }
 
     public DynamicEmojiGenerator(@NonNull CharSequence sequence) {
@@ -102,7 +103,7 @@ public final class DynamicEmojiGenerator extends TextureGenerator {
         Texture texture = new Texture(glIntImage, GL11.GL_RGBA8,
                 GL11.GL_LINEAR, GL11.GL_LINEAR,
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
-        return new Texture[]{ texture };
+        return new Texture[]{texture};
     }
 
     @Override
