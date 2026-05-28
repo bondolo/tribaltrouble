@@ -184,7 +184,9 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                             CHICKEN_IDLE_AUDIO[getWorld().getRandom().nextInt(CHICKEN_IDLE_AUDIO.length)]);
                     RacesResources racesResources = getWorld().getRacesResources();
                     if (racesResources != null) {
-                        addAccessory(new VisualSoundAccessory(racesResources.getSpeechEmojiSprite(),
+                        var chickenThoughts = racesResources.getChickenEmojiSprites();
+                        var thought = chickenThoughts[getWorld().getRandom().nextInt(chickenThoughts.length)];
+                        addAccessory(new VisualSoundAccessory(thought,
                                 VisualSoundAccessory.DURATION_CHICKEN_CLUCK,
                                 Assets.AUDIO_DISTANCE_CHICKEN));
                     }

@@ -102,9 +102,9 @@ public final class RacesResources {
     private final @NonNull Race @NonNull [] races;
 
     private final @NonNull SpriteKey gravestone_emoji_sprite;
-    private final @NonNull SpriteKey speech_emoji_sprite;
     private final @NonNull SpriteKey saw_emoji_sprite;
     private final @NonNull SpriteKey hammer_emoji_sprite;
+    private final @NonNull SpriteKey[] chicken_emoji_sprites;
     private final @NonNull SpriteKey tree_status_sprite;
     private final @NonNull SpriteKey rock_status_sprite;
     private final @NonNull SpriteKey iron_status_sprite;
@@ -692,8 +692,11 @@ public final class RacesResources {
         logger.info("RacesResources: beginning emoji sprite registration");
         gravestone_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
                 queues.registerTexture(new DynamicEmojiGenerator("🪦"), 0));
-        speech_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
-                queues.registerTexture(new DynamicEmojiGenerator("💬"), 0));
+        chicken_emoji_sprites = "🐓🥚🐣🌽🐛".codePoints()
+                .mapToObj(DynamicEmojiGenerator::new)
+                .map(tg -> queues.registerTexture(tg, 0))
+                .map(tk -> queues.registerDynamicSprite(SpriteList.getQuadInstance(), tk))
+                .toArray(SpriteKey[]::new);
         saw_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
                 queues.registerTexture(new DynamicEmojiGenerator("🪚"), 0));
         hammer_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
@@ -712,16 +715,16 @@ public final class RacesResources {
         return gravestone_emoji_sprite;
     }
 
-    public @NonNull SpriteKey getSpeechEmojiSprite() {
-        return speech_emoji_sprite;
-    }
-
     public @NonNull SpriteKey getSawEmojiSprite() {
         return saw_emoji_sprite;
     }
 
     public @NonNull SpriteKey getHammerEmojiSprite() {
         return hammer_emoji_sprite;
+    }
+
+    public @NonNull SpriteKey[] getChickenEmojiSprites() {
+        return chicken_emoji_sprites;
     }
 
     public @NonNull SpriteKey getTreeStatusSprite() {
