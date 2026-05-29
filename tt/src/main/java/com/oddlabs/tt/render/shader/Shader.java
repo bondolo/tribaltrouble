@@ -4,6 +4,9 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Base interface for OpenGL shaders.
+ */
 public interface Shader {
     // Standard Attribute Locations
     int POSITION_LOC = 0;
@@ -27,7 +30,7 @@ public interface Shader {
                 mat4 u_projectionMatrix;
                 mat4 u_viewMatrix;
                 vec4 u_fogColor;
-                vec3 u_fogParams;
+                vec4 u_fogParams;
                 float u_cameraHeight;
                 float u_fogHeightFactor;
                 float u_globalTime;

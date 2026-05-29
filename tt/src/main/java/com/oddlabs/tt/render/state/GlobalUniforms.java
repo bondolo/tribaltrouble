@@ -5,7 +5,6 @@ import com.oddlabs.tt.render.shader.FogShader;
 import com.oddlabs.tt.resource.DistanceFogInfo;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.RadialFogInfo;
-import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.ByteBuffer;
@@ -15,7 +14,7 @@ import java.nio.ByteBuffer;
  */
 public final class GlobalUniforms {
 
-    public void update(@NonNull CameraState camera, float time, @NonNull ByteBuffer buffer) {
+    public void update(@NonNull CameraState camera, float time, float seaLevel, @NonNull ByteBuffer buffer) {
         buffer.clear();
 
         // 0: mat4 projection (64)
@@ -27,18 +26,17 @@ public final class GlobalUniforms {
         // 128: vec4 fogColor (16)
         buffer.position(128);
         FogInfo fog = camera.getFog();
-        Color color = fog.getColor();
-        assert color instanceof Color.Linear : "Color must be linear, not " + color.getClass().getSimpleName();
-        buffer.putFloat(color.r());
-        buffer.putFloat(color.g());
-        buffer.putFloat(color.b());
-        buffer.putFloat(color.a());
+        var linearColor = fog.getColor();
+        buffer.putFloat(linearColor.r());
+        buffer.putFloat(linearColor.g());
+        buffer.putFloat(linearColor.b());
+        buffer.putFloat(linearColor.a());
 
         // 144: vec3 fogParams (16 aligned)
-        // 156: float cameraHeight (4) -- Packed tightly after vec3
-        // 160: float fogHeightFactor (4)
-        // 164: float globalTime (4)
-        // 168: int fogMode (4)
+        // 160: float cameraHeight (4) -- Must be 16-aligned after vec3 in std140
+        // 164: float fogHeightFactor (4)
+        // 168: float globalTime (4)
+        // 172: int fogMode (4)
 
         int mode = -1;
         float hf = 0f;
@@ -68,13 +66,13 @@ public final class GlobalUniforms {
         buffer.putFloat(p1);
         buffer.putFloat(p2);
         buffer.putFloat(p3);
-        // NO padding here; vec3 takes 12 bytes, next float starts at 12 bytes offset (align 4)
+        buffer.putFloat(seaLevel);
 
         buffer.putFloat(ch);
         buffer.putFloat(hf);
         buffer.putFloat(time);
         buffer.putInt(mode);
 
-        buffer.position(176); // End of data (172 used, pad to 176 for 16-byte alignment)
+        buffer.position(176); // End of data (176 used, pad to 176 for 16-byte alignment)
     }
 }

@@ -18,6 +18,13 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
         String CAMERA_POS = "u_cameraPos";
         String WATER_HEIGHT = "u_waterHeight";
 
+        String HEIGHT_MAP = "u_HeightMap";
+        String WORLD_SIZE = "u_WorldSize";
+        String DEPTH_SCALE = "u_depthScale";
+        String MIN_ALPHA = "u_minAlpha";
+        String MAX_ALPHA = "u_maxAlpha";
+        String SKY_COLOR = "u_skyColor";
+
         // Fog Uniforms
         String FOG_HEIGHT_FACTOR = FogShader.FOG_HEIGHT_FACTOR;
     }
@@ -41,9 +48,11 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     uniform vec2 u_scrollOffset0;
                     uniform vec2 u_scrollOffset1;
                     uniform float u_waterHeight;
+                    uniform float u_WorldSize;
 
                     out vec2 v_texCoord0;
                     out vec2 v_texCoord1;
+                    out vec2 v_texCoordHeightmap;
                     out float v_fogDist;
                     out vec3 v_worldPos;
 
@@ -59,6 +68,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
 
                         v_texCoord0 = (worldPos.xy * u_waterRepeatRate * scaleFix) + u_scrollOffset0;
                         v_texCoord1 = (worldPos.xy * u_waterRepeatRate * scaleFix * 1.3) + u_scrollOffset1;
+                        v_texCoordHeightmap = (worldPos.xy + 1.0) / u_WorldSize;
 
                         v_fogDist = length(viewPosition.xyz);
                     }
@@ -73,11 +83,18 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
             """
                     uniform sampler2D u_texture0;
                     uniform sampler2D u_texture1;
+                    uniform sampler2D u_HeightMap;
                     uniform bool u_enableDetail;
                     uniform vec3 u_cameraPos;
+                    uniform float u_depthScale;
+                    uniform float u_minAlpha;
+                    uniform float u_maxAlpha;
+                    uniform float u_WorldSize;
+                    uniform vec3 u_skyColor;
 
                     in vec2 v_texCoord0;
                     in vec2 v_texCoord1;
+                    in vec2 v_texCoordHeightmap;
                     in float v_fogDist;
                     in vec3 v_worldPos;
 
@@ -98,6 +115,14 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     void main() {
                         vec4 baseColor = texture(u_texture0, v_texCoord0);
 
+                        // Depth-based transparency: sample heightmap at closest point to determine water depth continuously
+                        vec2 closestPoint = clamp(v_texCoordHeightmap.xy, 0.0, 1.0);
+                        float terrainHeight = texture(u_HeightMap, closestPoint).r;
+                        float distInMeters = distance(v_texCoordHeightmap.xy, closestPoint) * u_WorldSize;
+                        float depth = v_worldPos.z - terrainHeight + distInMeters;
+                        float depthFade = smoothstep(0.0, 1.0, clamp(depth / u_depthScale, 0.0, 1.0));
+                        float finalAlpha = mix(u_minAlpha, u_maxAlpha, depthFade);
+
                         vec2 grad1 = getGradient(v_texCoord0);
                         vec2 grad2 = getGradient(v_texCoord1);
                         vec2 combinedGrad = (grad1 + grad2) * 0.5;
@@ -115,7 +140,10 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         float F0 = 0.02;
                         float F = F0 + (1.0 - F0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
 
-                        vec3 reflectionColor = vec3(0.3185, 0.4479, 0.6120); // linearized (0.6, 0.7, 0.8)
+                        // Calculate reflection vector in world space to dynamically sample sky gradient
+                        vec3 reflectDir = reflect(-viewDir, normal);
+                        float horizonFactor = clamp(reflectDir.z, 0.0, 1.0);
+                        vec3 reflectionColor = mix(u_fogColor.rgb, u_skyColor, horizonFactor);
                         vec3 waterColor = baseColor.rgb * 0.7;
 
                         vec3 finalRGB = mix(waterColor, reflectionColor, F * 0.6);
@@ -127,7 +155,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         }
 
                         float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                        out_FragColor = vec4(mix(u_fogColor.rgb, finalRGB, fogFactor), baseColor.a);
+                        out_FragColor = vec4(mix(u_fogColor.rgb, finalRGB, fogFactor), finalAlpha);
                     }
                     """;
 

@@ -37,6 +37,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
             out vec2 v_texCoord1;
             out float v_fogDist;
             out vec3 v_viewPosition;
+            out float v_height;
 
             void main() {
                 vec2 worldPos = in_InstancePatchOffset + in_Position;
@@ -53,6 +54,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                 v_texCoord1 = worldPos * u_DetailScale;
                 v_fogDist = length(viewPosition.xyz);
                 v_viewPosition = viewPosition.xyz;
+                v_height = h;
             }
             """;
 
@@ -75,6 +77,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     in vec2 v_texCoord1;
                     in float v_fogDist;
                     in vec3 v_viewPosition;
+                    in float v_height;
 
                     layout(location = 0) out vec4 out_FragColor;
 
@@ -82,6 +85,18 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec4 diffuseColor = texture(u_DiffuseMap, v_texCoordColormap);
                         vec4 detailColor = texture(u_DetailMap, v_texCoord1);
                         vec4 normalMapVal = texture(u_NormalMap, v_texCoordColormap);
+
+                        // Calculate underwater depth relative to sea level (heights above sea level have negative depth)
+                        float u_seaLevel = u_fogParams.w;
+                        float depth = u_seaLevel - v_height;
+                        float normalMapStrength;
+                        if (depth < 0.0) {
+                            float t = clamp((depth + 0.25) / 0.25, 0.0, 1.0);
+                            normalMapStrength = mix(1.0, 0.50, t);
+                        } else {
+                            float t = clamp(depth / 1.0, 0.0, 1.0);
+                            normalMapStrength = mix(0.50, 0.25, t);
+                        }
 
                         // Calculate edge blend factor (ranges from 0.0 at the edge to 1.0 at 2% inside the world)
                         float distToEdgeX = min(v_texCoordColormap.x, 1.0 - v_texCoordColormap.x);
@@ -93,9 +108,11 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         diffuseColor.rgb = mix(u_SeaBottomColor, diffuseColor.rgb, edgeBlend);
                         normalMapVal.a = mix(0.0, normalMapVal.a, edgeBlend);
 
-                        // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space)
+                        // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space), smoothing it under water
                         vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
-                        srgbDiffuse *= (detailColor.rgb * 0.4 + 0.8);
+                        float detailStrength = 0.4 * normalMapStrength;
+                        float detailOffset = 1.0 - detailStrength * 0.5;
+                        srgbDiffuse *= (detailColor.rgb * detailStrength + detailOffset);
                         diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
 
                         // Compute view-space normal from heightmap slope
@@ -113,11 +130,15 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         // Perturb using normal map
                         vec3 baseNormal = perturbNormal(viewNormal, normalize(v_viewPosition), v_texCoordColormap, normalMapVal.rgb);
+
+                        // Reduce the normal map perturbation strength under water to smooth the underwater terrain
+                        baseNormal = normalize(mix(viewNormal, baseNormal, normalMapStrength));
+
                         // Blend baseNormal back to the flat viewNormal near the boundary to eliminate TBN/derivative mismatches
                         baseNormal = normalize(mix(viewNormal, baseNormal, edgeBlend));
 
                         // Micro-detail normal perturbation from detail map color (adds tactile depth up close)
-                        vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * 0.08);
+                        vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * (0.08 * normalMapStrength));
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
                         vec3 viewDir = normalize(-v_viewPosition);

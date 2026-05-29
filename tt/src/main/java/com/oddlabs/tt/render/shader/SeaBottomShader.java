@@ -45,6 +45,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
             GLOBAL_STATE_BLOCK +
             LIGHTING_CONSTANTS +
             FOG_FUNCTION +
+            COLOR_SPACE_FUNCTIONS +
             """
                     uniform sampler2D u_texture1; // Detail texture
                     uniform vec4 u_baseColor;
@@ -65,9 +66,9 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                         if (u_detailScale > 0.0001) {
                             vec4 detail = texture(u_texture1, v_texCoordDetail);
                             // Match LandscapeShader's subtle detail range [0.8, 1.2] in sRGB space
-                            vec3 srgbColor = pow(color.rgb, vec3(1.0 / 2.2));
+                            vec3 srgbColor = toSRGB(color.rgb);
                             srgbColor *= (detail.rgb * 0.4 + 0.8);
-                            color.rgb = pow(srgbColor, vec3(2.2));
+                            color.rgb = toLinear(srgbColor);
 
                             // Perturb normal using detail map to match LandscapeShader's detail normal mapping
                             normal = normalize(normal + (detail.rgb - vec3(0.5)) * 0.08);

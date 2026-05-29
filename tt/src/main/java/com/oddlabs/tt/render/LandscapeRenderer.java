@@ -33,6 +33,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Renders the 3D terrain landscape.
+ */
 public final class LandscapeRenderer implements SceneRenderer, Animated {
     private final List<@NonNull LandscapeLeaf> render_list = new ArrayList<>();
     private final @NonNull World world;

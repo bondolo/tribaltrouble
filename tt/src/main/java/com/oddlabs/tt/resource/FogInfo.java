@@ -23,7 +23,7 @@ public class FogInfo {
     }
 
     protected final @NonNull Mode mode;
-    protected final @NonNull Color color;
+    protected final Color.@NonNull Linear color;
     protected final float density;
     private boolean enabled = true;
 
@@ -46,7 +46,7 @@ public class FogInfo {
      *
      * @return Linear color
      */
-    public @NonNull Color getColor() {
+    public Color.@NonNull Linear getColor() {
         return color;
     }
 

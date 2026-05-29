@@ -65,12 +65,12 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             Landscape.TerrainType.VIKING, new Color.Standard(0xFF_99_99_D8)
     ));
 
-    private static final Map<Landscape.TerrainType, @NonNull Color> TEX_ENV_COLOR = new EnumMap<>(Map.of(
+    private static final Map<Landscape.TerrainType, Color.@NonNull Linear> TEX_ENV_COLOR = new EnumMap<>(Map.of(
             Landscape.TerrainType.NATIVE, new Color.Linear(new Color.Standard(0xFF_F2_F8_FF)),
             Landscape.TerrainType.VIKING, new Color.Linear(new Color.Standard(0xFF_FF_F2_CC))
     ));
 
-    public static final Map<Landscape.TerrainType, Color> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
+    public static final Map<Landscape.TerrainType, Color.@NonNull Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
             Landscape.TerrainType.NATIVE, new Color.Linear(new Color.Standard(0xFF_73_40_99)),
             Landscape.TerrainType.VIKING, Color.Linear.BLACK
     ));
@@ -84,8 +84,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
     private static final float START_ANGLE = -(float) Math.PI / 4f;
 
-    private final @NonNull Color skyColor;
-    private final @NonNull Color seaBottomColor;
+    private final Color.@NonNull Linear skyColor;
+    private final Color.@NonNull Linear seaBottomColor;
     private final ShortVBO @NonNull [] strip_indices;
     private final @NonNull ShortVBO fan_indices;
     private final @NonNull FloatVBO water_vertices;
@@ -358,6 +358,10 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
     public @NonNull FloatVBO getWaterVertices() {
         return water_vertices;
+    }
+
+    public Color.@NonNull Linear getSkyColor() {
+        return skyColor;
     }
 
     public @NonNull ShortVBO getWaterIndices() {
