@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Manages the procedural generation, state, and properties of the game's landscape.
+ */
 public final class Landscape {
     public static final boolean DEBUG = false;
     private static final int STRUCTURE_SEED = 42; // must be constant; otherwise distinct repeating patterns might appear
@@ -907,27 +910,24 @@ public final class Landscape {
         float accessible = supplies.sum();
 
         // place trees
-        trees = placeSupplies(tree_channel, supplies, 64, (int) (vegetation_amount * max_trees * (accessible / area)),
-                0.33f);
+        trees = placeSupplies(tree_channel, supplies, 64, (int) (vegetation_amount * max_trees * (accessible / area)));
         access.channelSubtract(trees);
         if (DEBUG) trees.toLayer().saveAsPNG("supplies_trees_placed");
 
         // place palmtrees
         palmtrees = placeSupplies(palmtree_channel, supplies, 64, (int) (vegetation_amount * max_palmtrees * (accessible
-                / area)), 0.25f);
+                / area)));
         access.channelSubtract(palmtrees);
         if (DEBUG) palmtrees.toLayer().saveAsPNG("supplies_palmtrees_placed");
 
         // place rock
-        rock = placeSupplies(rock_channel, supplies, 64, (int) (supplies_amount * max_rock), 0f);
+        rock = placeSupplies(rock_channel, supplies, 64, (int) (supplies_amount * max_rock));
         access.channelSubtract(rock);
-        shadow.channelBrightest(rock.copy().multiply(0.5f));
         if (DEBUG) rock.toLayer().saveAsPNG("supplies_rock_placed");
 
         // place iron
-        iron = placeSupplies(iron_channel, supplies, 64, (int) (supplies_amount * max_iron), 0f);
+        iron = placeSupplies(iron_channel, supplies, 64, (int) (supplies_amount * max_iron));
         access.channelSubtract(iron);
-        shadow.channelBrightest(iron.copy().multiply(0.5f));
         if (DEBUG) iron.toLayer().saveAsPNG("supplies_iron_placed");
 
         if (DEBUG) {
@@ -983,19 +983,12 @@ public final class Landscape {
 
     // place supplies on map
     private @NonNull Channel placeSupplies(@NonNull Channel probability, @NonNull Channel supplies, int intervals,
-            int max_count, float shadow_alpha_val) {
+            int max_count) {
         max_count = Math.min(probability.width * probability.height, max_count);
-        int scaleshift = Utils.powerOf2Log2(unit_grids_per_world * meters_per_height_unit / meters_per_world);
         int i = 0;
         float interval_size = 1f / intervals;
         float upper_bound = 1f;
         float lower_bound = upper_bound - interval_size;
-        int supplyshadow_size = Math.max(unit_grids_per_world >> 7, 2);
-        Channel supplyshadow_alpha = new Channel(supplyshadow_size << 1, supplyshadow_size << 1).place(new Channel(
-                supplyshadow_size, supplyshadow_size).fill(1f), supplyshadow_size >> 1, supplyshadow_size >> 1)
-                .smoothFast();
-        Channel supplyshadow = new Channel(supplyshadow_size << 1, supplyshadow_size << 1);
-        Channel supplyshadow_alpha2 = supplyshadow_alpha.copy().brightness(shadow_alpha_val);
         Channel place = new Channel(probability.width, probability.height);
 
         // place supplies
@@ -1013,13 +1006,6 @@ public final class Landscape {
                                 && supplies.getPixel(x, y + 1) > 0
                         ) {
                             place.putPixel(x, y, 1f);
-                            // place shadow
-                            if (shadow_alpha_val > 0f) {
-                                int x_pixel = (x - supplyshadow_size + 1) >> scaleshift;
-                                int y_pixel = (y - supplyshadow_size + 1) >> scaleshift;
-                                highlight.place(supplyshadow, supplyshadow_alpha, x_pixel, y_pixel);
-                                shadow.placeBrightest(supplyshadow_alpha2, x_pixel, y_pixel);
-                            }
                             // make node neighbourhood inaccessible
                             for (int k = -1; k <= 1; k++) {
                                 for (int l = -1; l <= 1; l++) {
@@ -1211,14 +1197,7 @@ public final class Landscape {
     private @NonNull List<int @NonNull []> getPositions(@NonNull Channel channel) {
         int count = channel.count(1f);
         List<int[]> list = new ArrayList<>(count);
-        for (int y = 0; y < channel.height; y++) {
-            for (int x = 0; x < channel.width; x++) {
-                if (channel.getPixel(x, y) == 1f) {
-                    list.add(new int[]{x, y});
-                }
-            }
-        }
-        assert count == list.size();
+        channel.matching(p -> p == 1f, list::add);
         return list;
     }
 

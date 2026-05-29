@@ -23,6 +23,9 @@ import org.lwjgl.opengl.GL33;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+/**
+ * Renders textured decals such as dynamic shadows and selection halos using hardware instancing.
+ */
 public final class DecalRenderer implements AutoCloseable {
 
     private final DecalShader shader = new DecalShader();
@@ -34,7 +37,7 @@ public final class DecalRenderer implements AutoCloseable {
     public static final int HALO_LUT_RESOLUTION = 256;
 
     private static final int MAX_INSTANCES = 1024;
-    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1; // Pos(2) + Size(1) + Color(4) + Pattern(1)
+    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1 + 1; // Pos(2) + Size(1) + Color(4) + Pattern(1) + OffsetScale(1)
     private final @NonNull FloatBuffer instanceBuffer;
 
     private int instanceCount = 0;
@@ -110,6 +113,11 @@ public final class DecalRenderer implements AutoCloseable {
         GL20.glVertexAttribPointer(6, 1, GL11.GL_FLOAT, false, stride, 7 * Float.BYTES);
         GL33.glVertexAttribDivisor(6, 1);
 
+        // in_InstanceOffsetScale (Loc 7, 1 float)
+        GL20.glEnableVertexAttribArray(7);
+        GL20.glVertexAttribPointer(7, 1, GL11.GL_FLOAT, false, stride, 8 * Float.BYTES);
+        GL33.glVertexAttribDivisor(7, 1);
+
         this.vao.unbind();
     }
 
@@ -161,10 +169,10 @@ public final class DecalRenderer implements AutoCloseable {
     /**
      * Draws the specified decal texture with the provided tint and pattern at the specified position and size.
      *
-     * @param color is assumed to be linear
+     * @param color the drawing tint
      */
     public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size,
-            @NonNull Color color, Selectable.@NonNull VisualPattern pattern) {
+            Color.@NonNull Linear color, Selectable.@NonNull VisualPattern pattern, float shadowOffsetScale) {
         if (currentTexture != texture) {
             flush(context);
             currentTexture = texture;
@@ -177,12 +185,12 @@ public final class DecalRenderer implements AutoCloseable {
         instanceBuffer.put(x);
         instanceBuffer.put(y);
         instanceBuffer.put(size);
-        assert color instanceof Color.Linear : "Color must be linear, not " + color.getClass().getSimpleName();
         instanceBuffer.put(color.r());
         instanceBuffer.put(color.g());
         instanceBuffer.put(color.b());
         instanceBuffer.put(color.a());
         instanceBuffer.put((float) pattern.ordinal());
+        instanceBuffer.put(shadowOffsetScale);
         instanceCount++;
     }
 

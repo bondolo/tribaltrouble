@@ -39,8 +39,9 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
             bindShadowTexture(ring);
             while (!target_list.isEmpty()) {
                 var target = target_list.pop();
-                renderShadow(context, renderer, SHADOW_SIZE * target.getProgress(), target.getPositionX(), target
-                        .getPositionY());
+                renderShadow(context, renderer, target.getPositionX(), target
+                        .getPositionY(), SHADOW_SIZE * target.getProgress()
+                );
             }
         }
     }

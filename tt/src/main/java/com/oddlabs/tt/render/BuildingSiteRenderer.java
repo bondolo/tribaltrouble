@@ -34,7 +34,7 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
                     setShadowColor(Color.Linear.WHITE);
                 else
                     setShadowColor(new Color.Linear(0f, 1f, 0f, Math.max(0f, 1 - a * a)));
-                renderShadow(context, renderer, 2f, target.getPositionX(), target.getPositionY());
+                renderShadow(context, renderer, target.getPositionX(), target.getPositionY(), 2f);
             }
         }
     }

@@ -266,9 +266,11 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
 
         sprite_sorter.distributeModels();
-
         if (Globals.process_shadows) {
             render_queues.renderShadows(context, landscape_renderer, modelViewStack, projectionStack);
+            if (Globals.process_trees) {
+                tree_renderer.renderShadows((SelectableShadowRenderer) render_queues.getDefaultShadowRenderer());
+            }
         }
 
         if (Globals.process_trees) {
@@ -348,6 +350,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             sonicBlastRenderer.close();
             sky.close();
             water.close();
+            tree_renderer.close();
             treeSpriteRenderer.close();
             postProcessor.close();
         }

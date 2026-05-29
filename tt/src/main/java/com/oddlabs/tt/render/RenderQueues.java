@@ -2,6 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
@@ -73,6 +74,10 @@ public final class RenderQueues implements AutoCloseable {
     public @NonNull ShadowListKey registerSelectableShadowList(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
         ShadowListKey key = desc_to_shadow_key.get(desc);
         return key != null ? key : register(desc, new SelectableShadowRenderer(desc));
+    }
+
+    public @NonNull ShadowRenderer getDefaultShadowRenderer() {
+        return getShadowRenderer(registerSelectableShadowList(RacesResources.DEFAULT_SHADOW_DESC));
     }
 
     @NonNull

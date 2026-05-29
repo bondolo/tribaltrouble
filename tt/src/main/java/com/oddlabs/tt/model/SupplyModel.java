@@ -8,6 +8,9 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Abstract base class for non-tree harvestable resources in the world such as rocks and iron.
+ */
 public abstract sealed class SupplyModel extends AccessorizableModel implements Supply, Target permits IronSupply,
         RubberSupply, RockSupply {
     private static final float SPAWN_OFFSET_Z = -2f;
@@ -25,6 +28,7 @@ public abstract sealed class SupplyModel extends AccessorizableModel implements 
     private int grid_x;
     private int grid_y;
 
+    private final int max_supplies;
     private int num_supplies;
     private int hit_counter = 0;
 
@@ -38,7 +42,9 @@ public abstract sealed class SupplyModel extends AccessorizableModel implements 
         this.grid_y = grid_y;
         this.rotation = rotation;
         this.num_supplies = num_supplies;
+        this.max_supplies = num_supplies;
         setPosition(x, y);
+        updateBounds();
         world.getNotificationListener().registerTarget(this);
         UnitGrid unit_grid = world.getUnitGrid();
         unit_grid.occupyGrid(grid_x, grid_y, this);
@@ -97,6 +103,36 @@ public abstract sealed class SupplyModel extends AccessorizableModel implements 
             remove();
             getWorld().getSupplyManager(getClass()).emptySupply(this);
         }
+    }
+
+    @Override
+    protected void updateBounds() {
+        super.updateBounds();
+        float r = getShadowDiameter() * 0.5f;
+        // Expand bounds by shadow radius to prevent culling of the shadow
+        bmin_x -= r;
+        bmin_y -= r;
+        bmax_x += r;
+        bmax_y += r;
+    }
+
+    @Override
+    public float getShadowDiameter() {
+        return 7.0f * getSupplyRatio();
+    }
+
+    @Override
+    public float getShadowOpacity() {
+        return 0.5f * getSupplyRatio();
+    }
+
+    private float getSupplyRatio() {
+        return max_supplies > 0 ? (float) num_supplies / max_supplies : 0.0f;
+    }
+
+    @Override
+    public float getShadowVerticalCenter() {
+        return 0.3f;
     }
 
     @Override

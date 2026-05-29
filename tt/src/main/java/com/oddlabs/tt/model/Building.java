@@ -598,6 +598,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
+    public float getShadowDiameter() {
+        return getRenderLevel() == BuildState.START ? 0.0f : super.getShadowDiameter();
+    }
+
+    @Override
     public @NonNull SpriteKey getSpriteRenderer() {
         return switch (getRenderLevel()) {
             case START -> getTemplate().getStartRenderer();

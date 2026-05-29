@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -1351,6 +1353,14 @@ public final class Channel {
                 return new int[]{i % width, i / width};
         }
         return new int[]{-1, -1};
+    }
+
+    public void matching(@NonNull Predicate<Float> predicate, @NonNull Consumer<int @NonNull []> consumer) {
+        for (int i = 0; i < pixels.length; i++) {
+            if (predicate.test(pixels[i])) {
+                consumer.accept(new int[]{i % width, i / width});
+            }
+        }
     }
 
     public @NonNull Channel bump(@NonNull Channel bumpmap, float lx, float ly, float shadow, float light,

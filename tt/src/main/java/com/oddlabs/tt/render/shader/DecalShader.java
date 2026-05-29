@@ -1,5 +1,8 @@
 package com.oddlabs.tt.render.shader;
 
+/**
+ * Shader program for rendering instanced decals with optional fog and radial distortion.
+ */
 public final class DecalShader extends ShaderProgram implements FogShader {
 
     public static final class Uniforms {
@@ -21,6 +24,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
         public static final String INSTANCE_SIZE = "in_InstanceSize";
         public static final String INSTANCE_COLOR = "in_InstanceColor";
         public static final String INSTANCE_PATTERN = "in_InstancePattern";
+        public static final String INSTANCE_OFFSET_SCALE = "in_InstanceOffsetScale";
 
         private Attributes() {
         }
@@ -36,6 +40,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     layout(location = 5) in float in_InstanceSize; // Size in meters
                     layout(location = 3) in vec4 in_InstanceColor; // RGBA
                     layout(location = 6) in float in_InstancePattern; // Pattern ID
+                    layout(location = 7) in float in_InstanceOffsetScale; // Offset scale
 
                     uniform mat4 u_modelViewMatrix;
                     uniform float u_WorldSize;
@@ -73,7 +78,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         // The shadow sample is shifted by this amount; the ring sample is not.
                         if (u_Radial) {
                             const vec3 lightDir = vec3(-0.70710678, 0.0, 0.70710678);
-                            v_ShadowOffset = lightDir.xy * 0.225;
+                            v_ShadowOffset = lightDir.xy * 0.225 * in_InstanceOffsetScale;
                         } else {
                             v_ShadowOffset = vec2(0.0);
                         }

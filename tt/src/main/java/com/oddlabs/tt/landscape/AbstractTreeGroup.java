@@ -11,13 +11,26 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Base class representing hierarchical groupings of trees and individual tree supplies.
+ */
 public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeGroup, TreeLeaf, TreeSupply {
 
     public enum TreeType {
-        JUNGLE,
-        PALM,
-        OAK,
-        PINE
+        JUNGLE(16.0f, 0.5f, 0.6f),
+        PALM(20.0f, 0.3f, 1.0f),
+        OAK(20.0f, 0.5f, 0.6f),
+        PINE(12.0f, 0.6f, 0.3f);
+
+        public final float shadowDiameter;
+        public final float shadowOpacity;
+        public final float shadowVerticalCenter;
+
+        TreeType(float shadowDiameter, float shadowOpacity, float shadowVerticalCenter) {
+            this.shadowDiameter = shadowDiameter;
+            this.shadowOpacity = shadowOpacity;
+            this.shadowVerticalCenter = shadowVerticalCenter;
+        }
     }
 
     private final @Nullable AbstractTreeGroup parent;

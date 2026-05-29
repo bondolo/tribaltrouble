@@ -12,6 +12,7 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  * Specialized renderer for forest elements, coordinating the efficient
  * drawing of crown and trunk sprite lists using hardware instancing.
  */
-public final class TreeRenderer extends TreePicker implements SceneRenderer {
+public final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer {
     private static final Logger logger = Logger.getLogger(TreeRenderer.class.getName());
     private final InstancedSpriteRenderer instancedSpriteRenderer;
     private final WaveAnimation wave_animation = new WaveAnimation();
@@ -31,6 +32,12 @@ public final class TreeRenderer extends TreePicker implements SceneRenderer {
         super(sprite_sorter, respond_manager);
         this.cheat = cheat;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
+    }
+
+    public void renderShadows(@NonNull SelectableShadowRenderer shadowRenderer) {
+        Arrays.stream(getRenderLists())
+                .flatMap(List::stream)
+                .forEach(shadowRenderer::addToShadowList);
     }
 
     @Override
@@ -123,5 +130,9 @@ public final class TreeRenderer extends TreePicker implements SceneRenderer {
     @Override
     boolean isPicking() {
         return false;
+    }
+
+    @Override
+    public void close() {
     }
 }

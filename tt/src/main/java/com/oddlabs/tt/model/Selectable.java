@@ -62,7 +62,7 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
     }
 
     @Override
-    public final float getShadowDiameter() {
+    public float getShadowDiameter() {
         return template.getShadowDiameter();
     }
 

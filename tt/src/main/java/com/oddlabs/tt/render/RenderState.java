@@ -27,6 +27,7 @@ import com.oddlabs.tt.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.model.weapon.RotatingThrowingWeapon;
 import com.oddlabs.tt.model.weapon.SonicBlast;
 import com.oddlabs.tt.net.PeerHub;
+import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.particle.Emitter;
 import com.oddlabs.tt.particle.Lightning;
 import com.oddlabs.tt.particle.SonicBlastEffect;
@@ -41,8 +42,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import com.oddlabs.tt.render.state.RenderContext;
+import com.oddlabs.tt.render.state.ScopedState;
 
 /**
  * Manages the rendering state and visit logic for world entities and their accessories.
@@ -262,7 +266,7 @@ final class RenderState {
                         selectable.getTemplate().getSelectableShadowRenderer());
                 if (isHovered(selectable) || isSelected(selectable)) {
                     shadow_renderer.addToSelectionList(state);
-                } else {
+                } else if (selectable.getShadowDiameter() > 0f) {
                     shadow_renderer.addToShadowList(state);
                 }
             }
@@ -395,7 +399,13 @@ final class RenderState {
     };
 
     private void visitSupplyModel(final @NonNull SupplyModel model) {
-        addToRenderList(getCachedState(supply_model_visitor, model));
+        ElementRenderState<SupplyModel> state = (ElementRenderState<SupplyModel>) getCachedState(
+                supply_model_visitor, model);
+        addToRenderList(state);
+        if (!picking) {
+            if (model.getShadowDiameter() > 0f)
+                default_shadow_renderer.addToShadowList((ModelState<?>) state);
+        }
     }
 
     private static final ModelVisitor<RubberSupply> rubber_model_visitor = new SupplyModelVisitor<>() {
@@ -414,7 +424,7 @@ final class RenderState {
                 model, z_offset);
         addToRenderList(state);
         if (!picking && !model.isHit())
-            default_shadow_renderer.addToShadowList(state);
+            default_shadow_renderer.addToShadowList((ModelState<?>) state);
         visitAccessories(model, state);
     }
 
@@ -426,7 +436,7 @@ final class RenderState {
         addToRenderList(state);
         if (!picking) {
             if (model.getShadowDiameter() > 0f)
-                default_shadow_renderer.addToShadowList(state);
+                default_shadow_renderer.addToShadowList((ModelState<?>) state);
         }
     }
 

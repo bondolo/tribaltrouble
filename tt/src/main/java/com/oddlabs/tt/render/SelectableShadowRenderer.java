@@ -16,11 +16,14 @@ import java.util.Deque;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+/**
+ * Specialized renderer that handles drawing halos for selected units and regular shadows for other entities.
+ */
 final class SelectableShadowRenderer extends ShadowListRenderer {
     private final @NonNull Texture @NonNull [] halos;
 
     private final Deque<@NonNull ModelState<?>> selection_list = new ArrayDeque<>();
-    private final Deque<@NonNull Model> shadowed_list = new ArrayDeque<>();
+    private final Deque<@NonNull Shadowable> shadowed_list = new ArrayDeque<>();
 
     public SelectableShadowRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> halos_desc) {
         halos = Resources.findResource(halos_desc);
@@ -47,6 +50,12 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
         }
     }
 
+    public void addToShadowList(@NonNull Shadowable shadowable) {
+        if (Globals.process_shadows) {
+            shadowed_list.add(shadowable);
+        }
+    }
+
     @Override
     protected void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
@@ -56,7 +65,7 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
             bindShadowTexture(halos[GeneratorHalos.HaloType.SHADOWED.ordinal()]);
             while (!shadowed_list.isEmpty()) {
                 var model = shadowed_list.pop();
-                renderShadow(context, renderer, model.getShadowDiameter(), model.getPositionX(), model.getPositionY());
+                renderShadow(context, renderer, model);
             }
 
             bindShadowTexture(halos[GeneratorHalos.HaloType.SELECTED.ordinal()]);
@@ -66,7 +75,7 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
                 setShadowColor(modelState.getSelectionColor());
                 setPattern(modelState.getPattern());
 
-                renderShadow(context, renderer, model.getShadowDiameter(), model.getPositionX(), model.getPositionY());
+                renderShadow(context, renderer, model);
             }
         }
     }

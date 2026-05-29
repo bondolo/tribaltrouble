@@ -8,6 +8,7 @@ import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
+import com.oddlabs.tt.render.Shadowable;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.joml.Matrix4f;
@@ -21,7 +22,7 @@ import java.util.stream.Stream;
  * A harvestable tree resource in the game world.
  * Provides wood supplies when harvested by peon units.
  */
-public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated {
+public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated, Shadowable {
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
 
@@ -69,6 +70,11 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
             checkBoundsY(dest.y);
             checkBoundsZ(dest.z);
         }
+        float r = getShadowDiameter() * 0.5f;
+        checkBoundsX(x - r);
+        checkBoundsX(x + r);
+        checkBoundsY(y - r);
+        checkBoundsY(y + r);
         if (world.getUnitGrid().getOccupant(grid_x, grid_y) == null)
             occupyTree();
         world.getSupplyManager(getClass()).newSupply();
@@ -140,6 +146,23 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         Region region = grid.getRegion(grid_x, grid_y);
         region.unregisterObject((Class<TreeSupply>) getClass(), this);
         grid.freeGrid(grid_x, grid_y, this);
+    }
+
+    @Override
+    public float getShadowDiameter() {
+        float base_diameter = tree_type.shadowDiameter;
+        return isEmpty() ? base_diameter * Math.max(0f, 1f - getTreeFallProgress()) : base_diameter;
+    }
+
+    @Override
+    public float getShadowOpacity() {
+        float base_opacity = tree_type.shadowOpacity;
+        return isEmpty() ? base_opacity * (1.0f + 0.3f * getTreeFallProgress()) : base_opacity;
+    }
+
+    @Override
+    public float getShadowVerticalCenter() {
+        return tree_type.shadowVerticalCenter;
     }
 
     @Override

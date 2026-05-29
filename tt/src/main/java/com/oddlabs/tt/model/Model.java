@@ -2,6 +2,7 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.RenderTools;
+import com.oddlabs.tt.render.Shadowable;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
@@ -12,7 +13,7 @@ import java.util.Objects;
 /**
  * Represents a world entity with visual representation and world association.
  */
-public abstract class Model extends Element<Model> {
+public abstract class Model extends Element<Model> implements Shadowable {
     private final @NonNull World world;
 
     protected Model(@NonNull World world) {
@@ -25,9 +26,12 @@ public abstract class Model extends Element<Model> {
         return this;
     }
 
+    @Override
     public float getShadowDiameter() {
+        // no shadow
         return 0f;
     }
+
 
     public float getOffsetZ() {
         return 0f;
@@ -47,7 +51,7 @@ public abstract class Model extends Element<Model> {
 
     public abstract @Nullable SpriteKey getSpriteRenderer();
 
-    private void updateBounds() {
+    protected void updateBounds() {
         SpriteKey renderer = getSpriteRenderer();
         if (renderer != null) {
             BoundingBox unit_bounds = renderer.getBounds(getAnimation());

@@ -7,9 +7,12 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Base class for rendering dynamic shadow decals for world objects.
+ */
 abstract class ShadowRenderer {
     private final DecalRenderer decalRenderer = new DecalRenderer();
-    private Color color = new Color.Linear(Color.Linear.WHITE);
+    private Color.@NonNull Linear color = Color.Linear.WHITE;
     private Selectable.@NonNull VisualPattern pattern = Selectable.VisualPattern.NONE;
     private @Nullable Texture currentTexture;
 
@@ -41,11 +44,26 @@ abstract class ShadowRenderer {
     }
 
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            float shadow_size, float f_x, float f_y) {
+            @NonNull Shadowable model) {
+        if (currentTexture != null) {
+            Color.Linear c = new Color.Linear(color.r(), color.g(), color.b(),
+                    color.a() * model.getShadowOpacity());
+            renderShadow(context, renderer, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(), c,
+                    model.getShadowVerticalCenter());
+        }
+    }
+
+    protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
+            float f_x, float f_y, float shadow_size) {
+        renderShadow(context, renderer, f_x, f_y, shadow_size, color, 0.6f);
+    }
+
+    protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
+            float f_x, float f_y, float shadow_size, Color.@NonNull Linear color, float shadowOffsetScale) {
         if (currentTexture != null) {
             // Expand the quad for radial halos to provide room for the offset shadow blob and animation padding.
             float size = decalRenderer.isRadial() ? shadow_size * 2.5f : shadow_size;
-            decalRenderer.draw(context, currentTexture, f_x, f_y, size, color, pattern);
+            decalRenderer.draw(context, currentTexture, f_x, f_y, size, color, pattern, shadowOffsetScale);
         }
     }
 

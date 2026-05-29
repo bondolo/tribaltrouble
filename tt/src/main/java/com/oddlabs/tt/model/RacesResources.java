@@ -104,7 +104,7 @@ public final class RacesResources {
     private final @NonNull SpriteKey gravestone_emoji_sprite;
     private final @NonNull SpriteKey saw_emoji_sprite;
     private final @NonNull SpriteKey hammer_emoji_sprite;
-    private final @NonNull SpriteKey[] chicken_emoji_sprites;
+    private final @NonNull SpriteKey @NonNull [] chicken_emoji_sprites;
     private final @NonNull SpriteKey tree_status_sprite;
     private final @NonNull SpriteKey rock_status_sprite;
     private final @NonNull SpriteKey iron_status_sprite;
@@ -723,7 +723,7 @@ public final class RacesResources {
         return hammer_emoji_sprite;
     }
 
-    public @NonNull SpriteKey[] getChickenEmojiSprites() {
+    public @NonNull SpriteKey @NonNull [] getChickenEmojiSprites() {
         return chicken_emoji_sprites;
     }
 
