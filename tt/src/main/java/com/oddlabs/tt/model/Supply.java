@@ -22,6 +22,10 @@ public non-sealed interface Supply extends Occupant, ModelToolTip {
 
     void spawnComplete();
 
+    default float getSpawnTime() {
+        return 3.0f;
+    }
+
     @NonNull
     World getWorld();
 }

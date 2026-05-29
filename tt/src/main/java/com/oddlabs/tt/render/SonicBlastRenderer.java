@@ -72,10 +72,10 @@ public final class SonicBlastRenderer implements AutoCloseable {
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (activeEffects.isEmpty()) return;
 
-        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
-                DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
-
-            shader.setUniformColor3(SonicBlastShader.Uniforms.COLOR, BLAST_COLOR);
+        try (var _ = shader.use();
+             var _ = context.withBlendMode(BlendMode.ADDITIVE);
+             var _ = context.withDepthMode(DepthMode.READ_ONLY);
+             var _ = context.withCullMode(CullMode.NONE)) {
 
             // Bind generated noise texture for ring turbulence
             context.setTexture(0, noiseTextures[0].getHandle());
@@ -95,10 +95,24 @@ public final class SonicBlastRenderer implements AutoCloseable {
                 float visualRadius = effect.getMaxRadius() * 1.2f;
                 float r = visualRadius * 2.0f; // Quad size (diameter)
 
-                // Position and scale the quad to be parallel to the ground
+                var hm = effect.getWorld().getHeightMap();
+                float h_l = hm.getNearestHeight(x - 0.5f, y);
+                float h_r = hm.getNearestHeight(x + 0.5f, y);
+                float h_d = hm.getNearestHeight(x, y - 0.5f);
+                float h_u = hm.getNearestHeight(x, y + 0.5f);
+
+                float dh_dx = h_r - h_l;
+                float dh_dy = h_u - h_d;
+                float angleX = (float) Math.atan2(dh_dx, 1.0f);
+                float angleY = (float) Math.atan2(dh_dy, 1.0f);
+
+                // Position, align to terrain slope, and scale the quad
                 modelViewStack.translate(x, y, z);
+                modelViewStack.current().rotateY(-angleX);
+                modelViewStack.current().rotateX(angleY);
                 modelViewStack.scale(r, r, 1.0f);
 
+                shader.setUniformColor3(SonicBlastShader.Uniforms.COLOR, effect.getColor());
                 shader.setUniform(SonicBlastShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
                 shader.setUniform(SonicBlastShader.Uniforms.TIME, effect.getTime());
                 shader.setUniform(SonicBlastShader.Uniforms.MAX_RADIUS, visualRadius);

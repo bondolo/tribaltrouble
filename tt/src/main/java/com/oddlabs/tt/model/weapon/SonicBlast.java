@@ -103,8 +103,6 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
             rumble.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
         }
 
-        sonicBlastEffect.update(t);
-
         float current_radius = hit_radius * time / seconds;
         float squared_radius = current_radius * current_radius;
 

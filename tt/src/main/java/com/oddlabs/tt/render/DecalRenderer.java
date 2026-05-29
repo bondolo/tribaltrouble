@@ -1,6 +1,5 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.render.shader.DecalShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
@@ -122,9 +121,7 @@ public final class DecalRenderer implements AutoCloseable {
     }
 
     public void setRadial(boolean radial) {
-        if (this.radial != radial) {
-            this.radial = radial;
-        }
+        this.radial = radial;
     }
 
     public boolean isRadial() {
@@ -172,7 +169,7 @@ public final class DecalRenderer implements AutoCloseable {
      * @param color the drawing tint
      */
     public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size,
-            Color.@NonNull Linear color, Selectable.@NonNull VisualPattern pattern, float shadowOffsetScale) {
+            Color.@NonNull Linear color, float patternVal, float shadowOffsetScale) {
         if (currentTexture != texture) {
             flush(context);
             currentTexture = texture;
@@ -189,7 +186,7 @@ public final class DecalRenderer implements AutoCloseable {
         instanceBuffer.put(color.g());
         instanceBuffer.put(color.b());
         instanceBuffer.put(color.a());
-        instanceBuffer.put((float) pattern.ordinal());
+        instanceBuffer.put(patternVal);
         instanceBuffer.put(shadowOffsetScale);
         instanceCount++;
     }

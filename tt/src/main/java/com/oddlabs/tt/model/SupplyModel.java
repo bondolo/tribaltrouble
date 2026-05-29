@@ -7,6 +7,8 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import com.oddlabs.util.Color;
 
 /**
  * Abstract base class for non-tree harvestable resources in the world such as rocks and iron.
@@ -70,6 +72,26 @@ public abstract sealed class SupplyModel extends AccessorizableModel implements 
     public void spawnComplete() {
     }
 
+    public Color.@Nullable Linear getSpawnColorTint() {
+        return null;
+    }
+
+    public Color.@Nullable Linear getCrackDecalColor() {
+        return null;
+    }
+
+    public float getCrackDecalOpacity() {
+        return 0.0f;
+    }
+
+    public float getCrackDecalDiameter() {
+        return getSize();
+    }
+
+    public float getCrackDecalPattern() {
+        return 0.0f;
+    }
+
     @Override
     public final boolean isEmpty() {
         return num_supplies == 0;
@@ -121,9 +143,15 @@ public abstract sealed class SupplyModel extends AccessorizableModel implements 
         return 7.0f * getSupplyRatio();
     }
 
+    private boolean showShadow = true;
+
+    protected final void setShowShadow(boolean showShadow) {
+        this.showShadow = showShadow;
+    }
+
     @Override
     public float getShadowOpacity() {
-        return 0.5f * getSupplyRatio();
+        return !showShadow ? 0.0f : 0.5f * getSupplyRatio();
     }
 
     private float getSupplyRatio() {
@@ -166,7 +194,7 @@ public abstract sealed class SupplyModel extends AccessorizableModel implements 
         return offset_z + calculateSlopeOffset();
     }
 
-    private float calculateSlopeOffset() {
+    protected float calculateSlopeOffset() {
         // Check surrounding heights to lift object on slopes
         float r = getSize() * 0.2f;
         float x = getPositionX();

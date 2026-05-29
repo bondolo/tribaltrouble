@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 abstract class ShadowRenderer {
     private final DecalRenderer decalRenderer = new DecalRenderer();
     private Color.@NonNull Linear color = Color.Linear.WHITE;
-    private Selectable.@NonNull VisualPattern pattern = Selectable.VisualPattern.NONE;
+    private float patternVal = 0.0f;
     private @Nullable Texture currentTexture;
 
     protected @NonNull ScopedState setupShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
@@ -23,7 +23,7 @@ abstract class ShadowRenderer {
         return () -> {
             decalState.close();
             currentTexture = null;
-            pattern = Selectable.VisualPattern.NONE;
+            patternVal = 0.0f;
         };
     }
 
@@ -32,7 +32,11 @@ abstract class ShadowRenderer {
     }
 
     protected void setPattern(Selectable.@NonNull VisualPattern pattern) {
-        this.pattern = pattern;
+        this.patternVal = (float) pattern.ordinal();
+    }
+
+    protected void setPatternVal(float patternVal) {
+        this.patternVal = patternVal;
     }
 
     protected void bindShadowTexture(@NonNull Texture texture) {
@@ -63,7 +67,7 @@ abstract class ShadowRenderer {
         if (currentTexture != null) {
             // Expand the quad for radial halos to provide room for the offset shadow blob and animation padding.
             float size = decalRenderer.isRadial() ? shadow_size * 2.5f : shadow_size;
-            decalRenderer.draw(context, currentTexture, f_x, f_y, size, color, pattern, shadowOffsetScale);
+            decalRenderer.draw(context, currentTexture, f_x, f_y, size, color, patternVal, shadowOffsetScale);
         }
     }
 

@@ -164,8 +164,12 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return remaining_particles;
     }
 
-    protected final float getParticlesPerSecond() {
+    public final float getParticlesPerSecond() {
         return particles_per_second;
+    }
+
+    public final void setParticlesPerSecond(float particles_per_second) {
+        this.particles_per_second = particles_per_second;
     }
 
     protected final void setRemainingParticles(int remaining) {

@@ -61,6 +61,7 @@ final class RenderState {
     private final @NonNull RenderQueues render_queues;
     private final @NonNull TargetRespondRenderer target_respond_renderer;
     private final @NonNull SelectableShadowRenderer default_shadow_renderer;
+    private final @NonNull CrackDecalRenderer crack_shadow_renderer;
     private final @NonNull Picker picker;
     private final @Nullable Selection selection;
     private final @NonNull Player local_player;
@@ -85,6 +86,8 @@ final class RenderState {
         this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(key);
         this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(
                 render_queues.registerSelectableShadowList(RacesResources.DEFAULT_SHADOW_DESC));
+        this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(
+                render_queues.registerCrackDecalList(RacesResources.CRACK_DECAL_DESC));
         this.render_state_cache = new RenderStateCache<>(() -> new ElementRenderState<>(RenderState.this));
         this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
     }
@@ -395,6 +398,11 @@ final class RenderState {
             SupplyModel model = render_state.getModel();
             dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
                     .rotate((float) Math.toRadians(model.getRotation()), 0f, 0f, 1f);
+
+            Color.Linear tint = model.getSpawnColorTint();
+            if (tint != null) {
+                render_state.setColor(tint.r(), tint.g(), tint.b(), tint.a());
+            }
         }
     };
 
@@ -405,6 +413,45 @@ final class RenderState {
         if (!picking) {
             if (model.getShadowDiameter() > 0f)
                 default_shadow_renderer.addToShadowList((ModelState<?>) state);
+            if (model.getCrackDecalOpacity() > 0.0f) {
+                crack_shadow_renderer.addToCrackList(new Shadowable() {
+                    @Override
+                    public float getPositionX() {
+                        return model.getPositionX();
+                    }
+
+                    @Override
+                    public float getPositionY() {
+                        return model.getPositionY();
+                    }
+
+                    @Override
+                    public float getShadowDiameter() {
+                        return model.getCrackDecalDiameter();
+                    }
+
+                    @Override
+                    public float getShadowOpacity() {
+                        return model.getCrackDecalOpacity();
+                    }
+
+                    @Override
+                    public Color.@NonNull Linear getShadowColor() {
+                        Color.Linear color = model.getCrackDecalColor();
+                        return color != null ? color : Color.Linear.BLACK;
+                    }
+
+                    @Override
+                    public float getShadowVerticalCenter() {
+                        return 0.6f;
+                    }
+
+                    @Override
+                    public float getShadowPattern() {
+                        return model.getCrackDecalPattern();
+                    }
+                });
+            }
         }
     }
 

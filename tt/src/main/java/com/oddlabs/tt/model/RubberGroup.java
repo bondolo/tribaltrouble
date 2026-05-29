@@ -40,7 +40,7 @@ public final class RubberGroup {
                 RubberSupply supply = new RubberSupply(world, world.getLandscapeResources().getChicken(), 2f, grid_x,
                         grid_y, x, y, 0f, this, spawn_x, spawn_y);
                 supplies.add(supply);
-                new SupplySpawnAnimation(supply, SPAWN_TIME);
+                new SupplySpawnAnimation(supply, supply.getSpawnTime());
             }
             ((RubberSupplyManager) world.getSupplyManager(RubberSupply.class)).newGroup();
         }

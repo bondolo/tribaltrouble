@@ -154,6 +154,10 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                         // Clamp intensity
                         totalIntensity = clamp(totalIntensity, 0.0, 1.0);
 
+                        // Fade out near the quad boundaries (dist_uv = 0.5) to prevent square clipping
+                        float boundaryFade = smoothstep(0.5, 0.45, dist_uv);
+                        totalIntensity *= boundaryFade;
+
                         vec3 finalColor = u_color * totalIntensity;
 
                         // Apply fog

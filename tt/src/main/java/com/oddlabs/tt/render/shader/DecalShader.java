@@ -170,7 +170,22 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         } else {
                             // Standard 2D sampling (Square Building Sites)
                             baseColor = texture(u_texture, v_TexCoord + 0.5) * v_Color;
-                            baseColor.rgb *= baseColor.a; // Premultiply for consistency
+                            if (v_Pattern > 9.5) {
+                                float dist = length(v_TexCoord);
+                                float maskRadius = v_Pattern - 10.0;
+                                float edgeWidth = 0.05;
+                                float alphaScale = 1.0 - smoothstep(maskRadius - edgeWidth, maskRadius, dist);
+                                baseColor.a *= alphaScale;
+                                if (maskRadius > 0.0) {
+                                    float t = clamp(dist / maskRadius, 0.0, 1.0);
+                                    vec3 glowColor = vec3(2.0, 0.4, 0.0) * (1.0 - t) * (1.0 - t);
+                                    baseColor.rgb = glowColor * v_Color.rgb * baseColor.a;
+                                } else {
+                                    baseColor.rgb = vec3(0.0);
+                                }
+                            } else {
+                                baseColor.rgb *= baseColor.a; // Premultiply for consistency
+                            }
                         }
 
                         float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);

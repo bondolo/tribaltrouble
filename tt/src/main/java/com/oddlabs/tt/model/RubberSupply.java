@@ -88,6 +88,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         float inv_len = 1f / (float) Math.hypot(dx, dy);
         setDirection(dx * inv_len, dy * inv_len);
         setNewAnimation(Animation.FLYING);
+        setShowShadow(false);
     }
 
     @Override
@@ -120,6 +121,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         offset_z = 0;
         spawning = false;
         setNewAnimation(Animation.IDLING);
+        setShowShadow(true);
     }
 
     @Override

@@ -76,6 +76,11 @@ public final class RenderQueues implements AutoCloseable {
         return key != null ? key : register(desc, new SelectableShadowRenderer(desc));
     }
 
+    public @NonNull ShadowListKey registerCrackDecalList(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
+        ShadowListKey key = desc_to_shadow_key.get(desc);
+        return key != null ? key : register(desc, new CrackDecalRenderer(desc));
+    }
+
     public @NonNull ShadowRenderer getDefaultShadowRenderer() {
         return getShadowRenderer(registerSelectableShadowList(RacesResources.DEFAULT_SHADOW_DESC));
     }

@@ -21,6 +21,7 @@ import com.oddlabs.tt.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.player.NativeChieftainAI;
 import com.oddlabs.tt.player.VikingChieftainAI;
+import com.oddlabs.tt.procedural.GeneratorCrack;
 import com.oddlabs.tt.procedural.GeneratorDamageSmoke;
 import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.procedural.GeneratorLightning;
@@ -77,6 +78,8 @@ public final class RacesResources {
 
     public static final GeneratorHalos DEFAULT_SHADOW_DESC = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION,
             new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
+
+    public static final GeneratorCrack CRACK_DECAL_DESC = new GeneratorCrack();
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
     private static final Logger logger = Logger.getLogger(RacesResources.class.getSimpleName());
