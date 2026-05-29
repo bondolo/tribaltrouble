@@ -391,12 +391,9 @@ public final class Picker implements Updatable<TimerAnimation> {
             float t_min_z = z + t_min * dz;
             float t_min_height = getHeight(t_min_x, t_min_y);
             if (t_min_height >= 0.001f + t_min_z) {
-//				System.out.println(t_min_x + " " + t_min_y + " " + t_min_height + " " + t_min_z);
-                /*com.oddlabs.tt.landscape.LandscapeTileIndices.debug = true;
-                World.getHeightMap().getNearestHeight(t_min_x, t_min_y);
-                com.oddlabs.tt.landscape.LandscapeTileIndices.debug = false;*/
-                assert false;
-//				return false;
+                // Ray enters the bounding box already below the terrain surface.
+                // This is a valid degenerate case (e.g. steep camera angles in map overview mode).
+                continue;
             }
             boolean found_t_range = false;
             for (float t_scan = t_min; t_scan <= t_max; t_scan += PATCH_PICK_STEP) {

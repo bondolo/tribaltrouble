@@ -43,8 +43,8 @@ abstract class ShadowRenderer {
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             float shadow_size, float f_x, float f_y) {
         if (currentTexture != null) {
-            // Only increase quad size for radial (procedural) halos to provide padding for throb/animations.
-            float size = decalRenderer.isRadial() ? shadow_size * 1.25f : shadow_size;
+            // Expand the quad for radial halos to provide room for the offset shadow blob and animation padding.
+            float size = decalRenderer.isRadial() ? shadow_size * 2.5f : shadow_size;
             decalRenderer.draw(context, currentTexture, f_x, f_y, size, color, pattern);
         }
     }

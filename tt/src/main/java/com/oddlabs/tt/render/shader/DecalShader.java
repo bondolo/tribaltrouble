@@ -41,8 +41,10 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     uniform float u_WorldSize;
                     uniform float u_DepthBias;
                     uniform sampler2D u_HeightMap;
+                    uniform bool u_Radial;
 
                     out vec2 v_TexCoord;
+                    flat out vec2 v_ShadowOffset;
                     out vec4 v_Color;
                     out float v_Pattern;
                     out float v_fogDist;
@@ -66,6 +68,15 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         v_TexCoord = in_Position;
                         v_Color = in_InstanceColor;
                         v_Pattern = in_InstancePattern;
+
+                        // Shadow offset in local decal space (±0.5 = quad edge = one radius).
+                        // The shadow sample is shifted by this amount; the ring sample is not.
+                        if (u_Radial) {
+                            const vec3 lightDir = vec3(-0.70710678, 0.0, 0.70710678);
+                            v_ShadowOffset = lightDir.xy * 0.225;
+                        } else {
+                            v_ShadowOffset = vec2(0.0);
+                        }
                     }
                     """;
 
@@ -80,6 +91,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     uniform bool u_Radial;
 
                     in vec2 v_TexCoord;
+                    flat in vec2 v_ShadowOffset;
                     in vec4 v_Color;
                     in float v_Pattern;
                     in float v_fogDist;
@@ -90,9 +102,8 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     void main() {
                         vec4 baseColor;
                         if (u_Radial) {
-                            // Calculate radial distance from center (0..0.5)
-                            // Compensate for the 1.25x larger quad only if in radial mode
-                            float dist = length(v_TexCoord) * 1.25;
+                            // Ring: sample at unshifted position so it stays centred on the unit.
+                            float dist = length(v_TexCoord) * 2.5;
                             float time = u_globalTime;
                             float angle = atan(v_TexCoord.y, v_TexCoord.x);
 
@@ -100,9 +111,12 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                             // Red   = Ring Alpha
                             // Green = Shadow Alpha
 
-                            // Base static sample for shadow part
+                            // Shadow: sampled at a position offset opposite the light direction
+                            // so the blob falls behind the unit while the ring stays centred.
+                            float shadowDist = length(v_TexCoord - v_ShadowOffset) * 2.5;
+                            float shadowAlpha = texture(u_texture, vec2(shadowDist * 2.0, 0.5)).g;
+
                             vec4 baseSample = texture(u_texture, vec2(dist * 2.0, 0.5));
-                            float shadowAlpha = baseSample.g;
 
                             float ringAlpha = 0.0;
 

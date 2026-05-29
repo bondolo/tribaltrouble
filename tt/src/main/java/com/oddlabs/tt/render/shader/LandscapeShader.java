@@ -108,13 +108,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         diffuseColor.rgb = mix(u_SeaBottomColor, diffuseColor.rgb, edgeBlend);
                         normalMapVal.a = mix(0.0, normalMapVal.a, edgeBlend);
 
-                        // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space), smoothing it under water
-                        vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
-                        float detailStrength = 0.4 * normalMapStrength;
-                        float detailOffset = 1.0 - detailStrength * 0.5;
-                        srgbDiffuse *= (detailColor.rgb * detailStrength + detailOffset);
-                        diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
-
                         // Compute view-space normal from heightmap slope
                         float h_plus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(1, 0)).r;
                         float h_minus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(-1, 0)).r;
@@ -125,6 +118,15 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         // Smoothly blend worldNormal to flat (0,0,1) near the world edges to match the seabottom normal
                         worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
+
+                        // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space)
+                        // Steep slopes (high slope) get full contrast; flat terrain gets reduced contrast
+                        float slope = 1.0 - worldNormal.z;
+                        vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
+                        float detailStrength = mix(0.15, 0.4, slope) * normalMapStrength;
+                        float detailOffset = 1.0 - detailStrength * 0.5;
+                        srgbDiffuse *= (detailColor.rgb * detailStrength + detailOffset);
+                        diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
 
                         vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
 
