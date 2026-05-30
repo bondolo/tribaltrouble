@@ -91,6 +91,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     uniform vec2 u_waveDir[3];
                     uniform float u_waveLength[3];
                     uniform float u_WorldSize;
+                    uniform float u_DetailScale;
 
                     in vec2 v_texCoord0;
                     in vec2 v_texCoordColormap;
@@ -121,9 +122,9 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                     void main() {
                         vec4 diffuseColor = texture(u_DiffuseMap, v_texCoordColormap);
-                        vec4 detailColor = texture(u_DetailMap, v_texCoord1);
-                        vec4 detailNormalColor = texture(u_DetailNormalMap, v_texCoord1);
                         vec4 normalMapVal = texture(u_NormalMap, v_texCoordColormap);
+                        vec4 detailColor;
+                        vec4 detailNormalColor;
 
                         // Reconstruct world position and calculate dynamic wetness factor
                         vec2 worldPos = v_texCoordColormap * u_WorldSize;
@@ -164,6 +165,25 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         // Smoothly blend worldNormal to flat (0,0,1) near the world edges to match the seabottom normal
                         worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
+
+                        // Sample detail map and detail normal map using branching-optimized triplanar mapping for steep slopes (cliffs)
+                        if (worldNormal.z > 0.85) {
+                            detailColor = texture(u_DetailMap, v_texCoord1);
+                            detailNormalColor = texture(u_DetailNormalMap, v_texCoord1);
+                        } else {
+                            vec3 coord = vec3(worldPos, v_height) * u_DetailScale;
+                            vec3 blendWeights = abs(worldNormal);
+                            blendWeights = pow(blendWeights, vec3(4.0));
+                            blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
+
+                            detailColor = texture(u_DetailMap, v_texCoord1) * blendWeights.z +
+                                          texture(u_DetailMap, coord.yz) * blendWeights.x +
+                                          texture(u_DetailMap, coord.xz) * blendWeights.y;
+
+                            detailNormalColor = texture(u_DetailNormalMap, v_texCoord1) * blendWeights.z +
+                                                texture(u_DetailNormalMap, coord.yz) * blendWeights.x +
+                                                texture(u_DetailNormalMap, coord.xz) * blendWeights.y;
+                        }
 
                         // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space)
                         // Steep slopes (high slope) get full contrast; flat terrain gets reduced contrast
