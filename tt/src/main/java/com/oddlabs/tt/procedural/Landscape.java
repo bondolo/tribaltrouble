@@ -321,6 +321,16 @@ public final class Landscape {
         return structures;
     }
 
+    private static @NonNull Layer toNormalMapWithZeroSpecular(@NonNull Channel bump, float strength, int size) {
+        return toNormalMapWithSpecular(bump, strength, 0f, size);
+    }
+
+    private static @NonNull Layer toNormalMapWithSpecular(@NonNull Channel bump, float strength, float specular,
+            int size) {
+        Channel spec = new Channel(size, size).fill(specular);
+        return bump.toNormalMap(strength, spec);
+    }
+
     private static @NonNull StructureLayers genSand(int size, @NonNull Channel noise8, @NonNull Channel noise256) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel sand_bump1 = noise8.brightness(0.75f);
@@ -331,7 +341,7 @@ public final class Landscape {
         sand.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) sand.saveAsPNG("structure_sand");
 
-        return new StructureLayers(sand, getFlatNormal(size)); // Forced flat normal
+        return new StructureLayers(sand, toNormalMapWithZeroSpecular(bump, 0.3f, size));
     }
 
     private static @NonNull StructureLayers genGravel(int size, @NonNull Channel noise8, @NonNull Channel noise256) {
@@ -344,7 +354,7 @@ public final class Landscape {
         gravel.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) gravel.saveAsPNG("structure_gravel");
 
-        return new StructureLayers(gravel, getFlatNormal(size)); // Forced flat normal
+        return new StructureLayers(gravel, toNormalMapWithZeroSpecular(bump, 0.6f, size));
     }
 
     private static @NonNull StructureLayers genDirt(int size, @NonNull Channel noise8, @NonNull Channel noise256,
@@ -360,7 +370,7 @@ public final class Landscape {
         dirt.bump(dirt_bump, size / 128f, 0f, 0.5f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) dirt.saveAsPNG("structure_dirt");
 
-        return new StructureLayers(dirt, getFlatNormal(size)); // Forced flat normal
+        return new StructureLayers(dirt, toNormalMapWithZeroSpecular(dirt_bump, 0.6f, size));
     }
 
     private static @NonNull StructureLayers genSoil(int size, @NonNull Channel noise8, @NonNull Channel noise256,
@@ -376,8 +386,7 @@ public final class Landscape {
         soil.bump(soil_bump, size / 128f, 0f, 0.5f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) soil.saveAsPNG("structure_soil");
 
-        Channel zero = new Channel(size, size).fill(0f);
-        return new StructureLayers(soil, soil_bump.toNormalMap(1.5f, zero));
+        return new StructureLayers(soil, toNormalMapWithZeroSpecular(soil_bump, 1.5f, size));
     }
 
     private static @NonNull StructureLayers genGrass(int size, @NonNull Color grassColor, @NonNull Channel noise8,
@@ -386,8 +395,8 @@ public final class Landscape {
         Channel grass_bump = noise8.copy().rotate(90).channelAdd(noise256.brightness(0.02f));
         Layer grass = new Layer(empty.copy().fill(grassColor.r()), empty.copy().fill(grassColor.g()), empty.copy().fill(
                 grassColor.b()));
-        grass.r.channelAdd(noise8.brightness(0.2f));
-        grass.bump(grass_bump, size / 512f, 0f, 0.4f, 1f, 1f, 1f, 0f, 0f, 0f);
+        grass.r.channelAdd(noise8.brightness(0.08f));
+        grass.bump(grass_bump, size / 512f, 0f, 0.15f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) grass.saveAsPNG("structure_grass");
 
         return new StructureLayers(grass, getFlatNormal(size));
@@ -403,7 +412,7 @@ public final class Landscape {
         rubble.multiply(.9f).bump(rubble_bump, size / 256f, 0f, 0f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) rubble.saveAsPNG("structure_rubble");
 
-        return new StructureLayers(rubble, getFlatNormal(size));
+        return new StructureLayers(rubble, toNormalMapWithZeroSpecular(rubble_bump, 1.5f, size));
     }
 
     private static @NonNull StructureLayers genRock(int size, @NonNull Channel noise8, @NonNull Channel noise256,
@@ -422,11 +431,11 @@ public final class Landscape {
         rock.layerBlend(rubble.multiply(NATIVE_ROCK_TINT.r(), NATIVE_ROCK_TINT.g(), NATIVE_ROCK_TINT.b()), noise8
                 .gamma8().invert().contrast(4f));
         rock.layerBlend(grass.multiply(0.5f), noise8.rotate(90).multiply(0.5f)); // grass tint
-        rock.bump(rock_bump, size / 384f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f);
-        rock.gamma2().multiply(0.9f);
+        rock.bump(rock_bump, size / 384f, 0f, 0.3f, 1f, 1f, 1f, 0f, 0f, 0f);
+        rock.multiply(0.95f);
         if (DEBUG) rock.saveAsPNG("structure_rock");
 
-        return new StructureLayers(rock, getFlatNormal(size));
+        return new StructureLayers(rock, toNormalMapWithZeroSpecular(rock_bump, 2.5f, size));
     }
 
     private static @NonNull StructureLayers genCliff(int size, @NonNull Channel noise8, @NonNull Channel noise256,
@@ -446,11 +455,11 @@ public final class Landscape {
         cliff.layerBlend(rubble, noise8.gamma8().invert().contrast(4f));
         cliff.layerBlend(grass.multiply(VIKING_CLIFF_GRASS_TINT.r(), VIKING_CLIFF_GRASS_TINT.g(),
                 VIKING_CLIFF_GRASS_TINT.b()), noise8.rotate(90).multiply(0.75f));
-        cliff.bump(cliff_bump, size / 384f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f);
-        cliff.gamma2().multiply(0.9f);
+        cliff.bump(cliff_bump, size / 384f, 0f, 0.3f, 1f, 1f, 1f, 0f, 0f, 0f);
+        cliff.multiply(0.95f);
         if (DEBUG) cliff.saveAsPNG("structure_cliff");
 
-        return new StructureLayers(cliff, getFlatNormal(size));
+        return new StructureLayers(cliff, toNormalMapWithZeroSpecular(cliff_bump, 2.5f, size));
     }
 
     private static @NonNull StructureLayers genSnow(int size, @NonNull Channel noise8, @NonNull Channel noise256) {
@@ -463,7 +472,7 @@ public final class Landscape {
         snow.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) snow.saveAsPNG("structure_snow");
 
-        return new StructureLayers(snow, getFlatNormal(size));
+        return new StructureLayers(snow, toNormalMapWithSpecular(bump, 0.5f, 0.8f, size));
     }
 
     private static @NonNull StructureLayers genBlack() {

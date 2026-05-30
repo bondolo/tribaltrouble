@@ -81,14 +81,15 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                             vec4 detail = texture(u_texture1, v_texCoordDetail);
 
                             // Match LandscapeShader's flat slope detail modulation underwater
-                            float detailStrength = 0.15 * normalMapStrength;
+                            float detailFade = clamp(detail.a / 0.15, 0.0, 1.0);
+                            float detailStrength = 0.15 * normalMapStrength * detailFade;
                             float detailOffset = 1.0 - detailStrength * 0.5;
                             vec3 srgbColor = toSRGB(color.rgb);
                             srgbColor *= (detail.rgb * detailStrength + detailOffset);
                             color.rgb = toLinear(srgbColor);
 
                             // Perturb normal using detail map to match LandscapeShader's detail normal mapping in wet areas
-                            normal = normalize(normal + (detail.rgb - vec3(0.5)) * (0.01 * normalMapStrength));
+                            normal = normalize(normal + (detail.rgb - vec3(0.5)) * (0.01 * normalMapStrength * detailFade));
                         }
 
                         // Apply wet surface darkening to match the wet landscape

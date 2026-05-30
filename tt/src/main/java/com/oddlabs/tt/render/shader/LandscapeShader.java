@@ -166,7 +166,8 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         // Steep slopes (high slope) get full contrast; flat terrain gets reduced contrast
                         float slope = 1.0 - worldNormal.z;
                         vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
-                        float detailStrength = mix(0.15, 0.4, slope) * normalMapStrength;
+                        float detailFade = clamp(detailColor.a / 0.15, 0.0, 1.0);
+                        float detailStrength = mix(0.15, 0.4, slope) * normalMapStrength * detailFade;
                         float detailOffset = 1.0 - detailStrength * 0.5;
                         srgbDiffuse *= (detailColor.rgb * detailStrength + detailOffset);
                         diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
@@ -187,7 +188,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         // Micro-detail normal perturbation from detail map color (adds tactile depth up close)
                         // Under water or in wet areas, the micro-detail normal is reduced
-                        float detailNormalStrength = mix(0.08, 0.01, wetness) * normalMapStrength;
+                        float detailNormalStrength = mix(0.08, 0.01, wetness) * normalMapStrength * detailFade;
                         vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * detailNormalStrength);
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
