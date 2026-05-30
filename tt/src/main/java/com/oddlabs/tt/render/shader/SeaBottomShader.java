@@ -106,11 +106,11 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
 
                         float rim = 1.0 - max(dot(viewDir, normal), 0.0);
                         rim = smoothstep(0.8, 1.0, rim);
-                        vec3 rimLight = rim * u_globalAmbient * 0.25;
+                        vec3 rimLight = rim * u_globalAmbient * 0.05;
 
                         // Add wet specular highlight to match the wet landscape
                         float spec = pow(max(dot(normal, halfDir), 0.0), 80.0);
-                        vec3 specular = 0.3 * spec * vec3(1.0);
+                        vec3 specular = 0.05 * spec * vec3(1.0);
 
                         float exposure = 1.1;
                         vec3 lightFactor = (ambient + diff * vec3(1.0) + rimLight) * exposure;

@@ -196,8 +196,8 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec3 halfDir = normalize(lightDir + viewDir);
 
                         // For wet surfaces, blend to a sharper and more intense water-film specular highlight
-                        float drySpecIntensity = normalMapVal.a * 0.15;
-                        float wetSpecIntensity = 0.3;
+                        float drySpecIntensity = normalMapVal.a * 0.05;
+                        float wetSpecIntensity = 0.05;
                         float specExponent = mix(32.0, 80.0, wetness);
                         float specIntensity = mix(drySpecIntensity, wetSpecIntensity, wetness);
                         float spec = pow(max(dot(normal, halfDir), 0.0), specExponent);
@@ -205,7 +205,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         float rim = 1.0 - max(dot(viewDir, normal), 0.0);
                         rim = smoothstep(0.8, 1.0, rim);
-                        vec3 rimLight = rim * u_globalAmbient * 0.25;
+                        vec3 rimLight = rim * u_globalAmbient * 0.05;
 
                         // Hemispheric Ambient (mix based on normal Z in World Space)
                         float skyWeight = clamp(worldNormal.z * 0.5 + 0.5, 0.0, 1.0);
