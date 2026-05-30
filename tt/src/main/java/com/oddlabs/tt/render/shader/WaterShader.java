@@ -35,6 +35,14 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
 
         // Fog Uniforms
         String FOG_HEIGHT_FACTOR = FogShader.FOG_HEIGHT_FACTOR;
+
+        // Fake sky reflection uniforms
+        String CLOUD_TEXTURE_0 = "u_cloudTexture0";
+        String CLOUD_TEXTURE_1 = "u_cloudTexture1";
+        String INNER_OFFSET = "u_innerOffset";
+        String OUTER_OFFSET = "u_outerOffset";
+        String INNER_CLOUD_DENSITY = "u_innerCloudDensity";
+        String OUTER_CLOUD_DENSITY = "u_outerCloudDensity";
     }
 
     public interface Attributes {
@@ -145,6 +153,14 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     uniform float u_WorldSize;
                     uniform vec3 u_skyColor;
 
+                    // Fake sky reflection uniforms
+                    uniform sampler2D u_cloudTexture0;
+                    uniform sampler2D u_cloudTexture1;
+                    uniform vec2 u_innerOffset;
+                    uniform vec2 u_outerOffset;
+                    uniform float u_innerCloudDensity;
+                    uniform float u_outerCloudDensity;
+
                     in vec2 v_texCoord0;
                     in vec2 v_texCoord1;
                     in vec2 v_texCoordHeightmap;
@@ -176,13 +192,33 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         float F0 = 0.02;
                         float F = F0 + (1.0 - F0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
 
-                        // Calculate reflection vector in world space to dynamically sample sky gradient
+                        // Calculate reflection vector in world space to dynamically sample sky gradient and clouds
                         vec3 reflectDir = reflect(-viewDir, normal);
                         float horizonFactor = clamp(reflectDir.z, 0.0, 1.0);
                         vec3 reflectionColor = mix(u_fogColor.rgb, u_skyColor, horizonFactor);
+
+                        vec3 reflectedSky = reflectionColor;
+                        if (reflectDir.z > 0.0) {
+                            vec2 reflectUV0 = reflectDir.xy * 0.2 + u_innerOffset;
+                            vec2 reflectUV1 = reflectDir.xy * 0.2 + u_outerOffset;
+
+                            vec4 tex0 = texture(u_cloudTexture0, reflectUV0);
+                            vec4 tex1 = texture(u_cloudTexture1, reflectUV1);
+
+                            float exp0 = exp(-u_innerCloudDensity * 2.0);
+                            float exp1 = exp(-u_outerCloudDensity * 2.0);
+
+                            float cloud0 = pow(tex0.r, exp0);
+                            float cloud1 = pow(tex1.r, exp1);
+
+                            // Blend clouds subtly into the reflection color, fading out near the horizon
+                            float cloudFactor = clamp(reflectDir.z * 1.5, 0.0, 1.0);
+                            reflectedSky = mix(reflectedSky, u_skyColor, (cloud0 * 0.25 + cloud1 * 0.15) * cloudFactor);
+                        }
+
                         vec3 waterColor = baseColor.rgb * 0.7;
 
-                        vec3 finalRGB = mix(waterColor, reflectionColor, F * 0.6);
+                        vec3 finalRGB = mix(waterColor, reflectedSky, F * 0.6);
                         finalRGB += vec3(specular) * 0.5;
 
                         if (u_enableDetail) {

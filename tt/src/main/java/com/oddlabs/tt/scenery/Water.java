@@ -281,6 +281,17 @@ public final class Water implements AutoCloseable {
             waterShader.setUniform(WaterShader.Uniforms.MAX_ALPHA, maxAlpha);
             waterShader.setUniformColor3(WaterShader.Uniforms.SKY_COLOR, sky.getSkyColor());
 
+            // Upload cloud parameters and textures for fake sky reflection
+            waterShader.setUniform(WaterShader.Uniforms.INNER_OFFSET, sky.getInnerOffset()[0], sky.getInnerOffset()[1]);
+            waterShader.setUniform(WaterShader.Uniforms.OUTER_OFFSET, sky.getOuterOffset()[0], sky.getOuterOffset()[1]);
+            waterShader.setUniform(WaterShader.Uniforms.INNER_CLOUD_DENSITY, sky.getInnerCloudDensity());
+            waterShader.setUniform(WaterShader.Uniforms.OUTER_CLOUD_DENSITY, sky.getOuterCloudDensity());
+
+            context.setTexture(3, sky.getClouds()[0]);
+            waterShader.setUniform(WaterShader.Uniforms.CLOUD_TEXTURE_0, 3);
+            context.setTexture(4, sky.getClouds()[1]);
+            waterShader.setUniform(WaterShader.Uniforms.CLOUD_TEXTURE_1, 4);
+
             // Upload Gerstner wave parameters.
             waterShader.setUniform(WaterShader.Uniforms.TIME, waveTime * waveSpeed);
             waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, true);

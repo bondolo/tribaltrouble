@@ -412,6 +412,26 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         return water_indices;
     }
 
+    public float @NonNull [] getInnerOffset() {
+        return innerOffset;
+    }
+
+    public float @NonNull [] getOuterOffset() {
+        return outerOffset;
+    }
+
+    public float getInnerCloudDensity() {
+        return innerCloudDensity;
+    }
+
+    public float getOuterCloudDensity() {
+        return outerCloudDensity;
+    }
+
+    public @NonNull Texture @NonNull [] getClouds() {
+        return clouds;
+    }
+
     private void makeSkyVertices(float radius, float outer_utile, float outer_vtile, float inner_utile,
             float inner_vtile, float origin_x, float origin_y, float origin_z, @NonNull FloatBuffer buffer) {
         float r;
