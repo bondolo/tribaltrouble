@@ -9,6 +9,7 @@ import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.resource.BlendInfo;
 import com.oddlabs.tt.resource.BlendLighting;
+import com.oddlabs.tt.resource.BlendOcclusion;
 import com.oddlabs.tt.resource.DistanceFogInfo;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.GLByteImage;
@@ -62,6 +63,7 @@ public final class Landscape {
     // Misc colors
     private static final float DETAIL_GREY = 0.5f;
     private static final Color BLEND_LIGHTING_COLOR = new Color.Standard(0xFF_FF_E6_99); // 1.0, 0.9, 0.6
+    private static final Color AO_COLOR = new Color.Standard(0xFF_55_4C_66);
 
     public enum TerrainType {
         NATIVE,
@@ -247,7 +249,8 @@ public final class Landscape {
                 new StructureBlend(structures[4], structure_normals[4], alpha_maps[3]),
                 new BlendLighting(alpha_maps[4], BLEND_LIGHTING_COLOR),
                 new StructureBlend(structures[5], structure_normals[5], alpha_maps[5]),
-                new StructureBlend(structures[6], structure_normals[6], alpha_maps[6])
+                new StructureBlend(structures[6], structure_normals[6], alpha_maps[6]),
+                new BlendOcclusion(alpha_maps[7], AO_COLOR)
         };
     }
 
@@ -493,7 +496,7 @@ public final class Landscape {
     // * TERRAIN *
     // ***********
     private void generateTerrainNative() {
-        alpha_maps = new GLByteImage[7];
+        alpha_maps = new GLByteImage[8];
 
         // generate height map
         height = new Mountain(unit_grids_per_world, Utils.powerOf2Log2(unit_grids_per_world) - 6, 0.5f, seed)
@@ -541,7 +544,7 @@ public final class Landscape {
     }
 
     private void generateTerrainViking() {
-        alpha_maps = new GLByteImage[7];
+        alpha_maps = new GLByteImage[8];
 
         // generate height map
         height = new Mountain(unit_grids_per_world, Utils.powerOf2Log2(unit_grids_per_world) - 6, 0.5f, seed)
@@ -770,6 +773,21 @@ public final class Landscape {
         shadow.channelBrightest(shadowcast.smooth(1).brightness(0.67f));
         if (DEBUG) shadow.toLayer().saveAsPNG("alpha_shadow");
         ProgressForm.progress(1 / 14f);
+
+        // generate Ambient Occlusion alpha map
+        Channel ao = new Channel(unit_grids_per_world, unit_grids_per_world);
+        for (int y = 0; y < unit_grids_per_world; y++) {
+            for (int x = 0; x < unit_grids_per_world; x++) {
+                float v = relheight.getPixel(x, y);
+                float intensity = 0.0f;
+                if (v < 0.5f) {
+                    intensity = 1.0f - (v / 0.5f);
+                }
+                ao.putPixel(x, y, intensity);
+            }
+        }
+        ao.smooth(2);
+        alpha_maps[7] = new GLByteImage(ao, GL11.GL_RED);
 
         alpha_maps[6] = new GLByteImage(seabottom_alpha, GL11.GL_RED);
 

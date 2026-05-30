@@ -5,6 +5,7 @@ import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.resource.BlendInfo;
 import com.oddlabs.tt.resource.BlendLighting;
+import com.oddlabs.tt.resource.BlendOcclusion;
 import com.oddlabs.tt.resource.StructureBlend;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.vbo.QuadVBO;
@@ -18,6 +19,9 @@ import java.nio.IntBuffer;
 
 import static com.oddlabs.tt.util.GLUtils.checkGLError;
 
+/**
+ * Generates combined diffuse and normal maps for the landscape by baking layers.
+ */
 public final class LandscapeBaker {
 
     private static final String VERTEX_SHADER = """
@@ -38,7 +42,7 @@ public final class LandscapeBaker {
             uniform sampler2D u_BaseNormal;
             uniform sampler2D u_LayerNormal;
             uniform sampler2D u_AlphaMap;
-            uniform int u_Mode; // 0 = Blend, 1 = Light
+            uniform int u_Mode; // 0 = Blend, 1 = Light, 2 = Occlusion
             uniform float u_TextureScale;
             uniform vec3 u_Color;
 
@@ -67,8 +71,12 @@ public final class LandscapeBaker {
                     // Convert back to linear for the HDR output
                     out_Diffuse = vec4(pow(srgbMixed, vec3(2.2)), mix(baseDiff.a, layerDiff.a, alpha));
                     out_Normal = mix(baseNorm, layerNorm, alpha);
-                } else { // Lighting Blend
+                } else if (u_Mode == 1) { // Lighting Blend
                     out_Diffuse = baseDiff + vec4(u_Color * alpha, 0.0);
+                    out_Normal = baseNorm;
+                } else { // Occlusion Blend (u_Mode == 2)
+                    vec3 occluded = baseDiff.rgb * mix(vec3(1.0), u_Color, alpha);
+                    out_Diffuse = vec4(occluded, baseDiff.a);
                     out_Normal = baseNorm;
                 }
             }
@@ -165,6 +173,9 @@ public final class LandscapeBaker {
                         } else if (info instanceof BlendLighting bl) {
                             shader.setUniform("u_Mode", 1);
                             shader.setUniformColor3("u_Color", bl.getColor());
+                        } else if (info instanceof BlendOcclusion bo) {
+                            shader.setUniform("u_Mode", 2);
+                            shader.setUniformColor3("u_Color", bo.getColor());
                         }
 
                         quad.render();
