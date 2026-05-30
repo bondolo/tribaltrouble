@@ -49,6 +49,12 @@ public final class IslandGenerator implements WorldGenerator {
                 GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
+    private static @NonNull Texture createDetailNormal(@NonNull GLImage detail_image) {
+        GLImage[] detail_mipmaps = detail_image.buildMipMaps(10000, 1.0f, true, false);
+        return new Texture(detail_mipmaps, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+    }
+
     private static int getTexelsPerGridUnit() {
         int texels_per_grid_unit = Globals.TEXELS_PER_GRID_UNIT / (int) Math.pow(2, Globals.TEXTURE_MIP_SHIFT[Renderer
                 .getRenderer().getSettings().graphic_detail]);
@@ -81,6 +87,7 @@ public final class IslandGenerator implements WorldGenerator {
         time_before = Instant.now();
         BlendInfo[] blend_infos = landscape.getBlendInfos();
         Texture detail = createDetail(landscape.getDetail(), base_level);
+        Texture detailNormal = createDetailNormal(landscape.getDetailNormal());
 
         float textureScale = meters_per_world * Globals.LANDSCAPE_TEXTURE_SCALE;
         LandscapeBaker baker = new LandscapeBaker(colormap_size, textureScale);
@@ -90,7 +97,7 @@ public final class IslandGenerator implements WorldGenerator {
 
         ProgressForm.progress();
         return new WorldInfo(terrain, meters_per_world, landscape.getSeaLevelMeters(),
-                colormap_size, chunks_per_colormap, null, maps, detail,
+                colormap_size, chunks_per_colormap, null, maps, detail, detailNormal,
                 landscape.getHeight(),
                 landscape.getTrees(), landscape.getPalmtrees(), landscape.getRock(), landscape.getIron(), landscape
                         .getPlants(),

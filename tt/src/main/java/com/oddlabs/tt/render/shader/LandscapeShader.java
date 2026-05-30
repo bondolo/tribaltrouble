@@ -12,6 +12,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
         String DIFFUSE_MAP = "u_DiffuseMap";
         String NORMAL_MAP = "u_NormalMap";
         String DETAIL_MAP = "u_DetailMap";
+        String DETAIL_NORMAL_MAP = "u_DetailNormalMap";
         String WORLD_SIZE = "u_WorldSize";
         String DETAIL_SCALE = "u_DetailScale";
         String SEA_BOTTOM_COLOR = "u_SeaBottomColor";
@@ -78,6 +79,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     uniform sampler2D u_DiffuseMap;
                     uniform sampler2D u_NormalMap;
                     uniform sampler2D u_DetailMap;
+                    uniform sampler2D u_DetailNormalMap;
                     uniform sampler2D u_HeightMap;
                     uniform vec3 u_SeaBottomColor;
 
@@ -120,6 +122,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     void main() {
                         vec4 diffuseColor = texture(u_DiffuseMap, v_texCoordColormap);
                         vec4 detailColor = texture(u_DetailMap, v_texCoord1);
+                        vec4 detailNormalColor = texture(u_DetailNormalMap, v_texCoord1);
                         vec4 normalMapVal = texture(u_NormalMap, v_texCoordColormap);
 
                         // Reconstruct world position and calculate dynamic wetness factor
@@ -189,7 +192,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         // Micro-detail normal perturbation from detail map color (adds tactile depth up close)
                         // Under water or in wet areas, the micro-detail normal is reduced
                         float detailNormalStrength = mix(0.08, 0.01, wetness) * normalMapStrength * detailFade;
-                        vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * detailNormalStrength);
+                        vec3 normal = normalize(baseNormal + (detailNormalColor.rgb - vec3(0.5)) * detailNormalStrength);
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
                         vec3 viewDir = normalize(-v_viewPosition);

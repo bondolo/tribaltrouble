@@ -44,6 +44,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     private final @NonNull Texture diffuseMap;
     private final @NonNull Texture normalMap;
     private final @NonNull Texture detailMap;
+    private final @NonNull Texture detailNormalMap;
     private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
     private @Nullable Water water;
@@ -63,6 +64,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         this.diffuseMap = world_info.maps().diffuse();
         this.normalMap = world_info.maps().normal();
         this.detailMap = world_info.detail();
+        this.detailNormalMap = world_info.detailNormal();
 
         manager.registerAnimation(this);
     }
@@ -136,6 +138,9 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
 
             context.setTexture(3, world.getHeightMap().getHeightTexture());
             shader.setUniform(LandscapeShader.Uniforms.HEIGHT_MAP, 3);
+
+            context.setTexture(4, detailNormalMap);
+            shader.setUniform(LandscapeShader.Uniforms.DETAIL_NORMAL_MAP, 4);
 
             // Upload wave uniforms from Water animation if active
             Water activeWater = water;

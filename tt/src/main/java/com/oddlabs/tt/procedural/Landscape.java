@@ -77,6 +77,7 @@ public final class Landscape {
     }
 
     private GLIntImage detail;
+    private GLIntImage detail_normal;
     private @NonNull GLByteImage[] alpha_maps;
 
     private Channel height;
@@ -288,6 +289,7 @@ public final class Landscape {
         StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
                 .copy());
         detail = new GLIntImage(structure_detail.diffuse);
+        detail_normal = new GLIntImage(structure_detail.normal);
         return structures;
     }
 
@@ -317,6 +319,7 @@ public final class Landscape {
         StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
                 .copy());
         detail = new GLIntImage(structure_detail.diffuse);
+        detail_normal = new GLIntImage(structure_detail.normal);
 
         return structures;
     }
@@ -488,7 +491,7 @@ public final class Landscape {
         Channel detail_alpha = new Channel(size, size).fill(detail_alpha_value);
         Layer detail = new Layer(detail_grey, detail_grey, detail_grey, detail_alpha);
         if (DEBUG) detail.saveAsPNG("structure_detail");
-        return new StructureLayers(detail, getFlatNormal(size));
+        return new StructureLayers(detail, toNormalMapWithSpecular(detail_noise, 2.0f, 1.0f, size));
     }
 
     private static @NonNull Layer getFlatNormal(int size) {
@@ -1184,6 +1187,10 @@ public final class Landscape {
 
     public GLIntImage getDetail() {
         return detail;
+    }
+
+    public GLIntImage getDetailNormal() {
+        return detail_normal;
     }
 
     public float @NonNull [] getHeight() {

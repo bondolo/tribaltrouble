@@ -10,6 +10,7 @@ import java.util.List;
 public record WorldInfo(Landscape.@NonNull TerrainType terrain, int meters_per_world, float sea_level_meters,
                         int texels_per_colormap, int chunks_per_colormap,
                         @NonNull Texture @Nullable [] @NonNull [] colormaps, Maps maps, @NonNull Texture detail,
+                        @NonNull Texture detailNormal,
                         float @NonNull [] heightmap, @NonNull List<int @NonNull []> trees,
                         @NonNull List<int @NonNull []> palm_trees, @NonNull List<int @NonNull []> rocks, @NonNull List<
                                 int @NonNull []> iron,

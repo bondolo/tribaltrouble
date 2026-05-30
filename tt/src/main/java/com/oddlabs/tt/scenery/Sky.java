@@ -104,6 +104,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private final SkyShader skyShader = new SkyShader();
     private final SeaBottomShader seaBottomShader = new SeaBottomShader();
     private final @NonNull Texture detail;
+    private final @NonNull Texture detailNormal;
     private final @NonNull VertexArray skyVAO;
     private final @NonNull VertexArray seaBottomVAO;
 
@@ -138,19 +139,21 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private float lastTime = 0f;
     private final Random random = new Random();
 
-    public Sky(@NonNull LandscapeRenderer renderer, Landscape.@NonNull TerrainType terrain, @NonNull Texture detail) {
+    public Sky(@NonNull LandscapeRenderer renderer, Landscape.@NonNull TerrainType terrain, @NonNull Texture detail,
+            @NonNull Texture detailNormal) {
         this(renderer, terrain, (float) (renderer.getHeightMap().getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 20, 20,
                 SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, renderer
                         .getHeightMap().getMetersPerWorld() / 2f, renderer.getHeightMap().getMetersPerWorld() / 2f,
-                SKYDOME_HEIGHT, detail);
+                SKYDOME_HEIGHT, detail, detailNormal);
     }
 
     private Sky(@NonNull LandscapeRenderer landscape_renderer, Landscape.@NonNull TerrainType terrain,
             float inner_radius, float radius, int subdiv_axis, int subdiv_height, float outer_utile, float outer_vtile,
             float inner_utile, float inner_vtile, float origin_x, float origin_y, float origin_z,
-            @NonNull Texture detail) {
+            @NonNull Texture detail, @NonNull Texture detailNormal) {
         this.terrain = terrain;
         this.detail = detail;
+        this.detailNormal = detailNormal;
         this.subdiv_axis = subdiv_axis;
         this.subdiv_height = subdiv_height;
         this.skyColor = TEX_ENV_COLOR.get(terrain);
@@ -332,6 +335,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             if (Globals.draw_detail) {
                 context.setTexture(1, detail);
                 seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_1, 1);
+                context.setTexture(2, detailNormal);
+                seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_NORMAL, 2);
                 seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, Globals.LANDSCAPE_DETAIL_REPEAT_RATE);
             } else {
                 seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, 0f);

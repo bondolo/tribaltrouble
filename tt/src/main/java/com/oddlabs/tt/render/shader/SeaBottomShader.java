@@ -9,6 +9,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
         String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
         String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         String TEXTURE_1 = "u_texture1"; // Detail texture
+        String TEXTURE_NORMAL = "u_textureNormal"; // Detail normal texture
         String BASE_COLOR = "u_baseColor";
         String DETAIL_SCALE = "u_detailScale";
     }
@@ -50,6 +51,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
             COLOR_SPACE_FUNCTIONS +
             """
                     uniform sampler2D u_texture1; // Detail texture
+                    uniform sampler2D u_textureNormal; // Detail normal texture
                     uniform vec4 u_baseColor;
                     uniform float u_detailScale;
 
@@ -79,6 +81,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
 
                         if (u_detailScale > 0.0001) {
                             vec4 detail = texture(u_texture1, v_texCoordDetail);
+                            vec4 detailNormal = texture(u_textureNormal, v_texCoordDetail);
 
                             // Match LandscapeShader's flat slope detail modulation underwater
                             float detailFade = clamp(detail.a / 0.15, 0.0, 1.0);
@@ -89,7 +92,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                             color.rgb = toLinear(srgbColor);
 
                             // Perturb normal using detail map to match LandscapeShader's detail normal mapping in wet areas
-                            normal = normalize(normal + (detail.rgb - vec3(0.5)) * (0.01 * normalMapStrength * detailFade));
+                            normal = normalize(normal + (detailNormal.rgb - vec3(0.5)) * (0.01 * normalMapStrength * detailFade));
                         }
 
                         // Apply wet surface darkening to match the wet landscape
