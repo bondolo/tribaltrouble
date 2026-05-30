@@ -43,6 +43,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+/**
+ * Renders the sky dome, clouds, and background water scenery (sea bottom and outer water).
+ */
 public final class Sky implements SceneRenderer, AutoCloseable {
     private static final float[] SKYDOME_SPEED_OUTER = {0.2f, 0f};
     private static final float[] SKYDOME_SPEED_INNER = {0.4f, 0f};
@@ -205,7 +208,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         all_indices.flip();
         water_indices = new ShortVBO(GL15.GL_STATIC_DRAW, all_indices);
         water_vertices = toVBO(all_vertices, landscape_renderer.getHeightMap().getSeaLevelMeters());
-        bottom_vertices = toVBO(all_vertices, 0);
+        bottom_vertices = toBottomVBO(all_vertices, landscape_renderer.getHeightMap());
 
         this.skyVAO = new VertexArray();
         skyVAO.bind();
@@ -350,6 +353,47 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             float x = vertex.x;
             float y = vertex.y;
             float z = (height * (NUM_WATER_RINGS - vertex.getSide())) / NUM_WATER_RINGS;
+            vertex_buffer.put(x).put(y).put(z);
+        }
+        vertex_buffer.flip();
+        return new FloatVBO(GL15.GL_STATIC_DRAW, vertex_buffer);
+    }
+
+    private static @NonNull FloatVBO toBottomVBO(SkyStitchVertex @NonNull [] vertices, @NonNull HeightMap heightmap) {
+        float metersPerWorld = heightmap.getMetersPerWorld();
+        float cx = metersPerWorld * 0.5f;
+        float cy = metersPerWorld * 0.5f;
+        FloatBuffer vertex_buffer = Objects.requireNonNull(BufferUtils.createFloatBuffer(vertices.length * 3));
+        for (SkyStitchVertex vertex : vertices) {
+            float x = vertex.x;
+            float y = vertex.y;
+            float dx = x - cx;
+            float dy = y - cy;
+            float maxDist = Math.max(Math.abs(dx), Math.abs(dy));
+            float bx;
+            float by;
+            if (maxDist < 1e-5f) {
+                bx = cx;
+                by = cy;
+            } else {
+                float t = cx / maxDist;
+                bx = Math.clamp(cx + t * dx, 0f, metersPerWorld);
+                by = Math.clamp(cy + t * dy, 0f, metersPerWorld);
+            }
+            float boundaryHeight = heightmap.getNearestHeight(bx, by);
+            float z = (boundaryHeight * (NUM_WATER_RINGS - vertex.getSide())) / NUM_WATER_RINGS;
+
+            if (vertex.getSide() == 0) {
+                float dxCenter = cx - x;
+                float dyCenter = cy - y;
+                float distToCenter = (float) Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
+                if (distToCenter > 1e-5f) {
+                    float overlap = 1.0f;
+                    x += (dxCenter / distToCenter) * overlap;
+                    y += (dyCenter / distToCenter) * overlap;
+                }
+            }
+
             vertex_buffer.put(x).put(y).put(z);
         }
         vertex_buffer.flip();

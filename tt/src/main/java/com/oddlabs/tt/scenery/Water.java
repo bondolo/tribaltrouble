@@ -51,6 +51,34 @@ public final class Water implements AutoCloseable {
     /** Maximum alpha (transparency) of Viking water in deep ocean. */
     private static final float VIKING_MAX_ALPHA = 0.60f;
 
+    private static final int WAVE_COUNT = 3;
+    private static final float WAVE_AMPLITUDE_BASE = 0.15f;
+    private static final float WAVE_STEEPNESS_BASE = 0.5f;
+
+    private static final float WAVE_AMPLITUDE_SCALE_2 = 0.53f;
+    private static final float WAVE_AMPLITUDE_SCALE_3 = 0.27f;
+
+    private static final float VIKING_AMPLITUDE_MULTIPLIER = 1.5f;
+    private static final float VIKING_STEEPNESS_MULTIPLIER = 1.2f;
+    private static final float VIKING_WAVE_SPEED = 1.0f;
+
+    private static final float NATIVE_WAVE_SPEED = 0.4f;
+
+    private static final float WAVE_DIR_X_1 = 1.0f;
+    private static final float WAVE_DIR_X_2 = 0.707f;
+    private static final float WAVE_DIR_X_3 = -0.5f;
+    private static final float WAVE_DIR_Y_1 = 0.0f;
+    private static final float WAVE_DIR_Y_2 = 0.707f;
+    private static final float WAVE_DIR_Y_3 = 0.866f;
+
+    private static final float NATIVE_WAVE_LEN_1 = 60.0f;
+    private static final float NATIVE_WAVE_LEN_2 = 35.0f;
+    private static final float NATIVE_WAVE_LEN_3 = 18.0f;
+
+    private static final float VIKING_WAVE_LEN_1 = 50.0f;
+    private static final float VIKING_WAVE_LEN_2 = 28.0f;
+    private static final float VIKING_WAVE_LEN_3 = 14.0f;
+
     private final Landscape.@NonNull TerrainType terrain;
     private final @NonNull Sky sky;
     private final @NonNull MatrixStack modelViewStack;
@@ -82,9 +110,48 @@ public final class Water implements AutoCloseable {
     private float lastTime = 0f;
     private final Random random = new Random();
 
+    private float waveTime = 0f;
+    private final float @NonNull [] waveAmplitudes;
+    private final float @NonNull [] waveSteepness;
+    private final float @NonNull [] waveLengths;
+    private final float @NonNull [] waveDirsX;
+    private final float @NonNull [] waveDirsY;
+    private final float waveSpeed;
+
     public Water(@NonNull HeightMap heightmap, Landscape.@NonNull TerrainType terrain, @NonNull Sky sky,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         this.terrain = terrain;
+        if (terrain == Landscape.TerrainType.VIKING) {
+            waveAmplitudes = new float[]{
+                    WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER,
+                    WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER * WAVE_AMPLITUDE_SCALE_2,
+                    WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER * WAVE_AMPLITUDE_SCALE_3
+            };
+            waveSteepness = new float[]{
+                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER,
+                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER,
+                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER
+            };
+            waveLengths = new float[]{VIKING_WAVE_LEN_1, VIKING_WAVE_LEN_2, VIKING_WAVE_LEN_3};
+            waveDirsX = new float[]{WAVE_DIR_X_1, WAVE_DIR_X_2, WAVE_DIR_X_3};
+            waveDirsY = new float[]{WAVE_DIR_Y_1, WAVE_DIR_Y_2, WAVE_DIR_Y_3};
+            waveSpeed = VIKING_WAVE_SPEED;
+        } else {
+            waveAmplitudes = new float[]{
+                    WAVE_AMPLITUDE_BASE,
+                    WAVE_AMPLITUDE_BASE * WAVE_AMPLITUDE_SCALE_2,
+                    WAVE_AMPLITUDE_BASE * WAVE_AMPLITUDE_SCALE_3
+            };
+            waveSteepness = new float[]{
+                    WAVE_STEEPNESS_BASE,
+                    WAVE_STEEPNESS_BASE,
+                    WAVE_STEEPNESS_BASE
+            };
+            waveLengths = new float[]{NATIVE_WAVE_LEN_1, NATIVE_WAVE_LEN_2, NATIVE_WAVE_LEN_3};
+            waveDirsX = new float[]{WAVE_DIR_X_1, WAVE_DIR_X_2, WAVE_DIR_X_3};
+            waveDirsY = new float[]{WAVE_DIR_Y_1, WAVE_DIR_Y_2, WAVE_DIR_Y_3};
+            waveSpeed = NATIVE_WAVE_SPEED;
+        }
         TextureGenerator ocean_desc = new GeneratorOcean(terrain);
         ocean = Resources.findResource(ocean_desc);
         this.heightMap = heightmap;
@@ -214,7 +281,17 @@ public final class Water implements AutoCloseable {
             waterShader.setUniform(WaterShader.Uniforms.MAX_ALPHA, maxAlpha);
             waterShader.setUniformColor3(WaterShader.Uniforms.SKY_COLOR, sky.getSkyColor());
 
-            // Render Sky Water (Infinite Plane). u_waterHeight = 0 because Z is baked in.
+            // Upload Gerstner wave parameters.
+            waterShader.setUniform(WaterShader.Uniforms.TIME, waveTime * waveSpeed);
+            waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, true);
+            for (int i = 0; i < WAVE_COUNT; i++) {
+                waterShader.setUniform(WaterShader.Uniforms.WAVE_AMPLITUDE + "[" + i + "]", waveAmplitudes[i]);
+                waterShader.setUniform(WaterShader.Uniforms.WAVE_STEEPNESS + "[" + i + "]", waveSteepness[i]);
+                waterShader.setUniform(WaterShader.Uniforms.WAVE_LENGTH + "[" + i + "]", waveLengths[i]);
+                waterShader.setUniform(WaterShader.Uniforms.WAVE_DIR + "[" + i + "]", waveDirsX[i], waveDirsY[i]);
+            }
+
+            // Render Sky Water (Infinite Plane)
             waterShader.setUniform(WaterShader.Uniforms.WATER_HEIGHT, 0.0f);
             skyWaterVao.bind();
             sky.getWaterIndices().drawElements(GL11.GL_TRIANGLES, sky.getWaterIndices().capacity(), 0);
@@ -248,11 +325,13 @@ public final class Water implements AutoCloseable {
 
                 if (oceanCount > 0) {
                     waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, minAlpha);
+                    waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, true);
                     oceanInstanceVBO = uploadAndDraw(context, oceanCount, oceanInstanceBuffer, oceanInstanceVBO);
                 }
 
                 if (inlandCount > 0) {
                     waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, maxAlpha);
+                    waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, false);
                     inlandInstanceVBO = uploadAndDraw(context, inlandCount, inlandInstanceBuffer, inlandInstanceVBO);
                 }
             }
@@ -266,6 +345,7 @@ public final class Water implements AutoCloseable {
         float dt = currentTime - lastTime;
         if (dt < 0 || dt > 1.0f) dt = 0.016f;
         lastTime = currentTime;
+        waveTime += dt;
 
         timeSinceChange += dt;
         if (timeSinceChange > changeInterval) {

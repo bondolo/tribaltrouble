@@ -25,6 +25,14 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
         String MAX_ALPHA = "u_maxAlpha";
         String SKY_COLOR = "u_skyColor";
 
+        // Gerstner wave uniforms
+        String TIME = "u_time";
+        String ENABLE_WAVES = "u_enableWaves";
+        String WAVE_AMPLITUDE = "u_waveAmplitude";
+        String WAVE_STEEPNESS = "u_waveSteepness";
+        String WAVE_DIR = "u_waveDir";
+        String WAVE_LENGTH = "u_waveLength";
+
         // Fog Uniforms
         String FOG_HEIGHT_FACTOR = FogShader.FOG_HEIGHT_FACTOR;
     }
@@ -50,22 +58,67 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     uniform float u_waterHeight;
                     uniform float u_WorldSize;
 
+                    uniform float u_time;
+                    uniform bool u_enableWaves;
+                    uniform float u_waveAmplitude[3];
+                    uniform float u_waveSteepness[3];
+                    uniform vec2  u_waveDir[3];
+                    uniform float u_waveLength[3];
+
                     out vec2 v_texCoord0;
                     out vec2 v_texCoord1;
                     out vec2 v_texCoordHeightmap;
                     out float v_fogDist;
                     out vec3 v_worldPos;
+                    out vec3 v_normal;
+
+                    const float PI = 3.14159265358979;
+                    const float GRAVITY = 9.81;
+
+                    void addGerstnerWave(int i, vec2 baseXY, float waveScale, inout vec3 disp, inout vec3 normal) {
+                        float k = 2.0 * PI / u_waveLength[i];
+                        float omega = sqrt(GRAVITY * k);
+                        float phase = k * dot(u_waveDir[i], baseXY) - omega * u_time;
+                        float s = sin(phase);
+                        float c = cos(phase);
+                        float A = u_waveAmplitude[i] * waveScale;
+                        float Q = u_waveSteepness[i];
+
+                        disp.x += Q * A * u_waveDir[i].x * c;
+                        disp.y += Q * A * u_waveDir[i].y * c;
+                        disp.z += A * s;
+
+                        float WA = k * A;
+                        normal.x -= WA * u_waveDir[i].x * c;
+                        normal.y -= WA * u_waveDir[i].y * c;
+                        normal.z -= Q * WA * s;
+                    }
 
                     void main() {
-                        vec3 worldPos = vec3(in_InstanceOffset + in_Position.xy, u_waterHeight + in_Position.z);
+                        vec2 baseXY = in_InstanceOffset + in_Position.xy;
+                        float baseZ = u_waterHeight + in_Position.z;
+
+                        vec3 disp = vec3(0.0);
+                        vec3 normal = vec3(0.0, 0.0, 1.0);
+
+                        if (u_enableWaves) {
+                            float waveScale = 1.0;
+                            if (u_waterHeight == 0.0) {
+                                waveScale = clamp(in_Position.z / u_fogParams.w, 0.0, 1.0);
+                            }
+                            addGerstnerWave(0, baseXY, waveScale, disp, normal);
+                            addGerstnerWave(1, baseXY, waveScale, disp, normal);
+                            addGerstnerWave(2, baseXY, waveScale, disp, normal);
+                        }
+
+                        vec3 worldPos = vec3(baseXY + disp.xy, baseZ + disp.z);
                         v_worldPos = worldPos;
+                        v_normal   = normalize(normal);
 
                         vec4 viewPosition = u_modelViewMatrix * vec4(worldPos, 1.0);
                         gl_Position = u_projectionMatrix * viewPosition;
 
-                        // Scale up the UVs significantly to reduce "blob" size.
                         float scaleFix = 4.0;
-
                         v_texCoord0 = (worldPos.xy * u_waterRepeatRate * scaleFix) + u_scrollOffset0;
                         v_texCoord1 = (worldPos.xy * u_waterRepeatRate * scaleFix * 1.3) + u_scrollOffset1;
                         v_texCoordHeightmap = (worldPos.xy + 1.0) / u_WorldSize;
@@ -97,20 +150,9 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     in vec2 v_texCoordHeightmap;
                     in float v_fogDist;
                     in vec3 v_worldPos;
+                    in vec3 v_normal;
 
                     layout(location = 0) out vec4 out_FragColor;
-
-                    float getNoise(vec2 uv) {
-                        return texture(u_texture0, uv).r;
-                    }
-
-                    vec2 getGradient(vec2 uv) {
-                        float eps = 0.005;
-                        float h = getNoise(uv);
-                        float h_x = getNoise(uv + vec2(eps, 0.0));
-                        float h_y = getNoise(uv + vec2(0.0, eps));
-                        return vec2(h - h_x, h - h_y);
-                    }
 
                     void main() {
                         vec4 baseColor = texture(u_texture0, v_texCoord0);
@@ -123,19 +165,13 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         float depthFade = smoothstep(0.0, 1.0, clamp(depth / u_depthScale, 0.0, 1.0));
                         float finalAlpha = mix(u_minAlpha, u_maxAlpha, depthFade);
 
-                        vec2 grad1 = getGradient(v_texCoord0);
-                        vec2 grad2 = getGradient(v_texCoord1);
-                        vec2 combinedGrad = (grad1 + grad2) * 0.5;
-
-                        float normalStrength = 0.8;
-                        vec3 normal = normalize(vec3(combinedGrad * normalStrength, 0.5));
-
+                        vec3 normal = normalize(v_normal);
                         vec3 lightDir = normalize(u_lightDirection);
                         vec3 viewDir = normalize(u_cameraPos - v_worldPos);
                         vec3 halfDir = normalize(lightDir + viewDir);
 
                         float specAngle = max(dot(normal, halfDir), 0.0);
-                        float specular = pow(specAngle, 40.0);
+                        float specular = pow(specAngle, 64.0);
 
                         float F0 = 0.02;
                         float F = F0 + (1.0 - F0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
@@ -147,7 +183,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         vec3 waterColor = baseColor.rgb * 0.7;
 
                         vec3 finalRGB = mix(waterColor, reflectionColor, F * 0.6);
-                        finalRGB += vec3(specular) * 0.4;
+                        finalRGB += vec3(specular) * 0.5;
 
                         if (u_enableDetail) {
                              vec4 detail = texture(u_texture1, v_texCoord0 * 2.0);
@@ -161,7 +197,6 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
 
     public WaterShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor");
         link();
     }
 }
