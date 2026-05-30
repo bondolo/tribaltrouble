@@ -15,6 +15,13 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
         String WORLD_SIZE = "u_WorldSize";
         String DETAIL_SCALE = "u_DetailScale";
         String SEA_BOTTOM_COLOR = "u_SeaBottomColor";
+
+        String TIME = "u_time";
+        String ENABLE_WAVES = "u_enableWaves";
+        String WAVE_AMPLITUDE = "u_waveAmplitude";
+        String WAVE_STEEPNESS = "u_waveSteepness";
+        String WAVE_DIR = "u_waveDir";
+        String WAVE_LENGTH = "u_waveLength";
     }
 
     public interface Attributes {
@@ -26,7 +33,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
             #version 410 core
             """ + GLOBAL_STATE_BLOCK + """
             layout(location = 0) in vec2 in_Position;
-            layout(location = 4) in vec2 in_InstancePatchOffset;
+            layout(location = 4) in vec3 in_InstancePatchOffset; // xy = offset, z = wave scale
 
             uniform float u_WorldSize;
             uniform float u_DetailScale;
@@ -38,9 +45,10 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
             out float v_fogDist;
             out vec3 v_viewPosition;
             out float v_height;
+            out float v_waveScale;
 
             void main() {
-                vec2 worldPos = in_InstancePatchOffset + in_Position;
+                vec2 worldPos = in_InstancePatchOffset.xy + in_Position;
                 // Add half-texel offset to align vertex-centered heightmap (1 grid unit = 2 meters)
                 vec2 uv = (worldPos + 1.0) / u_WorldSize;
                 float h = texture(u_HeightMap, uv).r;
@@ -55,6 +63,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                 v_fogDist = length(viewPosition.xyz);
                 v_viewPosition = viewPosition.xyz;
                 v_height = h;
+                v_waveScale = in_InstancePatchOffset.z;
             }
             """;
 
@@ -72,29 +81,63 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     uniform sampler2D u_HeightMap;
                     uniform vec3 u_SeaBottomColor;
 
+                    // Wave uniforms for wetness calculation
+                    uniform float u_time;
+                    uniform bool u_enableWaves;
+                    uniform float u_waveAmplitude[3];
+                    uniform float u_waveSteepness[3];
+                    uniform vec2 u_waveDir[3];
+                    uniform float u_waveLength[3];
+                    uniform float u_WorldSize;
+
                     in vec2 v_texCoord0;
                     in vec2 v_texCoordColormap;
                     in vec2 v_texCoord1;
                     in float v_fogDist;
                     in vec3 v_viewPosition;
                     in float v_height;
+                    in float v_waveScale;
 
                     layout(location = 0) out vec4 out_FragColor;
+
+                    const float PI = 3.14159265358979;
+                    const float GRAVITY = 9.81;
+
+                    float getWaveHeight(vec2 worldPos) {
+                        if (!u_enableWaves) {
+                            return 0.0;
+                        }
+                        float waveZ = 0.0;
+                        for (int i = 0; i < 3; i++) {
+                            float k = 2.0 * PI / u_waveLength[i];
+                            float omega = sqrt(GRAVITY * k);
+                            float phase = k * dot(u_waveDir[i], worldPos) - omega * u_time;
+                            waveZ += u_waveAmplitude[i] * sin(phase);
+                        }
+                        return waveZ;
+                    }
 
                     void main() {
                         vec4 diffuseColor = texture(u_DiffuseMap, v_texCoordColormap);
                         vec4 detailColor = texture(u_DetailMap, v_texCoord1);
                         vec4 normalMapVal = texture(u_NormalMap, v_texCoordColormap);
 
-                        // Calculate underwater depth relative to sea level (heights above sea level have negative depth)
+                        // Reconstruct world position and calculate dynamic wetness factor
+                        vec2 worldPos = v_texCoordColormap * u_WorldSize;
+                        float waveHeight = getWaveHeight(worldPos) * v_waveScale;
                         float u_seaLevel = u_fogParams.w;
-                        float depth = u_seaLevel - v_height;
+                        float waterHeight = u_seaLevel + waveHeight;
+                        float depth = waterHeight - v_height;
+                        float wetness = clamp((depth + 0.05) / 0.20, 0.0, 1.0);
+
+                        // Calculate underwater depth relative to sea level (heights above sea level have negative depth)
+                        float depthStatic = u_seaLevel - v_height;
                         float normalMapStrength;
-                        if (depth < 0.0) {
-                            float t = clamp((depth + 0.25) / 0.25, 0.0, 1.0);
+                        if (depthStatic < 0.0) {
+                            float t = clamp((depthStatic + 0.25) / 0.25, 0.0, 1.0);
                             normalMapStrength = mix(1.0, 0.50, t);
                         } else {
-                            float t = clamp(depth / 1.0, 0.0, 1.0);
+                            float t = clamp(depthStatic / 1.0, 0.0, 1.0);
                             normalMapStrength = mix(0.50, 0.25, t);
                         }
 
@@ -128,6 +171,9 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         srgbDiffuse *= (detailColor.rgb * detailStrength + detailOffset);
                         diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
 
+                        // Apply dynamic wetness darkening (wet surfaces scatter less light)
+                        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.55, wetness);
+
                         vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
 
                         // Perturb using normal map
@@ -140,14 +186,22 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         baseNormal = normalize(mix(viewNormal, baseNormal, edgeBlend));
 
                         // Micro-detail normal perturbation from detail map color (adds tactile depth up close)
-                        vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * (0.08 * normalMapStrength));
+                        // Under water or in wet areas, the micro-detail normal is reduced
+                        float detailNormalStrength = mix(0.08, 0.01, wetness) * normalMapStrength;
+                        vec3 normal = normalize(baseNormal + (detailColor.rgb - vec3(0.5)) * detailNormalStrength);
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
                         vec3 viewDir = normalize(-v_viewPosition);
                         vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
                         vec3 halfDir = normalize(lightDir + viewDir);
-                        float spec = pow(max(dot(normal, halfDir), 0.0), 32.0);
-                        vec3 specular = (normalMapVal.a * 0.15) * spec * vec3(1.0);
+
+                        // For wet surfaces, blend to a sharper and more intense water-film specular highlight
+                        float drySpecIntensity = normalMapVal.a * 0.15;
+                        float wetSpecIntensity = 0.3;
+                        float specExponent = mix(32.0, 80.0, wetness);
+                        float specIntensity = mix(drySpecIntensity, wetSpecIntensity, wetness);
+                        float spec = pow(max(dot(normal, halfDir), 0.0), specExponent);
+                        vec3 specular = specIntensity * spec * vec3(1.0);
 
                         float rim = 1.0 - max(dot(viewDir, normal), 0.0);
                         rim = smoothstep(0.8, 1.0, rim);

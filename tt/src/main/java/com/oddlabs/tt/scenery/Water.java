@@ -11,6 +11,7 @@ import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.PatchMesh;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.render.shader.WaterShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
@@ -51,33 +52,33 @@ public final class Water implements AutoCloseable {
     /** Maximum alpha (transparency) of Viking water in deep ocean. */
     private static final float VIKING_MAX_ALPHA = 0.60f;
 
-    private static final int WAVE_COUNT = 3;
-    private static final float WAVE_AMPLITUDE_BASE = 0.15f;
-    private static final float WAVE_STEEPNESS_BASE = 0.5f;
+    public static final int WAVE_COUNT = 3;
+    public static final float WAVE_AMPLITUDE_BASE = 0.15f;
+    public static final float WAVE_STEEPNESS_BASE = 0.5f;
 
-    private static final float WAVE_AMPLITUDE_SCALE_2 = 0.53f;
-    private static final float WAVE_AMPLITUDE_SCALE_3 = 0.27f;
+    public static final float WAVE_AMPLITUDE_SCALE_2 = 0.53f;
+    public static final float WAVE_AMPLITUDE_SCALE_3 = 0.27f;
 
-    private static final float VIKING_AMPLITUDE_MULTIPLIER = 1.5f;
-    private static final float VIKING_STEEPNESS_MULTIPLIER = 1.2f;
-    private static final float VIKING_WAVE_SPEED = 1.0f;
+    public static final float VIKING_AMPLITUDE_MULTIPLIER = 1.5f;
+    public static final float VIKING_STEEPNESS_MULTIPLIER = 1.2f;
+    public static final float VIKING_WAVE_SPEED = 0.8f;
 
-    private static final float NATIVE_WAVE_SPEED = 0.4f;
+    public static final float NATIVE_WAVE_SPEED = 0.4f;
 
-    private static final float WAVE_DIR_X_1 = 1.0f;
-    private static final float WAVE_DIR_X_2 = 0.707f;
-    private static final float WAVE_DIR_X_3 = -0.5f;
-    private static final float WAVE_DIR_Y_1 = 0.0f;
-    private static final float WAVE_DIR_Y_2 = 0.707f;
-    private static final float WAVE_DIR_Y_3 = 0.866f;
+    public static final float WAVE_DIR_X_1 = 1.0f;
+    public static final float WAVE_DIR_X_2 = 0.707f;
+    public static final float WAVE_DIR_X_3 = -0.5f;
+    public static final float WAVE_DIR_Y_1 = 0.0f;
+    public static final float WAVE_DIR_Y_2 = 0.707f;
+    public static final float WAVE_DIR_Y_3 = 0.866f;
 
-    private static final float NATIVE_WAVE_LEN_1 = 60.0f;
-    private static final float NATIVE_WAVE_LEN_2 = 35.0f;
-    private static final float NATIVE_WAVE_LEN_3 = 18.0f;
+    public static final float NATIVE_WAVE_LEN_1 = 60.0f;
+    public static final float NATIVE_WAVE_LEN_2 = 35.0f;
+    public static final float NATIVE_WAVE_LEN_3 = 18.0f;
 
-    private static final float VIKING_WAVE_LEN_1 = 50.0f;
-    private static final float VIKING_WAVE_LEN_2 = 28.0f;
-    private static final float VIKING_WAVE_LEN_3 = 14.0f;
+    public static final float VIKING_WAVE_LEN_1 = 50.0f;
+    public static final float VIKING_WAVE_LEN_2 = 28.0f;
+    public static final float VIKING_WAVE_LEN_3 = 14.0f;
 
     private final Landscape.@NonNull TerrainType terrain;
     private final @NonNull Sky sky;
@@ -293,14 +294,13 @@ public final class Water implements AutoCloseable {
             waterShader.setUniform(WaterShader.Uniforms.CLOUD_TEXTURE_1, 4);
 
             // Upload Gerstner wave parameters.
-            waterShader.setUniform(WaterShader.Uniforms.TIME, waveTime * waveSpeed);
-            waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, true);
-            for (int i = 0; i < WAVE_COUNT; i++) {
-                waterShader.setUniform(WaterShader.Uniforms.WAVE_AMPLITUDE + "[" + i + "]", waveAmplitudes[i]);
-                waterShader.setUniform(WaterShader.Uniforms.WAVE_STEEPNESS + "[" + i + "]", waveSteepness[i]);
-                waterShader.setUniform(WaterShader.Uniforms.WAVE_LENGTH + "[" + i + "]", waveLengths[i]);
-                waterShader.setUniform(WaterShader.Uniforms.WAVE_DIR + "[" + i + "]", waveDirsX[i], waveDirsY[i]);
-            }
+            uploadWaveUniforms(waterShader,
+                    WaterShader.Uniforms.TIME,
+                    WaterShader.Uniforms.ENABLE_WAVES,
+                    WaterShader.Uniforms.WAVE_AMPLITUDE,
+                    WaterShader.Uniforms.WAVE_STEEPNESS,
+                    WaterShader.Uniforms.WAVE_LENGTH,
+                    WaterShader.Uniforms.WAVE_DIR);
 
             // Render Sky Water (Infinite Plane)
             waterShader.setUniform(WaterShader.Uniforms.WATER_HEIGHT, 0.0f);
@@ -443,6 +443,24 @@ public final class Water implements AutoCloseable {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
         return vbo;
+    }
+
+    public @NonNull BitSet getOceanPatches() {
+        return oceanPatches;
+    }
+
+    public void uploadWaveUniforms(@NonNull ShaderProgram program, @NonNull String timeKey,
+            @NonNull String enableWavesKey,
+            @NonNull String amplitudeKey, @NonNull String steepnessKey, @NonNull String lengthKey,
+            @NonNull String dirKey) {
+        program.setUniform(timeKey, waveTime * waveSpeed);
+        program.setUniform(enableWavesKey, true);
+        for (int i = 0; i < WAVE_COUNT; i++) {
+            program.setUniform(amplitudeKey + "[" + i + "]", waveAmplitudes[i]);
+            program.setUniform(steepnessKey + "[" + i + "]", waveSteepness[i]);
+            program.setUniform(lengthKey + "[" + i + "]", waveLengths[i]);
+            program.setUniform(dirKey + "[" + i + "]", waveDirsX[i], waveDirsY[i]);
+        }
     }
 
     @Override

@@ -11,16 +11,17 @@ import com.oddlabs.tt.landscape.LandscapeLeaf;
 import com.oddlabs.tt.landscape.PatchGroup;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.shader.LandscapeShader;
-import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.scenery.Sky;
+import com.oddlabs.tt.scenery.Water;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -29,6 +30,7 @@ import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -44,11 +46,16 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     private final @NonNull Texture detailMap;
     private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
-    private @NonNull FloatVBO instanceVBO;
-    private FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
+    private @Nullable Water water;
+    private @NonNull FloatVBO instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 3);
+    private @NonNull FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 3);
 
     public @NonNull LandscapeShader getShader() {
         return shader;
+    }
+
+    public void setWater(@NonNull Water water) {
+        this.water = water;
     }
 
     public LandscapeRenderer(@NonNull World world, @NonNull WorldInfo world_info, @NonNull AnimationManager manager) {
@@ -56,7 +63,6 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         this.diffuseMap = world_info.maps().diffuse();
         this.normalMap = world_info.maps().normal();
         this.detailMap = world_info.detail();
-        this.instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2); // Initial capacity
 
         manager.registerAnimation(this);
     }
@@ -131,9 +137,23 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             context.setTexture(3, world.getHeightMap().getHeightTexture());
             shader.setUniform(LandscapeShader.Uniforms.HEIGHT_MAP, 3);
 
+            // Upload wave uniforms from Water animation if active
+            Water activeWater = water;
+            if (activeWater != null) {
+                activeWater.uploadWaveUniforms(shader,
+                        LandscapeShader.Uniforms.TIME,
+                        LandscapeShader.Uniforms.ENABLE_WAVES,
+                        LandscapeShader.Uniforms.WAVE_AMPLITUDE,
+                        LandscapeShader.Uniforms.WAVE_STEEPNESS,
+                        LandscapeShader.Uniforms.WAVE_LENGTH,
+                        LandscapeShader.Uniforms.WAVE_DIR);
+            } else {
+                shader.setUniform(LandscapeShader.Uniforms.ENABLE_WAVES, false);
+            }
+
             if (Globals.draw_landscape && !render_list.isEmpty()) {
                 int instanceCount = render_list.size();
-                int requiredFloats = instanceCount * 2;
+                int requiredFloats = instanceCount * 3;
 
                 // Resize buffer if needed
                 if (instanceBuffer.capacity() < requiredFloats) {
@@ -145,9 +165,16 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
 
                 instanceBuffer.clear();
                 float patchSize = world.getHeightMap().getMetersPerPatch();
+                int patchesPerWorld = world.getHeightMap().getPatchesPerWorld();
+                BitSet activeOceanPatches = activeWater != null ? activeWater.getOceanPatches() : null;
                 for (LandscapeLeaf leaf : render_list) {
-                    instanceBuffer.put(leaf.getPatchX() * patchSize);
-                    instanceBuffer.put(leaf.getPatchY() * patchSize);
+                    int px = leaf.getPatchX();
+                    int py = leaf.getPatchY();
+                    float waveScale = (activeOceanPatches != null && activeOceanPatches.get(py * patchesPerWorld + px))
+                            ? 1.0f : 0.0f;
+                    instanceBuffer.put(px * patchSize);
+                    instanceBuffer.put(py * patchSize);
+                    instanceBuffer.put(waveScale);
                 }
                 instanceBuffer.flip();
 
@@ -159,7 +186,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
                 // Setup instance attribute (Location 4: in_InstancePatchOffset)
                 int offsetLoc = 4; // Hardcoded location from shader layout
                 GL20.glEnableVertexAttribArray(offsetLoc);
-                GL20.glVertexAttribPointer(offsetLoc, 2, GL11.GL_FLOAT, false, 0, 0);
+                GL20.glVertexAttribPointer(offsetLoc, 3, GL11.GL_FLOAT, false, 0, 0);
                 GL33.glVertexAttribDivisor(offsetLoc, 1);
 
                 patchMesh.drawInstanced(instanceCount);
@@ -188,27 +215,5 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     @Override
     public void animate(float t) {
         // No animation needed for static VTF geometry
-    }
-
-    // Shadow rendering supported
-    void renderShadow(@NonNull ShaderProgram shader, int patch_x, int patch_y, int start_x, int start_y, int end_x,
-            int end_y) {
-        // Legacy shadow rendering (non-instanced for now as it renders specific sub-regions)
-        // Would need to update shader to support instance attribute if we wanted to batch this too
-        // But shadow rendering usually uses a specific projection/program
-        // For now, we just set the attribute to the single offset
-        // Since we removed the uniform, we must use the attribute
-        // This requires binding a VBO with 1 instance data
-
-        // Quick fix: Set attribute value directly using glVertexAttrib2f (Valid if attribute array is disabled)
-        // But we need to ensure the attribute array is disabled.
-
-        float patchSize = world.getHeightMap().getMetersPerPatch();
-        GL20.glDisableVertexAttribArray(4); // Ensure array is disabled
-        GL20.glVertexAttrib2f(4, patch_x * patchSize, patch_y * patchSize);
-
-        patchMesh.bind();
-        patchMesh.draw();
-        patchMesh.unbind();
     }
 }

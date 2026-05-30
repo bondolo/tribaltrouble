@@ -76,6 +76,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.modelViewStack = modelViewStack;
         this.projectionStack = projectionStack;
         this.water = new Water(world.getHeightMap(), world_info.terrain(), sky, modelViewStack, projectionStack);
+        this.landscape_renderer.setWater(this.water);
         this.emitterRenderer = new EmitterRenderer();
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
