@@ -831,9 +831,9 @@ public final class Landscape {
     private @NonNull Channel generateGrassAlpha(int size, int seed) {
         float v_boost = Math.min(1.0f, vegetation_amount * 1.5f);
         float lower = 1.0f - v_boost;
-        Channel grass_alpha = new Midpoint(size, 4, 0.45f, seed).toChannel().dynamicRange(lower, 1f, 0f, 1f).gamma2();
+        Channel grass_alpha = new Midpoint(size, 4, 0.45f, seed).toChannel().dynamicRange(lower, 1f, 0f, 1f);
         grass_alpha.channelBrightest(slope.copy().dynamicRange(0f, access_threshold, 0f, 1f).invert().dynamicRange(
-                lower, 1f, 0f, 1f).gamma2());
+                lower, 1f, 0f, 1f));
         grass_alpha.channelAdd(relheight.copy().invert().add(-0.5f).multiply(2f));
         grass_alpha.channelSubtract(height.copy().invert().dynamicRange(0.6f, 0.8f, 0f, 1f));
         grass_alpha.channelSubtract(slope.copy().threshold(0.75f * access_threshold, 1f).smooth(3));

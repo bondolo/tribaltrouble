@@ -161,7 +161,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         float h_plus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, 1)).r;
                         float h_minus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, -1)).r;
                         // Mathematically accurate normal (each texel spacing represents 2.0 meters, making 4.0 meters between plus and minus samples)
-                        vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
+                        vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
 
                         // Smoothly blend worldNormal to flat (0,0,1) near the world edges to match the seabottom normal
                         worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
