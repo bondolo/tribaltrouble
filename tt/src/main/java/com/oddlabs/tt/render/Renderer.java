@@ -65,7 +65,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -592,23 +591,15 @@ public final class Renderer implements AutoCloseable {
         Runnable load_task = setupMainMenu(network, gui, true);
 
         boolean reset_keyboard = false;
-        boolean wasActive = false;
         try {
             while (!finished) {
-                window.pollEvents();
+                // Use a small timeout when not the active window to save CPU
                 boolean isActive = window.isActive();
-                if (isActive && !wasActive) {
-                    if (window.isIconified()) window.restore();
-                    if (!window.isVisible()) window.show();
-                    window.focus();
-                } else if (!isActive && wasActive) {
-                    if (getSettings().fullscreen) {
-                        window.minimize();
-                    }
-                } else if (!isActive && first_frame) {
-                    window.focus();
+                if (isActive) {
+                    window.pollEvents();
+                } else {
+                    ((LWJGL3Window) window).pollEvents(100);
                 }
-                wasActive = isActive;
 
                 if (first_frame || (window.isVisible() && isActive)) {
                     runGameLoop(network, gui);
@@ -624,10 +615,8 @@ public final class Renderer implements AutoCloseable {
                     if (window.wasResized()) {
                         int width = window.getWidth();
                         int height = window.getHeight();
-                        int logicalW = window.getLogicalWidth();
-                        int logicalH = window.getLogicalHeight();
-                        getSettings().view_width = logicalW;
-                        getSettings().view_height = logicalH;
+                        getSettings().view_width = width;
+                        getSettings().view_height = height;
                         initGL();
                         gui.getGUIRoot().displayChanged(width, height);
                     }
@@ -654,11 +643,8 @@ public final class Renderer implements AutoCloseable {
                     AnimationManager.freezeTime();
                     reset_keyboard = true;
                     getAudioManager().setMasterGain(0f);
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(10);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException("Sleep interrupted", e);
+                    if (window.isIconified() && getSettings().fullscreen) {
+                        // Keep sleeping if minimized
                     }
                 }
             }
@@ -808,6 +794,7 @@ public final class Renderer implements AutoCloseable {
     public void toggleFullscreen() {
         try {
             boolean fs = !window.isFullscreen() && !getEventQueue().getDeterministic().isPlayback();
+            logger.info("Toggling fullscreen to: " + fs + ". Current mode: " + window.getDisplayMode());
             window.setFullscreen(fs);
             getSettings().fullscreen = fs;
             resetInput();
@@ -850,7 +837,7 @@ public final class Renderer implements AutoCloseable {
 
     private void modeSwitched() {
         SerializableDisplayMode new_mode = getCurrentDisplayMode();
-        logger.info("Switched mode to " + new_mode);
+        logger.info("Mode switch detected. New mode: " + new_mode);
         settings.view_width = new_mode.getWidth();
         settings.view_height = new_mode.getHeight();
         settings.view_freq = new_mode.getFrequency();
@@ -913,7 +900,7 @@ public final class Renderer implements AutoCloseable {
 
             if (width < SerializableDisplayMode.MIN_WIDTH || height < SerializableDisplayMode.MIN_HEIGHT) {
                 try {
-                    var modes = window.getAvailableDisplayModes();
+                    var modes = window.getFullscreenDisplayModes();
                     target_mode = modes.isEmpty()
                             ? new SerializableDisplayMode(SerializableDisplayMode.MIN_WIDTH,
                                     SerializableDisplayMode.MIN_HEIGHT, 32, 60)

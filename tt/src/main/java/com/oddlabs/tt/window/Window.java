@@ -67,6 +67,23 @@ public interface Window extends AutoCloseable {
 
     void setFullscreen(boolean fullscreen) throws Exception;
 
+    /**
+     * Returns a list of resolutions available for fullscreen mode sort from largest to smallest.
+     *
+     * @return List of SerializableDisplayMode
+     */
+    @NonNull
+    List<@NonNull SerializableDisplayMode> getFullscreenDisplayModes();
+
+    /**
+     * Returns a list of standard resolutions suitable for windowed mode, filtered to fit within the usable area of the
+     * current monitor.
+     *
+     * @return List of SerializableDisplayMode
+     */
+    @NonNull
+    List<@NonNull SerializableDisplayMode> getWindowedDisplayModes();
+
     @NonNull
     List<@NonNull SerializableDisplayMode> getAvailableDisplayModes();
 
@@ -112,4 +129,11 @@ public interface Window extends AutoCloseable {
      */
     @NonNull
     Vector2f getWindowContentScale();
+
+    /**
+     * Returns the pixel density of the window (Retina/High-DPI factor).
+     *
+     * @return float density
+     */
+    float getPixelDensity();
 }

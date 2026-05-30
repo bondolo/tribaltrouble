@@ -5,10 +5,7 @@ import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.Callbacks;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
@@ -19,6 +16,8 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -58,6 +57,7 @@ import static org.lwjgl.glfw.GLFW.glfwGetVideoModes;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowAttrib;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowContentScale;
 import static org.lwjgl.glfw.GLFW.glfwGetWindowMonitor;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwIconifyWindow;
 import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
@@ -110,38 +110,67 @@ public final class LWJGL3Window implements Window {
 
         if (windowHandle != MemoryUtil.NULL) {
             // Reconfigure existing window
-            logger.log(Level.INFO, "Reconfiguring window: " + mode + ", fullscreen: " + fullscreen);
+            float scale = getMonitorContentScale().x;
+            int logicalW = (int) (mode.getWidth() / scale);
+            int logicalH = (int) (mode.getHeight() / scale);
+            logger.log(Level.INFO, "Reconfiguring window: " + mode + " (logical: " + logicalW + "x" + logicalH + "), fullscreen: " + fullscreen + ", scale: " + scale);
 
             long monitor = fullscreen ? glfwGetPrimaryMonitor() : MemoryUtil.NULL;
             int refreshRate = fullscreen ? mode.getFrequency() : GLFW_DONT_CARE;
 
             if (fullscreen) {
-                glfwSetWindowMonitor(windowHandle, monitor, 0, 0, mode.getWidth(), mode.getHeight(), refreshRate);
+                glfwSetWindowMonitor(windowHandle, monitor, 0, 0, logicalW, logicalH, refreshRate);
             } else {
                 // Windowed mode: center on screen
                 long currentMonitor = getCurrentMonitor();
                 GLFWVidMode vidmode = glfwGetVideoMode(currentMonitor);
                 if (vidmode != null) {
-                    int x = (vidmode.width() - mode.getWidth()) / 2;
-                    int y = (vidmode.height() - mode.getHeight()) / 2;
-                    glfwSetWindowMonitor(windowHandle, MemoryUtil.NULL, x, y, mode.getWidth(), mode.getHeight(),
+                    int x = (vidmode.width() - logicalW) / 2;
+                    int y = (vidmode.height() - logicalH) / 2;
+                    glfwSetWindowMonitor(windowHandle, MemoryUtil.NULL, x, y, logicalW, logicalH,
                             refreshRate);
+                }
+
+                // After exiting fullscreen, the content scale might have changed (especially on macOS Retina).
+                // Re-calculate logical size with the new scale to avoid 2x sized windows.
+                float newScale = getMonitorContentScale().x;
+                if (newScale != scale) {
+                    logger.log(Level.INFO, "Scale changed from " + scale + " to " + newScale + " after exiting fullscreen. Adjusting window size.");
+                    scale = newScale;
+                    logicalW = (int) (mode.getWidth() / scale);
+                    logicalH = (int) (mode.getHeight() / scale);
+                    glfwSetWindowSize(windowHandle, logicalW, logicalH);
+
+                    // Re-center
+                    vidmode = glfwGetVideoMode(currentMonitor);
+                    if (vidmode != null) {
+                        glfwSetWindowPos(windowHandle, (vidmode.width() - logicalW) / 2, (vidmode.height() - logicalH) / 2);
+                    }
                 }
             }
 
             if (!fullscreen) {
-                glfwSetWindowSize(windowHandle, mode.getWidth(), mode.getHeight());
+                // Ensure the window size is exactly what we want, in case glfwSetWindowMonitor didn't do it perfectly
+                glfwSetWindowSize(windowHandle, logicalW, logicalH);
             }
 
-            glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT,
+            glfwSetWindowSizeLimits(windowHandle, (int) (SerializableDisplayMode.MIN_WIDTH / scale),
+                    (int) (SerializableDisplayMode.MIN_HEIGHT / scale),
                     GLFW_DONT_CARE, GLFW_DONT_CARE);
 
             glfwFocusWindow(windowHandle);
             syncViewport();
+            int[] actualW = new int[1];
+            int[] actualH = new int[1];
+            glfwGetWindowSize(windowHandle, actualW, actualH);
+            logger.log(Level.INFO, "Reconfiguration complete. Logical window size: " + actualW[0] + "x" + actualH[0] + ", Framebuffer size: " + getWidth() + "x" + getHeight());
             return;
         }
 
-        logger.log(Level.INFO, "Creating window: " + mode + ", fullscreen: " + fullscreen);
+        float scale = getMonitorContentScale().x;
+        int logicalW = (int) (mode.getWidth() / scale);
+        int logicalH = (int) (mode.getHeight() / scale);
+        logger.log(Level.INFO, "Creating window: " + mode + " (logical: " + logicalW + "x" + logicalH + "), fullscreen: " + fullscreen + ", scale: " + scale);
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
@@ -168,12 +197,13 @@ public final class LWJGL3Window implements Window {
             monitor = glfwGetPrimaryMonitor();
         }
 
-        windowHandle = glfwCreateWindow(mode.getWidth(), mode.getHeight(), title, monitor, MemoryUtil.NULL);
+        windowHandle = glfwCreateWindow(logicalW, logicalH, title, monitor, MemoryUtil.NULL);
         if (windowHandle == MemoryUtil.NULL) {
             throw new IllegalStateException("Failed to create the GLFW window");
         }
 
-        glfwSetWindowSizeLimits(windowHandle, SerializableDisplayMode.MIN_WIDTH, SerializableDisplayMode.MIN_HEIGHT,
+        glfwSetWindowSizeLimits(windowHandle, (int) (SerializableDisplayMode.MIN_WIDTH / scale),
+                (int) (SerializableDisplayMode.MIN_HEIGHT / scale),
                 GLFW_DONT_CARE, GLFW_DONT_CARE);
 
         // Center the window if not fullscreen
@@ -182,8 +212,8 @@ public final class LWJGL3Window implements Window {
             if (vidmode != null) {
                 glfwSetWindowPos(
                         windowHandle,
-                        (vidmode.width() - mode.getWidth()) / 2,
-                        (vidmode.height() - mode.getHeight()) / 2
+                        (vidmode.width() - logicalW) / 2,
+                        (vidmode.height() - logicalH) / 2
                 );
             }
         }
@@ -244,6 +274,14 @@ public final class LWJGL3Window implements Window {
     @Override
     public void pollEvents() {
         glfwPollEvents();
+    }
+
+    public void pollEvents(int timeoutMs) {
+        if (timeoutMs > 0) {
+            GLFW.glfwWaitEventsTimeout(timeoutMs / 1000.0);
+        } else {
+            glfwPollEvents();
+        }
     }
 
     @Override
@@ -367,7 +405,7 @@ public final class LWJGL3Window implements Window {
         assert windowHandle != MemoryUtil.NULL;
         int[] w = new int[1];
         int[] h = new int[1];
-        org.lwjgl.glfw.GLFW.glfwGetWindowSize(windowHandle, w, h);
+        GLFW.glfwGetWindowSize(windowHandle, w, h);
         return w[0];
     }
 
@@ -380,7 +418,7 @@ public final class LWJGL3Window implements Window {
         assert windowHandle != MemoryUtil.NULL;
         int[] w = new int[1];
         int[] h = new int[1];
-        org.lwjgl.glfw.GLFW.glfwGetWindowSize(windowHandle, w, h);
+        GLFW.glfwGetWindowSize(windowHandle, w, h);
         return h[0];
     }
 
@@ -403,15 +441,70 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
+    public @NonNull List<@NonNull SerializableDisplayMode> getFullscreenDisplayModes() {
+        return getAvailableDisplayModes();
+    }
+
+    @Override
+    public @NonNull List<@NonNull SerializableDisplayMode> getWindowedDisplayModes() {
+        int[][] standardResolutions = {
+                {1024, 768}, {1280, 720}, {1280, 800}, {1280, 1024},
+                {1440, 900}, {1600, 900}, {1600, 1200}, {1680, 1050},
+                {1920, 1080}, {1920, 1200}, {2560, 1440}, {2560, 1600},
+                {3440, 1440}, {3840, 2160}
+        };
+
+        long monitor = getCurrentMonitor();
+        int maxW = Integer.MAX_VALUE;
+        int maxH = Integer.MAX_VALUE;
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer x = stack.mallocInt(1);
+            IntBuffer y = stack.mallocInt(1);
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            GLFW.glfwGetMonitorWorkarea(monitor, x, y, w, h);
+            maxW = w.get(0);
+            maxH = h.get(0);
+        }
+
+        final int finalMaxW = maxW;
+        final int finalMaxH = maxH;
+        var current = getDisplayMode();
+        float scale = getMonitorContentScale().x;
+
+        var modes = Arrays.stream(standardResolutions)
+                .filter(res -> (res[0] / scale) <= finalMaxW && (res[1] / scale) <= finalMaxH)
+                .map(res -> new SerializableDisplayMode(res[0], res[1], current.getBitsPerPixel(), current
+                        .getFrequency()))
+                .filter(SerializableDisplayMode::isModeValid)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // Ensure current mode is included if it fits
+        if (modes.stream().noneMatch(current::isEquivalent)) {
+            if ((current.getWidth() / scale) <= finalMaxW && (current.getHeight() / scale) <= finalMaxH) {
+                modes.add(current);
+            }
+        }
+
+        return modes.stream()
+                .sorted(Comparator.reverseOrder())
+                .toList();
+    }
+
+    @Override
     public @NonNull List<@NonNull SerializableDisplayMode> getAvailableDisplayModes() {
         long monitor = getCurrentMonitor();
+        float scale = getMonitorContentScale().x;
 
         return Optional.ofNullable(monitor != MemoryUtil.NULL ? glfwGetVideoModes(monitor) : null).stream()
                 .flatMap(StructBuffer::stream)
                 .map(m -> {
                     int bpp = m.redBits() + m.greenBits() + m.blueBits();
                     if (bpp == 24) bpp = 32;
-                    return new SerializableDisplayMode(m.width(), m.height(), bpp, m.refreshRate());
+                    // Convert to physical pixels
+                    return new SerializableDisplayMode((int) (m.width() * scale), (int) (m.height() * scale), bpp,
+                            m.refreshRate());
                 })
                 .filter(SerializableDisplayMode::isModeValid)
                 .collect(Collectors.toMap(
@@ -430,8 +523,8 @@ public final class LWJGL3Window implements Window {
         int width, height;
 
         if (windowHandle != MemoryUtil.NULL) {
-            width = getLogicalWidth();
-            height = getLogicalHeight();
+            width = getWidth(); // Physical Pixels
+            height = getHeight();
         } else {
             // Fallback default
             width = SerializableDisplayMode.MIN_WIDTH;
@@ -449,6 +542,13 @@ public final class LWJGL3Window implements Window {
             freq = vidmode.refreshRate();
             bpp = vidmode.redBits() + vidmode.greenBits() + vidmode.blueBits();
             if (bpp == 24) bpp = 32;
+
+            if (windowHandle == MemoryUtil.NULL) {
+                // Return physical pixels
+                float scale = getMonitorContentScale().x;
+                width = (int) (vidmode.width() * scale);
+                height = (int) (vidmode.height() * scale);
+            }
         }
 
         return new SerializableDisplayMode(width, height, bpp, freq);
@@ -456,7 +556,7 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public void setDisplayMode(@NonNull SerializableDisplayMode mode) {
-        create(mode, glfwGetWindowMonitor(windowHandle) != MemoryUtil.NULL);
+        create(mode, isFullscreen());
     }
 
     @Override
@@ -514,5 +614,10 @@ public final class LWJGL3Window implements Window {
             glfwGetWindowContentScale(windowHandle, x, y);
             return new Vector2f(x.get(0), y.get(0));
         }
+    }
+
+    @Override
+    public float getPixelDensity() {
+        return getWindowContentScale().x;
     }
 }

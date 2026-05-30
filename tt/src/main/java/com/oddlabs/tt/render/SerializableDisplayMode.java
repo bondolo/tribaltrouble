@@ -15,6 +15,7 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
 
     public static final int MIN_WIDTH = 1024;
     public static final int MIN_HEIGHT = 768;
+    public static final int MIN_PIXELS = MIN_WIDTH * MIN_HEIGHT;
     public static final int MIN_FREQ = 24; // may also be zero for "unknown"
     public static final int MIN_BPP = 8;
 
@@ -37,13 +38,13 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
         this.freq = freq;
     }
 
+    /**
+     * Elias: sort after largest bpp first, then lowest freq
+     * to accommodate broken monitors lying about their
+     * capabilities
+     */
     @Override
     public int compareTo(@NonNull SerializableDisplayMode o) {
-        /*
-         * Elias: sort after largest bpp first, then lowest freq
-         * to accommodate broken monitors lying about their
-         * capabilities
-         */
         return COMPARATOR.compare(this, o);
     }
 
@@ -54,11 +55,18 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
     }
 
 
+    /**
+     * A mode is valid if at least one dimension is as large as the minimum size, has at least as many pixels as the
+     * minimum size, and has at least as many bits per pixel as the minimum size and meets a minimum refresh rate.
+     *
+     * @param mode mode to check
+     * @return true if the mode is valid, false otherwise
+     */
     public static boolean isModeValid(@NonNull SerializableDisplayMode mode) {
-        return mode.getWidth() >= MIN_WIDTH &&
-                mode.getHeight() >= MIN_HEIGHT
-                && mode.getBitsPerPixel() >= MIN_BPP
-                && (mode.getFrequency() == 0 || mode.getFrequency() >= MIN_FREQ);
+        return (mode.getWidth() >= MIN_WIDTH || mode.getHeight() >= MIN_HEIGHT) &&
+                (mode.getWidth() * mode.getHeight()) >= MIN_PIXELS &&
+                mode.getBitsPerPixel() >= MIN_BPP &&
+                (mode.getFrequency() == 0 || mode.getFrequency() >= MIN_FREQ);
     }
 
     @Override
