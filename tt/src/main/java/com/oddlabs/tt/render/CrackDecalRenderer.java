@@ -30,13 +30,14 @@ public final class CrackDecalRenderer extends ShadowListRenderer {
     }
 
     @Override
-    protected void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    protected void renderShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
+            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
+            @NonNull MatrixStack projectionStack) {
         if (crack_list.isEmpty()) {
             return;
         }
 
-        try (var _ = setupShadows(context, renderer, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
             setPattern(Selectable.VisualPattern.NONE);
             bindShadowTexture(crackTexture);
             while (!crack_list.isEmpty()) {

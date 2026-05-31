@@ -49,7 +49,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final @NonNull MatrixStack modelViewStack;
     private final @NonNull MatrixStack projectionStack;
     private final @NonNull Selection selection;
-    private final @NonNull EmitterRenderer emitterRenderer;
     private final @NonNull LightningRenderer lightningRenderer;
     private final @NonNull SonicBlastRenderer sonicBlastRenderer;
     private final InstancedSpriteRenderer treeSpriteRenderer = new InstancedSpriteRenderer();
@@ -77,7 +76,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.projectionStack = projectionStack;
         this.water = new Water(world.getHeightMap(), world_info.terrain(), sky, modelViewStack, projectionStack);
         this.landscape_renderer.setWater(this.water);
-        this.emitterRenderer = new EmitterRenderer();
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
         var context = Renderer.getRenderer().getRenderContext();
@@ -173,7 +171,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         if (Globals.draw_axes) drawAxes();
         landscape_renderer.debugRender(frustum_state);
         lightningRenderer.debugRender(element_renderer.getRenderState().getLightningQueue());
-        emitterRenderer.debugRender(element_renderer.getRenderState().getEmitterQueue());
+        render_queues.getEmitterRenderer().debugRender(element_renderer.getRenderState().getEmitterQueue());
         tree_renderer.debugRender(tree_renderer.getRenderLists(), tree_renderer.getRespondRenderLists());
 
         if (Globals.isBoundsEnabled(BoundingMode.REGIONS))
@@ -261,11 +259,11 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         // Process transient effects (smoke, lightning, fragments) immediately after visitation.
         if (Globals.process_misc) {
             var renderState = element_renderer.getRenderState();
-            emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state, modelViewStack);
+            render_queues.getEmitterRenderer().prepare(render_queues, renderState.getEmitterQueue(), frustum_state,
+                    modelViewStack);
             lightningRenderer.prepare(renderState.getLightningQueue());
             sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
         }
-
         sprite_sorter.distributeModels();
         if (Globals.process_shadows) {
             render_queues.renderShadows(context, landscape_renderer, modelViewStack, projectionStack);
@@ -313,10 +311,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         // Render transient effects (smoke, lightning) AFTER all other scene objects.
         // This ensures they are depth-tested against the complete scene (including water and blended units).
         lightningRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
-        emitterRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack, postProcessor
+        render_queues.renderParticles(context, frustum_state, modelViewStack, projectionStack, postProcessor
                 .getDepthCopyTexture());
         sonicBlastRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
-
         // Rally point uses SpriteShader (Mask) -> Enable
         context.setDrawBuffers(true);
         renderRallyPoint(context, frustum_state);
@@ -346,7 +343,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     public void close() {
         if (!closed) {
             closed = true;
-            emitterRenderer.close();
             lightningRenderer.close();
             sonicBlastRenderer.close();
             sky.close();

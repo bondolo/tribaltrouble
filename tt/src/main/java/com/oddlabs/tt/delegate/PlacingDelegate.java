@@ -128,8 +128,9 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
         List<LandscapeTarget> target_list = filter.getResult();
 
         RenderContext context = Renderer.getRenderer().getRenderContext();
-        site_renderer.renderSites(context, renderer, modelViewStack, projectionStack, target_list, center_x, center_y, 2
-                * GRID_RADIUS);
+        site_renderer.renderSites(context, queues, renderer, modelViewStack, projectionStack, target_list, center_x,
+                center_y, 2 * GRID_RADIUS);
+
         com.oddlabs.tt.util.GLUtils.checkGLError("Placing: After renderSites");
 
         SpriteRenderer built_renderer = queues.getRenderer(getTemplate().getBuiltRenderer());

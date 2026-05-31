@@ -189,6 +189,13 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
+    public void setUniform(@NonNull String name, int @NonNull [] values) {
+        int loc = getUniformLocation(name);
+        if (loc == -1) return;
+        GL20.glUniform1iv(loc, values);
+    }
+
+    @Override
     public void setUniform(@NonNull String name, int value) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;

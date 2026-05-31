@@ -29,11 +29,12 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
     }
 
     @Override
-    public void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void renderShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
+            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
+            @NonNull MatrixStack projectionStack) {
         if (target_list.isEmpty()) return;
 
-        try (var _ = setupShadows(context, renderer, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.BLUE);
             setPattern(Selectable.VisualPattern.FRIENDLY);
             bindShadowTexture(ring);

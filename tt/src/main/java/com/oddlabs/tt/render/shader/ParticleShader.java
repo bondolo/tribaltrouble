@@ -12,7 +12,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
     public interface Uniforms {
         String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String TEXTURE_0 = "u_texture0";
+        String TEXTURES = "u_textures";
         String DEPTH_MAP = "u_depthMap";
         String IS_ADDITIVE = "u_isAdditive";
         String NEAR_FAR = "u_nearFar"; // x = near, y = far
@@ -25,6 +25,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
         String COLOR = Shader.COLOR;
         String UV_COORDS_1 = "in_UvCoords1"; // u1, v1, u2, v2
         String UV_COORDS_2 = "in_UvCoords2"; // u3, v3, u4, v4
+        String TEX_SLOT = "in_TextureSlot";
     }
 
     public enum Attribute implements VertexAttribute {
@@ -32,7 +33,8 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
         SIZE(Attributes.SIZE, 3, GL11.GL_FLOAT), // radius_x, radius_y, radius_z
         COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT),
         UV_COORDS_1(Attributes.UV_COORDS_1, 4, GL11.GL_FLOAT),
-        UV_COORDS_2(Attributes.UV_COORDS_2, 4, GL11.GL_FLOAT);
+        UV_COORDS_2(Attributes.UV_COORDS_2, 4, GL11.GL_FLOAT),
+        TEX_SLOT(Attributes.TEX_SLOT, 1, GL11.GL_FLOAT);
 
         private final @NonNull String name;
         private final int componentCount;
@@ -79,9 +81,10 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
 
                     layout(location = 0) in vec3 in_CenterPosition;
                     layout(location = 1) in vec3 in_Size;
-                    layout(location = 2) in vec4 in_Color;
-                    layout(location = 3) in vec4 in_UvCoords1;
-                    layout(location = 4) in vec4 in_UvCoords2;
+                    layout(location = 3) in vec4 in_Color;
+                    layout(location = 4) in vec4 in_UvCoords1;
+                    layout(location = 5) in vec4 in_UvCoords2;
+                    layout(location = 6) in float in_TextureSlot;
 
                     uniform mat4 u_modelViewMatrix;
 
@@ -89,11 +92,13 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     out vec4 v_color;
                     out float v_fogDist;
                     out vec3 v_viewPos;
+                    flat out int v_texSlot;
 
                     void main() {
                         vec3 center = in_CenterPosition;
                         vec3 radius = in_Size;
                         v_color = in_Color;
+                        v_texSlot = int(in_TextureSlot + 0.5);
 
                         mat4 mv = u_modelViewMatrix;
                         vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
@@ -136,7 +141,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
             GLOBAL_STATE_BLOCK +
             FOG_FUNCTION +
             """
-                    uniform sampler2D u_texture0;
+                    uniform sampler2D u_textures[14];
                     uniform sampler2D u_depthMap;
                     uniform float u_isAdditive;
                     uniform vec2 u_nearFar;
@@ -146,6 +151,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     in vec4 v_color;
                     in float v_fogDist;
                     in vec3 v_viewPos;
+                    flat in int v_texSlot;
 
                     layout(location = 0) out vec4 out_FragColor;
 
@@ -154,8 +160,12 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         return (2.0 * u_nearFar.x * u_nearFar.y) / (u_nearFar.y + u_nearFar.x - z * (u_nearFar.y - u_nearFar.x));
                     }
 
+                    vec4 sampleParticle(vec2 uv) {
+                        return texture(u_textures[v_texSlot], uv);
+                    }
+
                     void main() {
-                        vec4 texColor = texture(u_texture0, v_texCoord);
+                        vec4 texColor = sampleParticle(v_texCoord);
                         vec4 finalColor = v_color * texColor;
 
                         if (finalColor.a <= 0.0) {
@@ -179,6 +189,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         out_FragColor = vec4(foggedColor, clamp(finalColor.a, 0.0, 1.0));
                     }
                     """;
+
 
     public ParticleShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);

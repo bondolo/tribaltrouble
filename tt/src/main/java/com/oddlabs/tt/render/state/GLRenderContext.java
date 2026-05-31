@@ -60,7 +60,7 @@ public final class GLRenderContext implements RenderContext {
     private @NonNull GLState maskA = GLState.UNKNOWN;
 
     private int activeTextureUnit = -1;
-    private final int[] boundTextures = new int[8];
+    private final int[] boundTextures = new int[32];
     private final int[] boundBuffers = new int[2]; // 0: ARRAY_BUFFER, 1: ELEMENT_ARRAY_BUFFER
 
     private int globalUbo = 0;
@@ -227,6 +227,9 @@ public final class GLRenderContext implements RenderContext {
 
     @Override
     public void setActiveTexture(int unit) {
+        if (unit < 0 || unit >= boundTextures.length) {
+            throw new IllegalArgumentException("Texture unit " + unit + " is out of bounds (max " + boundTextures.length + ").");
+        }
         if (activeTextureUnit != unit) {
             GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
             activeTextureUnit = unit;
@@ -235,7 +238,9 @@ public final class GLRenderContext implements RenderContext {
 
     @Override
     public void setTexture(int unit, int textureHandle) {
-        if (unit < 0 || unit >= boundTextures.length) return;
+        if (unit < 0 || unit >= boundTextures.length) {
+            throw new IllegalArgumentException("Texture unit " + unit + " is out of bounds (max " + boundTextures.length + ").");
+        }
 
         if (boundTextures[unit] != textureHandle) {
             setActiveTexture(unit);

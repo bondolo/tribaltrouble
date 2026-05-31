@@ -1,7 +1,6 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.render.state.RenderContext;
@@ -57,9 +56,10 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
     }
 
     @Override
-    protected void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        try (var _ = setupShadows(context, renderer, modelViewStack, projectionStack)) {
+    protected void renderShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
+            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
+            @NonNull MatrixStack projectionStack) {
+        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.WHITE);
             setPattern(Selectable.VisualPattern.NONE);
             bindShadowTexture(halos[GeneratorHalos.HaloType.SHADOWED.ordinal()]);

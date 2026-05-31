@@ -59,6 +59,8 @@ public interface Shader {
 
     int getUniformLocation(@NonNull String name);
 
+    void setUniform(@NonNull String name, int @NonNull [] values);
+
     void setUniform(@NonNull String name, int value);
 
     void setUniform(@NonNull String name, float value);

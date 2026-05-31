@@ -113,7 +113,8 @@ public final class LWJGL3Window implements Window {
             float scale = getMonitorContentScale().x;
             int logicalW = (int) (mode.getWidth() / scale);
             int logicalH = (int) (mode.getHeight() / scale);
-            logger.log(Level.INFO, "Reconfiguring window: " + mode + " (logical: " + logicalW + "x" + logicalH + "), fullscreen: " + fullscreen + ", scale: " + scale);
+            logger.log(Level.INFO, "Reconfiguring window: " + mode + " (logical: " + logicalW + "x" + logicalH
+                    + "), fullscreen: " + fullscreen + ", scale: " + scale);
 
             long monitor = fullscreen ? glfwGetPrimaryMonitor() : MemoryUtil.NULL;
             int refreshRate = fullscreen ? mode.getFrequency() : GLFW_DONT_CARE;
@@ -135,7 +136,8 @@ public final class LWJGL3Window implements Window {
                 // Re-calculate logical size with the new scale to avoid 2x sized windows.
                 float newScale = getMonitorContentScale().x;
                 if (newScale != scale) {
-                    logger.log(Level.INFO, "Scale changed from " + scale + " to " + newScale + " after exiting fullscreen. Adjusting window size.");
+                    logger.log(Level.INFO, "Scale changed from " + scale + " to " + newScale
+                            + " after exiting fullscreen. Adjusting window size.");
                     scale = newScale;
                     logicalW = (int) (mode.getWidth() / scale);
                     logicalH = (int) (mode.getHeight() / scale);
@@ -144,7 +146,8 @@ public final class LWJGL3Window implements Window {
                     // Re-center
                     vidmode = glfwGetVideoMode(currentMonitor);
                     if (vidmode != null) {
-                        glfwSetWindowPos(windowHandle, (vidmode.width() - logicalW) / 2, (vidmode.height() - logicalH) / 2);
+                        glfwSetWindowPos(windowHandle, (vidmode.width() - logicalW) / 2, (vidmode.height() - logicalH)
+                                / 2);
                     }
                 }
             }
@@ -163,14 +166,16 @@ public final class LWJGL3Window implements Window {
             int[] actualW = new int[1];
             int[] actualH = new int[1];
             glfwGetWindowSize(windowHandle, actualW, actualH);
-            logger.log(Level.INFO, "Reconfiguration complete. Logical window size: " + actualW[0] + "x" + actualH[0] + ", Framebuffer size: " + getWidth() + "x" + getHeight());
+            logger.log(Level.INFO, "Reconfiguration complete. Logical window size: " + actualW[0] + "x" + actualH[0]
+                    + ", Framebuffer size: " + getWidth() + "x" + getHeight());
             return;
         }
 
         float scale = getMonitorContentScale().x;
         int logicalW = (int) (mode.getWidth() / scale);
         int logicalH = (int) (mode.getHeight() / scale);
-        logger.log(Level.INFO, "Creating window: " + mode + " (logical: " + logicalW + "x" + logicalH + "), fullscreen: " + fullscreen + ", scale: " + scale);
+        logger.log(Level.INFO, "Creating window: " + mode + " (logical: " + logicalW + "x" + logicalH
+                + "), fullscreen: " + fullscreen + ", scale: " + scale);
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);

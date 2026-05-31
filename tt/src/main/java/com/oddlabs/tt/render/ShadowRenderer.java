@@ -11,19 +11,23 @@ import org.jspecify.annotations.Nullable;
  * Base class for rendering dynamic shadow decals for world objects.
  */
 abstract class ShadowRenderer {
-    private final DecalRenderer decalRenderer = new DecalRenderer();
     private Color.@NonNull Linear color = Color.Linear.WHITE;
     private float patternVal = 0.0f;
     private @Nullable Texture currentTexture;
+    private boolean radial = false;
+    private @Nullable DecalRenderer sharedRenderer;
 
-    protected @NonNull ScopedState setupShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        var decalState = decalRenderer.setup(context, renderer, modelViewStack, projectionStack);
+    protected @NonNull ScopedState setupShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
+            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
+            @NonNull MatrixStack projectionStack) {
+        this.sharedRenderer = queues.getDecalRenderer();
+        var decalState = sharedRenderer.setup(context, renderer, modelViewStack, projectionStack);
 
         return () -> {
             decalState.close();
-            currentTexture = null;
-            patternVal = 0.0f;
+            this.sharedRenderer = null;
+            this.currentTexture = null;
+            this.patternVal = 0.0f;
         };
     }
 
@@ -44,7 +48,7 @@ abstract class ShadowRenderer {
     }
 
     protected void setRadial(boolean radial) {
-        decalRenderer.setRadial(radial);
+        this.radial = radial;
     }
 
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
@@ -64,14 +68,13 @@ abstract class ShadowRenderer {
 
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             float f_x, float f_y, float shadow_size, Color.@NonNull Linear color, float shadowOffsetScale) {
-        if (currentTexture != null) {
+        if (currentTexture != null && sharedRenderer != null) {
             // Expand the quad for radial halos to provide room for the offset shadow blob and animation padding.
-            float size = decalRenderer.isRadial() ? shadow_size * 2.5f : shadow_size;
-            decalRenderer.draw(context, currentTexture, f_x, f_y, size, color, patternVal, shadowOffsetScale);
+            float size = radial ? shadow_size * 2.5f : shadow_size;
+            sharedRenderer.draw(context, currentTexture, f_x, f_y, size, color, patternVal, shadowOffsetScale, radial);
         }
     }
 
     public void close() {
-        decalRenderer.close();
     }
 }

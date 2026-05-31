@@ -32,8 +32,18 @@ public final class RenderQueues implements AutoCloseable {
             = new HashMap<>();
     private final List<@NonNull Texture> texture_lookup = new ArrayList<>();
     private final InstancedSpriteRenderer spriteRenderer = new InstancedSpriteRenderer();
+    private final DecalRenderer decalRenderer = new DecalRenderer();
+    private final EmitterRenderer emitterRenderer = new EmitterRenderer();
 
     public RenderQueues() {
+    }
+
+    public @NonNull EmitterRenderer getEmitterRenderer() {
+        return emitterRenderer;
+    }
+
+    public @NonNull DecalRenderer getDecalRenderer() {
+        return decalRenderer;
     }
 
     public @NonNull TextureKey registerTexture(@NonNull Supplier<Texture[]> desc, int index) {
@@ -199,14 +209,24 @@ public final class RenderQueues implements AutoCloseable {
 
     void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
-            shadowListRenderer.renderShadows(context, renderer, modelViewStack, projectionStack);
+        decalRenderer.clear();
+        try (var _ = decalRenderer.setup(context, renderer, modelViewStack, projectionStack)) {
+            for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
+                shadowListRenderer.renderShadows(context, this, renderer, modelViewStack, projectionStack);
+            }
         }
+    }
+
+    void renderParticles(@NonNull RenderContext context, @NonNull CameraState state,
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
+        emitterRenderer.render(context, this, state, modelViewStack, projectionStack, depthTexture);
     }
 
     @Override
     public void close() {
         spriteRenderer.close();
+        decalRenderer.close();
+        emitterRenderer.close();
         for (SpriteList spriteList : sprite_list_lookup.stream().map(SpriteRenderer::getSpriteList).distinct()
                 .toList()) {
             spriteList.close();

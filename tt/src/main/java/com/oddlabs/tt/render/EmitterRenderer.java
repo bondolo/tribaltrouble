@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,8 @@ public final class EmitterRenderer implements AutoCloseable {
             ParticleShader.Attribute.SIZE,
             ParticleShader.Attribute.COLOR,
             ParticleShader.Attribute.UV_COORDS_1,
-            ParticleShader.Attribute.UV_COORDS_2
+            ParticleShader.Attribute.UV_COORDS_2,
+            ParticleShader.Attribute.TEX_SLOT
     );
 
     private final @NonNull FloatBuffer particle_buffer;
@@ -49,14 +51,15 @@ public final class EmitterRenderer implements AutoCloseable {
     private final VertexArray vao = new VertexArray();
     private int vbo_offset = 0;
 
-    private record BatchKey(@NonNull Texture texture, int srcBlend, int dstBlend) {
+    private record BatchKey(int srcBlend, int dstBlend) {
     }
 
-    private record BatchEntry<P extends Particle>(@NonNull Emitter<P> emitter, @NonNull List<@NonNull P> particles) {
+    private record BatchEntry<P extends Particle>(@NonNull Emitter<P> emitter, @NonNull List<@NonNull P> particles,
+                                                  @NonNull Texture texture) {
     }
 
     /**
-     * LinkedHashMap so that insertion order matches drawing order. Better sorting may be needed.
+     * Grouping by blend modes. Inside each blend mode group, we will multi-texture batch.
      */
     private final Map<@NonNull BatchKey, @NonNull List<@NonNull BatchEntry<?>>> batches = new LinkedHashMap<>();
 
@@ -80,8 +83,13 @@ public final class EmitterRenderer implements AutoCloseable {
         vao.unbind();
     }
 
+    public void clear() {
+        batches.clear();
+    }
+
     public void prepare(@NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters,
             @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
+        clear();
         if (Globals.draw_particles)
             for (Emitter<?> emitter : emitters) {
                 collectParticles(render_queues, emitter, state, modelViewStack);
@@ -102,8 +110,9 @@ public final class EmitterRenderer implements AutoCloseable {
 
             shader.setUniform(ParticleShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
-            context.setActiveTexture(0);
-            shader.setUniform(ParticleShader.Uniforms.TEXTURE_0, 0);
+            int[] textureUnits = new int[14];
+            for (int i = 0; i < 14; i++) textureUnits[i] = i + 2; // Offset by 2 (0=UI/Misc, 1=DepthMap)
+            shader.setUniform(ParticleShader.Uniforms.TEXTURES, textureUnits);
 
             context.setActiveTexture(1);
             context.setTexture(1, depthTexture.getHandle());
@@ -114,14 +123,12 @@ public final class EmitterRenderer implements AutoCloseable {
 
             flushBatches(context);
         } finally {
-            batches.clear();
             vao.unbind();
-            context.setTexture(0, 0);
             context.setTexture(1, 0);
         }
     }
 
-    private <P extends Particle> void renderParticle(@NonNull P particle, @NonNull Emitter<P> emitter) {
+    private <P extends Particle> void renderParticle(@NonNull P particle, @NonNull Emitter<P> emitter, float slot) {
         particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
         particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter
                 .getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
@@ -133,6 +140,8 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_buffer.put(particle.getU1()).put(particle.getV1()).put(particle.getU2()).put(particle.getV2());
         // UV Info 2: u3, v3, u4, v4
         particle_buffer.put(particle.getU3()).put(particle.getV3()).put(particle.getU4()).put(particle.getV4());
+
+        particle_buffer.put(slot);
     }
 
     private <P extends Particle> void collectParticles(@NonNull RenderQueues render_queues, @NonNull Emitter<P> emitter,
@@ -145,8 +154,9 @@ public final class EmitterRenderer implements AutoCloseable {
             for (int j = 0; j < particles.length; j++) {
                 if (particles[j].isEmpty()) continue;
                 Texture texture = render_queues.getTexture(textures[j]);
-                BatchKey key = new BatchKey(texture, emitter.getSrcBlendFunc(), emitter.getDstBlendFunc());
-                batches.computeIfAbsent(key, k -> new ArrayList<>()).add(new BatchEntry<>(emitter, particles[j]));
+                BatchKey key = new BatchKey(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc());
+                batches.computeIfAbsent(key, k -> new ArrayList<>()).add(new BatchEntry<>(emitter, particles[j],
+                        texture));
             }
         } else if (sprite_renderers != null) {
             for (int j = 0; j < particles.length; j++) {
@@ -166,36 +176,71 @@ public final class EmitterRenderer implements AutoCloseable {
 
         for (var entry : batches.entrySet()) {
             BatchKey key = entry.getKey();
-            context.setTexture(0, key.texture().getHandle());
             context.setBlendFunc(key.srcBlend(), key.dstBlend());
             shader.setUniform(ParticleShader.Uniforms.IS_ADDITIVE, key.dstBlend() == GL11.GL_ONE ? 1.0f : 0.0f);
 
-            particle_buffer.clear();
-            int particleCount = 0;
+            var batchEntries = entry.getValue();
+            IdentityHashMap<Texture, Integer> textureToSlot = new IdentityHashMap<>();
+            List<Texture> activeTextures = new ArrayList<>(14);
 
-            for (var batch : entry.getValue()) {
-                particleCount = processBatchEntry(batch, floatsPerParticle, particleCount);
+            int startEntry = 0;
+            while (startEntry < batchEntries.size()) {
+                activeTextures.clear();
+                textureToSlot.clear();
+                particle_buffer.clear();
+                int particleCount = 0;
+
+                int entryIdx = startEntry;
+                while (entryIdx < batchEntries.size()) {
+                    var batchEntry = batchEntries.get(entryIdx);
+                    Integer slot = textureToSlot.get(batchEntry.texture);
+                    if (slot == null) {
+                        if (activeTextures.size() >= 14) break;
+                        slot = activeTextures.size();
+                        activeTextures.add(batchEntry.texture);
+                        textureToSlot.put(batchEntry.texture, slot);
+                    }
+
+                    particleCount = processBatchEntry(batchEntry, (float) slot, particleCount, context, activeTextures);
+                    entryIdx++;
+                }
+
+                bindAndDraw(context, activeTextures, particleCount);
+                startEntry = entryIdx;
             }
-            flush(particleCount);
         }
     }
 
-    private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, int floatsPerParticle,
-            int particleCount) {
+    private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, float slot, int particleCount,
+            @NonNull RenderContext context, List<Texture> activeTextures) {
         var particles = batch.particles();
         var emitter = batch.emitter();
+        int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
 
         // Iterate backwards as per original logic
         for (int i = particles.size() - 1; i >= 0; i--) {
-            if (particle_buffer.remaining() < floatsPerParticle) {
-                flush(particleCount);
+            if (particleCount >= MAX_PARTICLES || particle_buffer.remaining() < floatsPerParticle) {
+                // This internal flush is tricky because it might split an entry's particles.
+                // But we must flush if buffer is full.
+                bindAndDraw(context, activeTextures, particleCount);
                 particle_buffer.clear();
                 particleCount = 0;
             }
-            renderParticle(particles.get(i), emitter);
+            renderParticle(particles.get(i), emitter, slot);
             particleCount++;
         }
         return particleCount;
+    }
+
+    private void bindAndDraw(@NonNull RenderContext context, List<Texture> activeTextures, int particleCount) {
+        if (particleCount == 0) return;
+
+        // Bind textures
+        for (int i = 0; i < activeTextures.size(); i++) {
+            context.setTexture(i + 2, activeTextures.get(i).getHandle());
+        }
+
+        flush(particleCount);
     }
 
     private void flush(int particleCount) {

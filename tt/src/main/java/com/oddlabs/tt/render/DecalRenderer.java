@@ -11,7 +11,6 @@ import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -21,6 +20,10 @@ import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
 
 /**
  * Renders textured decals such as dynamic shadows and selection halos using hardware instancing.
@@ -35,13 +38,13 @@ public final class DecalRenderer implements AutoCloseable {
 
     public static final int HALO_LUT_RESOLUTION = 256;
 
-    private static final int MAX_INSTANCES = 1024;
-    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1 + 1; // Pos(2) + Size(1) + Color(4) + Pattern(1) + OffsetScale(1)
+    private static final int MAX_INSTANCES = 2048;
+    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1 + 1 + 1 + 1; // Pos(2)+Size(1)+Color(4)+Pat(1)+Off(1)+Slot(1)+Flags(1)
     private final @NonNull FloatBuffer instanceBuffer;
 
     private int instanceCount = 0;
-    private @Nullable Texture currentTexture;
-    private boolean radial = false;
+    private final IdentityHashMap<Texture, Integer> textureToSlot = new IdentityHashMap<>();
+    private final List<Texture> activeTextures = new ArrayList<>(14);
 
     private static final int GRID_SIZE = 32; // 32x32 grid
     private static final int VERTEX_COUNT = GRID_SIZE * GRID_SIZE;
@@ -117,66 +120,92 @@ public final class DecalRenderer implements AutoCloseable {
         GL20.glVertexAttribPointer(7, 1, GL11.GL_FLOAT, false, stride, 8 * Float.BYTES);
         GL33.glVertexAttribDivisor(7, 1);
 
+        // in_InstanceTextureSlot (Loc 8, 1 float)
+        GL20.glEnableVertexAttribArray(8);
+        GL20.glVertexAttribPointer(8, 1, GL11.GL_FLOAT, false, stride, 9 * Float.BYTES);
+        GL33.glVertexAttribDivisor(8, 1);
+
+        // in_InstanceFlags (Loc 9, 1 float)
+        GL20.glEnableVertexAttribArray(9);
+        GL20.glVertexAttribPointer(9, 1, GL11.GL_FLOAT, false, stride, 10 * Float.BYTES);
+        GL33.glVertexAttribDivisor(9, 1);
+
         this.vao.unbind();
     }
 
-    public void setRadial(boolean radial) {
-        this.radial = radial;
+    public void clear() {
+        instanceCount = 0;
+        textureToSlot.clear();
+        activeTextures.clear();
+        instanceBuffer.clear();
     }
 
-    public boolean isRadial() {
-        return radial;
-    }
+    private int setupCount = 0;
+    private ScopedState shaderState;
+    private ScopedState blendState;
+    private ScopedState depthState;
+    private ScopedState cullState;
 
     public @NonNull ScopedState setup(@NonNull RenderContext context, @NonNull LandscapeRenderer landscape,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
-        var shaderUseState = shader.use();
+        if (setupCount == 0) {
+            shaderState = shader.use();
 
-        shader.setUniform(DecalShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
+            shader.setUniform(DecalShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
-        shader.setUniform(DecalShader.Uniforms.WORLD_SIZE, (float) landscape.getHeightMap().getMetersPerWorld());
-        shader.setUniform(DecalShader.Uniforms.DEPTH_BIAS, 0.05f);
-        shader.setUniform(DecalShader.Uniforms.RADIAL, radial);
+            shader.setUniform(DecalShader.Uniforms.WORLD_SIZE, (float) landscape.getHeightMap().getMetersPerWorld());
+            shader.setUniform(DecalShader.Uniforms.DEPTH_BIAS, 0.05f);
 
-        context.setTexture(1, landscape.getHeightMap().getHeightTexture());
-        shader.setUniform(DecalShader.Uniforms.HEIGHT_MAP, 1);
+            context.setTexture(1, landscape.getHeightMap().getHeightTexture());
+            shader.setUniform(DecalShader.Uniforms.HEIGHT_MAP, 1);
 
-        // Render State: Use Premultiplied blending for stable color/shadow combination.
-        var blend = context.withBlendMode(BlendMode.PREMULTIPLIED);
-        var depth = context.withDepthMode(DepthMode.READ_ONLY);
-        var cull = context.withCullMode(CullMode.NONE);
+            int[] textureUnits = new int[14];
+            for (int i = 0; i < 14; i++) textureUnits[i] = i + 2; // Offset by 2 (0=DecalUnit, 1=HeightMap)
+            shader.setUniform(DecalShader.Uniforms.TEXTURES, textureUnits);
+            // Render State: Use Premultiplied blending for stable color/shadow combination.
+            blendState = context.withBlendMode(BlendMode.PREMULTIPLIED);
+            depthState = context.withDepthMode(DepthMode.READ_ONLY);
+            cullState = context.withCullMode(CullMode.NONE);
 
-        // Bias to prevent Z-fighting with terrain
-        GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
-        GL11.glPolygonOffset(-16.0f, -32.0f);
+            // Bias to prevent Z-fighting with terrain
+            GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
+            GL11.glPolygonOffset(-16.0f, -32.0f);
+        }
+        setupCount++;
 
         return () -> {
-            flush(context);
-            shaderUseState.close();
-            GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
+            setupCount--;
+            if (setupCount == 0) {
+                flush(context);
+                shaderState.close();
+                GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
 
-            cull.close();
-            depth.close();
-            blend.close();
-
-            this.currentTexture = null;
+                cullState.close();
+                depthState.close();
+                blendState.close();
+            }
         };
     }
 
     /**
      * Draws the specified decal texture with the provided tint and pattern at the specified position and size.
-     *
-     * @param color the drawing tint
      */
     public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size,
-            Color.@NonNull Linear color, float patternVal, float shadowOffsetScale) {
-        if (currentTexture != texture) {
+            Color.@NonNull Linear color, float patternVal, float shadowOffsetScale, boolean radial) {
+        Integer slot = textureToSlot.get(texture);
+        if (slot == null) {
+            if (activeTextures.size() >= 14 || instanceCount >= MAX_INSTANCES) {
+                flush(context);
+            }
+            slot = activeTextures.size();
+            activeTextures.add(texture);
+            textureToSlot.put(texture, slot);
+        } else if (instanceCount >= MAX_INSTANCES) {
             flush(context);
-            currentTexture = texture;
-        }
-
-        if (instanceCount >= MAX_INSTANCES) {
-            flush(context);
+            // After flush, activeTextures is empty, so we must re-add this texture
+            slot = 0;
+            activeTextures.add(texture);
+            textureToSlot.put(texture, slot);
         }
 
         instanceBuffer.put(x);
@@ -188,26 +217,35 @@ public final class DecalRenderer implements AutoCloseable {
         instanceBuffer.put(color.a());
         instanceBuffer.put(patternVal);
         instanceBuffer.put(shadowOffsetScale);
+        instanceBuffer.put((float) slot);
+        instanceBuffer.put(radial ? 1.0f : 0.0f);
         instanceCount++;
     }
 
     private void flush(@NonNull RenderContext context) {
-        if (instanceCount == 0 || currentTexture == null) return;
+        if (instanceCount == 0) return;
 
-        context.setTexture(0, currentTexture.getHandle());
-        shader.setUniform(DecalShader.Uniforms.TEXTURE, 0);
+        // Bind current batch of textures
+        for (int i = 0; i < activeTextures.size(); i++) {
+            context.setTexture(i + 2, activeTextures.get(i).getHandle());
+        }
 
         vao.bind();
         instanceVBO.bind(context);
         instanceBuffer.flip();
-        instanceVBO.put(instanceBuffer); // Or glBufferSubData if partial
-        instanceBuffer.clear(); // Reset for writing
+        instanceVBO.put(instanceBuffer);
 
         GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, INDEX_COUNT, GL11.GL_UNSIGNED_SHORT, 0, instanceCount);
 
         vao.unbind();
+
+        // Reset for next batch
         instanceCount = 0;
+        textureToSlot.clear();
+        activeTextures.clear();
+        instanceBuffer.clear();
     }
+
 
     @Override
     public void close() {

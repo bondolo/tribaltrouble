@@ -8,11 +8,10 @@ public final class DecalShader extends ShaderProgram implements FogShader {
     public static final class Uniforms {
         public static final String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
         public static final String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
-        public static final String TEXTURE = "u_texture";
+        public static final String TEXTURES = "u_textures";
         public static final String HEIGHT_MAP = "u_HeightMap";
         public static final String WORLD_SIZE = "u_WorldSize";
         public static final String DEPTH_BIAS = "u_DepthBias";
-        public static final String RADIAL = "u_Radial";
 
         private Uniforms() {
         }
@@ -25,6 +24,8 @@ public final class DecalShader extends ShaderProgram implements FogShader {
         public static final String INSTANCE_COLOR = "in_InstanceColor";
         public static final String INSTANCE_PATTERN = "in_InstancePattern";
         public static final String INSTANCE_OFFSET_SCALE = "in_InstanceOffsetScale";
+        public static final String INSTANCE_TEX_SLOT = "in_InstanceTextureSlot";
+        public static final String INSTANCE_FLAGS = "in_InstanceFlags";
 
         private Attributes() {
         }
@@ -41,17 +42,20 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     layout(location = 3) in vec4 in_InstanceColor; // RGBA
                     layout(location = 6) in float in_InstancePattern; // Pattern ID
                     layout(location = 7) in float in_InstanceOffsetScale; // Offset scale
+                    layout(location = 8) in float in_InstanceTextureSlot; // Texture unit (0..15)
+                    layout(location = 9) in float in_InstanceFlags; // bit 0: radial
 
                     uniform mat4 u_modelViewMatrix;
                     uniform float u_WorldSize;
                     uniform float u_DepthBias;
                     uniform sampler2D u_HeightMap;
-                    uniform bool u_Radial;
 
                     out vec2 v_TexCoord;
                     flat out vec2 v_ShadowOffset;
                     out vec4 v_Color;
                     out float v_Pattern;
+                    flat out int v_TexSlot;
+                    flat out int v_Flags;
                     out float v_fogDist;
 
                     void main() {
@@ -73,10 +77,12 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         v_TexCoord = in_Position;
                         v_Color = in_InstanceColor;
                         v_Pattern = in_InstancePattern;
+                        v_TexSlot = int(in_InstanceTextureSlot + 0.5);
+                        v_Flags = int(in_InstanceFlags + 0.5);
 
                         // Shadow offset in local decal space (±0.5 = quad edge = one radius).
                         // The shadow sample is shifted by this amount; the ring sample is not.
-                        if (u_Radial) {
+                        if ((v_Flags & 1) != 0) { // Radial flag
                             const vec3 lightDir = vec3(-0.70710678, 0.0, 0.70710678);
                             v_ShadowOffset = lightDir.xy * 0.225 * in_InstanceOffsetScale;
                         } else {
@@ -92,21 +98,26 @@ public final class DecalShader extends ShaderProgram implements FogShader {
             FOG_FUNCTION +
             """
 
-                    uniform sampler2D u_texture;
-                    uniform bool u_Radial;
+                    uniform sampler2D u_textures[14];
 
                     in vec2 v_TexCoord;
                     flat in vec2 v_ShadowOffset;
                     in vec4 v_Color;
                     in float v_Pattern;
-                    in float v_fogDist;
+                    flat in int v_TexSlot;
+                    flat in int v_Flags;
+                    out float v_fogDist;
 
                     layout(location = 0) out vec4 out_FragColor;
                     layout(location = 1) out vec4 out_MaskColor;
 
+                    vec4 sampleDecal(vec2 uv) {
+                        return texture(u_textures[v_TexSlot], uv);
+                    }
+
                     void main() {
                         vec4 baseColor;
-                        if (u_Radial) {
+                        if ((v_Flags & 1) != 0) { // Radial flag
                             // Ring: sample at unshifted position so it stays centred on the unit.
                             float dist = length(v_TexCoord) * 2.5;
                             float time = u_globalTime;
@@ -119,16 +130,16 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                             // Shadow: sampled at a position offset opposite the light direction
                             // so the blob falls behind the unit while the ring stays centred.
                             float shadowDist = length(v_TexCoord - v_ShadowOffset) * 2.5;
-                            float shadowAlpha = texture(u_texture, vec2(shadowDist * 2.0, 0.5)).g;
+                            float shadowAlpha = sampleDecal(vec2(shadowDist * 2.0, 0.5)).g;
 
-                            vec4 baseSample = texture(u_texture, vec2(dist * 2.0, 0.5));
+                            vec4 baseSample = sampleDecal(vec2(dist * 2.0, 0.5));
 
                             float ringAlpha = 0.0;
 
                             if (v_Pattern > 0.5) { // Any active pattern (Selection/Target)
                                 if (v_Pattern < 1.5) { // Pattern 1: Friendly (Throb)
                                     float offset = 0.03 * sin(time * 4.0);
-                                    ringAlpha = texture(u_texture, vec2((dist - offset) * 2.0, 0.5)).r;
+                                    ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
                                 }
                                 else if (v_Pattern < 2.5) { // Pattern 2: Neutral/Ally (Marching Ants)
                                     float ants = step(0.5, fract(angle * 10.0 / 6.28318 + time * 2.0));
@@ -136,13 +147,13 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                                 }
                                 else if (v_Pattern < 3.5) { // Pattern 3: Enemy (Aggressive Double Ring)
                                     float o1 = 0.03 * sin(time * 12.0);
-                                    float r1 = texture(u_texture, vec2((dist - o1) * 2.0, 0.5)).r;
-                                    float r2 = texture(u_texture, vec2((dist + 0.12) * 2.0, 0.5)).r;
+                                    float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
+                                    float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
                                     ringAlpha = max(r1, r2);
                                 }
                                 else if (v_Pattern < 4.5) { // Pattern 4: Friendly Building (Minimal Throb)
                                     float offset = 0.01 * sin(time * 2.0);
-                                    ringAlpha = texture(u_texture, vec2((dist - offset) * 2.0, 0.5)).r;
+                                    ringAlpha = sampleDecal(vec2((dist - offset) * 2.0, 0.5)).r;
                                 }
                                 else if (v_Pattern < 5.5) { // Pattern 5: Neutral Building (Static Ring + Marching Ants)
                                     float ants = step(0.5, fract(angle * 15.0 / 6.28318 + time * 1.0));
@@ -150,8 +161,8 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                                 }
                                 else { // Pattern 6: Enemy Building (Double Ring + Minimal Throb)
                                     float o1 = 0.01 * sin(time * 2.0);
-                                    float r1 = texture(u_texture, vec2((dist - o1) * 2.0, 0.5)).r;
-                                    float r2 = texture(u_texture, vec2((dist + 0.12) * 2.0, 0.5)).r;
+                                    float r1 = sampleDecal(vec2((dist - o1) * 2.0, 0.5)).r;
+                                    float r2 = sampleDecal(vec2((dist + 0.12) * 2.0, 0.5)).r;
                                     ringAlpha = max(r1, r2);
                                 }
                             } else {
@@ -169,7 +180,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                             baseColor = vec4(v_Color.rgb * a_r, finalAlpha);
                         } else {
                             // Standard 2D sampling (Square Building Sites)
-                            baseColor = texture(u_texture, v_TexCoord + 0.5) * v_Color;
+                            baseColor = sampleDecal(v_TexCoord + 0.5) * v_Color;
                             if (v_Pattern > 9.5) {
                                 float dist = length(v_TexCoord);
                                 float maskRadius = v_Pattern - 10.0;

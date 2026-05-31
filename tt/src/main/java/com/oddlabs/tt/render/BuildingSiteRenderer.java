@@ -20,10 +20,11 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
                 org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE, org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE);
     }
 
-    public void renderSites(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull List<
-                    ? extends @NonNull Target> targets, float center_x, float center_y, float max_radius) {
-        try (var _ = setupShadows(context, renderer, modelViewStack, projectionStack)) {
+    public void renderSites(@NonNull RenderContext context, @NonNull RenderQueues queues,
+            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
+            @NonNull MatrixStack projectionStack, @NonNull List<? extends @NonNull Target> targets, float center_x,
+            float center_y, float max_radius) {
+        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
             bindShadowTexture(green);
             float radius_sqr = max_radius * max_radius;
             for (Target target : targets) {
