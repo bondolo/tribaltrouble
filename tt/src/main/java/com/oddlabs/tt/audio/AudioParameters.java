@@ -27,7 +27,8 @@ public record AudioParameters(
                               float radius,
                               float pitch,
                               boolean looping,
-                              boolean relative
+                              boolean relative,
+                              boolean ambient
 ) {
     public AudioParameters {
         Objects.requireNonNull(audio, "audio");
@@ -42,6 +43,17 @@ public record AudioParameters(
     }
 
     public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius, float pitch) {
-        this(audio, rank, distance, gain, radius, pitch, false, false);
+        this(audio, rank, distance, gain, radius, pitch, false, false, false);
     }
+
+    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius, float pitch,
+            boolean looping) {
+        this(audio, rank, distance, gain, radius, pitch, looping, false, false);
+    }
+
+    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius, float pitch,
+            boolean looping, boolean relative) {
+        this(audio, rank, distance, gain, radius, pitch, looping, relative, false);
+    }
+
 }

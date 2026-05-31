@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * A point in 3D space that emits sound, abstracting the underlying audio implementation.
  */
-public interface AudioSource extends AutoCloseable {
+public interface AudioSource {
 
     enum State {
         INITIAL,
@@ -15,12 +15,6 @@ public interface AudioSource extends AutoCloseable {
         PAUSED,
         STOPPED
     }
-
-    /**
-     * Closes the audio source and releases its native resources.
-     */
-    @Override
-    void close();
 
     /**
      * {@return the current state of the source}

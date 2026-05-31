@@ -23,7 +23,7 @@ import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
 /**
  * OpenAL buffered audio
  */
-public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements Audio {
+final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements Audio {
     static final class Buffers extends NativeState {
         private final @NonNull IntBuffer al_buffers;
 
@@ -36,6 +36,7 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
         @Override
         public void close() {
             if (ALC10.alcGetCurrentContext() != 0 && al_buffers.limit() > 0) {
+                AL10.alGetError(); // Clear any sticky error from previous operations
                 AL10.alDeleteBuffers(al_buffers);
                 checkALError("alDeleteBuffers");
             }
@@ -43,7 +44,7 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
         }
     }
 
-    public OpenALAudio(@NonNull OpenALManager manager, int num_buffers) {
+    OpenALAudio(@NonNull OpenALManager manager, int num_buffers) {
         super(new Buffers(num_buffers), manager::enqueueCleanup);
     }
 
@@ -76,19 +77,20 @@ public final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> imple
         }
     }
 
-    public int getBufferCount() {
+    int getBufferCount() {
         return state.al_buffers.remaining();
     }
 
-    public @NonNull IntBuffer getBuffers() {
+    @NonNull
+    IntBuffer getBuffers() {
         return state.al_buffers.duplicate().position(0);
     }
 
-    public int getBuffer() {
+    int getBuffer() {
         return getBuffer(0);
     }
 
-    public int getBuffer(int idx) {
+    int getBuffer(int idx) {
         return state.al_buffers.get(idx);
     }
 }

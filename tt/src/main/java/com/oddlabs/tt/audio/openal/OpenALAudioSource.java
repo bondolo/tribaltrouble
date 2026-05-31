@@ -4,7 +4,6 @@ import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioSource;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.NativeResource;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -25,7 +24,7 @@ import static org.lwjgl.openal.EXTEfx.AL_AUXILIARY_SEND_FILTER;
 /**
  * OpenAL implementation of {@link AudioSource} managing a native OpenAL source.
  */
-public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> implements AudioSource {
+final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> implements AudioSource {
     private static final Logger logger = Logger.getLogger(OpenALAudioSource.class.getSimpleName());
 
     static final class Source extends NativeResource.NativeState {
@@ -43,13 +42,14 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             return obj instanceof Source source && sourceId == source.sourceId;
         }
 
         @Override
         public void close() {
             if (ALC10.alcGetCurrentContext() != 0) {
+                AL10.alGetError(); // Clear any sticky error from previous operations
                 // Check if the source is valid before trying to stop it
                 if (AL10.alIsSource(sourceId)) {
                     // Stop the source before deleting it, to be safe
@@ -65,6 +65,10 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
                     AL11.alSource3i(sourceId, AL_AUXILIARY_SEND_FILTER, 0, 0, 0);
                     checkALError("alSource3i AL_AUXILIARY_SEND_FILTER AL_NONE before deleting source");
 
+                    // Detach the direct filter to free up the filter object
+                    AL10.alSourcei(sourceId, EXTEfx.AL_DIRECT_FILTER, EXTEfx.AL_FILTER_NULL);
+                    checkALError("alSourcei AL_DIRECT_FILTER AL_FILTER_NULL before deleting source");
+
                     AL10.alDeleteSources(sourceId);
                     checkALError("alDeleteSources");
                 } else {
@@ -74,14 +78,15 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         }
     }
 
+    private final @NonNull OpenALManager manager;
     private @Nullable AudioPlayer audio_player;
     private @Nullable OpenALFilter directFilter;
     private float rolloff;
     private float reference_distance;
 
-    public OpenALAudioSource() {
-        // FIXME this is not great. It assumes AudioManager will be around when source is closed.
-        super(new Source(), task -> Renderer.getRenderer().getAudioManager().enqueueCleanup(task));
+    OpenALAudioSource(@NonNull OpenALManager manager) {
+        super(new Source(), manager::enqueueCleanup);
+        this.manager = manager;
     }
 
     @Override
@@ -90,19 +95,29 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         return obj instanceof OpenALAudioSource source && state.equals(source.state);
     }
 
     @Override
     public void close() {
         try {
+            stop();
+            if (directFilter != null) {
+                if (ALC10.alcGetCurrentContext() != 0) {
+                    int sourceId = getSource();
+                    if (AL10.alIsSource(sourceId)) {
+                        AL10.alSourcei(sourceId, EXTEfx.AL_DIRECT_FILTER, EXTEfx.AL_FILTER_NULL);
+                        checkALError("alSourcei AL_DIRECT_FILTER AL_FILTER_NULL");
+                    }
+                }
+            }
+            super.close();
+        } finally {
             if (directFilter != null) {
                 directFilter.close();
                 directFilter = null;
             }
-        } finally {
-            super.close();
         }
     }
 
@@ -121,7 +136,7 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         if (ALC10.alcGetCurrentContext() == 0) return;
         try {
             if (directFilter == null) {
-                directFilter = new OpenALFilter();
+                directFilter = new OpenALFilter(manager::enqueueCleanup);
             }
             directFilter.setLowPassGainHF(gainHF);
             int sourceId = getSource();
@@ -130,7 +145,7 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
                 checkALError("alSourcei AL_DIRECT_FILTER");
             }
         } catch (Exception e) {
-            // EFX not supported or error creating filter, ignore
+            // EFX not supported or an error creating the filter, ignore
         }
     }
 
@@ -378,7 +393,7 @@ public final class OpenALAudioSource extends NativeResource<OpenALAudioSource.So
         return new Vector3f();
     }
 
-    public int getSource() {
+    int getSource() {
         return state.sourceId;
     }
 

@@ -1,7 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.render.Renderer;
-
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -16,7 +14,8 @@ import java.util.logging.Logger;
 /**
  * An audio player that streams audio data from an OGG stream into multiple queued buffers.
  */
-public abstract class QueuedAudioPlayer extends AudioPlayer {
+public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>, AS extends AudioSource>
+        extends AbstractAudioPlayer<AM, AS> {
     private static final Logger logger = Logger.getLogger(QueuedAudioPlayer.class.getSimpleName());
     protected static final int PCM_SAMPLES = 16384;
 
@@ -28,9 +27,9 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
      */
     protected volatile @Nullable Audio audio;
 
-    protected QueuedAudioPlayer(@Nullable AudioSource source, float x, float y, float z,
+    protected QueuedAudioPlayer(@NonNull AM manager, @Nullable AS source, float x, float y, float z,
             @NonNull AudioParameters params) {
-        super(source, x, y, z, params);
+        super(manager, source, x, y, z, params);
         if (!isPlaying() || this.source == null) {
             return;
         }
@@ -52,13 +51,14 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     }
 
     private void refiller(@NonNull URL source) {
+        initThread();
         try (OGGStream stream = new OGGStream(source)) {
             this.audio = initAsync(stream);
             if (this.audio == null) {
                 return;
             }
 
-            if (Renderer.getRenderer().getAudioManager().startPlaying()) {
+            if (manager.startPlaying()) {
                 this.source.play();
             }
 
@@ -100,18 +100,22 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     /** Run by the Refiller thread */
     protected abstract @Nullable Audio initAsync(@NonNull OGGStream stream) throws Exception;
 
+    /** Run by the Refiller thread to initialize thread-local context/capabilities. */
+    protected void initThread() {
+    }
+
     /** Run by the Refiller thread */
     protected abstract void refill(@NonNull OGGStream stream) throws IOException;
 
     /** Run by the Refiller thread */
     protected abstract void cleanupAsync() throws Exception;
 
-    protected int readPCM(@NonNull OGGStream stream) {
+    protected static int readPCM(@NonNull OGGStream stream, @NonNull ShortBuffer pcmBuffer, boolean looping) {
         pcmBuffer.clear(); // Position 0, Limit PCM_SAMPLES
 
         int shortsRead = stream.read(pcmBuffer);
 
-        if (shortsRead <= 0 && getParameters().looping()) {
+        if (shortsRead <= 0 && looping) {
             // End of ogg stream reached, but we are looping.
             stream.seek(0);
             shortsRead = stream.read(pcmBuffer);
@@ -126,8 +130,8 @@ public abstract class QueuedAudioPlayer extends AudioPlayer {
     }
 
     @Override
-    public @NonNull QueuedAudioPlayer stop() {
-        if (Renderer.getRenderer().getAudioManager().removeQueuedPlayer(this)) {
+    public @NonNull QueuedAudioPlayer<AM, AS> stop() {
+        if (manager.removeQueuedPlayer(this)) {
             super.stop(); // Sets playing = false and stops the source.
         }
 

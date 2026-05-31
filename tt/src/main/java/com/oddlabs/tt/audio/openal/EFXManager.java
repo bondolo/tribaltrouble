@@ -1,5 +1,6 @@
 package com.oddlabs.tt.audio.openal;
 
+import com.oddlabs.tt.audio.ReverbType;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;
@@ -40,14 +41,6 @@ public final class EFXManager implements AutoCloseable {
     private int reverbEffect;
     private boolean supported = false;
 
-    // Reverb Presets
-    public enum ReverbType {
-        NONE,
-        GENERIC,    // General outdoors
-        FOREST,     // Dampened
-        VALLEY,     // Echoey
-        UNDERWATER  // Muffled
-    }
 
     // Reverb Snapshot record for parameter interpolation
     private record ReverbSnapshot(

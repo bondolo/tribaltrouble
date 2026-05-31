@@ -7,11 +7,7 @@ import com.oddlabs.tt.Main;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioFile;
-import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.*;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.MenuCamera;
 import com.oddlabs.tt.delegate.MainMenu;
@@ -36,11 +32,7 @@ import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.state.GLRenderContext;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.IslandGenerator;
-import com.oddlabs.tt.resource.NativeResource;
-import com.oddlabs.tt.resource.Resources;
-import com.oddlabs.tt.resource.WorldGenerator;
-import com.oddlabs.tt.resource.WorldInfo;
+import com.oddlabs.tt.resource.*;
 import com.oddlabs.tt.util.GLUtils;
 import com.oddlabs.tt.util.StatCounter;
 import com.oddlabs.tt.util.Utils;
@@ -64,12 +56,9 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
 
 import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 
@@ -101,7 +90,8 @@ public final class Renderer implements AutoCloseable {
     private final Network network = new Network();
     private final LocalInput localInput = new LocalInput(window);
 
-    private @Nullable AudioManager audioManager;
+    // Currently only OpenAL is supported
+    private @Nullable OpenALManager audioManager;
 
     private AudioPlayer music;
     private @Nullable AudioFile music_path;
@@ -160,6 +150,16 @@ public final class Renderer implements AutoCloseable {
             throw new IllegalStateException("AudioManager not initialized");
         }
         return manager;
+    }
+
+    /** global sound enable */
+    public void startSound() {
+        Objects.requireNonNull(audioManager).startSources();
+    }
+
+    /** global sound disable */
+    public void stopSound() {
+        Objects.requireNonNull(audioManager).stopSources();
     }
 
     public @NonNull LocalEventQueue getEventQueue() {
@@ -585,8 +585,7 @@ public final class Renderer implements AutoCloseable {
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio((float x, float y, float z, @NonNull AudioParameters params) -> getAudioManager()
-                .newAudio(x, y, z, params));
+        ambient = new AmbientAudio(getAudioManager());
 
         Runnable load_task = setupMainMenu(network, gui, true);
 
@@ -603,7 +602,7 @@ public final class Renderer implements AutoCloseable {
 
                 if (first_frame || (window.isVisible() && isActive)) {
                     runGameLoop(network, gui);
-                    getAudioManager().update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+                    audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
                     getAudioManager().setMasterGain(1f);
                     if (reset_keyboard) {
                         reset_keyboard = false;
@@ -684,6 +683,7 @@ public final class Renderer implements AutoCloseable {
             }
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed to setup file logging", e);
+            throw e;
         }
     }
 
@@ -775,6 +775,11 @@ public final class Renderer implements AutoCloseable {
 
     public void cleanup() {
         logger.info("Cleaning up...");
+        logger.info("closing ambient audio");
+        if (null != ambient) {
+            ambient.close();
+            ambient = null;
+        }
         logger.info("Disposing LocalEventQueue...");
         getEventQueue().close();
         destroyNative();
@@ -848,7 +853,10 @@ public final class Renderer implements AutoCloseable {
         Resources.clearResources();
 
         logger.info("Closing AudioManager...");
-        getRenderer().getAudioManager().close();
+        var audioManager = getRenderer().audioManager;
+        if (null != audioManager) {
+            audioManager.close();
+        }
 
         logger.info("Renderer Closed.");
     }
@@ -876,7 +884,6 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initNative(boolean crashed) throws Exception {
-        // Currently only OpenAL is supported
         this.audioManager = new OpenALManager(getSettings().headphone_mode)
                 .setSfxGain(getSettings().sound_gain)
                 .setMusicGain(getSettings().music_gain)
@@ -966,7 +973,7 @@ public final class Renderer implements AutoCloseable {
         initGL();
         initVisibleGL();
 
-        getAudioManager().startSources();
+        startSound();
     }
 
     public void toggleSound() {
@@ -987,7 +994,7 @@ public final class Renderer implements AutoCloseable {
         assert null != music_path && music_path.isStreaming() : "Inappropriate music file";
         var params = new AudioParameters(music_path, Assets.AUDIO_RANK_MUSIC,
                 Assets.AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
-                1f, true, true);
+                1f, true, true, false);
         music = getAudioManager().newAudio(0f, 0f, 0f, params);
     }
 

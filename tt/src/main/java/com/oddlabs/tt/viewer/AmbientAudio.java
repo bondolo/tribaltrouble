@@ -1,21 +1,14 @@
 package com.oddlabs.tt.viewer;
 
 import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.audio.openal.EFXManager;
-import com.oddlabs.tt.audio.openal.OpenALManager;
+import com.oddlabs.tt.audio.ReverbType;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
-import com.oddlabs.tt.landscape.AbstractTreeGroup;
-import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.landscape.TreeGroup;
-import com.oddlabs.tt.landscape.TreeLeaf;
-import com.oddlabs.tt.landscape.TreeSupply;
-import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.landscape.*;
+import com.oddlabs.tt.util.BoundingBox;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 
@@ -25,7 +18,7 @@ import java.util.logging.Logger;
  * Coordinates the playback of ambient environmental sounds, providing
  * realistic reverb and attenuation based on camera proximity and terrain features.
  */
-public final class AmbientAudio {
+public final class AmbientAudio implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(AmbientAudio.class.getSimpleName());
     /** How many trees make a forest */
     private static final int TREES_FOREST_THRESHOLD = 10;
@@ -33,16 +26,17 @@ public final class AmbientAudio {
     private static final AudioParameters AMBIENT_FOREST = new AudioParameters(
             Assets.SFX_AMBIENT_FOREST, Assets.AUDIO_RANK_AMBIENT,
             Assets.AUDIO_DISTANCE_AMBIENT, Assets.AUDIO_GAIN_AMBIENT_FOREST, Assets.AUDIO_RADIUS_AMBIENT_FOREST,
-            1f, true, true);
+            1f, true, true, true);
     private static final AudioParameters AMBIENT_BEACH = new AudioParameters(
             Assets.SFX_AMBIENT_BEACH, Assets.AUDIO_RANK_AMBIENT,
             Assets.AUDIO_DISTANCE_AMBIENT, Assets.AUDIO_GAIN_AMBIENT_BEACH, Assets.AUDIO_RADIUS_AMBIENT_BEACH,
-            1f, true, true);
+            1f, true, true, true);
     private static final AudioParameters AMBIENT_WIND = new AudioParameters(
             Assets.SFX_AMBIENT_WIND, Assets.AUDIO_RANK_AMBIENT,
             Assets.AUDIO_DISTANCE_AMBIENT, Assets.AUDIO_GAIN_AMBIENT_WIND, Assets.AUDIO_RADIUS_AMBIENT_WIND,
-            1f, true, true);
+            1f, true, true, true);
 
+    private final @NonNull AudioManager audioManager;
     private final @NonNull AudioPlayer ambient_forest;
     private final @NonNull AudioPlayer ambient_beach;
     private final @NonNull AudioPlayer ambient_wind;
@@ -51,10 +45,11 @@ public final class AmbientAudio {
     private final Vector3f s = new Vector3f();
     private final Vector3f u = new Vector3f();
 
-    public AmbientAudio(@NonNull AudioImplementation audio_implementation) {
-        ambient_forest = audio_implementation.newAudio(10000f, 10000f, 10000f, AMBIENT_FOREST).registerAmbient();
-        ambient_beach = audio_implementation.newAudio(10000f, 10000f, 10000f, AMBIENT_BEACH).registerAmbient();
-        ambient_wind = audio_implementation.newAudio(10000f, 10000f, 10000f, AMBIENT_WIND).registerAmbient();
+    public AmbientAudio(@NonNull AudioManager audioManager) {
+        this.audioManager = audioManager;
+        ambient_forest = audioManager.newAudio(10000f, 10000f, 10000f, AMBIENT_FOREST);
+        ambient_beach = audioManager.newAudio(10000f, 10000f, 10000f, AMBIENT_BEACH);
+        ambient_wind = audioManager.newAudio(10000f, 10000f, 10000f, AMBIENT_WIND);
     }
 
     private static int countTrees(@NonNull AbstractTreeGroup node, float x, float y, float radiusSq, int threshold,
@@ -95,20 +90,20 @@ public final class AmbientAudio {
         return currentCount;
     }
 
-    private static boolean intersects(com.oddlabs.tt.util.@NonNull BoundingBox box, float x, float y, float radiusSq) {
+    private static boolean intersects(@NonNull BoundingBox box, float x, float y, float radiusSq) {
         float dx = x - Math.max(box.bmin_x, Math.min(x, box.bmax_x));
         float dy = y - Math.max(box.bmin_y, Math.min(y, box.bmax_y));
         return (dx * dx + dy * dy) < radiusSq;
     }
 
-    public void stop() {
-        ambient_forest.stop().removeAmbient();
-        ambient_beach.stop().removeAmbient();
-        ambient_wind.stop().removeAmbient();
+    @Override
+    public void close() {
+        ambient_forest.stop();
+        ambient_beach.stop();
+        ambient_wind.stop();
     }
 
     public void updateSoundListener(@NonNull CameraState camera, @NonNull HeightMap heightmap) {
-        AudioManager audioManager = Renderer.getRenderer().getAudioManager();
         if (!audioManager.isSfxEnabled()) {
             return;
         }
@@ -143,46 +138,43 @@ public final class AmbientAudio {
         ambient_wind.setPosition(0f, 0f, Math.max(0f, 50f + GameCamera.MAX_Z - camera.getCurrentZ()));
         ambient_wind.setGain(Assets.AUDIO_GAIN_AMBIENT_WIND);
 
-        if (Renderer.getRenderer().getAudioManager() instanceof OpenALManager alManager) {
-            EFXManager efx = alManager.getEfxManager();
-            if (efx.isSupported()) {
-                float camZ = camera.getCurrentZ();
-                float camX = camera.getCurrentX();
-                float camY = camera.getCurrentY();
-                float hCurrent = heightmap.getNearestHeight(camX, camY);
+        if (audioManager.isEFXSupported()) {
+            float camZ = camera.getCurrentZ();
+            float camX = camera.getCurrentX();
+            float camY = camera.getCurrentY();
+            float hCurrent = heightmap.getNearestHeight(camX, camY);
 
-                if (camZ < heightmap.getSeaLevelMeters()) {
-                    efx.setReverb(EFXManager.ReverbType.UNDERWATER);
+            if (camZ < heightmap.getSeaLevelMeters()) {
+                audioManager.setReverb(ReverbType.UNDERWATER);
+            } else {
+                float heightAboveGround = camZ - hCurrent;
+
+                // Check for forest density
+                World world = heightmap.getWorld();
+                int treeCount = countTrees(world.getTreeRoot(), camX, camY, 25f * 25f, TREES_FOREST_THRESHOLD, 0);
+
+                if (treeCount >= TREES_FOREST_THRESHOLD) {
+                    // Forest reverb: Blend from FOREST (fully active at 15m) to NONE (fully silent at 30m)
+                    float blend = Math.clamp((30.0f - heightAboveGround) / 15.0f, 0f, 1f);
+                    audioManager.setReverb(ReverbType.NONE, ReverbType.FOREST, blend);
                 } else {
-                    float heightAboveGround = camZ - hCurrent;
+                    // Check for valley/enclosure by sampling terrain height around camera
+                    float hN = heightmap.getNearestHeight(camX, camY + CANYON_PROXIMITY_DISTANCE);
+                    float hS = heightmap.getNearestHeight(camX, camY - CANYON_PROXIMITY_DISTANCE);
+                    float hE = heightmap.getNearestHeight(camX + CANYON_PROXIMITY_DISTANCE, camY);
+                    float hW = heightmap.getNearestHeight(camX - CANYON_PROXIMITY_DISTANCE, camY);
 
-                    // Check for forest density
-                    World world = heightmap.getWorld();
-                    int treeCount = countTrees(world.getTreeRoot(), camX, camY, 25f * 25f, TREES_FOREST_THRESHOLD, 0);
+                    float avgSurround = (hN + hS + hE + hW) * 0.25f;
+                    float valleyDepth = avgSurround - hCurrent;
 
-                    if (treeCount >= TREES_FOREST_THRESHOLD) {
-                        // Forest reverb: Blend from FOREST (fully active at 15m) to NONE (fully silent at 30m)
-                        float blend = Math.clamp((30.0f - heightAboveGround) / 15.0f, 0f, 1f);
-                        efx.setReverb(EFXManager.ReverbType.NONE, EFXManager.ReverbType.FOREST, blend);
+                    if (valleyDepth > 8.0f) {
+                        // Valley reverb: Blend from VALLEY (fully active at 8m) to NONE (fully silent at 16m)
+                        float blend = Math.clamp((16.0f - heightAboveGround) / 8.0f, 0f, 1f);
+                        audioManager.setReverb(ReverbType.NONE, ReverbType.VALLEY, blend);
                     } else {
-                        // Check for valley/enclosure by sampling terrain height around camera
-                        float hN = heightmap.getNearestHeight(camX, camY + CANYON_PROXIMITY_DISTANCE);
-                        float hS = heightmap.getNearestHeight(camX, camY - CANYON_PROXIMITY_DISTANCE);
-                        float hE = heightmap.getNearestHeight(camX + CANYON_PROXIMITY_DISTANCE, camY);
-                        float hW = heightmap.getNearestHeight(camX - CANYON_PROXIMITY_DISTANCE, camY);
-
-                        float avgSurround = (hN + hS + hE + hW) * 0.25f;
-                        float valleyDepth = avgSurround - hCurrent;
-
-                        if (valleyDepth > 8.0f) {
-                            // Valley reverb: Blend from VALLEY (fully active at 8m) to NONE (fully silent at 16m)
-                            float blend = Math.clamp((16.0f - heightAboveGround) / 8.0f, 0f, 1f);
-                            efx.setReverb(EFXManager.ReverbType.NONE, EFXManager.ReverbType.VALLEY, blend);
-                        } else {
-                            // Open Plains (Generic) reverb: Blend from GENERIC (fully active at 10m) to NONE (fully silent at 20m)
-                            float blend = Math.clamp((20.0f - heightAboveGround) / 10.0f, 0f, 1f);
-                            efx.setReverb(EFXManager.ReverbType.NONE, EFXManager.ReverbType.GENERIC, blend);
-                        }
+                        // Open Plains (Generic) reverb: Blend from GENERIC (fully active at 10m) to NONE (fully silent at 20m)
+                        float blend = Math.clamp((20.0f - heightAboveGround) / 10.0f, 0f, 1f);
+                        audioManager.setReverb(ReverbType.NONE, ReverbType.GENERIC, blend);
                     }
                 }
             }
