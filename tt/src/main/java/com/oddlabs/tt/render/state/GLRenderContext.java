@@ -14,6 +14,8 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static com.oddlabs.tt.util.GLUtils.checkAndThrow;
@@ -66,6 +68,11 @@ public final class GLRenderContext implements RenderContext {
     private int globalUbo = 0;
     private static final int GLOBAL_UBO_BINDING = 0;
 
+    private record FboCacheEntry(boolean hasAttachment0, boolean hasAttachment1) {
+    }
+
+    private final Map<@NonNull Integer, @NonNull FboCacheEntry> fboCache = new HashMap<>();
+
     public GLRenderContext() {
         Arrays.fill(boundTextures, -1);
         Arrays.fill(boundBuffers, -1);
@@ -96,6 +103,7 @@ public final class GLRenderContext implements RenderContext {
 
     // Resets shadow state, forcing next set* call to talk to GL
     public void reset() {
+        fboCache.clear();
         currentBlend = BlendMode.NONE;
         currentDepth = DepthMode.NONE;
         currentCull = CullMode.NONE;
@@ -493,6 +501,7 @@ public final class GLRenderContext implements RenderContext {
 
     @Override
     public void invalidateFramebuffer(int handle) {
+        fboCache.remove(handle);
         if (currentFBO == handle) {
             currentFBO = -1;
             maskState = GLState.UNKNOWN;
@@ -531,31 +540,39 @@ public final class GLRenderContext implements RenderContext {
             return;
         }
 
+        FboCacheEntry entry = fboCache.get(currentFBO);
+        if (entry == null) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                stack.push();
+                IntBuffer params = stack.mallocInt(1);
+
+                // Probing for color attachments. We initialize params to GL_NONE to be safe.
+                params.put(0, GL11.GL_NONE);
+                GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0,
+                        GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
+                boolean hasAttachment0 = params.get(0) != GL11.GL_NONE;
+
+                params.put(0, GL11.GL_NONE);
+                GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1,
+                        GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
+                boolean hasAttachment1 = params.get(0) != GL11.GL_NONE;
+                stack.pop();
+
+                entry = new FboCacheEntry(hasAttachment0, hasAttachment1);
+                fboCache.put(currentFBO, entry);
+            }
+        }
+
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            stack.push();
-            IntBuffer params = stack.mallocInt(1);
-
-            // Probing for color attachments. We initialize params to GL_NONE to be safe.
-            params.put(0, GL11.GL_NONE);
-            GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0,
-                    GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
-            var hasAttachment0 = params.get(0) != GL11.GL_NONE;
-
-            params.put(0, GL11.GL_NONE);
-            GL30.glGetFramebufferAttachmentParameteriv(GL30.GL_DRAW_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1,
-                    GL30.GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, params);
-            var hasAttachment1 = params.get(0) != GL11.GL_NONE;
-            stack.pop();
-
-            var buffers = mask && hasAttachment0 && hasAttachment1
+            var buffers = mask && entry.hasAttachment0 && entry.hasAttachment1
                     ? stack.ints(GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1)
-                    : stack.ints(hasAttachment0 ? GL30.GL_COLOR_ATTACHMENT0 : GL11.GL_NONE);
+                    : stack.ints(entry.hasAttachment0 ? GL30.GL_COLOR_ATTACHMENT0 : GL11.GL_NONE);
 
             // Clear any existing errors before the critical call to isolate the failure
             GL11.glGetError();
             GL20.glDrawBuffers(buffers);
-            checkAndThrow("glDrawBuffers(" + mask + ") FBO=" + currentFBO + " (att0=" + hasAttachment0 + ", att1="
-                    + hasAttachment1 + ")");
+            checkAndThrow("glDrawBuffers(" + mask + ") FBO=" + currentFBO + " (att0=" + entry.hasAttachment0
+                    + ", att1=" + entry.hasAttachment1 + ")");
         }
         maskState = newState;
     }

@@ -21,9 +21,6 @@ import org.lwjgl.opengl.GL33;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
 
 /**
  * Renders textured decals such as dynamic shadows and selection halos using hardware instancing.
@@ -43,8 +40,7 @@ public final class DecalRenderer implements AutoCloseable {
     private final @NonNull FloatBuffer instanceBuffer;
 
     private int instanceCount = 0;
-    private final IdentityHashMap<Texture, Integer> textureToSlot = new IdentityHashMap<>();
-    private final List<Texture> activeTextures = new ArrayList<>(14);
+    private final TextureBatcher textureBatcher = new TextureBatcher(14);
 
     private static final int GRID_SIZE = 32; // 32x32 grid
     private static final int VERTEX_COUNT = GRID_SIZE * GRID_SIZE;
@@ -135,8 +131,7 @@ public final class DecalRenderer implements AutoCloseable {
 
     public void clear() {
         instanceCount = 0;
-        textureToSlot.clear();
-        activeTextures.clear();
+        textureBatcher.clear();
         instanceBuffer.clear();
     }
 
@@ -192,20 +187,10 @@ public final class DecalRenderer implements AutoCloseable {
      */
     public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size,
             Color.@NonNull Linear color, float patternVal, float shadowOffsetScale, boolean radial) {
-        Integer slot = textureToSlot.get(texture);
-        if (slot == null) {
-            if (activeTextures.size() >= 14 || instanceCount >= MAX_INSTANCES) {
-                flush(context);
-            }
-            slot = activeTextures.size();
-            activeTextures.add(texture);
-            textureToSlot.put(texture, slot);
-        } else if (instanceCount >= MAX_INSTANCES) {
+        int slot = textureBatcher.getOrAssignSlot(texture);
+        if (slot == -1 || instanceCount >= MAX_INSTANCES) {
             flush(context);
-            // After flush, activeTextures is empty, so we must re-add this texture
-            slot = 0;
-            activeTextures.add(texture);
-            textureToSlot.put(texture, slot);
+            slot = textureBatcher.getOrAssignSlot(texture);
         }
 
         instanceBuffer.put(x);
@@ -225,10 +210,7 @@ public final class DecalRenderer implements AutoCloseable {
     private void flush(@NonNull RenderContext context) {
         if (instanceCount == 0) return;
 
-        // Bind current batch of textures
-        for (int i = 0; i < activeTextures.size(); i++) {
-            context.setTexture(i + 2, activeTextures.get(i).getHandle());
-        }
+        textureBatcher.bindTextures(context, 2);
 
         vao.bind();
         instanceVBO.bind(context);
@@ -241,8 +223,7 @@ public final class DecalRenderer implements AutoCloseable {
 
         // Reset for next batch
         instanceCount = 0;
-        textureToSlot.clear();
-        activeTextures.clear();
+        textureBatcher.clear();
         instanceBuffer.clear();
     }
 

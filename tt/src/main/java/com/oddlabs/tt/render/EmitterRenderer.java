@@ -22,7 +22,6 @@ import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +61,7 @@ public final class EmitterRenderer implements AutoCloseable {
      * Grouping by blend modes. Inside each blend mode group, we will multi-texture batch.
      */
     private final Map<@NonNull BatchKey, @NonNull List<@NonNull BatchEntry<?>>> batches = new LinkedHashMap<>();
+    private final TextureBatcher textureBatcher = new TextureBatcher(14);
 
     public EmitterRenderer() {
         int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
@@ -180,49 +180,43 @@ public final class EmitterRenderer implements AutoCloseable {
             shader.setUniform(ParticleShader.Uniforms.IS_ADDITIVE, key.dstBlend() == GL11.GL_ONE ? 1.0f : 0.0f);
 
             var batchEntries = entry.getValue();
-            IdentityHashMap<Texture, Integer> textureToSlot = new IdentityHashMap<>();
-            List<Texture> activeTextures = new ArrayList<>(14);
 
             int startEntry = 0;
             while (startEntry < batchEntries.size()) {
-                activeTextures.clear();
-                textureToSlot.clear();
+                textureBatcher.clear();
                 particle_buffer.clear();
                 int particleCount = 0;
 
                 int entryIdx = startEntry;
                 while (entryIdx < batchEntries.size()) {
                     var batchEntry = batchEntries.get(entryIdx);
-                    Integer slot = textureToSlot.get(batchEntry.texture);
-                    if (slot == null) {
-                        if (activeTextures.size() >= 14) break;
-                        slot = activeTextures.size();
-                        activeTextures.add(batchEntry.texture);
-                        textureToSlot.put(batchEntry.texture, slot);
+                    int slot = textureBatcher.getOrAssignSlot(batchEntry.texture);
+                    if (slot == -1) {
+                        break;
                     }
 
-                    particleCount = processBatchEntry(batchEntry, (float) slot, particleCount, context, activeTextures);
+                    particleCount = processBatchEntry(batchEntry, (float) slot, particleCount, context,
+                            floatsPerParticle);
                     entryIdx++;
                 }
 
-                bindAndDraw(context, activeTextures, particleCount);
+                bindAndDraw(context, particleCount);
                 startEntry = entryIdx;
             }
         }
     }
 
     private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, float slot, int particleCount,
-            @NonNull RenderContext context, List<Texture> activeTextures) {
+            @NonNull RenderContext context, int floatsPerParticle) {
         var particles = batch.particles();
         var emitter = batch.emitter();
-        int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
 
         // Iterate backwards as per original logic
         for (int i = particles.size() - 1; i >= 0; i--) {
             if (particleCount >= MAX_PARTICLES || particle_buffer.remaining() < floatsPerParticle) {
                 // This internal flush is tricky because it might split an entry's particles.
                 // But we must flush if buffer is full.
-                bindAndDraw(context, activeTextures, particleCount);
+                bindAndDraw(context, particleCount);
                 particle_buffer.clear();
                 particleCount = 0;
             }
@@ -232,13 +226,10 @@ public final class EmitterRenderer implements AutoCloseable {
         return particleCount;
     }
 
-    private void bindAndDraw(@NonNull RenderContext context, List<Texture> activeTextures, int particleCount) {
+    private void bindAndDraw(@NonNull RenderContext context, int particleCount) {
         if (particleCount == 0) return;
 
-        // Bind textures
-        for (int i = 0; i < activeTextures.size(); i++) {
-            context.setTexture(i + 2, activeTextures.get(i).getHandle());
-        }
+        textureBatcher.bindTextures(context, 2);
 
         flush(particleCount);
     }
