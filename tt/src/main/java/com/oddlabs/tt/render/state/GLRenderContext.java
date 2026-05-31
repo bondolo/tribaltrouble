@@ -228,7 +228,8 @@ public final class GLRenderContext implements RenderContext {
     @Override
     public void setActiveTexture(int unit) {
         if (unit < 0 || unit >= boundTextures.length) {
-            throw new IllegalArgumentException("Texture unit " + unit + " is out of bounds (max " + boundTextures.length + ").");
+            throw new IllegalArgumentException("Texture unit " + unit + " is out of bounds (max " + boundTextures.length
+                    + ").");
         }
         if (activeTextureUnit != unit) {
             GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
@@ -239,7 +240,8 @@ public final class GLRenderContext implements RenderContext {
     @Override
     public void setTexture(int unit, int textureHandle) {
         if (unit < 0 || unit >= boundTextures.length) {
-            throw new IllegalArgumentException("Texture unit " + unit + " is out of bounds (max " + boundTextures.length + ").");
+            throw new IllegalArgumentException("Texture unit " + unit + " is out of bounds (max " + boundTextures.length
+                    + ").");
         }
 
         if (boundTextures[unit] != textureHandle) {

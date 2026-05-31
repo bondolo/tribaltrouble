@@ -42,8 +42,8 @@ public final class Landscape {
             TerrainType.NATIVE, new Color.Standard(0xFF_A5_BF_FF),
             TerrainType.VIKING, new Color.Standard(0xFF_33_66_8C)
     ));
-    private static final float NATIVE_FOG_DENSITY = 0.0012f;
-    private static final float VIKING_FOG_DENSITY = 0.0016f;
+    private static final float NATIVE_FOG_DENSITY = 0.001f;
+    private static final float VIKING_FOG_DENSITY = 0.0015f;
     private static final float NATIVE_FOG_HEIGHT = 1.2f;
     private static final float VIKING_FOG_HEIGHT = 1.4f;
 
