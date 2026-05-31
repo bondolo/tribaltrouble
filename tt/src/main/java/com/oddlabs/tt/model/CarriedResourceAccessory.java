@@ -42,4 +42,9 @@ public final class CarriedResourceAccessory implements StaticAccessory {
         // Carried resources currently use the parent's exact transform in the old code.
         // We can add offsets here later if needed.
     }
+
+    @Override
+    public int getAnimation() {
+        return unit.getAnimation();
+    }
 }

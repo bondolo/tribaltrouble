@@ -4,7 +4,6 @@ import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeTargetRespond;
-import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.AccessorizableModel;
 import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Building;
@@ -22,12 +21,10 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.StaticAccessory;
 import com.oddlabs.tt.model.SupplyModel;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.UnitSupplyContainer;
 import com.oddlabs.tt.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.model.weapon.RotatingThrowingWeapon;
 import com.oddlabs.tt.model.weapon.SonicBlast;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.particle.Emitter;
 import com.oddlabs.tt.particle.Lightning;
 import com.oddlabs.tt.particle.SonicBlastEffect;
@@ -42,11 +39,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.render.state.ScopedState;
 
 /**
  * Manages the rendering state and visit logic for world entities and their accessories.
@@ -195,22 +189,7 @@ final class RenderState {
         return visible_override;
     }
 
-    private static final ModelVisitor<Unit> unit_visitor = new SelectableVisitor<>() {
-        @Override
-        public void markDetailPolygon(@NonNull ElementRenderState<Unit> render_state, @NonNull PolyDetail detail) {
-            Unit unit = render_state.model;
-            super.markDetailPolygon(render_state, detail);
-            UnitSupplyContainer supply_container = unit.getSupplyContainer();
-            if (!render_state.render_state.isPicking() && unit.getAbilities().hasAbilities(Abilities.BUILD)
-                    && supply_container.getSupplyType() != null) {
-                if (supply_container.getNumSupplies() > 0) {
-                    SpriteRenderer supply_sprite = render_state.getRenderer(supply_container.getSupplySpriteRenderer(
-                            supply_container.getSupplyType()));
-                    supply_sprite.addToRenderList(detail, render_state, false);
-                }
-            }
-        }
-    };
+    private static final ModelVisitor<Unit> unit_visitor = new SelectableVisitor<>();
 
     private void visitUnit(final @NonNull Unit unit) {
         float z_offset = getVisuallyCorrectHeight(unit.getPositionX(), unit.getPositionY()) + unit.getOffsetZ();
