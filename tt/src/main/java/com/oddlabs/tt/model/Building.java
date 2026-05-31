@@ -598,8 +598,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    public float getShadowDiameter() {
-        return getRenderLevel() == BuildState.START ? 0.0f : super.getShadowDiameter();
+    public float getShadowOpacity() {
+        return getRenderLevel() == BuildState.START ? 0.0f : super.getShadowOpacity();
     }
 
     @Override

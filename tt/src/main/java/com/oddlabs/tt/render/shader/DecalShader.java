@@ -26,6 +26,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
         public static final String INSTANCE_OFFSET_SCALE = "in_InstanceOffsetScale";
         public static final String INSTANCE_TEX_SLOT = "in_InstanceTextureSlot";
         public static final String INSTANCE_FLAGS = "in_InstanceFlags";
+        public static final String INSTANCE_SHADOW_OPACITY = "in_InstanceShadowOpacity";
 
         private Attributes() {
         }
@@ -44,6 +45,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     layout(location = 7) in float in_InstanceOffsetScale; // Offset scale
                     layout(location = 8) in float in_InstanceTextureSlot; // Texture unit (0..15)
                     layout(location = 9) in float in_InstanceFlags; // bit 0: radial
+                    layout(location = 10) in float in_InstanceShadowOpacity;
 
                     uniform mat4 u_modelViewMatrix;
                     uniform float u_WorldSize;
@@ -56,6 +58,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     out float v_Pattern;
                     flat out int v_TexSlot;
                     flat out int v_Flags;
+                    out float v_ShadowOpacity;
                     out float v_fogDist;
 
                     void main() {
@@ -79,6 +82,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         v_Pattern = in_InstancePattern;
                         v_TexSlot = int(in_InstanceTextureSlot + 0.5);
                         v_Flags = int(in_InstanceFlags + 0.5);
+                        v_ShadowOpacity = in_InstanceShadowOpacity;
 
                         // Shadow offset in local decal space (±0.5 = quad edge = one radius).
                         // The shadow sample is shifted by this amount; the ring sample is not.
@@ -106,6 +110,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     in float v_Pattern;
                     flat in int v_TexSlot;
                     flat in int v_Flags;
+                    in float v_ShadowOpacity;
                     out float v_fogDist;
 
                     layout(location = 0) out vec4 out_FragColor;
@@ -171,7 +176,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
 
                             // Composition: Apply Ring OVER Shadow
                             float a_r = ringAlpha * 0.8 * v_Color.a; // 80% opacity for selection rings
-                            float a_s = shadowAlpha * v_Color.a;     // 100% opacity for unit shadows
+                            float a_s = shadowAlpha * v_ShadowOpacity;     // opacity scaled by shadow opacity
 
                             float finalAlpha = a_r + a_s * (1.0 - a_r);
 

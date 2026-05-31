@@ -36,7 +36,7 @@ public final class DecalRenderer implements AutoCloseable {
     public static final int HALO_LUT_RESOLUTION = 256;
 
     private static final int MAX_INSTANCES = 2048;
-    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1 + 1 + 1 + 1; // Pos(2)+Size(1)+Color(4)+Pat(1)+Off(1)+Slot(1)+Flags(1)
+    private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1 + 1 + 1 + 1 + 1; // Pos(2)+Size(1)+Color(4)+Pat(1)+Off(1)+Slot(1)+Flags(1)+ShadowOp(1)
     private final @NonNull FloatBuffer instanceBuffer;
 
     private int instanceCount = 0;
@@ -126,6 +126,11 @@ public final class DecalRenderer implements AutoCloseable {
         GL20.glVertexAttribPointer(9, 1, GL11.GL_FLOAT, false, stride, 10 * Float.BYTES);
         GL33.glVertexAttribDivisor(9, 1);
 
+        // in_InstanceShadowOpacity (Loc 10, 1 float)
+        GL20.glEnableVertexAttribArray(10);
+        GL20.glVertexAttribPointer(10, 1, GL11.GL_FLOAT, false, stride, 11 * Float.BYTES);
+        GL33.glVertexAttribDivisor(10, 1);
+
         this.vao.unbind();
     }
 
@@ -186,7 +191,7 @@ public final class DecalRenderer implements AutoCloseable {
      * Draws the specified decal texture with the provided tint and pattern at the specified position and size.
      */
     public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size,
-            Color.@NonNull Linear color, float patternVal, float shadowOffsetScale, boolean radial) {
+            Color.@NonNull Linear color, float patternVal, float shadowOffsetScale, boolean radial, float shadowOpacity) {
         int slot = textureBatcher.getOrAssignSlot(texture);
         if (slot == -1 || instanceCount >= MAX_INSTANCES) {
             flush(context);
@@ -204,6 +209,7 @@ public final class DecalRenderer implements AutoCloseable {
         instanceBuffer.put(shadowOffsetScale);
         instanceBuffer.put((float) slot);
         instanceBuffer.put(radial ? 1.0f : 0.0f);
+        instanceBuffer.put(shadowOpacity);
         instanceCount++;
     }
 

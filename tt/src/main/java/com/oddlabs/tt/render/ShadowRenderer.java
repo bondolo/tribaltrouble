@@ -53,27 +53,29 @@ abstract class ShadowRenderer {
 
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             @NonNull Shadowable model) {
-        if (currentTexture != null) {
-            Color.Linear c = new Color.Linear(color.r(), color.g(), color.b(),
-                    color.a() * model.getShadowOpacity());
+        if (currentTexture != null && sharedRenderer != null) {
+            Color.Linear c = new Color.Linear(color.r(), color.g(), color.b(), color.a());
             renderShadow(context, renderer, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(), c,
-                    model.getShadowVerticalCenter());
+                    model.getShadowVerticalCenter(), model.getShadowOpacity());
         }
     }
 
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             float f_x, float f_y, float shadow_size) {
-        renderShadow(context, renderer, f_x, f_y, shadow_size, color, 0.6f);
+        renderShadow(context, renderer, f_x, f_y, shadow_size, color, 0.6f, 1.0f);
     }
 
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            float f_x, float f_y, float shadow_size, Color.@NonNull Linear color, float shadowOffsetScale) {
+            float f_x, float f_y, float shadow_size, Color.@NonNull Linear color, float shadowOffsetScale,
+            float shadowOpacity) {
         if (currentTexture != null && sharedRenderer != null) {
             // Expand the quad for radial halos to provide room for the offset shadow blob and animation padding.
             float size = radial ? shadow_size * 2.5f : shadow_size;
-            sharedRenderer.draw(context, currentTexture, f_x, f_y, size, color, patternVal, shadowOffsetScale, radial);
+            sharedRenderer.draw(context, currentTexture, f_x, f_y, size, color, patternVal, shadowOffsetScale, radial,
+                    shadowOpacity);
         }
     }
+
 
     public void close() {
     }
