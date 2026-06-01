@@ -4,6 +4,7 @@ import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.model.AbstractElementNode;
+import com.oddlabs.tt.model.Plants;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.SupplyManager;
@@ -20,6 +21,8 @@ import com.oddlabs.tt.resource.WorldInfo;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
@@ -53,6 +56,8 @@ public final class World {
     private final @NonNull LandscapeResources landscape_resources;
     private final @NonNull FogInfo fog;
     private final Landscape.@NonNull TerrainType terrain;
+    private final float @NonNull [] @NonNull [] plantCoordinates;
+    private final List<@NonNull Plants> activePlants = new ArrayList<>();
 
     private int global_checksum;
     private int gamespeed;
@@ -70,10 +75,11 @@ public final class World {
     public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation,
             @NonNull LandscapeResources landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
-            @NonNull WorldInfo world_info, @NonNull PlayerInfo @NonNull [] player_infos) {
+            @NonNull WorldInfo world_info, @NonNull PlayerInfo @NonNull [] player_infos,
+            boolean insertPlants) {
         ProgressForm.progress();
         World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener,
-                world_params, world_info, player_infos);
+                world_params, world_info, player_infos, insertPlants);
         ProgressForm.progress();
         ProgressForm.progress(1 / 5f);
         ProgressForm.progress();
@@ -154,11 +160,12 @@ public final class World {
     private World(@NonNull AudioImplementation audio_implementation, @NonNull LandscapeResources landscape_resources,
             @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
             @NonNull WorldParameters world_params, @NonNull WorldInfo world_info,
-            @NonNull PlayerInfo @NonNull [] player_infos) {
+            @NonNull PlayerInfo @NonNull [] player_infos, boolean insertPlants) {
         IO.println("****************** Generating landscape at tick " + Renderer.getRenderer().getEventQueue()
                 .getHighPrecisionManager().getTick() + " ********************");
         this.fog = world_info.fog_info();
         this.terrain = world_info.terrain();
+        this.plantCoordinates = world_info.plants();
         this.landscape_resources = landscape_resources;
         this.races_resources = races_resources;
         this.audio_impl = audio_implementation;
@@ -191,7 +198,9 @@ public final class World {
         this.patch_root = new PatchGroup(this);
         this.tree_root = AbstractTreeGroup.newRoot(this, world_info.trees(), world_info.palm_trees(), terrain);
         this.element_root = AbstractElementNode.newRoot(world);
-        AbstractElementNode.buildSupplies(this, world_info.iron(), world_info.rocks(), world_info.plants(), terrain);
+        AbstractElementNode.buildSupplies(this, world_info.iron(), world_info.rocks(), world_info.plants(), terrain,
+                insertPlants);
+        activeWorlds.add(new java.lang.ref.WeakReference<>(this));
     }
 
     public @NonNull AbstractElementNode getElementRoot() {
@@ -240,5 +249,44 @@ public final class World {
 
     public @NonNull Random getRandom() {
         return random;
+    }
+
+    public void registerPlant(@NonNull Plants plant) {
+        synchronized (activePlants) {
+            activePlants.add(plant);
+        }
+    }
+
+    private void removeAllPlants() {
+        synchronized (activePlants) {
+            activePlants.forEach(Plants::remove);
+            activePlants.clear();
+        }
+    }
+
+    public void setPlantsDetail(boolean insertPlants) {
+        synchronized (activePlants) {
+            if (insertPlants) {
+                if (activePlants.isEmpty()) {
+                    AbstractElementNode.addPlants(this, plantCoordinates, terrain);
+                }
+            } else {
+                removeAllPlants();
+            }
+        }
+    }
+
+    private static final java.util.List<java.lang.ref.WeakReference<World>> activeWorlds
+            = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public static void updatePlantsDetail(boolean insertPlants) {
+        for (var ref : activeWorlds) {
+            World w = ref.get();
+            if (w != null) {
+                w.setPlantsDetail(insertPlants);
+            } else {
+                activeWorlds.remove(ref);
+            }
+        }
     }
 }

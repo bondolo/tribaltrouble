@@ -76,10 +76,13 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
     }
 
     public static void buildSupplies(@NonNull World world, @NonNull List<int[]> iron_positions, @NonNull List<
-            int[]> rock_positions, float @NonNull [] @NonNull [] plants, Landscape.@NonNull TerrainType terrain) {
+            int[]> rock_positions, float @NonNull [] @NonNull [] plants, Landscape.@NonNull TerrainType terrain,
+            boolean insertPlants) {
         buildRockSupplies(world, rock_positions);
         buildIronSupplies(world, iron_positions);
-        addPlants(world, plants, terrain);
+        if (insertPlants) {
+            addPlants(world, plants, terrain);
+        }
     }
 
     private static void buildRockSupplies(@NonNull World world, @NonNull List<int[]> positions) {
@@ -114,7 +117,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         }
     }
 
-    private static void addPlants(@NonNull World world, float @NonNull [] @NonNull [] plants,
+    public static void addPlants(@NonNull World world, float @NonNull [] @NonNull [] plants,
             Landscape.@NonNull TerrainType terrain) {
         int num_plants = 0;
         for (int t = 0; t < plants.length; t++) {

@@ -1,7 +1,9 @@
 package com.oddlabs.tt.form;
 
+import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.*;
 import com.oddlabs.tt.guievent.RowListener;
+import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.jspecify.annotations.NonNull;
@@ -102,6 +104,7 @@ public class GraphicsPanel extends Panel {
             int slider_value = pm_detail.getChosenItemIndex();
             if (initial_detail_value != slider_value) {
                 Renderer.getRenderer().getSettings().graphic_detail = slider_value;
+                World.updatePlantsDetail(Globals.INSERT_PLANTS[slider_value]);
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("change_next_run")));
             }
         });
