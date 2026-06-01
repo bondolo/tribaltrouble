@@ -148,6 +148,6 @@ public final class Stun extends PointEmitterModel implements Magic {
     @Override
     public void interrupt() {
         emitter.done();
-        sound.stop(.3f, 1.0f);
+        sound.stop(10.0f);
     }
 }

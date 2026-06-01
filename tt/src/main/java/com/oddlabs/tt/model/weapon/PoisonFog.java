@@ -80,7 +80,7 @@ public final class PoisonFog implements Magic {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         }
         if (first_run) {
-            bubbling_sound.stop(.2f, 1.0f);
+            bubbling_sound.stop(15.0f);
             first_run = false;
         }
 
@@ -140,6 +140,6 @@ public final class PoisonFog implements Magic {
 
     @Override
     public void interrupt() {
-        bubbling_sound.stop(.2f, 1.0f);
+        bubbling_sound.stop(15.0f);
     }
 }

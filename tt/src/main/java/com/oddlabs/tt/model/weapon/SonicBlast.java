@@ -10,7 +10,6 @@ import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SpriteKey;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -99,8 +98,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
             first_ring_sent = true;
 
             owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, BLAST_AUDIO);
-            lur.stop(.3f, Renderer.getRenderer().getSettings().sound_gain);
-            rumble.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
+            lur.stop(10.0f);
+            rumble.stop(15.0f);
         }
 
         float current_radius = hit_radius * time / seconds;
@@ -139,8 +138,8 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
 
     @Override
     public void interrupt() {
-        lur.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
-        rumble.stop(.2f, Renderer.getRenderer().getSettings().sound_gain);
+        lur.stop(15.0f);
+        rumble.stop(15.0f);
         sonicBlastEffect.abort();
     }
 

@@ -986,7 +986,7 @@ public final class Renderer implements AutoCloseable {
         if (getSettings().play_music) {
             initMusicPlayer();
         } else if (music != null) {
-            music.stop(2.5f, 1.0f);
+            music.stop(1.2f);
         }
     }
 
@@ -1002,7 +1002,7 @@ public final class Renderer implements AutoCloseable {
         this.music_path = music_path;
 
         if (music != null && getSettings().play_music) {
-            music.stop(2.5f, 1.0f);
+            music.stop(1.2f);
         }
         if (getSettings().play_music) {
             if (music_timer != null)

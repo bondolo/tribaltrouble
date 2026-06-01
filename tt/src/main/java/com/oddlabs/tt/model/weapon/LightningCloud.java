@@ -103,13 +103,13 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
             cloud_sound = owner.getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
                     CLOUD_AUDIO);
             first_run = false;
-            bubbling_sound.stop(.2f, 1.0f);
+            bubbling_sound.stop(15.0f);
         }
         cloud_sound.setPosition(getPositionX(), getPositionY(), getPositionZ());
         seconds_to_live -= t;
         if (seconds_to_live <= 0f) {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-            cloud_sound.stop(.2f, 1.0f);
+            cloud_sound.stop(15.0f);
             remove();
         }
         lightning_timer -= t;
@@ -194,7 +194,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
 
     @Override
     public void interrupt() {
-        bubbling_sound.stop(.2f, 1.0f);
+        bubbling_sound.stop(15.0f);
         remove();
     }
 }

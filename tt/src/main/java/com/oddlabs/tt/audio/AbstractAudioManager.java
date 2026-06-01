@@ -26,7 +26,8 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
     private final Set<@NonNull AS> ambients = new CopyOnWriteArraySet<>();
     private final Set<@NonNull AmbientAudioSource> active_ambient = new CopyOnWriteArraySet<>();
-    private final Set<@NonNull QueuedAudioPlayer<?, AS>> queued_players = new CopyOnWriteArraySet<>();
+    private final Set<@NonNull QueuedAudioPlayer<AM, AS>> queued_players = new CopyOnWriteArraySet<>();
+    private final Set<@NonNull AbstractAudioPlayer<AM, AS>> fading_players = new CopyOnWriteArraySet<>();
     private float updateTime = 0f;
     private volatile boolean closed = false;
 
@@ -226,6 +227,10 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
                 anActive_ambient.update(t);
             }
         }
+
+        fading_players.removeIf(player -> {
+            return !player.updateFade(t);
+        });
     }
 
     private void updateAmbientSources() {
@@ -370,6 +375,10 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
             updateAmbientSources();
         }
         return removed;
+    }
+
+    public final void registerFadingPlayer(@NonNull AbstractAudioPlayer<AM, AS> player) {
+        fading_players.add(player);
     }
 
     private @Nullable AS findSource(float x, float y, float z, @NonNull AudioParameters params) {

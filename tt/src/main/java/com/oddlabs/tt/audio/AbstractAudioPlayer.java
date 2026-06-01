@@ -1,6 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -16,15 +15,16 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
     protected final @NonNull AudioParameters parameters;
     protected volatile boolean playing = false;
 
-    private float fadeout_time;
-    private float end_gain;
-    private float fadeout_gain;
+    private float decay_rate;
+    private boolean is_fading = false;
+    private float current_gain;
 
     protected AbstractAudioPlayer(@NonNull AM manager, @Nullable AS source,
             float x, float y, float z, @NonNull AudioParameters params) {
         this.manager = manager;
         this.source = source;
         this.parameters = params;
+        this.current_gain = params.gain();
         if (source == null || (!params.audio().isStreaming() && !manager.isSfxEnabled())) {
             return;
         }
@@ -83,6 +83,7 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
 
     @Override
     public final void setGain(float gain) {
+        this.current_gain = gain;
         if (playing && source != null) {
             source.setGain(gain * (parameters.audio().isStreaming() ? manager.getMusicGain() : manager.getSfxGain()));
         }
@@ -145,25 +146,30 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public final @NonNull AudioPlayer stop(float delay, float end_gain) {
-        this.end_gain = end_gain;
-        fadeout_gain = end_gain;
-        fadeout_time = delay;
-        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
+    public final @NonNull AudioPlayer stop(float decayRate) {
+        assert decayRate > 0.0f : "decayRate must be positive";
+        if (!playing) return this;
+        this.decay_rate = decayRate;
+        this.is_fading = true;
+        manager.registerFadingPlayer(this);
 
         return this;
     }
 
-    @Override
-    public final void animate(float t) {
-        fadeout_gain -= t * (end_gain / fadeout_time);
-        if (fadeout_gain <= 0) {
+    /** {@return true if the player is currently fading out otherwise false.} */
+    final boolean updateFade(float t) {
+        if (!is_fading || !playing) return false;
+        float fadeout_gain = current_gain * (float) Math.exp(-decay_rate * t);
+        if (fadeout_gain < 0.01f) {
             stop();
-            Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
+            return is_fading = false;
         } else {
             setGain(fadeout_gain);
+            return true;
         }
     }
-
 }
