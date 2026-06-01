@@ -1,9 +1,11 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.gui.RaceIcons;
 import com.oddlabs.tt.model.weapon.MagicFactory;
 import com.oddlabs.tt.player.ChieftainAI;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
@@ -28,11 +30,11 @@ public final class Race {
     private final @NonNull UnitTemplate[] units = new UnitTemplate[5];
     private final @NonNull SpriteKey rally_point;
     private final @NonNull RaceIcons icons;
-    private final @NonNull AudioFile attack_notification;
-    private final @NonNull AudioFile building_notification;
+    private final @NonNull AudioParameters attack_notification;
+    private final @NonNull AudioParameters building_notification;
     private final @NonNull MagicFactory @NonNull [] magic_factory;
     private final @NonNull ChieftainAI chieftain_ai;
-    private final @NonNull AudioFile music_path;
+    private final @NonNull AudioParameters music;
 
     public Race(@NonNull BuildingTemplate quarters, @NonNull BuildingTemplate armory, @NonNull BuildingTemplate tower,
             @NonNull UnitTemplate warrior_rock, @NonNull UnitTemplate warrior_iron,
@@ -43,7 +45,7 @@ public final class Race {
             @NonNull AudioFile attack_notification, @NonNull AudioFile building_notification,
             @NonNull MagicFactory @NonNull [] magic_factory,
             @NonNull ChieftainAI chieftain_ai,
-            @NonNull AudioFile music_path) {
+            @NonNull AudioParameters music) {
         buildings[BUILDING_QUARTERS] = quarters;
         buildings[BUILDING_ARMORY] = armory;
         buildings[BUILDING_TOWER] = tower;
@@ -57,11 +59,17 @@ public final class Race {
         units[UNIT_CHIEFTAIN] = chieftain;
         this.rally_point = rally_point;
         this.icons = icons;
-        this.attack_notification = attack_notification;
-        this.building_notification = building_notification;
+        this.attack_notification = new AudioParameters(attack_notification, AudioAssets.AUDIO_RANK_NOTIFICATION,
+                AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
+                AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                1f, false, true);
+        this.building_notification = new AudioParameters(building_notification, AudioAssets.AUDIO_RANK_NOTIFICATION,
+                AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
+                AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                1f, false, true);
         this.magic_factory = magic_factory;
         this.chieftain_ai = chieftain_ai;
-        this.music_path = music_path;
+        this.music = music;
     }
 
     public @NonNull BuildingTemplate getBuildingTemplate(int index) {
@@ -80,11 +88,11 @@ public final class Race {
         return icons;
     }
 
-    public @NonNull AudioFile getAttackNotificationAudio() {
+    public @NonNull AudioParameters getAttackNotificationAudio() {
         return attack_notification;
     }
 
-    public @NonNull AudioFile getBuildingNotificationAudio() {
+    public @NonNull AudioParameters getBuildingNotificationAudio() {
         return building_notification;
     }
 
@@ -96,7 +104,7 @@ public final class Race {
         return chieftain_ai;
     }
 
-    public @NonNull AudioFile getMusicPath() {
-        return music_path;
+    public @NonNull AudioParameters getMusic() {
+        return music;
     }
 }

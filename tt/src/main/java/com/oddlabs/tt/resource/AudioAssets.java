@@ -86,10 +86,6 @@ public class AudioAssets {
                     RubberSupply.class, SFX_IMPACT_MEATS
             );
 
-    // Music
-    public static final AudioFile MUSIC_MENU = new AudioFile("/music/menu.ogg");
-    public static final AudioFile MUSIC_NATIVE = new AudioFile("/music/native.ogg");
-    public static final AudioFile MUSIC_VIKING = new AudioFile("/music/viking.ogg");
 
     // Sound priority rankings
     public static final int AUDIO_RANK_AMBIENT = AudioParameters.RANK_AMBIENT;
@@ -120,6 +116,20 @@ public class AudioAssets {
     public static final float AUDIO_DISTANCE_ARMORY = 120f;
     public static final float AUDIO_DISTANCE_HARVEST = 40f;
     public static final float AUDIO_DISTANCE_CHICKEN = 25f;
+
+    // Music
+    public static final AudioParameters MUSIC_MENU = new AudioParameters(
+            new AudioFile("/music/menu.ogg"), AUDIO_RANK_MUSIC,
+            AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
+            1f, true, true, false);
+    public static final AudioParameters MUSIC_NATIVE = new AudioParameters(
+            new AudioFile("/music/native.ogg"), AUDIO_RANK_MUSIC,
+            AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
+            1f, true, true, false);
+    public static final AudioParameters MUSIC_VIKING = new AudioParameters(
+            new AudioFile("/music/viking.ogg"), AUDIO_RANK_MUSIC,
+            AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
+            1f, true, true, false);
 
     // Sound gain parameters
     public static final float AUDIO_GAIN_AMBIENT_FOREST = .01f;

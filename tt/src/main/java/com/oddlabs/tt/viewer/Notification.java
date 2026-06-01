@@ -7,8 +7,6 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.gui.Arrow;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.resource.AudioAssets;
-import com.oddlabs.tt.resource.AudioFile;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
@@ -27,7 +25,8 @@ public class Notification implements Updatable<TimerAnimation> {
     private final @NonNull Arrow arrow;
 
     public Notification(@NonNull World world, @NonNull GUIRoot gui_root, float x, float y,
-            @NonNull NotificationManager manager, @NonNull Color color, @NonNull AudioFile sound, boolean show_always,
+            @NonNull NotificationManager manager, @NonNull Color color, @NonNull AudioParameters params,
+            boolean show_always,
             @NonNull AnimationManager animation_manager) {
         this.center_x = x;
         this.center_y = y;
@@ -36,10 +35,6 @@ public class Notification implements Updatable<TimerAnimation> {
         timer.start();
         this.arrow = new Arrow(world.getHeightMap(), gui_root, center_x, center_y, color, show_always);
         gui_root.addChild(arrow);
-        var params = new AudioParameters(sound, AudioAssets.AUDIO_RANK_NOTIFICATION,
-                AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
-                AudioAssets.AUDIO_RADIUS_NOTIFICATION,
-                1f, false, true);
         world.getAudio().newAudio(0f, 0f, 0f, params);
     }
 

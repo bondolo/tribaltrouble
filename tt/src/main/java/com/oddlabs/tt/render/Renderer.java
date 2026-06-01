@@ -96,7 +96,7 @@ public final class Renderer implements AutoCloseable {
     private @Nullable OpenALManager audioManager;
 
     private AudioPlayer music;
-    private @Nullable AudioFile music_path;
+    private @Nullable AudioParameters music_audio;
     private @Nullable TimerAnimation music_timer;
 
     private boolean movie_recording_started = false;
@@ -732,7 +732,7 @@ public final class Renderer implements AutoCloseable {
         UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info,
                 landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer,
                         selection), selection, modelViewStack, projectionStack);
-        Renderer.getRenderer().setMusicPath(AudioAssets.MUSIC_MENU, 0f);
+        Renderer.getRenderer().setMusic(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);
         if (first_progress && getRenderer().getSettings().warning_no_sound && !Renderer.getLocalInput()
@@ -994,15 +994,12 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initMusicPlayer() {
-        assert null != music_path && music_path.isStreaming() : "Inappropriate music file";
-        var params = new AudioParameters(music_path, AudioAssets.AUDIO_RANK_MUSIC,
-                AudioAssets.AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
-                1f, true, true, false);
-        music = getAudioManager().newAudio(0f, 0f, 0f, params);
+        assert null != music_audio && music_audio.audio().isStreaming() : "Inappropriate music file";
+        music = getAudioManager().newAudio(0f, 0f, 0f, music_audio);
     }
 
-    public void setMusicPath(@NonNull AudioFile music_path, float delay) {
-        this.music_path = music_path;
+    public void setMusic(@NonNull AudioParameters music_audio, float delay) {
+        this.music_audio = music_audio;
 
         if (music != null && getSettings().play_music) {
             music.stop(1.2f);

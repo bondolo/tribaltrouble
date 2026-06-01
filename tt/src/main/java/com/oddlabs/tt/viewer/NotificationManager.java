@@ -50,8 +50,10 @@ public final class NotificationManager {
 
     private void newNotification(@NonNull AnimationManager manager, @NonNull Player local_player, float x, float y,
             @NonNull Color color, boolean show_always) {
-        addNotification(new Notification(local_player.getWorld(), gui_root, x, y, this, color, local_player.getRace()
-                .getBuildingNotificationAudio(), show_always, manager), notifies);
+        var audio = local_player.getRace().getBuildingNotificationAudio();
+        var notification = new Notification(local_player.getWorld(), gui_root, x, y, this, color, audio, show_always,
+                manager);
+        addNotification(notification, notifies);
     }
 
     private <N extends @NonNull Notification> void addNotification(N notification, @NonNull List<N> list) {
