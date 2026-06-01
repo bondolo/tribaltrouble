@@ -1,7 +1,7 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.resource.NativeResource;
@@ -399,7 +399,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
 
     @Override
     public int getRank() {
-        return audio_player != null ? audio_player.getParameters().rank() : Assets.AUDIO_RANK_NOT_INITIALIZED;
+        return audio_player != null ? audio_player.getParameters().rank() : AudioParameters.RANK_NOT_INITIALIZED;
     }
 
     @Override

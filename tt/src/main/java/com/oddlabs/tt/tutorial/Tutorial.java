@@ -1,12 +1,12 @@
 package com.oddlabs.tt.tutorial;
 
 import com.oddlabs.tt.animation.TimerAnimation;
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.delegate.TutorialOverDelegate;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -74,8 +74,9 @@ public final class Tutorial {
         info.setPos(BORDER_OFFSET, viewer.getGUIRoot().getHeight() - BORDER_OFFSET - info.getHeight());
         viewer.getGUIRoot().addChild(info);
         var params = new AudioParameters(
-                viewer.getLocalPlayer().getRace().getBuildingNotificationAudio(), Assets.AUDIO_RANK_NOTIFICATION,
-                Assets.AUDIO_DISTANCE_NOTIFICATION, Assets.AUDIO_GAIN_NOTIFICATION, Assets.AUDIO_RADIUS_NOTIFICATION,
+                viewer.getLocalPlayer().getRace().getBuildingNotificationAudio(), AudioAssets.AUDIO_RANK_NOTIFICATION,
+                AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
+                AudioAssets.AUDIO_RADIUS_NOTIFICATION,
                 1f, false, true);
         viewer.getWorld().getAudio().newAudio(0f, 0f, 0f, params);
         timer = new TimerAnimation(viewer.getAnimationManagerLocal(), _ -> trigger.run(Tutorial.this), trigger

@@ -1,5 +1,6 @@
-package com.oddlabs.tt.audio;
+package com.oddlabs.tt.resource;
 
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.IronSupply;
 import com.oddlabs.tt.model.RockSupply;
@@ -7,12 +8,14 @@ import com.oddlabs.tt.model.RubberSupply;
 import com.oddlabs.tt.model.Supply;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /** Constants for all the game audio assets and parameters */
-public class Assets {
+public class AudioAssets {
 
     // Sound effects
     public static final AudioFile SFX_AMBIENT_BEACH = new AudioFile("/sfx/ambient_beach.ogg");
@@ -88,10 +91,10 @@ public class Assets {
     public static final AudioFile MUSIC_NATIVE = new AudioFile("/music/native.ogg");
     public static final AudioFile MUSIC_VIKING = new AudioFile("/music/viking.ogg");
 
-    // Sound priorit rankings
-    public static final int AUDIO_RANK_AMBIENT = 75;
-    public static final int AUDIO_RANK_MUSIC = 50;
-    public static final int AUDIO_RANK_NOTIFICATION = 40;
+    // Sound priority rankings
+    public static final int AUDIO_RANK_AMBIENT = AudioParameters.RANK_AMBIENT;
+    public static final int AUDIO_RANK_MUSIC = AudioParameters.RANK_MUSIC;
+    public static final int AUDIO_RANK_NOTIFICATION = AudioParameters.RANK_NOTIFICATION;
     public static final int AUDIO_RANK_BUILDING_COLLAPSE = 20;
     public static final int AUDIO_RANK_DEATH = 10;
     public static final int AUDIO_RANK_MAGIC = 8;
@@ -102,15 +105,15 @@ public class Assets {
     public static final int AUDIO_RANK_ARMORY = 3;
     public static final int AUDIO_RANK_HARVEST = 2;
     public static final int AUDIO_RANK_CHICKEN = 1;
-    public static final int AUDIO_RANK_NOT_INITIALIZED = 0;
+    public static final int AUDIO_RANK_NOT_INITIALIZED = AudioParameters.RANK_NOT_INITIALIZED;
 
     // Sound distance parameters
-    public static final float AUDIO_DISTANCE_MUSIC = Float.MAX_VALUE;
-    public static final float AUDIO_DISTANCE_AMBIENT = Float.MAX_VALUE;
-    public static final float AUDIO_DISTANCE_NOTIFICATION = Float.MAX_VALUE;
+    public static final float AUDIO_DISTANCE_MUSIC = AudioParameters.DISTANCE_AMBIENT;
+    public static final float AUDIO_DISTANCE_AMBIENT = AudioParameters.DISTANCE_AMBIENT;
+    public static final float AUDIO_DISTANCE_NOTIFICATION = AudioParameters.DISTANCE_AMBIENT;
     public static final float AUDIO_DISTANCE_BUILDING_COLLAPSE = 150f;
     public static final float AUDIO_DISTANCE_DEATH = 100f;
-    public static final float AUDIO_DISTANCE_MAGIC = Float.MAX_VALUE;
+    public static final float AUDIO_DISTANCE_MAGIC = AudioParameters.DISTANCE_AMBIENT;
     public static final float AUDIO_DISTANCE_WEAPON_HIT = 75f;
     public static final float AUDIO_DISTANCE_WEAPON_ATTACK = 75f;
     public static final float AUDIO_DISTANCE_TREE_FALL = 80f;
@@ -174,7 +177,104 @@ public class Assets {
                 AUDIO_DISTANCE_HARVEST, AUDIO_GAIN_HARVEST, AUDIO_RADIUS_HARVEST);
     }
 
-    private Assets() {
+    public static final AudioParameters ERROR_SOUND = new AudioParameters(
+            SFX_CHICKEN_PECK, AUDIO_RANK_NOTIFICATION,
+            AUDIO_DISTANCE_NOTIFICATION, 0.5f, 1f, 0.5f, false, true);
+
+    public static final AudioParameters BUILDING_COLLAPSE = new AudioParameters(
+            SFX_BUILDING_CRASH, AUDIO_RANK_BUILDING_COLLAPSE,
+            AUDIO_DISTANCE_BUILDING_COLLAPSE, AUDIO_GAIN_BUILDING_COLLAPSE,
+            AUDIO_RADIUS_BUILDING_COLLAPSE);
+
+    public static final @NonNull AudioParameters[] BUILDING_HITS = Arrays.stream(SFX_IMPACT_WOODS)
+            .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_WEAPON_HIT,
+                    AUDIO_DISTANCE_WEAPON_HIT, AUDIO_GAIN_WEAPON_HIT,
+                    AUDIO_RADIUS_WEAPON_HIT))
+            .toArray(AudioParameters[]::new);
+
+    public static final AudioParameters CHICKEN_PECK = new AudioParameters(
+            SFX_CHICKEN_PECK, AUDIO_RANK_CHICKEN,
+            AUDIO_DISTANCE_CHICKEN, AUDIO_GAIN_CHICKEN_PECK,
+            AUDIO_RADIUS_CHICKEN_PECK);
+
+    public static final AudioParameters CHICKEN_DEATH = new AudioParameters(
+            SFX_CHICKEN_DEATH, AUDIO_RANK_DEATH,
+            AUDIO_DISTANCE_DEATH, AUDIO_GAIN_CHICKEN_DEATH,
+            AUDIO_RADIUS_CHICKEN_DEATH);
+
+    public static final @NonNull AudioParameters[] CHICKEN_IDLES = Arrays.stream(SFX_CHICKEN_IDLES)
+            .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_CHICKEN,
+                    AUDIO_DISTANCE_CHICKEN, AUDIO_GAIN_CHICKEN_IDLE,
+                    AUDIO_RADIUS_CHICKEN_IDLE))
+            .toArray(AudioParameters[]::new);
+
+    public static final AudioParameters WEAPONS_PRODUCTION = new AudioParameters(
+            SFX_ARMORY, AUDIO_RANK_ARMORY,
+            AUDIO_DISTANCE_ARMORY, AUDIO_GAIN_ARMORY, AUDIO_RADIUS_ARMORY,
+            1f, true, false);
+
+    public static final AudioParameters BUBBLING = new AudioParameters(
+            SFX_BUBBLING, AUDIO_RANK_MAGIC,
+            AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_BUBBLING, AUDIO_RADIUS_BUBBLING,
+            1f, true, false);
+
+    public static final AudioParameters LIGHTNING_CLOUD = new AudioParameters(
+            SFX_CRACKLING_CLOUD, AUDIO_RANK_MAGIC,
+            AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_CLOUD, AUDIO_RADIUS_CLOUD,
+            1f, true, false);
+
+    public static final AudioParameters POISON_GAS = new AudioParameters(
+            SFX_GAS, AUDIO_RANK_GAS,
+            AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_GAS, AUDIO_RADIUS_GAS);
+
+    public static final @NonNull AudioParameters[] SONIC_BLAST_LUR = Arrays.stream(SFX_LURBLASTS)
+            .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_MAGIC,
+                    AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_BLAST_LUR,
+                    AUDIO_RADIUS_BLAST_LUR))
+            .toArray(AudioParameters[]::new);
+
+    public static final AudioParameters SONIC_BLAST_RUMBLE = new AudioParameters(
+            SFX_RUMBLE, AUDIO_RANK_MAGIC,
+            AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_BLAST_RUMBLE,
+            AUDIO_RADIUS_BLAST_RUMBLE);
+
+    public static final AudioParameters SONIC_BLAST = new AudioParameters(
+            SFX_LURBLAST, AUDIO_RANK_MAGIC,
+            AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_BLAST_BLAST,
+            AUDIO_RADIUS_BLAST_BLAST);
+
+    public static final @NonNull AudioParameters[] STUN_LUR = Arrays.stream(SFX_LUR_STUNS)
+            .map(audio -> new AudioParameters(audio, AUDIO_RANK_MAGIC,
+                    AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_STUN_LUR,
+                    AUDIO_RADIUS_STUN_LUR))
+            .toArray(AudioParameters[]::new);
+
+    public static final AudioParameters AMBIENT_FOREST = new AudioParameters(
+            SFX_AMBIENT_FOREST, AUDIO_RANK_AMBIENT,
+            AUDIO_DISTANCE_AMBIENT, AUDIO_GAIN_AMBIENT_FOREST,
+            AUDIO_RADIUS_AMBIENT_FOREST,
+            1f, true, true, true);
+
+    public static final AudioParameters AMBIENT_BEACH = new AudioParameters(
+            SFX_AMBIENT_BEACH, AUDIO_RANK_AMBIENT,
+            AUDIO_DISTANCE_AMBIENT, AUDIO_GAIN_AMBIENT_BEACH,
+            AUDIO_RADIUS_AMBIENT_BEACH,
+            1f, true, true, true);
+
+    public static final AudioParameters AMBIENT_WIND = new AudioParameters(
+            SFX_AMBIENT_WIND, AUDIO_RANK_AMBIENT,
+            AUDIO_DISTANCE_AMBIENT, AUDIO_GAIN_AMBIENT_WIND,
+            AUDIO_RADIUS_AMBIENT_WIND,
+            1f, true, true, true);
+
+    public static final @NonNull AudioParameters[] TREE_FALL = Stream.of(SFX_FELLING_TREE,
+            SFX_FELLING_PALMTREE)
+            .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_TREE_FALL,
+                    AUDIO_DISTANCE_TREE_FALL, AUDIO_GAIN_TREE_FALL,
+                    AUDIO_RADIUS_TREE_FALL))
+            .toArray(AudioParameters[]::new);
+
+    private AudioAssets() {
         // No instances
     }
 }

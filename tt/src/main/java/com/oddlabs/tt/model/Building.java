@@ -1,27 +1,16 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.gui.BuildSpinner;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.behaviour.AttackController;
-import com.oddlabs.tt.model.behaviour.GatherController;
-import com.oddlabs.tt.model.behaviour.NullController;
-import com.oddlabs.tt.model.behaviour.StunController;
-import com.oddlabs.tt.model.behaviour.TransferUnitController;
-import com.oddlabs.tt.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.model.weapon.IronSpearWeapon;
-import com.oddlabs.tt.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.model.weapon.RockSpearWeapon;
-import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
-import com.oddlabs.tt.model.weapon.RubberSpearWeapon;
-import com.oddlabs.tt.model.weapon.ThrowingWeapon;
+import com.oddlabs.tt.model.behaviour.*;
+import com.oddlabs.tt.model.weapon.*;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -29,7 +18,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,14 +27,6 @@ import java.util.Map;
  */
 public final class Building extends Selectable<BuildingTemplate> implements Occupant {
     private static final float REMOVE_DELAY = 1f / 10f;
-    private static final AudioParameters COLLAPSE_AUDIO = new AudioParameters(
-            Assets.SFX_BUILDING_CRASH, Assets.AUDIO_RANK_BUILDING_COLLAPSE,
-            Assets.AUDIO_DISTANCE_BUILDING_COLLAPSE, Assets.AUDIO_GAIN_BUILDING_COLLAPSE,
-            Assets.AUDIO_RADIUS_BUILDING_COLLAPSE);
-    private static final @NonNull AudioParameters[] HITS_AUDIO = Arrays.stream(Assets.SFX_IMPACT_WOODS)
-            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_WEAPON_HIT,
-                    Assets.AUDIO_DISTANCE_WEAPON_HIT, Assets.AUDIO_GAIN_WEAPON_HIT, Assets.AUDIO_RADIUS_WEAPON_HIT))
-            .toArray(AudioParameters[]::new);
 
     private static final int PLACING_BORDER = 1;
     private static final int MAX_SUPPLY_COUNT = 200;
@@ -551,7 +531,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
 
         remove_delay = REMOVE_DELAY;
-        getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), COLLAPSE_AUDIO);
+        getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                AudioAssets.BUILDING_COLLAPSE);
         if (getUnitContainer() != null) {
             while (getUnitContainer().getNumSupplies() > 0) {
                 Unit unit = getUnitContainer().exit();
@@ -678,8 +659,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         if (!isDead()) {
             adjustHitPoints(-damage);
             World world = getOwner().getWorld();
-            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), HITS_AUDIO[world.getRandom()
-                    .nextInt(HITS_AUDIO.length)]);
+            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), AudioAssets.BUILDING_HITS[world
+                    .getRandom()
+                    .nextInt(AudioAssets.BUILDING_HITS.length)]);
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();

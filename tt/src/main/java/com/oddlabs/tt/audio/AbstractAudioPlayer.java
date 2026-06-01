@@ -101,8 +101,8 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
         if (source == null) return;
 
         // Music and notifications don't get environmental effects/reverb
-        boolean useEFX = parameters.rank() != Assets.AUDIO_RANK_MUSIC && parameters.rank()
-                != Assets.AUDIO_RANK_NOTIFICATION;
+        boolean useEFX = parameters.rank() != AudioParameters.RANK_MUSIC && parameters.rank()
+                != AudioParameters.RANK_NOTIFICATION;
 
         if (manager.isEFXSupported()) {
             int slot = useEFX ? manager.getEFXEffectSlot() : 0;
@@ -114,7 +114,7 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
         if (source == null) return;
 
         // Music doesn't get muffled by distance
-        if (parameters.rank() == Assets.AUDIO_RANK_MUSIC || parameters.rank() == Assets.AUDIO_RANK_NOTIFICATION) {
+        if (parameters.rank() == AudioParameters.RANK_MUSIC || parameters.rank() == AudioParameters.RANK_NOTIFICATION) {
             source.setDirectFilterGainHF(1.0f);
             return;
         }

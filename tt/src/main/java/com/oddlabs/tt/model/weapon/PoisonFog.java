@@ -1,7 +1,5 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.Unit;
@@ -9,6 +7,7 @@ import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -26,16 +25,6 @@ public final class PoisonFog implements Magic {
     private static final float GAUSSIAN_LIMIT = 2.5f;
     private static final int MIN_BURSTS_PER_SOUND = 2;
 
-    private static final AudioParameters BUBBLING_AUDIO = new AudioParameters(
-            Assets.SFX_BUBBLING, Assets.AUDIO_RANK_MAGIC,
-            Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BUBBLING, Assets.AUDIO_RADIUS_BUBBLING,
-            1f, true, false);
-
-    private static final AudioParameters GAS_AUDIO = new AudioParameters(Assets.SFX_GAS,
-            Assets.AUDIO_RANK_GAS,
-            Assets.AUDIO_DISTANCE_MAGIC,
-            Assets.AUDIO_GAIN_GAS,
-            Assets.AUDIO_RADIUS_GAS);
 
     private final float hit_radius;
     private final float hit_chance;
@@ -70,7 +59,7 @@ public final class PoisonFog implements Magic {
         start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
 
         bubbling_sound = owner.getWorld().getAudio().newAudio(start_x, start_y, owner.getWorld().getHeightMap()
-                .getNearestHeight(start_x, start_y), BUBBLING_AUDIO);
+                .getNearestHeight(start_x, start_y), AudioAssets.BUBBLING);
     }
 
     @Override
@@ -108,7 +97,7 @@ public final class PoisonFog implements Magic {
 
             if (bursts % next_sound == 0) {
                 next_sound = MIN_BURSTS_PER_SOUND + owner.getWorld().getRandom().nextInt(5);
-                owner.getWorld().getAudio().newAudio(x, y, z, GAS_AUDIO);
+                owner.getWorld().getAudio().newAudio(x, y, z, AudioAssets.POISON_GAS);
             }
             bursts++;
         }

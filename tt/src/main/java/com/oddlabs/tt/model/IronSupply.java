@@ -1,12 +1,12 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.particle.RingEmitter;
 import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -130,8 +130,8 @@ public final class IronSupply extends SupplyModel {
                 new PointEmitterModel(getWorld(), puff);
 
                 getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                        new AudioParameters(Assets.SFX_FLASH, Assets.AUDIO_RANK_MAGIC,
-                                50.0f, Assets.AUDIO_GAIN_BLAST_BLAST,
+                        new AudioParameters(AudioAssets.SFX_FLASH, AudioAssets.AUDIO_RANK_MAGIC,
+                                50.0f, AudioAssets.AUDIO_GAIN_BLAST_BLAST,
                                 15.0f));
             }
             setShowShadow(true);

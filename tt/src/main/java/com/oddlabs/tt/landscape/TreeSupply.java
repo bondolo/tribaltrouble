@@ -1,8 +1,6 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.pathfinder.Occupant;
@@ -10,13 +8,13 @@ import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.Shadowable;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.stream.Stream;
 
 /**
  * A harvestable tree resource in the game world.
@@ -26,11 +24,6 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
 
-    private static final @NonNull AudioParameters[] TREE_FALL_AUDIO = Stream.of(Assets.SFX_FELLING_TREE,
-            Assets.SFX_FELLING_PALMTREE)
-            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_TREE_FALL,
-                    Assets.AUDIO_DISTANCE_TREE_FALL, Assets.AUDIO_GAIN_TREE_FALL, Assets.AUDIO_RADIUS_TREE_FALL))
-            .toArray(AudioParameters[]::new);
 
     private final @NonNull Matrix4f matrix;
     private final @NonNull TreeType tree_type;
@@ -221,7 +214,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         if (isEmpty()) {
             unoccupyTree();
             world.getSupplyManager(getClass()).emptySupply(this);
-            world.getAudio().newAudio(getCX(), getCY(), getCZ(), TREE_FALL_AUDIO[tree_type.ordinal() % 2]);
+            world.getAudio().newAudio(getCX(), getCY(), getCZ(), AudioAssets.TREE_FALL[tree_type.ordinal() % 2]);
             world.getAnimationManagerRealTime().registerAnimation(this);
             animation_time = 0f;
         }

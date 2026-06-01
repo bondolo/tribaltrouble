@@ -1,14 +1,10 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.UnitTemplate;
+import com.oddlabs.tt.model.*;
+import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -39,8 +35,9 @@ public final class InstantHitFactory extends WeaponFactory {
         if (target instanceof Unit) {
             World world = src.getOwner().getWorld();
             var params = new AudioParameters(
-                    sounds[world.getRandom().nextInt(sounds.length)], Assets.AUDIO_RANK_WEAPON_HIT,
-                    Assets.AUDIO_DISTANCE_WEAPON_HIT, Assets.AUDIO_GAIN_WEAPON_HIT, Assets.AUDIO_RADIUS_WEAPON_HIT,
+                    sounds[world.getRandom().nextInt(sounds.length)], AudioAssets.AUDIO_RANK_WEAPON_HIT,
+                    AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
+                    AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
                     1f + (world.getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch());
             world.getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }

@@ -120,8 +120,8 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
                 updateAmbientSources();
             } else {
                 for (AS source : getSources()) {
-                    if (source.getRank() != Assets.AUDIO_RANK_MUSIC) {
-                        if (source.getRank() == Assets.AUDIO_RANK_AMBIENT) {
+                    if (source.getRank() != AudioParameters.RANK_MUSIC) {
+                        if (source.getRank() == AudioParameters.RANK_AMBIENT) {
                             source.pause();
                         } else {
                             source.stop();
@@ -239,7 +239,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         // Mark all current slots as "potential removals" by setting target to 0
         active_ambient.forEach(a -> a.setGainTarget(0f));
 
-        float max_dist_sq = Assets.AUDIO_DISTANCE_AMBIENT * Assets.AUDIO_DISTANCE_AMBIENT;
+        float max_dist_sq = AudioParameters.DISTANCE_AMBIENT * AudioParameters.DISTANCE_AMBIENT;
 
         for (AS ambientSource : ambients) {
             var player = ambientSource.getAudioPlayer();
@@ -330,7 +330,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
                 ambients.forEach(AudioSource::play);
             }
             for (AudioSource source : getSources()) {
-                if (source.getAudioPlayer() != null && source.getRank() == Assets.AUDIO_RANK_MUSIC) {
+                if (source.getAudioPlayer() != null && source.getRank() == AudioParameters.RANK_MUSIC) {
                     source.play();
                 }
             }
@@ -344,7 +344,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
             for (AS source : getSources()) {
                 int rank = source.getRank();
                 switch (rank) {
-                    case Assets.AUDIO_RANK_MUSIC, Assets.AUDIO_RANK_AMBIENT -> source.pause();
+                    case AudioParameters.RANK_MUSIC, AudioParameters.RANK_AMBIENT -> source.pause();
                     default -> source.stop();
                 }
             }
@@ -390,7 +390,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         for (AS source : getSources()) {
             var sourceState = source.getState();
             if ((sourceState == AudioSource.State.INITIAL || sourceState == AudioSource.State.STOPPED) && source
-                    .getRank() < Assets.AUDIO_RANK_AMBIENT) {
+                    .getRank() < AudioParameters.RANK_AMBIENT) {
                 if (source.getAudioPlayer() != null)
                     source.getAudioPlayer().stop();
                 return source;

@@ -1,7 +1,7 @@
-package com.oddlabs.tt.audio;
+package com.oddlabs.tt.resource;
 
+import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.resource.File;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

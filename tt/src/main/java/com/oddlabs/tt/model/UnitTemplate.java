@@ -1,9 +1,9 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 /**

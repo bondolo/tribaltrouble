@@ -1,5 +1,6 @@
 package com.oddlabs.tt.audio;
 
+import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -30,6 +31,12 @@ public record AudioParameters(
                               boolean relative,
                               boolean ambient
 ) {
+    public static final int RANK_AMBIENT = 75;
+    public static final int RANK_MUSIC = 50;
+    public static final int RANK_NOTIFICATION = 40;
+    public static final int RANK_NOT_INITIALIZED = 0;
+    public static final float DISTANCE_AMBIENT = Float.MAX_VALUE;
+
     public AudioParameters {
         Objects.requireNonNull(audio, "audio");
     }

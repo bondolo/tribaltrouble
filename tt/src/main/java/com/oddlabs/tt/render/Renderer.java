@@ -7,7 +7,9 @@ import com.oddlabs.tt.Main;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
-import com.oddlabs.tt.audio.*;
+import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.MenuCamera;
 import com.oddlabs.tt.delegate.MainMenu;
@@ -730,7 +732,7 @@ public final class Renderer implements AutoCloseable {
         UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info,
                 landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer,
                         selection), selection, modelViewStack, projectionStack);
-        Renderer.getRenderer().setMusicPath(Assets.MUSIC_MENU, 0f);
+        Renderer.getRenderer().setMusicPath(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);
         if (first_progress && getRenderer().getSettings().warning_no_sound && !Renderer.getLocalInput()
@@ -993,8 +995,8 @@ public final class Renderer implements AutoCloseable {
 
     private void initMusicPlayer() {
         assert null != music_path && music_path.isStreaming() : "Inappropriate music file";
-        var params = new AudioParameters(music_path, Assets.AUDIO_RANK_MUSIC,
-                Assets.AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
+        var params = new AudioParameters(music_path, AudioAssets.AUDIO_RANK_MUSIC,
+                AudioAssets.AUDIO_DISTANCE_MUSIC, 1.0f, 1f,
                 1f, true, true, false);
         music = getAudioManager().newAudio(0f, 0f, 0f, params);
     }

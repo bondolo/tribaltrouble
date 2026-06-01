@@ -1,7 +1,5 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.AccessorizableModel;
 import com.oddlabs.tt.model.Selectable;
@@ -11,26 +9,17 @@ import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
 
 /**
  * Logic controller for the Sonic Blast magic effect.
  */
 public final class SonicBlast extends AccessorizableModel implements Magic {
-    private static final @NonNull AudioParameters[] LUR_AUDIO = Arrays.stream(Assets.SFX_LURBLASTS)
-            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_MAGIC,
-                    Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BLAST_LUR, Assets.AUDIO_RADIUS_BLAST_LUR))
-            .toArray(AudioParameters[]::new);
-    private static final AudioParameters RUMBLE_AUDIO = new AudioParameters(
-            Assets.SFX_RUMBLE, Assets.AUDIO_RANK_MAGIC,
-            Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BLAST_RUMBLE, Assets.AUDIO_RADIUS_BLAST_RUMBLE);
-    private static final AudioParameters BLAST_AUDIO = new AudioParameters(
-            Assets.SFX_LURBLAST, Assets.AUDIO_RANK_MAGIC,
-            Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BLAST_BLAST, Assets.AUDIO_RADIUS_BLAST_BLAST);
+
 
     private final float hit_radius;
     private final float hit_chance_closest;
@@ -80,9 +69,10 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
         sonicBlastEffect = new SonicBlastEffect(owner.getWorld(), new Vector3f(start_x, start_y, start_z), hit_radius,
                 seconds);
 
-        lur = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, LUR_AUDIO[owner.getWorld().getRandom()
-                .nextInt(LUR_AUDIO.length)]);
-        rumble = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, RUMBLE_AUDIO);
+        lur = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, AudioAssets.SONIC_BLAST_LUR[owner
+                .getWorld().getRandom()
+                .nextInt(AudioAssets.SONIC_BLAST_LUR.length)]);
+        rumble = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, AudioAssets.SONIC_BLAST_RUMBLE);
 
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
@@ -97,7 +87,7 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
         if (!first_ring_sent) {
             first_ring_sent = true;
 
-            owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, BLAST_AUDIO);
+            owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, AudioAssets.SONIC_BLAST);
             lur.stop(10.0f);
             rumble.stop(15.0f);
         }

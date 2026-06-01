@@ -1,22 +1,9 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.geometry.AnimationInfo;
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.LandscapeTarget;
-import com.oddlabs.tt.model.behaviour.DefendController;
-import com.oddlabs.tt.model.behaviour.DieBehaviour;
-import com.oddlabs.tt.model.behaviour.DieController;
-import com.oddlabs.tt.model.behaviour.EnterController;
-import com.oddlabs.tt.model.behaviour.GatherController;
-import com.oddlabs.tt.model.behaviour.HuntController;
-import com.oddlabs.tt.model.behaviour.IdleController;
-import com.oddlabs.tt.model.behaviour.MagicController;
-import com.oddlabs.tt.model.behaviour.PlaceBuildingController;
-import com.oddlabs.tt.model.behaviour.RepairController;
-import com.oddlabs.tt.model.behaviour.StunController;
-import com.oddlabs.tt.model.behaviour.WalkBehaviour;
-import com.oddlabs.tt.model.behaviour.WalkController;
+import com.oddlabs.tt.model.behaviour.*;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.particle.StunFunction;
@@ -26,6 +13,7 @@ import com.oddlabs.tt.pathfinder.PathTracker;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -395,13 +383,13 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 if (racesResources != null) {
                     addAccessory(new VisualSoundAccessory(racesResources.getGravestoneEmojiSprite(),
                             VisualSoundAccessory.DURATION_UNIT_DEATH,
-                            Assets.AUDIO_DISTANCE_DEATH));
+                            AudioAssets.AUDIO_DISTANCE_DEATH));
                 }
 
                 pushController(new DieController(this));
                 forceDecide();
-                var params = new AudioParameters(getTemplate().getDeathSound(), Assets.AUDIO_RANK_DEATH,
-                        Assets.AUDIO_DISTANCE_DEATH, Assets.AUDIO_GAIN_DEATH, Assets.AUDIO_RADIUS_DEATH,
+                var params = new AudioParameters(getTemplate().getDeathSound(), AudioAssets.AUDIO_RANK_DEATH,
+                        AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH,
                         1f + (getOwner().getWorld().getRandom().nextFloat() - .5f) * getTemplate().getDeathPitch());
                 getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
                 setDirection(-direction_x, -direction_y);

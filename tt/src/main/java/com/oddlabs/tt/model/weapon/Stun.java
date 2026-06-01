@@ -1,34 +1,24 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.MountUnitContainer;
-import com.oddlabs.tt.model.PointEmitterModel;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.model.*;
 import com.oddlabs.tt.particle.Emitter;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Arrays;
 
 /**
  * Logic controller for the Stun magic effect.
  */
 public final class Stun extends PointEmitterModel implements Magic {
-    private static final @NonNull AudioParameters[] STUN_AUDIO = Arrays.stream(Assets.SFX_LUR_STUNS)
-            .map(audio -> new AudioParameters(audio, Assets.AUDIO_RANK_MAGIC,
-                    Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_STUN_LUR, Assets.AUDIO_RADIUS_STUN_LUR))
-            .toArray(AudioParameters[]::new);
+
     private final @NonNull Unit src;
     private final float offset_x;
     private final float offset_y;
@@ -65,8 +55,9 @@ public final class Stun extends PointEmitterModel implements Magic {
                 .getPositionY()));
         target_list = filter.getResult();
 
-        sound = owner.getWorld().getAudio().newAudio(start_x, start_y, z, STUN_AUDIO[getWorld().getRandom().nextInt(
-                STUN_AUDIO.length)]);
+        sound = owner.getWorld().getAudio().newAudio(start_x, start_y, z, AudioAssets.STUN_LUR[getWorld().getRandom()
+                .nextInt(
+                        AudioAssets.STUN_LUR.length)]);
     }
 
     private static Emitter<?> createEmitter(float offset_x, float offset_y, float offset_z, @NonNull Unit src) {

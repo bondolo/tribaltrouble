@@ -1,38 +1,15 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.GUIIcons;
 import com.oddlabs.tt.landscape.TreeSupply;
-import com.oddlabs.tt.model.weapon.InstantHitFactory;
-import com.oddlabs.tt.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.model.weapon.IronSpearWeapon;
-import com.oddlabs.tt.model.weapon.LightningCloudFactory;
-import com.oddlabs.tt.model.weapon.MagicFactory;
-import com.oddlabs.tt.model.weapon.PoisonFogFactory;
-import com.oddlabs.tt.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.model.weapon.RockSpearWeapon;
-import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
-import com.oddlabs.tt.model.weapon.RubberSpearWeapon;
-import com.oddlabs.tt.model.weapon.SonicBlastFactory;
-import com.oddlabs.tt.model.weapon.StunFactory;
-import com.oddlabs.tt.model.weapon.ThrowingFactory;
-import com.oddlabs.tt.model.weapon.WeaponFactory;
+import com.oddlabs.tt.model.weapon.*;
 import com.oddlabs.tt.player.NativeChieftainAI;
 import com.oddlabs.tt.player.VikingChieftainAI;
-import com.oddlabs.tt.procedural.GeneratorCrack;
-import com.oddlabs.tt.procedural.GeneratorDamageSmoke;
-import com.oddlabs.tt.procedural.GeneratorHalos;
-import com.oddlabs.tt.procedural.GeneratorLightning;
-import com.oddlabs.tt.procedural.GeneratorPoison;
-import com.oddlabs.tt.procedural.GeneratorSmoke;
-import com.oddlabs.tt.render.DecalRenderer;
-import com.oddlabs.tt.render.RenderQueues;
-import com.oddlabs.tt.render.ShadowListKey;
-import com.oddlabs.tt.render.SpriteKey;
-import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.render.TextureKey;
+import com.oddlabs.tt.procedural.*;
+import com.oddlabs.tt.render.*;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.resource.TextureFile;
 import com.oddlabs.tt.util.Utils;
@@ -40,8 +17,6 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
-import com.oddlabs.tt.procedural.DynamicEmojiGenerator;
-import com.oddlabs.tt.render.SpriteList;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Supplier;
@@ -400,33 +375,33 @@ public final class RacesResources {
         WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f,
                 THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_ROCK),
-                Assets.SFX_WEAPON_AXE,
-                Assets.SFX_IMPACT_MEATS);
+                AudioAssets.SFX_WEAPON_AXE,
+                AudioAssets.SFX_IMPACT_MEATS);
         WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f,
                 THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_IRON),
-                Assets.SFX_WEAPON_AXE,
-                Assets.SFX_IMPACT_MEATS);
+                AudioAssets.SFX_WEAPON_AXE,
+                AudioAssets.SFX_IMPACT_MEATS);
         WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new,
                 0.95f, THROW_RANGE, 29f / 58f,
                 queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_RUBBER),
-                Assets.SFX_WEAPON_AXE,
-                Assets.SFX_IMPACT_MEATS);
+                AudioAssets.SFX_WEAPON_AXE,
+                AudioAssets.SFX_IMPACT_MEATS);
         WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new,
                 0.5f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_ROCK),
-                Assets.SFX_WEAPON_SPEAR,
-                Assets.SFX_IMPACT_MEATS);
+                AudioAssets.SFX_WEAPON_SPEAR,
+                AudioAssets.SFX_IMPACT_MEATS);
         WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new,
                 0.75f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_IRON),
-                Assets.SFX_WEAPON_SPEAR,
-                Assets.SFX_IMPACT_MEATS);
+                AudioAssets.SFX_WEAPON_SPEAR,
+                AudioAssets.SFX_IMPACT_MEATS);
         WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class,
                 RubberSpearWeapon::new, 0.95f, THROW_RANGE, 46f / 100f,
                 queues.register(native_warrior_spear, Race.UNIT_WARRIOR_RUBBER),
-                Assets.SFX_WEAPON_SPEAR,
-                Assets.SFX_IMPACT_MEATS);
+                AudioAssets.SFX_WEAPON_SPEAR,
+                AudioAssets.SFX_IMPACT_MEATS);
 
         ProgressForm.progress(1f / num_progress);
         ShadowListKey default_shadow_list = queues.registerSelectableShadowList(DEFAULT_SHADOW_DESC);
@@ -439,7 +414,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_VIKING_WARRIORS[0],
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[0],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -457,7 +432,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_VIKING_WARRIORS[1],
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -475,7 +450,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_VIKING_WARRIORS[1],
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -493,7 +468,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_NATIVE_WARRIORS[0],
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[0],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -511,7 +486,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_NATIVE_WARRIORS[1],
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -529,7 +504,7 @@ public final class RacesResources {
                 shadow_diameter_warrior,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_NATIVE_WARRIORS[1],
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -542,12 +517,12 @@ public final class RacesResources {
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
-                new InstantHitFactory(1 / 5f, 0f, 11f / 38f, Assets.SFX_IMPACT_MEATS),
+                new InstantHitFactory(1 / 5f, 0f, 11f / 38f, AudioAssets.SFX_IMPACT_MEATS),
                 queues.register(sprite_list_peon),
                 shadow_diameter_peon,
                 default_shadow_list,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, viking_supply_sprite_lists),
-                Assets.SFX_DEATH_PEON,
+                AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
                 1f,
@@ -560,12 +535,12 @@ public final class RacesResources {
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
-                new InstantHitFactory(1 / 5f, 0f, 51f / 83f, Assets.SFX_IMPACT_MEATS),
+                new InstantHitFactory(1 / 5f, 0f, 51f / 83f, AudioAssets.SFX_IMPACT_MEATS),
                 queues.register(sprite_list_native_peon),
                 shadow_diameter_peon,
                 default_shadow_list,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, native_supply_sprite_lists),
-                Assets.SFX_DEATH_PEON,
+                AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
                 1f,
@@ -578,12 +553,12 @@ public final class RacesResources {
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 119f, Assets.SFX_VIKING_CHIEFTAIN_HITS),
+                new InstantHitFactory(3 / 4f, 0f, 75f / 119f, AudioAssets.SFX_VIKING_CHIEFTAIN_HITS),
                 queues.register(sprite_list_chieftain),
                 shadow_diameter_chieftain,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_VIKING_WARRIORS[1],
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .15f,
                 new float[]{1.7f},
                 1f,
@@ -596,12 +571,12 @@ public final class RacesResources {
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 129f, Assets.SFX_NATIVE_CHIEFTAIN_HITS),
+                new InstantHitFactory(3 / 4f, 0f, 75f / 129f, AudioAssets.SFX_NATIVE_CHIEFTAIN_HITS),
                 queues.register(sprite_list_native_chieftain),
                 shadow_diameter_chieftain,
                 default_shadow_list,
                 null,
-                Assets.SFX_DEATH_NATIVE_WARRIORS[1],
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .15f,
                 new float[]{1.7f},
                 1f,
@@ -636,11 +611,11 @@ public final class RacesResources {
                         Globals.NO_MIPMAP_CUTOFF,
                         true, true, true, false)),
                 icons.getNativeIcons(),
-                Assets.SFX_ATTACKNOTIFY_NATIVE,
-                Assets.SFX_BUILDINGNOTIFY_NATIVE,
+                AudioAssets.SFX_ATTACKNOTIFY_NATIVE,
+                AudioAssets.SFX_BUILDINGNOTIFY_NATIVE,
                 native_magic,
                 new NativeChieftainAI(),
-                Assets.MUSIC_NATIVE);
+                AudioAssets.MUSIC_NATIVE);
         Race vikings_race = new Race(viking_quarters_template,
                 viking_armory_template,
                 viking_tower_template,
@@ -653,11 +628,11 @@ public final class RacesResources {
                         Globals.NO_MIPMAP_CUTOFF,
                         true, true, true, false)),
                 icons.getVikingIcons(),
-                Assets.SFX_ATTACKNOTIFY_VIKING,
-                Assets.SFX_BUILDINGNOTIFY_VIKING,
+                AudioAssets.SFX_ATTACKNOTIFY_VIKING,
+                AudioAssets.SFX_BUILDINGNOTIFY_VIKING,
                 viking_magic,
                 new VikingChieftainAI(),
-                Assets.MUSIC_VIKING);
+                AudioAssets.MUSIC_VIKING);
         races = new Race[]{natives_race, vikings_race};
 
         wood_fragment_sprites[0] = queues.register(new SpriteFile("/geometry/misc/wood_2.binsprite",

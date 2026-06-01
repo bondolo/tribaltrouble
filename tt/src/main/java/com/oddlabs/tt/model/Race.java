@@ -1,10 +1,10 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.gui.RaceIcons;
 import com.oddlabs.tt.model.weapon.MagicFactory;
 import com.oddlabs.tt.player.ChieftainAI;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 /**

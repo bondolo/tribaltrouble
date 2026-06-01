@@ -1,11 +1,11 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.RacesResources;
+import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.VisualSoundAccessory;
+import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -43,7 +43,7 @@ public final class RepairBehaviour implements Behaviour {
             sound = true;
             var random = unit.getOwner().getWorld().getRandom();
             unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
-                    .getPositionZ(), Assets.getHarvestSound(TreeSupply.class, random));
+                    .getPositionZ(), AudioAssets.getHarvestSound(TreeSupply.class, random));
 
             RacesResources racesResources = unit.getOwner().getWorld().getRacesResources();
             if (racesResources != null) {
@@ -52,7 +52,7 @@ public final class RepairBehaviour implements Behaviour {
                         : racesResources.getHammerEmojiSprite();
                 unit.addAccessory(new VisualSoundAccessory(selectedSprite,
                         VisualSoundAccessory.DURATION_REPAIR,
-                        Assets.AUDIO_DISTANCE_HARVEST));
+                        AudioAssets.AUDIO_DISTANCE_HARVEST));
             }
         }
 

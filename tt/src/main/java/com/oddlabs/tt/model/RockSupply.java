@@ -1,10 +1,10 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -109,8 +109,8 @@ public final class RockSupply extends SupplyModel {
             if (!soundPlayed) {
                 soundPlayed = true;
                 getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                        new AudioParameters(Assets.SFX_RUMBLE, Assets.AUDIO_RANK_MAGIC,
-                                50.0f, Assets.AUDIO_GAIN_BLAST_RUMBLE,
+                        new AudioParameters(AudioAssets.SFX_RUMBLE, AudioAssets.AUDIO_RANK_MAGIC,
+                                50.0f, AudioAssets.AUDIO_GAIN_BLAST_RUMBLE,
                                 15.0f));
             }
             ensureSmokeEmitter();

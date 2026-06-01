@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.Assets;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.landscape.World;
@@ -13,6 +12,7 @@ import com.oddlabs.tt.particle.Lightning;
 import com.oddlabs.tt.particle.ParametricEmitter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -30,14 +30,6 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private static final float LIGHTNING_TIME = .1f;
     private static final Color DELTA_COLOR = new Color.Linear(0f, 0f, 0f, -1f / LIGHTNING_TIME);
 
-    private static final AudioParameters BUBBLING_AUDIO = new AudioParameters(
-            Assets.SFX_BUBBLING, Assets.AUDIO_RANK_MAGIC,
-            Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_BUBBLING, Assets.AUDIO_RADIUS_BUBBLING,
-            1f, true, false);
-    private static final AudioParameters CLOUD_AUDIO = new AudioParameters(
-            Assets.SFX_CRACKLING_CLOUD, Assets.AUDIO_RANK_MAGIC,
-            Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_CLOUD, Assets.AUDIO_RADIUS_CLOUD,
-            1f, true, false);
 
     private final @NonNull Player owner;
     private final float seconds_per_hit;
@@ -77,7 +69,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         setPositionZ(start_z);
 
         bubbling_sound = world.getAudio().newAudio(getPositionX(), getPositionY(), world.getHeightMap()
-                .getNearestHeight(getPositionX(), getPositionY()), BUBBLING_AUDIO);
+                .getNearestHeight(getPositionX(), getPositionY()), AudioAssets.BUBBLING);
     }
 
     private static Emitter<?> createEmitter(@NonNull World world, float offset_x, float offset_y, float offset_z,
@@ -101,7 +93,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     public void animate(float t) {
         if (first_run) {
             cloud_sound = owner.getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                    CLOUD_AUDIO);
+                    AudioAssets.LIGHTNING_CLOUD);
             first_run = false;
             bubbling_sound.stop(15.0f);
         }
@@ -148,8 +140,9 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                 float y = target.getPositionY();
                 float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
                 var params = new AudioParameters(
-                        Assets.SFX_FLASH, Assets.AUDIO_RANK_MAGIC,
-                        Assets.AUDIO_DISTANCE_MAGIC, Assets.AUDIO_GAIN_LIGHTNING, Assets.AUDIO_RADIUS_LIGHTNING);
+                        AudioAssets.SFX_FLASH, AudioAssets.AUDIO_RANK_MAGIC,
+                        AudioAssets.AUDIO_DISTANCE_MAGIC, AudioAssets.AUDIO_GAIN_LIGHTNING,
+                        AudioAssets.AUDIO_RADIUS_LIGHTNING);
                 owner.getWorld().getAudio().newAudio(x, y, z, params);
                 strike(target);
                 strike(target);

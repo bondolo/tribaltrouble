@@ -1,8 +1,6 @@
 package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.Model;
@@ -11,6 +9,8 @@ import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.UnitTemplate;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.resource.AudioFile;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 
@@ -75,8 +75,9 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         register();
         reinsert();
 
-        var params = new AudioParameters(throw_sound, Assets.AUDIO_RANK_WEAPON_ATTACK,
-                Assets.AUDIO_DISTANCE_WEAPON_ATTACK, Assets.AUDIO_GAIN_WEAPON_ATTACK, Assets.AUDIO_RADIUS_WEAPON_ATTACK,
+        var params = new AudioParameters(throw_sound, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
+                AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
+                AudioAssets.AUDIO_RADIUS_WEAPON_ATTACK,
                 getWorld().getRandom().nextFloat() * .2f + .9f);
         audio_player = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
         getWorld().getAnimationManagerGameTime().registerAnimation(this);
@@ -194,8 +195,9 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     protected final void damageTarget(@NonNull Selectable<?> target) {
         if (target instanceof Unit) {
             var params = new AudioParameters(hit_sounds[getWorld().getRandom().nextInt(hit_sounds.length)],
-                    Assets.AUDIO_RANK_WEAPON_HIT,
-                    Assets.AUDIO_DISTANCE_WEAPON_HIT, Assets.AUDIO_GAIN_WEAPON_HIT, Assets.AUDIO_RADIUS_WEAPON_HIT,
+                    AudioAssets.AUDIO_RANK_WEAPON_HIT,
+                    AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
+                    AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
                     1f + (getWorld().getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate())
                             .getDeathPitch());
             getWorld().getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);

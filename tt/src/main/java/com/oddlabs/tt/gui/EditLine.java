@@ -1,7 +1,5 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.font.Index;
 import com.oddlabs.tt.font.TextLineRenderer;
 import com.oddlabs.tt.guievent.EnterListener;
@@ -10,6 +8,7 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,9 +22,6 @@ import java.util.concurrent.TimeUnit;
  * input filtering, and horizontal scrolling for text that exceeds the visual width.
  */
 public class EditLine extends TextField implements Clipped {
-    private static final AudioParameters ERROR_SOUND = new AudioParameters(
-            Assets.SFX_CHICKEN_PECK, Assets.AUDIO_RANK_NOTIFICATION,
-            Assets.AUDIO_DISTANCE_NOTIFICATION, 0.5f, 1f, 0.5f, false, true);
     @SuppressWarnings("TimeUnitConversionChecker")
     private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
     private final Set<@NonNull EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
@@ -115,7 +111,7 @@ public class EditLine extends TextField implements Clipped {
     public void triggerError() {
         errorFlashStart = System.currentTimeMillis();
         try {
-            Renderer.getRenderer().getAudioManager().newAudio(0f, 0f, 0f, ERROR_SOUND);
+            Renderer.getRenderer().getAudioManager().newAudio(0f, 0f, 0f, AudioAssets.ERROR_SOUND);
         } catch (Exception _) {
             // Ignore audio errors
         }

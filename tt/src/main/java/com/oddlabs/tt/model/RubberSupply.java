@@ -2,19 +2,13 @@ package com.oddlabs.tt.model;
 
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.audio.Assets;
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.pathfinder.Movable;
-import com.oddlabs.tt.pathfinder.PathTracker;
-import com.oddlabs.tt.pathfinder.Region;
-import com.oddlabs.tt.pathfinder.TargetTrackerAlgorithm;
-import com.oddlabs.tt.pathfinder.UnitGrid;
+import com.oddlabs.tt.pathfinder.*;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Arrays;
 
 /**
  * Represents a rubber resource, visually represented as a chicken.
@@ -26,17 +20,6 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     private static final int INITIAL_SUPPLIES = 1;
     private static final int MAX_MOVE_GRIDS = 5;
-
-    private static final AudioParameters CHICKEN_PECK_AUDIO = new AudioParameters(
-            Assets.SFX_CHICKEN_PECK, Assets.AUDIO_RANK_CHICKEN,
-            Assets.AUDIO_DISTANCE_CHICKEN, Assets.AUDIO_GAIN_CHICKEN_PECK, Assets.AUDIO_RADIUS_CHICKEN_PECK);
-    private static final AudioParameters CHICKEN_DEATH_AUDIO = new AudioParameters(
-            Assets.SFX_CHICKEN_DEATH, Assets.AUDIO_RANK_DEATH,
-            Assets.AUDIO_DISTANCE_DEATH, Assets.AUDIO_GAIN_CHICKEN_DEATH, Assets.AUDIO_RADIUS_CHICKEN_DEATH);
-    private static final @NonNull AudioParameters[] CHICKEN_IDLE_AUDIO = Arrays.stream(Assets.SFX_CHICKEN_IDLES)
-            .map(rsrc -> new AudioParameters(rsrc, Assets.AUDIO_RANK_CHICKEN,
-                    Assets.AUDIO_DISTANCE_CHICKEN, Assets.AUDIO_GAIN_CHICKEN_IDLE, Assets.AUDIO_RADIUS_CHICKEN_IDLE))
-            .toArray(AudioParameters[]::new);
 
     public enum Animation {
         IDLING(1f / (50f / 25f)),
@@ -183,14 +166,15 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 setNewAnimation(Animation.IDLING);
                 if (random < .05) {
                     getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            CHICKEN_IDLE_AUDIO[getWorld().getRandom().nextInt(CHICKEN_IDLE_AUDIO.length)]);
+                            AudioAssets.CHICKEN_IDLES[getWorld().getRandom().nextInt(
+                                    AudioAssets.CHICKEN_IDLES.length)]);
                     RacesResources racesResources = getWorld().getRacesResources();
                     if (racesResources != null) {
                         var chickenThoughts = racesResources.getChickenEmojiSprites();
                         var thought = chickenThoughts[getWorld().getRandom().nextInt(chickenThoughts.length)];
                         addAccessory(new VisualSoundAccessory(thought,
                                 VisualSoundAccessory.DURATION_CHICKEN_CLUCK,
-                                Assets.AUDIO_DISTANCE_CHICKEN));
+                                AudioAssets.AUDIO_DISTANCE_CHICKEN));
                     }
                 }
             } else if (random < .85) {
@@ -202,14 +186,16 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 float move_random = getWorld().getRandom().nextFloat();
                 if (move_random < .25f) {
                     setNewAnimation(Animation.FLYING);
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_PECK_AUDIO);
+                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                            AudioAssets.CHICKEN_PECK);
                 } else {
                     setNewAnimation(Animation.RUNNING);
                 }
             } else {
                 setNewAnimation(Animation.PECKING);
                 if (random > .98f)
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_PECK_AUDIO);
+                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                            AudioAssets.CHICKEN_PECK);
 
             }
         }
@@ -254,12 +240,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         if (!is_hit) {
             is_hit = true;
             setNewAnimation(Animation.DYING);
-            getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), CHICKEN_DEATH_AUDIO);
+            getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), AudioAssets.CHICKEN_DEATH);
             RacesResources racesResources = getWorld().getRacesResources();
             if (racesResources != null) {
                 addAccessory(new VisualSoundAccessory(getStatusSprite(racesResources),
                         VisualSoundAccessory.DURATION_CHICKEN_DEATH,
-                        Assets.AUDIO_DISTANCE_DEATH));
+                        AudioAssets.AUDIO_DISTANCE_DEATH));
             }
             group.remove(this);
         }
