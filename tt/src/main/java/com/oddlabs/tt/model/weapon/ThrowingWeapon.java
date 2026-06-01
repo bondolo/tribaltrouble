@@ -11,6 +11,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
+import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 
@@ -93,6 +94,11 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     @Override
     public final @NonNull SpriteKey getSpriteRenderer() {
         return sprite_renderer;
+    }
+
+    @Override
+    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+        return sprite_renderer.bounds();
     }
 
     @Override

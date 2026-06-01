@@ -2,6 +2,7 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.util.BoundingBox;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 
@@ -15,8 +16,11 @@ public final class BuildingTemplate extends Template {
     private final float smoke_height;
     private final int num_fragments;
     private final @NonNull SpriteKey built_renderer;
+    private final @NonNull BoundingBox @NonNull [] built_bounds;
     private final @NonNull SpriteKey halfbuilt_renderer;
+    private final @NonNull BoundingBox @NonNull [] halfbuilt_bounds;
     private final @NonNull SpriteKey start_renderer;
+    private final @NonNull BoundingBox @NonNull [] start_bounds;
     private final int max_hit_points;
     private final UnitContainerFactory unit_container_factory;
     private final float mount_offset;
@@ -63,8 +67,12 @@ public final class BuildingTemplate extends Template {
         this.smoke_height = smoke_height;
         this.num_fragments = num_fragments;
         this.built_renderer = built_renderer;
+        this.built_bounds = built_renderer.bounds();
         this.halfbuilt_renderer = halfbuilt_renderer;
+        this.halfbuilt_bounds = halfbuilt_renderer.bounds();
         this.start_renderer = start_renderer;
+        this.start_bounds = start_renderer.bounds();
+
         this.max_hit_points = max_hit_points;
         this.unit_container_factory = unit_container_factory;
         this.mount_offset = mount_offset;
@@ -120,13 +128,26 @@ public final class BuildingTemplate extends Template {
         return built_renderer;
     }
 
+    public @NonNull BoundingBox @NonNull [] getBuiltBounds() {
+        return built_bounds;
+    }
+
     public @NonNull SpriteKey getStartRenderer() {
         return start_renderer;
+    }
+
+    public @NonNull BoundingBox @NonNull [] getStartBounds() {
+        return start_bounds;
     }
 
     public @NonNull SpriteKey getHalfbuiltRenderer() {
         return halfbuilt_renderer;
     }
+
+    public @NonNull BoundingBox @NonNull [] getHalfbuiltBounds() {
+        return halfbuilt_bounds;
+    }
+
 
     public int getMaxHitPoints() {
         return max_hit_points;

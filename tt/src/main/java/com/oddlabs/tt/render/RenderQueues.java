@@ -61,7 +61,7 @@ public final class RenderQueues implements AutoCloseable {
 
     @NonNull
     Texture getTexture(@NonNull TextureKey key) {
-        return texture_lookup.get(key.getKey());
+        return texture_lookup.get(key.key());
     }
 
     public @NonNull ShadowListKey registerRespondRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
@@ -97,7 +97,7 @@ public final class RenderQueues implements AutoCloseable {
 
     @NonNull
     ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {
-        return shadow_renderer_lookup.get(key.getKey());
+        return shadow_renderer_lookup.get(key.key());
     }
 
     public @NonNull SpriteKey register(@NonNull SpriteFile sprite_file) {
@@ -126,12 +126,11 @@ public final class RenderQueues implements AutoCloseable {
         sprite_list_lookup.add(sprite_renderer);
         registerSpriteRenderer(sprite_renderer, sprite_file.getLocation());
         AnimationInfo.AnimationType[] animation_types = sprite_list.getAnimationTypes();
-        int[] type_array = Arrays.stream(animation_types).mapToInt(Enum::ordinal).toArray();
-        return new SpriteKey(index, sprite_list.getBounds(), type_array);
+        return new SpriteKey(index, sprite_list.getBounds(), animation_types);
     }
 
     public @NonNull SpriteRenderer getRenderer(@NonNull SpriteKey key) {
-        return sprite_list_lookup.get(key.getKey());
+        return sprite_list_lookup.get(key.key());
     }
 
     public @NonNull SpriteKey registerDynamicSprite(@NonNull SpriteList sprite_list, @NonNull Texture texture) {
@@ -147,8 +146,7 @@ public final class RenderQueues implements AutoCloseable {
         sprite_list_lookup.add(sprite_renderer);
         registerSpriteRenderer(sprite_renderer, "dynamic_emoji");
         AnimationInfo.AnimationType[] animation_types = sprite_list.getAnimationTypes();
-        int[] type_array = Arrays.stream(animation_types).mapToInt(Enum::ordinal).toArray();
-        return new SpriteKey(index, sprite_list.getBounds(), type_array);
+        return new SpriteKey(index, sprite_list.getBounds(), animation_types);
     }
 
     public @NonNull SpriteKey registerDynamicSprite(@NonNull SpriteList sprite_list, @NonNull TextureKey texture_key) {

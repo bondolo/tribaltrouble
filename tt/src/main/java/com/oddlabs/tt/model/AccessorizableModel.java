@@ -1,7 +1,9 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,12 @@ public abstract class AccessorizableModel extends Model {
     protected AccessorizableModel(@NonNull World world) {
         super(world);
     }
+
+    @Override
+    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+        return null;
+    }
+
 
     /**
      * Ticks all animated accessories. Should be called by subclasses in their animate methods.

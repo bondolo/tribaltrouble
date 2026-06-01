@@ -5,6 +5,7 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -129,5 +130,10 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     @Override
     public final @NonNull SpriteKey getSpriteRenderer() {
         return sprite_renderer;
+    }
+
+    @Override
+    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+        return sprite_renderer.bounds();
     }
 }

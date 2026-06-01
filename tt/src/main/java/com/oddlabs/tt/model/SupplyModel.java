@@ -5,6 +5,7 @@ import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -223,6 +224,11 @@ public abstract sealed class SupplyModel extends AccessorizableModel implements 
     @Override
     public final @NonNull SpriteKey getSpriteRenderer() {
         return sprite_renderer;
+    }
+
+    @Override
+    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+        return sprite_renderer.bounds();
     }
 
     @Override

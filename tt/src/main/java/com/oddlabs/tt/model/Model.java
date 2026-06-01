@@ -1,7 +1,6 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.render.RenderTools;
 import com.oddlabs.tt.render.Shadowable;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.BoundingBox;
@@ -51,10 +50,13 @@ public abstract class Model extends Element<Model> implements Shadowable {
 
     public abstract @Nullable SpriteKey getSpriteRenderer();
 
+    /** {@return the bounds of the model in the local coordinate system for each animation} */
+    protected abstract @NonNull BoundingBox @Nullable [] getLocalBounds();
+
     protected void updateBounds() {
-        SpriteKey renderer = getSpriteRenderer();
-        if (renderer != null) {
-            BoundingBox unit_bounds = renderer.getBounds(getAnimation());
+        var modelBounds = getLocalBounds();
+        if (modelBounds != null) {
+            BoundingBox unit_bounds = modelBounds[getAnimation()];
             float x = getPositionX();
             float y = getPositionY();
             float z = getPositionZ();
@@ -64,10 +66,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
         }
     }
 
-    @Override
-    public void debugRender() {
-        RenderTools.draw(this);
-    }
 
     protected float getZError() {
         return 0f;

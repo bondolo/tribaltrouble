@@ -1,9 +1,11 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.render.ShadowListKey;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioFile;
+import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -13,6 +15,8 @@ public final class UnitTemplate extends Template {
     private final float meters_per_second;
     private final @NonNull WeaponFactory weapon_factory;
     private final @NonNull SpriteKey sprite_renderer;
+    private final @NonNull BoundingBox @NonNull [] bounds;
+    private final AnimationInfo.@NonNull AnimationType @NonNull [] anim_types;
     private final @NonNull UnitSupplyContainerFactory supply_container_factory;
     private final @NonNull AudioFile death_sound;
     private final float death_pitch;
@@ -50,7 +54,10 @@ public final class UnitTemplate extends Template {
         this.meters_per_second = meters_per_second;
         this.weapon_factory = weapon_factory;
         this.sprite_renderer = sprite_renderer;
+        this.bounds = sprite_renderer.bounds();
+        this.anim_types = sprite_renderer.animTypes();
         this.supply_container_factory = supply_container_factory;
+
         this.death_sound = death_sound;
         this.death_pitch = death_pitch;
         this.max_hit_points = max_hit_points;
@@ -78,6 +85,15 @@ public final class UnitTemplate extends Template {
 
     public @NonNull SpriteKey getSpriteRenderer() {
         return sprite_renderer;
+    }
+
+    public @NonNull BoundingBox @NonNull [] getBounds() {
+        return bounds;
+    }
+
+    /** {@return the animation type for the specified unit animation} */
+    public AnimationInfo.@NonNull AnimationType getAnimationType(Unit.@NonNull Animation animation) {
+        return anim_types[animation.ordinal()];
     }
 
     public UnitSupplyContainerFactory getUnitSupplyContainerFactory() {

@@ -11,6 +11,7 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -589,6 +590,15 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             case START -> getTemplate().getStartRenderer();
             case HALFBUILT -> getTemplate().getHalfbuiltRenderer();
             case BUILT -> getTemplate().getBuiltRenderer();
+        };
+    }
+
+    @Override
+    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+        return switch (getRenderLevel()) {
+            case START -> getTemplate().getStartBounds();
+            case HALFBUILT -> getTemplate().getHalfbuiltBounds();
+            case BUILT -> getTemplate().getBuiltBounds();
         };
     }
 

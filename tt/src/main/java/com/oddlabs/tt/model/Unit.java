@@ -14,6 +14,7 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -276,6 +277,11 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     @Override
     public @NonNull SpriteKey getSpriteRenderer() {
         return getTemplate().getSpriteRenderer();
+    }
+
+    @Override
+    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+        return getTemplate().getBounds();
     }
 
     @Override
@@ -555,10 +561,9 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         if (this.animation != animation) {
             this.animation = animation;
             this.anim_time = 0f;
-        } else if (getTemplate().getSpriteRenderer().getAnimationType(animation.ordinal())
-                == AnimationInfo.AnimationType.PLAIN.ordinal()) {
-                    this.anim_time = 0f;
-                }
+        } else if (getTemplate().getAnimationType(animation) == AnimationInfo.AnimationType.PLAIN) {
+            this.anim_time = 0f;
+        }
     }
 
     @Override
