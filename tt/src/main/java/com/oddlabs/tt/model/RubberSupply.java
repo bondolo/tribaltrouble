@@ -154,7 +154,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public void animate(float t) {
-        animateAccessories(t);
+        animateClientState(t);
         if (spawning)
             return;
         anim_time += animation.getSpeed() * t;
@@ -172,9 +172,11 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                     if (racesResources != null) {
                         var chickenThoughts = racesResources.getChickenEmojiSprites();
                         var thought = chickenThoughts[getWorld().getRandom().nextInt(chickenThoughts.length)];
-                        addAccessory(new VisualSoundAccessory(thought,
-                                VisualSoundAccessory.DURATION_CHICKEN_CLUCK,
-                                AudioAssets.AUDIO_DISTANCE_CHICKEN));
+                        ModelClient client = getClientState(ModelClient.class);
+                        if (client != null) {
+                            client.addVisualSound(thought,
+                                    ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
+                        }
                     }
                 }
             } else if (random < .85) {
@@ -243,9 +245,11 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), AudioAssets.CHICKEN_DEATH);
             RacesResources racesResources = getWorld().getRacesResources();
             if (racesResources != null) {
-                addAccessory(new VisualSoundAccessory(getStatusSprite(racesResources),
-                        VisualSoundAccessory.DURATION_CHICKEN_DEATH,
-                        AudioAssets.AUDIO_DISTANCE_DEATH));
+                ModelClient client = getClientState(ModelClient.class);
+                if (client != null) {
+                    client.addVisualSound(getStatusSprite(racesResources),
+                            ModelClient.DURATION_CHICKEN_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
+                }
             }
             group.remove(this);
         }

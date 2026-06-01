@@ -21,7 +21,7 @@ import java.util.List;
  * Represents a {@link Model} that can be selected, commanded, and augmented with accessories.
  * Base class for both {@link Unit} and {@link Building}.
  */
-public abstract sealed class Selectable<T extends Template> extends AccessorizableModel implements Target, Animated,
+public abstract sealed class Selectable<T extends Template> extends Model implements Target, Animated,
         ModelToolTip permits Unit, Building {
 
     public enum VisualPattern {
@@ -101,8 +101,8 @@ public abstract sealed class Selectable<T extends Template> extends Accessorizab
             }
             case DONE -> decide();
         }
-        animateAccessories(t);
         doAnimate(t);
+        animateClientState(t);
         owner.getWorld().updateGlobalChecksum(grid_x + grid_y);
     }
 

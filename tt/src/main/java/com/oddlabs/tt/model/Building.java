@@ -70,12 +70,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         float y = UnitGrid.coordinateFromGrid(grid_y);
         setPosition(x, y);
         pushController(new NullController(this));
-
-        addAccessory(new BuildingDamagedAccessory(this, getHitOffsetZ(), owner.getWorld().getRacesResources()
-                .getDamageSmokeTextures()));
-
-        addAccessory(new BuildingProductionAccessory(this, getTemplate().getChimney(), owner.getWorld()
-                .getRacesResources().getSmokeTextures()));
     }
 
     public boolean hasRallyPoint() {

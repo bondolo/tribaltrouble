@@ -4,13 +4,9 @@ import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeTargetRespond;
-import com.oddlabs.tt.model.AccessorizableModel;
-import com.oddlabs.tt.model.Accessory;
+import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.BuildingDamagedAccessory;
-import com.oddlabs.tt.model.BuildingProductionAccessory;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.model.EmitterAttachedAccessory;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Plants;
 import com.oddlabs.tt.model.PointEmitterModel;
@@ -18,16 +14,18 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.RubberSupply;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.StaticAccessory;
 import com.oddlabs.tt.model.SupplyModel;
 import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.model.behaviour.StunController;
 import com.oddlabs.tt.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.model.weapon.RotatingThrowingWeapon;
 import com.oddlabs.tt.model.weapon.SonicBlast;
 import com.oddlabs.tt.net.PeerHub;
+import com.oddlabs.tt.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.particle.Emitter;
 import com.oddlabs.tt.particle.Lightning;
 import com.oddlabs.tt.particle.SonicBlastEffect;
+import com.oddlabs.tt.particle.StunFunction;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.procedural.GeneratorRing;
 import com.oddlabs.tt.util.BoundingBox;
@@ -37,10 +35,9 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayDeque;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 /**
  * Manages the rendering state and visit logic for world entities and their accessories.
@@ -50,8 +47,8 @@ final class RenderState {
     private final Queue<@NonNull Lightning> lightning_queue = new ArrayDeque<>();
     private final Queue<@NonNull SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
     private final @NonNull SpriteSorter sprite_sorter;
-    private final @NonNull RenderStateCache<ElementRenderState<Model>> render_state_cache;
-    private final @NonNull RenderStateCache<AttachedRenderState> attached_state_cache;
+    private final @NonNull RenderStateCache<@NonNull ElementRenderState<Model>> render_state_cache;
+    private final @NonNull RenderStateCache<@NonNull AttachedRenderState> attached_state_cache;
     private final @NonNull RenderQueues render_queues;
     private final @NonNull TargetRespondRenderer target_respond_renderer;
     private final @NonNull SelectableShadowRenderer default_shadow_renderer;
@@ -60,9 +57,6 @@ final class RenderState {
     private final @Nullable Selection selection;
     private final @NonNull Player local_player;
     private final @NonNull MatrixStack model_view_stack = new MatrixStack();
-    private final Matrix4f temp_matrix = new Matrix4f();
-    private final Matrix4f rel_matrix = new Matrix4f();
-    private final Vector3f pos_vector = new Vector3f();
 
     private boolean picking;
     private boolean visible_override;
@@ -108,38 +102,28 @@ final class RenderState {
                     weapon));
             case RotatingThrowingWeapon weapon -> addToRenderList(getCachedState(rotating_weapon_model_visitor,
                     weapon));
-            case AccessorizableModel model -> visitAccessorizableModel(model);
+            case PointEmitterModel emitterModel -> visitPointEmitterModel(emitterModel);
+            case SonicBlast blast -> visitSonicBlast(blast);
             default -> throw new UnsupportedOperationException("element has no rendering defined " + element);
         }
     }
 
-    private void visitAccessorizableModel(final @NonNull AccessorizableModel model) {
+    private void visitPointEmitterModel(final @NonNull PointEmitterModel emitterModel) {
         if (picking) return;
-        switch (model) {
-            case PointEmitterModel emitterModel -> {
-                emitter_queue.add(emitterModel.getEmitter());
-                float z_offset = getVisuallyCorrectHeight(emitterModel.getPositionX(), emitterModel.getPositionY());
-                ElementRenderState<PointEmitterModel> state = (ElementRenderState<PointEmitterModel>) getCachedState(
-                        WhiteModelVisitor.getInstance(), emitterModel, z_offset);
-                visitAccessories(emitterModel, state);
-            }
-            case SonicBlast blast -> {
-                // SonicBlast logic itself is a model, but its visuals are handled by the sonic_blast_queue
-                sonic_blast_queue.add(blast.getSonicBlastEffect());
-                float z_offset = getVisuallyCorrectHeight(blast.getPositionX(), blast.getPositionY());
-                ElementRenderState<SonicBlast> state = (ElementRenderState<SonicBlast>) getCachedState(
-                        WhiteModelVisitor.getInstance(), blast, z_offset);
-                visitAccessories(blast, state);
-            }
-            default -> {
-                // If it's a generic accessorizable model, we still want to visit its accessories
-                float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-                ElementRenderState<AccessorizableModel> state = (ElementRenderState<
-                        AccessorizableModel>) getCachedState(
-                                WhiteModelVisitor.getInstance(), model, z_offset);
-                visitAccessories(model, state);
-            }
-        }
+        emitter_queue.add(emitterModel.getEmitter());
+        float z_offset = getVisuallyCorrectHeight(emitterModel.getPositionX(), emitterModel.getPositionY());
+        ElementRenderState<PointEmitterModel> state = (ElementRenderState<PointEmitterModel>) getCachedState(
+                WhiteModelVisitor.getInstance(), emitterModel, z_offset);
+        visitAccessories(emitterModel, state);
+    }
+
+    private void visitSonicBlast(final @NonNull SonicBlast blast) {
+        if (picking) return;
+        sonic_blast_queue.add(blast.getSonicBlastEffect());
+        float z_offset = getVisuallyCorrectHeight(blast.getPositionX(), blast.getPositionY());
+        ElementRenderState<SonicBlast> state = (ElementRenderState<SonicBlast>) getCachedState(
+                WhiteModelVisitor.getInstance(), blast, z_offset);
+        visitAccessories(blast, state);
     }
 
     @NonNull
@@ -215,10 +199,9 @@ final class RenderState {
         return state;
     }
 
-    private static final BoundingBox picking_selection_box = new BoundingBox();
-
     private static boolean pickingInFrustum(@NonNull Selectable<?> selectable, float[][] frustum, float z_offset,
             float selection_radius, float selection_height) {
+        BoundingBox picking_selection_box = new BoundingBox();
         picking_selection_box.setBounds(-selection_radius + selectable.getPositionX(), selection_radius + selectable
                 .getPositionX(), -selection_radius + selectable.getPositionY(), selection_radius + selectable
                         .getPositionY(), z_offset, z_offset + selection_height);
@@ -256,9 +239,74 @@ final class RenderState {
         }
     }
 
-    private <M extends AccessorizableModel> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<
+    private @NonNull VisualModel getOrCreateVisualModel(@NonNull Model model) {
+        VisualModel visualModel = model.getClientState(VisualModel.class);
+        if (visualModel == null) {
+            visualModel = new VisualModel(model);
+            model.setClientState(visualModel);
+
+            // Populate initial accessories
+            if (model instanceof Unit unit) {
+                if (unit.getAbilities().hasAbilities(Abilities.BUILD)) {
+                    visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
+                }
+            } else if (model instanceof Building building) {
+                float hitOffsetZ = building.getHitOffsetZ();
+                var racesResources = local_player.getWorld().getRacesResources();
+                if (racesResources != null) {
+                    visualModel.getAccessories().add(new BuildingDamagedAccessory(
+                            building, hitOffsetZ, racesResources.getDamageSmokeTextures()));
+                    visualModel.getAccessories().add(new BuildingProductionAccessory(
+                            building, building.getTemplate().getChimney(), racesResources.getSmokeTextures()));
+                }
+            }
+        }
+        return visualModel;
+    }
+
+    private <M extends Model> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<
             M> parentState) {
-        List<Accessory> accessories = model.getAttachedAccessories();
+        VisualModel visualModel = getOrCreateVisualModel(model);
+
+        // Dynamically add/remove stun star accessory for units
+        if (model instanceof Unit unit) {
+            if (unit.getCurrentController() instanceof StunController stunController) {
+                boolean hasStunStar = false;
+                for (Accessory acc : visualModel.getAccessories()) {
+                    if (acc instanceof EmitterAttachedAccessory) {
+                        hasStunStar = true;
+                        break;
+                    }
+                }
+                if (!hasStunStar) {
+                    float timeLeft = stunController.getTime();
+                    float velocity = (float) Math.PI / 2;
+                    var racesResources = local_player.getWorld().getRacesResources();
+                    if (racesResources != null) {
+                        BalancedParametricEmitter emitter = new BalancedParametricEmitter(
+                                local_player.getWorld(),
+                                new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
+                                velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
+                                5, 0f, 2f,
+                                Color.Standard.WHITE, Color.Standard.TRANSPARENT,
+                                new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), timeLeft,
+                                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                                racesResources.getStarTextures());
+
+                        float mountOffset = unit.getMountOffset();
+                        var offset = new Vector3f(
+                                unit.getTemplate().getStunX(),
+                                unit.getTemplate().getStunY(),
+                                unit.getTemplate().getStunZ() + mountOffset);
+                        visualModel.getAccessories().add(new EmitterAttachedAccessory(emitter, offset));
+                    }
+                }
+            } else {
+                visualModel.getAccessories().removeIf(acc -> acc instanceof EmitterAttachedAccessory);
+            }
+        }
+
+        List<Accessory> accessories = visualModel.getAccessories();
         for (int i = 0; i < accessories.size(); i++) {
             Accessory accessory = accessories.get(i);
             if (accessory != null && accessory.isVisible(model, camera)) {
@@ -267,7 +315,7 @@ final class RenderState {
         }
     }
 
-    private <M extends AccessorizableModel> void visitAccessory(@NonNull Accessory accessory,
+    private <M extends Model> void visitAccessory(@NonNull Accessory accessory,
             @NonNull ElementRenderState<M> parentState) {
         if (picking) return;
 
@@ -290,7 +338,6 @@ final class RenderState {
                 addToRenderList(state);
             }
             default -> {
-                // Handle generic animated accessories that might just be sprites
                 AttachedRenderState state = attached_state_cache.get();
                 state.setup(parentState, accessory);
                 addToRenderList(state);
@@ -298,8 +345,12 @@ final class RenderState {
         }
     }
 
-    private <M extends AccessorizableModel> void updateEmitterWorldPosition(@NonNull Emitter<?> emitter,
+    private <M extends Model> void updateEmitterWorldPosition(@NonNull Emitter<?> emitter,
             @NonNull Accessory accessory, @NonNull ElementRenderState<M> parentState) {
+        Matrix4f temp_matrix = new Matrix4f();
+        Matrix4f rel_matrix = new Matrix4f();
+        Vector3f pos_vector = new Vector3f();
+
         // Get parent world transform (pos and rot)
         parentState.getTransform(temp_matrix);
 

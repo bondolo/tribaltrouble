@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Unit;
 import org.jspecify.annotations.NonNull;
 
@@ -13,11 +12,15 @@ public final class StunController extends Controller {
 
     private float time;
 
-    public StunController(@NonNull Unit unit, float time, @NonNull Accessory accessory) {
+    public StunController(@NonNull Unit unit, float time) {
         super(0);
         this.unit = unit;
         this.time = time;
-        stun_behaviour = new StunBehaviour(this, unit, accessory);
+        stun_behaviour = new StunBehaviour(this, unit);
+    }
+
+    public float getTime() {
+        return time;
     }
 
     public boolean shouldSleep(float t) {

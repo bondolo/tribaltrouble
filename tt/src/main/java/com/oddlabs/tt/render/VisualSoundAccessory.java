@@ -1,8 +1,8 @@
-package com.oddlabs.tt.model;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Unit;
 import org.joml.Matrix4f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
@@ -12,11 +12,6 @@ import org.jspecify.annotations.Nullable;
  * An accessory representing a temporary visual alert for in-game sounds.
  */
 public final class VisualSoundAccessory implements AnimatedAccessory {
-    public static final float DURATION_CHICKEN_CLUCK = 0.8f;
-    public static final float DURATION_CHICKEN_DEATH = 1.2f;
-    public static final float DURATION_UNIT_DEATH = 1.5f;
-    public static final float DURATION_HARVEST = 1.0f;
-    public static final float DURATION_REPAIR = 1.0f;
 
     private static final float DRIFT_HEIGHT = 0.8f;
     private static final float BASE_Z_OFFSET = 3.5f;
@@ -47,7 +42,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
         if (!Renderer.getRenderer().getSettings().sound_emojis) {
             return false;
         }
@@ -88,7 +83,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull AccessorizableModel parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
         float mountOffset = 0.0f;
         if (parent instanceof Unit unit) {
             if (unit.isRegistered() && !unit.isDead()) {

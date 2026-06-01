@@ -2,9 +2,9 @@ package com.oddlabs.tt.model.behaviour;
 
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.VisualSoundAccessory;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 
@@ -50,9 +50,11 @@ public final class RepairBehaviour implements Behaviour {
                 var selectedSprite = random.nextBoolean()
                         ? racesResources.getSawEmojiSprite()
                         : racesResources.getHammerEmojiSprite();
-                unit.addAccessory(new VisualSoundAccessory(selectedSprite,
-                        VisualSoundAccessory.DURATION_REPAIR,
-                        AudioAssets.AUDIO_DISTANCE_HARVEST));
+                ModelClient client = unit.getClientState(ModelClient.class);
+                if (client != null) {
+                    client.addVisualSound(selectedSprite,
+                            ModelClient.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_HARVEST);
+                }
             }
         }
 

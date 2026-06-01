@@ -1,4 +1,4 @@
-package com.oddlabs.tt.model;
+package com.oddlabs.tt.render;
 
 /**
  * An {@link Accessory} that does not require frame-by-frame animation updates.

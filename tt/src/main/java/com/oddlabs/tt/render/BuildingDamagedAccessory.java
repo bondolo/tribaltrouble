@@ -1,10 +1,10 @@
-package com.oddlabs.tt.model;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.particle.LinearEmitter;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.render.SpriteKey;
-import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -57,7 +57,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
         if (parent instanceof Building building) {
             int startSmoke = building.getTemplate().getMaxHitPoints() / 2;
             int hp = building.getHitPoints();
@@ -79,7 +79,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull AccessorizableModel parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
         dest.translate(0f, 0f, hitOffsetZ);
     }
 

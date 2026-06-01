@@ -5,8 +5,6 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.behaviour.*;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
-import com.oddlabs.tt.particle.BalancedParametricEmitter;
-import com.oddlabs.tt.particle.StunFunction;
 import com.oddlabs.tt.pathfinder.Movable;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.PathTracker;
@@ -16,11 +14,8 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
-import com.oddlabs.util.Color;
-import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,9 +92,6 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
         findInitialPosition(x, y, grid_targets_only);
         pushController(new IdleController(this, new AttackScanFilter(getOwner(), AttackScanFilter.UNIT_RANGE), true));
-        if (getAbilities().hasAbilities(Abilities.BUILD)) {
-            addAccessory(new CarriedResourceAccessory(this));
-        }
         if (!getAbilities().hasAbilities(Abilities.MAGIC)) {
             int result = getOwner().getUnitCountContainer().increaseSupply(1);
             assert (result == 1) : "No room for new unit in player unit container.";
@@ -382,14 +374,13 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 owner.unitKilled();
                 getOwner().unitLost();
 
-                // Clear all accessories on death (supply, harvesting emojis, stun stars, etc.)
-                getAttachedAccessories().clear();
-
                 RacesResources racesResources = getOwner().getWorld().getRacesResources();
                 if (racesResources != null) {
-                    addAccessory(new VisualSoundAccessory(racesResources.getGravestoneEmojiSprite(),
-                            VisualSoundAccessory.DURATION_UNIT_DEATH,
-                            AudioAssets.AUDIO_DISTANCE_DEATH));
+                    ModelClient client = getClientState(ModelClient.class);
+                    if (client != null) {
+                        client.addVisualSound(racesResources.getGravestoneEmojiSprite(),
+                                ModelClient.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
+                    }
                 }
 
                 pushController(new DieController(this));
@@ -405,24 +396,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     public void stun(float time) {
-        EmitterAttachedAccessory accessory = createStunStar(time, (float) Math.PI / 2);
-        pushController(new StunController(this, time, accessory));
+        pushController(new StunController(this, time));
         forceDecide();
-    }
-
-    private @NonNull EmitterAttachedAccessory createStunStar(float time, float velocity) {
-        BalancedParametricEmitter emitter = new BalancedParametricEmitter(getOwner().getWorld(),
-                new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
-                velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
-                5, 0f, 2f,
-                Color.Standard.WHITE, Color.Standard.TRANSPARENT,
-                new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), time,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, getOwner().getWorld().getRacesResources()
-                        .getStarTextures());
-
-        var offset = new Vector3f(getTemplate().getStunX(), getTemplate().getStunY(), getTemplate().getStunZ()
-                + mount_offset);
-        return new EmitterAttachedAccessory(emitter, offset);
     }
 
     public boolean canAttack(@NonNull Target target, boolean kill_friendly) {

@@ -1,10 +1,7 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.AccessorizableModel;
-import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.VisualSoundAccessory;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -29,7 +26,7 @@ final class AttachedRenderState implements ModelState<Model> {
     @Override
     public @NonNull Matrix4f getTransform(@NonNull Matrix4f dest) {
         parentState.getTransform(dest);
-        accessory.getRelativeTransform(dest, (AccessorizableModel) parentState.model);
+        accessory.getRelativeTransform(dest, parentState.model);
 
         if (accessory instanceof VisualSoundAccessory) {
             CameraState camera = parentState.render_state.getCamera();
@@ -127,7 +124,7 @@ final class AttachedRenderState implements ModelState<Model> {
 
     @Override
     public float getAnimationTicks() {
-        return accessory.getAnimationTicks((AccessorizableModel) parentState.model);
+        return accessory.getAnimationTicks(parentState.model);
     }
 
     @Override

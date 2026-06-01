@@ -5,6 +5,7 @@ import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.particle.Emitter;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -13,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  * Used for standalone particle effects like explosions or impact bursts.
  * Can itself be augmented with accessories.
  */
-public class PointEmitterModel extends AccessorizableModel implements Animated {
+public class PointEmitterModel extends Model implements Animated {
     protected final @NonNull Emitter<?> emitter;
     private final @NonNull AnimationManager manager;
     private final float height;
@@ -61,7 +62,7 @@ public class PointEmitterModel extends AccessorizableModel implements Animated {
     public void animate(float t) {
         emitter.getPosition().set(getPositionX(), getPositionY(), getPositionZ());
         emitter.animate(t);
-        animateAccessories(t);
+        animateClientState(t);
     }
 
     @Override
@@ -71,6 +72,11 @@ public class PointEmitterModel extends AccessorizableModel implements Animated {
 
     @Override
     public final @Nullable SpriteKey getSpriteRenderer() {
+        return null;
+    }
+
+    @Override
+    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 

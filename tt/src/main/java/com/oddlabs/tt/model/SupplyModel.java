@@ -14,7 +14,7 @@ import com.oddlabs.util.Color;
 /**
  * Abstract base class for non-tree harvestable resources in the world such as rocks and iron.
  */
-public abstract sealed class SupplyModel extends AccessorizableModel implements Supply, Target permits IronSupply,
+public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply,
         RubberSupply, RockSupply {
     private static final float SPAWN_OFFSET_Z = -2f;
 

@@ -1,13 +1,13 @@
-package com.oddlabs.tt.model;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.model.Model;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * An accessory that is logically attached to an {@link AccessorizableModel}.
+ * An accessory that is logically attached to a {@link Model}.
  * These accessories do not exist independently in the world quadtree and instead
  * share the lifecycle and visibility context of their parent.
  */
@@ -27,7 +27,7 @@ public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
      * @param camera The current camera state for distance/visibility checks.
      * @return visibility status.
      */
-    boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera);
+    boolean isVisible(@NonNull Model parent, @NonNull CameraState camera);
 
     /**
      * Returns true if this accessory has completed its lifecycle and should be removed.
@@ -53,7 +53,7 @@ public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
      * @param parent The model this accessory is attached to.
      * @return animation ticks.
      */
-    default float getAnimationTicks(@NonNull AccessorizableModel parent) {
+    default float getAnimationTicks(@NonNull Model parent) {
         return parent.getAnimationTicks();
     }
 
@@ -63,5 +63,5 @@ public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
      * @param dest   The matrix to populate with the relative transform.
      * @param parent The model this accessory is attached to.
      */
-    void getRelativeTransform(@NonNull Matrix4f dest, @NonNull AccessorizableModel parent);
+    void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent);
 }

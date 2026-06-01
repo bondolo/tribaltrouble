@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.model.Accessory;
 import com.oddlabs.tt.model.Unit;
 import org.jspecify.annotations.NonNull;
 
@@ -10,13 +9,10 @@ import org.jspecify.annotations.NonNull;
 public final class StunBehaviour implements Behaviour {
     private final @NonNull StunController controller;
     private final @NonNull Unit unit;
-    private final @NonNull Accessory accessory;
 
-    public StunBehaviour(@NonNull StunController controller, @NonNull Unit unit, @NonNull Accessory accessory) {
+    public StunBehaviour(@NonNull StunController controller, @NonNull Unit unit) {
         this.controller = controller;
         this.unit = unit;
-        this.accessory = accessory;
-        unit.addAccessory(accessory);
     }
 
     @Override
@@ -36,6 +32,5 @@ public final class StunBehaviour implements Behaviour {
 
     @Override
     public void onCleanup() {
-        unit.removeAccessory(accessory);
     }
 }

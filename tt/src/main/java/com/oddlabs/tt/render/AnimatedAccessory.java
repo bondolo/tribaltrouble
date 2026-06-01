@@ -1,4 +1,4 @@
-package com.oddlabs.tt.model;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.animation.Animated;
 

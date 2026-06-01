@@ -1,7 +1,7 @@
 package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.model.AccessorizableModel;
+import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.particle.SonicBlastEffect;
@@ -11,6 +11,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.joml.Vector3f;
+import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -18,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Logic controller for the Sonic Blast magic effect.
  */
-public final class SonicBlast extends AccessorizableModel implements Magic {
+public final class SonicBlast extends Model implements Magic {
 
 
     private final float hit_radius;
@@ -83,6 +84,7 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
         if (time >= seconds) {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         }
+        animateClientState(t);
 
         if (!first_ring_sent) {
             first_ring_sent = true;
@@ -115,7 +117,6 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
                 targets.remove();
             }
         }
-        animateAccessories(t);
     }
 
     private float calculateValueFromCurrentRadius(float current_radius, float max, float min) {
@@ -140,6 +141,11 @@ public final class SonicBlast extends AccessorizableModel implements Magic {
 
     @Override
     public @Nullable SpriteKey getSpriteRenderer() {
+        return null;
+    }
+
+    @Override
+    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 

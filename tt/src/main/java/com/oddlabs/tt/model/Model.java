@@ -14,6 +14,7 @@ import java.util.Objects;
  */
 public abstract class Model extends Element<Model> implements Shadowable {
     private final @NonNull World world;
+    private @Nullable ClientState clientState;
 
     protected Model(@NonNull World world) {
         super(Objects.requireNonNull(world, "world").getElementRoot());
@@ -98,6 +99,26 @@ public abstract class Model extends Element<Model> implements Shadowable {
             updateBounds();
             onReinsert();
             reregister();
+        }
+    }
+
+    /** {@return the client state of the specified class type, or null if not set or of a different type} */
+    public final <C extends ClientState> @Nullable C getClientState(@NonNull Class<? extends C> type) {
+        return type.isInstance(clientState) ? type.cast(clientState) : null;
+    }
+
+    /**
+     * Sets the client state associated with this model.
+     *
+     * @param clientState The new client state.
+     */
+    public final void setClientState(@Nullable ClientState clientState) {
+        this.clientState = clientState;
+    }
+
+    protected final void animateClientState(float t) {
+        if (clientState != null) {
+            clientState.update(t);
         }
     }
 }

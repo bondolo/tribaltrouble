@@ -1,10 +1,11 @@
-package com.oddlabs.tt.model;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.model.Abilities;
+import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.particle.LinearEmitter;
 import com.oddlabs.tt.particle.RandomAccelerationEmitter;
-import com.oddlabs.tt.render.SpriteKey;
-import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -27,7 +28,6 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
 
     private static final Vector3fc ZERO_VEC = new Vector3f(0f, 0f, 0f);
     private static final Vector3fc EMITTER_ACCEL = new Vector3f(0f, 0f, 1.3f);
-    private static final Vector3fc EMITTER_ACCEL_OFFSET = new Vector3f(0f, 0f, 0.25f);
     private static final float PARTICLE_DAMPING = 0.7f;
     private static final Color PARTICLE_COLOR = new Color.Standard(0xBF_59_59_59);
     private static final Vector3fc PARTICLE_RADIUS = new Vector3f(0.3f, 0.3f, 0.3f);
@@ -59,7 +59,7 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
         if (parent instanceof Building building) {
             // Only armories have production smoke
             if (!building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
@@ -84,7 +84,7 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull AccessorizableModel parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
         dest.translate(chimneyOffset);
     }
 

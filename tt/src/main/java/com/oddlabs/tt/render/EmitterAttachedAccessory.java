@@ -1,8 +1,9 @@
-package com.oddlabs.tt.model;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.particle.Emitter;
-import com.oddlabs.tt.render.SpriteKey;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -27,7 +28,7 @@ public final class EmitterAttachedAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull AccessorizableModel parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
         if (parent instanceof Selectable<?> selectable) {
             return !selectable.isDead();
         }
@@ -35,7 +36,7 @@ public final class EmitterAttachedAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull AccessorizableModel parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
         // Apply rotation based on parent direction
         float angle = (float) Math.atan2(parent.getDirectionY(), parent.getDirectionX());
         dest.rotate(angle, 0f, 0f, 1f);
