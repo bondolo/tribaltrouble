@@ -266,6 +266,11 @@ public final class GUIRoot extends GUIObject {
 
         effective_scale = calculateEffectiveScale(width, height);
 
+        var pointerInput = Renderer.getLocalInput().getPointerInput();
+        if (pointerInput.getCurrentScale() != effective_scale) {
+            pointerInput.loadCursors(effective_scale);
+        }
+
         int virtualWidth = (int) (width / effective_scale);
         int virtualHeight = (int) (height / effective_scale);
 

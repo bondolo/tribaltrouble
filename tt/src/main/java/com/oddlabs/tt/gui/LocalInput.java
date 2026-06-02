@@ -20,6 +20,9 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Coordinates keyboard and pointer input for the local user.
+ */
 public final class LocalInput implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(LocalInput.class.getName());
 
@@ -29,6 +32,7 @@ public final class LocalInput implements AutoCloseable {
     private int mouse_x;
     private int mouse_y;
 
+    private final @NonNull Window window;
     private final @NonNull InputProvider<?> inputProvider;
     private final InputManager inputManager = new InputManager();
     private final KeyboardInput keyboardInput = new KeyboardInput();
@@ -41,6 +45,7 @@ public final class LocalInput implements AutoCloseable {
     private int revision;
 
     public LocalInput(@NonNull Window lwjglWindow) {
+        this.window = lwjglWindow;
         if (lwjglWindow instanceof LWJGL3Window win) {
             inputProvider = new LWJGL3InputProvider(win);
         } else {
@@ -163,7 +168,7 @@ public final class LocalInput implements AutoCloseable {
         if (inputProvider instanceof LWJGL3InputProvider lwjgl3InputProvider) {
             lwjgl3InputProvider.initCallbacks();
         }
-        pointerInput.loadCursors();
+        pointerInput.loadCursors(window.getPixelDensity());
         Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
         mouse_x = deterministic.log(inputProvider.getMouseX());
         mouse_y = deterministic.log(inputProvider.getMouseY());

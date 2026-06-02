@@ -17,11 +17,15 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Manages mouse/pointer input and hardware cursor state.
+ */
 public final class PointerInput {
     private final Set<@NonNull MouseButton> buttons = EnumSet.noneOf(MouseButton.class);
     private short last_x;
     private short last_y;
     private @NonNull Cursor active_cursor = Cursor.NULL_CURSOR;
+    private @Nullable CursorType active_cursor_type = null;
     private @Nullable MouseButton drag_button = null;
 
     private final @NonNull InputProvider<?> inputProvider;
@@ -30,15 +34,27 @@ public final class PointerInput {
     private final Map<@NonNull CursorType, @NonNull Cursor> cursors = new EnumMap<>(CursorType.class);
     private @NonNull Cursor debug_cursor = Cursor.NULL_CURSOR;
 
-    public void loadCursors() {
-        debug_cursor = Resources.findResource(new CursorFile("/textures/gui/pointer_clientload_32_8.png", 2, 2));
-        cursors.put(CursorType.NORMAL, Resources.findResource(new CursorFile("/textures/gui/pointer_32_8.png", 2, 2)));
+    private float current_scale = 1.0f;
+
+    public float getCurrentScale() {
+        return current_scale;
+    }
+
+    public void loadCursors(float scale) {
+        this.current_scale = scale;
+        debug_cursor = Resources.findResource(new CursorFile("/textures/gui/pointer_clientload_32_8.png", 2, 2, scale));
+        cursors.put(CursorType.NORMAL, Resources.findResource(new CursorFile("/textures/gui/pointer_32_8.png", 2, 2,
+                scale)));
         cursors.put(CursorType.TARGET, Resources.findResource(new CursorFile("/textures/gui/pointer_target_32_8.png",
-                14, 14)));
+                14, 14, scale)));
         cursors.put(CursorType.TEXT, Resources.findResource(new CursorFile("/textures/gui/pointer_text_32_8.png", 6,
-                11)));
+                11, scale)));
         cursors.put(CursorType.DEBUG, debug_cursor);
         cursors.put(CursorType.NULL, Cursor.NULL_CURSOR);
+
+        if (active_cursor_type != null) {
+            setActiveCursor(active_cursor_type);
+        }
     }
 
     public PointerInput(@NonNull InputProvider<?> inputProvider, @NonNull LocalInput localInput) {
@@ -47,6 +63,7 @@ public final class PointerInput {
     }
 
     public void setActiveCursor(@NonNull CursorType type) {
+        this.active_cursor_type = type;
         Cursor c = cursors.get(type);
         if (c != null) {
             setActiveCursor(c);

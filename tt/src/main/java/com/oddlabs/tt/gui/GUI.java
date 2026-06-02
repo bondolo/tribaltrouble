@@ -46,8 +46,9 @@ public final class GUI implements Animated {
 
     public @NonNull GUIRoot createRoot() {
         GUIRoot gui_root = new GUIRoot(this);
-        var context = Renderer.getRenderer().getRenderContext();
-        gui_root.displayChanged(context.getViewportWidth(), context.getViewportHeight());
+        // This happens early before the viewport is fully initialized
+        var window = Renderer.getRenderer().getWindow();
+        gui_root.displayChanged(window.getWidth(), window.getHeight());
         return gui_root;
     }
 
