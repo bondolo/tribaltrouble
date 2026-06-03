@@ -206,8 +206,8 @@ public final class RacesResources {
                 RubberSupply.class, queues.register(viking_rubber_sprite)
         );
 
-        smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(), 0);
-        damage_smoke_textures[0] = queues.registerTexture(new GeneratorDamageSmoke(), 0);
+        smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(42, 0.6f, 1.0f), 0);
+        damage_smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(43, 1.0f, 0.5f), 0);
         poison_textures[0] = queues.registerTexture(new GeneratorPoison(), 0);
         lightning_texture = queues.registerTexture(new GeneratorLightning(), 0);
 
