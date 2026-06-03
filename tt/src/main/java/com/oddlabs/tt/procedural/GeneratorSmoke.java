@@ -47,7 +47,7 @@ public final class GeneratorSmoke extends TextureGenerator {
         // This ensures the "cartoon chunks" fade out before hitting the sprite edge, preventing banding.
         Channel smoke_alpha = new Ring(TEXTURE_SIZE, TEXTURE_SIZE, new float[][]{{0f, 1f}, {0.4f, 0f}},
                 Ring.Interpolation.SMOOTH).toChannel().gamma(3.0f);
-        
+
         // Perturb the alpha with the Voronoi noise to create stylized chunky edges.
         smoke_alpha.channelMultiply(voronoi.copy().dynamicRange(0.85f, 1.0f));
 
@@ -56,7 +56,7 @@ public final class GeneratorSmoke extends TextureGenerator {
         }
 
         Channel smoke_color = new Channel(TEXTURE_SIZE, TEXTURE_SIZE).fill(baseBrightness);
-        
+
         // Smooth the bump map significantly to keep the shapes "bloby" but not "ringy".
         Channel smoke_bump = voronoi.copy().gamma(0.5f).smooth(3).dynamicRange(0.0f, 1.0f).channelMultiply(smoke_alpha);
 
@@ -66,7 +66,7 @@ public final class GeneratorSmoke extends TextureGenerator {
 
         GLIntImage smoke_img = new GLIntImage(smoke);
         if (Landscape.DEBUG) smoke_img.saveAsPNG("generator_smoke_" + seed);
-        
+
         return new Texture[]{
                 new Texture(smoke_img, Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                         GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE)

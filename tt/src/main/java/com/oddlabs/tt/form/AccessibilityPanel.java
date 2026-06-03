@@ -230,8 +230,9 @@ public final class AccessibilityPanel extends Panel {
         Runnable refreshUI = () -> {
             int index = pm_team.getChosenItemIndex();
             var currentColour = Renderer.getRenderer().getSettings().team_colours[index];
-            float[] hsb = java.awt.Color.RGBtoHSB((int) (currentColour.r() * 255), (int) (currentColour.g() * 255),
-                    (int) (currentColour.b() * 255), null);
+            float[] hsb = java.awt.Color.RGBtoHSB(Math.round(currentColour.r() * 255), Math.round(currentColour.g()
+                    * 255),
+                    Math.round(currentColour.b() * 255), null);
             slider_hue.setValue((int) (hsb[0] * 360));
             colourBox.setColour(currentColour);
         };

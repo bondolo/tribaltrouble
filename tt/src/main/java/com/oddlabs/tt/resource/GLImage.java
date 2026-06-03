@@ -106,10 +106,10 @@ public abstract class GLImage {
                 int g = (pixel >>> 8) & 0xff;
                 int b = pixel & 0xff;
 
-                a = (int) (a * factor);
-                r = (int) (r * factor);
-                g = (int) (g * factor);
-                b = (int) (b * factor);
+                a = Math.round(a * factor);
+                r = Math.round(r * factor);
+                g = Math.round(g * factor);
+                b = Math.round(b * factor);
 
                 image.putPixel(x, y, (a << 24) | (r << 16) | (g << 8) | b);
             }
@@ -223,9 +223,9 @@ public abstract class GLImage {
         // Calculate average color based on weight
         int r_avg, g_avg, b_avg;
         if (weight_acc > 0) {
-            r_avg = (int) (r_acc / weight_acc);
-            g_avg = (int) (g_acc / weight_acc);
-            b_avg = (int) (b_acc / weight_acc);
+            r_avg = (int) ((r_acc + weight_acc / 2) / weight_acc);
+            g_avg = (int) ((g_acc + weight_acc / 2) / weight_acc);
+            b_avg = (int) ((b_acc + weight_acc / 2) / weight_acc);
         } else {
             r_avg = 0;
             g_avg = 0;
@@ -233,14 +233,14 @@ public abstract class GLImage {
         }
 
         if (current_level >= base_fadeout_level) {
-            a_acc = (int) (a_acc * fadeout_factor);
+            a_acc = Math.round(a_acc * fadeout_factor);
             // Don't fade color, only alpha? Original faded color too.
             // If we fade color towards black, it becomes anemic.
             // Usually distance fadeout only affects Alpha.
             // But original code faded R,G,B too.
-            r_avg = (int) (r_avg * fadeout_factor);
-            g_avg = (int) (g_avg * fadeout_factor);
-            b_avg = (int) (b_avg * fadeout_factor);
+            r_avg = Math.round(r_avg * fadeout_factor);
+            g_avg = Math.round(g_avg * fadeout_factor);
+            b_avg = Math.round(b_avg * fadeout_factor);
         }
 
         if (max_alpha) {
@@ -249,7 +249,7 @@ public abstract class GLImage {
                 a_acc = 255;
             }
         } else {
-            a_acc = (int) (a_acc * inv_num_averaged);
+            a_acc = Math.round(a_acc * inv_num_averaged);
         }
 
         return (a_acc << 24) | (r_avg << 16) | (g_avg << 8) | b_avg;
@@ -289,15 +289,15 @@ public abstract class GLImage {
             }
         }
         if (current_level >= base_fadeout_level) {
-            col1 = (int) (col1 * fadeout_factor);
-            col2 = (int) (col2 * fadeout_factor);
-            col3 = (int) (col3 * fadeout_factor);
-            col4 = (int) (col4 * fadeout_factor);
+            col1 = Math.round(col1 * fadeout_factor);
+            col2 = Math.round(col2 * fadeout_factor);
+            col3 = Math.round(col3 * fadeout_factor);
+            col4 = Math.round(col4 * fadeout_factor);
         }
-        col1 = (int) (col1 * inv_num_averaged);
-        col2 = (int) (col2 * inv_num_averaged);
-        col3 = (int) (col3 * inv_num_averaged);
-        col4 = (int) (col4 * inv_num_averaged);
+        col1 = Math.round(col1 * inv_num_averaged);
+        col2 = Math.round(col2 * inv_num_averaged);
+        col3 = Math.round(col3 * inv_num_averaged);
+        col4 = Math.round(col4 * inv_num_averaged);
         if (max_alpha) {
             if (col1 >= 128)
                 col1 = 255;
@@ -362,8 +362,10 @@ public abstract class GLImage {
                 dg = dpixel >>> 8 & 0xff;
                 db = dpixel & 0xff;
                 da = dpixel >>> 24;
-                putPixel(x + dx, y + dy, (((sa * sa + da * sa_inverse) / 255) << 24) + (((sr * sa + dr * sa_inverse)
-                        / 255) << 16) + (((sg * sa + dg * sa_inverse) / 255) << 8) + ((sb * sa + db * sa_inverse)
+                putPixel(x + dx, y + dy, (((sa * 255 + da * sa_inverse + 127) / 255) << 24) + (((sr * sa + dr
+                        * sa_inverse + 127)
+                        / 255) << 16) + (((sg * sa + dg * sa_inverse + 127) / 255) << 8) + ((sb * sa + db * sa_inverse
+                                + 127)
                                 / 255));
 //				System.out.println("result dp " + Integer.toHexString(pixels[x+dy_loop]) + " sp " + Integer.toHexString(spixel) + " dp " + Integer.toHexString(dpixel) + " sa " + Integer.toHexString(sa) + " sa_inv " + Integer.toHexString(sa_inverse) + " sr " + Integer.toHexString(sr) + " sg " + Integer.toHexString(sg) + " sb " + Integer.toHexString(sb) + " dr " + Integer.toHexString(dr) + " dg " + Integer.toHexString(dg)  + " db " + Integer.toHexString(db) + " da " + Integer.toHexString(da));
             }

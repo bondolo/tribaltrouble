@@ -113,18 +113,17 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
          * @param color The 32-bit ARGB integer color.
          */
         public Standard(int color) {
-            this(
-                    ((color >> 16) & 0xFF) / NORMALIZE_8_BIT,
+            this(((color >> 16) & 0xFF) / NORMALIZE_8_BIT,
                     ((color >> 8) & 0xFF) / NORMALIZE_8_BIT,
                     (color & 0xFF) / NORMALIZE_8_BIT,
                     ((color >> 24) & 0xFF) / NORMALIZE_8_BIT);
         }
 
         public int toInt() {
-            return (Byte.toUnsignedInt((byte) (a() * NORMALIZE_8_BIT)) << 24) |
-                    (Byte.toUnsignedInt((byte) (r() * NORMALIZE_8_BIT)) << 16) |
-                    (Byte.toUnsignedInt((byte) (g() * NORMALIZE_8_BIT)) << 8) |
-                    Byte.toUnsignedInt((byte) (b() * NORMALIZE_8_BIT));
+            return (Math.clamp(Math.round(a() * NORMALIZE_8_BIT), 0, 255) << 24) |
+                    (Math.clamp(Math.round(r() * NORMALIZE_8_BIT), 0, 255) << 16) |
+                    (Math.clamp(Math.round(g() * NORMALIZE_8_BIT), 0, 255) << 8) |
+                    Math.clamp(Math.round(b() * NORMALIZE_8_BIT), 0, 255);
         }
     }
 

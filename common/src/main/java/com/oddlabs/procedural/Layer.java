@@ -140,15 +140,10 @@ public final class Layer {
         byte[] byte_pixel_data = new byte[getWidth() * getHeight() * 4];
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {
-                int ri = ((int) (r.getPixel(x, y) * 255 + .5f)) & 0xff;
-                int gi = ((int) (g.getPixel(x, y) * 255 + .5f)) & 0xff;
-                int bi = ((int) (b.getPixel(x, y) * 255 + .5f)) & 0xff;
-                int ai;
-                if (a != null) {
-                    ai = ((int) (a.getPixel(x, y) * 255 + .5f)) & 0xff;
-                } else {
-                    ai = 255;
-                }
+                int ri = Math.clamp(Math.round(r.getPixel(x, y) * 255), 0, 255);
+                int gi = Math.clamp(Math.round(g.getPixel(x, y) * 255), 0, 255);
+                int bi = Math.clamp(Math.round(b.getPixel(x, y) * 255), 0, 255);
+                int ai = a != null ? Math.clamp(Math.round(a.getPixel(x, y) * 255), 0, 255) : 255;
                 int index = y * getWidth() + x;
                 byte_pixel_data[index * 4] = (byte) ri;
                 byte_pixel_data[index * 4 + 1] = (byte) gi;
@@ -160,7 +155,7 @@ public final class Layer {
     }
 
     private @NonNull BufferedImage convertToImage() {
-        byte[] byte_pixel_data = convertToBytes();
+        byte[] byte_pixel_data = convertToBytes(); // contains little-endian ABGR ints
         BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
         image.getRaster().setDataElements(0, 0, getWidth(), getHeight(), byte_pixel_data);
         return image;

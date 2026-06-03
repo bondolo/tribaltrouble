@@ -127,10 +127,10 @@ public class GUIIcons {
             int r, g, b;
             if (progress < 0.5f) {
                 r = 255;
-                g = (int) (255 * (progress * 2));
+                g = Math.clamp(Math.round(255 * (progress * 2)), 0, 255);
                 b = 0;
             } else {
-                r = (int) (255 * (1.0f - (progress - 0.5f) * 2));
+                r = Math.clamp(Math.round(255 * (1.0f - (progress - 0.5f) * 2)), 0, 255);
                 g = 255;
                 b = 0;
             }
@@ -167,7 +167,7 @@ public class GUIIcons {
                         if (shadowDist > outerRadius) {
                             alpha *= (1.0f - (shadowDist - outerRadius) / 2.0f);
                         }
-                        finalColor = ((int) (alpha * 255) << 24);
+                        finalColor = (Math.clamp(Math.round(alpha * 255), 0, 255) << 24);
                     }
 
                     // Main Shape
@@ -189,7 +189,7 @@ public class GUIIcons {
 
                         // Blend pixelColor over finalColor (shadow)
                         int destA = (finalColor >>> 24);
-                        int srcA = (int) ((pixelColor >>> 24) * alpha);
+                        int srcA = Math.clamp(Math.round((pixelColor >>> 24) * alpha), 0, 255);
 
                         float srcAf = srcA / 255.0f;
                         float destAf = destA / 255.0f;
@@ -200,10 +200,10 @@ public class GUIIcons {
                             int srcG = (pixelColor >>> 8) & 0xFF;
                             int srcB = pixelColor & 0xFF;
 
-                            int outR = (int) ((srcR * srcAf) / outAf);
-                            int outG = (int) ((srcG * srcAf) / outAf);
-                            int outB = (int) ((srcB * srcAf) / outAf);
-                            int outA = (int) (outAf * 255);
+                            int outR = Math.clamp(Math.round((srcR * srcAf) / outAf), 0, 255);
+                            int outG = Math.clamp(Math.round((srcG * srcAf) / outAf), 0, 255);
+                            int outB = Math.clamp(Math.round((srcB * srcAf) / outAf), 0, 255);
+                            int outA = Math.clamp(Math.round(outAf * 255), 0, 255);
 
                             finalColor = (outA << 24) | (outR << 16) | (outG << 8) | outB;
                         }
