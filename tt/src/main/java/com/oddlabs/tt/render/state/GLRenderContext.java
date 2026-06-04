@@ -220,8 +220,8 @@ public final class GLRenderContext implements RenderContext {
             }
         } else if (maskState == GLState.FALSE) {
             if (currentFBO == 0) {
-                if (drawBuffer0 != GL11.GL_BACK_LEFT) {
-                    logger.severe("Draw Buffer 0 Mismatch: Expected BACK_LEFT, GL=" + drawBuffer0);
+                if (drawBuffer0 != GL11.GL_BACK_LEFT && drawBuffer0 != GL11.GL_BACK) {
+                    logger.severe("Draw Buffer 0 Mismatch: Expected BACK_LEFT or BACK, GL=" + drawBuffer0);
                 }
             } else {
                 if (drawBuffer0 != GL30.GL_COLOR_ATTACHMENT0) {
