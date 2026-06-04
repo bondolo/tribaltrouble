@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.particle.RingEmitter;
 import com.oddlabs.tt.particle.SonicBlastEffect;
+import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.LandscapeResources;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
@@ -22,7 +23,7 @@ public final class IronSupply extends SupplyModel {
     private static final float SPAWN_OFFSET_Z = 75.0f;
     private static final float FALL_DURATION_RATIO = 0.12f;
 
-    private Color.@Nullable Linear spawnColorTint = null;
+    private Color.@NonNull Linear spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
     private Color.@Nullable Linear crackDecalColor = null;
     private float crackDecalOpacity = 0.0f;
     private float crackDecalDiameter = 0.0f;
@@ -30,6 +31,7 @@ public final class IronSupply extends SupplyModel {
     private @Nullable PointEmitterModel trailEmitter = null;
     private @Nullable PointEmitterModel coolingEmitter = null;
     private boolean landed = false;
+    private boolean cooling = false;
 
     public IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
         var rotation = ThreadLocalRandom.current().nextFloat((float) -Math.PI, (float) Math.PI);
@@ -46,6 +48,11 @@ public final class IronSupply extends SupplyModel {
     @Override
     public @NonNull Supply respawn() {
         return new IronSupply(getWorld(), getGridX(), getGridY(), getPositionX(), getPositionY(), false);
+    }
+
+    @Override
+    public float getSpawnTime() {
+        return 6.0f;
     }
 
     @Override
@@ -87,26 +94,30 @@ public final class IronSupply extends SupplyModel {
     public void animateSpawn(float t, float progress) {
         super.animateSpawn(t, progress);
         if (progress < FALL_DURATION_RATIO) {
+            // falling
             spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
 
             Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
             if (trailEmitter == null) {
+                // Legacy baseline physical parameters (rate 400, spreads)
                 RandomVelocityEmitter emitter = new RandomVelocityEmitter(
                         getWorld(), pos, 0.0f, 0.0f,
                         getSize() * 0.8f, 0.5f, 0.1f, 0.05f,
                         -1, 400f,
                         new Vector3f(0f, 0f, -120.0f), new Vector3f(0f, 0f, 150.0f),
-                        new Color.Linear(0.06f, 0.06f, 0.06f, 0.6f), new Color.LinearDelta(0f, 0f, 0f, -0.75f),
-                        new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f(3.5f, 3.5f, 3.5f),
+                        new Color.Linear(0.02f, 0.75f), new Color.LinearDelta(0f, 0f, 0f, -0.75f),
+                        new Vector3f(1.0f, 1.0f, 2.0f), new Vector3f(3.5f, 3.5f, 7.0f), // Vertically Stretched
                         0.8f, 0.1f,
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                         getWorld().getRacesResources().getSmokeTextures()
                 );
+                // Specifically requested sooty/black anchor
+                emitter.setSpectrumRange(0.2f, 0.2f);
+                emitter.setJitterIntensity(0.005f);
                 trailEmitter = new PointEmitterModel(getWorld(), emitter);
             } else {
                 trailEmitter.setPosition(getPositionX(), getPositionY(), getPositionZ());
             }
-            setShowShadow(false);
         } else {
             if (trailEmitter != null) {
                 trailEmitter.getEmitter().done();
@@ -115,21 +126,31 @@ public final class IronSupply extends SupplyModel {
 
             if (!landed) {
                 landed = true;
+                setShowShadow(true);
+
                 Vector3f landingPos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + 0.15f);
                 new SonicBlastEffect(getWorld(), landingPos, 3.5f, 0.4f, new Color.Linear(0.2f, 0.25f, 0.3f, 1.0f));
 
+                // Fewer particles (24), more vertical stretch (1.5 radius, 15.0 growth)
                 RingEmitter puff = new RingEmitter(
                         getWorld(), landingPos, 0.0f,
-                        0.2f, 0.1f, // emitter_radius, emitter_height
-                        48, 4000f,  // num_particles, particles_per_second
-                        new Vector3f(0f, 0f, 15.0f), // velocity (Z component is horizontal expansion speed)
-                        new Vector3f(0f, 0f, 16.0f),   // acceleration (positive Z rises upwards)
-                        new Color.Standard(0x1A_FF_CC_99).linear(), Color.LinearDelta.ZERO.alpha(-0.2f),
-                        new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(8.5f, 8.5f, 8.5f),
+                        0.2f, 0.1f,
+                        24, 2000f,
+                        new Vector3f(0f, 0f, 15.0f),
+                        new Vector3f(0f, 0f, 16.0f),
+                        new Color.Linear(0.05f, 0.75f), Color.LinearDelta.ZERO.alpha(-0.2f),
+                        new Vector3f(0.8f, 0.8f, 1.5f), // Stretched Radius Z=1.5
+                        new Vector3f(8.5f, 8.5f, 15.0f), // Stretched Growth Z=15.0
                         0.5f, 0.1f,
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                         getWorld().getRacesResources().getSmokeTextures()
                 );
+
+                puff.setSpectrumRange(0.0f, 0.6f);
+                puff.setBaseColor(Landscape.getDustColor(getWorld().getTerrainType()));
+                puff.setTransition(0.1f, 0.1f, 0.0f, 0.5f);
+                puff.setJitterIntensity(0.01f);
+
                 new PointEmitterModel(getWorld(), puff);
 
                 getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
@@ -138,7 +159,6 @@ public final class IronSupply extends SupplyModel {
                                 AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.8f
                         ));
             }
-            setShowShadow(true);
 
             // Cracks pulse logic (orange fading to black over 0.5s)
             float crackTime = 0.5f / 3.0f; // 0.5s duration
@@ -155,8 +175,9 @@ public final class IronSupply extends SupplyModel {
             }
 
             float coolProgress = (progress - 0.4f) / 0.6f;
-            if (coolingEmitter == null) {
+            if (coolingEmitter == null && !cooling) {
                 Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
+                // Legacy baseline physical parameters
                 RandomVelocityEmitter emitter = new RandomVelocityEmitter(
                         getWorld(), pos, 0.0f, 0.0f,
                         getSize() * 0.5f, 0.1f, 0.1f, 0.05f,
@@ -169,9 +190,22 @@ public final class IronSupply extends SupplyModel {
                         getWorld().getRacesResources().getSmokeTextures()
                 );
                 coolingEmitter = new PointEmitterModel(getWorld(), emitter);
-            } else if (coolProgress >= 0.0f) {
+            }
+
+            if (coolProgress >= 0.0f) {
                 float spawnRate = 150.0f * (1.0f - coolProgress);
-                coolingEmitter.getEmitter().setParticlesPerSecond(spawnRate);
+                if (coolingEmitter != null) {
+                    coolingEmitter.getEmitter().setParticlesPerSecond(spawnRate);
+                }
+                if (!cooling) {
+                    cooling = true;
+                    var sizzle = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                            new AudioParameters(AudioAssets.SFX_GAS, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
+                                    AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
+                                    AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.65f
+                            ));
+                    sizzle.stop(10f);
+                }
             }
 
             if (coolProgress < 0.3f) {
@@ -206,6 +240,8 @@ public final class IronSupply extends SupplyModel {
     @Override
     public void spawnComplete() {
         super.spawnComplete();
+        setShowShadow(true);
+
         spawnColorTint = null;
         crackDecalColor = null;
         crackDecalOpacity = 0.0f;
@@ -220,6 +256,7 @@ public final class IronSupply extends SupplyModel {
             coolingEmitter.getEmitter().done();
             coolingEmitter = null;
         }
+        cooling = false;
         reinsert();
     }
 }
