@@ -5,6 +5,7 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -131,14 +132,10 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return scale_z;
     }
 
-    /** delta color is assumed to be linear */
-    public final void forceColorChange(float dr, float dg, float db, float da) {
-        for (List<P> particle1 : particles) {
-            for (Particle particle : particle1) {
-                particle.setColor(particle.getColorR() + dr, particle.getColorG() + dg, particle.getColorB() + db,
-                        particle.getColorA() + da);
-            }
-        }
+    public final void adjustColor(Color.@NonNull LinearDelta delta) {
+        Arrays.stream(particles)
+                .flatMap(List::stream)
+                .forEach(p -> p.setColor(p.getColor().add(delta)));
     }
 
     public final void start() {

@@ -21,7 +21,7 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
             @NonNull Vector3f position,
             float velocity_u, float velocity_v, float dist_u, float dist_v,
             int num_particles, float margin_u, float margin_v,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
             int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
         super(world, function, position,
@@ -40,7 +40,7 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
     @Override
     protected int initParticle(@NonNull ParametricFunction function,
             float velocity_u, float velocity_v,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
             float energy) {
 

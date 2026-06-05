@@ -43,7 +43,7 @@ public final class Player implements PlayerInterface {
     private final @NonNull SupplyContainer unit_count;
     private final SupplyContainer building_count = new SupplyContainer(MAX_BUILDING_COUNT);
 
-    private final @NonNull Color color;
+    private final Color.@NonNull Linear color;
 
 //	private final String team_tip;
 
@@ -383,7 +383,7 @@ public final class Player implements PlayerInterface {
         return training_chieftain;
     }
 
-    public @NonNull Color getColor() {
+    public Color.@NonNull Linear getColor() {
         return color;
     }
 

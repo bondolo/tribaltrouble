@@ -17,7 +17,7 @@ public final class RingEmitter extends LinearEmitter {
             float emitter_radius, float emitter_height,
             int num_particles, float particles_per_second,
             @NonNull Vector3f velocity, @NonNull Vector3f acceleration,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3f particle_radius, @NonNull Vector3f growth_rate, float energy, float friction,
             int src_blend_func, int dst_blend_func,
             @NonNull TextureKey @NonNull [] textures) {
@@ -45,7 +45,7 @@ public final class RingEmitter extends LinearEmitter {
 
     @Override
     protected int initParticle(@NonNull Vector3f position, @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy) {
         float angle = 2 * (float) Math.PI / num_particles;
         for (int i = 0; i < num_particles; i++) {

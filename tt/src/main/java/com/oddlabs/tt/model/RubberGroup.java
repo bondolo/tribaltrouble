@@ -37,8 +37,8 @@ public final class RubberGroup {
                 int grid_y = target.getGridY();
                 float x = UnitGrid.coordinateFromGrid(grid_x);
                 float y = UnitGrid.coordinateFromGrid(grid_y);
-                RubberSupply supply = new RubberSupply(world, world.getLandscapeResources().getChicken(), 2f, grid_x,
-                        grid_y, x, y, 0f, this, spawn_x, spawn_y);
+                RubberSupply supply = new RubberSupply(world, world.getLandscapeResources().getChicken(),
+                        grid_x, grid_y, x, y, this, spawn_x, spawn_y);
                 supplies.add(supply);
                 new SupplySpawnAnimation(supply, supply.getSpawnTime());
             }

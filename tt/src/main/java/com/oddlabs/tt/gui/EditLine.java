@@ -72,10 +72,8 @@ public class EditLine extends TextField implements Clipped {
         long elapsed = System.currentTimeMillis() - errorFlashStart;
         if (elapsed < ERROR_DURATION) {
             var elapsed_percent = 1.0f - ((float) elapsed / ERROR_DURATION);
-            float alpha = 0.5f * elapsed_percent;
-            var oneLinear = Color.toLinear(1f);
-            renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, new Color.Linear(oneLinear, oneLinear,
-                    oneLinear, alpha));
+            var color = Color.Linear.WHITE.alpha(0.5f * elapsed_percent);
+            renderer.drawColoredQuad(2, 2, getWidth() - 4, getHeight() - 4, color);
         }
 
         int render_index = isActive() ? index : -1;

@@ -9,7 +9,6 @@ import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
-
 /**
  * Represents a rubber resource, visually represented as a chicken.
  */
@@ -52,19 +51,19 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private @NonNull Animation animation = Animation.IDLING;
     private boolean is_hit = false;
     private boolean spawning;
-    private float offset_z;
 
-    public RubberSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y,
-            float x, float y, float rotation, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
-        super(world, sprite_renderer, size, grid_x, grid_y, x, y, rotation, INITIAL_SUPPLIES, false);
+    public RubberSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, int grid_x, int grid_y,
+            float x, float y, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
+        var spawn_z = world.getRandom().nextFloat() * (MAX_TREE_FALL_HEIGHT - MIN_TREE_FALL_HEIGHT)
+                + MIN_TREE_FALL_HEIGHT;
+        super(world, sprite_renderer, 2f, grid_x, grid_y, x, y, spawn_z, 0, INITIAL_SUPPLIES, false);
         this.path_tracker = new PathTracker(world.getUnitGrid(), this);
         this.group = group;
         start_grid_x = grid_x;
         start_grid_y = grid_y;
         this.spawn_x = spawn_x;
         this.spawn_y = spawn_y;
-        this.spawn_z = offset_z = world.getRandom().nextFloat() * (MAX_TREE_FALL_HEIGHT - MIN_TREE_FALL_HEIGHT)
-                + MIN_TREE_FALL_HEIGHT;
+        this.spawn_z = spawn_z;
         spawning = true;
         float dx = x - spawn_x;
         float dy = y - spawn_y;

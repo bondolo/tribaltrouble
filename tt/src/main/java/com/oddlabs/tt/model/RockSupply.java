@@ -27,9 +27,10 @@ public final class RockSupply extends SupplyModel {
     private @Nullable PointEmitterModel smokeEmitter = null;
     private boolean soundPlayed = false;
 
-    public RockSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y,
-            float x, float y, float rotation, boolean increase) {
-        super(world, sprite_renderer, size, grid_x, grid_y, x, y, rotation, INITIAL_SUPPLIES, increase);
+    public RockSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, int grid_x, int grid_y,
+            float x, float y, boolean increase) {
+        var rotation = (float) (world.getRandom().nextDouble() * 2d * Math.PI);
+        super(world, sprite_renderer, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, rotation, INITIAL_SUPPLIES, increase);
     }
 
     @Override
@@ -38,9 +39,9 @@ public final class RockSupply extends SupplyModel {
     }
 
     @Override
-    public @NonNull Supply respawn() {
-        return new RockSupply(getWorld(), getSpriteRenderer(), getSize(), getGridX(), getGridY(), getPositionX(),
-                getPositionY(), 0, false);
+    public @NonNull RockSupply respawn() {
+        return new RockSupply(getWorld(), getSpriteRenderer(), getGridX(), getGridY(), getPositionX(),
+                getPositionY(), false);
     }
 
     @Override
@@ -109,9 +110,9 @@ public final class RockSupply extends SupplyModel {
             if (!soundPlayed) {
                 soundPlayed = true;
                 getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                        new AudioParameters(AudioAssets.SFX_RUMBLE, AudioAssets.AUDIO_RANK_MAGIC,
-                                50.0f, AudioAssets.AUDIO_GAIN_BLAST_RUMBLE,
-                                15.0f));
+                        new AudioParameters(AudioAssets.SFX_RUMBLE, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION));
             }
             ensureSmokeEmitter();
             setShowShadow(false);

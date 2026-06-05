@@ -54,9 +54,8 @@ abstract class ShadowRenderer {
     protected final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             @NonNull Shadowable model) {
         if (currentTexture != null && sharedRenderer != null) {
-            Color.Linear c = new Color.Linear(color.r(), color.g(), color.b(), color.a());
-            renderShadow(context, renderer, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(), c,
-                    model.getShadowVerticalCenter(), model.getShadowOpacity());
+            renderShadow(context, renderer, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(),
+                    color, model.getShadowVerticalCenter(), model.getShadowOpacity());
         }
     }
 

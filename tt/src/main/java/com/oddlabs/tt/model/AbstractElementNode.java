@@ -95,9 +95,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + (world.getRandom().nextFloat() - .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + (world.getRandom().nextFloat() - .5f);
-            float rotation = world.getRandom().nextFloat() * 360f;
-            new RockSupply(world, sprite_renderers[i % sprite_renderers.length], 2f, grid_x, grid_y, x, y, rotation,
-                    true);
+            new RockSupply(world, sprite_renderers[i % sprite_renderers.length], grid_x, grid_y, x, y, true);
         }
     }
 
@@ -111,9 +109,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + (world.getRandom().nextFloat() - .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + (world.getRandom().nextFloat() - .5f);
-            float rotation = world.getRandom().nextFloat() * 360f;
-            new IronSupply(world, sprite_renderers[i % sprite_renderers.length], 2f, grid_x, grid_y, x, y, rotation,
-                    true);
+            new IronSupply(world, sprite_renderers[i % sprite_renderers.length], grid_x, grid_y, x, y, true);
         }
     }
 

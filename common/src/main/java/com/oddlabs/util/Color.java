@@ -74,12 +74,24 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
             return new Linear(r + delta.r(), g + delta.g(), b + delta.b(), a + delta.a());
         }
 
+        public @NonNull Linear sub(Color.@NonNull LinearDelta delta) {
+            return new Linear(r - delta.r(), g - delta.g(), b - delta.b(), a - delta.a());
+        }
+
         public @NonNull Linear mul(float factor) {
             return new Linear(r * factor, g * factor, b * factor, a * factor);
         }
 
         public @NonNull Linear mul(Color.@NonNull Linear other) {
             return new Linear(r * other.r(), g * other.g(), b * other.b(), a * other.a());
+        }
+
+        public @NonNull Linear alpha(float alpha) {
+            return new Linear(r, g, b, alpha);
+        }
+
+        public @NonNull LinearDelta delta(Color.@NonNull Linear other) {
+            return new LinearDelta(r - other.r(), g - other.g(), b - other.b(), a - other.a());
         }
     }
 
@@ -131,12 +143,22 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
      * An immutable representation of a linear color difference/delta.
      */
     record LinearDelta(float r, float g, float b, float a) implements Color {
-        public LinearDelta(@NonNull Color color) {
-            this(color.r(), color.g(), color.b(), color.a());
-        }
+        public static final Color.LinearDelta ZERO = new LinearDelta(0, 0, 0, 0);
 
         public @NonNull LinearDelta mul(float factor) {
             return new LinearDelta(r * factor, g * factor, b * factor, a * factor);
+        }
+
+        public @NonNull LinearDelta add(Color.@NonNull LinearDelta delta) {
+            return new LinearDelta(r + delta.r, g + delta.g, b + delta.b, a + delta.a);
+        }
+
+        public @NonNull LinearDelta sub(Color.@NonNull LinearDelta delta) {
+            return new LinearDelta(r - delta.r, g - delta.g, b - delta.b, a - delta.a);
+        }
+
+        public @NonNull LinearDelta negate() {
+            return new LinearDelta(-r, -g, -b, -a);
         }
     }
 }

@@ -18,7 +18,7 @@ public final class Arrow extends GUIObject {
     private final float target_x;
     private final float target_y;
     private final float target_z;
-    private final Color color;
+    private final Color.Linear color;
     private final boolean show_always;
     private final @NonNull GUIRoot gui_root;
 
@@ -91,7 +91,7 @@ public final class Arrow extends GUIObject {
                 val = 2f - val;
             val = COLOR_DELTA * val;
             IconQuad arrow = data.arrow();
-            renderer.drawIcon(arrow, -head_x, -head_y, new Color.Linear(color.r(), color.g(), color.b(), 1f - val));
+            renderer.drawIcon(arrow, -head_x, -head_y, color.alpha(1f - val));
             renderer.getMatrixStack().pop();
         }
     }

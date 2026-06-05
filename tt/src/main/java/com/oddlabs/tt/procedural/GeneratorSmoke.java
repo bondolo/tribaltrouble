@@ -12,6 +12,10 @@ import org.lwjgl.opengl.GL12;
 
 import java.util.Objects;
 
+/**
+ * Procedural generator for stylized "cartoon" smoke and dust "puffs".
+ * Uses Voronoi noise for chunky structures while maintaining soft edges for volumetric blending.
+ */
 public final class GeneratorSmoke extends TextureGenerator {
     private static final int TEXTURE_SIZE = 128;
 

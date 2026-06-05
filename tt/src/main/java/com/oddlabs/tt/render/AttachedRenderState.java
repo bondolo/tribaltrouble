@@ -12,8 +12,8 @@ import org.jspecify.annotations.Nullable;
  * Specialized render state for handling attached accessories.
  */
 final class AttachedRenderState implements ModelState<Model> {
-    private ElementRenderState<?> parentState;
-    private Accessory accessory;
+    private @Nullable ElementRenderState<?> parentState;
+    private @Nullable Accessory accessory;
 
     AttachedRenderState() {
     }
@@ -25,6 +25,9 @@ final class AttachedRenderState implements ModelState<Model> {
 
     @Override
     public @NonNull Matrix4f getTransform(@NonNull Matrix4f dest) {
+        assert parentState != null;
+        assert accessory != null;
+
         parentState.getTransform(dest);
         accessory.getRelativeTransform(dest, parentState.model);
 
@@ -63,21 +66,24 @@ final class AttachedRenderState implements ModelState<Model> {
 
     @Override
     public @NonNull Color getTeamColor() {
+        assert parentState != null;
         return parentState.getTeamColor();
     }
 
     @Override
     public @NonNull Color getSelectionColor() {
+        assert parentState != null;
         return parentState.getSelectionColor();
     }
 
     @Override
     public @NonNull Color getColor() {
+        assert parentState != null;
         Color.Linear parentColor = parentState.getColor();
         if (accessory instanceof VisualSoundAccessory visualSoundAccessory) {
             float alpha = visualSoundAccessory.getAlpha();
             if (alpha < 1.0f) {
-                return new Color.Linear(parentColor.r(), parentColor.g(), parentColor.b(), parentColor.a() * alpha);
+                return parentColor.alpha(parentColor.a() * alpha);
             }
         }
         return parentColor;
@@ -85,11 +91,13 @@ final class AttachedRenderState implements ModelState<Model> {
 
     @Override
     public Selectable.@NonNull VisualPattern getPattern() {
+        assert parentState != null;
         return parentState.getPattern();
     }
 
     @Override
     public @Nullable Model getModel() {
+        assert parentState != null;
         return parentState.model;
     }
 
@@ -100,6 +108,9 @@ final class AttachedRenderState implements ModelState<Model> {
 
     @Override
     public void markDetailPolygon(@NonNull PolyDetail detail) {
+        assert accessory != null;
+        assert parentState != null;
+
         // Standard sprite rendering
         SpriteKey key = accessory.getSpriteRenderer();
         if (key != null) {
@@ -110,6 +121,9 @@ final class AttachedRenderState implements ModelState<Model> {
 
     @Override
     public int getTriangleCount(@NonNull PolyDetail detail) {
+        assert accessory != null;
+        assert parentState != null;
+
         SpriteKey key = accessory.getSpriteRenderer();
         if (key != null) {
             return parentState.render_state.getRenderQueues().getRenderer(key).getTriangleCount(detail);
@@ -119,16 +133,24 @@ final class AttachedRenderState implements ModelState<Model> {
 
     @Override
     public int getAnimation() {
+        assert accessory != null;
+
         return accessory.getAnimation();
     }
 
     @Override
     public float getAnimationTicks() {
+        assert accessory != null;
+        assert parentState != null;
+
         return accessory.getAnimationTicks(parentState.model);
     }
 
     @Override
     public float getEyeDistanceSquared() {
+        assert accessory != null;
+        assert parentState != null;
+
         return parentState.getEyeDistanceSquared();
     }
 }

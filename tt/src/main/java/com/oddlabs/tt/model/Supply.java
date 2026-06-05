@@ -15,6 +15,7 @@ public non-sealed interface Supply extends Occupant, ModelToolTip {
 
     boolean hit();
 
+    /** Create a new supply at the same location */
     @NonNull
     Supply respawn();
 

@@ -80,7 +80,9 @@ public final class TreeRenderer extends TreePicker implements AutoCloseable, Sce
             tempMatrix.rotate((float) Math.toRadians(90f * time * time), 1f, 0f, 0f);
         } else {
             float scale = tree.getScale();
-            tempMatrix.scale(scale, scale, scale);
+            // trees shoot up and then get bushier. Yeah, palms should be different.
+            float zScale = (float) Math.log(scale * (Math.E - 1.0) + 1.0);
+            tempMatrix.scale(scale, scale, zScale);
             wave_animation.mulRotation(tempMatrix);
         }
     }

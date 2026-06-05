@@ -28,8 +28,8 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
         return color;
     }
 
-    public void setColor(float r, float g, float b, float a) {
-        this.color = new Color.Linear(r, g, b, a);
+    public void setColor(Color.@NonNull Linear color) {
+        this.color = color;
     }
 
     public void resetColor() {

@@ -22,8 +22,8 @@ public class Particle extends Model {
     private final float v4;
 
     private final Vector3f position = new Vector3f();
-    private Color.@NonNull Linear color = new Color.Linear(0f, 0f, 0f, 0f);
-    private Color.@NonNull LinearDelta deltaColor = new Color.LinearDelta(0f, 0f, 0f, 0f);
+    private Color.@NonNull Linear color = Color.Linear.TRANSPARENT;
+    private Color.@NonNull LinearDelta deltaColor = Color.LinearDelta.ZERO;
     private final Vector3f growthRate = new Vector3f();
     private final Vector3f radius = new Vector3f();
 
@@ -117,16 +117,11 @@ public class Particle extends Model {
         return position.z();
     }
 
-    final void setColor(@NonNull Color color) {
-        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
+    final void setColor(Color.@NonNull Linear color) {
+        this.color = color;
     }
 
-    /** The provided color is assumed to be linear. */
-    final void setColor(float r, float g, float b, float a) {
-        this.color = new Color.Linear(r, g, b, a);
-    }
-
-    public final @NonNull Color getColor() {
+    public final Color.@NonNull Linear getColor() {
         return color;
     }
 
@@ -150,8 +145,8 @@ public class Particle extends Model {
         return deltaColor;
     }
 
-    public final void setDeltaColor(@NonNull Color color) {
-        this.deltaColor = color instanceof Color.LinearDelta delta ? delta : new Color.LinearDelta(color);
+    public final void setDeltaColor(Color.@NonNull LinearDelta delta) {
+        this.deltaColor = delta;
     }
 
     public final void setEnergy(float energy) {

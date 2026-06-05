@@ -30,7 +30,7 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
             int num_particles, float particles_per_second,
             @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
             float acceleration_factor,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
             int src_blend_func, int dst_blend_func,
             TextureKey @NonNull [] textures, SpriteKey[] sprite_renderers, int types) {
@@ -66,7 +66,7 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
             int num_particles, float particles_per_second,
             @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
             float acceleration_factor,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
             int src_blend_func, int dst_blend_func,
             TextureKey @NonNull [] textures) {
@@ -96,7 +96,7 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
 
     @Override
     protected int initParticle(@NonNull Vector3f position, @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy) {
         randomizeAcceleration();
 

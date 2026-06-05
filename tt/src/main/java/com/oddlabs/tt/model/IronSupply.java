@@ -18,7 +18,7 @@ import org.lwjgl.opengl.GL11;
  */
 public final class IronSupply extends SupplyModel {
     private static final int INITIAL_SUPPLIES = 10;
-    private static final float SPAWN_START_Z = 75.0f;
+    private static final float SPAWN_OFFSET_Z = 75.0f;
     private static final float FALL_DURATION_RATIO = 0.12f;
 
     private Color.@Nullable Linear spawnColorTint = null;
@@ -31,9 +31,10 @@ public final class IronSupply extends SupplyModel {
     private @Nullable PointEmitterModel coolingEmitter = null;
     private boolean landed = false;
 
-    public IronSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y,
-            float x, float y, float rotation, boolean increase) {
-        super(world, sprite_renderer, size, grid_x, grid_y, x, y, rotation, INITIAL_SUPPLIES, increase);
+    public IronSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, int grid_x, int grid_y,
+            float x, float y, boolean increase) {
+        var rotation = (float) (world.getRandom().nextDouble() * 2d * Math.PI);
+        super(world, sprite_renderer, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, rotation, INITIAL_SUPPLIES, increase);
     }
 
     @Override
@@ -42,9 +43,9 @@ public final class IronSupply extends SupplyModel {
     }
 
     @Override
-    public @NonNull Supply respawn() {
-        return new IronSupply(getWorld(), getSpriteRenderer(), getSize(), getGridX(), getGridY(), getPositionX(),
-                getPositionY(), 0, false);
+    public @NonNull IronSupply respawn() {
+        return new IronSupply(getWorld(), getSpriteRenderer(), getGridX(), getGridY(), getPositionX(),
+                getPositionY(), false);
     }
 
     @Override
@@ -81,7 +82,7 @@ public final class IronSupply extends SupplyModel {
     public void animateSpawn(float t, float progress) {
         if (progress < FALL_DURATION_RATIO) {
             float fallProgress = progress / FALL_DURATION_RATIO;
-            offsetZ = SPAWN_START_Z * (1.0f - fallProgress);
+            offsetZ = SPAWN_OFFSET_Z * (1.0f - fallProgress);
             spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
 
             Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + offsetZ);
@@ -121,7 +122,7 @@ public final class IronSupply extends SupplyModel {
                         48, 4000f,  // num_particles, particles_per_second
                         new Vector3f(0f, 0f, 15.0f), // velocity (Z component is horizontal expansion speed)
                         new Vector3f(0f, 0f, 16.0f),   // acceleration (positive Z rises upwards)
-                        new Color.Standard(0x1A_FF_CC_99), new Color.LinearDelta(0f, 0f, 0f, -0.2f),
+                        new Color.Linear(new Color.Standard(0x1A_FF_CC_99)), new Color.LinearDelta(0f, 0f, 0f, -0.2f),
                         new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(8.5f, 8.5f, 8.5f),
                         0.5f, 0.1f,
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
@@ -130,9 +131,10 @@ public final class IronSupply extends SupplyModel {
                 new PointEmitterModel(getWorld(), puff);
 
                 getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                        new AudioParameters(AudioAssets.SFX_FLASH, AudioAssets.AUDIO_RANK_MAGIC,
-                                50.0f, AudioAssets.AUDIO_GAIN_BLAST_BLAST,
-                                15.0f));
+                        new AudioParameters(AudioAssets.SFX_LURBLAST, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.8f
+                        ));
             }
             setShowShadow(true);
 

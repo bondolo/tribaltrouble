@@ -26,7 +26,8 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     private final float size;
     private final float rotation;
 
-    private float offset_z = 0;
+    /** z-position relative to the ground height at (x,y) */
+    protected float offset_z;
 
     private int grid_x;
     private int grid_y;
@@ -37,7 +38,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
 
     @SuppressWarnings("unchecked")
     public SupplyModel(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y,
-            float x, float y, float rotation, int num_supplies, boolean increase_count) {
+            float x, float y, float offset_z, float rotation, int num_supplies, boolean increase_count) {
         super(world);
         this.sprite_renderer = sprite_renderer;
         this.size = size;
@@ -46,6 +47,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         this.rotation = rotation;
         this.num_supplies = num_supplies;
         this.max_supplies = num_supplies;
+        this.offset_z = offset_z;
         setPosition(x, y);
         updateBounds();
         world.getNotificationListener().registerTarget(this);
@@ -71,6 +73,8 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
 
     @Override
     public void spawnComplete() {
+        offset_z = 0.0f;
+        showShadow = true;
     }
 
     public Color.@Nullable Linear getSpawnColorTint() {

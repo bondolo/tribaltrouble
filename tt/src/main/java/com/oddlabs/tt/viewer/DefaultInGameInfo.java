@@ -14,7 +14,6 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
-import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
@@ -91,8 +90,7 @@ public class DefaultInGameInfo implements InGameInfo {
         for (Player player : players) {
             PlayerInfo player_info = player.getPlayerInfo();
             var color_floats = player.getColor();
-            Color color = viewer.getPeerHub().isAlive(player) ? color_floats : new Color.Linear(color_floats.r(),
-                    color_floats.g(), color_floats.b(), .25f);
+            var color = viewer.getPeerHub().isAlive(player) ? color_floats : color_floats.alpha(.25f);
             Label name = new Label(player_info.getName(), Skin.getSkin().getHeadlineFont())
                     .setColor(color);
             String race_str = RacesResources.getRaceName(player_info.getRace());

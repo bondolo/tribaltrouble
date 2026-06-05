@@ -26,18 +26,18 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     private final float velocity_u;
     private final float velocity_v;
     private final float velocity_random_margin;
-    private final @NonNull Color color;
+    private final Color.@NonNull Linear color;
     private final @NonNull Vector3fc particle_radius;
     private final @NonNull Vector3fc growth_rate;
     private final BoundingBox bounds = new BoundingBox();
 
-    private @NonNull Color delta_color;
+    private Color.@NonNull LinearDelta delta_color;
     private float energy;
 
     public ParametricEmitter(@NonNull World world, @NonNull ParametricFunction function, @NonNull Vector3f position,
             float area_xy, float area_z, float velocity_u, float velocity_v, float velocity_random_margin,
             int num_particles, float particles_per_second,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
             int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
         super(world, position, src_blend_func, dst_blend_func, textures, null, textures.length, num_particles,
@@ -56,7 +56,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         random = world.getRandom();
     }
 
-    public final void setDeltaColor(@NonNull Color delta_color) {
+    public final void setDeltaColor(Color.@NonNull LinearDelta delta_color) {
         this.delta_color = delta_color;
     }
 
@@ -124,7 +124,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
     protected int initParticle(@NonNull ParametricFunction function,
             float velocity_u, float velocity_v,
-            @NonNull Color color, @NonNull Color delta_color,
+            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
             float energy) {
 

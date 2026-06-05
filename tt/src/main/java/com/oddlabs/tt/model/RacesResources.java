@@ -168,6 +168,9 @@ public final class RacesResources {
                 name);
     }
 
+    private final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull SpriteKey> native_supply_sprites;
+    private final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull SpriteKey> viking_supply_sprites;
+
     public RacesResources(@NonNull RenderQueues queues) {
         int num_progress = 23;
         SpriteFile native_rock_sprite = new SpriteFile("/geometry/natives/rock_resource.binsprite",
@@ -181,7 +184,7 @@ public final class RacesResources {
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressForm.progress(1f / num_progress);
-        Map<Class<? extends Supply>, SpriteKey> native_supply_sprite_lists = Map.of(
+        native_supply_sprites = Map.of(
                 TreeSupply.class, queues.register(native_wood_sprite),
                 RockSupply.class, queues.register(native_rock_sprite),
                 IronSupply.class, queues.register(native_rock_sprite, 1),
@@ -199,7 +202,7 @@ public final class RacesResources {
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressForm.progress(1f / num_progress);
-        Map<Class<? extends Supply>, SpriteKey> viking_supply_sprite_lists = Map.of(
+        viking_supply_sprites = Map.of(
                 TreeSupply.class, queues.register(viking_wood_sprite),
                 RockSupply.class, queues.register(viking_rock_sprite),
                 IronSupply.class, queues.register(viking_rock_sprite, 1),
@@ -521,7 +524,7 @@ public final class RacesResources {
                 queues.register(sprite_list_peon),
                 shadow_diameter_peon,
                 default_shadow_list,
-                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, viking_supply_sprite_lists),
+                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, viking_supply_sprites),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
@@ -539,7 +542,7 @@ public final class RacesResources {
                 queues.register(sprite_list_native_peon),
                 shadow_diameter_peon,
                 default_shadow_list,
-                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, native_supply_sprite_lists),
+                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, native_supply_sprites),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
@@ -755,6 +758,10 @@ public final class RacesResources {
 
     public static int getNumRaces() {
         return race_names.length;
+    }
+
+    public @NonNull SpriteKey getSupplySprite(int race, @NonNull Class<? extends Supply> supplyType) {
+        return race == RACE_NATIVES ? native_supply_sprites.get(supplyType) : viking_supply_sprites.get(supplyType);
     }
 
     public @NonNull SpriteKey @NonNull [] getWoodFragments() {

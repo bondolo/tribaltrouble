@@ -92,7 +92,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     }
 
     @Override
-    public @NonNull Supply respawn() {
+    public @NonNull TreeSupply respawn() {
         occupyTree();
         hide = false;
         num_supplies = INITIAL_SUPPLIES;
@@ -101,12 +101,14 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
 
     @Override
     public void animateSpawn(float t, float progress) {
-        float inv = 1 - progress;
-        scale = 1 - inv * inv * inv * inv * inv * inv;
+        float inv = 1f - progress;
+        scale = 1f - inv * inv * inv * inv * inv * inv;
     }
 
     @Override
     public void spawnComplete() {
+        scale = 1f;
+        animation_time = 0f;
     }
 
     @Override
@@ -143,13 +145,13 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
 
     @Override
     public float getShadowDiameter() {
-        float base_diameter = tree_type.shadowDiameter;
+        float base_diameter = hide ? 0f : (tree_type.shadowDiameter * scale);
         return isEmpty() ? base_diameter * Math.max(0f, 1f - getTreeFallProgress()) : base_diameter;
     }
 
     @Override
     public float getShadowOpacity() {
-        float base_opacity = tree_type.shadowOpacity;
+        float base_opacity = hide ? 0f : tree_type.shadowOpacity;
         return isEmpty() ? base_opacity * (1.0f + 0.3f * getTreeFallProgress()) : base_opacity;
     }
 

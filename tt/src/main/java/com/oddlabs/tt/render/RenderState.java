@@ -288,7 +288,7 @@ final class RenderState {
                                 new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
                                 velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
                                 5, 0f, 2f,
-                                Color.Standard.WHITE, Color.Standard.TRANSPARENT,
+                                Color.Linear.WHITE, Color.LinearDelta.ZERO,
                                 new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), timeLeft,
                                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                                 racesResources.getStarTextures());
@@ -370,19 +370,21 @@ final class RenderState {
 
     private static float getBuildingSelectionRadius(@NonNull Building building) {
         Building.BuildState render_level = building.getRenderLevel();
+        var template = building.getTemplate();
         return switch (render_level) {
-            case START -> building.getTemplate().getStartSelectionRadius();
-            case HALFBUILT -> building.getTemplate().getHalfbuiltSelectionRadius();
-            case BUILT -> building.getTemplate().getBuiltSelectionRadius();
+            case START -> template.getStartSelectionRadius();
+            case HALFBUILT -> template.getHalfbuiltSelectionRadius();
+            case BUILT -> template.getBuiltSelectionRadius();
         };
     }
 
     private static float getBuildingSelectionHeight(@NonNull Building building) {
         Building.BuildState render_level = building.getRenderLevel();
+        var template = building.getTemplate();
         return switch (render_level) {
-            case START -> building.getTemplate().getStartSelectionHeight();
-            case HALFBUILT -> building.getTemplate().getHalfbuiltSelectionHeight();
-            case BUILT -> building.getTemplate().getBuiltSelectionHeight();
+            case START -> template.getStartSelectionHeight();
+            case HALFBUILT -> template.getHalfbuiltSelectionHeight();
+            case BUILT -> template.getBuiltSelectionHeight();
         };
     }
 
@@ -427,11 +429,11 @@ final class RenderState {
         public void getTransform(@NonNull ElementRenderState<SupplyModel> render_state, @NonNull Matrix4f dest) {
             SupplyModel model = render_state.getModel();
             dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
-                    .rotate((float) Math.toRadians(model.getRotation()), 0f, 0f, 1f);
+                    .rotate(model.getRotation(), 0f, 0f, 1f);
 
             Color.Linear tint = model.getSpawnColorTint();
             if (tint != null) {
-                render_state.setColor(tint.r(), tint.g(), tint.b(), tint.a());
+                render_state.setColor(tint);
             }
         }
     };
@@ -532,8 +534,7 @@ final class RenderState {
             if (dist_squared > START_FADE_DIST * START_FADE_DIST) {
                 float camera_dist = (float) Math.sqrt(dist_squared);
                 float alpha = 1f - ((camera_dist - START_FADE_DIST) / (PLANTS_CUT_DIST - START_FADE_DIST));
-                var linearOne = Color.toLinear(1f);
-                render_state.setColor(linearOne, linearOne, linearOne, alpha);
+                render_state.setColor(new Color.Linear(1f, 1f, 1f, alpha));
             }
         }
     };

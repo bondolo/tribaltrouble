@@ -27,9 +27,9 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private static final int NUM_STRIKES = 6;
     private static final float SECONDS_BETWEEN_STRIKES = .125f;
     private static final float BRIGHTNESS = Color.toLinear(.2f);
+    private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS, 0);
     private static final float LIGHTNING_TIME = .1f;
-    private static final Color DELTA_COLOR = new Color.Linear(0f, 0f, 0f, -1f / LIGHTNING_TIME);
-
+    private static final Color.LinearDelta DELTA_COLOR = new Color.LinearDelta(0f, 0f, 0f, -1f / LIGHTNING_TIME);
 
     private final @NonNull Player owner;
     private final float seconds_per_hit;
@@ -83,7 +83,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         return new ParametricEmitter(world, new CloudFunction(2.5f, .7f), pos,
                 0f, offset_z, .5f, .5f, .2f,
                 25, 100f,
-                new Color.Linear(new Color.Standard(.4f, .4f, .4f, alpha)), new Color.Linear(0f, 0f, 0f, -alpha
+                new Color.Linear(new Color.Standard(.4f, .4f, .4f, alpha)), new Color.LinearDelta(0f, 0f, 0f, -alpha
                         / energy),
                 new Vector3f(3f, 3f, 1f), new Vector3f(0f, 0f, 0f), energy,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, world.getRacesResources().getSmokeTextures());
@@ -106,7 +106,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         }
         lightning_timer -= t;
         if (lightning_timer <= 0 && lighted) {
-            emitter.forceColorChange(-BRIGHTNESS, -BRIGHTNESS, -BRIGHTNESS, 0f);
+            emitter.adjustColor(BRIGHTNESS_DELTA.negate());
             lighted = false;
         }
 
@@ -169,7 +169,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
 
     private void strike(@NonNull Target target) {
         if (lightning_timer <= 0f) {
-            emitter.forceColorChange(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS, 0f);
+            emitter.adjustColor(BRIGHTNESS_DELTA);
             lightning_timer = LIGHTNING_TIME;
             lighted = true;
         }
@@ -179,7 +179,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
 
         Vector3f cloudPos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
         Lightning lightning = new Lightning(owner.getWorld(), cloudPos, new Vector3f(x, y, z), .5f,
-                15, Color.Standard.WHITE, DELTA_COLOR,
+                15, Color.Linear.WHITE, DELTA_COLOR,
                 owner.getWorld().getRacesResources().getLightningTexture(), LIGHTNING_TIME,
                 owner.getWorld().getAnimationManagerGameTime());
         lightning.register();

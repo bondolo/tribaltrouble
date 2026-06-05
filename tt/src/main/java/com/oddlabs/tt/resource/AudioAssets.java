@@ -96,7 +96,7 @@ public class AudioAssets {
     public static final int AUDIO_RANK_MAGIC = 8;
     public static final int AUDIO_RANK_WEAPON_HIT = 7;
     public static final int AUDIO_RANK_WEAPON_ATTACK = 6;
-    public static final int AUDIO_RANK_TREE_FALL = 5;
+    public static final int AUDIO_RANK_SUPPLY_ACTION = 5;
     public static final int AUDIO_RANK_GAS = 4;
     public static final int AUDIO_RANK_ARMORY = 3;
     public static final int AUDIO_RANK_HARVEST = 2;
@@ -112,7 +112,7 @@ public class AudioAssets {
     public static final float AUDIO_DISTANCE_MAGIC = AudioParameters.DISTANCE_AMBIENT;
     public static final float AUDIO_DISTANCE_WEAPON_HIT = 75f;
     public static final float AUDIO_DISTANCE_WEAPON_ATTACK = 75f;
-    public static final float AUDIO_DISTANCE_TREE_FALL = 80f;
+    public static final float AUDIO_DISTANCE_SUPPLY_ACTION = 80f;
     public static final float AUDIO_DISTANCE_ARMORY = 120f;
     public static final float AUDIO_DISTANCE_HARVEST = 40f;
     public static final float AUDIO_DISTANCE_CHICKEN = 25f;
@@ -144,7 +144,7 @@ public class AudioAssets {
     public static final float AUDIO_GAIN_CHICKEN_PECK = .25f;
     public static final float AUDIO_GAIN_CHICKEN_DEATH = .25f;
     public static final float AUDIO_GAIN_DEATH = 1f;
-    public static final float AUDIO_GAIN_TREE_FALL = 1f;
+    public static final float AUDIO_GAIN_SUPPLY_ACTION = 1f;
     public static final float AUDIO_GAIN_LIGHTNING = 1f;
     public static final float AUDIO_GAIN_CLOUD = .4f;
     public static final float AUDIO_GAIN_BUBBLING = 1f;
@@ -168,7 +168,7 @@ public class AudioAssets {
     public static final float AUDIO_RADIUS_CHICKEN_PECK = .1f;
     public static final float AUDIO_RADIUS_CHICKEN_DEATH = .1f;
     public static final float AUDIO_RADIUS_DEATH = 1f;
-    public static final float AUDIO_RADIUS_TREE_FALL = 2f;
+    public static final float AUDIO_RADIUS_SUPPLY_ACTION = 2f;
     public static final float AUDIO_RADIUS_LIGHTNING = 5f;
     public static final float AUDIO_RADIUS_CLOUD = 5f;
     public static final float AUDIO_RADIUS_BUBBLING = 1f;
@@ -279,9 +279,10 @@ public class AudioAssets {
 
     public static final @NonNull AudioParameters[] TREE_FALL = Stream.of(SFX_FELLING_TREE,
             SFX_FELLING_PALMTREE)
-            .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_TREE_FALL,
-                    AUDIO_DISTANCE_TREE_FALL, AUDIO_GAIN_TREE_FALL,
-                    AUDIO_RADIUS_TREE_FALL))
+            .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_SUPPLY_ACTION,
+                    AUDIO_DISTANCE_SUPPLY_ACTION, AUDIO_GAIN_SUPPLY_ACTION,
+                    AUDIO_RADIUS_SUPPLY_ACTION
+            ))
             .toArray(AudioParameters[]::new);
 
     private AudioAssets() {
