@@ -6,7 +6,7 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 public class PanelTab extends GUIObject {
-    private static final Color HIGHLIGHT_COLOR = new Color.Linear(new Color.Standard(0xFF_00_FF_00));
+    private static final Color.Linear HIGHLIGHT_COLOR = Color.Linear.GREEN;
     private boolean selected;
     private final @NonNull Label label;
 

@@ -17,12 +17,12 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
                 .rotate(angle, 0f, 0f, 1f);
     }
 
-    static @NonNull Color getTeamColor(@NonNull Selectable<?> model) {
+    static Color.@NonNull Linear getTeamColor(@NonNull Selectable<?> model) {
         return model.getOwner().getColor();
     }
 
     @Override
-    public final @NonNull Color getTeamColor(@NonNull ElementRenderState<S> render_state) {
+    public final Color.@NonNull Linear getTeamColor(@NonNull ElementRenderState<S> render_state) {
         return getTeamColor(render_state.getModel());
     }
 

@@ -109,7 +109,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state,
             @NonNull Target rally_point, @NonNull SpriteKey rally_sprite,
-            @NonNull Color teamColor) {
+            Color.@NonNull Linear teamColor) {
         try (var _ = spriteShader.use(); var _ = context.withBlendMode(BlendMode.ALPHA)) {
 
             SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);

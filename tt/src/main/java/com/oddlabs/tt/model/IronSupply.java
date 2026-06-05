@@ -122,7 +122,7 @@ public final class IronSupply extends SupplyModel {
                         48, 4000f,  // num_particles, particles_per_second
                         new Vector3f(0f, 0f, 15.0f), // velocity (Z component is horizontal expansion speed)
                         new Vector3f(0f, 0f, 16.0f),   // acceleration (positive Z rises upwards)
-                        new Color.Linear(new Color.Standard(0x1A_FF_CC_99)), new Color.LinearDelta(0f, 0f, 0f, -0.2f),
+                        new Color.Standard(0x1A_FF_CC_99).linear(), Color.LinearDelta.ZERO.alpha(-0.2f),
                         new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(8.5f, 8.5f, 8.5f),
                         0.5f, 0.1f,
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,

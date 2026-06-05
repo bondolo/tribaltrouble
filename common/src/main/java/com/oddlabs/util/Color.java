@@ -137,6 +137,18 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
                     (Math.clamp(Math.round(g() * NORMALIZE_8_BIT), 0, 255) << 8) |
                     Math.clamp(Math.round(b() * NORMALIZE_8_BIT), 0, 255);
         }
+
+        public @NonNull Standard alpha(float alpha) {
+            return new Standard(r, g, b, alpha);
+        }
+
+        public @NonNull LinearDelta delta(Color.@NonNull Standard other) {
+            return new LinearDelta(r - other.r(), g - other.g(), b - other.b(), a - other.a());
+        }
+
+        public @NonNull Linear linear() {
+            return new Linear(Color.toLinear(r()), Color.toLinear(g()), Color.toLinear(b()), a());
+        }
     }
 
     /**
@@ -155,6 +167,10 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
         public @NonNull LinearDelta sub(Color.@NonNull LinearDelta delta) {
             return new LinearDelta(r - delta.r, g - delta.g, b - delta.b, a - delta.a);
+        }
+
+        public @NonNull LinearDelta alpha(float alpha) {
+            return new LinearDelta(r, g, b, alpha);
         }
 
         public @NonNull LinearDelta negate() {

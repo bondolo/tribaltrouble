@@ -8,8 +8,8 @@ import org.jspecify.annotations.NonNull;
 
 /** A GUI object that is used to provide a text label another GUI object. */
 public class Label extends TextField implements Comparable<Label> {
-    public static final Color DEFAULT_COLOR = Color.Linear.WHITE;
-    public static final Color DISABLED_COLOR = new Color.Linear(new Color.Standard(0xB2_B2_B2_B2));
+    public static final Color.Linear DEFAULT_COLOR = Color.Linear.WHITE;
+    public static final Color.Linear DISABLED_COLOR = new Color.Standard(0xB2_B2_B2_B2).linear();
     private static final int INSET = 2;
 
     private final @NonNull Origin align;

@@ -38,8 +38,8 @@ import java.util.logging.Logger;
 public final class PlacingDelegate extends ControllableCameraDelegate {
     private static final Logger logger = Logger.getLogger(PlacingDelegate.class.getName());
     private static final int GRID_RADIUS = 20;
-    private static final Color.Linear GOOD_PLACEMENT = new Color.Linear(new Color.Standard(0xCC_FF_FF_FF));
-    private static final Color.Linear BAD_PLACEMENT = new Color.Linear(new Color.Standard(0xCC_FF_00_00));
+    private static final Color.Linear GOOD_PLACEMENT = Color.Linear.WHITE.alpha(0.8f);
+    private static final Color.Linear BAD_PLACEMENT = Color.Linear.RED.alpha(0.8f);
 
     private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
     private final SpriteShader spriteShader = new SpriteShader();

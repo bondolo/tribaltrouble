@@ -503,7 +503,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 1f, 1f,
                 30, 400f,
                 new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
-                new Color.Linear(new Color.Standard(0xFF_FF_CC_99)), new Color.LinearDelta(0f, 0f, 0f, -1f),
+                new Color.Standard(0xFF_FF_CC_99).linear(), Color.LinearDelta.ZERO.alpha(-1f),
                 new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 getOwner().getWorld().getRacesResources().getSmokeTextures());

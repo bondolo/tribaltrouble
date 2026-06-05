@@ -6,6 +6,7 @@ import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
         GLIntImage img = new GLIntImage(16, 16, GL11.GL_RGBA);
         img.clear(1, 1, img.getWidth() - 2, img.getHeight() - 2, Color.WHITE_INT);
         green = new Texture(new GLIntImage[]{img}, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
-                org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE, org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE);
+                GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
     }
 
     public void renderSites(@NonNull RenderContext context, @NonNull RenderQueues queues,
@@ -34,7 +35,7 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
                 if (dx == 0f && dy == 0f)
                     setShadowColor(Color.Linear.WHITE);
                 else
-                    setShadowColor(new Color.Linear(0f, 1f, 0f, Math.max(0f, 1 - a * a)));
+                    setShadowColor(Color.Linear.GREEN.alpha(Math.max(0f, 1 - a * a)));
                 renderShadow(context, renderer, target.getPositionX(), target.getPositionY(), 2f);
             }
         }

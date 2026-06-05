@@ -52,8 +52,8 @@ public final class GUIRenderer {
     private int quadCount = 0;
 
     // Modulation stack
-    private final Deque<Color> modulationStack = new ArrayDeque<>();
-    private Color currentModulation = Color.Linear.WHITE;
+    private final Deque<Color.@NonNull Linear> modulationStack = new ArrayDeque<>();
+    private Color.Linear currentModulation = Color.Linear.WHITE;
 
     private @Nullable RenderContext currentContext;
 
@@ -75,7 +75,7 @@ public final class GUIRenderer {
         setupBuffers(ibo);
     }
 
-    public void pushModulation(@NonNull Color modulation) {
+    public void pushModulation(Color.@NonNull Linear modulation) {
         flush();
         modulationStack.push(modulation);
         currentModulation = modulation;

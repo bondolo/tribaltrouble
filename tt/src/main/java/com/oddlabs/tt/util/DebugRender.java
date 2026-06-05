@@ -11,21 +11,21 @@ import java.util.Arrays;
  * Utilities for rendering debug shapes (boxes, lines, spheres, etc.) using a {@link DebugShaderRenderer}.
  */
 public final class DebugRender {
-    private static final Color AXIS_X_COLOR = Color.Linear.RED;
-    private static final Color AXIS_Y_COLOR = Color.Linear.GREEN;
-    private static final Color AXIS_Z_COLOR = Color.Linear.BLUE;
+    private static final Color.Linear AXIS_X_COLOR = Color.Linear.RED;
+    private static final Color.Linear AXIS_Y_COLOR = Color.Linear.GREEN;
+    private static final Color.Linear AXIS_Z_COLOR = Color.Linear.BLUE;
 
-    public static final Color[] debug_colors = {
-            new Color.Linear(new Color.Standard(0xFF_7f_1f_1f)), new Color.Linear(new Color.Standard(0xFF_7f_1f_00)),
-            new Color.Linear(new Color.Standard(0xFF_7f_00_1f)), new Color.Linear(new Color.Standard(0xFF_3f_7f_00)),
-            new Color.Linear(new Color.Standard(0xFF_00_1f_1f)), new Color.Linear(new Color.Standard(0xFF_00_1f_00)),
-            new Color.Linear(new Color.Standard(0xFF_00_00_1f)), new Color.Linear(new Color.Standard(0xFF_00_00_00)),
-            new Color.Linear(new Color.Standard(0xFF_00_5f_5f)), new Color.Linear(new Color.Standard(0xFF_00_5f_00)),
-            new Color.Linear(new Color.Standard(0xFF_00_00_5f)), new Color.Linear(new Color.Standard(0xFF_5f_8f_8f)),
-            new Color.Linear(new Color.Standard(0xFF_3f_5f_1f)), new Color.Linear(new Color.Standard(0xFF_5f_5f_8f)),
-            new Color.Linear(new Color.Standard(0xFF_3f_2f_5f)), new Color.Linear(new Color.Standard(0xFF_3f_3f_3f)),
-            new Color.Linear(new Color.Standard(0xFF_5f_1f_1f)), new Color.Linear(new Color.Standard(0xFF_5f_1f_5f)),
-            new Color.Linear(new Color.Standard(0xFF_5f_5f_1f)), new Color.Linear(new Color.Standard(0xFF_5f_5f_5f))
+    public static final Color.Linear[] debug_colors = {
+            new Color.Standard(0xFF_7f_1f_1f).linear(), new Color.Standard(0xFF_7f_1f_00).linear(),
+            new Color.Standard(0xFF_7f_00_1f).linear(), new Color.Standard(0xFF_3f_7f_00).linear(),
+            new Color.Standard(0xFF_00_1f_1f).linear(), new Color.Standard(0xFF_00_1f_00).linear(),
+            new Color.Standard(0xFF_00_00_1f).linear(), new Color.Standard(0xFF_00_00_00).linear(),
+            new Color.Standard(0xFF_00_5f_5f).linear(), new Color.Standard(0xFF_00_5f_00).linear(),
+            new Color.Standard(0xFF_00_00_5f).linear(), new Color.Standard(0xFF_5f_8f_8f).linear(),
+            new Color.Standard(0xFF_3f_5f_1f).linear(), new Color.Standard(0xFF_5f_5f_8f).linear(),
+            new Color.Standard(0xFF_3f_2f_5f).linear(), new Color.Standard(0xFF_3f_3f_3f).linear(),
+            new Color.Standard(0xFF_5f_1f_1f).linear(), new Color.Standard(0xFF_5f_1f_5f).linear(),
+            new Color.Standard(0xFF_5f_5f_1f).linear(), new Color.Standard(0xFF_5f_5f_5f).linear()
     };
     private static final float CIRCLE_DELTA = (float) java.lang.Math.PI / 2;
     private static final float ANGLE_DELTA = (float) java.lang.Math.PI / 20;

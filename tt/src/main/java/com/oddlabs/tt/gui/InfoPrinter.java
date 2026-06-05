@@ -13,8 +13,8 @@ import java.util.List;
 
 public final class InfoPrinter extends GUIObject implements Animated, ChatListener {
     private static final float SECONDS_PER_TIMEOUT = 8f;
-    private static final Color PRIVATE_COLOR = new Color.Linear(new Color.Standard(0xFF_33_66_FF));
-    private static final Color TEAM_COLOR = new Color.Linear(new Color.Standard(0xFF_4C_7F_FF));
+    private static final Color.Linear PRIVATE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
+    private static final Color.Linear TEAM_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
 
     private final @NonNull Font font;
     private final List<@NonNull LabelBox> history = new ArrayList<>();

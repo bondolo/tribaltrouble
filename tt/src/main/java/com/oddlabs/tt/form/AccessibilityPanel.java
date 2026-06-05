@@ -217,8 +217,8 @@ public final class AccessibilityPanel extends Panel {
         Runnable updateColour = () -> {
             int teamIndex = pm_team.getChosenItemIndex();
             float hue = slider_hue.getValue();
-            int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1.0f, 1.0f);
-            var newColour = new Color.Standard((0xFF << 24) | (rgb & 0xFFFFFF));
+            int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1f, 1f);
+            var newColour = new Color.Standard(rgb);
             Renderer.getRenderer().getSettings().team_colours[teamIndex] = newColour;
             colourBox.setColour(newColour);
 
@@ -233,7 +233,7 @@ public final class AccessibilityPanel extends Panel {
             float[] hsb = java.awt.Color.RGBtoHSB(Math.round(currentColour.r() * 255), Math.round(currentColour.g()
                     * 255),
                     Math.round(currentColour.b() * 255), null);
-            slider_hue.setValue((int) (hsb[0] * 360));
+            slider_hue.setValue((int) (hsb[0] * 360f));
             colourBox.setColour(currentColour);
         };
 

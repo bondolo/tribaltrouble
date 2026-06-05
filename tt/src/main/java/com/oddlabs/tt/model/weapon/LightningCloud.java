@@ -84,8 +84,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         return new ParametricEmitter(world, new CloudFunction(2.5f, .7f), pos,
                 0f, offset_z, .5f, .5f, .2f,
                 25, 100f,
-                new Color.Linear(new Color.Standard(.4f, .4f, .4f, alpha)), new Color.LinearDelta(0f, 0f, 0f, -alpha
-                        / energy),
+                new Color.Standard(.4f, .4f, .4f, alpha).linear(), Color.LinearDelta.ZERO.alpha(-alpha / energy),
                 new Vector3f(3f, 3f, 1f), new Vector3f(0f, 0f, 0f), energy,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, world.getRacesResources().getSmokeTextures());
     }

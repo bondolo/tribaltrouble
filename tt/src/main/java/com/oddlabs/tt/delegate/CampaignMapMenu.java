@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  * adjust settings, end the campaign, or quit the application.
  */
 final class CampaignMapMenu extends Form {
-    private static final Color DARK_GLASS = new Color.Linear(new Color.Standard(0x4C_00_00_00));
+    private static final Color.Linear DARK_GLASS = Color.Linear.BLACK.alpha(0.345f);
     private final @NonNull GUIRoot gui_root;
     private final @NonNull NetworkSelector network;
     private final @NonNull GUIImage overlay;

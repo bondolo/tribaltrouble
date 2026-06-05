@@ -69,12 +69,12 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     ));
 
     private static final Map<Landscape.TerrainType, Color.@NonNull Linear> TEX_ENV_COLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Linear(new Color.Standard(0xFF_F2_F8_FF)),
-            Landscape.TerrainType.VIKING, new Color.Linear(new Color.Standard(0xFF_FF_F2_CC))
+            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_F2_F8_FF).linear(),
+            Landscape.TerrainType.VIKING, new Color.Standard(0xFF_FF_F2_CC).linear()
     ));
 
     public static final Map<Landscape.TerrainType, Color.@NonNull Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Linear(new Color.Standard(0xFF_73_40_99)),
+            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_73_40_99).linear(),
             Landscape.TerrainType.VIKING, Color.Linear.BLACK
     ));
 
@@ -449,12 +449,12 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
         // skydome_default_color is authored to be darker in the original game (sRGB space)
         Color.Standard skydome_gradient_const = SKYDOME_GRADIENT.get(terrain);
-        Color.Linear skydome_default_linear = new Color.Linear(new Color.Standard(
+        Color.Linear skydome_default_linear = new Color.Standard(
                 (float) Math.pow(skydome_gradient_const.r(), SKYDOME_DEFAULT_COLOR),
                 (float) Math.pow(skydome_gradient_const.g(), SKYDOME_DEFAULT_COLOR),
                 (float) Math.pow(skydome_gradient_const.b(), SKYDOME_DEFAULT_COLOR),
                 1.0f
-        ));
+        ).linear();
 
         Color.Linear[] skydome_gradient = new Color.Linear[SKYDOME_GRADIENT_LENGTH];
         Color.Linear initialLinear = new Color.Linear(SKYDOME_INITCOLOR.get(terrain));

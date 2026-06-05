@@ -29,8 +29,8 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
 
     private static final Vector3fc ZERO_VEC = new Vector3f(0f, 0f, 0f);
     private static final Vector3fc PARTICLE_VELOCITY = new Vector3f(0f, 0f, 5f);
-    private static final Color.Linear PARTICLE_BASE_COLOR = new Color.Linear(new Color.Standard(0.3f, 0.3f, 0.3f,
-            INITIAL_PARTICLE_ALPHA));
+    private static final Color.Linear PARTICLE_BASE_COLOR = new Color.Standard(0.3f, 0.3f, 0.3f,
+            INITIAL_PARTICLE_ALPHA).linear();
     private static final Vector3fc PARTICLE_RADIUS = new Vector3f(1.5f, 1.5f, 1.5f);
     private static final Vector3fc PARTICLE_GROWTH = new Vector3f(0.6f, 0.6f, 0.6f);
 
