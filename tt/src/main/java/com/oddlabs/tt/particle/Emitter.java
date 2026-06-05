@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Stream;
 
 /**
@@ -40,6 +41,25 @@ public abstract class Emitter<P extends Particle> implements Animated {
     private float particle_counter = 0;
     private boolean started = true;
 
+    // Relative Clustering Logic
+    private Color.@NonNull LinearDelta cluster_rgb = Color.LinearDelta.ZERO;
+
+    private float spectrum_min = 0.0f;
+    private float spectrum_max = 1.0f;
+    private float current_spectrum = 0.0f; // Neutral default
+
+    private float jitter_intensity = 0.0f; // No jitter by default
+
+    private Color.@NonNull Linear base_color = Color.Linear.WHITE; // Neutral default
+
+    // Scripted Transition State
+    private float emitter_age = 0;
+    private float transition_start = -1;
+    private float transition_end = -1;
+    private float target_spectrum = -1;
+
+    private @NonNull ColorSpectrum colorSpectrum = (spectrum, baseColor) -> Color.Linear.WHITE;
+
     @SuppressWarnings("unchecked")
     public Emitter(@NonNull World world, @NonNull Vector3f position,
             int src_blend_func, int dst_blend_func,
@@ -55,6 +75,85 @@ public abstract class Emitter<P extends Particle> implements Animated {
         this.remaining_particles = remaining_particles;
         this.particles_per_second = particles_per_second;
         particles = Stream.generate(ArrayList::new).limit(types).toArray(List[]::new);
+    }
+
+    public final void setColorSpectrum(@NonNull ColorSpectrum spectrum) {
+        this.colorSpectrum = spectrum;
+    }
+
+    public final void setTransition(float delay, float duration, float spectrum, float brightness) {
+        this.transition_start = emitter_age + delay;
+        this.transition_end = this.transition_start + duration;
+        this.target_spectrum = spectrum;
+    }
+
+    public final void setSpectrumRange(float min, float max) {
+        this.spectrum_min = min;
+        this.spectrum_max = max;
+        this.current_spectrum = Math.clamp(current_spectrum, min, max);
+    }
+
+    public final void setJitterIntensity(float intensity) {
+        this.jitter_intensity = intensity;
+    }
+
+    protected final float getJitterIntensity() {
+        return jitter_intensity;
+    }
+
+    public final void setBaseColor(Color.@NonNull Linear color) {
+        this.base_color = color;
+    }
+
+    protected final void updateCluster(@NonNull Random random, float t) {
+        if (jitter_intensity <= 0.0f) {
+            return;
+        }
+
+        emitter_age += t;
+
+        if (emitter_age >= transition_start && emitter_age <= transition_end) {
+            float progress = (emitter_age - transition_start) / (transition_end - transition_start);
+            current_spectrum = current_spectrum + (target_spectrum - current_spectrum) * progress;
+        } else {
+            current_spectrum = Math.clamp(current_spectrum + (random.nextFloat() * 0.02f - 0.01f),
+                    spectrum_min, spectrum_max);
+        }
+
+        float cr = Math.clamp(cluster_rgb.r() + (random.nextFloat() * 0.02f - 0.01f), -0.15f, 0.15f);
+        float cg = Math.clamp(cluster_rgb.g() + (random.nextFloat() * 0.02f - 0.01f), -0.15f, 0.15f);
+        float cb = Math.clamp(cluster_rgb.b() + (random.nextFloat() * 0.02f - 0.01f), -0.15f, 0.15f);
+        float ca = Math.clamp(cluster_rgb.a() + (random.nextFloat() * 0.01f - 0.005f), -0.1f, 0.1f);
+        cluster_rgb = new Color.LinearDelta(cr, cg, cb, ca);
+    }
+
+    protected final Color.@NonNull Linear getClusterColor() {
+        return colorSpectrum.getColor(current_spectrum, base_color).add(cluster_rgb);
+    }
+
+    protected final Color.@NonNull Linear nextParticleColor(Color.@NonNull Linear templateColor,
+            @NonNull Random random) {
+        Color.Linear clusterColor = getClusterColor();
+        float jitter = (float) random.nextGaussian() * jitter_intensity;
+        float r = Math.clamp(clusterColor.r() + jitter, 0, 1);
+        float g = Math.clamp(clusterColor.g() + jitter, 0, 1);
+        float b = Math.clamp(clusterColor.b() + jitter, 0, 1);
+        float a = Math.max(0, templateColor.a() + cluster_rgb.a() + jitter);
+
+        // Modulation
+        r *= templateColor.r();
+        g *= templateColor.g();
+        b *= templateColor.b();
+
+        return new Color.Linear(r, g, b, a);
+    }
+
+    protected final int nextType(@NonNull Random random) {
+        if (types <= 1) return 0;
+        float mean = (types - 1) / 2.0f;
+        float stdDev = (types - 1) / 4.0f;
+        int type = Math.round(mean + (float) random.nextGaussian() * stdDev);
+        return Math.clamp(type, 0, types - 1);
     }
 
     public final @NonNull World getWorld() {

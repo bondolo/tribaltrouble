@@ -99,7 +99,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
             return true;
         }
         if (actions.contains(GameAction.CHEAT_8)) {
-            // F7 hides and shows terrain grid.
+            // F8 hides and shows terrain grid.
             cheat.line_mode = !cheat.line_mode;
             return true;
         }

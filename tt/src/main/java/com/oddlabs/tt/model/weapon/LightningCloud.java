@@ -27,7 +27,8 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private static final int NUM_STRIKES = 6;
     private static final float SECONDS_BETWEEN_STRIKES = .125f;
     private static final float BRIGHTNESS = Color.toLinear(.2f);
-    private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS, 0);
+    private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS,
+            0);
     private static final float LIGHTNING_TIME = .1f;
     private static final Color.LinearDelta DELTA_COLOR = new Color.LinearDelta(0f, 0f, 0f, -1f / LIGHTNING_TIME);
 

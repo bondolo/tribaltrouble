@@ -18,21 +18,21 @@ import java.util.Random;
  */
 public class ParametricEmitter extends Emitter<ParametricParticle> {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
-    private final @NonNull Random random;
+    protected final @NonNull Random random;
     private final Vector3f randomized_offset = new Vector3f();
-    private final @NonNull ParametricFunction function;
-    private final float area_xy;
-    private final float area_z;
-    private final float velocity_u;
-    private final float velocity_v;
-    private final float velocity_random_margin;
-    private final Color.@NonNull Linear color;
-    private final @NonNull Vector3fc particle_radius;
-    private final @NonNull Vector3fc growth_rate;
+    protected final @NonNull ParametricFunction function;
+    protected final float area_xy;
+    protected final float area_z;
+    protected final float velocity_u;
+    protected final float velocity_v;
+    protected final float velocity_random_margin;
+    protected final Color.@NonNull Linear color;
+    protected final @NonNull Vector3fc particle_radius;
+    protected final @NonNull Vector3fc growth_rate;
     private final BoundingBox bounds = new BoundingBox();
 
-    private Color.@NonNull LinearDelta delta_color;
-    private float energy;
+    protected Color.@NonNull LinearDelta delta_color;
+    protected float energy;
 
     public ParametricEmitter(@NonNull World world, @NonNull ParametricFunction function, @NonNull Vector3f position,
             float area_xy, float area_z, float velocity_u, float velocity_v, float velocity_random_margin,
@@ -67,6 +67,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     @Override
     public final void animate(float t) {
         updateSpawning(t);
+        updateCluster(random, t);
 
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
@@ -116,8 +117,9 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {
-            initiated += initParticle(function, velocity_u, velocity_v, color, delta_color, particle_radius,
-                    growth_rate, energy);
+            Color.Linear particleColor = nextParticleColor(color, random);
+            initiated += initParticle(function, velocity_u, velocity_v, particleColor, delta_color,
+                    particle_radius, growth_rate, energy);
         }
         return initiated;
     }
@@ -139,7 +141,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
         particle.setEnergy(energy);
-        particle.setType(random.nextInt(getTypes()));
+        particle.setType(nextType(random));
         particle.update(0);
         add(particle);
         return 1;

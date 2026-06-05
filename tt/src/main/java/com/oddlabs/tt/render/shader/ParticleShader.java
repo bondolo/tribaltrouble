@@ -104,8 +104,8 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
                         vec3 up = vec3(mv[0][1], mv[1][1], mv[2][1]);
 
-                        vec3 r_plus_up = (right + up) * radius;
-                        vec3 r_minus_up = (right - up) * radius;
+                        vec3 scaledRight = right * radius.x;
+                        vec3 scaledUp = up * radius.y;
 
                         vec4 viewCenter = mv * vec4(center, 1.0);
                         v_fogDist = length(viewCenter.xyz);
@@ -113,19 +113,19 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         vec3 p;
                         if (gl_VertexID == 0) {
                             // Bottom-left
-                            p = center - r_plus_up;
+                            p = center - scaledRight - scaledUp;
                             v_texCoord = in_UvCoords1.xy;
                         } else if (gl_VertexID == 1) {
                             // Bottom-right
-                            p = center + r_minus_up;
+                            p = center + scaledRight - scaledUp;
                             v_texCoord = in_UvCoords1.zw;
                         } else if (gl_VertexID == 2) {
                             // Top-left
-                            p = center - r_minus_up;
+                            p = center - scaledRight + scaledUp;
                             v_texCoord = in_UvCoords2.zw;
                         } else {
                             // Top-right
-                            p = center + r_plus_up;
+                            p = center + scaledRight + scaledUp;
                             v_texCoord = in_UvCoords2.xy;
                         }
 

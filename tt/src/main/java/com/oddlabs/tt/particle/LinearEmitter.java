@@ -21,21 +21,21 @@ import java.util.Random;
 public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
 
-    private final @NonNull Random random;
+    protected final @NonNull Random random;
     private final Vector3f randomized_position = new Vector3f();
     private final float offset_z;
     private final float emitter_radius;
     private final float emitter_height;
     private final @NonNull Vector3fc velocity;
     private final @NonNull Vector3fc acceleration;
-    private final Color.@NonNull Linear color;
-    private final @NonNull Vector3fc particle_radius;
-    private final @NonNull Vector3fc growth_rate;
+    protected final Color.@NonNull Linear color;
+    protected final @NonNull Vector3fc particle_radius;
+    protected final @NonNull Vector3fc growth_rate;
     private final float friction;
     private final BoundingBox bounds = new BoundingBox();
 
-    private Color.@NonNull LinearDelta delta_color;
-    private float energy;
+    protected Color.@NonNull LinearDelta delta_color;
+    protected float energy;
 
     protected LinearEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
             float emitter_radius, float emitter_height,
@@ -73,6 +73,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     @Override
     public final void animate(float t) {
         updateSpawning(t);
+        updateCluster(random, t);
 
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
@@ -128,8 +129,9 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {
-            initiated += initParticle(getPosition(), velocity, acceleration, color, delta_color, particle_radius,
-                    growth_rate, energy);
+            Color.Linear particleColor = nextParticleColor(color, random);
+            initiated += initParticle(getPosition(), velocity, acceleration, particleColor, delta_color,
+                    particle_radius, growth_rate, energy);
         }
         return initiated;
     }
