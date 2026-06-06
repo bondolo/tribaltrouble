@@ -141,7 +141,7 @@ public final class GUIRenderer {
         }
     }
 
-    public void drawColoredQuad(float x, float y, float w, float h, @NonNull Color color) {
+    public void drawColoredQuad(float x, float y, float w, float h, Color.@NonNull Linear color) {
         if (quadCount >= MAX_QUADS) {
             flush();
         }

@@ -121,16 +121,16 @@ final class Icons {
         return new IconQuad(u1, v1, u2, v2, right - left, bottom - top, texture);
     }
 
-    static @NonNull Color getNamedColor(@NonNull Node n, @NonNull String name) {
+    static Color.@NonNull Linear getNamedColor(@NonNull Node n, @NonNull String name) {
         return getColor(getNodeByName(name, n));
     }
 
-    static @NonNull Color getColor(@NonNull Node n) {
+    static Color.@NonNull Linear getColor(@NonNull Node n) {
         Node q = getNodeByName("color", n);
         float r = getFloat(q, "r");
         float g = getFloat(q, "g");
         float b = getFloat(q, "b");
         float a = getFloat(q, "a");
-        return new Color.Standard(r, g, b, a);
+        return new Color.Standard(r, g, b, a).linear();
     }
 }

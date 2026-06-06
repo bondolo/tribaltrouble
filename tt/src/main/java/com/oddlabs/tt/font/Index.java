@@ -33,12 +33,12 @@ public final class Index implements Updatable<TimerAnimation> {
     }
 
     public static void renderIndex(@NonNull GUIRenderer renderer, int render_x, int render_y, @NonNull Font font,
-            @NonNull Color color) {
+            Color.@NonNull Linear color) {
         index.doRenderIndex(renderer, render_x, render_y, font, color);
     }
 
     private void doRenderIndex(@NonNull GUIRenderer renderer, int render_x, int render_y, @NonNull Font font,
-            @NonNull Color color) {
+            Color.@NonNull Linear color) {
         if (blink_on) {
             renderer.drawColoredQuad(render_x, render_y + 3, INDEX_WIDTH, font.getHeight() - 6, color);
         }

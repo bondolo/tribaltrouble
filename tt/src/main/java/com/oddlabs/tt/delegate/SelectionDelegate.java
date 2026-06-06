@@ -38,7 +38,7 @@ import java.util.ResourceBundle;
  * It also manages in-game chat, jumping to notifications, and switching to map or observer modes.
  */
 public final class SelectionDelegate extends ControllableCameraDelegate {
-    private static final Color SELECTION_COLOR = new Color.Standard(0xFF_4C_FF_00);
+    private static final Color.Linear SELECTION_COLOR = new Color.Standard(0xFF_4C_FF_00).linear();
     private static final GameAction[] ARMY_CREATES = new GameAction[]{
             GameAction.ARMY_CREATE_0,
             GameAction.ARMY_CREATE_1,

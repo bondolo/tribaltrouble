@@ -9,9 +9,9 @@ public record MultiColumnComboBoxData(@NonNull Box box,
                                       @NonNull Horizontal buttonUnpressed,
                                       @NonNull ModeIconQuads descending,
                                       @NonNull ModeIconQuads ascending,
-                                      @NonNull Color color1,
-                                      @NonNull Color color2,
-                                      @NonNull Color colorMarked,
+                                      Color.@NonNull Linear color1,
+                                      Color.@NonNull Linear color2,
+                                      Color.@NonNull Linear colorMarked,
                                       @NonNull Font font,
                                       int captionOffset) {
 }

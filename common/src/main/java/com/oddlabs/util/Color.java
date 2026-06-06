@@ -131,6 +131,10 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
                     ((color >> 24) & 0xFF) / NORMALIZE_8_BIT);
         }
 
+        public Standard(float grey, float alpha) {
+            this(grey, grey, grey, alpha);
+        }
+
         public int toInt() {
             return (Math.clamp(Math.round(a() * NORMALIZE_8_BIT), 0, 255) << 24) |
                     (Math.clamp(Math.round(r() * NORMALIZE_8_BIT), 0, 255) << 16) |

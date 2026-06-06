@@ -9,7 +9,7 @@ public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject
     private final @NonNull C @NonNull [] columns;
     private final @Nullable T content_object;
     private int sort_index;
-    private @NonNull Color color = Color.Linear.TRANSPARENT;
+    private Color.@NonNull Linear color = Color.Linear.TRANSPARENT;
     private boolean marked = false;
 
     public Row(@NonNull C @NonNull [] columns, @Nullable T content_object) {

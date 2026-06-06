@@ -187,7 +187,7 @@ public final class AccessibilityPanel extends Panel {
 
         // Colour Preview Box
         class ColourBox extends GUIObject {
-            private @NonNull Color colour = Color.Standard.WHITE;
+            private Color.@NonNull Linear colour = Color.Linear.WHITE;
 
             ColourBox() {
                 setDim(20, 20);
@@ -199,7 +199,7 @@ public final class AccessibilityPanel extends Panel {
             }
 
             void setColour(@NonNull Color c) {
-                this.colour = c;
+                this.colour = c instanceof Color.Linear linear ? linear : new Color.Linear(c);
             }
         }
         ColourBox colourBox = new ColourBox();

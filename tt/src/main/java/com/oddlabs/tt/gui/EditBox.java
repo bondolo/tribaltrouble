@@ -22,7 +22,7 @@ public final class EditBox extends TextBox {
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
         Box edit_box = Skin.getSkin().getEditBox();
         super.renderBox(renderer, isDisabled() ? ModeIconQuads.Mode.DISABLED : ModeIconQuads.Mode.NORMAL);
-        var c = isDisabled() ? Label.DISABLED_COLOR : Color.Standard.WHITE;
+        var c = isDisabled() ? Label.DISABLED_COLOR : Color.Linear.WHITE;
 
         TextLineRenderer.render(renderer, getTextLayout(), edit_box.getLeftOffset(), getHeight() - edit_box
                 .getBottomOffset() - getFont().getHeight() + getOffsetY(), edit_box.getLeftOffset(), getWidth()
