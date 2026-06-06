@@ -14,73 +14,133 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * An accessory that manages the chimney smoke during building production.
  */
 public final class BuildingProductionAccessory implements AnimatedAccessory {
     private static final float EMITTER_ENERGY = 5.0f;
     private static final float EMITTER_ALPHA = 0.75f;
-    private static final float EMITTER_RADIUS_XY = 0.01f;
-    private static final float EMITTER_HEIGHT = 1.5f;
-    private static final float ACCELERATION_FACTOR = 0.1f;
-    private static final float PARTICLES_PER_SECOND = 15.0f;
-    private static final float IDLE_STOP_THRESHOLD = 0.3f;
+    private static final float GO_IDLE_DURATION = 1.0f;
+    private static final float IDLE_STOP_THRESHOLD = 2.5f;
+    private static final float WARMUP_DURATION = 1.5f;
+    private static final float WARM_DURATION = 4.0f;
 
-    private static final Vector3fc ZERO_VEC = new Vector3f(0f, 0f, 0f);
-    private static final Vector3fc EMITTER_ACCEL = new Vector3f(0f, 0f, 1.3f);
-    private static final float PARTICLE_DAMPING = 0.7f;
-    private static final Color.Linear PARTICLE_COLOR = new Color.Standard(0xBF_59_59_59).linear();
-    private static final Vector3fc PARTICLE_RADIUS = new Vector3f(0.3f, 0.3f, 0.3f);
-    private static final Vector3fc PARTICLE_GROWTH = new Vector3f(0.5f, 0.5f, 0.5f);
+    private static final Color.Linear START_DARK = new Color.Linear(0.3f, 1.0f);
+    private static final Color.Linear END_BASE = Color.Linear.WHITE;
+    private static final Color.Linear STARTUP_BROWN = new Color.Linear(0.8f, 0.4f, 0.1f, 1.0f);
+    private static final Color.Linear PRODUCTION_BLUE = new Color.Linear(1.5f, 1.6f, 1.9f, 1.0f);
+    private static final Color.Linear IDLE_GREY = new Color.Linear(2.0f, 1.0f);
 
+    private enum State {
+        IDLE,
+        PRODUCING,
+        GOING_IDLE
+    }
+
+    private final @NonNull Building building;
     private final @NonNull LinearEmitter emitter;
     private final @NonNull Vector3fc chimneyOffset;
+
+    private @NonNull State state = State.IDLE;
+    private float productionTimer = 0f;
     private float idleTimer = 0f;
+    private float goingIdleTimer = 0f;
 
-    public BuildingProductionAccessory(@NonNull Building building, @NonNull Vector3fc chimneyOffset,
-            @NonNull TextureKey @NonNull [] textures) {
-        this.chimneyOffset = chimneyOffset;
-
-        this.emitter = new RandomAccelerationEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f), 0f,
-                EMITTER_RADIUS_XY, EMITTER_RADIUS_XY, EMITTER_HEIGHT, ACCELERATION_FACTOR,
-                -1, PARTICLES_PER_SECOND,
-                ZERO_VEC, EMITTER_ACCEL, ACCELERATION_FACTOR,
-                PARTICLE_COLOR, Color.LinearDelta.ZERO.alpha(-EMITTER_ALPHA / EMITTER_ENERGY),
-                PARTICLE_RADIUS, PARTICLE_GROWTH, EMITTER_ENERGY, PARTICLE_DAMPING,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                textures, null, textures.length);
+    public BuildingProductionAccessory(@NonNull Building building, @NonNull TextureKey @NonNull [] textures) {
+        this.building = building;
+        this.chimneyOffset = building.getTemplate().getChimney();
+        this.emitter = new RandomAccelerationEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f),
+                0f, 0.15f, 0.05f, 1.5f, 0.1f, -1, 15.0f,
+                new Vector3f(0.15f, 0.05f, 0.5f), new Vector3f(0f, 0f, 1.3f), 0.4f,
+                new Color.Linear(1.0f, 1.0f, 1.0f, EMITTER_ALPHA),
+                Color.LinearDelta.ZERO.alpha(-EMITTER_ALPHA / EMITTER_ENERGY),
+                new Vector3f(0.3f, 0.3f, 0.3f), new Vector3f(0.5f, 0.5f, 0.6f), EMITTER_ENERGY, 0.7f,
+                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, textures, null, textures.length);
         this.emitter.stop();
-        this.emitter.setSpectrumRange(0.6f, 0.8f);
-        this.emitter.setJitterIntensity(0.01f);
+        this.emitter.setBaseColor(new Color.Linear(0.0992f, 0.0992f, 0.0992f, EMITTER_ALPHA));
+        this.emitter.setSpectrumRange(0.0f, 1.0f);
+        this.emitter.setJitterIntensity(0.08f);
+
+        this.emitter.setColorSpectrum((spectrum, baseColor) -> {
+            Random rand = ThreadLocalRandom.current();
+            Color.Linear factor;
+            float alpha;
+
+            // Phase 1: Startup transition (spectrum 0.0 to 0.5)
+            // Gradually transitions from startup soot/orange-brown to standard production grey/blue.
+            if (spectrum < 0.5f) {
+                float t = spectrum / 0.5f;
+                alpha = 1.0f - 0.3f * t; // Alpha fades slightly from 1.0 to 0.7
+                factor = rand.nextFloat() < 0.65f
+                        ? START_DARK.lerp(END_BASE, t)
+                        : STARTUP_BROWN.lerp(PRODUCTION_BLUE, t);
+            } else {
+                // Phase 2: Going Idle transition (spectrum 0.5 to 1.0)
+                // Gradually transitions from production grey/blue to light idle grey before disappearing.
+                float t = (spectrum - 0.5f) / 0.5f;
+                alpha = 0.7f - 0.3f * t; // Alpha fades from 0.7 to 0.4
+                factor = rand.nextFloat() < 0.65f
+                        ? END_BASE.lerp(IDLE_GREY, t)
+                        : PRODUCTION_BLUE.lerp(IDLE_GREY, t);
+            }
+            return baseColor.mul(factor).alpha(alpha);
+        });
     }
 
     @Override
     public void animate(float t) {
+        if (!building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+            state = State.IDLE;
+            productionTimer = 0f;
+            emitter.stop();
+            emitter.animate(t);
+            return;
+        }
+
+        boolean isProducing = building.isAlive() && building.isProducing();
+        if (isProducing) {
+            idleTimer = 0f;
+            goingIdleTimer = 0f;
+            state = State.PRODUCING;
+            emitter.start();
+            productionTimer = Math.min(1.0f, productionTimer + t / WARMUP_DURATION);
+        } else {
+            if (state == State.PRODUCING) {
+                idleTimer += t;
+                if (idleTimer >= IDLE_STOP_THRESHOLD) {
+                    state = State.GOING_IDLE;
+                    goingIdleTimer = 0f;
+                }
+            } else if (state == State.GOING_IDLE) {
+                goingIdleTimer += t;
+                if (goingIdleTimer >= GO_IDLE_DURATION) {
+                    state = State.IDLE;
+                    emitter.stop();
+                }
+            } else if (state == State.IDLE) {
+                productionTimer = Math.max(0f, productionTimer - t / WARM_DURATION);
+            }
+        }
+
+        float spectrum = 0.5f;
+        if (state == State.PRODUCING) {
+            spectrum = productionTimer * 0.5f;
+        } else if (state == State.GOING_IDLE) {
+            spectrum = 0.5f + (goingIdleTimer / GO_IDLE_DURATION) * 0.5f;
+        }
+        emitter.setSpectrum(spectrum);
+
         emitter.animate(t);
-        idleTimer += t;
     }
 
     @Override
     public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
-        if (parent instanceof Building building) {
-            // Only armories have production smoke
-            if (!building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                emitter.stop();
-                return !emitter.isFinished();
-            }
-
-            boolean isProducing = building.isAlive() && building.isProducing();
-            if (isProducing) {
-                emitter.start();
-                idleTimer = 0f;
-            } else {
-                // Only stop emitting if we've been idle for a while (handles WeaponsProducer breaks)
-                if (idleTimer > IDLE_STOP_THRESHOLD) {
-                    emitter.stop();
-                }
-            }
-
-            return isProducing || !emitter.isFinished();
+        if (parent instanceof Building b) {
+            return b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES) &&
+                    (state != State.IDLE || !emitter.isFinished());
         }
         return false;
     }

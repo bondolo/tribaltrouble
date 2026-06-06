@@ -3,9 +3,9 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.util.Color;
+import java.util.Optional;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * A specialized {@link ModelVisitor} that renders models with a neutral white team color.
@@ -21,8 +21,8 @@ class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     }
 
     @Override
-    public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<M> render_state) {
-        return null;
+    public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<M> render_state) {
+        return Optional.empty();
     }
 
     @Override

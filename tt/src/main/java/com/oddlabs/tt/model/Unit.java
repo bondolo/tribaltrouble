@@ -415,7 +415,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         return target instanceof Building building &&
                 getAbilities().hasAbilities(Abilities.BUILD) &&
                 (action_repair || !building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER) || !building
-                        .isComplete()) &&
+                        .isBuilt()) &&
                 // getOwner() == building.getOwner() && building.isPlaced() && building.isDamaged();
                 !getOwner().isEnemy(building.getOwner()) && building.isPlaced() && building.isDamaged();
     }

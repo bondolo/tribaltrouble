@@ -34,6 +34,28 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     protected Color.@NonNull LinearDelta delta_color;
     protected float energy;
 
+    /**
+     * Constructs a new ParametricEmitter using the specified parametric function for particle movement.
+     *
+     * @param world game world this emitter belongs to
+     * @param function parametric function defining particle trajectories
+     * @param position base 3D position of the emitter
+     * @param area_xy horizontal bounds for random spawn offsets
+     * @param area_z vertical bounds for random spawn offsets
+     * @param velocity_u initial u-velocity component along the parametric function
+     * @param velocity_v initial v-velocity component along the parametric function
+     * @param velocity_random_margin random deviation added to velocity components
+     * @param num_particles maximum particle budget, or -1 for infinite
+     * @param particles_per_second rate at which particles spawn per second
+     * @param color base color of the particles
+     * @param delta_color color delta applied to particles per second
+     * @param particle_radius initial 3D size radius of the particles
+     * @param growth_rate rate at which particle size changes per second
+     * @param energy starting energy (lifetime) of each particle
+     * @param src_blend_func OpenGL source blend function
+     * @param dst_blend_func OpenGL destination blend function
+     * @param textures textures to assign to spawned particles
+     */
     public ParametricEmitter(@NonNull World world, @NonNull ParametricFunction function, @NonNull Vector3f position,
             float area_xy, float area_z, float velocity_u, float velocity_v, float velocity_random_margin,
             int num_particles, float particles_per_second,

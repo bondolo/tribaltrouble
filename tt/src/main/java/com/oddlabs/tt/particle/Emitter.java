@@ -61,6 +61,20 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     private @NonNull ColorSpectrum colorSpectrum = (spectrum, baseColor) -> Color.Linear.WHITE;
 
+    /**
+     * Constructs a new Emitter with the specified world, position, blending functions, textures,
+     * sprite renderers, particle types, and spawn settings.
+     *
+     * @param world game world this emitter belongs to
+     * @param position base 3D position of the emitter
+     * @param src_blend_func OpenGL source blend function
+     * @param dst_blend_func OpenGL destination blend function
+     * @param textures textures to assign to spawned particles
+     * @param sprite_renderers sprite renderers to assign to spawned particles
+     * @param types number of different particle types/textures
+     * @param remaining_particles maximum number of particles to spawn, or -1 for infinite
+     * @param particles_per_second rate at which particles are spawned per second
+     */
     @SuppressWarnings("unchecked")
     public Emitter(@NonNull World world, @NonNull Vector3f position,
             int src_blend_func, int dst_blend_func,
@@ -94,6 +108,25 @@ public abstract class Emitter<P extends Particle> implements Animated {
         this.current_spectrum = Math.clamp(current_spectrum, min, max);
     }
 
+    /**
+     * Sets current spectrum position.
+     *
+     * @param spectrum spectrum position, clamped between min and max bounds
+     */
+    public final void setSpectrum(float spectrum) {
+        this.current_spectrum = Math.clamp(spectrum, spectrum_min, spectrum_max);
+    }
+
+    /**
+     * Returns current spectrum position.
+     *
+     * @return current spectrum position
+     */
+    public final float getSpectrum() {
+        return current_spectrum;
+    }
+
+
     public final void setJitterIntensity(float intensity) {
         this.jitter_intensity = intensity;
     }
@@ -123,9 +156,10 @@ public abstract class Emitter<P extends Particle> implements Animated {
                     spectrum_min, spectrum_max);
         }
 
-        float cr = Math.clamp(cluster_rgb.r() + (random.nextFloat() * 0.02f - 0.01f), -0.15f, 0.15f);
-        float cg = Math.clamp(cluster_rgb.g() + (random.nextFloat() * 0.02f - 0.01f), -0.15f, 0.15f);
-        float cb = Math.clamp(cluster_rgb.b() + (random.nextFloat() * 0.02f - 0.01f), -0.15f, 0.15f);
+        float drift = random.nextFloat() * 0.02f - 0.01f;
+        float cr = Math.clamp(cluster_rgb.r() + drift, -0.15f, 0.15f);
+        float cg = Math.clamp(cluster_rgb.g() + drift, -0.15f, 0.15f);
+        float cb = Math.clamp(cluster_rgb.b() + drift, -0.15f, 0.15f);
         float ca = Math.clamp(cluster_rgb.a() + (random.nextFloat() * 0.01f - 0.005f), -0.1f, 0.1f);
         cluster_rgb = new Color.LinearDelta(cr, cg, cb, ca);
     }
@@ -140,7 +174,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         float r = Math.clamp(clusterColor.r() + jitter, 0, 1);
         float g = Math.clamp(clusterColor.g() + jitter, 0, 1);
         float b = Math.clamp(clusterColor.b() + jitter, 0, 1);
-        float a = Math.max(0, templateColor.a() + cluster_rgb.a() + jitter);
+        float a = Math.max(0, clusterColor.a() * templateColor.a() + jitter);
 
         // Modulation
         r *= templateColor.r();

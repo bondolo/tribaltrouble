@@ -25,6 +25,34 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
     private float x_angle = 0;
     private float y_angle = 0;
 
+    /**
+     * Constructs a new RandomAccelerationEmitter with fully specified parameters, including custom sprite renderers and
+     * type counts.
+     *
+     * @param world game world this emitter belongs to
+     * @param position base 3D position of the emitter
+     * @param offset_z vertical offset applied to the emitter position
+     * @param emitter_radius radius of the horizontal spawning region
+     * @param emitter_height height of the vertical spawning region
+     * @param angle_bound maximum angle bounds (in radians) for the random walk of acceleration
+     * @param angle_max_jump maximum angle step in radians per spawned particle
+     * @param num_particles maximum particle budget, or -1 for infinite
+     * @param particles_per_second rate at which particles spawn per second
+     * @param velocity initial velocity vector of spawned particles
+     * @param acceleration base acceleration vector applied to particles
+     * @param acceleration_factor scaling factor applied to the horizontal random acceleration components
+     * @param color base color of the particles
+     * @param delta_color color delta applied to particles per second
+     * @param particle_radius initial 3D size radius of the particles
+     * @param growth_rate rate at which particle size changes per second
+     * @param energy starting energy (lifetime) of each particle
+     * @param friction damping factor applied to particles colliding with terrain
+     * @param src_blend_func OpenGL source blend function
+     * @param dst_blend_func OpenGL destination blend function
+     * @param textures textures to assign to spawned particles
+     * @param sprite_renderers sprite renderers to assign to spawned particles
+     * @param types number of different particle types/textures
+     */
     public RandomAccelerationEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
             float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
             int num_particles, float particles_per_second,
@@ -44,6 +72,31 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
         this.acceleration_factor = acceleration_factor;
     }
 
+    /**
+     * Constructs a new RandomAccelerationEmitter with a simplified texture array, defaulting sprite renderers to null.
+     *
+     * @param world game world this emitter belongs to
+     * @param position base 3D position of the emitter
+     * @param offset_z vertical offset applied to the emitter position
+     * @param emitter_radius radius of the horizontal spawning region
+     * @param emitter_height height of the vertical spawning region
+     * @param angle_bound maximum angle bounds (in radians) for the random walk of acceleration
+     * @param angle_max_jump maximum angle step in radians per spawned particle
+     * @param num_particles maximum particle budget, or -1 for infinite
+     * @param particles_per_second rate at which particles spawn per second
+     * @param velocity initial velocity vector of spawned particles
+     * @param acceleration base acceleration vector applied to particles
+     * @param acceleration_factor scaling factor applied to the horizontal random acceleration components
+     * @param color base color of the particles
+     * @param delta_color color delta applied to particles per second
+     * @param particle_radius initial 3D size radius of the particles
+     * @param growth_rate rate at which particle size changes per second
+     * @param energy starting energy (lifetime) of each particle
+     * @param friction damping factor applied to particles colliding with terrain
+     * @param src_blend_func OpenGL source blend function
+     * @param dst_blend_func OpenGL destination blend function
+     * @param textures textures to assign to spawned particles
+     */
     public RandomAccelerationEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
             float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
             int num_particles, float particles_per_second,
@@ -68,7 +121,11 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
         LinearParticle particle = new LinearParticle(getWorld());
         Vector3f pos = randomPosition();
         particle.setPos(pos.x(), pos.y(), pos.z());
-        particle.setVelocity(velocity.x(), velocity.y(), velocity.z());
+        Random random = ThreadLocalRandom.current();
+        float vx = velocity.x() + (random.nextFloat() * 0.4f - 0.2f);
+        float vy = velocity.y() + (random.nextFloat() * 0.4f - 0.2f);
+        float vz = velocity.z() + (random.nextFloat() * 0.2f - 0.1f);
+        particle.setVelocity(vx, vy, vz);
         particle.setAcceleration(current_acceleration.x(), current_acceleration.y(), current_acceleration.z());
         particle.setColor(color);
         particle.setDeltaColor(delta_color);

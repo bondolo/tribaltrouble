@@ -70,6 +70,10 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
             );
         }
 
+        public Linear(float gray, float alpha) {
+            this(gray, gray, gray, alpha);
+        }
+
         public @NonNull Linear add(Color.@NonNull LinearDelta delta) {
             return new Linear(r + delta.r(), g + delta.g(), b + delta.b(), a + delta.a());
         }
@@ -88,6 +92,22 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
         public @NonNull Linear alpha(float alpha) {
             return new Linear(r, g, b, alpha);
+        }
+
+        /**
+         * Linearly interpolates between this color and another color.
+         *
+         * @param other destination color to interpolate towards
+         * @param t interpolation factor, typically in [0, 1]
+         * @return a new Linear color representing the interpolated state
+         */
+        public @NonNull Linear lerp(Color.@NonNull Linear other, float t) {
+            return new Linear(
+                    r + (other.r() - r) * t,
+                    g + (other.g() - g) * t,
+                    b + (other.b() - b) * t,
+                    a + (other.a() - a) * t
+            );
         }
 
         public @NonNull LinearDelta delta(Color.@NonNull Linear other) {
@@ -131,8 +151,8 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
                     ((color >> 24) & 0xFF) / NORMALIZE_8_BIT);
         }
 
-        public Standard(float grey, float alpha) {
-            this(grey, grey, grey, alpha);
+        public Standard(float gray, float alpha) {
+            this(gray, gray, gray, alpha);
         }
 
         public int toInt() {
@@ -160,6 +180,10 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
      */
     record LinearDelta(float r, float g, float b, float a) implements Color {
         public static final Color.LinearDelta ZERO = new LinearDelta(0, 0, 0, 0);
+
+        public static @NonNull LinearDelta red(float r) {
+            return new LinearDelta(r, 0f, 0f, 0f);
+        }
 
         public @NonNull LinearDelta mul(float factor) {
             return new LinearDelta(r * factor, g * factor, b * factor, a * factor);

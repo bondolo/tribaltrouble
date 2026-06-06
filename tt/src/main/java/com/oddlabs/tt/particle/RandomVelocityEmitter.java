@@ -25,6 +25,34 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     private float x_angle = 0;
     private float y_angle = 0;
 
+    /**
+     * Constructs a new RandomVelocityEmitter with fully specified parameters, including custom sprite renderers and
+     * type counts.
+     *
+     * @param world game world this emitter belongs to
+     * @param position base 3D position of the emitter
+     * @param offset_z vertical offset applied to the emitter position
+     * @param uv_angle initial rotation angle for the particle sprite textures
+     * @param emitter_radius radius of the horizontal spawning region
+     * @param emitter_height height of the vertical spawning region
+     * @param angle_bound maximum angle bounds (in radians) for the random walk of velocity
+     * @param angle_max_jump maximum angle step in radians per spawned particle
+     * @param num_particles maximum particle budget, or -1 for infinite
+     * @param particles_per_second rate at which particles spawn per second
+     * @param velocity base initial velocity vector of spawned particles
+     * @param acceleration acceleration vector applied to particles
+     * @param color base color of the particles
+     * @param delta_color color delta applied to particles per second
+     * @param particle_radius initial 3D size radius of the particles
+     * @param growth_rate rate at which particle size changes per second
+     * @param energy starting energy (lifetime) of each particle
+     * @param friction damping factor applied to particles colliding with terrain
+     * @param src_blend_func OpenGL source blend function
+     * @param dst_blend_func OpenGL destination blend function
+     * @param textures textures to assign to spawned particles
+     * @param sprite_renderers sprite renderers to assign to spawned particles
+     * @param types number of different particle types/textures
+     */
     public RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z, float uv_angle,
             float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
             int num_particles, float particles_per_second,
@@ -43,6 +71,31 @@ public final class RandomVelocityEmitter extends LinearEmitter {
         this.angle_max_jump = angle_max_jump;
     }
 
+    /**
+     * Constructs a new RandomVelocityEmitter with a simplified texture array, defaulting sprite renderers to null.
+     *
+     * @param world game world this emitter belongs to
+     * @param position base 3D position of the emitter
+     * @param offset_z vertical offset applied to the emitter position
+     * @param uv_angle initial rotation angle for the particle sprite textures
+     * @param emitter_radius radius of the horizontal spawning region
+     * @param emitter_height height of the vertical spawning region
+     * @param angle_bound maximum angle bounds (in radians) for the random walk of velocity
+     * @param angle_max_jump maximum angle step in radians per spawned particle
+     * @param num_particles maximum particle budget, or -1 for infinite
+     * @param particles_per_second rate at which particles spawn per second
+     * @param velocity base initial velocity vector of spawned particles
+     * @param acceleration acceleration vector applied to particles
+     * @param color base color of the particles
+     * @param delta_color color delta applied to particles per second
+     * @param particle_radius initial 3D size radius of the particles
+     * @param growth_rate rate at which particle size changes per second
+     * @param energy starting energy (lifetime) of each particle
+     * @param friction damping factor applied to particles colliding with terrain
+     * @param src_blend_func OpenGL source blend function
+     * @param dst_blend_func OpenGL destination blend function
+     * @param textures textures to assign to spawned particles
+     */
     public RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z, float uv_angle,
             float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
             int num_particles, float particles_per_second,
@@ -56,6 +109,29 @@ public final class RandomVelocityEmitter extends LinearEmitter {
                 growth_rate, energy, friction, src_blend_func, dst_blend_func, textures, null, textures.length);
     }
 
+    /**
+     * Constructs a new RandomVelocityEmitter with a simplified sprite renderer array, defaulting texture keys to null
+     * and blending functions to zero.
+     *
+     * @param world game world this emitter belongs to
+     * @param position base 3D position of the emitter
+     * @param offset_z vertical offset applied to the emitter position
+     * @param emitter_radius radius of the horizontal spawning region
+     * @param emitter_height height of the vertical spawning region
+     * @param angle_bound maximum angle bounds (in radians) for the random walk of velocity
+     * @param angle_max_jump maximum angle step in radians per spawned particle
+     * @param num_particles maximum particle budget, or -1 for infinite
+     * @param particles_per_second rate at which particles spawn per second
+     * @param velocity base initial velocity vector of spawned particles
+     * @param acceleration acceleration vector applied to particles
+     * @param color base color of the particles
+     * @param delta_color color delta applied to particles per second
+     * @param particle_radius initial 3D size radius of the particles
+     * @param growth_rate rate at which particle size changes per second
+     * @param energy starting energy (lifetime) of each particle
+     * @param friction damping factor applied to particles colliding with terrain
+     * @param sprite_renderers sprite renderers to assign to spawned particles
+     */
     public RandomVelocityEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
             float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
             int num_particles, float particles_per_second,

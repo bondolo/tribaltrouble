@@ -45,22 +45,30 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private final Map<@NonNull SupplyType, @NonNull SupplyContainer> resource_containers
             = new EnumMap<>(SupplyType.class);
     private final Map<@NonNull Class<?>, @NonNull BuildProductionContainer> build_containers = new HashMap<>();
-    private final Map<@NonNull DeployType, @NonNull DeployContainer> deploy_containers = new EnumMap<>(
-            DeployType.class);
+    private final Map<@NonNull DeployType, @NonNull DeployContainer> deploy_containers
+            = new EnumMap<>(DeployType.class);
 
     private @Nullable ChieftainContainer chieftain_container = null;
     private @Nullable WeaponsProducer weapons_producer = null;
     private float remove_delay = 0;
     private int hit_points = 1;
-    private int build_points = 0;
+    private int build_points = 0; // 0 = not placed, > 0 = placed
     private float[][] old_landscape_heights;
 
     private @NonNull Target rally_point = this;
     private boolean is_training_chieftain = false;
 
-    public enum BuildState {
+    /**
+     * Represents the construction stages of a building in the game world.
+     */
+    public enum BuildStage {
+        /** The building template has not yet been placed on the terrain grid. */
+        UNPLACED,
+        /** Construction has started but is under 50% completed. */
         START,
+        /** Construction progress is between 50% and 99%. */
         HALFBUILT,
+        /** Construction is completed (100% built). */
         BUILT
     }
 
@@ -322,7 +330,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     private void setHitPoints(int new_hit_points) {
-        hit_points = Math.clamp(new_hit_points, 0, getTemplate().getMaxHitPoints());
+        hit_points = Math.clamp(new_hit_points, 0, Math.min(build_points, getTemplate().getMaxHitPoints()));
     }
 
     public void repair(int amount) {
@@ -331,85 +339,16 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         if (!isDamaged())
             return;
 
-        adjustHitPoints(amount);
-        if (build_points < getTemplate().getMaxHitPoints()) {
-            build_points = Math.min(build_points + amount, getTemplate().getMaxHitPoints());
+        if (!isBuilt()) {
+            var max_hitpoints = getTemplate().getMaxHitPoints();
+            build_points = Math.min(build_points + amount, max_hitpoints);
             reinsert();
-            if (build_points == getTemplate().getMaxHitPoints()) {
-                getOwner().getWorld().getNotificationListener().newSelectableNotification(this);
-                getAbilities().addAbilities(getTemplate().getAbilities());
-                supply_containers.put(Unit.class, getTemplate().getUnitContainerFactory().createContainer(this));
-                if (getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
-                    resource_containers.put(SupplyType.WOOD, new SupplyContainer(MAX_SUPPLY_COUNT));
-                    resource_containers.put(SupplyType.ROCK, new SupplyContainer(MAX_SUPPLY_COUNT));
-                    resource_containers.put(SupplyType.IRON, new SupplyContainer(MAX_SUPPLY_COUNT));
-                    resource_containers.put(SupplyType.RUBBER, new SupplyContainer(MAX_SUPPLY_COUNT));
-
-                    SupplyContainer rock_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    supply_containers.put(RockAxeWeapon.class, rock_weapon_container);
-                    supply_containers.put(RockSpearWeapon.class, rock_weapon_container);
-                    SupplyContainer iron_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    supply_containers.put(IronAxeWeapon.class, iron_weapon_container);
-                    supply_containers.put(IronSpearWeapon.class, iron_weapon_container);
-                    SupplyContainer rubber_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    supply_containers.put(RubberAxeWeapon.class, rubber_weapon_container);
-                    SupplyContainer rubber_spear_weapon = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    supply_containers.put(RubberSpearWeapon.class, rubber_spear_weapon);
-
-                    BuildProductionContainer rock_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
-                            rock_weapon_container,
-                            this,
-                            COST_ROCK_WEAPON,
-                            40f);
-                    BuildProductionContainer iron_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
-                            iron_weapon_container,
-                            this,
-                            COST_IRON_WEAPON,
-                            80f);
-                    BuildProductionContainer rubber_axe_weapon = new BuildProductionContainer(
-                            BuildSpinner.INFINITE_LIMIT,
-                            rubber_weapon_container,
-                            this,
-                            COST_RUBBER_WEAPON,
-                            120f);
-                    build_containers.put(RockAxeWeapon.class, rock_axe_weapon);
-                    build_containers.put(IronAxeWeapon.class, iron_axe_weapon);
-                    build_containers.put(RubberAxeWeapon.class, rubber_axe_weapon);
-                    BuildProductionContainer[] production_containers = new BuildProductionContainer[]{rock_axe_weapon,
-                            iron_axe_weapon, rubber_axe_weapon};
-
-                    weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer(),
-                            production_containers);
-
-                    deploy_containers.put(DeployType.ROCK_WARRIOR, new DeployContainer(this, 1f,
-                            DeployType.ROCK_WARRIOR, RockAxeWeapon.class));
-                    deploy_containers.put(DeployType.IRON_WARRIOR, new DeployContainer(this, 1.5f,
-                            DeployType.IRON_WARRIOR, IronAxeWeapon.class));
-                    deploy_containers.put(DeployType.RUBBER_WARRIOR, new DeployContainer(this, 2f,
-                            DeployType.RUBBER_WARRIOR, RubberAxeWeapon.class));
-                    deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
-                    deploy_containers.put(DeployType.PEON_HARVEST_TREE, new DeployContainer(this, .5f,
-                            DeployType.PEON_HARVEST_TREE, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_TREE, new DeployContainer(this, .5f,
-                            DeployType.PEON_TRANSPORT_TREE, TreeSupply.class));
-                    deploy_containers.put(DeployType.PEON_HARVEST_ROCK, new DeployContainer(this, .5f,
-                            DeployType.PEON_HARVEST_ROCK, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_ROCK, new DeployContainer(this, .5f,
-                            DeployType.PEON_TRANSPORT_ROCK, RockSupply.class));
-                    deploy_containers.put(DeployType.PEON_HARVEST_IRON, new DeployContainer(this, .5f,
-                            DeployType.PEON_HARVEST_IRON, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_IRON, new DeployContainer(this, .5f,
-                            DeployType.PEON_TRANSPORT_IRON, IronSupply.class));
-                    deploy_containers.put(DeployType.PEON_HARVEST_RUBBER, new DeployContainer(this, .5f,
-                            DeployType.PEON_HARVEST_RUBBER, null));
-                    deploy_containers.put(DeployType.PEON_TRANSPORT_RUBBER, new DeployContainer(this, .5f,
-                            DeployType.PEON_TRANSPORT_RUBBER, RubberSupply.class));
-                } else if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-                    chieftain_container = new ChieftainContainer(this);
-                    deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
-                }
+            if (build_points == max_hitpoints) {
+                buildingCompleted();
             }
         }
+
+        adjustHitPoints(amount);
     }
 
     public static boolean isPlacingLegal(@NonNull UnitGrid unit_grid, @NonNull BuildingTemplate template, int grid_x,
@@ -423,18 +362,113 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                         - PLACING_BORDER);
     }
 
+    /** {@return true if the building is placed, false otherwise} */
     public boolean isPlaced() {
         assert !isDead();
-        return build_points != 0;
+        return getBuildStage() != BuildStage.UNPLACED;
     }
 
-    public boolean isComplete() {
+    /** {@return true if construction is complete, false otherwise} */
+    public boolean isBuilt() {
         return build_points == getTemplate().getMaxHitPoints();
+    }
+
+    public int getBuildPoints() {
+        return build_points;
+    }
+
+    public @NonNull BuildStage getBuildStage() {
+        var max_points = getTemplate().getMaxHitPoints();
+        return build_points == max_points
+                ? BuildStage.BUILT
+                : (float) build_points / max_points > .5f
+                        ? BuildStage.HALFBUILT
+                : build_points > 0 ? BuildStage.START : BuildStage.UNPLACED;
+    }
+
+    private void buildingCompleted() {
+        getOwner().getWorld().getNotificationListener().newSelectableNotification(this);
+        getAbilities().addAbilities(getTemplate().getAbilities());
+        supply_containers.put(Unit.class, getTemplate().getUnitContainerFactory().createContainer(this));
+        if (getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
+            resource_containers.put(SupplyType.WOOD, new SupplyContainer(MAX_SUPPLY_COUNT));
+            resource_containers.put(SupplyType.ROCK, new SupplyContainer(MAX_SUPPLY_COUNT));
+            resource_containers.put(SupplyType.IRON, new SupplyContainer(MAX_SUPPLY_COUNT));
+            resource_containers.put(SupplyType.RUBBER, new SupplyContainer(MAX_SUPPLY_COUNT));
+
+            SupplyContainer rock_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
+            supply_containers.put(RockAxeWeapon.class, rock_weapon_container);
+            supply_containers.put(RockSpearWeapon.class, rock_weapon_container);
+            SupplyContainer iron_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
+            supply_containers.put(IronAxeWeapon.class, iron_weapon_container);
+            supply_containers.put(IronSpearWeapon.class, iron_weapon_container);
+            SupplyContainer rubber_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
+            supply_containers.put(RubberAxeWeapon.class, rubber_weapon_container);
+            SupplyContainer rubber_spear_weapon = new SupplyContainer(MAX_SUPPLY_COUNT);
+            supply_containers.put(RubberSpearWeapon.class, rubber_spear_weapon);
+
+            BuildProductionContainer rock_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
+                    rock_weapon_container,
+                    this,
+                    COST_ROCK_WEAPON,
+                    40f);
+            BuildProductionContainer iron_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
+                    iron_weapon_container,
+                    this,
+                    COST_IRON_WEAPON,
+                    80f);
+            BuildProductionContainer rubber_axe_weapon = new BuildProductionContainer(
+                    BuildSpinner.INFINITE_LIMIT,
+                    rubber_weapon_container,
+                    this,
+                    COST_RUBBER_WEAPON,
+                    120f);
+            build_containers.put(RockAxeWeapon.class, rock_axe_weapon);
+            build_containers.put(IronAxeWeapon.class, iron_axe_weapon);
+            build_containers.put(RubberAxeWeapon.class, rubber_axe_weapon);
+            BuildProductionContainer[] production_containers = new BuildProductionContainer[]{rock_axe_weapon,
+                    iron_axe_weapon, rubber_axe_weapon};
+
+            weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer(),
+                    production_containers);
+
+            deploy_containers.put(DeployType.ROCK_WARRIOR, new DeployContainer(this, 1f,
+                    DeployType.ROCK_WARRIOR, RockAxeWeapon.class));
+            deploy_containers.put(DeployType.IRON_WARRIOR, new DeployContainer(this, 1.5f,
+                    DeployType.IRON_WARRIOR, IronAxeWeapon.class));
+            deploy_containers.put(DeployType.RUBBER_WARRIOR, new DeployContainer(this, 2f,
+                    DeployType.RUBBER_WARRIOR, RubberAxeWeapon.class));
+            deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
+            deploy_containers.put(DeployType.PEON_HARVEST_TREE, new DeployContainer(this, .5f,
+                    DeployType.PEON_HARVEST_TREE, null));
+            deploy_containers.put(DeployType.PEON_TRANSPORT_TREE, new DeployContainer(this, .5f,
+                    DeployType.PEON_TRANSPORT_TREE, TreeSupply.class));
+            deploy_containers.put(DeployType.PEON_HARVEST_ROCK, new DeployContainer(this, .5f,
+                    DeployType.PEON_HARVEST_ROCK, null));
+            deploy_containers.put(DeployType.PEON_TRANSPORT_ROCK, new DeployContainer(this, .5f,
+                    DeployType.PEON_TRANSPORT_ROCK, RockSupply.class));
+            deploy_containers.put(DeployType.PEON_HARVEST_IRON, new DeployContainer(this, .5f,
+                    DeployType.PEON_HARVEST_IRON, null));
+            deploy_containers.put(DeployType.PEON_TRANSPORT_IRON, new DeployContainer(this, .5f,
+                    DeployType.PEON_TRANSPORT_IRON, IronSupply.class));
+            deploy_containers.put(DeployType.PEON_HARVEST_RUBBER, new DeployContainer(this, .5f,
+                    DeployType.PEON_HARVEST_RUBBER, null));
+            deploy_containers.put(DeployType.PEON_TRANSPORT_RUBBER, new DeployContainer(this, .5f,
+                    DeployType.PEON_TRANSPORT_RUBBER, RubberSupply.class));
+        } else if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+            chieftain_container = new ChieftainContainer(this);
+            deploy_containers.put(DeployType.PEON, new DeployContainer(this, .5f, DeployType.PEON, null));
+        }
     }
 
     @Override
     public float getHitOffsetZ() {
-        return getTemplate().getHitOffsetZ(getRenderLevel().ordinal());
+        int index = switch (getBuildStage()) {
+            case START -> 0;
+            case HALFBUILT -> 1;
+            case UNPLACED, BUILT -> 2;
+        };
+        return getTemplate().getHitOffsetZ(index);
     }
 
     public static boolean doIsPlacingLegal(@NonNull UnitGrid unit_grid, int grid_x, int grid_y, int size) {
@@ -572,25 +606,20 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 : getUnitGrid().findGridTargets(target.getGridX(), target.getGridY(), 1, false)[0];
     }
 
-    public @NonNull BuildState getRenderLevel() {
-        var max_points = getTemplate().getMaxHitPoints();
-        return build_points == max_points
-                ? BuildState.BUILT
-                : (float) build_points / max_points < .5
-                        ? BuildState.START : BuildState.HALFBUILT;
-    }
-
     @Override
     public float getShadowOpacity() {
-        return getRenderLevel() == BuildState.START ? 0.0f : super.getShadowOpacity();
+        return switch (getBuildStage()) {
+            case UNPLACED, START -> 0.0f;
+            case HALFBUILT, BUILT -> super.getShadowOpacity();
+        };
     }
 
     @Override
     protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
-        return switch (getRenderLevel()) {
+        return switch (getBuildStage()) {
             case START -> getTemplate().getStartBounds();
             case HALFBUILT -> getTemplate().getHalfbuiltBounds();
-            case BUILT -> getTemplate().getBuiltBounds();
+            case UNPLACED, BUILT -> getTemplate().getBuiltBounds();
         };
     }
 

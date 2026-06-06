@@ -13,6 +13,28 @@ import org.jspecify.annotations.NonNull;
 public final class RingEmitter extends LinearEmitter {
     private final int num_particles;
 
+    /**
+     * Constructs a new RingEmitter that spawns particles in a radial ring formation.
+     *
+     * @param world game world this emitter belongs to
+     * @param position base 3D position of the emitter
+     * @param offset_z vertical offset applied to the emitter position
+     * @param emitter_radius radius of the horizontal spawning region
+     * @param emitter_height height of the vertical spawning region
+     * @param num_particles number of particles to spawn in a single ring burst
+     * @param particles_per_second rate at which particles spawn per second
+     * @param velocity base initial velocity vector; velocity.z is the radial velocity magnitude
+     * @param acceleration acceleration vector applied to particles
+     * @param color base color of the particles
+     * @param delta_color color delta applied to particles per second
+     * @param particle_radius initial 3D size radius of the particles
+     * @param growth_rate rate at which particle size changes per second
+     * @param energy starting energy (lifetime) of each particle
+     * @param friction damping factor applied to particles colliding with terrain
+     * @param src_blend_func OpenGL source blend function
+     * @param dst_blend_func OpenGL destination blend function
+     * @param textures textures to assign to spawned particles
+     */
     public RingEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
             float emitter_radius, float emitter_height,
             int num_particles, float particles_per_second,

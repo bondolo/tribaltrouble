@@ -33,6 +33,7 @@ import com.oddlabs.tt.procedural.GeneratorRing;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.viewer.Selection;
 import com.oddlabs.util.Color;
+import java.util.Optional;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -165,6 +166,7 @@ final class RenderState {
         sonic_blast_queue.clear();
     }
 
+    @Nullable
     CameraState getCamera() {
         return camera;
     }
@@ -268,18 +270,17 @@ final class RenderState {
                 float hitOffsetZ = building.getHitOffsetZ();
                 var racesResources = local_player.getWorld().getRacesResources();
                 if (racesResources != null) {
-                    visualModel.getAccessories().add(new BuildingDamagedAccessory(
-                            building, hitOffsetZ, racesResources.getDamageSmokeTextures()));
-                    visualModel.getAccessories().add(new BuildingProductionAccessory(
-                            building, building.getTemplate().getChimney(), racesResources.getSmokeTextures()));
+                    visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ, racesResources
+                            .getDamageSmokeTextures()));
+                    visualModel.getAccessories().add(new BuildingProductionAccessory(building, racesResources
+                            .getSmokeTextures()));
                 }
             }
         }
         return visualModel;
     }
 
-    private <M extends Model> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<
-            M> parentState) {
+    private <M extends Model> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<M> parentState) {
         VisualModel visualModel = getOrCreateVisualModel(model);
 
         // Dynamically add/remove stun star accessory for units
@@ -321,8 +322,7 @@ final class RenderState {
         }
 
         List<Accessory> accessories = visualModel.getAccessories();
-        for (int i = 0; i < accessories.size(); i++) {
-            Accessory accessory = accessories.get(i);
+        for (Accessory accessory : accessories) {
             if (accessory != null && accessory.isVisible(model, camera)) {
                 visitAccessory(accessory, parentState);
             }
@@ -383,22 +383,22 @@ final class RenderState {
     }
 
     private static float getBuildingSelectionRadius(@NonNull Building building) {
-        Building.BuildState render_level = building.getRenderLevel();
+        Building.BuildStage render_level = building.getBuildStage();
         var template = building.getTemplate();
         return switch (render_level) {
             case START -> template.getStartSelectionRadius();
             case HALFBUILT -> template.getHalfbuiltSelectionRadius();
-            case BUILT -> template.getBuiltSelectionRadius();
+            case UNPLACED, BUILT -> template.getBuiltSelectionRadius();
         };
     }
 
     private static float getBuildingSelectionHeight(@NonNull Building building) {
-        Building.BuildState render_level = building.getRenderLevel();
+        Building.BuildStage render_level = building.getBuildStage();
         var template = building.getTemplate();
         return switch (render_level) {
             case START -> template.getStartSelectionHeight();
             case HALFBUILT -> template.getHalfbuiltSelectionHeight();
-            case BUILT -> template.getBuiltSelectionHeight();
+            case UNPLACED, BUILT -> template.getBuiltSelectionHeight();
         };
     }
 
@@ -440,8 +440,9 @@ final class RenderState {
 
     private static final ModelVisitor<SupplyModel> supply_model_visitor = new SupplyModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<SupplyModel> render_state) {
-            return render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null;
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<SupplyModel> render_state) {
+            return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
+                    ? spriteKey : null);
         }
 
         @Override
@@ -463,7 +464,7 @@ final class RenderState {
         addToRenderList(state);
         if (!picking) {
             if (model.getShadowDiameter() > 0f)
-                default_shadow_renderer.addToShadowList((ModelState<?>) state);
+                default_shadow_renderer.addToShadowList(state);
             if (model.getCrackDecalOpacity() > 0.0f) {
                 crack_shadow_renderer.addToCrackList(new Shadowable() {
                     @Override
@@ -508,8 +509,9 @@ final class RenderState {
 
     private static final ModelVisitor<RubberSupply> rubber_model_visitor = new SupplyModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<RubberSupply> render_state) {
-            return render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null;
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<RubberSupply> render_state) {
+            return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
+                    ? spriteKey : null);
         }
 
         @Override
@@ -527,14 +529,15 @@ final class RenderState {
                 model, z_offset);
         addToRenderList(state);
         if (!picking && !model.isHit())
-            default_shadow_renderer.addToShadowList((ModelState<?>) state);
+            default_shadow_renderer.addToShadowList(state);
         visitAccessories(model, state);
     }
 
     private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<SceneryModel> render_state) {
-            return render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null;
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<SceneryModel> render_state) {
+            return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
+                    ? spriteKey : null);
         }
     };
 
@@ -543,7 +546,7 @@ final class RenderState {
         addToRenderList(state);
         if (!picking) {
             if (model.getShadowDiameter() > 0f)
-                default_shadow_renderer.addToShadowList((ModelState<?>) state);
+                default_shadow_renderer.addToShadowList(state);
         }
     }
 
@@ -552,8 +555,9 @@ final class RenderState {
         private static final float START_FADE_DIST = 100;
 
         @Override
-        public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<Plants> render_state) {
-            return render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null;
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<Plants> render_state) {
+            return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
+                    ? spriteKey : null);
         }
 
         @Override
@@ -584,11 +588,12 @@ final class RenderState {
     private static final ModelVisitor<DirectedThrowingWeapon> directed_weapon_model_visitor
             = new WhiteModelVisitor<>() {
                 @Override
-                public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<
+                public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<
                         DirectedThrowingWeapon> render_state) {
                     DirectedThrowingWeapon model = render_state.getModel();
                     int race = model.getSrc().getOwner().getRace().getRaceType();
-                    return VisualRegistry.getInstance().getWeaponSprite(race, model.getWeaponVisualType());
+                    return Optional.of(VisualRegistry.getInstance().getWeaponSprite(race, model
+                            .getWeaponVisualType()));
                 }
 
                 @Override
@@ -611,11 +616,12 @@ final class RenderState {
     private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor
             = new WhiteModelVisitor<>() {
                 @Override
-                public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<
+                public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<
                         RotatingThrowingWeapon> render_state) {
                     RotatingThrowingWeapon model = render_state.getModel();
                     int race = model.getSrc().getOwner().getRace().getRaceType();
-                    return VisualRegistry.getInstance().getWeaponSprite(race, model.getWeaponVisualType());
+                    return Optional.of(VisualRegistry.getInstance().getWeaponSprite(race, model
+                            .getWeaponVisualType()));
                 }
 
                 @Override

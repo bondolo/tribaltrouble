@@ -58,7 +58,7 @@ public final class RepairBehaviour implements Behaviour {
         if (anim_time > SECONDS_PER_ANIMATION_CYCLE) {
             restartAnimation();
             repairs++;
-            if (building.isDead() || !building.isDamaged()) {
+            if (building.isDead() || (building.isBuilt() && !building.isDamaged())) {
                 return State.DONE;
             } else
                 building.repair(1);
