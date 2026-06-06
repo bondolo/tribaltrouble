@@ -38,7 +38,8 @@ public final class VisualModel implements ModelClient {
 
     @Override
     public void addVisualSound(@NonNull EmojiType emoji, float duration, float audioDistance) {
-        SpriteKey sprite = VisualRegistry.getInstance().getEmojiSprite(emoji);
-        accessories.add(new VisualSoundAccessory(sprite, duration, audioDistance));
+        VisualRegistry.getInstance().getEmojiSprite(emoji)
+                .map(sprite -> new VisualSoundAccessory(sprite, duration, audioDistance))
+                .ifPresent(accessories::add);
     }
 }

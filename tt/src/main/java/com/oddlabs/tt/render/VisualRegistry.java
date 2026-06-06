@@ -4,6 +4,7 @@ import com.oddlabs.tt.model.BuildingVisualType;
 import com.oddlabs.tt.model.UnitVisualType;
 import com.oddlabs.tt.model.EmojiType;
 import java.util.EnumMap;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.oddlabs.tt.model.WeaponVisualType;
@@ -103,16 +104,13 @@ public final class VisualRegistry {
         emojis.put(type, sprite);
     }
 
-    public @NonNull SpriteKey getEmojiSprite(@NonNull EmojiType type) {
+    public @NonNull Optional<SpriteKey> getEmojiSprite(@NonNull EmojiType type) {
         if (type == EmojiType.CHICKEN_CLUCK && chickenCluckSprites != null && chickenCluckSprites.length > 0) {
-            return chickenCluckSprites[ThreadLocalRandom.current().nextInt(
-                    chickenCluckSprites.length)];
+            return Optional.of(chickenCluckSprites[ThreadLocalRandom.current().nextInt(
+                    chickenCluckSprites.length)]);
         }
-        SpriteKey sprite = emojis.get(type);
-        if (sprite == null) {
-            throw new IllegalStateException("Emoji sprite not registered for type " + type);
-        }
-        return sprite;
+
+        return Optional.ofNullable(emojis.get(type));
     }
 
     public void registerDefaultUnitShadow(@NonNull ShadowListKey shadow) {
