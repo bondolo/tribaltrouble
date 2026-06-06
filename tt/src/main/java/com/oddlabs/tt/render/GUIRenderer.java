@@ -146,8 +146,7 @@ public final class GUIRenderer {
             flush();
         }
         // Use -1 for "no texture"
-        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color instanceof Color.Linear linear ? linear : new Color.Linear(
-                color));
+        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color);
     }
 
     public void drawModeIcon(@NonNull ModeIconQuads iconQuad, ModeIconQuads.@NonNull Mode skinMode, float x, float y) {
