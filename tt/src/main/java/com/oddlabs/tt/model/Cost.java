@@ -2,23 +2,22 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.gui.GUIIcons;
 import com.oddlabs.tt.gui.IconQuad;
-import com.oddlabs.tt.landscape.TreeSupply;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 
 /** Captures the supply types and amounts needed for a production */
 public final class Cost {
-    private final @NonNull Class<? extends Supply> @NonNull [] supply_types;
+    private final @NonNull SupplyType @NonNull [] supply_types;
     private final int @NonNull [] supply_amounts;
 
-    public Cost(@NonNull Class<? extends Supply> @NonNull [] supply_types, int @NonNull [] supply_amounts) {
+    public Cost(@NonNull SupplyType @NonNull [] supply_types, int @NonNull [] supply_amounts) {
         this.supply_types = supply_types;
         this.supply_amounts = supply_amounts;
         assert supply_types.length == supply_amounts.length;
     }
 
-    public @NonNull Class<? extends Supply> @NonNull [] getSupplyTypes() {
+    public @NonNull SupplyType @NonNull [] getSupplyTypes() {
         return supply_types;
     }
 
@@ -40,19 +39,12 @@ public final class Cost {
         return result;
     }
 
-    private @NonNull IconQuad getIconQuad(@NonNull Class<? extends Supply> supply_type) {
-        IconQuad icon;
-        if (supply_type == TreeSupply.class) {
-            icon = GUIIcons.getIcons().getTreeStatusIcon();
-        } else if (supply_type == RockSupply.class) {
-            icon = GUIIcons.getIcons().getRockStatusIcon();
-        } else if (supply_type == IronSupply.class) {
-            icon = GUIIcons.getIcons().getIronStatusIcon();
-        } else if (supply_type == RubberSupply.class) {
-            icon = GUIIcons.getIcons().getRubberStatusIcon();
-        } else {
-            throw new IllegalArgumentException("Unknown supply_type: " + supply_type);
-        }
-        return icon;
+    private @NonNull IconQuad getIconQuad(@NonNull SupplyType supply_type) {
+        return switch (supply_type) {
+            case WOOD -> GUIIcons.getIcons().getTreeStatusIcon();
+            case ROCK -> GUIIcons.getIcons().getRockStatusIcon();
+            case IRON -> GUIIcons.getIcons().getIronStatusIcon();
+            case RUBBER -> GUIIcons.getIcons().getRubberStatusIcon();
+        };
     }
 }

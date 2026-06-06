@@ -3,7 +3,6 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.UnitSupplyContainer;
 import org.joml.Matrix4f;
@@ -24,10 +23,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     public @Nullable SpriteKey getSpriteRenderer() {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         if (supply_container != null) {
-            Class<? extends Supply> type = supply_container.getSupplyType();
-            if (type != null) {
-                return supply_container.getSupplySpriteRenderer(type);
-            }
+            return supply_container.getSupplyType().map(supply_container::getSupplySpriteRenderer).orElse(null);
         }
         return null;
     }

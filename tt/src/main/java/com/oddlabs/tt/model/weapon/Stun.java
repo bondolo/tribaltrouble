@@ -13,6 +13,8 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 
 /**
  * Logic controller for the Stun magic effect.
@@ -55,9 +57,8 @@ public final class Stun extends PointEmitterModel implements Magic {
                 .getPositionY()));
         target_list = filter.getResult();
 
-        sound = owner.getWorld().getAudio().newAudio(start_x, start_y, z, AudioAssets.STUN_LUR[getWorld().getRandom()
-                .nextInt(
-                        AudioAssets.STUN_LUR.length)]);
+        sound = owner.getWorld().getAudio().newAudio(start_x, start_y, z,
+                AudioAssets.STUN_LUR[ThreadLocalRandom.current().nextInt(AudioAssets.STUN_LUR.length)]);
     }
 
     private static Emitter<?> createEmitter(float offset_x, float offset_y, float offset_z, @NonNull Unit src) {

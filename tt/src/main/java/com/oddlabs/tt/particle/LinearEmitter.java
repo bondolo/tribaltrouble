@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * An emitter that spawns particles with linear movement properties (velocity, acceleration).
@@ -21,7 +22,6 @@ import java.util.Random;
 public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
 
-    protected final @NonNull Random random;
     private final Vector3f randomized_position = new Vector3f();
     private final float offset_z;
     private final float emitter_radius;
@@ -58,7 +58,6 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.growth_rate = growth_rate;
         this.energy = energy;
         this.friction = friction;
-        random = new Random((long) (position.x() * position.y() * position.z()));
         position.set(position.x(), position.y(), position.z() + offset_z);
     }
 
@@ -73,7 +72,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     @Override
     public final void animate(float t) {
         updateSpawning(t);
-        updateCluster(random, t);
+        updateCluster(t);
 
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
@@ -129,7 +128,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {
-            Color.Linear particleColor = nextParticleColor(color, random);
+            Color.Linear particleColor = nextParticleColor(color);
             initiated += initParticle(getPosition(), velocity, acceleration, particleColor, delta_color,
                     particle_radius, growth_rate, energy);
         }
@@ -143,6 +142,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
             float energy);
 
     protected final @NonNull Vector3f randomPosition() {
+        Random random = ThreadLocalRandom.current();
         float r = emitter_radius * (float) (1 - random.nextGaussian());
         float a = random.nextFloat() * (float) Math.PI * 2;
         float x = (float) Math.cos(a) * r;

@@ -4,10 +4,11 @@ package com.oddlabs.tt.model;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.*;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Represents a rubber resource, visually represented as a chicken.
@@ -52,11 +53,13 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private boolean is_hit = false;
     private boolean spawning;
 
-    public RubberSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, int grid_x, int grid_y,
+    public RubberSupply(@NonNull World world, int grid_x, int grid_y,
             float x, float y, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
+        super(world, 2f, grid_x, grid_y, x, y, 0f, INITIAL_SUPPLIES, false,
+                world.getLandscapeResources().getChickenBounds());
         var spawn_z = world.getRandom().nextFloat() * (MAX_TREE_FALL_HEIGHT - MIN_TREE_FALL_HEIGHT)
                 + MIN_TREE_FALL_HEIGHT;
-        super(world, sprite_renderer, 2f, grid_x, grid_y, x, y, spawn_z, 0, INITIAL_SUPPLIES, false);
+        this.offset_z = spawn_z;
         this.path_tracker = new PathTracker(world.getUnitGrid(), this);
         this.group = group;
         start_grid_x = grid_x;
@@ -74,8 +77,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     }
 
     @Override
-    public @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources) {
-        return resources.getRubberStatusSprite();
+    public @NonNull SupplyType getSupplyType() {
+        return SupplyType.RUBBER;
     }
 
     @Override
@@ -137,8 +140,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         Region current_region = getWorld().getUnitGrid().getRegion(getGridX(), getGridY());
         Region new_region = getWorld().getUnitGrid().getRegion(grid_x, grid_y);
         if (current_region != new_region) {
-            current_region.unregisterObject((Class<RubberSupply>) getClass(), this);
-            new_region.registerObject((Class<RubberSupply>) getClass(), this);
+            current_region.unregisterObject(RubberSupply.class, this);
+            new_region.registerObject(RubberSupply.class, this);
         }
         super.setGridPosition(grid_x, grid_y);
     }
@@ -165,17 +168,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 setNewAnimation(Animation.IDLING);
                 if (random < .05) {
                     getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            AudioAssets.CHICKEN_IDLES[getWorld().getRandom().nextInt(
+                            AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
                                     AudioAssets.CHICKEN_IDLES.length)]);
-                    RacesResources racesResources = getWorld().getRacesResources();
-                    if (racesResources != null) {
-                        var chickenThoughts = racesResources.getChickenEmojiSprites();
-                        var thought = chickenThoughts[getWorld().getRandom().nextInt(chickenThoughts.length)];
-                        ModelClient client = getClientState(ModelClient.class);
-                        if (client != null) {
-                            client.addVisualSound(thought,
-                                    ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
-                        }
+                    ModelClient client = getClientState(ModelClient.class);
+                    if (client != null) {
+                        client.addVisualSound(EmojiType.CHICKEN_CLUCK,
+                                ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
                     }
                 }
             } else if (random < .85) {
@@ -242,14 +240,6 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             is_hit = true;
             setNewAnimation(Animation.DYING);
             getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), AudioAssets.CHICKEN_DEATH);
-            RacesResources racesResources = getWorld().getRacesResources();
-            if (racesResources != null) {
-                ModelClient client = getClientState(ModelClient.class);
-                if (client != null) {
-                    client.addVisualSound(getStatusSprite(racesResources),
-                            ModelClient.DURATION_CHICKEN_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
-                }
-            }
             group.remove(this);
         }
         return super.hit();

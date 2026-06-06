@@ -3,7 +3,6 @@ package com.oddlabs.tt.model;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.GUIIcons;
-import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.weapon.*;
 import com.oddlabs.tt.player.NativeChieftainAI;
 import com.oddlabs.tt.player.VikingChieftainAI;
@@ -17,6 +16,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Supplier;
@@ -79,15 +79,6 @@ public final class RacesResources {
     private final @NonNull SpriteKey[] treasure_sprites = new SpriteKey[6];
     private final @NonNull Race @NonNull [] races;
 
-    private final @NonNull SpriteKey gravestone_emoji_sprite;
-    private final @NonNull SpriteKey saw_emoji_sprite;
-    private final @NonNull SpriteKey hammer_emoji_sprite;
-    private final @NonNull SpriteKey @NonNull [] chicken_emoji_sprites;
-    private final @NonNull SpriteKey tree_status_sprite;
-    private final @NonNull SpriteKey rock_status_sprite;
-    private final @NonNull SpriteKey iron_status_sprite;
-    private final @NonNull SpriteKey rubber_status_sprite;
-
     public static boolean isValidRace(int race) {
         return race == RACE_NATIVES || race == RACE_VIKINGS;
     }
@@ -95,6 +86,7 @@ public final class RacesResources {
     private static @NonNull BuildingTemplate createBuildingTemplate(
             @NonNull RenderQueues queues,
             int template_id,
+            int race,
             @NonNull String built_name,
             float built_selection_radius,
             float built_selection_height,
@@ -120,7 +112,8 @@ public final class RacesResources {
             float rally_z,
             float chimney_x,
             float chimney_y,
-            float chimney_z, @NonNull String name) {
+            float chimney_z,
+            @NonNull String name) {
         assert hit_offset_z.length == 3;
 
         final float ring_mid = 0.445f;
@@ -140,20 +133,34 @@ public final class RacesResources {
         SpriteFile building_start = new SpriteFile(start_name,
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
+        SpriteKey builtSprite = queues.register(building);
+        SpriteKey halfbuiltSprite = queues.register(building_halfbuilt);
+        SpriteKey startSprite = queues.register(building_start);
+
+        BuildingVisualType visualType = switch (template_id % 3) {
+            case 0 -> BuildingVisualType.QUARTERS;
+            case 1 -> BuildingVisualType.FOUNDRY;
+            case 2 -> BuildingVisualType.TOWER;
+            default -> throw new AssertionError();
+        };
+
+        VisualRegistry.getInstance().registerBuilding(race, visualType,
+                new VisualRegistry.BuildingVisuals(startSprite, halfbuiltSprite, builtSprite, shadow_renderer));
+
         return new BuildingTemplate(template_id,
                 placing_size,
                 smoke_radius,
                 smoke_height,
                 num_fragments,
                 shadow_diameter,
-                shadow_renderer,
-                queues.register(building),
+                visualType,
+                builtSprite.bounds(),
                 built_selection_radius,
                 built_selection_height,
-                queues.register(building_halfbuilt),
+                halfbuiltSprite.bounds(),
                 halfbuilt_selection_radius,
                 halfbuilt_selection_height,
-                queues.register(building_start),
+                startSprite.bounds(),
                 start_selection_radius,
                 start_selection_height,
                 max_hit_points,
@@ -168,8 +175,8 @@ public final class RacesResources {
                 name);
     }
 
-    private final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull SpriteKey> native_supply_sprites;
-    private final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull SpriteKey> viking_supply_sprites;
+    private final @NonNull Map<@NonNull SupplyType, @NonNull SpriteKey> native_supply_sprites;
+    private final @NonNull Map<@NonNull SupplyType, @NonNull SpriteKey> viking_supply_sprites;
 
     public RacesResources(@NonNull RenderQueues queues) {
         int num_progress = 23;
@@ -184,12 +191,12 @@ public final class RacesResources {
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressForm.progress(1f / num_progress);
-        native_supply_sprites = Map.of(
-                TreeSupply.class, queues.register(native_wood_sprite),
-                RockSupply.class, queues.register(native_rock_sprite),
-                IronSupply.class, queues.register(native_rock_sprite, 1),
-                RubberSupply.class, queues.register(native_rubber_sprite)
-        );
+        EnumMap<SupplyType, SpriteKey> nativeMap = new EnumMap<>(SupplyType.class);
+        nativeMap.put(SupplyType.WOOD, queues.register(native_wood_sprite));
+        nativeMap.put(SupplyType.ROCK, queues.register(native_rock_sprite));
+        nativeMap.put(SupplyType.IRON, queues.register(native_rock_sprite, 1));
+        nativeMap.put(SupplyType.RUBBER, queues.register(native_rubber_sprite));
+        native_supply_sprites = nativeMap;
 
         SpriteFile viking_wood_sprite = new SpriteFile("/geometry/vikings/wood_resource.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
@@ -202,12 +209,12 @@ public final class RacesResources {
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressForm.progress(1f / num_progress);
-        viking_supply_sprites = Map.of(
-                TreeSupply.class, queues.register(viking_wood_sprite),
-                RockSupply.class, queues.register(viking_rock_sprite),
-                IronSupply.class, queues.register(viking_rock_sprite, 1),
-                RubberSupply.class, queues.register(viking_rubber_sprite)
-        );
+        EnumMap<SupplyType, SpriteKey> vikingMap = new EnumMap<>(SupplyType.class);
+        vikingMap.put(SupplyType.WOOD, queues.register(viking_wood_sprite));
+        vikingMap.put(SupplyType.ROCK, queues.register(viking_rock_sprite));
+        vikingMap.put(SupplyType.IRON, queues.register(viking_rock_sprite, 1));
+        vikingMap.put(SupplyType.RUBBER, queues.register(viking_rubber_sprite));
+        viking_supply_sprites = vikingMap;
 
         smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(42, 0.6f, 1.0f), 0);
         damage_smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(43, 1.0f, 0.5f), 0);
@@ -236,6 +243,7 @@ public final class RacesResources {
         BuildingTemplate viking_quarters_template = createBuildingTemplate(
                 queues,
                 Race.BUILDING_QUARTERS,
+                RACE_VIKINGS,
                 "/geometry/vikings/quarters.binsprite",
                 3.5f, 7f,
                 "/geometry/vikings/quarters_halfbuilt.binsprite",
@@ -253,6 +261,7 @@ public final class RacesResources {
         BuildingTemplate viking_armory_template = createBuildingTemplate(
                 queues,
                 Race.BUILDING_ARMORY,
+                RACE_VIKINGS,
                 "/geometry/vikings/armory.binsprite",
                 3.5f, 7f,
                 "/geometry/vikings/armory_halfbuilt.binsprite",
@@ -271,6 +280,7 @@ public final class RacesResources {
         BuildingTemplate viking_tower_template = createBuildingTemplate(
                 queues,
                 Race.BUILDING_TOWER,
+                RACE_VIKINGS,
                 "/geometry/vikings/tower.binsprite",
                 1.25f, 11f,
                 "/geometry/vikings/tower_halfbuilt.binsprite",
@@ -288,6 +298,7 @@ public final class RacesResources {
         BuildingTemplate native_quarters_template = createBuildingTemplate(
                 queues,
                 Race.BUILDING_QUARTERS,
+                RACE_NATIVES,
                 "/geometry/natives/quarters.binsprite",
                 4f, 8f,
                 "/geometry/natives/quarters_halfbuilt.binsprite",
@@ -305,6 +316,7 @@ public final class RacesResources {
         BuildingTemplate native_armory_template = createBuildingTemplate(
                 queues,
                 Race.BUILDING_ARMORY,
+                RACE_NATIVES,
                 "/geometry/natives/armory.binsprite",
                 4f, 8f,
                 "/geometry/natives/armory_halfbuilt.binsprite",
@@ -323,6 +335,7 @@ public final class RacesResources {
         BuildingTemplate native_tower_template = createBuildingTemplate(
                 queues,
                 Race.BUILDING_TOWER,
+                RACE_NATIVES,
                 "/geometry/natives/tower.binsprite",
                 1f, 14f,
                 "/geometry/natives/tower_halfbuilt.binsprite",
@@ -376,46 +389,49 @@ public final class RacesResources {
         ProgressForm.progress(1f / num_progress);
 
         WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f,
-                THROW_RANGE, 29f / 58f,
-                queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_ROCK),
-                AudioAssets.SFX_WEAPON_AXE,
-                AudioAssets.SFX_IMPACT_MEATS);
+                THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+        VisualRegistry.getInstance().registerWeapon(RACE_VIKINGS, WeaponVisualType.ROCK,
+                queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_ROCK));
+
         WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f,
-                THROW_RANGE, 29f / 58f,
-                queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_IRON),
-                AudioAssets.SFX_WEAPON_AXE,
-                AudioAssets.SFX_IMPACT_MEATS);
+                THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+        VisualRegistry.getInstance().registerWeapon(RACE_VIKINGS, WeaponVisualType.IRON,
+                queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_IRON));
+
         WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new,
-                0.95f, THROW_RANGE, 29f / 58f,
-                queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_RUBBER),
-                AudioAssets.SFX_WEAPON_AXE,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.95f, THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+        VisualRegistry.getInstance().registerWeapon(RACE_VIKINGS, WeaponVisualType.RUBBER,
+                queues.register(viking_warrior_axe, Race.UNIT_WARRIOR_RUBBER));
+
         WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new,
-                0.5f, THROW_RANGE, 46f / 100f,
-                queues.register(native_warrior_spear, Race.UNIT_WARRIOR_ROCK),
-                AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.5f, THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.SFX_IMPACT_MEATS);
+        VisualRegistry.getInstance().registerWeapon(RACE_NATIVES, WeaponVisualType.ROCK,
+                queues.register(native_warrior_spear, Race.UNIT_WARRIOR_ROCK));
+
         WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new,
-                0.75f, THROW_RANGE, 46f / 100f,
-                queues.register(native_warrior_spear, Race.UNIT_WARRIOR_IRON),
-                AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.75f, THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.SFX_IMPACT_MEATS);
+        VisualRegistry.getInstance().registerWeapon(RACE_NATIVES, WeaponVisualType.IRON,
+                queues.register(native_warrior_spear, Race.UNIT_WARRIOR_IRON));
+
         WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class,
-                RubberSpearWeapon::new, 0.95f, THROW_RANGE, 46f / 100f,
-                queues.register(native_warrior_spear, Race.UNIT_WARRIOR_RUBBER),
-                AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                RubberSpearWeapon::new,
+                0.95f, THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.SFX_IMPACT_MEATS);
+        VisualRegistry.getInstance().registerWeapon(RACE_NATIVES, WeaponVisualType.RUBBER,
+                queues.register(native_warrior_spear, Race.UNIT_WARRIOR_RUBBER));
 
         ProgressForm.progress(1f / num_progress);
         ShadowListKey default_shadow_list = queues.registerSelectableShadowList(DEFAULT_SHADOW_DESC);
+        VisualRegistry.getInstance().registerDefaultUnitShadow(default_shadow_list);
+        SpriteKey vRockSprite = queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_ROCK);
         UnitTemplate viking_warrior_rock_template = new UnitTemplate(.4f,
                 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f,
                 viking_warrior_rock_weapon,
-                queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_ROCK),
+                UnitVisualType.WARRIOR_ROCK,
+                vRockSprite.bounds(),
+                vRockSprite.animTypes(),
                 shadow_diameter_warrior,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_VIKING_WARRIORS[0],
                 .25f,
@@ -426,14 +442,18 @@ public final class RacesResources {
                 1,
                 0f, 0f, 2f,
                 3);
+        VisualRegistry.getInstance().registerUnit(RACE_VIKINGS, UnitVisualType.WARRIOR_ROCK, vRockSprite);
+
+        SpriteKey vIronSprite = queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_IRON);
         UnitTemplate viking_warrior_iron_template = new UnitTemplate(.4f,
                 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f,
                 viking_warrior_iron_weapon,
-                queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_IRON),
+                UnitVisualType.WARRIOR_IRON,
+                vIronSprite.bounds(),
+                vIronSprite.animTypes(),
                 shadow_diameter_warrior,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
@@ -444,14 +464,18 @@ public final class RacesResources {
                 1,
                 0f, 0f, 2f,
                 5);
+        VisualRegistry.getInstance().registerUnit(RACE_VIKINGS, UnitVisualType.WARRIOR_IRON, vIronSprite);
+
+        SpriteKey vRubberSprite = queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_RUBBER);
         UnitTemplate viking_warrior_rubber_template = new UnitTemplate(.4f,
                 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f,
                 viking_warrior_rubber_weapon,
-                queues.register(sprite_list_warrior, Race.UNIT_WARRIOR_RUBBER),
+                UnitVisualType.WARRIOR_RUBBER,
+                vRubberSprite.bounds(),
+                vRubberSprite.animTypes(),
                 shadow_diameter_warrior,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
@@ -462,14 +486,18 @@ public final class RacesResources {
                 1,
                 0f, 0f, 2f,
                 10);
+        VisualRegistry.getInstance().registerUnit(RACE_VIKINGS, UnitVisualType.WARRIOR_RUBBER, vRubberSprite);
+
+        SpriteKey nRockSprite = queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_ROCK);
         UnitTemplate native_warrior_rock_template = new UnitTemplate(.4f,
                 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f,
                 native_warrior_rock_weapon,
-                queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_ROCK),
+                UnitVisualType.WARRIOR_ROCK,
+                nRockSprite.bounds(),
+                nRockSprite.animTypes(),
                 shadow_diameter_warrior,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_NATIVE_WARRIORS[0],
                 .25f,
@@ -480,14 +508,18 @@ public final class RacesResources {
                 1,
                 0f, 0f, 2f,
                 3);
+        VisualRegistry.getInstance().registerUnit(RACE_NATIVES, UnitVisualType.WARRIOR_ROCK, nRockSprite);
+
+        SpriteKey nIronSprite = queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_IRON);
         UnitTemplate native_warrior_iron_template = new UnitTemplate(.4f,
                 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f,
                 native_warrior_iron_weapon,
-                queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_IRON),
+                UnitVisualType.WARRIOR_IRON,
+                nIronSprite.bounds(),
+                nIronSprite.animTypes(),
                 shadow_diameter_warrior,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
@@ -498,14 +530,18 @@ public final class RacesResources {
                 1,
                 0f, 0f, 2f,
                 5);
+        VisualRegistry.getInstance().registerUnit(RACE_NATIVES, UnitVisualType.WARRIOR_IRON, nIronSprite);
+
+        SpriteKey nRubberSprite = queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_RUBBER);
         UnitTemplate native_warrior_rubber_template = new UnitTemplate(.4f,
                 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f,
                 native_warrior_rubber_weapon,
-                queues.register(sprite_list_native_warrior, Race.UNIT_WARRIOR_RUBBER),
+                UnitVisualType.WARRIOR_RUBBER,
+                nRubberSprite.bounds(),
+                nRubberSprite.animTypes(),
                 shadow_diameter_warrior,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
@@ -516,14 +552,18 @@ public final class RacesResources {
                 1,
                 0f, 0f, 2f,
                 10);
+        VisualRegistry.getInstance().registerUnit(RACE_NATIVES, UnitVisualType.WARRIOR_RUBBER, nRubberSprite);
+
+        SpriteKey vPeonSprite = queues.register(sprite_list_peon);
         UnitTemplate viking_peon_template = new UnitTemplate(.4f,
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
                 new InstantHitFactory(1 / 5f, 0f, 11f / 38f, AudioAssets.SFX_IMPACT_MEATS),
-                queues.register(sprite_list_peon),
+                UnitVisualType.PEON,
+                vPeonSprite.bounds(),
+                vPeonSprite.animTypes(),
                 shadow_diameter_peon,
-                default_shadow_list,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, viking_supply_sprites),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
@@ -534,14 +574,18 @@ public final class RacesResources {
                 1,
                 .1f, 0f, 1.75f,
                 1);
+        VisualRegistry.getInstance().registerUnit(RACE_VIKINGS, UnitVisualType.PEON, vPeonSprite);
+
+        SpriteKey nPeonSprite = queues.register(sprite_list_native_peon);
         UnitTemplate native_peon_template = new UnitTemplate(.4f,
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
                 new InstantHitFactory(1 / 5f, 0f, 51f / 83f, AudioAssets.SFX_IMPACT_MEATS),
-                queues.register(sprite_list_native_peon),
+                UnitVisualType.PEON,
+                nPeonSprite.bounds(),
+                nPeonSprite.animTypes(),
                 shadow_diameter_peon,
-                default_shadow_list,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, native_supply_sprites),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
@@ -552,14 +596,18 @@ public final class RacesResources {
                 1,
                 0f, 0f, 1.75f,
                 1);
+        VisualRegistry.getInstance().registerUnit(RACE_NATIVES, UnitVisualType.PEON, nPeonSprite);
+
+        SpriteKey vChieftainSprite = queues.register(sprite_list_chieftain);
         UnitTemplate viking_chieftain_template = new UnitTemplate(.4f,
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
                 new InstantHitFactory(3 / 4f, 0f, 75f / 119f, AudioAssets.SFX_VIKING_CHIEFTAIN_HITS),
-                queues.register(sprite_list_chieftain),
+                UnitVisualType.CHIEFTAIN,
+                vChieftainSprite.bounds(),
+                vChieftainSprite.animTypes(),
                 shadow_diameter_chieftain,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .15f,
@@ -570,14 +618,18 @@ public final class RacesResources {
                 VIKING_CHIEFTAIN_HIT_POINTS,
                 -.07f, .312f, 2.7f,
                 40);
+        VisualRegistry.getInstance().registerUnit(RACE_VIKINGS, UnitVisualType.CHIEFTAIN, vChieftainSprite);
+
+        SpriteKey nChieftainSprite = queues.register(sprite_list_native_chieftain);
         UnitTemplate native_chieftain_template = new UnitTemplate(.4f,
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
                 new InstantHitFactory(3 / 4f, 0f, 75f / 129f, AudioAssets.SFX_NATIVE_CHIEFTAIN_HITS),
-                queues.register(sprite_list_native_chieftain),
+                UnitVisualType.CHIEFTAIN,
+                nChieftainSprite.bounds(),
+                nChieftainSprite.animTypes(),
                 shadow_diameter_chieftain,
-                default_shadow_list,
                 null,
                 AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .15f,
@@ -588,6 +640,7 @@ public final class RacesResources {
                 NATIVE_CHIEFTAIN_HIT_POINTS,
                 .878f, .151f, 2.8f,
                 40);
+        VisualRegistry.getInstance().registerUnit(RACE_NATIVES, UnitVisualType.CHIEFTAIN, nChieftainSprite);
 
         MagicFactory[] native_magic = new MagicFactory[NUM_MAGIC];
         native_magic[INDEX_MAGIC_POISON] = new PoisonFogFactory(0.9f, 0f, 0.55f, 26f, .5f, 2f, 20f, 10, 5f, 80f / 224f,
@@ -602,7 +655,13 @@ public final class RacesResources {
 
         ProgressForm.progress(1f / num_progress);
         GUIIcons icons = GUIIcons.getIcons();
-        Race natives_race = new Race(native_quarters_template,
+        SpriteKey nativeRallyPoint = queues.register(new SpriteFile("/geometry/natives/rally_point.binsprite",
+                Globals.NO_MIPMAP_CUTOFF,
+                true, true, true, false));
+        VisualRegistry.getInstance().registerRallyPoint(RACE_NATIVES, nativeRallyPoint);
+
+        Race natives_race = new Race(RACE_NATIVES,
+                native_quarters_template,
                 native_armory_template,
                 native_tower_template,
                 native_warrior_rock_template,
@@ -610,16 +669,20 @@ public final class RacesResources {
                 native_warrior_rubber_template,
                 native_peon_template,
                 native_chieftain_template,
-                queues.register(new SpriteFile("/geometry/natives/rally_point.binsprite",
-                        Globals.NO_MIPMAP_CUTOFF,
-                        true, true, true, false)),
                 icons.getNativeIcons(),
                 AudioAssets.SFX_ATTACKNOTIFY_NATIVE,
                 AudioAssets.SFX_BUILDINGNOTIFY_NATIVE,
                 native_magic,
                 new NativeChieftainAI(),
                 AudioAssets.MUSIC_NATIVE);
-        Race vikings_race = new Race(viking_quarters_template,
+
+        SpriteKey vikingRallyPoint = queues.register(new SpriteFile("/geometry/vikings/rally_point.binsprite",
+                Globals.NO_MIPMAP_CUTOFF,
+                true, true, true, false));
+        VisualRegistry.getInstance().registerRallyPoint(RACE_VIKINGS, vikingRallyPoint);
+
+        Race vikings_race = new Race(RACE_VIKINGS,
+                viking_quarters_template,
                 viking_armory_template,
                 viking_tower_template,
                 viking_warrior_rock_template,
@@ -627,9 +690,6 @@ public final class RacesResources {
                 viking_warrior_rubber_template,
                 viking_peon_template,
                 viking_chieftain_template,
-                queues.register(new SpriteFile("/geometry/vikings/rally_point.binsprite",
-                        Globals.NO_MIPMAP_CUTOFF,
-                        true, true, true, false)),
                 icons.getVikingIcons(),
                 AudioAssets.SFX_ATTACKNOTIFY_VIKING,
                 AudioAssets.SFX_BUILDINGNOTIFY_VIKING,
@@ -671,58 +731,44 @@ public final class RacesResources {
                 true, true, true, false));
 
         logger.info("RacesResources: beginning emoji sprite registration");
-        gravestone_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
-                queues.registerTexture(new DynamicEmojiGenerator("🪦"), 0));
-        chicken_emoji_sprites = "🐓🥚🐣🌽🐛".codePoints()
+        SpriteKey gravestone_emoji_sprite = queues.registerDynamicSprite(
+                SpriteList.getQuadInstance(),
+                queues.registerTexture(new DynamicEmojiGenerator("🪦"), 0)
+        );
+        @NonNull SpriteKey[] chicken_emoji_sprites = "🐓🥚🐣🌽🐛".codePoints()
                 .mapToObj(DynamicEmojiGenerator::new)
                 .map(tg -> queues.registerTexture(tg, 0))
                 .map(tk -> queues.registerDynamicSprite(SpriteList.getQuadInstance(), tk))
                 .toArray(SpriteKey[]::new);
-        saw_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
-                queues.registerTexture(new DynamicEmojiGenerator("🪚"), 0));
-        hammer_emoji_sprite = queues.registerDynamicSprite(SpriteList.getQuadInstance(),
-                queues.registerTexture(new DynamicEmojiGenerator("🔨"), 0));
+        SpriteKey saw_emoji_sprite = queues.registerDynamicSprite(
+                SpriteList.getQuadInstance(),
+                queues.registerTexture(new DynamicEmojiGenerator("🪚"), 0)
+        );
+        SpriteKey hammer_emoji_sprite = queues.registerDynamicSprite(
+                SpriteList.getQuadInstance(),
+                queues.registerTexture(new DynamicEmojiGenerator("🔨"), 0)
+        );
 
-        tree_status_sprite = queues.registerIconSprite(icons.getTreeStatusIcon());
-        rock_status_sprite = queues.registerIconSprite(icons.getRockStatusIcon());
-        iron_status_sprite = queues.registerIconSprite(icons.getIronStatusIcon());
-        rubber_status_sprite = queues.registerIconSprite(icons.getRubberStatusIcon());
+        SpriteKey tree_status_sprite = queues.registerIconSprite(icons.getTreeStatusIcon());
+        SpriteKey rock_status_sprite = queues.registerIconSprite(icons.getRockStatusIcon());
+        SpriteKey iron_status_sprite = queues.registerIconSprite(icons.getIronStatusIcon());
+        SpriteKey rubber_status_sprite = queues.registerIconSprite(icons.getRubberStatusIcon());
+
+        // Register visual emojis and status sprites in registry
+        VisualRegistry vr = VisualRegistry.getInstance();
+        vr.registerEmoji(EmojiType.GRAVESTONE, gravestone_emoji_sprite);
+        vr.registerEmoji(EmojiType.REPAIR_SAW, saw_emoji_sprite);
+        vr.registerEmoji(EmojiType.REPAIR_HAMMER, hammer_emoji_sprite);
+        vr.registerChickenCluckSprites(chicken_emoji_sprites);
+        vr.registerEmoji(EmojiType.HARVEST_WOOD, tree_status_sprite);
+        vr.registerEmoji(EmojiType.HARVEST_ROCK, rock_status_sprite);
+        vr.registerEmoji(EmojiType.HARVEST_IRON, iron_status_sprite);
+        vr.registerEmoji(EmojiType.HARVEST_RUBBER, rubber_status_sprite);
 
         ProgressForm.progress(1f / num_progress);
         ProgressForm.progress(1f / num_progress);
     }
 
-    public @NonNull SpriteKey getGravestoneEmojiSprite() {
-        return gravestone_emoji_sprite;
-    }
-
-    public @NonNull SpriteKey getSawEmojiSprite() {
-        return saw_emoji_sprite;
-    }
-
-    public @NonNull SpriteKey getHammerEmojiSprite() {
-        return hammer_emoji_sprite;
-    }
-
-    public @NonNull SpriteKey @NonNull [] getChickenEmojiSprites() {
-        return chicken_emoji_sprites;
-    }
-
-    public @NonNull SpriteKey getTreeStatusSprite() {
-        return tree_status_sprite;
-    }
-
-    public @NonNull SpriteKey getRockStatusSprite() {
-        return rock_status_sprite;
-    }
-
-    public @NonNull SpriteKey getIronStatusSprite() {
-        return iron_status_sprite;
-    }
-
-    public @NonNull SpriteKey getRubberStatusSprite() {
-        return rubber_status_sprite;
-    }
 
     public @NonNull TextureKey @NonNull [] getSmokeTextures() {
         return smoke_textures;
@@ -758,10 +804,6 @@ public final class RacesResources {
 
     public static int getNumRaces() {
         return race_names.length;
-    }
-
-    public @NonNull SpriteKey getSupplySprite(int race, @NonNull Class<? extends Supply> supplyType) {
-        return race == RACE_NATIVES ? native_supply_sprites.get(supplyType) : viking_supply_sprites.get(supplyType);
     }
 
     public @NonNull SpriteKey @NonNull [] getWoodFragments() {

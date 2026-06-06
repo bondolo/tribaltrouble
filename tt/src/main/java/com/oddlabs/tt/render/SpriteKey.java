@@ -1,6 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.geometry.AnimationInfo;
+import com.oddlabs.tt.model.BoundsProvider;
 import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
 
@@ -11,5 +12,5 @@ public record SpriteKey(
                         int key,
                         @NonNull BoundingBox @NonNull [] bounds,
                         AnimationInfo.@NonNull AnimationType @NonNull [] animTypes
-) implements RenderQueueKey {
+) implements RenderQueueKey, BoundsProvider {
 }

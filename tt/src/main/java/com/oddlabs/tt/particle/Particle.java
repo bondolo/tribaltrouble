@@ -2,7 +2,6 @@ package com.oddlabs.tt.particle;
 
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -197,10 +196,6 @@ public class Particle extends Model {
         return radius.z();
     }
 
-    @Override
-    public @Nullable SpriteKey getSpriteRenderer() {
-        return null;
-    }
 
     @Override
     protected @NonNull BoundingBox @Nullable [] getLocalBounds() {

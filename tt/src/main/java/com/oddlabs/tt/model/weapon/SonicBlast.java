@@ -8,7 +8,6 @@ import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.joml.Vector3f;
 import com.oddlabs.tt.util.BoundingBox;
@@ -137,11 +136,6 @@ public final class SonicBlast extends Model implements Magic {
     @Override
     public boolean isFinished() {
         return time >= seconds && sonicBlastEffect.isFinished();
-    }
-
-    @Override
-    public @Nullable SpriteKey getSpriteRenderer() {
-        return null;
     }
 
     @Override

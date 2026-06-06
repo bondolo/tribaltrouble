@@ -7,6 +7,8 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * A specialized parametric emitter that maintains a balanced distribution of particles.
  */
@@ -55,7 +57,7 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
             particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
             particle.setEnergy(energy);
-            particle.setType(getWorld().getRandom().nextInt(getTypes()));
+            particle.setType(ThreadLocalRandom.current().nextInt(getTypes()));
             particle.update(0);
             add(particle);
         }

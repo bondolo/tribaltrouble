@@ -37,12 +37,11 @@ public final class RubberGroup {
                 int grid_y = target.getGridY();
                 float x = UnitGrid.coordinateFromGrid(grid_x);
                 float y = UnitGrid.coordinateFromGrid(grid_y);
-                RubberSupply supply = new RubberSupply(world, world.getLandscapeResources().getChicken(),
-                        grid_x, grid_y, x, y, this, spawn_x, spawn_y);
+                RubberSupply supply = new RubberSupply(world, grid_x, grid_y, x, y, this, spawn_x, spawn_y);
                 supplies.add(supply);
                 new SupplySpawnAnimation(supply, supply.getSpawnTime());
             }
-            ((RubberSupplyManager) world.getSupplyManager(RubberSupply.class)).newGroup();
+            ((RubberSupplyManager) world.getSupplyManager(SupplyType.RUBBER)).newGroup();
         }
     }
 
@@ -64,6 +63,6 @@ public final class RubberGroup {
         boolean in_list = supplies.remove(supply);
         assert in_list;
         if (supplies.isEmpty())
-            ((RubberSupplyManager) world.getSupplyManager(RubberSupply.class)).emptyGroup();
+            ((RubberSupplyManager) world.getSupplyManager(SupplyType.RUBBER)).emptyGroup();
     }
 }

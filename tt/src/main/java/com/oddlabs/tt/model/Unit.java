@@ -10,7 +10,6 @@ import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.PathTracker;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
@@ -20,6 +19,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Represents a mobile unit in the game world.
@@ -267,11 +267,6 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     @Override
-    public @NonNull SpriteKey getSpriteRenderer() {
-        return getTemplate().getSpriteRenderer();
-    }
-
-    @Override
     protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
         return getTemplate().getBounds();
     }
@@ -374,20 +369,18 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 owner.unitKilled();
                 getOwner().unitLost();
 
-                RacesResources racesResources = getOwner().getWorld().getRacesResources();
-                if (racesResources != null) {
-                    ModelClient client = getClientState(ModelClient.class);
-                    if (client != null) {
-                        client.addVisualSound(racesResources.getGravestoneEmojiSprite(),
-                                ModelClient.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
-                    }
+                ModelClient client = getClientState(ModelClient.class);
+                if (client != null) {
+                    client.addVisualSound(EmojiType.GRAVESTONE,
+                            ModelClient.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
                 }
 
                 pushController(new DieController(this));
                 forceDecide();
                 var params = new AudioParameters(getTemplate().getDeathSound(), AudioAssets.AUDIO_RANK_DEATH,
                         AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH,
-                        1f + (getOwner().getWorld().getRandom().nextFloat() - .5f) * getTemplate().getDeathPitch());
+                        1f + (ThreadLocalRandom.current().nextFloat() - .5f) * getTemplate()
+                                .getDeathPitch());
                 getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
                 setDirection(-direction_x, -direction_y);
                 removeDying();
@@ -456,7 +449,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 if (canBuild(target)) {
                     pushController(new PlaceBuildingController(this, (Building) target));
                 } else if (canGather(target)) {
-                    pushController(new GatherController(this, (Supply) target, ((Supply) target).getClass()));
+                    pushController(new GatherController(this, (Supply) target, ((Supply) target).getSupplyType()));
                 } else if (canRepair(target, false)) {
                     pushController(new RepairController(this, (Building) target));
                 } else if (canEnter(target)) {
@@ -483,7 +476,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
             }
             case GATHER_REPAIR -> {
                 if (canGather(target)) {
-                    pushController(new GatherController(this, (Supply) target, ((Supply) target).getClass()));
+                    pushController(new GatherController(this, (Supply) target, ((Supply) target).getSupplyType()));
                 } else if (canRepair(target, true)) {
                     pushController(new RepairController(this, (Building) target));
                 }

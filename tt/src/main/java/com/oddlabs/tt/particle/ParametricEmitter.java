@@ -12,13 +12,13 @@ import org.jspecify.annotations.NonNull;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * An emitter that spawns particles whose movement is defined by a parametric function.
  */
 public class ParametricEmitter extends Emitter<ParametricParticle> {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
-    protected final @NonNull Random random;
     private final Vector3f randomized_offset = new Vector3f();
     protected final @NonNull ParametricFunction function;
     protected final float area_xy;
@@ -53,7 +53,6 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         this.particle_radius = particle_radius;
         this.growth_rate = growth_rate;
         this.energy = energy;
-        random = world.getRandom();
     }
 
     public final void setDeltaColor(Color.@NonNull LinearDelta delta_color) {
@@ -67,7 +66,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     @Override
     public final void animate(float t) {
         updateSpawning(t);
-        updateCluster(random, t);
+        updateCluster(t);
 
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
@@ -117,7 +116,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {
-            Color.Linear particleColor = nextParticleColor(color, random);
+            Color.Linear particleColor = nextParticleColor(color);
             initiated += initParticle(function, velocity_u, velocity_v, particleColor, delta_color,
                     particle_radius, growth_rate, energy);
         }
@@ -131,6 +130,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
             float energy) {
 
         Vector3f offset = randomOffset(area_xy, area_xy, area_z);
+        Random random = ThreadLocalRandom.current();
         ParametricParticle particle = new ParametricParticle(getWorld(), function, random.nextFloat() * (float) Math.PI
                 * 2f, random.nextFloat() * (float) Math.PI * 2f,
                 offset.x(), offset.y(), offset.z());
@@ -141,13 +141,14 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
         particle.setEnergy(energy);
-        particle.setType(nextType(random));
+        particle.setType(nextType());
         particle.update(0);
         add(particle);
         return 1;
     }
 
     protected final @NonNull Vector3f randomOffset(float a, float b, float c) {
+        Random random = ThreadLocalRandom.current();
         float x = random.nextFloat() * 2 * a - a;
         float y = random.nextFloat() * 2 * b - b;
         float z = random.nextFloat() * 2 * c - c;

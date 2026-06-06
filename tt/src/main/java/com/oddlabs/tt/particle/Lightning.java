@@ -13,6 +13,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Visual effect representing a lightning strike.
@@ -66,8 +67,7 @@ public final class Lightning extends Element<Lightning> implements Animated {
     }
 
     private void initParticles() {
-        Random random = world.getRandom();
-        random.nextFloat();
+        Random random = ThreadLocalRandom.current();
         float x = src.x();
         float y = src.y();
         float z = src.z();

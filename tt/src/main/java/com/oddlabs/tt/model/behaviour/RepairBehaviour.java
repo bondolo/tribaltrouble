@@ -1,12 +1,14 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.ModelClient;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Logic for unit repairing behavior.
@@ -27,7 +29,7 @@ public final class RepairBehaviour implements Behaviour {
         this.building = building;
         unit.aimAtTarget(building);
         restartAnimation();
-        unit.getSupplyContainer().increaseSupply(-1, TreeSupply.class);
+        unit.getSupplyContainer().increaseSupply(-1, SupplyType.WOOD);
         repairs = 0;
     }
 
@@ -41,20 +43,15 @@ public final class RepairBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            var random = unit.getOwner().getWorld().getRandom();
             unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
-                    .getPositionZ(), AudioAssets.getHarvestSound(TreeSupply.class, random));
+                    .getPositionZ(), AudioAssets.getHarvestSound(SupplyType.WOOD));
 
-            RacesResources racesResources = unit.getOwner().getWorld().getRacesResources();
-            if (racesResources != null) {
-                var selectedSprite = random.nextBoolean()
-                        ? racesResources.getSawEmojiSprite()
-                        : racesResources.getHammerEmojiSprite();
-                ModelClient client = unit.getClientState(ModelClient.class);
-                if (client != null) {
-                    client.addVisualSound(selectedSprite,
-                            ModelClient.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_HARVEST);
-                }
+            var selectedEmoji = ThreadLocalRandom.current().nextBoolean()
+                    ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
+            ModelClient client = unit.getClientState(ModelClient.class);
+            if (client != null) {
+                client.addVisualSound(selectedEmoji,
+                        ModelClient.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_HARVEST);
             }
         }
 

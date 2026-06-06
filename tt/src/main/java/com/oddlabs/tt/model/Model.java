@@ -1,8 +1,6 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.render.Shadowable;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -48,8 +46,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
     public float getNoDetailSize() {
         return 0f;
     }
-
-    public abstract @Nullable SpriteKey getSpriteRenderer();
 
     /** {@return the bounds of the model in the local coordinate system for each animation} */
     protected abstract @NonNull BoundingBox @Nullable [] getLocalBounds();

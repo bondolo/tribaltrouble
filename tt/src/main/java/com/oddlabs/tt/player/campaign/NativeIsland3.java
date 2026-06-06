@@ -17,6 +17,7 @@ import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.render.VisualRegistry;
 import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.MagicUsedTrigger;
 import com.oddlabs.tt.trigger.campaign.NearPointTrigger;
@@ -27,6 +28,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Native Island 3, containing objectives and triggers.
+ */
 public final class NativeIsland3 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland3.class.getName());
 
@@ -215,9 +219,12 @@ public final class NativeIsland3 extends Island {
         float shadow_diameter = 4.5f;
 
         float dir = (float) Math.sin(Math.PI / 4);
-        new SceneryModel(getViewer().getWorld(), thor_x, thor_y, dir, dir, enemy.getRace().getUnitTemplate(
-                Race.UNIT_CHIEFTAIN).getSpriteRenderer(), shadow_diameter, true, i18n("god"), Unit.Animation.THOR
-                        .ordinal(), -1f, 0f);
+        new SceneryModel(getViewer().getWorld(), thor_x, thor_y, dir, dir,
+                VisualRegistry.getInstance().getUnitSprite(
+                        enemy.getRace().getRaceType(),
+                        enemy.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN).getVisualType()
+                ),
+                shadow_diameter, true, i18n("god"), Unit.Animation.THOR.ordinal(), -1f, 0f);
 
 
         // Insert reinforcements

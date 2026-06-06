@@ -8,6 +8,8 @@ import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * A weapon factory for units that deal damage instantly to their targets
  * (e.g., melee units or non-projectile weapons).
@@ -35,10 +37,12 @@ public final class InstantHitFactory extends WeaponFactory {
         if (target instanceof Unit) {
             World world = src.getOwner().getWorld();
             var params = new AudioParameters(
-                    sounds[world.getRandom().nextInt(sounds.length)], AudioAssets.AUDIO_RANK_WEAPON_HIT,
+                    sounds[ThreadLocalRandom.current().nextInt(sounds.length)],
+                    AudioAssets.AUDIO_RANK_WEAPON_HIT,
                     AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
                     AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + (world.getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate()).getDeathPitch());
+                    1f + (ThreadLocalRandom.current().nextFloat() - .5f) * ((UnitTemplate) target
+                            .getTemplate()).getDeathPitch());
             world.getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }
         target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());

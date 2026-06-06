@@ -8,12 +8,15 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.UnitTemplate;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.model.WeaponVisualType;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Base {@link Model} class for all projectile weapons that are thrown through the world.
@@ -34,7 +37,6 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private final @NonNull AudioPlayer audio_player;
     private final @NonNull AudioFile @NonNull [] hit_sounds;
     private final boolean hit;
-    private final @NonNull SpriteKey sprite_renderer;
     private final @NonNull Unit src;
 
     /** the target of the weapon. Mutable because rubber weapons bounce and change targets **/
@@ -58,10 +60,9 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private float deterministic_z;
 
     public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target,
-            @NonNull SpriteKey sprite_renderer, @NonNull AudioFile throw_sound,
+            @NonNull AudioFile throw_sound,
             @NonNull AudioFile @NonNull [] hit_sounds) {
         super(src.getOwner().getWorld());
-        this.sprite_renderer = sprite_renderer;
         this.src = src;
         this.hit = hit;
         this.hit_sounds = hit_sounds;
@@ -79,7 +80,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         var params = new AudioParameters(throw_sound, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
                 AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
                 AudioAssets.AUDIO_RADIUS_WEAPON_ATTACK,
-                getWorld().getRandom().nextFloat() * .2f + .9f);
+                ThreadLocalRandom.current().nextFloat() * .2f + .9f);
         audio_player = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
         getWorld().getAnimationManagerGameTime().registerAnimation(this);
 
@@ -91,14 +92,11 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         return src;
     }
 
-    @Override
-    public final @NonNull SpriteKey getSpriteRenderer() {
-        return sprite_renderer;
-    }
+    public abstract @NonNull WeaponVisualType getWeaponVisualType();
 
     @Override
-    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
-        return sprite_renderer.bounds();
+    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+        return null;
     }
 
     @Override
@@ -200,11 +198,13 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     protected final void damageTarget(@NonNull Selectable<?> target) {
         if (target instanceof Unit) {
-            var params = new AudioParameters(hit_sounds[getWorld().getRandom().nextInt(hit_sounds.length)],
+            var params = new AudioParameters(hit_sounds[ThreadLocalRandom.current().nextInt(
+                    hit_sounds.length)],
                     AudioAssets.AUDIO_RANK_WEAPON_HIT,
                     AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
                     AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + (getWorld().getRandom().nextFloat() - .5f) * ((UnitTemplate) target.getTemplate())
+                    1f + (ThreadLocalRandom.current().nextFloat() - .5f) * ((UnitTemplate) target
+                            .getTemplate())
                             .getDeathPitch());
             getWorld().getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }

@@ -1,13 +1,39 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.BuildingVisualType;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+/**
+ * ModelVisitor implementation that resolves visual properties and sprite keys for selectable entities
+ * (units/buildings).
+ */
 class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
+
+    @Override
+    public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<S> render_state) {
+        Selectable<?> selectable = render_state.getModel();
+        int race = selectable.getOwnerNoCheck().getRace().getRaceType();
+        if (selectable instanceof Unit unit) {
+            return VisualRegistry.getInstance().getUnitSprite(race, unit.getTemplate().getVisualType());
+        } else if (selectable instanceof Building building) {
+            BuildingVisualType bvt = building.getTemplate().getVisualType();
+            var visuals = VisualRegistry.getInstance().getBuildingVisuals(race, bvt);
+            return switch (building.getRenderLevel()) {
+                case START -> visuals.start();
+                case HALFBUILT -> visuals.halfbuilt();
+                case BUILT -> visuals.built();
+            };
+        }
+        return null;
+    }
 
     @Override
     public void getTransform(@NonNull ElementRenderState<S> render_state, @NonNull Matrix4f dest) {

@@ -1,16 +1,21 @@
-package com.oddlabs.tt.landscape;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.render.RenderQueues;
-import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.resource.SpriteFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
-public final class LandscapeResources {
+/**
+ * Client-side resource manager that loads landscape-associated sprites (rocks, iron, plants, chickens)
+ * and exposes their physical bounds to the simulation via {@link LandscapeBoundsProvider}.
+ */
+public final class LandscapeResources implements LandscapeBoundsProvider {
+    public static final int SUPPLY_FRAGMENT_COUNT = 5;
+
     private final @NonNull SpriteKey @NonNull [] rock_fragment_sprites;
     private final @NonNull SpriteKey @NonNull [] iron_fragment_sprites;
     private final @NonNull SpriteKey @NonNull [] @NonNull [] plant_sprites;
@@ -20,7 +25,7 @@ public final class LandscapeResources {
         int num_progress = 13;
         ProgressForm.progress(10f / num_progress);
 
-        var fragments = IntStream.rangeClosed(1, 5)
+        var fragments = IntStream.rangeClosed(1, SUPPLY_FRAGMENT_COUNT)
                 .mapToObj(i -> String.format("/geometry/misc/rock_%d.binsprite", i))
                 .map(rsrc -> new SpriteFile(rsrc, Globals.NO_MIPMAP_CUTOFF, true, true, true, false))
                 .toArray(SpriteFile[]::new);
@@ -56,19 +61,28 @@ public final class LandscapeResources {
         ProgressForm.progress(1f / num_progress);
     }
 
-    public @NonNull SpriteKey @NonNull [] getRockFragments() {
-        return rock_fragment_sprites;
-    }
-
-    public @NonNull SpriteKey @NonNull [] getIronFragments() {
-        return iron_fragment_sprites;
-    }
-
-    public @NonNull SpriteKey @NonNull [] @NonNull [] getPlants() {
-        return plant_sprites;
-    }
-
     public @NonNull SpriteKey getChicken() {
+        return chicken;
+    }
+
+    @Override
+    public @NonNull SpriteKey getRockBounds(int index) {
+        return rock_fragment_sprites[index % rock_fragment_sprites.length];
+    }
+
+    @Override
+    public @NonNull SpriteKey getIronBounds(int index) {
+        return iron_fragment_sprites[index % iron_fragment_sprites.length];
+    }
+
+    @Override
+    public @NonNull SpriteKey getPlantBounds(int terrain, int index) {
+        var sprites = plant_sprites[terrain];
+        return sprites[index % sprites.length];
+    }
+
+    @Override
+    public @NonNull SpriteKey getChickenBounds() {
         return chicken;
     }
 }

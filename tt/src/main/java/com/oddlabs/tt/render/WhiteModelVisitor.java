@@ -5,6 +5,7 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A specialized {@link ModelVisitor} that renders models with a neutral white team color.
@@ -13,9 +14,15 @@ import org.jspecify.annotations.NonNull;
 class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     private static final WhiteModelVisitor<Model> INSTANCE = new WhiteModelVisitor<>();
 
+    @SuppressWarnings("unchecked")
     @NonNull
     public static <M extends Model> WhiteModelVisitor<M> getInstance() {
         return (WhiteModelVisitor<M>) INSTANCE;
+    }
+
+    @Override
+    public @Nullable SpriteKey getSpriteKey(@NonNull ElementRenderState<M> render_state) {
+        return null;
     }
 
     @Override

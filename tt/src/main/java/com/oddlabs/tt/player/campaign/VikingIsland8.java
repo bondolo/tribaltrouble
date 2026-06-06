@@ -18,6 +18,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.render.VisualRegistry;
 import com.oddlabs.tt.trigger.campaign.DeathTrigger;
 import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.MagicUsedTrigger;
@@ -29,6 +30,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Viking Island 8, containing objectives and triggers.
+ */
 public final class VikingIsland8 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland8.class.getName());
 
@@ -130,7 +134,8 @@ public final class VikingIsland8 extends Island {
         });
 
         // Insert rally point
-        new SceneryModel(getViewer().getWorld(), 354 * 2, 478 * 2, 0, -1, local_player.getRace().getRallyPoint());
+        new SceneryModel(getViewer().getWorld(), 354 * 2, 478 * 2, 0, -1, VisualRegistry.getInstance().getRallyPoint(
+                local_player.getRace().getRaceType()));
 
         // Insert native towers
         insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 208, 210);

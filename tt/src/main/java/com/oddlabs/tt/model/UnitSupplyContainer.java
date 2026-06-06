@@ -1,16 +1,22 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.render.SpriteKey;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
 
+/**
+ * A specialized supply container for peon units to carry resources.
+ */
 public final class UnitSupplyContainer extends SupplyContainer {
-    private final Map<Class<? extends Supply>, SpriteKey> supply_sprite_renderers;
+    private final @NonNull Map<@NonNull SupplyType, @NonNull SpriteKey> supply_sprite_renderers;
 
-    private Class<? extends Supply> type;
+    private @Nullable SupplyType type;
 
-    public UnitSupplyContainer(int max_resource_count, Map<Class<? extends Supply>,
-            SpriteKey> supply_sprite_renderers) {
+    public UnitSupplyContainer(int max_resource_count, @NonNull Map<@NonNull SupplyType,
+            @NonNull SpriteKey> supply_sprite_renderers) {
         super(max_resource_count);
         this.supply_sprite_renderers = supply_sprite_renderers;
     }
@@ -20,19 +26,19 @@ public final class UnitSupplyContainer extends SupplyContainer {
         throw new UnsupportedOperationException("UnitSupplyContainer requires a supply type");
     }
 
-    public int increaseSupply(int amount, Class<? extends Supply> type) {
+    public int increaseSupply(int amount, @NonNull SupplyType type) {
         if (this.type != type) {
             this.type = type;
-            super.increaseSupply(-super.getNumSupplies());
+            super.increaseSupply(-getNumSupplies());
         }
         return super.increaseSupply(amount);
     }
 
-    public Class<? extends Supply> getSupplyType() {
-        return type;
+    public @NonNull Optional<SupplyType> getSupplyType() {
+        return Optional.ofNullable(type);
     }
 
-    public SpriteKey getSupplySpriteRenderer(Class<? extends Supply> key) {
+    public @Nullable SpriteKey getSupplySpriteRenderer(@NonNull SupplyType key) {
         return supply_sprite_renderers.get(key);
     }
 }

@@ -61,7 +61,7 @@ public final class RingEmitter extends LinearEmitter {
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
             particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
             particle.setEnergy(energy);
-            particle.setType(nextType(random));
+            particle.setType(nextType());
             add(particle);
         }
         return num_particles;

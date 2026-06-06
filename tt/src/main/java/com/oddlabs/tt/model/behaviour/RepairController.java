@@ -1,11 +1,14 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Unit;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Controller that handles unit repair cycles, including gathering resources if needed.
+ */
 public final class RepairController extends Controller {
     private enum State {
         HARVEST,
@@ -34,7 +37,8 @@ public final class RepairController extends Controller {
     public void decide() {
         if (building.isDead()) {
             unit.popController();
-        } else if (unit.getSupplyContainer().getSupplyType() == TreeSupply.class && unit.getSupplyContainer()
+        } else if (unit.getSupplyContainer().getSupplyType().orElse(null) == SupplyType.WOOD && unit
+                .getSupplyContainer()
                 .getNumSupplies() > 0) {
                     resetGiveUpCounter(State.HARVEST.ordinal());
                     if (unit.isCloseEnough(0f, building)) {
@@ -56,7 +60,7 @@ public final class RepairController extends Controller {
                 } else {
                     resetGiveUpCounter(State.REPAIR.ordinal());
                     if (!shouldGiveUp(State.HARVEST.ordinal())) {
-                        unit.pushController(new HarvestController<>(unit, null, TreeSupply.class));
+                        unit.pushController(new HarvestController<>(unit, null, SupplyType.WOOD));
                     } else {
                         unit.popController();
                     }

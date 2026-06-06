@@ -24,7 +24,6 @@ import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Languages;
 import com.oddlabs.tt.gui.LocalInput;
-import com.oddlabs.tt.landscape.LandscapeResources;
 import com.oddlabs.tt.landscape.NotificationListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.landscape.WorldParameters;
@@ -720,10 +719,12 @@ public final class Renderer implements AutoCloseable {
         PlayerInfo[] players = new PlayerInfo[]{player_info};
         WorldInfo world_info = generator.generate(players.length, world_params.getInitialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
-        LandscapeResources landscape_resources = World.loadCommon(render_queues);
+        LandscapeResources landscape_resources = new LandscapeResources(render_queues);
+        com.oddlabs.tt.form.ProgressForm.progress();
         World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null,
                 new NotificationListener() {
                 }, world_params, world_info, players,
+                getRenderer().getSettings().linear_team_colours,
                 Globals.INSERT_PLANTS[getRenderer().getSettings().graphic_detail]);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);

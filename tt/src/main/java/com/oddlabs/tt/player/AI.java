@@ -3,14 +3,11 @@ package com.oddlabs.tt.player;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.BuildSpinner;
-import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.IronSupply;
 import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RockSupply;
-import com.oddlabs.tt.model.RubberSupply;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.behaviour.DefendController;
@@ -26,6 +23,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Random;
 
+/**
+ * Base abstract class for artificial intelligence players controlling units and building construction.
+ */
 public abstract class AI implements Animated {
     private static final float SLEEP_SECONDS = 2f;
     private static final float MIN_SLEEP_SECONDS = 5f;
@@ -195,14 +195,14 @@ public abstract class AI implements Animated {
                     INDEX_IDLE_WARRIORS = i;
                 }
             } else if (s.getPrimaryController() instanceof GatherController<?> gc) {
-                Class<?> supply_type = gc.getSupplyType();
-                if (supply_type == TreeSupply.class) {
+                SupplyType supply_type = gc.getSupplyType();
+                if (supply_type == SupplyType.WOOD) {
                     INDEX_GATHER_TREE_PEONS = i;
-                } else if (supply_type == RockSupply.class) {
+                } else if (supply_type == SupplyType.ROCK) {
                     INDEX_GATHER_ROCK_PEONS = i;
-                } else if (supply_type == IronSupply.class) {
+                } else if (supply_type == SupplyType.IRON) {
                     INDEX_GATHER_IRON_PEONS = i;
-                } else if (supply_type == RubberSupply.class) {
+                } else if (supply_type == SupplyType.RUBBER) {
                     INDEX_GATHER_RUBBER_PEONS = i;
                 }
             } else if (s.getPrimaryController() instanceof NullController) {

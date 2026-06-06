@@ -2,8 +2,9 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
+import java.util.concurrent.ThreadLocalRandom;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.render.LandscapeResources;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -27,22 +28,23 @@ public final class RockSupply extends SupplyModel {
     private @Nullable PointEmitterModel smokeEmitter = null;
     private boolean soundPlayed = false;
 
-    public RockSupply(@NonNull World world, @NonNull SpriteKey sprite_renderer, int grid_x, int grid_y,
-            float x, float y, boolean increase) {
-        var rotation = (float) (world.getRandom().nextDouble() * 2d * Math.PI);
-        super(world, sprite_renderer, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, rotation, INITIAL_SUPPLIES, increase);
+    public RockSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
+        var rotation = (float) (ThreadLocalRandom.current().nextDouble() * 2d * Math.PI);
+        var fragmentIndex = ThreadLocalRandom.current().nextInt(LandscapeResources.SUPPLY_FRAGMENT_COUNT);
+        super(world, 2f, grid_x, grid_y, x, y, rotation, INITIAL_SUPPLIES, increase,
+                world.getLandscapeResources().getRockBounds(fragmentIndex));
     }
 
     @Override
-    public @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources) {
-        return resources.getRockStatusSprite();
+    public @NonNull SupplyType getSupplyType() {
+        return SupplyType.ROCK;
     }
 
     @Override
-    public @NonNull RockSupply respawn() {
-        return new RockSupply(getWorld(), getSpriteRenderer(), getGridX(), getGridY(), getPositionX(),
-                getPositionY(), false);
+    public @NonNull Supply respawn() {
+        return new RockSupply(getWorld(), getGridX(), getGridY(), getPositionX(), getPositionY(), false);
     }
+
 
     @Override
     public float getSpawnTime() {

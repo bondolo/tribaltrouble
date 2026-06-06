@@ -1,5 +1,6 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.GLImage;
 import com.oddlabs.tt.resource.GLIntImage;
@@ -10,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.w3c.dom.Node;
 
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -41,7 +43,7 @@ public class GUIIcons {
     private final @NonNull IconQuad infinite;
     private final @NonNull NotifyArrowData notify_arrow_data;
 
-    private final @NonNull Map<@NonNull Class<?>, @NonNull IconQuad @NonNull []> tool_tip_icons;
+    private final @NonNull Map<@NonNull SupplyType, @NonNull IconQuad @NonNull []> tool_tip_icons;
 
     public static GUIIcons getIcons() {
         return ICONS;
@@ -70,11 +72,11 @@ public class GUIIcons {
         watch = generateWatchIcons();
         infinite = Icons.getNamedIconQuad(root, "infinite", texture);
         notify_arrow_data = GUIIcons.parseNotifyArrowData(root, texture);
-        tool_tip_icons = Map.of(
-                com.oddlabs.tt.landscape.TreeSupply.class, new IconQuad[]{tree_status_icon},
-                com.oddlabs.tt.model.RockSupply.class, new IconQuad[]{rock_status_icon},
-                com.oddlabs.tt.model.IronSupply.class, new IconQuad[]{iron_status_icon},
-                com.oddlabs.tt.model.RubberSupply.class, new IconQuad[]{rubber_status_icon});
+        tool_tip_icons = new EnumMap<>(Map.of(
+                SupplyType.WOOD, new IconQuad[]{tree_status_icon},
+                SupplyType.ROCK, new IconQuad[]{rock_status_icon},
+                SupplyType.IRON, new IconQuad[]{iron_status_icon},
+                SupplyType.RUBBER, new IconQuad[]{rubber_status_icon}));
     }
 
     private static @NonNull RaceIcons parseRaceIcons(@NonNull Node n, @NonNull String head, @NonNull String magic1_desc,
@@ -242,7 +244,7 @@ public class GUIIcons {
                 Icons.getInt(node, "end_y"));
     }
 
-    public @NonNull IconQuad @Nullable [] getToolTipIcon(@NonNull Class<?> key) {
+    public @NonNull IconQuad @Nullable [] getToolTipIcon(@NonNull SupplyType key) {
         return tool_tip_icons.get(key);
     }
 

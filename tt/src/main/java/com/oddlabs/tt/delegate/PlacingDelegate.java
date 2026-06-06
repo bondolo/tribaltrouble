@@ -19,7 +19,9 @@ import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Sprite;
+import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.SpriteRenderer;
+import com.oddlabs.tt.render.VisualRegistry;
 import com.oddlabs.tt.render.shader.SpriteShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
@@ -133,7 +135,11 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
 
         com.oddlabs.tt.util.GLUtils.checkGLError("Placing: After renderSites");
 
-        SpriteRenderer built_renderer = queues.getRenderer(getTemplate().getBuiltRenderer());
+        SpriteKey built_key = VisualRegistry.getInstance().getBuildingVisuals(
+                getViewer().getLocalPlayer().getRace().getRaceType(),
+                getTemplate().getVisualType()
+        ).built();
+        SpriteRenderer built_renderer = queues.getRenderer(built_key);
         Sprite sprite = built_renderer.getSpriteList().getSprite(0);
 
         try (var _ = spriteShader.use()) {

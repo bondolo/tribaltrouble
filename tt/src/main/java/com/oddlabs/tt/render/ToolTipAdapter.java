@@ -19,6 +19,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
+/**
+ * Adapter that maps simulation-side ModelToolTip entities to the UI ToolTip representation.
+ */
 final class ToolTipAdapter implements ToolTip {
     private final ModelToolTip model;
     private final Player local_player;
@@ -71,9 +74,9 @@ final class ToolTipAdapter implements ToolTip {
             tool_tip_box.append(name);
     }
 
-    private void visitSupply(@NonNull Supply model) {
-        tool_tip_box.append(Utils.getBundleString(ResourceBundle.getBundle(model.getClass().getName()), "name"));
-        tool_tip_box.append(GUIIcons.getIcons().getToolTipIcon(model.getClass()));
+    private void visitSupply(@NonNull Supply supply) {
+        tool_tip_box.append(Utils.getBundleString(ResourceBundle.getBundle(supply.getClass().getName()), "name"));
+        tool_tip_box.append(GUIIcons.getIcons().getToolTipIcon(supply.getSupplyType()));
     }
 
     private void visitBuilding(@NonNull Building building) {

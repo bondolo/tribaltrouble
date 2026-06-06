@@ -2,21 +2,17 @@ package com.oddlabs.tt.player;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.landscape.LandscapeTarget;
-import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Army;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.IronSupply;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RacesResources;
-import com.oddlabs.tt.model.RockSupply;
-import com.oddlabs.tt.model.RubberSupply;
 import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.SupplyContainer;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.behaviour.NullController;
 import com.oddlabs.tt.model.weapon.IronAxeWeapon;
@@ -32,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a player in the game simulation, managing units, buildings, color, and player metrics.
+ */
 public final class Player implements PlayerInterface {
     public static final int INITIAL_UNIT_COUNT = 20;
     public static final int MAX_BUILDING_COUNT = 20;
@@ -598,17 +597,13 @@ public final class Player implements PlayerInterface {
         return buildings_destroyed;
     }
 
-    public void harvested(@NonNull Class<? extends Supply> type) {
-        if (type == TreeSupply.class) {
-            tree_harvested++;
-        } else if (type == RockSupply.class) {
-            rock_harvested++;
-        } else if (type == IronSupply.class) {
-            iron_harvested++;
-        } else if (type == RubberSupply.class) {
-            rubber_harvested++;
-        } else
-            throw new IllegalArgumentException("Unknown supply type: " + type.getName());
+    public void harvested(@NonNull SupplyType type) {
+        switch (type) {
+            case WOOD -> tree_harvested++;
+            case ROCK -> rock_harvested++;
+            case IRON -> iron_harvested++;
+            case RUBBER -> rubber_harvested++;
+        }
     }
 
     public int getTreeHarvested() {

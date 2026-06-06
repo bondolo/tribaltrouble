@@ -6,18 +6,17 @@ import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.model.AbstractElementNode;
 import com.oddlabs.tt.model.Plants;
 import com.oddlabs.tt.model.RacesResources;
-import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.SupplyManager;
 import com.oddlabs.tt.model.SupplyManagers;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.pathfinder.RegionBuilder;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.procedural.Landscape;
-import com.oddlabs.tt.render.RenderQueues;
-import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.WorldInfo;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -53,7 +52,7 @@ public final class World {
     private final @NonNull AbstractTreeGroup tree_root;
     private final @NonNull AbstractElementNode<?> element_root;
     private final @Nullable RacesResources races_resources;
-    private final @NonNull LandscapeResources landscape_resources;
+    private final @NonNull LandscapeBoundsProvider landscape_resources;
     private final @NonNull FogInfo fog;
     private final Landscape.@NonNull TerrainType terrain;
     private final float @NonNull [] @NonNull [] plantCoordinates;
@@ -62,24 +61,14 @@ public final class World {
     private int global_checksum;
     private int gamespeed;
 
-    public static @NonNull LandscapeResources loadCommon(@NonNull RenderQueues queues) {
-        LandscapeResources landscape_resources = new LandscapeResources(queues);
-        ProgressForm.progress();
-        return landscape_resources;
-    }
-
-    public static @NonNull RacesResources loadInGame(@NonNull RenderQueues queues) {
-        return new RacesResources(queues);
-    }
-
     public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation,
-            @NonNull LandscapeResources landscape_resources, @Nullable RacesResources races_resources,
+            @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
             @NonNull WorldInfo world_info, @NonNull PlayerInfo @NonNull [] player_infos,
-            boolean insertPlants) {
+            Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants) {
         ProgressForm.progress();
         World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener,
-                world_params, world_info, player_infos, insertPlants);
+                world_params, world_info, player_infos, teamColors, insertPlants);
         ProgressForm.progress();
         ProgressForm.progress(1 / 5f);
         ProgressForm.progress();
@@ -95,13 +84,14 @@ public final class World {
         return terrain;
     }
 
-    public @NonNull LandscapeResources getLandscapeResources() {
+    public @NonNull LandscapeBoundsProvider getLandscapeResources() {
         return landscape_resources;
     }
 
     public @Nullable RacesResources getRacesResources() {
         return races_resources;
     }
+
 
     public @NonNull AudioImplementation getAudio() {
         return audio_impl;
@@ -157,12 +147,13 @@ public final class World {
         return getAnimationManagerRealTime().getTick();
     }
 
-    private World(@NonNull AudioImplementation audio_implementation, @NonNull LandscapeResources landscape_resources,
+    private World(@NonNull AudioImplementation audio_implementation,
+            @NonNull LandscapeBoundsProvider landscape_resources,
             @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
             @NonNull WorldParameters world_params, @NonNull WorldInfo world_info,
-            @NonNull PlayerInfo @NonNull [] player_infos, boolean insertPlants) {
-        IO.println("****************** Generating landscape at tick " + Renderer.getRenderer().getEventQueue()
-                .getHighPrecisionManager().getTick() + " ********************");
+            @NonNull PlayerInfo @NonNull [] player_infos, Color.@NonNull Linear @NonNull [] teamColors,
+            boolean insertPlants) {
+        IO.println("****************** Generating landscape ********************");
         this.fog = world_info.fog_info();
         this.terrain = world_info.terrain();
         this.plantCoordinates = world_info.plants();
@@ -182,9 +173,7 @@ public final class World {
         random = new Random(42);
 
         players = IntStream.range(0, player_infos.length)
-                .mapToObj(i -> new Player(this, player_infos[i], Renderer.getRenderer()
-                        .getSettings().linear_team_colours[i % Renderer.getRenderer()
-                                .getSettings().linear_team_colours.length])
+                .mapToObj(i -> new Player(this, player_infos[i], teamColors[i % teamColors.length])
                         .init(world_info.starting_locations()[i])
                 ).toArray(Player[]::new);
 
@@ -219,8 +208,8 @@ public final class World {
         return unit_grid;
     }
 
-    public @Nullable SupplyManager getSupplyManager(@NonNull Class<? extends Supply> cl) {
-        return supply_managers.getSupplyManager(cl);
+    public @Nullable SupplyManager getSupplyManager(@NonNull SupplyType type) {
+        return supply_managers.getSupplyManager(type);
     }
 
     public @NonNull Player @NonNull [] getPlayers() {

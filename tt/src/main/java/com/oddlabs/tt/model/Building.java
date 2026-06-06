@@ -9,7 +9,6 @@ import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
@@ -22,6 +21,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Represents a static building structure in the game world.
@@ -32,17 +32,18 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private static final int PLACING_BORDER = 1;
     private static final int MAX_SUPPLY_COUNT = 200;
 
-    @SuppressWarnings({"unchecked"})
-    public static final Cost COST_ROCK_WEAPON = new Cost(new Class[]{TreeSupply.class, RockSupply.class}, new int[]{2,
+    public static final Cost COST_ROCK_WEAPON = new Cost(new SupplyType[]{SupplyType.WOOD, SupplyType.ROCK}, new int[]{
+            2,
             1});
-    @SuppressWarnings({"unchecked"})
-    public static final Cost COST_IRON_WEAPON = new Cost(new Class[]{TreeSupply.class, IronSupply.class}, new int[]{2,
+    public static final Cost COST_IRON_WEAPON = new Cost(new SupplyType[]{SupplyType.WOOD, SupplyType.IRON}, new int[]{
+            2,
             1});
-    @SuppressWarnings({"unchecked"})
-    public static final Cost COST_RUBBER_WEAPON = new Cost(new Class[]{TreeSupply.class, RockSupply.class,
-            IronSupply.class, RubberSupply.class}, new int[]{2, 1, 1, 1});
+    public static final Cost COST_RUBBER_WEAPON = new Cost(new SupplyType[]{SupplyType.WOOD, SupplyType.ROCK,
+            SupplyType.IRON, SupplyType.RUBBER}, new int[]{2, 1, 1, 1});
 
     private final Map<@NonNull Class<?>, @NonNull SupplyContainer> supply_containers = new HashMap<>();
+    private final Map<@NonNull SupplyType, @NonNull SupplyContainer> resource_containers
+            = new EnumMap<>(SupplyType.class);
     private final Map<@NonNull Class<?>, @NonNull BuildProductionContainer> build_containers = new HashMap<>();
     private final Map<@NonNull DeployType, @NonNull DeployContainer> deploy_containers = new EnumMap<>(
             DeployType.class);
@@ -140,7 +141,19 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     public @Nullable SupplyContainer getSupplyContainer(@NonNull Class<?> key) {
         assert !isDead();
-        return supply_containers.get(key);
+        SupplyContainer container = supply_containers.get(key);
+        if (container == null) {
+            SupplyType type = SupplyType.fromClass(key);
+            if (type != null) {
+                container = resource_containers.get(type);
+            }
+        }
+        return container;
+    }
+
+    public @Nullable SupplyContainer getSupplyContainer(@NonNull SupplyType key) {
+        assert !isDead();
+        return resource_containers.get(key);
     }
 
     public @Nullable BuildSupplyContainer getBuildSupplyContainer(@NonNull Class<?> key) {
@@ -191,19 +204,19 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     public void createHarvesters(int num_tree, int num_rock, int num_iron, int num_rubber) {
         assert !isDead();
-        createHarvesters(TreeSupply.class, num_tree);
-        createHarvesters(RockSupply.class, num_rock);
-        createHarvesters(IronSupply.class, num_iron);
-        createHarvesters(RubberSupply.class, num_rubber);
+        createHarvesters(SupplyType.WOOD, num_tree);
+        createHarvesters(SupplyType.ROCK, num_rock);
+        createHarvesters(SupplyType.IRON, num_iron);
+        createHarvesters(SupplyType.RUBBER, num_rubber);
     }
 
-    private void createHarvesters(@NonNull Class<? extends Supply> supply_type, int amount) {
+    private void createHarvesters(@NonNull SupplyType supplyType, int amount) {
         Race race = getOwner().getRace();
         for (int i = 0; i < amount; i++) {
             getUnitContainer().prepareDeploy(-1);
             getUnitContainer().exit();
             Unit unit = createUnit(null, race.getUnitTemplate(Race.UNIT_PEON));
-            unit.pushController(new GatherController<>(unit, null, supply_type));
+            unit.pushController(new GatherController<>(unit, null, supplyType));
         }
     }
 
@@ -272,10 +285,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     public void createTransporters(int num_tree, int num_rock, int num_iron, int num_rubber) {
         assert !isDead();
-        createTransporters(num_tree, TreeSupply.class);
-        createTransporters(num_rock, RockSupply.class);
-        createTransporters(num_iron, IronSupply.class);
-        createTransporters(num_rubber, RubberSupply.class);
+        createTransporters(num_tree, SupplyType.WOOD);
+        createTransporters(num_rock, SupplyType.ROCK);
+        createTransporters(num_iron, SupplyType.IRON);
+        createTransporters(num_rubber, SupplyType.RUBBER);
     }
 
     private void checkRallyPoint() {
@@ -283,7 +296,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             rally_point = this;
     }
 
-    private void createTransporters(int amount, Class<? extends Supply> supply) {
+    private void createTransporters(int amount, SupplyType supply) {
         Race race = getOwner().getRace();
         checkRallyPoint();
         for (int i = 0; i < amount; i++) {
@@ -291,8 +304,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             getUnitContainer().exit();
             Unit unit = createUnit(hasRallyPoint() ? rally_point : null, race.getUnitTemplate(Race.UNIT_PEON));
             unit.getSupplyContainer().increaseSupply(unit.getSupplyContainer().getMaxSupplyCount(), supply);
-            //	getSupplyContainer(supply).increaseSupply(-unit.getSupplyContainer().getMaxSupplyCount());
-            //	getSupplyContainer(supply).prepareDeploy(-unit.getSupplyContainer().getMaxSupplyCount());
         }
 
     }
@@ -329,14 +340,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 getAbilities().addAbilities(getTemplate().getAbilities());
                 supply_containers.put(Unit.class, getTemplate().getUnitContainerFactory().createContainer(this));
                 if (getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
-                    SupplyContainer tree_supply = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    SupplyContainer rock_supply = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    SupplyContainer iron_supply = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    SupplyContainer rubber_supply = new SupplyContainer(MAX_SUPPLY_COUNT);
-                    supply_containers.put(TreeSupply.class, tree_supply);
-                    supply_containers.put(RockSupply.class, rock_supply);
-                    supply_containers.put(IronSupply.class, iron_supply);
-                    supply_containers.put(RubberSupply.class, rubber_supply);
+                    resource_containers.put(SupplyType.WOOD, new SupplyContainer(MAX_SUPPLY_COUNT));
+                    resource_containers.put(SupplyType.ROCK, new SupplyContainer(MAX_SUPPLY_COUNT));
+                    resource_containers.put(SupplyType.IRON, new SupplyContainer(MAX_SUPPLY_COUNT));
+                    resource_containers.put(SupplyType.RUBBER, new SupplyContainer(MAX_SUPPLY_COUNT));
 
                     SupplyContainer rock_weapon_container = new SupplyContainer(MAX_SUPPLY_COUNT);
                     supply_containers.put(RockAxeWeapon.class, rock_weapon_container);
@@ -579,15 +586,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    public @NonNull SpriteKey getSpriteRenderer() {
-        return switch (getRenderLevel()) {
-            case START -> getTemplate().getStartRenderer();
-            case HALFBUILT -> getTemplate().getHalfbuiltRenderer();
-            case BUILT -> getTemplate().getBuiltRenderer();
-        };
-    }
-
-    @Override
     protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
         return switch (getRenderLevel()) {
             case START -> getTemplate().getStartBounds();
@@ -636,7 +634,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @SuppressWarnings("unchecked")
     private void occupy() {
         UnitGrid grid = getUnitGrid();
-        grid.getRegion(getGridX(), getGridY()).registerObject((Class<Building>) getClass(), this);
+        grid.getRegion(getGridX(), getGridY()).registerObject(Building.class, this);
         int size = getTemplate().getPlacingSize() * 2 - 1;
         for (int y = PLACING_BORDER; y < size - PLACING_BORDER; y++) {
             for (int x = PLACING_BORDER; x < size - PLACING_BORDER; x++) {
@@ -648,7 +646,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @SuppressWarnings("unchecked")
     private void free() {
         UnitGrid grid = getUnitGrid();
-        grid.getRegion(getGridX(), getGridY()).unregisterObject((Class<Building>) getClass(), this);
+        grid.getRegion(getGridX(), getGridY()).unregisterObject(Building.class, this);
         int size = getTemplate().getPlacingSize() * 2 - 1;
         for (int y = PLACING_BORDER; y < size - PLACING_BORDER; y++) {
             for (int x = PLACING_BORDER; x < size - PLACING_BORDER; x++) {
@@ -663,9 +661,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         if (!isDead()) {
             adjustHitPoints(-damage);
             World world = getOwner().getWorld();
-            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), AudioAssets.BUILDING_HITS[world
-                    .getRandom()
-                    .nextInt(AudioAssets.BUILDING_HITS.length)]);
+            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                    AudioAssets.BUILDING_HITS[ThreadLocalRandom.current()
+                            .nextInt(AudioAssets.BUILDING_HITS.length)]);
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();

@@ -1,16 +1,14 @@
 package com.oddlabs.tt.resource;
 
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.landscape.TreeSupply;
-import com.oddlabs.tt.model.IronSupply;
-import com.oddlabs.tt.model.RockSupply;
-import com.oddlabs.tt.model.RubberSupply;
-import com.oddlabs.tt.model.Supply;
+import com.oddlabs.tt.model.SupplyType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -78,13 +76,16 @@ public class AudioAssets {
             .mapToObj(i -> String.format("/sfx/lur_stun%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
 
-    public static final @NonNull Map<@NonNull Class<? extends Supply>, @NonNull AudioFile[]> SFX_HARVEST_SOUNDS = Map
-            .of(
-                    TreeSupply.class, SFX_AXE_CUTTING_WOODS,
-                    RockSupply.class, SFX_AXE_CUTTING_STONES,
-                    IronSupply.class, SFX_AXE_CUTTING_STONES,
-                    RubberSupply.class, SFX_IMPACT_MEATS
-            );
+    public static final @NonNull Map<@NonNull SupplyType, @NonNull AudioFile[]> SFX_HARVEST_SOUNDS;
+
+    static {
+        var map = new EnumMap<SupplyType, AudioFile[]>(SupplyType.class);
+        map.put(SupplyType.WOOD, SFX_AXE_CUTTING_WOODS);
+        map.put(SupplyType.ROCK, SFX_AXE_CUTTING_STONES);
+        map.put(SupplyType.IRON, SFX_AXE_CUTTING_STONES);
+        map.put(SupplyType.RUBBER, SFX_IMPACT_MEATS);
+        SFX_HARVEST_SOUNDS = Collections.unmodifiableMap(map);
+    }
 
 
     // Sound priority rankings
@@ -179,10 +180,9 @@ public class AudioAssets {
     public static final float AUDIO_RADIUS_BLAST_BLAST = 1f;
     public static final float AUDIO_RADIUS_ARMORY = 5f;
 
-    public static @NonNull AudioParameters getHarvestSound(@NonNull Class<? extends Supply> key,
-            @NonNull Random random) {
+    public static @NonNull AudioParameters getHarvestSound(@NonNull SupplyType key) {
         AudioFile[] sounds = SFX_HARVEST_SOUNDS.get(key);
-        var audioFile = sounds[random.nextInt(sounds.length)];
+        var audioFile = sounds[ThreadLocalRandom.current().nextInt(sounds.length)];
         return new AudioParameters(audioFile, AUDIO_RANK_HARVEST,
                 AUDIO_DISTANCE_HARVEST, AUDIO_GAIN_HARVEST, AUDIO_RADIUS_HARVEST);
     }

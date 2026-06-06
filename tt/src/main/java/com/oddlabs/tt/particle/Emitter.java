@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
 /**
@@ -105,12 +106,14 @@ public abstract class Emitter<P extends Particle> implements Animated {
         this.base_color = color;
     }
 
-    protected final void updateCluster(@NonNull Random random, float t) {
+    protected final void updateCluster(float t) {
         if (jitter_intensity <= 0.0f) {
             return;
         }
 
         emitter_age += t;
+
+        Random random = ThreadLocalRandom.current();
 
         if (emitter_age >= transition_start && emitter_age <= transition_end) {
             float progress = (emitter_age - transition_start) / (transition_end - transition_start);
@@ -131,10 +134,9 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return colorSpectrum.getColor(current_spectrum, base_color).add(cluster_rgb);
     }
 
-    protected final Color.@NonNull Linear nextParticleColor(Color.@NonNull Linear templateColor,
-            @NonNull Random random) {
+    protected final Color.@NonNull Linear nextParticleColor(Color.@NonNull Linear templateColor) {
         Color.Linear clusterColor = getClusterColor();
-        float jitter = (float) random.nextGaussian() * jitter_intensity;
+        float jitter = (float) ThreadLocalRandom.current().nextGaussian() * jitter_intensity;
         float r = Math.clamp(clusterColor.r() + jitter, 0, 1);
         float g = Math.clamp(clusterColor.g() + jitter, 0, 1);
         float b = Math.clamp(clusterColor.b() + jitter, 0, 1);
@@ -148,11 +150,11 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return new Color.Linear(r, g, b, a);
     }
 
-    protected final int nextType(@NonNull Random random) {
+    protected final int nextType() {
         if (types <= 1) return 0;
         float mean = (types - 1) / 2.0f;
         float stdDev = (types - 1) / 4.0f;
-        int type = Math.round(mean + (float) random.nextGaussian() * stdDev);
+        int type = Math.round(mean + (float) ThreadLocalRandom.current().nextGaussian() * stdDev);
         return Math.clamp(type, 0, types - 1);
     }
 

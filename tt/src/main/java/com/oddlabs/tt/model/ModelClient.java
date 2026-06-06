@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.render.SpriteKey;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -8,7 +7,6 @@ import org.jspecify.annotations.NonNull;
  */
 public interface ModelClient extends ClientState {
     float DURATION_CHICKEN_CLUCK = 0.8f;
-    float DURATION_CHICKEN_DEATH = 1.2f;
     float DURATION_UNIT_DEATH = 1.5f;
     float DURATION_HARVEST = 1.0f;
     float DURATION_REPAIR = 1.0f;
@@ -16,9 +14,9 @@ public interface ModelClient extends ClientState {
     /**
      * Spawns a visual sound emoji/thought accessory on the model.
      *
-     * @param sprite        The sprite key of the emoji/thought.
+     * @param emoji         The emoji type of the thought.
      * @param duration      The duration to display the thought.
      * @param audioDistance The maximum distance at which the sound/visual is audible.
      */
-    void addVisualSound(@NonNull SpriteKey sprite, float duration, float audioDistance);
+    void addVisualSound(@NonNull EmojiType emoji, float duration, float audioDistance);
 }

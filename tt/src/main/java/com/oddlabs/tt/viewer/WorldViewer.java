@@ -11,11 +11,11 @@ import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.delegate.GameStatsDelegate;
 import com.oddlabs.tt.delegate.InGameMainMenu;
 import com.oddlabs.tt.delegate.SelectionDelegate;
+import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.ActionButtonPanel;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
-import com.oddlabs.tt.landscape.LandscapeResources;
 import com.oddlabs.tt.landscape.NotificationListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.landscape.WorldParameters;
@@ -36,6 +36,7 @@ import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.player.VikingChieftainAI;
 import com.oddlabs.tt.render.DefaultRenderer;
 import com.oddlabs.tt.render.LandscapeRenderer;
+import com.oddlabs.tt.render.LandscapeResources;
 import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.Picker;
 import com.oddlabs.tt.render.RenderQueues;
@@ -94,8 +95,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         RenderQueues render_queues = new RenderQueues();
-        LandscapeResources landscape_resources = World.loadCommon(render_queues);
-        RacesResources races_resources = World.loadInGame(render_queues);
+        LandscapeResources landscape_resources = new LandscapeResources(render_queues);
+        ProgressForm.progress();
+        RacesResources races_resources = new RacesResources(render_queues);
         this.distributable_table = new DistributableTable();
         NotificationListener listener = new NotificationListener() {
             @Override
@@ -149,7 +151,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
                 .getAudioManager().newAudio(camera_state, x, y, z, params);
         this.world = World.newWorld(audio, landscape_resources, races_resources, listener, world_params, world_info,
-                player_infos, Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail]);
+                player_infos, renderer.getSettings().linear_team_colours,
+                Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail]);
         this.local_player = world.getPlayers()[player_slot];
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);

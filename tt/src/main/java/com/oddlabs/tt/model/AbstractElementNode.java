@@ -4,7 +4,6 @@ import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.procedural.Landscape;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.util.LinkedList;
 import org.jspecify.annotations.NonNull;
@@ -12,6 +11,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Abstract base class for spatial partition tree nodes in the world entity grid.
+ */
 public abstract sealed class AbstractElementNode<T extends Element<T>> extends BoundingBox permits ElementNode,
         ElementLeaf {
     private final LinkedList<T> models = new LinkedList<>();
@@ -86,7 +88,6 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
     }
 
     private static void buildRockSupplies(@NonNull World world, @NonNull List<int[]> positions) {
-        SpriteKey[] sprite_renderers = world.getLandscapeResources().getRockFragments();
         int num_supplies = positions.size();
         IO.println("num_rocks = " + num_supplies);
         for (int i = 0; i < num_supplies; i++) {
@@ -95,12 +96,11 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + (world.getRandom().nextFloat() - .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + (world.getRandom().nextFloat() - .5f);
-            new RockSupply(world, sprite_renderers[i % sprite_renderers.length], grid_x, grid_y, x, y, true);
+            new RockSupply(world, grid_x, grid_y, x, y, true);
         }
     }
 
     private static void buildIronSupplies(@NonNull World world, @NonNull List<int[]> positions) {
-        SpriteKey[] sprite_renderers = world.getLandscapeResources().getIronFragments();
         int num_supplies = positions.size();
         IO.println("num_iron = " + num_supplies);
         for (int i = 0; i < num_supplies; i++) {
@@ -109,7 +109,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + (world.getRandom().nextFloat() - .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + (world.getRandom().nextFloat() - .5f);
-            new IronSupply(world, sprite_renderers[i % sprite_renderers.length], grid_x, grid_y, x, y, true);
+            new IronSupply(world, grid_x, grid_y, x, y, true);
         }
     }
 
@@ -119,8 +119,8 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         for (int t = 0; t < plants.length; t++) {
             num_plants += plants[t].length / 2;
             for (int p = 0; p < plants[t].length >> 1; p++) {
-                float dir_x = world.getRandom().nextFloat();
-                float dir_y = world.getRandom().nextFloat();
+                float dir_x = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
+                float dir_y = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
                 float len_sqr = dir_x * dir_x + dir_y * dir_y;
                 if (len_sqr < .001) {
                     dir_x = 1f;
@@ -130,8 +130,8 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
                     dir_x *= inv_len;
                     dir_y *= inv_len;
                 }
-                new Plants(world, plants[t][2 * p], plants[t][2 * p + 1], dir_x, dir_y, world.getLandscapeResources()
-                        .getPlants()[terrain.ordinal()][t]);
+                new Plants(world, plants[t][2 * p], plants[t][2 * p + 1], dir_x, dir_y,
+                        world.getLandscapeResources().getPlantBounds(terrain.ordinal(), t));
             }
         }
         IO.println("num_plants = " + num_plants);

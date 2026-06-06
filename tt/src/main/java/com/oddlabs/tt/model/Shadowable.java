@@ -1,4 +1,4 @@
-package com.oddlabs.tt.render;
+package com.oddlabs.tt.model;
 
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
@@ -11,18 +11,28 @@ public interface Shadowable {
     float getShadowDiameter();
 
     /** darkness of the shadow */
-    default float getShadowOpacity() { return 0.5f; }
+    default float getShadowOpacity() {
+        return 0.5f;
+    }
 
     /** vertical center of the shadow relative to object height */
-    default float getShadowVerticalCenter() { return 0.6f; }
+    default float getShadowVerticalCenter() {
+        return 0.6f;
+    }
 
-    default Color.@NonNull Linear getShadowColor() { return Color.Linear.BLACK; }
+    default Color.@NonNull Linear getShadowColor() {
+        return Color.Linear.BLACK;
+    }
 
-    default float getShadowPattern() { return 0.0f; }
+    default float getShadowPattern() {
+        return 0.0f;
+    }
 
     float getPositionX();
 
     float getPositionY();
 
-    default boolean isDead() { return false; }
+    default boolean isDead() {
+        return false;
+    }
 }

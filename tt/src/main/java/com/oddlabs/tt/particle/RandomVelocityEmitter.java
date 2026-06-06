@@ -8,6 +8,9 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * A linear emitter that applies randomized initial velocities to its particles.
  */
@@ -82,12 +85,13 @@ public final class RandomVelocityEmitter extends LinearEmitter {
         particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
         particle.setEnergy(energy);
-        particle.setType(nextType(random));
+        particle.setType(nextType());
         add(particle);
         return 1;
     }
 
     private void randomizeVelocity() {
+        Random random = ThreadLocalRandom.current();
         float dx_angle = random.nextFloat() * angle_max_jump - .5f * angle_max_jump;
         float dy_angle = random.nextFloat() * angle_max_jump - .5f * angle_max_jump;
 

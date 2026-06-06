@@ -2,12 +2,14 @@ package com.oddlabs.tt.model.behaviour;
 
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.model.weapon.ThrowingWeapon;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Controller that handles unit movement and entry into buildings (towers or armories).
+ */
 public final class EnterController extends Controller {
     private final @NonNull Building building;
     private final @NonNull Unit unit;
@@ -27,8 +29,10 @@ public final class EnterController extends Controller {
                 if (building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
                     if (unit.getAbilities().hasAbilities(Abilities.HARVEST)
                             && unit.getSupplyContainer().getNumSupplies() > 0) {
-                        Class<? extends Supply> type = unit.getSupplyContainer().getSupplyType();
-                        building.getSupplyContainer(type).increaseSupply(unit.getSupplyContainer().getNumSupplies());
+                        unit.getSupplyContainer().getSupplyType().ifPresent(type -> building.getSupplyContainer(type)
+                                .increaseSupply(unit.getSupplyContainer()
+                                        .getNumSupplies())
+                        );
                     }
                     if (unit.getWeaponFactory() instanceof ThrowingFactory) {
                         Class<? extends ThrowingWeapon> type = unit.getWeaponFactory().getType();

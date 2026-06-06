@@ -1,5 +1,6 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.ModelClient;
 import java.util.ArrayList;
@@ -36,7 +37,8 @@ public final class VisualModel implements ModelClient {
     }
 
     @Override
-    public void addVisualSound(@NonNull SpriteKey sprite, float duration, float audioDistance) {
+    public void addVisualSound(@NonNull EmojiType emoji, float duration, float audioDistance) {
+        SpriteKey sprite = VisualRegistry.getInstance().getEmojiSprite(emoji);
         accessories.add(new VisualSoundAccessory(sprite, duration, audioDistance));
     }
 }

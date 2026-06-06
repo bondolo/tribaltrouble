@@ -4,7 +4,6 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
@@ -19,9 +18,10 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     private static final float SPAWN_OFFSET_Z = -2f;
 
     @Override
-    public abstract @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources);
+    public abstract @NonNull SupplyType getSupplyType();
 
-    private final @NonNull SpriteKey sprite_renderer;
+    /** This is also known to be a SpriteKey */
+    private final @NonNull BoundsProvider boundsProvider;
 
     private final float size;
     private final float rotation;
@@ -36,30 +36,32 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     private int num_supplies;
     private int hit_counter = 0;
 
-    @SuppressWarnings("unchecked")
-    public SupplyModel(@NonNull World world, @NonNull SpriteKey sprite_renderer, float size, int grid_x, int grid_y,
-            float x, float y, float offset_z, float rotation, int num_supplies, boolean increase_count) {
+    public SupplyModel(@NonNull World world, float size, int grid_x, int grid_y,
+            float x, float y, float rotation, int num_supplies, boolean increase_count,
+            @NonNull BoundsProvider boundsProvider) {
         super(world);
-        this.sprite_renderer = sprite_renderer;
+        this.boundsProvider = boundsProvider;
         this.size = size;
         this.grid_x = grid_x;
         this.grid_y = grid_y;
         this.rotation = rotation;
         this.num_supplies = num_supplies;
         this.max_supplies = num_supplies;
-        this.offset_z = offset_z;
+        this.offset_z = SPAWN_OFFSET_Z;
         setPosition(x, y);
         updateBounds();
         world.getNotificationListener().registerTarget(this);
         UnitGrid unit_grid = world.getUnitGrid();
         unit_grid.occupyGrid(grid_x, grid_y, this);
         Region region = unit_grid.getRegion(grid_x, grid_y);
-        region.registerObject((Class<SupplyModel>) getClass(), this);
+        @SuppressWarnings("unchecked") var supplyClass = (Class<Supply>) getSupplyType().getSupplyClass();
+        region.registerObject(supplyClass, this);
         register();
         reinsert();
         if (increase_count)
-            world.getSupplyManager(getClass()).newSupply();
+            world.getSupplyManager(getSupplyType()).newSupply();
     }
+
 
     public final float getRotation() {
         return rotation;
@@ -88,6 +90,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     public float getCrackDecalOpacity() {
         return 0.0f;
     }
+
 
     public float getCrackDecalDiameter() {
         return getSize();
@@ -126,9 +129,10 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
             unit_grid.freeGrid(grid_x, grid_y, this);
             getWorld().getNotificationListener().unregisterTarget(this);
             Region region = unit_grid.getRegion(grid_x, grid_y);
-            region.unregisterObject((Class<SupplyModel>) getClass(), this);
+            @SuppressWarnings("unchecked") var supplyClass = (Class<Supply>) getSupplyType().getSupplyClass();
+            region.unregisterObject(supplyClass, this);
             remove();
-            getWorld().getSupplyManager(getClass()).emptySupply(this);
+            getWorld().getSupplyManager(getSupplyType()).emptySupply(this);
         }
     }
 
@@ -225,14 +229,13 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         return Math.max(0f, h_max - h_center);
     }
 
-    @Override
-    public final @NonNull SpriteKey getSpriteRenderer() {
-        return sprite_renderer;
+    public final @NonNull BoundsProvider getBoundsProvider() {
+        return boundsProvider;
     }
 
     @Override
     protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
-        return sprite_renderer.bounds();
+        return boundsProvider.bounds();
     }
 
     @Override

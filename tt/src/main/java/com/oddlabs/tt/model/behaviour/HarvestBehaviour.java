@@ -1,7 +1,7 @@
 package com.oddlabs.tt.model.behaviour;
 
+import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.ModelClient;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.resource.AudioAssets;
@@ -35,22 +35,19 @@ public final class HarvestBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            var params = AudioAssets.getHarvestSound(supply.getClass(), unit.getOwner().getWorld().getRandom());
+            var params = AudioAssets.getHarvestSound(supply.getSupplyType());
             unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
                     .getPositionZ(), params);
 
-            RacesResources racesResources = unit.getOwner().getWorld().getRacesResources();
-            if (racesResources != null) {
-                ModelClient client = unit.getClientState(ModelClient.class);
-                if (client != null) {
-                    client.addVisualSound(supply.getStatusSprite(racesResources),
-                            ModelClient.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_HARVEST);
-                }
+            ModelClient client = unit.getClientState(ModelClient.class);
+            if (client != null) {
+                client.addVisualSound(EmojiType.fromSupply(supply.getSupplyType()),
+                        ModelClient.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_HARVEST);
             }
 
             if (supply.hit()) {
-                unit.getSupplyContainer().increaseSupply(1, supply.getClass());
-                unit.getOwner().harvested(supply.getClass());
+                unit.getSupplyContainer().increaseSupply(1, supply.getSupplyType());
+                unit.getOwner().harvested(supply.getSupplyType());
             }
         }
 

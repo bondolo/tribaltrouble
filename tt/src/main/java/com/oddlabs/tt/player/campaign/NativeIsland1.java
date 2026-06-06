@@ -18,6 +18,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.SpriteKey;
+import com.oddlabs.tt.render.VisualRegistry;
 import com.oddlabs.tt.trigger.campaign.DeathTrigger;
 import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.TimeTrigger;
@@ -28,6 +29,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Native Island 1, containing objectives and triggers.
+ */
 public final class NativeIsland1 extends Island {
     private static final int NUM_CAPTIVES = 10;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland1.class.getName());
@@ -123,7 +127,10 @@ public final class NativeIsland1 extends Island {
         final int captive_start_x = 48 * 2;
         final int captive_start_y = 96 * 2;
         float shadow_diameter = local_player.getRace().getUnitTemplate(Race.UNIT_PEON).getShadowDiameter();
-        SpriteKey sprite_renderer = local_player.getRace().getUnitTemplate(Race.UNIT_PEON).getSpriteRenderer();
+        SpriteKey sprite_renderer = VisualRegistry.getInstance().getUnitSprite(
+                local_player.getRace().getRaceType(),
+                local_player.getRace().getUnitTemplate(Race.UNIT_PEON).getVisualType()
+        );
 
         final float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
         float dir = (float) Math.sin(Math.PI / 4);

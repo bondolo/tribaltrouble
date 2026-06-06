@@ -1,13 +1,12 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.model.RacesResources;
+import com.oddlabs.tt.model.Shadowable;
 import com.oddlabs.tt.model.Supply;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
-import com.oddlabs.tt.render.Shadowable;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import org.joml.Matrix4f;
@@ -70,12 +69,12 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         checkBoundsY(y + r);
         if (world.getUnitGrid().getOccupant(grid_x, grid_y) == null)
             occupyTree();
-        world.getSupplyManager(getClass()).newSupply();
+        world.getSupplyManager(getSupplyType()).newSupply();
     }
 
     @Override
-    public @NonNull SpriteKey getStatusSprite(@NonNull RacesResources resources) {
-        return resources.getTreeStatusSprite();
+    public @NonNull SupplyType getSupplyType() {
+        return SupplyType.WOOD;
     }
 
     @Override
@@ -121,7 +120,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         UnitGrid grid = world.getUnitGrid();
         world.getNotificationListener().registerTarget(this);
         Region region = grid.getRegion(getGridX(), getGridY());
-        region.registerObject((Class<TreeSupply>) getClass(), this);
+        region.registerObject(TreeSupply.class, this);
         for (int y = 0; y < grid_size; y++) {
             int occ_y = grid_y + y - (grid_size - 1) / 2;
             for (int x = 0; x < grid_size; x++) {
@@ -139,7 +138,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         UnitGrid grid = world.getUnitGrid();
         world.getNotificationListener().unregisterTarget(this);
         Region region = grid.getRegion(grid_x, grid_y);
-        region.unregisterObject((Class<TreeSupply>) getClass(), this);
+        region.unregisterObject(TreeSupply.class, this);
         grid.freeGrid(grid_x, grid_y, this);
     }
 
@@ -215,7 +214,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         num_supplies--;
         if (isEmpty()) {
             unoccupyTree();
-            world.getSupplyManager(getClass()).emptySupply(this);
+            world.getSupplyManager(getSupplyType()).emptySupply(this);
             world.getAudio().newAudio(getCX(), getCY(), getCZ(), AudioAssets.TREE_FALL[tree_type.ordinal() % 2]);
             world.getAnimationManagerRealTime().registerAnimation(this);
             animation_time = 0f;

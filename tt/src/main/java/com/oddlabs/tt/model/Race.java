@@ -4,7 +4,6 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.gui.RaceIcons;
 import com.oddlabs.tt.model.weapon.MagicFactory;
 import com.oddlabs.tt.player.ChieftainAI;
-import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
@@ -26,9 +25,9 @@ public final class Race {
     public static final int UNIT_PEON = 3;
     public static final int UNIT_CHIEFTAIN = 4;
 
+    private final int raceType;
     private final @NonNull BuildingTemplate[] buildings = new BuildingTemplate[NUM_BUILDINGS];
     private final @NonNull UnitTemplate[] units = new UnitTemplate[5];
-    private final @NonNull SpriteKey rally_point;
     private final @NonNull RaceIcons icons;
     private final @NonNull AudioParameters attack_notification;
     private final @NonNull AudioParameters building_notification;
@@ -36,16 +35,17 @@ public final class Race {
     private final @NonNull ChieftainAI chieftain_ai;
     private final @NonNull AudioParameters music;
 
-    public Race(@NonNull BuildingTemplate quarters, @NonNull BuildingTemplate armory, @NonNull BuildingTemplate tower,
+    public Race(int raceType, @NonNull BuildingTemplate quarters, @NonNull BuildingTemplate armory,
+            @NonNull BuildingTemplate tower,
             @NonNull UnitTemplate warrior_rock, @NonNull UnitTemplate warrior_iron,
             @NonNull UnitTemplate warrior_rubber,
             @NonNull UnitTemplate peon, @NonNull UnitTemplate chieftain,
-            @NonNull SpriteKey rally_point,
             @NonNull RaceIcons icons,
             @NonNull AudioFile attack_notification, @NonNull AudioFile building_notification,
             @NonNull MagicFactory @NonNull [] magic_factory,
             @NonNull ChieftainAI chieftain_ai,
             @NonNull AudioParameters music) {
+        this.raceType = raceType;
         buildings[BUILDING_QUARTERS] = quarters;
         buildings[BUILDING_ARMORY] = armory;
         buildings[BUILDING_TOWER] = tower;
@@ -57,7 +57,6 @@ public final class Race {
         units[UNIT_WARRIOR_RUBBER] = warrior_rubber;
         units[UNIT_PEON] = peon;
         units[UNIT_CHIEFTAIN] = chieftain;
-        this.rally_point = rally_point;
         this.icons = icons;
         this.attack_notification = new AudioParameters(attack_notification, AudioAssets.AUDIO_RANK_NOTIFICATION,
                 AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
@@ -72,16 +71,16 @@ public final class Race {
         this.music = music;
     }
 
+    public int getRaceType() {
+        return raceType;
+    }
+
     public @NonNull BuildingTemplate getBuildingTemplate(int index) {
         return buildings[index];
     }
 
     public @NonNull UnitTemplate getUnitTemplate(int index) {
         return units[index];
-    }
-
-    public @NonNull SpriteKey getRallyPoint() {
-        return rally_point;
     }
 
     public @NonNull RaceIcons getIcons() {
