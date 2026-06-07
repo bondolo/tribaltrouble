@@ -39,7 +39,7 @@ public final class DefeatTrigger extends IntervalTrigger {
     @Override
     protected void check() {
         Player current = viewer.getLocalPlayer();
-        if (chieftain != current.getChieftain()) {
+        if (current.getChieftain().map(c -> c != chieftain).orElse(true)) {
             triggered_by_chieftain_death = true;
             triggered();
         }

@@ -34,15 +34,15 @@ public final class BuildSpinner extends IconSpinner {
         this.current_building = current_building;
         this.type = type;
         if (!current_building.isDead())
-            num_orders = current_building.getBuildSupplyContainer(type).getNumOrders();
+            num_orders = current_building.getBuildSupplyContainer(type).orElseThrow().getNumOrders();
     }
 
     @Override
     public int computeCount() {
         if (!current_building.isDead()) {
-            BuildSupplyContainer build_container = current_building.getBuildSupplyContainer(type);
-            int count = Math.min(build_container.getMaxSupplyCount(),
-                    Math.max(0, build_container.getNumSupplies() + getOrderDiff()));
+            BuildSupplyContainer build_container = current_building.getBuildSupplyContainer(type).orElseThrow();
+            int count = Math.clamp(build_container.getNumSupplies() + getOrderDiff(),
+                    0, build_container.getMaxSupplyCount());
             infinite = count >= INFINITE_LIMIT;
             return count;
         } else
@@ -78,7 +78,7 @@ public final class BuildSpinner extends IconSpinner {
     protected float getProgress() {
         return current_building.isDead()
                 ? 0
-                : ((BuildProductionContainer) current_building.getBuildSupplyContainer(type)).getBuildProgress();
+                : ((BuildProductionContainer) current_building.getBuildSupplyContainer(type).orElseThrow()).getBuildProgress();
     }
 
     Building getBuilding() {
@@ -88,7 +88,7 @@ public final class BuildSpinner extends IconSpinner {
     private int getOrderDiff() {
         return current_building.isDead()
                 ? 0
-                : num_orders - current_building.getBuildSupplyContainer(type).getNumOrders();
+                : num_orders - current_building.getBuildSupplyContainer(type).orElseThrow().getNumOrders();
     }
 
     @Override

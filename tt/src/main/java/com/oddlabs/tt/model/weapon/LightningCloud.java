@@ -15,6 +15,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.util.Color;
+import java.util.Optional;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -115,10 +116,10 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         if (hit_timer > seconds_per_hit) {
             if (target == null) {
                 target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid.toGridCoordinate(
-                        getPositionY()), prev_target);
+                        getPositionY()), prev_target).orElse(null);
                 if (target == null) {
                     target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid
-                            .toGridCoordinate(getPositionY()), null);
+                            .toGridCoordinate(getPositionY()), null).orElse(null);
                     if (target == null) {
                         super.animate(t);
                         return;

@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -254,11 +255,11 @@ public final class Player implements PlayerInterface {
         this.ai = ai;
     }
 
-    public @Nullable AI getAI() {
-        return ai;
+    public @NonNull Optional<AI> getAI() {
+        return Optional.ofNullable(ai);
     }
 
-    public @Nullable Building buildBuilding(int building_type, int grid_x, int grid_y) {
+    public @NonNull Optional<Building> buildBuilding(int building_type, int grid_x, int grid_y) {
         BuildingSiteScanFilter filter = new BuildingSiteScanFilter(world.getUnitGrid(), getRace().getBuildingTemplate(
                 building_type), 40, true);
         world.getUnitGrid().scan(filter, grid_x, grid_y);
@@ -270,7 +271,7 @@ public final class Player implements PlayerInterface {
             b.place();
             b.repair(1000);
         }
-        return b;
+        return Optional.ofNullable(b);
     }
 
     public Player init(float @NonNull [] starting_location) {
@@ -280,11 +281,11 @@ public final class Player implements PlayerInterface {
         return this;
     }
 
-    public @Nullable Selectable<?> findNearestEnemy(int start_x, int start_y) {
+    public @NonNull Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y) {
         return findNearestEnemy(start_x, start_y, null);
     }
 
-    public @Nullable Selectable<?> findNearestEnemy(int start_x, int start_y, Selectable<?> target) {
+    public @NonNull Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, Selectable<?> target) {
         return findNearestEnemy(start_x, start_y, target, Selectable.genericClass());
     }
 
@@ -292,7 +293,7 @@ public final class Player implements PlayerInterface {
         return getUnits().getSet().stream().mapToInt(Selectable::getStatusValue).sum();
     }
 
-    public @Nullable Selectable<?> findNearestEnemy(int start_x, int start_y, Selectable<?> target, @NonNull Class<
+    public @NonNull Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, Selectable<?> target, @NonNull Class<
             ? extends Selectable<?>> type) {
         int best_dist_squared = Integer.MAX_VALUE;
         Selectable<?> best_target = null;
@@ -312,10 +313,10 @@ public final class Player implements PlayerInterface {
                 }
             }
         }
-        return best_target;
+        return Optional.ofNullable(best_target);
     }
 
-    public @Nullable Selectable<?> findNearestEnemyBuilding(int start_x, int start_y) {
+    public @NonNull Optional<Selectable<?>> findNearestEnemyBuilding(int start_x, int start_y) {
         return findNearestEnemy(start_x, start_y, null, Building.class);
     }
 
@@ -335,33 +336,33 @@ public final class Player implements PlayerInterface {
         this.chieftain = chieftain;
     }
 
-    public @Nullable Building getArmory() {
+    public @NonNull Optional<Building> getArmory() {
         Selectable<?>[][] lists = classifyUnits();
         for (Selectable<?>[] list : lists) {
             Selectable<?> s = list[0];
             if (s.getPrimaryController() instanceof NullController && s.getAbilities().hasAbilities(
                     Abilities.BUILD_ARMIES)) {
-                return (Building) s;
+                return Optional.of((Building) s);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
-    public @Nullable Building getQuarters() {
+    public @NonNull Optional<Building> getQuarters() {
         Selectable<?>[][] lists = classifyUnits();
         for (Selectable<?>[] list : lists) {
             Selectable<?> s = list[0];
             if (s.getPrimaryController() instanceof NullController && s.getAbilities().hasAbilities(
                     Abilities.REPRODUCE)) {
-                return (Building) s;
+                return Optional.of((Building) s);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public boolean isAlive() {
         int units = getUnitCountContainer().getNumSupplies();
-        return units > 0 || hasActiveChieftain() || getQuarters() != null;
+        return units > 0 || hasActiveChieftain() || getQuarters().isPresent();
     }
 
 
@@ -369,8 +370,8 @@ public final class Player implements PlayerInterface {
         return chieftain != null;
     }
 
-    public @Nullable Unit getChieftain() {
-        return chieftain;
+    public @NonNull Optional<Unit> getChieftain() {
+        return Optional.ofNullable(chieftain);
     }
 
     public void setTrainingChieftain(boolean training_chieftain) {

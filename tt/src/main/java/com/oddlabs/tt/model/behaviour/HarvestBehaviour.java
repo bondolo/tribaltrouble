@@ -4,6 +4,7 @@ import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
+import java.util.Optional;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 
@@ -39,11 +40,10 @@ public final class HarvestBehaviour implements Behaviour {
             unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
                     .getPositionZ(), params);
 
-            ModelClient client = unit.getClientState(ModelClient.class);
-            if (client != null) {
+            unit.getClientState(ModelClient.class).ifPresent(client -> {
                 client.addVisualSound(EmojiType.fromSupply(supply.getSupplyType()),
                         ModelClient.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_HARVEST);
-            }
+            });
 
             if (supply.hit()) {
                 unit.getSupplyContainer().increaseSupply(1, supply.getSupplyType());

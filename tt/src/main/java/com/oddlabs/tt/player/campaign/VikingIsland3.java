@@ -105,7 +105,7 @@ public final class VikingIsland3 extends Island {
         new VictoryTrigger(getViewer(), runnable);
 
         // Put warrior in tower
-        enemy.getAI().manTowers(1); // TODO: exchange with insertGuardTower()
+        enemy.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: exchange with insertGuardTower()
 
         // Insert treasures
         float shadow_diameter = 2.6f;

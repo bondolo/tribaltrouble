@@ -170,11 +170,10 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                     getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
                             AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
                                     AudioAssets.CHICKEN_IDLES.length)]);
-                    ModelClient client = getClientState(ModelClient.class);
-                    if (client != null) {
+                    getClientState(ModelClient.class).ifPresent(client -> {
                         client.addVisualSound(EmojiType.CHICKEN_CLUCK,
                                 ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
-                    }
+                    });
                 }
             } else if (random < .85) {
                 // fly

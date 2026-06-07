@@ -99,10 +99,10 @@ public final class Stun extends PointEmitterModel implements Magic {
                     unit = unit1;
                 } else if (selectable instanceof Building building) {
                     if (!building.isDead() && building.getAbilities().hasAbilities(Abilities.ATTACK)) {
-                        MountUnitContainer muc = (MountUnitContainer) building.getUnitContainer();
-                        if (muc.getNumSupplies() > 0) {
-                            unit = muc.getUnit();
-                        }
+                        unit = building.getUnitContainer().map(c -> (MountUnitContainer) c)
+                                .filter(muc -> muc.getNumSupplies() > 0)
+                                .map(MountUnitContainer::getUnit)
+                                .orElse(null);
                     }
                 }
 

@@ -5,6 +5,7 @@ import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RacesResources;
@@ -23,6 +24,7 @@ import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -110,13 +112,15 @@ public final class VikingIsland9 extends Island {
 
         // Fill native armory with units and weapons
         int num_extra_units = 130;
-        if (enemy.getArmory().getSupplyContainer(IronAxeWeapon.class).getNumSupplies() < num_extra_units)
-            enemy.getArmory().getSupplyContainer(IronAxeWeapon.class).increaseSupply(num_extra_units);
-        if (enemy.getArmory().getUnitContainer().getNumSupplies() < num_extra_units)
-            enemy.getArmory().getUnitContainer().increaseSupply(num_extra_units);
+        enemy.getArmory().ifPresent(armory -> {
+            if (armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies() < num_extra_units)
+                armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().increaseSupply(num_extra_units);
+            if (armory.getUnitContainer().orElseThrow().getNumSupplies() < num_extra_units)
+                armory.getUnitContainer().orElseThrow().increaseSupply(num_extra_units);
 
-        // Deploy units now, and reinforcements when needed
-        enemy.deployUnits(enemy.getArmory(), DeployType.IRON_WARRIOR, 20);
+            // Deploy units now, and reinforcements when needed
+            enemy.deployUnits(armory, DeployType.IRON_WARRIOR, 20);
+        });
         new ReinforcementsTrigger(enemy, DeployType.IRON_WARRIOR);
 
         // Winner prize

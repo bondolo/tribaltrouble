@@ -21,9 +21,11 @@ import com.oddlabs.tt.trigger.campaign.PlayerEleminatedTrigger;
 import com.oddlabs.tt.trigger.campaign.ReinforcementsTrigger;
 import com.oddlabs.tt.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
+import com.oddlabs.tt.util.Target;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -115,26 +117,20 @@ public final class VikingIsland4 extends Island {
 
         // Attack1
         Runnable attack1_runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
-            if (armory != null && !armory.isDead()) {
-                attack(enemy, armory, attack1);
-            } else if (chieftain != null && !chieftain.isDead()) {
-                attack(enemy, chieftain, attack1);
-            }
+            local_player.getArmory().filter(a -> !a.isDead())
+                    .map(a -> (Target) a)
+                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+                    .ifPresent(target -> attack(enemy, target, attack1));
             refillArmory(enemy);
             deploy(enemy, attack2);
         };
 
         // Attack2
         Runnable attack2_runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
-            if (armory != null && !armory.isDead()) {
-                attack(enemy, armory, attack2);
-            } else if (chieftain != null && !chieftain.isDead()) {
-                attack(enemy, chieftain, attack1);
-            }
+            local_player.getArmory().filter(a -> !a.isDead())
+                    .map(a -> (Target) a)
+                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+                    .ifPresent(target -> attack(enemy, target, attack2));
             refillArmory(enemy);
             deploy(enemy, defense);
         };
@@ -177,14 +173,16 @@ public final class VikingIsland4 extends Island {
         placePrisoners(captive, enemy, 0, 0, 0, 0, true);
 
         // Put warrior in tower
-        enemy.getAI().manTowers(1); // TODO: replace with insertGuardTower()
+        enemy.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
 
         // Fill native armory with units and weapons
         int num_reinforcements = 100;
-        if (enemy.getArmory().getSupplyContainer(IronAxeWeapon.class).getNumSupplies() < num_reinforcements)
-            enemy.getArmory().getSupplyContainer(IronAxeWeapon.class).increaseSupply(num_reinforcements);
-        if (enemy.getArmory().getUnitContainer().getNumSupplies() < num_reinforcements)
-            enemy.getArmory().getUnitContainer().increaseSupply(num_reinforcements);
+        enemy.getArmory().ifPresent(armory -> {
+            if (armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies() < num_reinforcements)
+                armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().increaseSupply(num_reinforcements);
+            if (armory.getUnitContainer().orElseThrow().getNumSupplies() < num_reinforcements)
+                armory.getUnitContainer().orElseThrow().increaseSupply(num_reinforcements);
+        });
 
         // Deploy reinforcements when needed
         new ReinforcementsTrigger(enemy, DeployType.IRON_WARRIOR);

@@ -369,11 +369,10 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 owner.unitKilled();
                 getOwner().unitLost();
 
-                ModelClient client = getClientState(ModelClient.class);
-                if (client != null) {
+                getClientState(ModelClient.class).ifPresent(client -> {
                     client.addVisualSound(EmojiType.GRAVESTONE,
                             ModelClient.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
-                }
+                });
 
                 pushController(new DieController(this));
                 forceDecide();
@@ -423,9 +422,9 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     private boolean canEnter(@NonNull Target target) {
         return target instanceof Building building &&
                 !getAbilities().hasAbilities(Abilities.MAGIC) &&
-                building.getUnitContainer() != null &&
+                building.getUnitContainer().isPresent() &&
                 getOwner() == building.getOwner() &&
-                building.getUnitContainer().canEnter(this);
+                building.getUnitContainer().get().canEnter(this);
     }
 
     @Override

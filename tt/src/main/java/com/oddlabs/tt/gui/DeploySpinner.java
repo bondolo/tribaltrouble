@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployContainer;
 import com.oddlabs.tt.model.DeployType;
+import com.oddlabs.tt.model.SupplyContainer;
 import com.oddlabs.tt.player.PlayerInterface;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -63,11 +64,10 @@ public final class DeploySpinner extends IconSpinner {
     @Override
     protected void increase(int amount) {
         if (!current_building.isDead()) {
-            int num_units = current_building.getUnitContainer().getNumSupplies();
-            int num_supplies = Integer.MAX_VALUE;
-            if (supply_type != null) {
-                num_supplies = current_building.getSupplyContainer(supply_type).getNumSupplies();
-            }
+            int num_units = current_building.getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0);
+            int num_supplies = supply_type != null
+                   ? current_building.getSupplyContainer(supply_type).map(SupplyContainer::getNumSupplies).orElse(0)
+                   : Integer.MAX_VALUE;
 
             if (num_units > getOrderDiff() && num_supplies > getOrderDiff()) {
                 if (amount > num_units - getOrderDiff()) {

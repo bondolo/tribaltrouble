@@ -18,9 +18,11 @@ import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.PlayerEleminatedTrigger;
 import com.oddlabs.tt.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
+import com.oddlabs.tt.util.Target;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -112,26 +114,20 @@ public final class VikingIsland1 extends Island {
 
         // Attack1
         Runnable attack1_runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
-            if (armory != null && !armory.isDead()) {
-                attack(enemy, armory, attack1);
-            } else if (chieftain != null && !chieftain.isDead()) {
-                attack(enemy, chieftain, attack1);
-            }
+            local_player.getArmory().filter(a -> !a.isDead())
+                    .map(a -> (Target) a)
+                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+                    .ifPresent(target -> attack(enemy, target, attack1));
             refillArmory(enemy);
             deploy(enemy, attack2);
         };
 
         // Attack2
         Runnable attack2_runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
-            if (armory != null && !armory.isDead()) {
-                attack(enemy, armory, attack2);
-            } else if (chieftain != null && !chieftain.isDead()) {
-                attack(enemy, chieftain, attack1);
-            }
+            local_player.getArmory().filter(a -> !a.isDead())
+                    .map(a -> (Target) a)
+                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+                    .ifPresent(target -> attack(enemy, target, attack2));
             refillArmory(enemy);
             deploy(enemy, defense);
         };

@@ -27,6 +27,8 @@ import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Optional;
+
 /**
  * Base class for all campaign islands, defining common logic for game setup,
  * difficulty scaling, and scenario-specific object placement.
@@ -92,7 +94,7 @@ public abstract class Island {
                     throw new IllegalArgumentException("unexpected difficulty: " + campaign.getState().getDifficulty());
             }
             start();
-            new DefeatTrigger(world_viewer, campaign, viewer.getLocalPlayer().getChieftain());
+            new DefeatTrigger(world_viewer, campaign, viewer.getLocalPlayer().getChieftain().orElse(null));
         };
         return Menu.startNewGame(network, gui_root, null, new WorldParameters(Game.GAMESPEED_NORMAL,
                 "Campaign" + campaign_num, initial_units,
@@ -130,13 +132,14 @@ public abstract class Island {
     }
 
     protected final void insertGuardTower(@NonNull Player owner, int warrior_type, int grid_x, int grid_y) {
-        Building tower = owner.buildBuilding(Race.BUILDING_TOWER, grid_x, grid_y);
-        Unit unit = new Unit(owner,
-                UnitGrid.coordinateFromGrid(grid_x),
-                UnitGrid.coordinateFromGrid(grid_y),
-                null,
-                owner.getRace().getUnitTemplate(warrior_type));
-        unit.setTarget(tower, Action.DEFAULT, false);
+        owner.buildBuilding(Race.BUILDING_TOWER, grid_x, grid_y).ifPresent(tower -> {
+            Unit unit = new Unit(owner,
+                    UnitGrid.coordinateFromGrid(grid_x),
+                    UnitGrid.coordinateFromGrid(grid_y),
+                    null,
+                    owner.getRace().getUnitTemplate(warrior_type));
+            unit.setTarget(tower, Action.DEFAULT, false);
+        });
     }
 
     protected final void placePrisoners(@NonNull Player captive, @NonNull Player enemy, int peons, int rock_warriors,
@@ -173,9 +176,11 @@ public abstract class Island {
     }
 
     protected final void deploy(@NonNull Player enemy, int num_units) {
-        if (enemy.getArmory() != null && !enemy.getArmory().isDead()) {
-            enemy.deployUnits(enemy.getArmory(), DeployType.IRON_WARRIOR, num_units);
-        }
+        enemy.getArmory().ifPresent(armory -> {
+            if (!armory.isDead()) {
+                enemy.deployUnits(armory, DeployType.IRON_WARRIOR, num_units);
+            }
+        });
     }
 
     protected final void attack(@NonNull Player enemy, @NonNull Target target, int num_units) {
@@ -188,13 +193,14 @@ public abstract class Island {
     }
 
     protected final void refillArmory(@NonNull Player enemy) {
-        if (enemy.getQuarters() == null || enemy.getArmory() == null)
-            return;
-
-        enemy.getQuarters().removeSupplies(Unit.class);
-        enemy.getArmory().fillSupplies(Unit.class, enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer()
-                .getNumSupplies());
-        enemy.getArmory().fillSupplies(IronAxeWeapon.class, Integer.MAX_VALUE);
+        enemy.getQuarters().ifPresent(quarters -> {
+            enemy.getArmory().ifPresent(armory -> {
+                quarters.removeSupplies(Unit.class);
+                armory.fillSupplies(Unit.class, enemy.getWorld().getMaxUnitCount() - enemy.getUnitCountContainer()
+                        .getNumSupplies());
+                armory.fillSupplies(IronAxeWeapon.class, Integer.MAX_VALUE);
+            });
+        });
     }
 
     public final void updateChecksum(@NonNull StateChecksum checksum) {

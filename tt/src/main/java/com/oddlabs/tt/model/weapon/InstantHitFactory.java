@@ -8,6 +8,7 @@ import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -49,7 +50,7 @@ public final class InstantHitFactory extends WeaponFactory {
     }
 
     @Override
-    public @Nullable Class<? extends ThrowingWeapon> getType() {
-        return null;
+    public @NonNull Optional<Class<? extends ThrowingWeapon>> getType() {
+        return Optional.empty();
     }
 }

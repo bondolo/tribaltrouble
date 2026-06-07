@@ -26,6 +26,7 @@ import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -120,19 +121,20 @@ public final class VikingIsland0 extends Island {
 
         // Fill native armory with units and weapons
         final int num_units = 10;
-        if (enemy.getArmory().getSupplyContainer(IronAxeWeapon.class).getNumSupplies() < num_units * 3)
-            enemy.getArmory().getSupplyContainer(IronAxeWeapon.class).increaseSupply(num_units * 3);
-        if (enemy.getArmory().getUnitContainer().getNumSupplies() < num_units * 3)
-            enemy.getArmory().getUnitContainer().increaseSupply(num_units * 3);
+        Building enemyArmory = enemy.getArmory().orElseThrow();
+        if (enemyArmory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies() < num_units * 3)
+            enemyArmory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().increaseSupply(num_units * 3);
+        if (enemyArmory.getUnitContainer().orElseThrow().getNumSupplies() < num_units * 3)
+            enemyArmory.getUnitContainer().orElseThrow().increaseSupply(num_units * 3);
 
         // Deploy and attack mid-game
         Runnable runnable = () -> {
-            Building armory = local_player.getArmory();
+            Building armory = local_player.getArmory().orElse(null);
             if (armory != null && !armory.isDead()) {
-                if (enemy.getArmory() != null && !enemy.getArmory().isDead()) {
-                    enemy.deployUnits(enemy.getArmory(), DeployType.IRON_WARRIOR, num_units);
+                enemy.getArmory().filter(a -> !a.isDead()).ifPresent(a -> {
+                    enemy.deployUnits(a, DeployType.IRON_WARRIOR, num_units);
                     AI.attackLandscape(enemy, armory, num_units);
-                }
+                });
             }
         };
         if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_NORMAL) {

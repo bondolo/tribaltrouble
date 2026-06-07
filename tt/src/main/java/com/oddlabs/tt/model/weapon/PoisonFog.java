@@ -9,6 +9,7 @@ import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
+import java.util.Optional;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -120,7 +121,7 @@ public final class PoisonFog implements Magic {
                     * (1 - s.getDefenseChance()))
                     || (!owner.isEnemy(s.getOwner()) && owner.getWorld().getRandom().nextFloat() < (hit_chance / 4f)
                             * (1 - s.getDefenseChance())
-                            && s != owner.getChieftain()))) {
+                            && !owner.getChieftain().map(c -> s == c).orElse(false)))) {
                 float inv_dist = 1f / ((float) Math.sqrt(squared_dist));
                 s.hit(damage, dx * inv_dist, dy * inv_dist, owner);
             }

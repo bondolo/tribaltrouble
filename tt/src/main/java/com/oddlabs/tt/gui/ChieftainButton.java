@@ -25,12 +25,14 @@ public class ChieftainButton extends NonFocusIconButton implements ToolTip {
 
     @Override
     protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
-        player_interface.trainChieftain(current_building, !current_building.getChieftainContainer().isTraining());
+        player_interface.trainChieftain(current_building, !current_building.getChieftainContainer()
+                .orElseThrow().isTraining());
     }
 
     @Override
     protected final void postRender(@NonNull GUIRenderer renderer) {
-        if (current_building.isAlive() && current_building.getChieftainContainer().isTraining()) {
+        if (current_building.isAlive() && current_building.getChieftainContainer()
+                .map(c -> c.isTraining()).orElse(false)) {
             IconQuad[] watch = GUIIcons.getIcons().getWatch();
             int index = (int) (getProgress() * (watch.length - 1));
             IconQuad watchQuad = watch[index];
@@ -39,6 +41,7 @@ public class ChieftainButton extends NonFocusIconButton implements ToolTip {
     }
 
     protected final float getProgress() {
-        return current_building.isAlive() ? current_building.getChieftainContainer().getBuildProgress() : 0;
+        return current_building.isAlive() ? current_building.getChieftainContainer()
+                .map(c -> c.getBuildProgress()).orElse(0f) : 0;
     }
 }

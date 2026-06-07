@@ -22,6 +22,7 @@ import com.oddlabs.tt.trigger.campaign.NearPointTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -95,8 +96,10 @@ public final class VikingIsland10 extends Island {
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
         local_player.setActiveChieftain(new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRace()
                 .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        local_player.getChieftain().increaseMagicEnergy(0, 1000);
-        local_player.getChieftain().increaseMagicEnergy(1, 1000);
+        local_player.getChieftain().ifPresent(chieftain -> {
+            chieftain.increaseMagicEnergy(0, 1000);
+            chieftain.increaseMagicEnergy(1, 1000);
+        });
         // 5 peons
         for (int i = 0; i < 5; i++) {
             new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
@@ -124,7 +127,7 @@ public final class VikingIsland10 extends Island {
         };
 
         // Winning condition
-        new MagicUsedTrigger(local_player.getChieftain(), 173 * 2, 153 * 2, 7, 1, runnable);
+        new MagicUsedTrigger(local_player.getChieftain().orElseThrow(), 173 * 2, 153 * 2, 7, 1, runnable);
 
         // Give blast when arrived
         final Runnable dialog11 = () -> {
@@ -215,10 +218,12 @@ public final class VikingIsland10 extends Island {
                     dialog2);
             addModalForm(dialog);
             getViewer().getLocalPlayer().enableMagic(1, true);
-            local_player.getChieftain().increaseMagicEnergy(0, 1000);
-            local_player.getChieftain().increaseMagicEnergy(1, 1000);
+            local_player.getChieftain().ifPresent(chieftain -> {
+                chieftain.increaseMagicEnergy(0, 1000);
+                chieftain.increaseMagicEnergy(1, 1000);
+            });
         };
-        new NearPointTrigger(173, 153, 3, local_player.getChieftain(), dialog1);
+        new NearPointTrigger(173, 153, 3, local_player.getChieftain().orElseThrow(), dialog1);
 
         // Insert statue
         float shadow_diameter = 2.6f;

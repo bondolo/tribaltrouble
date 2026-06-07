@@ -30,6 +30,7 @@ import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -189,8 +190,10 @@ public final class NativeIsland0 extends Island {
         // Insert viking men
         enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(
                 Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        enemy.getChieftain().increaseMagicEnergy(0, 1000);
-        enemy.getChieftain().increaseMagicEnergy(1, 1000);
+        enemy.getChieftain().ifPresent(chieftain -> {
+            chieftain.increaseMagicEnergy(0, 1000);
+            chieftain.increaseMagicEnergy(1, 1000);
+        });
 
         int num_iron = 45;
         for (int i = 0; i < num_iron; i++) {
@@ -203,8 +206,7 @@ public final class NativeIsland0 extends Island {
                     Race.UNIT_WARRIOR_RUBBER));
         }
         // Initiate attack
-        Building armory = natives.getArmory();
-        attack(enemy, armory, num_iron + num_rubber + 1);
+        natives.getArmory().ifPresent(armory -> attack(enemy, armory, num_iron + num_rubber + 1));
 
         // Winning condition
         final Runnable dialog7 = () -> {

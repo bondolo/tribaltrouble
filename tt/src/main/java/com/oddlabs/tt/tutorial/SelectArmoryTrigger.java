@@ -23,8 +23,9 @@ public final class SelectArmoryTrigger extends TutorialTrigger {
 
     @Override
     protected void run(@NonNull Tutorial tutorial) {
-        Building building = tutorial.getViewer().getSelection().getCurrentSelection().getBuilding();
-        if (building != null && building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES))
-            tutorial.next(new HarvestMenuTrigger(tutorial.getViewer().getLocalPlayer()));
+        tutorial.getViewer().getSelection().getCurrentSelection().getBuilding().ifPresent(building -> {
+            if (building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES))
+                tutorial.next(new HarvestMenuTrigger(tutorial.getViewer().getLocalPlayer()));
+        });
     }
 }

@@ -26,9 +26,10 @@ public final class BuildingChieftainTrigger extends TutorialTrigger {
     protected void run(@NonNull Tutorial tutorial) {
         for (var s : tutorial.getViewer().getLocalPlayer().getUnits().getSet()) {
             if (s instanceof Building b) {
-                ChieftainContainer container = b.getChieftainContainer();
-                if (container != null && container.isTraining())
-                    tutorial.next(new ChieftainBuiltTrigger());
+                b.getChieftainContainer().ifPresent(container -> {
+                    if (container.isTraining())
+                        tutorial.next(new ChieftainBuiltTrigger());
+                });
             }
         }
     }

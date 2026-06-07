@@ -256,9 +256,8 @@ final class RenderState {
     }
 
     private @NonNull VisualModel getOrCreateVisualModel(@NonNull Model model) {
-        VisualModel visualModel = model.getClientState(VisualModel.class);
-        if (visualModel == null) {
-            visualModel = new VisualModel(model);
+        return model.getClientState(VisualModel.class).orElseGet(() -> {
+            VisualModel visualModel = new VisualModel(model);
             model.setClientState(visualModel);
 
             // Populate initial accessories
@@ -276,8 +275,8 @@ final class RenderState {
                             .getSmokeTextures()));
                 }
             }
-        }
-        return visualModel;
+            return visualModel;
+        });
     }
 
     private <M extends Model> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<M> parentState) {

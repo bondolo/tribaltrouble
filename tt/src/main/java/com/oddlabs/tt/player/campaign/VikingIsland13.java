@@ -21,6 +21,7 @@ import com.oddlabs.tt.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -173,8 +174,8 @@ public final class VikingIsland13 extends Island {
 
         // Attack1
         runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack1);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -187,8 +188,8 @@ public final class VikingIsland13 extends Island {
 
         // Attack2
         runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack2);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -201,8 +202,8 @@ public final class VikingIsland13 extends Island {
 
         // Attack3
         runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack3);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -215,8 +216,8 @@ public final class VikingIsland13 extends Island {
 
         // Attack4
         runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack4);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -229,8 +230,8 @@ public final class VikingIsland13 extends Island {
 
         // Attack5
         runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack5);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -243,8 +244,8 @@ public final class VikingIsland13 extends Island {
 
         // Attack6
         runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack6);
             } else if (chieftain != null && !chieftain.isDead()) {

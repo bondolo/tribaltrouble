@@ -11,8 +11,9 @@ public final class SelectQuartersTrigger extends TutorialTrigger {
 
     @Override
     protected void run(@NonNull Tutorial tutorial) {
-        Building building = tutorial.getViewer().getSelection().getCurrentSelection().getBuilding();
-        if (building != null && building.getAbilities().hasAbilities(Abilities.REPRODUCE))
-            tutorial.next(new UnitsInQuartersTrigger());
+        tutorial.getViewer().getSelection().getCurrentSelection().getBuilding().ifPresent(building -> {
+            if (building.getAbilities().hasAbilities(Abilities.REPRODUCE))
+                tutorial.next(new UnitsInQuartersTrigger());
+        });
     }
 }

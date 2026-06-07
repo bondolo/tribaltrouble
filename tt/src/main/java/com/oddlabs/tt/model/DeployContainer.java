@@ -20,19 +20,20 @@ public class DeployContainer extends SupplyContainer {
 
     public void orderSupply(int orders) {
         int capped_amount = capAmount(orders);
-        int result = -building.getUnitContainer().capAmount(-capped_amount);
+        UnitContainer unitContainer = building.getUnitContainer().orElseThrow();
+        int result = -unitContainer.capAmount(-capped_amount);
         if (supply_type != null)
-            result = -building.getSupplyContainer(supply_type).capAmount(-result);
+            result = -building.getSupplyContainer(supply_type).orElseThrow().capAmount(-result);
         if (result > 0) {
             if (supply_type != null)
-                building.getSupplyContainer(supply_type).prepareDeploy(result);
-            building.getUnitContainer().prepareDeploy(result);
+                building.getSupplyContainer(supply_type).orElseThrow().prepareDeploy(result);
+            unitContainer.prepareDeploy(result);
             orderSupply(result, orders);
         } else {
             orderSupply(result, orders);
-            building.getUnitContainer().prepareDeploy(result);
+            unitContainer.prepareDeploy(result);
             if (supply_type != null) {
-                SupplyContainer supply_container = building.getSupplyContainer(supply_type);
+                SupplyContainer supply_container = building.getSupplyContainer(supply_type).orElseThrow();
                 if (!supply_container.isSupplyFull())
                     supply_container.prepareDeploy(result);
             }

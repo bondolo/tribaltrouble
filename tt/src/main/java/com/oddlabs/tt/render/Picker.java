@@ -452,20 +452,20 @@ public final class Picker implements Updatable<TimerAnimation> {
             camera.mapGoto(patch_hit_x, patch_hit_y);
     }
 
-    public @Nullable Target pickRallyPoint(@NonNull CameraState camera, int x, int y, @NonNull Building building) {
+    public @NonNull Optional<Target> pickRallyPoint(@NonNull CameraState camera, int x, int y, @NonNull Building building) {
         int[] viewport = new int[4];
         float scale = getScale();
         setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
         pickObjects();
         Target nearest = getNearestPick(element_pick_list, Target.class);
         if (nearest instanceof Building) {
-            return nearest;
+            return Optional.of(nearest);
         } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
             int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
             int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
-            return building.getUnitGrid().findGridTargets(grid_x, grid_y, 1, false)[0];
+            return Optional.of(building.getUnitGrid().findGridTargets(grid_x, grid_y, 1, false)[0]);
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 

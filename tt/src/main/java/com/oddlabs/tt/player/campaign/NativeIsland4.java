@@ -22,6 +22,7 @@ import com.oddlabs.tt.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -110,8 +111,10 @@ public final class NativeIsland4 extends Island {
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace()
                 .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
-        local_player.getChieftain().increaseMagicEnergy(0, 1000);
-        local_player.getChieftain().increaseMagicEnergy(1, 1000);
+        local_player.getChieftain().ifPresent(c -> {
+            c.increaseMagicEnergy(0, 1000);
+            c.increaseMagicEnergy(1, 1000);
+        });
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
             new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
         }
@@ -218,8 +221,8 @@ public final class NativeIsland4 extends Island {
 
         // Attack1
         new TimeTrigger(getViewer().getWorld(), 3.5f * 60f, () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             attack(enemy, new LandscapeTarget(captive_x, captive_y), attack1);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack1);
@@ -232,8 +235,8 @@ public final class NativeIsland4 extends Island {
 
         // Attack2
         new TimeTrigger(getViewer().getWorld(), 4.5f * 60f, () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack2);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -245,8 +248,8 @@ public final class NativeIsland4 extends Island {
 
         // Attack3
         new TimeTrigger(getViewer().getWorld(), 6 * 60f, () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack3);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -258,8 +261,8 @@ public final class NativeIsland4 extends Island {
 
         // Attack4
         new TimeTrigger(getViewer().getWorld(), 9 * 60f, () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack4);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -271,8 +274,8 @@ public final class NativeIsland4 extends Island {
 
         // Attack5
         new TimeTrigger(getViewer().getWorld(), 11 * 60f, () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack5);
             } else if (chieftain != null && !chieftain.isDead()) {
@@ -284,8 +287,8 @@ public final class NativeIsland4 extends Island {
 
         // Attack6
         new TimeTrigger(getViewer().getWorld(), 12.5f * 60f, () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
+            Building armory = local_player.getArmory().orElse(null);
+            Unit chieftain = local_player.getChieftain().orElse(null);
             if (armory != null && !armory.isDead()) {
                 attack(enemy, armory, attack6);
             } else if (chieftain != null && !chieftain.isDead()) {

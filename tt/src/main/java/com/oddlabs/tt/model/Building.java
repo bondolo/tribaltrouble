@@ -21,6 +21,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -96,9 +97,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @Override
     protected void doAnimate(float t) {
         if (!isDead()) {
-            UnitContainer unit_container = getUnitContainer();
-            if (unit_container != null)
-                unit_container.animate(t);
+            getUnitContainer().ifPresent(unit_container -> unit_container.animate(t));
             if (weapons_producer != null) {
                 weapons_producer.animate(t);
             }
@@ -142,12 +141,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
     }
 
-    public @Nullable UnitContainer getUnitContainer() {
+    public @NonNull Optional<UnitContainer> getUnitContainer() {
         assert !isDead();
-        return (UnitContainer) getSupplyContainer(Unit.class);
+        return getSupplyContainer(Unit.class).map(c -> (UnitContainer) c);
     }
 
-    public @Nullable SupplyContainer getSupplyContainer(@NonNull Class<?> key) {
+    public @NonNull Optional<SupplyContainer> getSupplyContainer(@NonNull Class<?> key) {
         assert !isDead();
         SupplyContainer container = supply_containers.get(key);
         if (container == null) {
@@ -156,17 +155,17 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 container = resource_containers.get(type);
             }
         }
-        return container;
+        return Optional.ofNullable(container);
     }
 
-    public @Nullable SupplyContainer getSupplyContainer(@NonNull SupplyType key) {
+    public @NonNull Optional<SupplyContainer> getSupplyContainer(@NonNull SupplyType key) {
         assert !isDead();
-        return resource_containers.get(key);
+        return Optional.ofNullable(resource_containers.get(key));
     }
 
-    public @Nullable BuildSupplyContainer getBuildSupplyContainer(@NonNull Class<?> key) {
+    public @NonNull Optional<BuildSupplyContainer> getBuildSupplyContainer(@NonNull Class<?> key) {
         assert !isDead();
-        return build_containers.get(key);
+        return Optional.ofNullable(build_containers.get(key));
     }
 
     public DeployContainer getDeployContainer(DeployType type) {
@@ -174,9 +173,9 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return deploy_containers.get(type);
     }
 
-    public @Nullable ChieftainContainer getChieftainContainer() {
+    public @NonNull Optional<ChieftainContainer> getChieftainContainer() {
         assert !isDead();
-        return chieftain_container;
+        return Optional.ofNullable(chieftain_container);
     }
 
     @Override
@@ -186,20 +185,21 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     public int getUnitCount() {
         assert !isDead();
-        return getUnitContainer().getNumSupplies();
+        return getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0);
     }
 
     public boolean canExitTower() {
-        return !isDead() && getAbilities().hasAbilities(Abilities.ATTACK) && getUnitContainer().getNumSupplies() > 0
+        return !isDead() && getAbilities().hasAbilities(Abilities.ATTACK)
+                && getUnitContainer().map(c -> c.getNumSupplies() > 0).orElse(false)
                 && getOwner().canExitTowers() &&
-                !(((MountUnitContainer) getUnitContainer()).getUnit().getCurrentController() instanceof StunController);
+                getUnitContainer().map(c -> !(((MountUnitContainer) c).getUnit().getCurrentController()
+                        instanceof StunController)).orElse(false);
     }
 
     public void exitTower() {
         assert !isDead();
-        UnitContainer container = getUnitContainer();
         if (canExitTower()) {
-            container.exit();
+            getUnitContainer().ifPresent(UnitContainer::exit);
         }
     }
 
@@ -221,8 +221,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private void createHarvesters(@NonNull SupplyType supplyType, int amount) {
         Race race = getOwner().getRace();
         for (int i = 0; i < amount; i++) {
-            getUnitContainer().prepareDeploy(-1);
-            getUnitContainer().exit();
+            getUnitContainer().ifPresent(c -> {
+                c.prepareDeploy(-1);
+                c.exit();
+            });
             Unit unit = createUnit(null, race.getUnitTemplate(Race.UNIT_PEON));
             unit.pushController(new GatherController<>(unit, null, supplyType));
         }
@@ -234,7 +236,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             getOwner().getWorld().updateGlobalChecksum(num_weapons);
         else
             getOwner().getWorld().updateGlobalChecksum(1000000);
-        ((BuildProductionContainer) getBuildSupplyContainer(type)).orderSupply(num_weapons, infinite);
+        getBuildSupplyContainer(type).ifPresent(c -> ((BuildProductionContainer) c).orderSupply(num_weapons, infinite));
     }
 
     public boolean canBuildChieftain() {
@@ -282,8 +284,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         Race race = getOwner().getRace();
         checkRallyPoint();
         for (int i = 0; i < amount; i++) {
-            getUnitContainer().prepareDeploy(-1);
-            getUnitContainer().exit();
+            getUnitContainer().ifPresent(c -> {
+                c.prepareDeploy(-1);
+                c.exit();
+            });
             Unit unit = createUnit(hasRallyPoint() ? rally_point : null, race.getUnitTemplate(template));
             if (getAbilities().hasAbilities(Abilities.REPRODUCE) && !hasRallyPoint()) {
                 unit.pushController(new TransferUnitController(unit));
@@ -308,8 +312,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         Race race = getOwner().getRace();
         checkRallyPoint();
         for (int i = 0; i < amount; i++) {
-            getUnitContainer().prepareDeploy(-1);
-            getUnitContainer().exit();
+            getUnitContainer().ifPresent(c -> {
+                c.prepareDeploy(-1);
+                c.exit();
+            });
             Unit unit = createUnit(hasRallyPoint() ? rally_point : null, race.getUnitTemplate(Race.UNIT_PEON));
             unit.getSupplyContainer().increaseSupply(unit.getSupplyContainer().getMaxSupplyCount(), supply);
         }
@@ -429,7 +435,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             BuildProductionContainer[] production_containers = new BuildProductionContainer[]{rock_axe_weapon,
                     iron_axe_weapon, rubber_axe_weapon};
 
-            weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer(),
+            weapons_producer = new WeaponsProducer(this, (WorkerUnitContainer) getUnitContainer().orElseThrow(),
                     production_containers);
 
             deploy_containers.put(DeployType.ROCK_WARRIOR, new DeployContainer(this, 1f,
@@ -501,7 +507,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     protected void setTarget(@NonNull Target target, @NonNull Action action, boolean aggressive) {
         if (getAbilities().hasAbilities(Abilities.ATTACK)) {
             if (target != this) {
-                Unit unit = ((MountUnitContainer) getUnitContainer()).getUnit();
+                Unit unit = ((MountUnitContainer) getUnitContainer().orElseThrow()).getUnit();
                 boolean kill_friendly = action == Action.ATTACK;
                 if (unit != null && unit.canAttack(target, kill_friendly))
                     unit.pushController(new AttackController(unit, (Selectable<?>) target));
@@ -569,18 +575,17 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         remove_delay = REMOVE_DELAY;
         getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
                 AudioAssets.BUILDING_COLLAPSE);
-        if (getUnitContainer() != null) {
-            while (getUnitContainer().getNumSupplies() > 0) {
-                Unit unit = getUnitContainer().exit();
+        getUnitContainer().ifPresent(c -> {
+            while (c.getNumSupplies() > 0) {
+                Unit unit = c.exit();
                 if (unit != null)
                     unit.removeNow();
             }
-        }
-        SupplyContainer worker_container = getBuildSupplyContainer(Unit.class);
-        if (worker_container != null) {
+        });
+        getBuildSupplyContainer(Unit.class).ifPresent(worker_container -> {
             int result = getOwner().getUnitCountContainer().increaseSupply(-worker_container.getNumSupplies());
             assert result == -worker_container.getNumSupplies();
-        }
+        });
         for (DeployContainer deploy_container : deploy_containers.values()) {
             int result = getOwner().getUnitCountContainer().increaseSupply(-deploy_container.getNumSupplies());
             assert result == -deploy_container.getNumSupplies();
@@ -710,44 +715,42 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     public void fillSupplies(@NonNull Class<?> key, int max) {
-        SupplyContainer container = getSupplyContainer(key);
-        if (container != null) {
+        getSupplyContainer(key).ifPresent(container -> {
             container.increaseSupply(Math.min(container.getMaxSupplyCount() - container.getNumSupplies(), max));
-        }
+        });
     }
 
     public void removeSupplies(@NonNull Class<?> key) {
-        SupplyContainer container = getSupplyContainer(key);
-        if (container != null) {
+        getSupplyContainer(key).ifPresent(container -> {
             container.increaseSupply(-container.getNumSupplies());
-        }
+        });
     }
 
     @Override
     public int getStatusValue() {
         return getAbilities().hasAbilities(Abilities.REPRODUCE)
-                ? getUnitContainer().getNumSupplies()
+                ? getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0)
                 : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
-                        ? getUnitContainer().getNumSupplies() +
-                                getSupplyContainer(RockAxeWeapon.class).getNumSupplies() +
-                                getSupplyContainer(IronAxeWeapon.class).getNumSupplies() * 3 +
-                                getSupplyContainer(RubberAxeWeapon.class).getNumSupplies() * 8
+                        ? getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0) +
+                                getSupplyContainer(RockAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0) +
+                                getSupplyContainer(IronAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0) * 3 +
+                                getSupplyContainer(RubberAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0) * 8
                 : 0;
     }
 
     public void printDebugInfo() {
         IO.println("-----------------------------------");
         if (getAbilities().hasAbilities(Abilities.REPRODUCE)) {
-            IO.println("Units = " + getUnitContainer().getNumSupplies());
+            IO.println("Units = " + getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0));
         } else if (getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-            IO.println("Units = " + getUnitContainer().getNumSupplies());
-            IO.println("Tree = " + getSupplyContainer(TreeSupply.class).getNumSupplies());
-            IO.println("Rock = " + getSupplyContainer(RockSupply.class).getNumSupplies());
-            IO.println("Iron = " + getSupplyContainer(IronSupply.class).getNumSupplies());
-            IO.println("Rubber = " + getSupplyContainer(RubberSupply.class).getNumSupplies());
-            IO.println("Rock Weapons = " + getSupplyContainer(RockAxeWeapon.class).getNumSupplies());
-            IO.println("Iron Weapons = " + getSupplyContainer(IronAxeWeapon.class).getNumSupplies());
-            IO.println("Rubber Weapons = " + getSupplyContainer(RubberAxeWeapon.class).getNumSupplies());
+            IO.println("Units = " + getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Tree = " + getSupplyContainer(TreeSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Rock = " + getSupplyContainer(RockSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Iron = " + getSupplyContainer(IronSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Rubber = " + getSupplyContainer(RubberSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Rock Weapons = " + getSupplyContainer(RockAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Iron Weapons = " + getSupplyContainer(IronAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Rubber Weapons = " + getSupplyContainer(RubberAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0));
         }
     }
 }

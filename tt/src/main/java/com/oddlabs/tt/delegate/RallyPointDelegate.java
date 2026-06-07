@@ -22,15 +22,14 @@ public final class RallyPointDelegate extends TargetDelegate {
             pop();
             return;
         }
-        Target target = getViewer().getPicker().pickRallyPoint(getViewer().getGUIRoot().getDelegate().getCamera()
-                .getState(), x, y, building);
-        if (target == null)
-            return;
-        if (building.isValidRallyPoint(target)) {
-            getViewer().getPeerHub().getPlayerInterface().setRallyPoint(building, target);
-        } else {
-            getViewer().getPeerHub().getPlayerInterface().setRallyPoint(building, target.getGridX(), target.getGridY());
-        }
-        pop();
+        getViewer().getPicker().pickRallyPoint(getViewer().getGUIRoot().getDelegate().getCamera()
+                .getState(), x, y, building).ifPresent(target -> {
+                    if (building.isValidRallyPoint(target)) {
+                        getViewer().getPeerHub().getPlayerInterface().setRallyPoint(building, target);
+                    } else {
+                        getViewer().getPeerHub().getPlayerInterface().setRallyPoint(building, target.getGridX(), target.getGridY());
+                    }
+                    pop();
+                });
     }
 }

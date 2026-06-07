@@ -5,7 +5,8 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
 
 public abstract class WeaponFactory {
     private static final float TERRAIN_MAX_BONUS = .25f;
@@ -52,5 +53,5 @@ public abstract class WeaponFactory {
 
     protected abstract void doAttack(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target);
 
-    public abstract @Nullable Class<? extends ThrowingWeapon> getType();
+    public abstract @NonNull Optional<Class<? extends ThrowingWeapon>> getType();
 }

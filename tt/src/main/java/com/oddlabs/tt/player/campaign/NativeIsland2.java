@@ -19,9 +19,11 @@ import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.PlayerEleminatedTrigger;
 import com.oddlabs.tt.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
+import com.oddlabs.tt.util.Target;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -117,8 +119,10 @@ public final class NativeIsland2 extends Island {
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace()
                 .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
-        local_player.getChieftain().increaseMagicEnergy(0, 1000);
-        local_player.getChieftain().increaseMagicEnergy(1, 1000);
+        local_player.getChieftain().ifPresent(chieftain -> {
+            chieftain.increaseMagicEnergy(0, 1000);
+            chieftain.increaseMagicEnergy(1, 1000);
+        });
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
             new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
         }
@@ -147,26 +151,20 @@ public final class NativeIsland2 extends Island {
 
         // Attack1
         Runnable attack1_runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
-            if (armory != null && !armory.isDead()) {
-                attack(enemy, armory, attack1);
-            } else if (chieftain != null && !chieftain.isDead()) {
-                attack(enemy, chieftain, attack1);
-            }
+            local_player.getArmory().filter(a -> !a.isDead())
+                    .map(a -> (Target) a)
+                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+                    .ifPresent(target -> attack(enemy, target, attack1));
             refillArmory(enemy);
             deploy(enemy, attack2);
         };
 
         // Attack2
         Runnable attack2_runnable = () -> {
-            Building armory = local_player.getArmory();
-            Unit chieftain = local_player.getChieftain();
-            if (armory != null && !armory.isDead()) {
-                attack(enemy, armory, attack2);
-            } else if (chieftain != null && !chieftain.isDead()) {
-                attack(enemy, chieftain, attack1);
-            }
+            local_player.getArmory().filter(a -> !a.isDead())
+                    .map(a -> (Target) a)
+                    .or(() -> local_player.getChieftain().filter(c -> !c.isDead()))
+                    .ifPresent(target -> attack(enemy, target, attack2));
             refillArmory(enemy);
             deploy(enemy, defense);
         };

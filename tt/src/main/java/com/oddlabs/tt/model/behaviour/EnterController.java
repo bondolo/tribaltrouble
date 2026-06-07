@@ -25,24 +25,27 @@ public final class EnterController extends Controller {
         if (building.isDead()) {
             unit.popController();
         } else if (unit.isCloseEnough(0f, building)) {
-            if (building.getUnitContainer() != null && building.getUnitContainer().canEnter(unit)) {
-                if (building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
-                    if (unit.getAbilities().hasAbilities(Abilities.HARVEST)
-                            && unit.getSupplyContainer().getNumSupplies() > 0) {
-                        unit.getSupplyContainer().getSupplyType().ifPresent(type -> building.getSupplyContainer(type)
-                                .increaseSupply(unit.getSupplyContainer()
-                                        .getNumSupplies())
-                        );
+            building.getUnitContainer().ifPresentOrElse(c -> {
+                if (c.canEnter(unit)) {
+                    if (building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
+                        if (unit.getAbilities().hasAbilities(Abilities.HARVEST)
+                                && unit.getSupplyContainer().getNumSupplies() > 0) {
+                            unit.getSupplyContainer().getSupplyType().ifPresent(type -> building.getSupplyContainer(type)
+                                    .orElseThrow().increaseSupply(unit.getSupplyContainer()
+                                            .getNumSupplies())
+                            );
+                        }
+                        if (unit.getWeaponFactory() instanceof ThrowingFactory) {
+                            unit.getWeaponFactory().getType().ifPresent(type -> {
+                                building.getSupplyContainer(type).orElseThrow().increaseSupply(1);
+                            });
+                        }
                     }
-                    if (unit.getWeaponFactory() instanceof ThrowingFactory) {
-                        Class<? extends ThrowingWeapon> type = unit.getWeaponFactory().getType();
-                        building.getSupplyContainer(type).increaseSupply(1);
-                    }
+                    c.enter(unit);
+                } else {
+                    unit.popController();
                 }
-                building.getUnitContainer().enter(unit);
-            } else {
-                unit.popController();
-            }
+            }, unit::popController);
         } else {
             if (shouldGiveUp(0)) {
                 unit.popController();

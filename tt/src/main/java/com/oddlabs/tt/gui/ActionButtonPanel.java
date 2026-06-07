@@ -421,12 +421,12 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
 
     @Override
     public void animate(float t) {
-        Building new_building = viewer.getSelection().getCurrentSelection().getBuilding();
+        Building new_building = viewer.getSelection().getCurrentSelection().getBuilding().orElse(null);
         boolean different_building = new_building != current_building;
         current_building = new_building;
         viewer.getRenderer().setSelectedBuilding(new_building);
 
-        Unit new_chieftain = viewer.getSelection().getCurrentSelection().getChieftain();
+        Unit new_chieftain = viewer.getSelection().getCurrentSelection().getChieftain().orElse(null);
         boolean different_chieftain = new_chieftain != current_chieftain;
         current_chieftain = new_chieftain;
 

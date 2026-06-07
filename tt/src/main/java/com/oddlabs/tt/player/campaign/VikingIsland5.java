@@ -127,8 +127,8 @@ public final class VikingIsland5 extends Island {
         new VictoryTrigger(getViewer(), runnable);
 
         // Put warrior in tower
-        enemy0.getAI().manTowers(1); // TODO: replace with insertGuardTower()
-        enemy1.getAI().manTowers(1); // TODO: replace with insertGuardTower()
+        enemy0.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+        enemy1.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
 
         // Defeat if friends eleminated
         runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));

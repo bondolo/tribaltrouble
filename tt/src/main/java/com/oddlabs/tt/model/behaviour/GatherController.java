@@ -68,7 +68,7 @@ public final class GatherController<S extends Supply> extends Controller {
                 building_tracker.getOccupant())) {
             Building building = building_tracker.getOccupant();
             unit.getSupplyContainer().getSupplyType().ifPresent(unit_supply_type -> {
-                int num_supplies = building.getSupplyContainer(unit_supply_type).increaseSupply(unit
+                int num_supplies = building.getSupplyContainer(unit_supply_type).orElseThrow().increaseSupply(unit
                         .getSupplyContainer()
                         .getNumSupplies());
                 unit.getSupplyContainer().increaseSupply(-num_supplies, unit_supply_type);

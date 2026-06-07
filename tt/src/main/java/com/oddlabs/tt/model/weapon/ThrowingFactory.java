@@ -5,6 +5,8 @@ import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
+import java.util.Optional;
+
 /**
  * A factory for creating throwing weapons.
  *
@@ -38,7 +40,7 @@ public final class ThrowingFactory<W extends ThrowingWeapon> extends WeaponFacto
     }
 
     @Override
-    public @NonNull Class<W> getType() {
-        return weapon_type;
+    public  @NonNull Optional<Class<? extends ThrowingWeapon>> getType() {
+        return Optional.of(weapon_type);
     }
 }

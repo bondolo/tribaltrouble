@@ -6,6 +6,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a world entity with visual representation and world association.
@@ -98,9 +99,9 @@ public abstract class Model extends Element<Model> implements Shadowable {
         }
     }
 
-    /** {@return the client state of the specified class type, or null if not set or of a different type} */
-    public final <C extends ClientState> @Nullable C getClientState(@NonNull Class<? extends C> type) {
-        return type.isInstance(clientState) ? type.cast(clientState) : null;
+    /** {@return the client state of the specified class type, or empty if not set or of a different type} */
+    public final <C extends ClientState> @NonNull Optional<C> getClientState(@NonNull Class<? extends C> type) {
+        return Optional.ofNullable(type.isInstance(clientState) ? type.cast(clientState) : null);
     }
 
     /**

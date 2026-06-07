@@ -14,6 +14,7 @@ import com.oddlabs.tt.model.weapon.RockAxeWeapon;
 import com.oddlabs.tt.model.weapon.RockSpearWeapon;
 import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.model.weapon.RubberSpearWeapon;
+import com.oddlabs.tt.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -80,7 +82,7 @@ public final class AdvancedAI extends AI {
                 >= NUM_WARRIORS_FOR_CHIEFTAIN[difficulty]);
         nodeAssignIdlePeons();
         if (getOwner().hasActiveChieftain()) {
-            getOwner().getRace().getChieftainAI().decide(getOwner().getChieftain());
+            getOwner().getRace().getChieftainAI().decide(getOwner().getChieftain().orElseThrow());
         }
     }
 
@@ -107,18 +109,18 @@ public final class AdvancedAI extends AI {
     private void nodeDeployArmy() {
         if (getArmory() != null) {
             Building armory = (Building) getArmory()[0];
-            int num_units = armory.getUnitContainer().getNumSupplies() - MIN_UNITS_BUILDING_WEAPONS[difficulty];
+            int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies() - MIN_UNITS_BUILDING_WEAPONS[difficulty];
             int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK[difficulty];
             if (num_units <= 0 || num_weapons <= 0)
                 return;
 
             int num_warriors = Math.min(num_units, num_weapons);
             int num_rubber_units = Math.min(num_warriors, armory.getSupplyContainer(RubberAxeWeapon.class)
-                    .getNumSupplies());
+                    .orElseThrow().getNumSupplies());
             int num_iron_units = Math.min(num_warriors - num_rubber_units, armory.getSupplyContainer(
-                    IronAxeWeapon.class).getNumSupplies());
+                    IronAxeWeapon.class).orElseThrow().getNumSupplies());
             int num_rock_units = Math.min(num_warriors - num_rubber_units - num_iron_units, armory.getSupplyContainer(
-                    RockAxeWeapon.class).getNumSupplies());
+                    RockAxeWeapon.class).orElseThrow().getNumSupplies());
             if (num_rubber_units > 0) {
                 getOwner().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
 //				deployed += num_rubber_units*SCORE_WARRIOR_RUBBER;
@@ -131,7 +133,7 @@ public final class AdvancedAI extends AI {
                 getOwner().deployUnits(armory, DeployType.ROCK_WARRIOR, num_rock_units);
 //				deployed += num_rock_units*SCORE_WARRIOR_ROCK;
             }
-            num_units = armory.getUnitContainer().getNumSupplies();
+            num_units = armory.getUnitContainer().orElseThrow().getNumSupplies();
             if (num_units > 0) {
                 getOwner().deployUnits(armory, DeployType.PEON, num_units);
 //				deployed += num_units*SCORE_PEON;
@@ -204,16 +206,16 @@ public final class AdvancedAI extends AI {
             return SCORE_PEON;
         } else if (unit.getAbilities().hasAbilities(Abilities.MAGIC)) {
             return SCORE_CHIEFTAIN;
-        } else if (unit.getWeaponFactory().getType() == RockAxeWeapon.class || unit.getWeaponFactory().getType()
-                == RockSpearWeapon.class) {
-                    return SCORE_WARRIOR_ROCK;
-                } else if (unit.getWeaponFactory().getType() == IronAxeWeapon.class || unit.getWeaponFactory().getType()
-                        == IronSpearWeapon.class) {
-                            return SCORE_WARRIOR_IRON;
-                        } else if (unit.getWeaponFactory().getType() == RubberAxeWeapon.class || unit.getWeaponFactory()
-                                .getType() == RubberSpearWeapon.class) {
-                                    return SCORE_WARRIOR_RUBBER;
-                                }
+        } else {
+            var type = unit.getWeaponFactory().getType().orElse(null);
+            if (type == RockAxeWeapon.class || type == RockSpearWeapon.class) {
+                return SCORE_WARRIOR_ROCK;
+            } else if (type == IronAxeWeapon.class || type == IronSpearWeapon.class) {
+                return SCORE_WARRIOR_IRON;
+            } else if (type == RubberAxeWeapon.class || type == RubberSpearWeapon.class) {
+                return SCORE_WARRIOR_RUBBER;
+            }
+        }
         throw new IllegalArgumentException("Unit has no valid weapon or magic abilities");
     }
 
@@ -222,7 +224,7 @@ public final class AdvancedAI extends AI {
             nodeBuildTower(num_towers);
         } else if (num_towers > 0) {
             for (int i = 0; i < getTowers().length; i++) {
-                if (!((Building) getTowers()[i]).getUnitContainer().isSupplyFull() && getIdleWarriors() != null
+                if (!((Building) getTowers()[i]).getUnitContainer().orElseThrow().isSupplyFull() && getIdleWarriors() != null
                         && getIdleWarriors().length > i) {
                     getOwner().setTarget(Selectable.newArray(getIdleWarriors()[i]), getTowers()[i], Action.DEFAULT,
                             false);
@@ -318,16 +320,16 @@ public final class AdvancedAI extends AI {
         }
         if (armory != null) {
             if (!armory.isDead()) {
-                int num_units = armory.getUnitContainer().getNumSupplies() - MIN_UNITS_BUILDING_WEAPONS[difficulty];
+                int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies() - MIN_UNITS_BUILDING_WEAPONS[difficulty];
                 int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK[difficulty];
 
                 if (num_units >= num_warriors && num_weapons >= num_warriors) {
                     int num_rubber_units = Math.min(num_warriors, armory.getSupplyContainer(RubberAxeWeapon.class)
-                            .getNumSupplies());
+                            .orElseThrow().getNumSupplies());
                     int num_iron_units = Math.min(num_warriors - num_rubber_units, armory.getSupplyContainer(
-                            IronAxeWeapon.class).getNumSupplies());
+                            IronAxeWeapon.class).orElseThrow().getNumSupplies());
                     int num_rock_units = Math.min(num_warriors - num_rubber_units - num_iron_units, armory
-                            .getSupplyContainer(RockAxeWeapon.class).getNumSupplies());
+                            .getSupplyContainer(RockAxeWeapon.class).orElseThrow().getNumSupplies());
                     if (num_rubber_units > 0)
                         getOwner().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
                     if (num_iron_units > 0)
@@ -408,8 +410,8 @@ public final class AdvancedAI extends AI {
         if (quarters != null) {
             if (!quarters.isDead()) {
                 quarters.setRallyPoint(armory);
-                if (quarters.getUnitContainer().getNumSupplies() > MIN_UNITS_REPRODUCING[difficulty]) {
-                    int units = Math.min(num_units, quarters.getUnitContainer().getNumSupplies()
+                if (quarters.getUnitContainer().orElseThrow().getNumSupplies() > MIN_UNITS_REPRODUCING[difficulty]) {
+                    int units = Math.min(num_units, quarters.getUnitContainer().orElseThrow().getNumSupplies()
                             - MIN_UNITS_REPRODUCING[difficulty]);
                     getOwner().deployUnits(quarters, DeployType.PEON, units);
                 }
@@ -431,7 +433,7 @@ public final class AdvancedAI extends AI {
                 && getQuarters() != null && getQuarters()[0].getAbilities().hasAbilities(Abilities.REPRODUCE)) {
             Selectable<?>[] builders = getPeons(20);
             if (builders.length < 20) {
-                if (quarters != null && !quarters.isDead() && quarters.getUnitContainer().getNumSupplies() >= 20)
+                if (quarters != null && !quarters.isDead() && quarters.getUnitContainer().orElseThrow().getNumSupplies() >= 20)
                     getOwner().deployUnits(quarters, DeployType.PEON, 20);
             }
             if (builders.length == 0)
@@ -483,14 +485,14 @@ public final class AdvancedAI extends AI {
         }
     */
     private int numWeapons(@NonNull Building armory) {
-        return armory.getSupplyContainer(RockAxeWeapon.class).getNumSupplies()
-                + armory.getSupplyContainer(IronAxeWeapon.class).getNumSupplies()
-                + armory.getSupplyContainer(RubberAxeWeapon.class).getNumSupplies();
+        return armory.getSupplyContainer(RockAxeWeapon.class).orElseThrow().getNumSupplies()
+                + armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies()
+                + armory.getSupplyContainer(RubberAxeWeapon.class).orElseThrow().getNumSupplies();
     }
 
     private @Nullable Target findTarget(int start_x, int start_y) {
-        Target best_building = getOwner().findNearestEnemyBuilding(start_x, start_y);
-        Target best_target = getOwner().findNearestEnemy(start_x, start_y);
+        Target best_building = getOwner().findNearestEnemyBuilding(start_x, start_y).orElse(null);
+        Target best_target = getOwner().findNearestEnemy(start_x, start_y).orElse(null);
         if (best_building == null) {
             return best_target;
         }

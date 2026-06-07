@@ -5,6 +5,7 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Unit;
+import java.util.Optional;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 
@@ -48,11 +49,10 @@ public final class RepairBehaviour implements Behaviour {
 
             var selectedEmoji = ThreadLocalRandom.current().nextBoolean()
                     ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-            ModelClient client = unit.getClientState(ModelClient.class);
-            if (client != null) {
+            unit.getClientState(ModelClient.class).ifPresent(client -> {
                 client.addVisualSound(selectedEmoji,
                         ModelClient.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_HARVEST);
-            }
+            });
         }
 
         if (anim_time > SECONDS_PER_ANIMATION_CYCLE) {
