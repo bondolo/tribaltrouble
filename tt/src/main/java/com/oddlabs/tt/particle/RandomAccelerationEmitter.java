@@ -122,9 +122,9 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
         Vector3f pos = randomPosition();
         particle.setPos(pos.x(), pos.y(), pos.z());
         Random random = ThreadLocalRandom.current();
-        float vx = velocity.x() + (random.nextFloat() * 0.4f - 0.2f);
-        float vy = velocity.y() + (random.nextFloat() * 0.4f - 0.2f);
-        float vz = velocity.z() + (random.nextFloat() * 0.2f - 0.1f);
+        float vx = velocity.x() + random.nextFloat(-0.2f, 0.2f);
+        float vy = velocity.y() + random.nextFloat(-0.2f, 0.2f);
+        float vz = velocity.z() + random.nextFloat(-0.1f, 0.1f);
         particle.setVelocity(vx, vy, vz);
         particle.setAcceleration(current_acceleration.x(), current_acceleration.y(), current_acceleration.z());
         particle.setColor(color);
@@ -139,8 +139,9 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
 
     private void randomizeAcceleration() {
         Random random = ThreadLocalRandom.current();
-        float dx_angle = random.nextFloat() * angle_max_jump - .5f * angle_max_jump;
-        float dy_angle = random.nextFloat() * angle_max_jump - .5f * angle_max_jump;
+        float halfJump = .5f * angle_max_jump;
+        float dx_angle = random.nextFloat(-halfJump, halfJump);
+        float dy_angle = random.nextFloat(-halfJump, halfJump);
 
         if ((x_angle + dx_angle < -angle_bound) || (x_angle + dx_angle > angle_bound))
             x_angle -= dx_angle;

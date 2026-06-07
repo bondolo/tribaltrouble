@@ -57,8 +57,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             float x, float y, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
         super(world, 2f, grid_x, grid_y, x, y, 0f, INITIAL_SUPPLIES, false,
                 world.getLandscapeResources().getChickenBounds());
-        var spawn_z = world.getRandom().nextFloat() * (MAX_TREE_FALL_HEIGHT - MIN_TREE_FALL_HEIGHT)
-                + MIN_TREE_FALL_HEIGHT;
+        var spawn_z = world.getRandom().nextFloat(MIN_TREE_FALL_HEIGHT, MAX_TREE_FALL_HEIGHT);
         this.offset_z = spawn_z;
         this.path_tracker = new PathTracker(world.getUnitGrid(), this);
         this.group = group;
@@ -177,8 +176,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 }
             } else if (random < .85) {
                 // fly
-                int new_grid_x = start_grid_x + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
-                int new_grid_y = start_grid_y + (int) ((getWorld().getRandom().nextFloat() * 2 - 1) * MAX_MOVE_GRIDS);
+                int new_grid_x = start_grid_x + (int) (getWorld().getRandom().nextFloat(-1f, 1f) * MAX_MOVE_GRIDS);
+                int new_grid_y = start_grid_y + (int) (getWorld().getRandom().nextFloat(-1f, 1f) * MAX_MOVE_GRIDS);
                 Target target = getWorld().getUnitGrid().findGridTargets(new_grid_x, new_grid_y, 1, false)[0];
                 path_tracker.setTarget(new TargetTrackerAlgorithm(getWorld().getUnitGrid(), 0f, target));
                 float move_random = getWorld().getRandom().nextFloat();

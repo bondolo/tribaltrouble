@@ -46,7 +46,7 @@ public class WeaponsProducer {
         if (!build_list.isEmpty()) {
             if (break_time <= 0) {
                 if (building.getOwner().getWorld().getRandom().nextFloat() < BREAK_PROBABILITY) {
-                    break_time = building.getOwner().getWorld().getRandom().nextFloat() * MAX_BREAK_TIME;
+                    break_time = building.getOwner().getWorld().getRandom().nextFloat(0f, MAX_BREAK_TIME);
                     producing = false;
                 } else {
                     producing = true;

@@ -154,7 +154,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         for (int i = 0; i < count; i++) {
             Color.Linear particleColor = nextParticleColor(color);
             float baseFadeRate = energy > 0f ? -particleColor.a() / energy : 0f;
-            float multiplier = 0.85f + ThreadLocalRandom.current().nextFloat() * 0.3f;
+            float multiplier = ThreadLocalRandom.current().nextFloat(0.85f, 1.15f);
             Color.LinearDelta particleDeltaColor = delta_color.alpha(baseFadeRate * multiplier);
             initiated += initParticle(getPosition(), velocity, acceleration, particleColor, particleDeltaColor,
                     particle_radius, growth_rate, energy);
@@ -171,10 +171,10 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     protected final @NonNull Vector3f randomPosition() {
         Random random = ThreadLocalRandom.current();
         float r = emitter_radius * (float) (1 - random.nextGaussian());
-        float a = random.nextFloat() * (float) Math.PI * 2;
+        float a = random.nextFloat(0f, (float) Math.PI * 2);
         float x = (float) Math.cos(a) * r;
         float y = (float) Math.sin(a) * r;
-        float z = random.nextFloat() * emitter_height;
+        float z = random.nextFloat(0f, emitter_height);
 
         randomized_position.set(getX() + x, getY() + y, getZ() + z);
         return randomized_position;

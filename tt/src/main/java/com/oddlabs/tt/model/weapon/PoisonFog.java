@@ -77,7 +77,7 @@ public final class PoisonFog implements Magic {
             float gaussian = (float) (GAUSSIAN_LIMIT - Math.abs(Math.clamp(owner.getWorld().getRandom().nextGaussian(),
                     -GAUSSIAN_LIMIT, GAUSSIAN_LIMIT))) / GAUSSIAN_LIMIT;
             float r = gaussian * (hit_radius - BURST_RADIUS - 5f);
-            float a = owner.getWorld().getRandom().nextFloat() * (float) Math.PI * 2;
+            float a = owner.getWorld().getRandom().nextFloat(0f, (float) Math.PI * 2);
             float x = start_x + (float) Math.cos(a) * r;
             float y = start_y + (float) Math.sin(a) * r;
             float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
@@ -85,7 +85,7 @@ public final class PoisonFog implements Magic {
             float energy = 2f;
 
             RandomVelocityEmitter emitter = new RandomVelocityEmitter(owner.getWorld(), new Vector3f(x, y, z), offset_z,
-                    owner.getWorld().getRandom().nextFloat() * (float) Math.PI * 2,
+                    owner.getWorld().getRandom().nextFloat(0f, (float) Math.PI * 2),
                     BURST_RADIUS, 0f, 0f, 0f,
                     PARTICLES_PER_BURST, PARTICLES_PER_BURST,
                     new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f),

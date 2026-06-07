@@ -237,10 +237,10 @@ public final class RandomVelocityEmitter extends LinearEmitter {
             float energy) {
         randomizeVelocity();
 
-        float angle = randomizeRotation ? (float) (ThreadLocalRandom.current().nextDouble() * 2 * Math.PI) : uv_angle;
+        float angle = randomizeRotation ? (float) ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI) : uv_angle;
         LinearParticle particle = new LinearParticle(getWorld(), angle);
         if (randomizeRotation) {
-            particle.setAngularVelocity((ThreadLocalRandom.current().nextFloat() - 0.5f) * 20f);
+            particle.setAngularVelocity(ThreadLocalRandom.current().nextFloat(-10f, 10f));
         }
         Vector3f pos = randomPosition();
         particle.setPos(pos.x(), pos.y(), pos.z());
@@ -249,7 +249,7 @@ public final class RandomVelocityEmitter extends LinearEmitter {
         particle.setColor(color);
         particle.setDeltaColor(delta_color);
         if (randomizeScale) {
-            float scale = 0.4f + ThreadLocalRandom.current().nextFloat() * 1.1f;
+            float scale = ThreadLocalRandom.current().nextFloat(0.4f, 1.5f);
             particle.setRadius(particle_radius.x() * scale, particle_radius.y() * scale, particle_radius.z() * scale);
         } else {
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
@@ -263,8 +263,9 @@ public final class RandomVelocityEmitter extends LinearEmitter {
 
     private void randomizeVelocity() {
         Random random = ThreadLocalRandom.current();
-        float dx_angle = random.nextFloat() * angle_max_jump - .5f * angle_max_jump;
-        float dy_angle = random.nextFloat() * angle_max_jump - .5f * angle_max_jump;
+        float halfJump = .5f * angle_max_jump;
+        float dx_angle = random.nextFloat(-halfJump, halfJump);
+        float dy_angle = random.nextFloat(-halfJump, halfJump);
 
         if ((x_angle + dx_angle < -angle_bound) || (x_angle + dx_angle > angle_bound))
             x_angle -= dx_angle;

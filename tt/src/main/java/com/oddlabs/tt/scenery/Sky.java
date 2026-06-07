@@ -313,7 +313,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         densityTimeSinceChange += dt;
         if (densityTimeSinceChange > densityChangeInterval) {
             densityTimeSinceChange = 0f;
-            densityChangeInterval = 60f + random.nextFloat() * 60f;
+            densityChangeInterval = random.nextFloat(60f, 120f);
             float innerChange = (float) random.nextGaussian() * 0.1f;
             targetInnerCloudDensity = Math.clamp(innerChange, -0.2f, 0.2f);
             float outerChange = (float) random.nextGaussian() * 0.1f;

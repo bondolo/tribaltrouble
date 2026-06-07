@@ -376,10 +376,10 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
                 pushController(new DieController(this));
                 forceDecide();
+                float pitchRange = getTemplate().getDeathPitch();
                 var params = new AudioParameters(getTemplate().getDeathSound(), AudioAssets.AUDIO_RANK_DEATH,
                         AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH,
-                        1f + (ThreadLocalRandom.current().nextFloat() - .5f) * getTemplate()
-                                .getDeathPitch());
+                        1f + ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange));
                 getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
                 setDirection(-direction_x, -direction_y);
                 removeDying();

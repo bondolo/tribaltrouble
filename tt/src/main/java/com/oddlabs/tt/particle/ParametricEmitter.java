@@ -156,8 +156,9 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
         Vector3f offset = randomOffset(area_xy, area_xy, area_z);
         Random random = ThreadLocalRandom.current();
-        ParametricParticle particle = new ParametricParticle(getWorld(), function, random.nextFloat() * (float) Math.PI
-                * 2f, random.nextFloat() * (float) Math.PI * 2f,
+        float twoPi = (float) Math.PI * 2f;
+        ParametricParticle particle = new ParametricParticle(getWorld(), function,
+                random.nextFloat(0f, twoPi), random.nextFloat(0f, twoPi),
                 offset.x(), offset.y(), offset.z());
         offset = randomOffset(velocity_random_margin, velocity_random_margin, 0f);
         particle.setVelocity(velocity_u + offset.x(), velocity_v + offset.y());
@@ -165,7 +166,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         particle.setDeltaColor(delta_color);
         float scale = 1.0f;
         if (randomizeScale) {
-            scale = 0.5f + ThreadLocalRandom.current().nextFloat() * 1.0f;
+            scale = ThreadLocalRandom.current().nextFloat(0.5f, 1.5f);
         }
         particle.setRadius(particle_radius.x() * scale, particle_radius.y() * scale, particle_radius.z() * scale);
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
@@ -181,9 +182,9 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
     protected final @NonNull Vector3f randomOffset(float a, float b, float c) {
         Random random = ThreadLocalRandom.current();
-        float x = random.nextFloat() * 2 * a - a;
-        float y = random.nextFloat() * 2 * b - b;
-        float z = random.nextFloat() * 2 * c - c;
+        float x = random.nextFloat(-a, a);
+        float y = random.nextFloat(-b, b);
+        float z = random.nextFloat(-c, c);
 
         randomized_offset.set(x, y, z);
         return randomized_offset;

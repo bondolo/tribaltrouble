@@ -153,15 +153,15 @@ public abstract class Emitter<P extends Particle> implements Animated {
             float progress = (emitter_age - transition_start) / (transition_end - transition_start);
             current_spectrum = current_spectrum + (target_spectrum - current_spectrum) * progress;
         } else {
-            current_spectrum = Math.clamp(current_spectrum + (random.nextFloat() * 0.02f - 0.01f),
+            current_spectrum = Math.clamp(current_spectrum + random.nextFloat(-0.01f, 0.01f),
                     spectrum_min, spectrum_max);
         }
 
-        float drift = random.nextFloat() * 0.02f - 0.01f;
+        float drift = random.nextFloat(-0.01f, 0.01f);
         float cr = Math.clamp(cluster_rgb.r() + drift, -0.15f, 0.15f);
         float cg = Math.clamp(cluster_rgb.g() + drift, -0.15f, 0.15f);
         float cb = Math.clamp(cluster_rgb.b() + drift, -0.15f, 0.15f);
-        float ca = Math.clamp(cluster_rgb.a() + (random.nextFloat() * 0.01f - 0.005f), -0.1f, 0.1f);
+        float ca = Math.clamp(cluster_rgb.a() + random.nextFloat(-0.005f, 0.005f), -0.1f, 0.1f);
         cluster_rgb = new Color.LinearDelta(cr, cg, cb, ca);
     }
 

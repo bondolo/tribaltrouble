@@ -94,8 +94,8 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int[] coords = positions.get(i);
             int grid_x = coords[0];
             int grid_y = coords[1];
-            float x = UnitGrid.coordinateFromGrid(grid_x) + (world.getRandom().nextFloat() - .5f);
-            float y = UnitGrid.coordinateFromGrid(grid_y) + (world.getRandom().nextFloat() - .5f);
+            float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
+            float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
             new RockSupply(world, grid_x, grid_y, x, y, true);
         }
     }
@@ -107,8 +107,8 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int[] coords = positions.get(i);
             int grid_x = coords[0];
             int grid_y = coords[1];
-            float x = UnitGrid.coordinateFromGrid(grid_x) + (world.getRandom().nextFloat() - .5f);
-            float y = UnitGrid.coordinateFromGrid(grid_y) + (world.getRandom().nextFloat() - .5f);
+            float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
+            float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
             new IronSupply(world, grid_x, grid_y, x, y, true);
         }
     }

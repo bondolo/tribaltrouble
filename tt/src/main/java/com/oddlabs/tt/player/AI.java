@@ -258,7 +258,8 @@ public abstract class AI implements Animated {
     }
 
     private void reset() {
-        sleep_time = owner.getWorld().getRandom().nextFloat() * SLEEP_SECONDS + MIN_SLEEP_SECONDS;
+        sleep_time = owner.getWorld().getRandom().nextFloat(MIN_SLEEP_SECONDS,
+                MIN_SLEEP_SECONDS + SLEEP_SECONDS);
     }
 
     protected final boolean shouldDoAction(float time) {
@@ -317,8 +318,8 @@ public abstract class AI implements Animated {
 
     protected final Target getTarget(@NonNull Random random) {
         float RADIUS = 30;
-        float target_x = owner.getStartX() + (random.nextFloat() * 2 - 1) * RADIUS;
-        float target_y = owner.getStartY() + (random.nextFloat() * 2 - 1) * RADIUS;
+        float target_x = owner.getStartX() + random.nextFloat(-RADIUS, RADIUS);
+        float target_y = owner.getStartY() + random.nextFloat(-RADIUS, RADIUS);
         return getUnitGrid().findGridTargets(UnitGrid.toGridCoordinate(target_x), UnitGrid.toGridCoordinate(target_y),
                 1, false)[0];
 

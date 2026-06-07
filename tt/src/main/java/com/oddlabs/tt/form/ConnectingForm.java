@@ -60,7 +60,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
         if (multiplayer) {
             Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
             random.nextFloat(); // first one always in same area
-            int race = (int) (random.nextFloat() * (RacesResources.getNumRaces() - 1) + .5f);
+            int race = random.nextInt(RacesResources.getNumRaces());
             int team = player_slot;
             if (game.isRated())
                 team = player_slot % 2;

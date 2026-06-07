@@ -80,7 +80,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         var params = new AudioParameters(throw_sound, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
                 AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
                 AudioAssets.AUDIO_RADIUS_WEAPON_ATTACK,
-                ThreadLocalRandom.current().nextFloat() * .2f + .9f);
+                ThreadLocalRandom.current().nextFloat(.9f, 1.1f));
         audio_player = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
         getWorld().getAnimationManagerGameTime().registerAnimation(this);
 
@@ -198,14 +198,13 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     protected final void damageTarget(@NonNull Selectable<?> target) {
         if (target instanceof Unit) {
+            float pitchRange = ((UnitTemplate) target.getTemplate()).getDeathPitch();
             var params = new AudioParameters(hit_sounds[ThreadLocalRandom.current().nextInt(
                     hit_sounds.length)],
                     AudioAssets.AUDIO_RANK_WEAPON_HIT,
                     AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
                     AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + (ThreadLocalRandom.current().nextFloat() - .5f) * ((UnitTemplate) target
-                            .getTemplate())
-                            .getDeathPitch());
+                    1f + ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange));
             getWorld().getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }
         target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());

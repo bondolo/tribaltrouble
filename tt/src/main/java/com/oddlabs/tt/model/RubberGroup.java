@@ -24,8 +24,8 @@ public final class RubberGroup {
         this.world = world;
         int[] group_position = getGroupPosition();
         if (group_position != null) {
-            int num_supplies = MIN_CHICKENS_PER_GROUP + world.getRandom().nextInt(MAX_CHICKENS_PER_GROUP
-                    - MIN_CHICKENS_PER_GROUP + 1);
+            int num_supplies = world.getRandom().nextInt(MIN_CHICKENS_PER_GROUP,
+                    MAX_CHICKENS_PER_GROUP + 1);
             Target[] supply_positions = world.getUnitGrid().findGridTargets(group_position[0], group_position[1],
                     num_supplies, true);
             float spawn_x = UnitGrid.coordinateFromGrid(group_position[0]);
