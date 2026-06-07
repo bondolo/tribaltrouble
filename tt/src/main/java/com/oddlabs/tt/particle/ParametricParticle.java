@@ -18,6 +18,10 @@ final class ParametricParticle extends Particle {
     private float u;
     private float v;
 
+    private float localZ = 0f;
+    private float heightLightingIntensity = 0f;
+    private float maxLocalZ = 1f;
+
     public ParametricParticle(@NonNull World world, @NonNull ParametricFunction function, float u, float v,
             float offset_x, float offset_y, float offset_z) {
         super(world);
@@ -36,8 +40,8 @@ final class ParametricParticle extends Particle {
 
         float x = offset_x + scale_x * function.getX(u, v);
         float y = offset_y + scale_y * function.getY(u, v);
-        float z = offset_z + scale_z * function.getZ(u, v);
-        setPos(x, y, z);
+        localZ = offset_z + scale_z * function.getZ(u, v);
+        setPos(x, y, localZ);
     }
 
     public void setVelocity(float u, float v) {
@@ -51,5 +55,40 @@ final class ParametricParticle extends Particle {
 
     public float getVelocityV() {
         return velocity_v;
+    }
+
+    public void setHeightLighting(float intensity, float maxLocalZ) {
+        this.heightLightingIntensity = intensity;
+        this.maxLocalZ = maxLocalZ;
+    }
+
+    @Override
+    public float getColorR() {
+        if (heightLightingIntensity <= 0.0f) {
+            return super.getColorR();
+        }
+        float factor = localZ / maxLocalZ;
+        float multiplier = 1.0f + factor * heightLightingIntensity;
+        return Math.clamp(super.getColorR() * multiplier, 0f, 1f);
+    }
+
+    @Override
+    public float getColorG() {
+        if (heightLightingIntensity <= 0.0f) {
+            return super.getColorG();
+        }
+        float factor = localZ / maxLocalZ;
+        float multiplier = 1.0f + factor * heightLightingIntensity;
+        return Math.clamp(super.getColorG() * multiplier, 0f, 1f);
+    }
+
+    @Override
+    public float getColorB() {
+        if (heightLightingIntensity <= 0.0f) {
+            return super.getColorB();
+        }
+        float factor = localZ / maxLocalZ;
+        float multiplier = 1.0f + factor * heightLightingIntensity;
+        return Math.clamp(super.getColorB() * multiplier, 0f, 1f);
     }
 }

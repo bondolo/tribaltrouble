@@ -41,6 +41,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     private int remaining_particles;
     private float particle_counter = 0;
     private boolean started = true;
+    private boolean fog_enabled = true;
 
     // Relative Clustering Logic
     private Color.@NonNull LinearDelta cluster_rgb = Color.LinearDelta.ZERO;
@@ -283,6 +284,14 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     public final boolean isStarted() {
         return started;
+    }
+
+    public final boolean isFogEnabled() {
+        return fog_enabled;
+    }
+
+    public final void setFogEnabled(boolean fog_enabled) {
+        this.fog_enabled = fog_enabled;
     }
 
     /**

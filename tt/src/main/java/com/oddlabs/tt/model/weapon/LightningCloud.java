@@ -27,10 +27,15 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private static final int NUM_STRIKES = 6;
     private static final float SECONDS_BETWEEN_STRIKES = .125f;
     private static final float BRIGHTNESS = Color.toLinear(.2f);
-    private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS,
-            0);
+    private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, 0);
     private static final float LIGHTNING_TIME = .1f;
-    private static final Color.LinearDelta DELTA_COLOR = new Color.LinearDelta(0f, 0f, 0f, -1f / LIGHTNING_TIME);
+    private static final Color.LinearDelta DELTA_COLOR = Color.LinearDelta.ZERO.alpha(-1f / LIGHTNING_TIME);
+
+    private static final float CLOUD_RADIUS_XY = 2.5f;
+    private static final float CLOUD_RADIUS_Z = 0.7f;
+    private static final float PARTICLE_RADIUS_XY = 2.0f;
+    private static final float PARTICLE_RADIUS_Z = 0.7f;
+    private static final float LIGHTING_INTENSITY = 0.10f;
 
     private final @NonNull Player owner;
     private final float seconds_per_hit;
@@ -39,7 +44,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private final int damage;
     private final float height;
     private final @NonNull AudioPlayer bubbling_sound;
-    private AudioPlayer cloud_sound;
+    private @Nullable AudioPlayer cloud_sound;
 
     private float seconds_to_live;
     private @Nullable Selectable<?> target = null;
@@ -79,14 +84,24 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         Vector3f pos = new Vector3f(start_x, start_y, world.getHeightMap().getNearestHeight(start_x, start_y) + height);
 
-        float alpha = .6f;
         float energy = seconds_to_live + seconds_to_init;
-        return new ParametricEmitter(world, new CloudFunction(2.5f, .7f), pos,
+        var function = new CloudFunction(CLOUD_RADIUS_XY, CLOUD_RADIUS_Z);
+        var emitter = new ParametricEmitter(world, function, pos,
                 0f, offset_z, .5f, .5f, .2f,
-                25, 100f,
-                new Color.Standard(.4f, .4f, .4f, alpha).linear(), Color.LinearDelta.ZERO.alpha(-alpha / energy),
-                new Vector3f(3f, 3f, 1f), new Vector3f(0f, 0f, 0f), energy,
+                45, 150f,
+                Color.Linear.WHITE.alpha(0.8f), Color.LinearDelta.ZERO,
+                new Vector3f(PARTICLE_RADIUS_XY, PARTICLE_RADIUS_XY, PARTICLE_RADIUS_Z), new Vector3f(0f, 0f, 0f),
+                energy,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, world.getRacesResources().getSmokeTextures());
+        emitter.setBaseColor(new Color.Standard(.3f, 1f).linear());
+        emitter.setColorSpectrum((spectrum, baseColor) -> baseColor);
+        emitter.setFogEnabled(false);
+        emitter.setJitterIntensity(0.05f);
+        emitter.setRandomizeScale(true);
+
+        float maxLocalZ = CLOUD_RADIUS_Z * CloudFunction.TOP_PUFFINESS_PEAK;
+        emitter.setHeightLighting(LIGHTING_INTENSITY, maxLocalZ);
+        return emitter;
     }
 
     @Override
@@ -99,6 +114,9 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         }
         cloud_sound.setPosition(getPositionX(), getPositionY(), getPositionZ());
         seconds_to_live -= t;
+        if (seconds_to_live <= 2.0f) {
+            emitter.adjustColor(new Color.LinearDelta(0f, -0.8f * t / 2.0f));
+        }
         if (seconds_to_live <= 0f) {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
             cloud_sound.stop(15.0f);

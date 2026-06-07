@@ -50,7 +50,7 @@ public final class EmitterRenderer implements AutoCloseable {
     private final VertexArray vao = new VertexArray();
     private int vbo_offset = 0;
 
-    private record BatchKey(int srcBlend, int dstBlend) {
+    private record BatchKey(int srcBlend, int dstBlend, boolean fogEnabled) {
     }
 
     private record BatchEntry<P extends Particle>(@NonNull Emitter<P> emitter, @NonNull List<@NonNull P> particles,
@@ -154,7 +154,8 @@ public final class EmitterRenderer implements AutoCloseable {
             for (int j = 0; j < particles.length; j++) {
                 if (particles[j].isEmpty()) continue;
                 Texture texture = render_queues.getTexture(textures[j]);
-                BatchKey key = new BatchKey(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc());
+                BatchKey key = new BatchKey(emitter.getSrcBlendFunc(), emitter.getDstBlendFunc(), emitter
+                        .isFogEnabled());
                 batches.computeIfAbsent(key, k -> new ArrayList<>()).add(new BatchEntry<>(emitter, particles[j],
                         texture));
             }
@@ -178,6 +179,7 @@ public final class EmitterRenderer implements AutoCloseable {
             BatchKey key = entry.getKey();
             context.setBlendFunc(key.srcBlend(), key.dstBlend());
             shader.setUniform(ParticleShader.Uniforms.IS_ADDITIVE, key.dstBlend() == GL11.GL_ONE ? 1.0f : 0.0f);
+            shader.setUniform(ParticleShader.Uniforms.FOG_ENABLED, key.fogEnabled());
 
             var batchEntries = entry.getValue();
 

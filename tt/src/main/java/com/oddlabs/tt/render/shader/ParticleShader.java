@@ -15,6 +15,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
         String TEXTURES = "u_textures";
         String DEPTH_MAP = "u_depthMap";
         String IS_ADDITIVE = "u_isAdditive";
+        String FOG_ENABLED = "u_fogEnabled";
         String NEAR_FAR = "u_nearFar"; // x = near, y = far
         String SOFT_RANGE = "u_softRange";
     }
@@ -144,6 +145,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     uniform sampler2D u_textures[14];
                     uniform sampler2D u_depthMap;
                     uniform float u_isAdditive;
+                    uniform int u_fogEnabled;
                     uniform vec2 u_nearFar;
                     uniform float u_softRange;
 
@@ -181,7 +183,10 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                             finalColor.a *= clamp(depthDiff / u_softRange, 0.0, 1.0);
                         }
 
-                        float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                        float fogFactor = 1.0;
+                        if (u_fogEnabled != 0) {
+                            fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                        }
                         vec3 foggedColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
                         if (u_isAdditive > 0.5) {
                             foggedColor = finalColor.rgb * fogFactor;

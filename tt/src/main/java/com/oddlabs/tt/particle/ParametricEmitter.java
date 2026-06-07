@@ -30,6 +30,9 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     protected final @NonNull Vector3fc particle_radius;
     protected final @NonNull Vector3fc growth_rate;
     private final BoundingBox bounds = new BoundingBox();
+    private boolean randomizeScale = false;
+    private float heightLightingIntensity = 0.0f;
+    private float maxLocalZ = 1.0f;
 
     protected Color.@NonNull LinearDelta delta_color;
     protected float energy;
@@ -160,8 +163,15 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         particle.setVelocity(velocity_u + offset.x(), velocity_v + offset.y());
         particle.setColor(color);
         particle.setDeltaColor(delta_color);
-        particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
+        float scale = 1.0f;
+        if (randomizeScale) {
+            scale = 0.5f + ThreadLocalRandom.current().nextFloat() * 1.0f;
+        }
+        particle.setRadius(particle_radius.x() * scale, particle_radius.y() * scale, particle_radius.z() * scale);
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
+        if (heightLightingIntensity > 0.0f) {
+            particle.setHeightLighting(heightLightingIntensity, maxLocalZ);
+        }
         particle.setEnergy(energy);
         particle.setType(nextType());
         particle.update(0);
@@ -177,5 +187,18 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
         randomized_offset.set(x, y, z);
         return randomized_offset;
+    }
+
+    public final void setRandomizeScale(boolean randomizeScale) {
+        this.randomizeScale = randomizeScale;
+    }
+
+    public final boolean isRandomizeScale() {
+        return randomizeScale;
+    }
+
+    public final void setHeightLighting(float intensity, float maxLocalZ) {
+        this.heightLightingIntensity = intensity;
+        this.maxLocalZ = maxLocalZ;
     }
 }

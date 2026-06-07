@@ -217,6 +217,10 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
     record LinearDelta(float r, float g, float b, float a) implements Color {
         public static final Color.LinearDelta ZERO = new LinearDelta(0, 0, 0, 0);
 
+        public LinearDelta(float gray, float alpha) {
+            this(gray, gray, gray, alpha);
+        }
+
         public static @NonNull LinearDelta red(float r) {
             return new LinearDelta(r, 0f, 0f, 0f);
         }

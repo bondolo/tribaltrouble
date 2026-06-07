@@ -140,15 +140,15 @@ public class Particle extends Model {
         return color;
     }
 
-    public final float getColorR() {
+    public float getColorR() {
         return color.r();
     }
 
-    public final float getColorG() {
+    public float getColorG() {
         return color.g();
     }
 
-    public final float getColorB() {
+    public float getColorB() {
         return color.b();
     }
 
