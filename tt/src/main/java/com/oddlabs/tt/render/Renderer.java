@@ -69,6 +69,8 @@ import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
  */
 public final class Renderer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
+    private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
+
     private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault()
             .getCountry(), "default");
 
@@ -77,6 +79,8 @@ public final class Renderer implements AutoCloseable {
     private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
+
+    private static final int INSTRUMENTATION_FRAME_COUNT = Integer.MAX_VALUE;
 
     private static final Renderer renderer_instance = new Renderer();
     private static final StatCounter fps = new StatCounter(10);
@@ -101,6 +105,13 @@ public final class Renderer implements AutoCloseable {
     private boolean movie_recording_started = false;
     private AmbientAudio ambient;
 
+    private int instrumentationFrameCounter;
+    private long totalPollEventsTime;
+    private long totalRunGameLoopTime;
+    private long totalAudioUpdateTime;
+    private long totalWindowUpdateTime;
+    private long totalDisplayTime;
+    private long totalLoopTime;
 
     private @Nullable Cheat cheat = new Cheat();
 
@@ -593,25 +604,42 @@ public final class Renderer implements AutoCloseable {
         boolean reset_keyboard = false;
         try {
             while (!finished) {
+                long frameStart = System.nanoTime();
+
                 // Use a small timeout when not the active window to save CPU
                 boolean isActive = window.isActive();
+                long t0 = System.nanoTime();
                 if (isActive) {
                     window.pollEvents();
                 } else {
                     ((LWJGL3Window) window).pollEvents(100);
                 }
+                long t1 = System.nanoTime();
+                totalPollEventsTime += (t1 - t0);
 
                 if (first_frame || (window.isVisible() && isActive)) {
+                    long t2 = System.nanoTime();
                     runGameLoop(network, gui);
+                    long t3 = System.nanoTime();
+                    totalRunGameLoopTime += (t3 - t2);
+
+                    long t4 = System.nanoTime();
                     audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+                    long t5 = System.nanoTime();
+                    totalAudioUpdateTime += (t5 - t4);
+
                     getAudioManager().setMasterGain(1f);
                     if (reset_keyboard) {
                         reset_keyboard = false;
                         Renderer.getLocalInput().resetKeyboard();
                     }
+                    long t6 = System.nanoTime();
                     if (!first_frame) {
                         window.update();
                     }
+                    long t7 = System.nanoTime();
+                    totalWindowUpdateTime += (t7 - t6);
+
                     if (window.wasResized()) {
                         int width = window.getWidth();
                         int height = window.getHeight();
@@ -620,7 +648,11 @@ public final class Renderer implements AutoCloseable {
                         initGL();
                         gui.getGUIRoot().displayChanged(width, height);
                     }
+                    long t8 = System.nanoTime();
                     display(gui);
+                    long t9 = System.nanoTime();
+                    totalDisplayTime += (t9 - t8);
+
                     if (first_frame) {
                         Duration startup_time = Duration.between(start_time, Instant.now());
                         logger.info("First frame rendered after " + startup_time);
@@ -639,6 +671,36 @@ public final class Renderer implements AutoCloseable {
                     }
                     if (grab_frames && movie_recording_started)
                         GLUtils.takeScreenshot("");
+
+                    long frameEnd = System.nanoTime();
+                    totalLoopTime += (frameEnd - frameStart);
+
+                    instrumentationFrameCounter++;
+                    if (DEBUG && (finished || instrumentationFrameCounter >= INSTRUMENTATION_FRAME_COUNT)) {
+                        logger.info(String.format(Locale.ROOT,
+                                "[Instrumentation] Averages over %d frames: "
+                                        + "Total frame: %.2f ms | "
+                                        + "pollEvents: %.2f ms | "
+                                        + "runGameLoop: %.2f ms | "
+                                        + "audioUpdate: %.2f ms | "
+                                        + "windowUpdate: %.2f ms | "
+                                        + "display: %.2f ms",
+                                instrumentationFrameCounter,
+                                (totalLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                                (totalPollEventsTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                                (totalRunGameLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                                (totalAudioUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                                (totalWindowUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                                (totalDisplayTime / (float) instrumentationFrameCounter) / 1_000_000f));
+
+                        instrumentationFrameCounter = 0;
+                        totalPollEventsTime = 0;
+                        totalRunGameLoopTime = 0;
+                        totalAudioUpdateTime = 0;
+                        totalWindowUpdateTime = 0;
+                        totalDisplayTime = 0;
+                        totalLoopTime = 0;
+                    }
                 } else {
                     AnimationManager.freezeTime();
                     reset_keyboard = true;
