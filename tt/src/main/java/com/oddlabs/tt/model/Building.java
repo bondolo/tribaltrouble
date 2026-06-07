@@ -36,14 +36,17 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private static final int PLACING_BORDER = 1;
     private static final int MAX_SUPPLY_COUNT = 200;
 
-    public static final Cost COST_ROCK_WEAPON = new Cost(new SupplyType[]{SupplyType.WOOD, SupplyType.ROCK}, new int[]{
-            2,
-            1});
-    public static final Cost COST_IRON_WEAPON = new Cost(new SupplyType[]{SupplyType.WOOD, SupplyType.IRON}, new int[]{
-            2,
-            1});
-    public static final Cost COST_RUBBER_WEAPON = new Cost(new SupplyType[]{SupplyType.WOOD, SupplyType.ROCK,
-            SupplyType.IRON, SupplyType.RUBBER}, new int[]{2, 1, 1, 1});
+    public static final Cost COST_ROCK_WEAPON = new Cost(Map.of(
+            SupplyType.WOOD, 2,
+            SupplyType.ROCK, 1));
+    public static final Cost COST_IRON_WEAPON = new Cost(Map.of(
+            SupplyType.WOOD, 2,
+            SupplyType.IRON, 1));
+    public static final Cost COST_RUBBER_WEAPON = new Cost(Map.of(
+            SupplyType.WOOD, 2,
+            SupplyType.ROCK, 1,
+            SupplyType.IRON, 1,
+            SupplyType.RUBBER, 1));
 
     private static final Color.Linear DAMAGE_BASE_COLOR = new Color.Standard(0.3f, 0.8f).linear();
     private static final Color.Linear DAMAGE_FACTOR_END = new Color.Linear(0.3f, 1.0f);

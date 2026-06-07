@@ -1,6 +1,7 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.gui.BuildSpinner;
+import java.util.Map;
 import org.jspecify.annotations.NonNull;
 
 public class BuildProductionContainer extends BuildSupplyContainer {
@@ -33,9 +34,8 @@ public class BuildProductionContainer extends BuildSupplyContainer {
     }
 
     public final boolean hasEnoughSupplies() {
-        for (int i = 0; i < cost.getSupplyTypes().length; i++) {
-            if (building.getSupplyContainer(cost.getSupplyTypes()[i]).orElseThrow().getNumSupplies() < cost
-                    .getSupplyAmounts()[i]) {
+        for (Map.Entry<@NonNull SupplyType, @NonNull Integer> entry : cost.costs().entrySet()) {
+            if (building.getSupplyContainer(entry.getKey()).orElseThrow().getNumSupplies() < entry.getValue()) {
                 return false;
             }
         }
@@ -47,9 +47,8 @@ public class BuildProductionContainer extends BuildSupplyContainer {
         if (man_seconds >= man_seconds_per_production) {
             man_seconds = 0;
             if (!dest_container.isSupplyFull()) {
-                for (int i = 0; i < cost.getSupplyTypes().length; i++) {
-                    building.getSupplyContainer(cost.getSupplyTypes()[i]).orElseThrow().increaseSupply(-cost
-                            .getSupplyAmounts()[i]);
+                for (Map.Entry<@NonNull SupplyType, @NonNull Integer> entry : cost.costs().entrySet()) {
+                    building.getSupplyContainer(entry.getKey()).orElseThrow().increaseSupply(-entry.getValue());
                 }
                 if (!infinite)
                     increaseSupply(-1);
