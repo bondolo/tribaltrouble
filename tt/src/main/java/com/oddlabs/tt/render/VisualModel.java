@@ -24,15 +24,17 @@ public final class VisualModel implements ModelClient {
 
     @Override
     public void update(float t) {
-        var it = accessories.iterator();
-        while (it.hasNext()) {
-            Accessory acc = it.next();
+        boolean hasExpired = false;
+        for (Accessory acc : accessories) {
             if (acc instanceof AnimatedAccessory animated) {
                 animated.animate(t);
             }
             if (acc.isExpired()) {
-                it.remove();
+                hasExpired = true;
             }
+        }
+        if (hasExpired) {
+            accessories.removeIf(Accessory::isExpired);
         }
     }
 

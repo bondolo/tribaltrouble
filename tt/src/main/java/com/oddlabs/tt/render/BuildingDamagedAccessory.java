@@ -98,7 +98,9 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
             emitter.stop();
         }
 
-        emitter.animate(t);
+        if (isDamaged || emitter.hasActiveParticles()) {
+            emitter.animate(t);
+        }
     }
 
     @Override

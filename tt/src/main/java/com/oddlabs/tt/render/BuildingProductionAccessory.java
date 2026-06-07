@@ -96,7 +96,9 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
             state = State.IDLE;
             productionTimer = 0f;
             emitter.stop();
-            emitter.animate(t);
+            if (emitter.hasActiveParticles()) {
+                emitter.animate(t);
+            }
             return;
         }
 
@@ -133,7 +135,9 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
         }
         emitter.setSpectrum(spectrum);
 
-        emitter.animate(t);
+        if (state != State.IDLE || emitter.hasActiveParticles()) {
+            emitter.animate(t);
+        }
     }
 
     @Override
