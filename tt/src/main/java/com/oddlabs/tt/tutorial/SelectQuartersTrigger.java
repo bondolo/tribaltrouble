@@ -1,7 +1,6 @@
 package com.oddlabs.tt.tutorial;
 
 import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
 import org.jspecify.annotations.NonNull;
 
 public final class SelectQuartersTrigger extends TutorialTrigger {

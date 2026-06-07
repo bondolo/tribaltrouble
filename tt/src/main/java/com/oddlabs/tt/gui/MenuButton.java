@@ -13,8 +13,8 @@ public final class MenuButton extends ButtonObject {
     private static final float HOVER_SCALE_FACTOR = 0.06f;
 
     private final @NonNull CharSequence text;
-    private final @NonNull Color color_normal;
-    private final @NonNull Color color_active;
+    private final Color.@NonNull Linear color_normal;
+    private final Color.@NonNull Linear color_active;
 
     private float start_hover_time;
 
@@ -27,8 +27,8 @@ public final class MenuButton extends ButtonObject {
         super(font);
         setDim(font.getWidth(text), font.getHeight());
         this.text = text;
-        this.color_normal = color_normal;
-        this.color_active = color_active;
+        this.color_normal = color_normal instanceof Color.Linear linear ? linear : new Color.Linear(color_normal);
+        this.color_active = color_active instanceof Color.Linear linear ? linear : new Color.Linear(color_active);
     }
 
     private void scaleHovered(@NonNull GUIRenderer renderer) {
@@ -46,7 +46,7 @@ public final class MenuButton extends ButtonObject {
         if (isActive()) {
             c = color_active;
             scaleHovered(renderer);
-        } else c = isDisabled() ? Label.DISABLED_COLOR : color_normal;
+        } else c = isDisabled() ? color_normal.desaturate(0.3f).alpha(color_normal.a() * 08.f) : color_normal;
 
         TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f, Float.NEGATIVE_INFINITY,
                 Float.POSITIVE_INFINITY, c);

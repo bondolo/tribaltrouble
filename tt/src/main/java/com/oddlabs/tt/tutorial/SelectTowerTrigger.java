@@ -28,7 +28,7 @@ public final class SelectTowerTrigger extends TutorialTrigger {
 
     @Override
     protected void run(@NonNull Tutorial tutorial) {
-        tutorial.getViewer().getSelection().getCurrentSelection().getBuilding().ifPresent( building -> {
+        tutorial.getViewer().getSelection().getCurrentSelection().getBuilding().ifPresent(building -> {
             if (building.getAbilities().hasAbilities(Abilities.ATTACK)) {
                 tutorial.next(new UnitInTowerTrigger(building));
             }

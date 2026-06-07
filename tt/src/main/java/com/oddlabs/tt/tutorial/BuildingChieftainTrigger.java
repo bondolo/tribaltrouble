@@ -1,7 +1,6 @@
 package com.oddlabs.tt.tutorial;
 
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.ChieftainContainer;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.player.Player;
 import org.jspecify.annotations.NonNull;

@@ -78,7 +78,8 @@ public final class BuildSpinner extends IconSpinner {
     protected float getProgress() {
         return current_building.isDead()
                 ? 0
-                : ((BuildProductionContainer) current_building.getBuildSupplyContainer(type).orElseThrow()).getBuildProgress();
+                : ((BuildProductionContainer) current_building.getBuildSupplyContainer(type).orElseThrow())
+                        .getBuildProgress();
     }
 
     Building getBuilding() {

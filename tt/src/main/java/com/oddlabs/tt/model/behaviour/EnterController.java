@@ -4,7 +4,6 @@ import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.weapon.ThrowingFactory;
-import com.oddlabs.tt.model.weapon.ThrowingWeapon;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -30,7 +29,8 @@ public final class EnterController extends Controller {
                     if (building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER)) {
                         if (unit.getAbilities().hasAbilities(Abilities.HARVEST)
                                 && unit.getSupplyContainer().getNumSupplies() > 0) {
-                            unit.getSupplyContainer().getSupplyType().ifPresent(type -> building.getSupplyContainer(type)
+                            unit.getSupplyContainer().getSupplyType().ifPresent(type -> building.getSupplyContainer(
+                                    type)
                                     .orElseThrow().increaseSupply(unit.getSupplyContainer()
                                             .getNumSupplies())
                             );

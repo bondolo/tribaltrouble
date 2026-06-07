@@ -19,6 +19,8 @@ public class Particle extends Model {
     private final float v3;
     private final float u4;
     private final float v4;
+    private float angle;
+    private float angularVelocity = 0f;
 
     private final Vector3f position = new Vector3f();
     private Color.@NonNull Linear color = Color.Linear.TRANSPARENT;
@@ -35,6 +37,7 @@ public class Particle extends Model {
 
     public Particle(@NonNull World world, float angle) {
         super(world);
+        this.angle = angle;
         Matrix4f rotMatrix = new Matrix4f();
         Vector3f axis = new Vector3f(0f, 0f, 1f);
         Vector4f uvVector = new Vector4f();
@@ -94,10 +97,23 @@ public class Particle extends Model {
         return v4;
     }
 
+    public final float getAngle() {
+        return angle;
+    }
+
     public void update(float t) {
         color = color.add(deltaColor.mul(t));
         radius.add(growthRate.x() * t, growthRate.y() * t, growthRate.z() * t);
+        angle += angularVelocity * t;
         energy -= t;
+    }
+
+    public final void setAngularVelocity(float angularVelocity) {
+        this.angularVelocity = angularVelocity;
+    }
+
+    public final float getAngularVelocity() {
+        return angularVelocity;
     }
 
     public final void setPos(float x, float y, float z) {

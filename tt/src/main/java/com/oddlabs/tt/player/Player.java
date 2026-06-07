@@ -293,8 +293,9 @@ public final class Player implements PlayerInterface {
         return getUnits().getSet().stream().mapToInt(Selectable::getStatusValue).sum();
     }
 
-    public @NonNull Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, Selectable<?> target, @NonNull Class<
-            ? extends Selectable<?>> type) {
+    public @NonNull Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, Selectable<?> target,
+            @NonNull Class<
+                    ? extends Selectable<?>> type) {
         int best_dist_squared = Integer.MAX_VALUE;
         Selectable<?> best_target = null;
         for (Player player : world.getPlayers()) {

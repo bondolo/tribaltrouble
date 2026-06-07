@@ -70,6 +70,19 @@ public final class Landscape {
         VIKING
     }
 
+    /**
+     * Returns the baseline dust color for a given landscape terrain type.
+     *
+     * @param terrain the terrain type
+     * @return the linear color representing the terrain's dust/soil
+     */
+    public static Color.@NonNull Linear getDustColor(@NonNull TerrainType terrain) {
+        return switch (terrain) {
+            case NATIVE -> new Color.Linear(NATIVE_SAND_COLOR);
+            case VIKING -> new Color.Linear(VIKING_SOIL_COLOR);
+        };
+    }
+
     private final @NonNull Random random;
     private final @NonNull BlendInfo @NonNull [] blend_infos;
 

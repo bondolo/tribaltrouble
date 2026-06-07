@@ -335,10 +335,10 @@ public final class Picker implements Updatable<TimerAnimation> {
     /**
      * Unprojects a 2D screen coordinate into a 3D world coordinate.
      *
-     * @param winx     The window x-coordinate.
-     * @param winy     The window y-coordinate.
-     * @param winz     The window z-coordinate (depth).
-     * @param proj     The combined projection-model-view matrix from the camera.
+     * @param winx The window x-coordinate.
+     * @param winy The window y-coordinate.
+     * @param winz The window z-coordinate (depth).
+     * @param proj The combined projection-model-view matrix from the camera.
      * @param viewport The viewport buffer.
      */
     private void unproject(float winx, float winy, float winz, @NonNull Matrix4f proj, int[] viewport) {
@@ -452,7 +452,8 @@ public final class Picker implements Updatable<TimerAnimation> {
             camera.mapGoto(patch_hit_x, patch_hit_y);
     }
 
-    public @NonNull Optional<Target> pickRallyPoint(@NonNull CameraState camera, int x, int y, @NonNull Building building) {
+    public @NonNull Optional<Target> pickRallyPoint(@NonNull CameraState camera, int x, int y,
+            @NonNull Building building) {
         int[] viewport = new int[4];
         float scale = getScale();
         setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);

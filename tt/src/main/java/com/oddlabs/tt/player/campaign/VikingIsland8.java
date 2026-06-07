@@ -27,7 +27,6 @@ import com.oddlabs.tt.trigger.campaign.NearPointTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -355,7 +354,8 @@ public final class VikingIsland8 extends Island {
             getCampaign().victory(getViewer());
         };
 
-        new MagicUsedTrigger(getViewer().getLocalPlayer().getChieftain().orElseThrow(), 354 * 2, 478 * 2, 15, 0, runnable);
+        new MagicUsedTrigger(getViewer().getLocalPlayer().getChieftain().orElseThrow(), 354 * 2, 478 * 2, 15, 0,
+                runnable);
     }
 
     @Override

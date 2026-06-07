@@ -9,12 +9,11 @@ import org.jspecify.annotations.NonNull;
 /** A GUI object that is used to provide a text label another GUI object. */
 public class Label extends TextField implements Comparable<Label> {
     public static final Color.Linear DEFAULT_COLOR = Color.Linear.WHITE;
-    public static final Color.Linear DISABLED_COLOR = new Color.Standard(0.7f, 0.7f).linear();
     private static final int INSET = 2;
 
     private final @NonNull Origin align;
 
-    private @NonNull Color color = DEFAULT_COLOR;
+    private Color.@NonNull Linear color = DEFAULT_COLOR;
 
     public Label(@NonNull CharSequence text, @NonNull Font font) {
         this(text, font, font.getWidth(text), Origin.AT_START);
@@ -41,7 +40,7 @@ public class Label extends TextField implements Comparable<Label> {
 
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
-        var c = isDisabled() ? DISABLED_COLOR : color;
+        var c = isDisabled() ? color.desaturate(0.3f).alpha(color.a() * 0.8f) : color;
         int textWidth = getFont().getWidth(getText());
         int x = switch (align) {
             case AT_START -> 0;

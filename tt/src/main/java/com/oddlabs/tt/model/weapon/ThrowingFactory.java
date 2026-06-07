@@ -40,7 +40,7 @@ public final class ThrowingFactory<W extends ThrowingWeapon> extends WeaponFacto
     }
 
     @Override
-    public  @NonNull Optional<Class<? extends ThrowingWeapon>> getType() {
+    public @NonNull Optional<Class<? extends ThrowingWeapon>> getType() {
         return Optional.of(weapon_type);
     }
 }

@@ -41,6 +41,7 @@ public class SupplyCounter {
     }
 
     public final int getMaxSupplies() {
-        return !building.isDead() ? building.getSupplyContainer(supply_type).map(c -> c.getMaxSupplyCount()).orElse(0) : 0;
+        return !building.isDead() ? building.getSupplyContainer(supply_type).map(c -> c.getMaxSupplyCount()).orElse(0)
+                : 0;
     }
 }

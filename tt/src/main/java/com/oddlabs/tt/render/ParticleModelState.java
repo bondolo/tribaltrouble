@@ -70,7 +70,10 @@ final class ParticleModelState implements ModelState<Particle> {
         dest.m21(viewMatrix.m12());
         dest.m22(viewMatrix.m22());
 
-        // 3. Scale the particle
+        // 3. Apply the particle's rotation angle around its forward facing axis
+        dest.rotate(particle.getAngle(), 0f, 0f, 1f);
+
+        // 4. Scale the particle
         dest.scale(particle.getRadiusX(), particle.getRadiusY(), particle.getRadiusZ());
 
         return dest;

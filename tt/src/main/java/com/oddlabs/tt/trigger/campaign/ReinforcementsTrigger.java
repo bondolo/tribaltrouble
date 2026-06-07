@@ -5,7 +5,6 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Optional;
 
 public final class ReinforcementsTrigger extends IntervalTrigger {
     private final @NonNull Player player;

@@ -14,7 +14,6 @@ import com.oddlabs.tt.model.weapon.RockAxeWeapon;
 import com.oddlabs.tt.model.weapon.RockSpearWeapon;
 import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.model.weapon.RubberSpearWeapon;
-import com.oddlabs.tt.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -109,7 +107,8 @@ public final class AdvancedAI extends AI {
     private void nodeDeployArmy() {
         if (getArmory() != null) {
             Building armory = (Building) getArmory()[0];
-            int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies() - MIN_UNITS_BUILDING_WEAPONS[difficulty];
+            int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies()
+                    - MIN_UNITS_BUILDING_WEAPONS[difficulty];
             int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK[difficulty];
             if (num_units <= 0 || num_weapons <= 0)
                 return;
@@ -224,7 +223,8 @@ public final class AdvancedAI extends AI {
             nodeBuildTower(num_towers);
         } else if (num_towers > 0) {
             for (int i = 0; i < getTowers().length; i++) {
-                if (!((Building) getTowers()[i]).getUnitContainer().orElseThrow().isSupplyFull() && getIdleWarriors() != null
+                if (!((Building) getTowers()[i]).getUnitContainer().orElseThrow().isSupplyFull() && getIdleWarriors()
+                        != null
                         && getIdleWarriors().length > i) {
                     getOwner().setTarget(Selectable.newArray(getIdleWarriors()[i]), getTowers()[i], Action.DEFAULT,
                             false);
@@ -320,7 +320,8 @@ public final class AdvancedAI extends AI {
         }
         if (armory != null) {
             if (!armory.isDead()) {
-                int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies() - MIN_UNITS_BUILDING_WEAPONS[difficulty];
+                int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies()
+                        - MIN_UNITS_BUILDING_WEAPONS[difficulty];
                 int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK[difficulty];
 
                 if (num_units >= num_warriors && num_weapons >= num_warriors) {
@@ -433,7 +434,8 @@ public final class AdvancedAI extends AI {
                 && getQuarters() != null && getQuarters()[0].getAbilities().hasAbilities(Abilities.REPRODUCE)) {
             Selectable<?>[] builders = getPeons(20);
             if (builders.length < 20) {
-                if (quarters != null && !quarters.isDead() && quarters.getUnitContainer().orElseThrow().getNumSupplies() >= 20)
+                if (quarters != null && !quarters.isDead() && quarters.getUnitContainer().orElseThrow().getNumSupplies()
+                        >= 20)
                     getOwner().deployUnits(quarters, DeployType.PEON, 20);
             }
             if (builders.length == 0)

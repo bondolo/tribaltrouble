@@ -34,7 +34,8 @@ public class BuildProductionContainer extends BuildSupplyContainer {
 
     public final boolean hasEnoughSupplies() {
         for (int i = 0; i < cost.getSupplyTypes().length; i++) {
-            if (building.getSupplyContainer(cost.getSupplyTypes()[i]).orElseThrow().getNumSupplies() < cost.getSupplyAmounts()[i]) {
+            if (building.getSupplyContainer(cost.getSupplyTypes()[i]).orElseThrow().getNumSupplies() < cost
+                    .getSupplyAmounts()[i]) {
                 return false;
             }
         }
@@ -47,7 +48,8 @@ public class BuildProductionContainer extends BuildSupplyContainer {
             man_seconds = 0;
             if (!dest_container.isSupplyFull()) {
                 for (int i = 0; i < cost.getSupplyTypes().length; i++) {
-                    building.getSupplyContainer(cost.getSupplyTypes()[i]).orElseThrow().increaseSupply(-cost.getSupplyAmounts()[i]);
+                    building.getSupplyContainer(cost.getSupplyTypes()[i]).orElseThrow().increaseSupply(-cost
+                            .getSupplyAmounts()[i]);
                 }
                 if (!infinite)
                     increaseSupply(-1);

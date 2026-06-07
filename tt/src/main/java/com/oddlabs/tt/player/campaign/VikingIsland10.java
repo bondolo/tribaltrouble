@@ -22,7 +22,6 @@ import com.oddlabs.tt.trigger.campaign.NearPointTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 

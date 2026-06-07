@@ -66,8 +66,8 @@ public final class DeploySpinner extends IconSpinner {
         if (!current_building.isDead()) {
             int num_units = current_building.getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0);
             int num_supplies = supply_type != null
-                   ? current_building.getSupplyContainer(supply_type).map(SupplyContainer::getNumSupplies).orElse(0)
-                   : Integer.MAX_VALUE;
+                    ? current_building.getSupplyContainer(supply_type).map(SupplyContainer::getNumSupplies).orElse(0)
+                    : Integer.MAX_VALUE;
 
             if (num_units > getOrderDiff() && num_supplies > getOrderDiff()) {
                 if (amount > num_units - getOrderDiff()) {

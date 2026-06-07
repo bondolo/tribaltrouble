@@ -4,7 +4,6 @@ import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
-import java.util.Optional;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 

@@ -42,11 +42,24 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
     float a();
 
+    /** stores color in the provided float buffer in RGBA order */
     default void get(int offset, @NonNull FloatBuffer dest) {
         dest.put(offset++, r());
         dest.put(offset++, g());
         dest.put(offset++, b());
         dest.put(offset, a());
+    }
+
+    default @NonNull Color desaturate(float factor) {
+        return this;
+    }
+
+    default @NonNull Color saturate(float factor) {
+        return this;
+    }
+
+    default @NonNull Color alpha(float alpha) {
+        return this;
     }
 
     /**
@@ -90,6 +103,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
             return new Linear(r * other.r(), g * other.g(), b * other.b(), a * other.a());
         }
 
+        @Override
         public @NonNull Linear alpha(float alpha) {
             return new Linear(r, g, b, alpha);
         }
@@ -112,6 +126,17 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
         public @NonNull LinearDelta delta(Color.@NonNull Linear other) {
             return new LinearDelta(r - other.r(), g - other.g(), b - other.b(), a - other.a());
+        }
+
+        @Override
+        public @NonNull Linear desaturate(float factor) {
+            float gray = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+            return this.lerp(new Linear(gray, gray, gray, a), factor);
+        }
+
+        @Override
+        public @NonNull Linear saturate(float factor) {
+            return desaturate(-factor);
         }
     }
 
@@ -162,6 +187,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
                     Math.clamp(Math.round(b() * NORMALIZE_8_BIT), 0, 255);
         }
 
+        @Override
         public @NonNull Standard alpha(float alpha) {
             return new Standard(r, g, b, alpha);
         }
@@ -172,6 +198,16 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
 
         public @NonNull Linear linear() {
             return new Linear(Color.toLinear(r()), Color.toLinear(g()), Color.toLinear(b()), a());
+        }
+
+        @Override
+        public @NonNull Standard desaturate(float factor) {
+            return new Standard(this.linear().desaturate(factor));
+        }
+
+        @Override
+        public @NonNull Standard saturate(float factor) {
+            return new Standard(this.linear().saturate(factor));
         }
     }
 
@@ -197,6 +233,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
             return new LinearDelta(r - delta.r, g - delta.g, b - delta.b, a - delta.a);
         }
 
+        @Override
         public @NonNull LinearDelta alpha(float alpha) {
             return new LinearDelta(r, g, b, alpha);
         }

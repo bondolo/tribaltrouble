@@ -5,10 +5,12 @@ import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.behaviour.*;
 import com.oddlabs.tt.model.weapon.*;
+import com.oddlabs.tt.particle.ColorSpectrum;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
@@ -22,6 +24,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -41,6 +44,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             1});
     public static final Cost COST_RUBBER_WEAPON = new Cost(new SupplyType[]{SupplyType.WOOD, SupplyType.ROCK,
             SupplyType.IRON, SupplyType.RUBBER}, new int[]{2, 1, 1, 1});
+
+    private static final Color.Linear DAMAGE_BASE_COLOR = new Color.Standard(0.3f, 0.8f).linear();
+    private static final Color.Linear DAMAGE_FACTOR_END = new Color.Linear(0.3f, 1.0f);
+    private static final Color.Linear SOOT_TINT = new Color.Linear(1.0f, 0.9f, 0.7f, 1.0f);
+    private static final Color.LinearDelta SOOT_DELTA = Color.LinearDelta.red(0.05f);
+    private static final Color.Linear PARTICULATE_COLOR = new Color.Standard(0.08f, 0.06f, 0.05f, 0.8f).linear();
 
     private final Map<@NonNull Class<?>, @NonNull SupplyContainer> supply_containers = new HashMap<>();
     private final Map<@NonNull SupplyType, @NonNull SupplyContainer> resource_containers
@@ -129,13 +138,14 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
                 RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(
                         getPositionX(), getPositionY(), getPositionZ()), 0f,
-                        getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
+                        getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.5f, (float) Math.PI,
                         getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                         new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
                         new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f,
                                 -fade_speed),
                         new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                        getOwner().getWorld().getRacesResources().getWoodFragments());
+                        getOwner().getWorld().getRacesResources().getWoodFragments(),
+                        true, true);
                 new PointEmitterModel(getOwner().getWorld(), emitter);
             }
         }
@@ -192,8 +202,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return !isDead() && getAbilities().hasAbilities(Abilities.ATTACK)
                 && getUnitContainer().map(c -> c.getNumSupplies() > 0).orElse(false)
                 && getOwner().canExitTowers() &&
-                getUnitContainer().map(c -> !(((MountUnitContainer) c).getUnit().getCurrentController()
-                        instanceof StunController)).orElse(false);
+                getUnitContainer().map(c -> !(((MountUnitContainer) c).getUnit()
+                        .getCurrentController() instanceof StunController)).orElse(false);
     }
 
     public void exitTower() {
@@ -544,18 +554,52 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     @Override
     protected void removeDying() {
+        final Landscape.TerrainType terrain = getOwner().getWorld().getTerrainType();
+        final Color.Linear dustColor = Landscape.getDustColor(terrain).desaturate(0.5f);
+
+        ColorSpectrum spectrumCallback = (spectrum, baseColor) -> {
+            Random rand = ThreadLocalRandom.current();
+            Color.Linear baseDustColor = (rand.nextFloat() < 0.25f) ? PARTICULATE_COLOR : dustColor;
+
+            if (spectrum < 0.15f) {
+                Color.Linear grayColor = DAMAGE_BASE_COLOR.mul(DAMAGE_FACTOR_END);
+                return (rand.nextFloat() < 0.6f) ? grayColor : grayColor.mul(SOOT_TINT).add(SOOT_DELTA);
+            } else if (spectrum < 0.25f) {
+                float t = (spectrum - 0.15f) / 0.10f;
+                Color.Linear grayColor = DAMAGE_BASE_COLOR.mul(DAMAGE_FACTOR_END);
+                Color.Linear smokeColor = (rand.nextFloat() < 0.6f) ? grayColor : grayColor.mul(SOOT_TINT).add(
+                        SOOT_DELTA);
+                return smokeColor.lerp(baseDustColor, t);
+            } else if (spectrum < 0.67f) {
+                return baseDustColor;
+            } else {
+                float fade = Math.clamp((1.0f - spectrum) / 0.33f, 0.0f, 1.0f);
+                return baseDustColor.alpha(baseDustColor.a() * fade);
+            }
+        };
 
         RandomVelocityEmitter collapse_emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(
                 getPositionX(), getPositionY(), getPositionZ()), 0f, 0f,
                 getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 1f, 1f,
-                30, 400f,
+                120, 80f,
                 new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
-                new Color.Standard(0xFF_FF_CC_99).linear(), Color.LinearDelta.ZERO.alpha(-1f),
-                new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1f, 0.75f,
+                Color.Linear.WHITE, Color.LinearDelta.ZERO.alpha(-1f),
+                new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1.2f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 getOwner().getWorld().getRacesResources().getSmokeTextures());
+        collapse_emitter.setColorSpectrum(spectrumCallback);
+
         new PointEmitterModel(getOwner().getWorld(), collapse_emitter, getOwner().getWorld()
-                .getAnimationManagerRealTime());
+                .getAnimationManagerRealTime()) {
+            private float elapsed = 0.0f;
+
+            @Override
+            public void animate(float t) {
+                elapsed += t;
+                emitter.setSpectrum(Math.min(1.0f, elapsed / 1.5f));
+                super.animate(t);
+            }
+        };
 
         {
             float energy = 3f;
@@ -563,12 +607,13 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
             RandomVelocityEmitter emitter = new RandomVelocityEmitter(getOwner().getWorld(), new Vector3f(
                     getPositionX(), getPositionY(), getPositionZ()), 0f,
-                    getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.05f, (float) Math.PI,
+                    getTemplate().getSmokeRadius(), getTemplate().getSmokeHeight(), 0.5f, (float) Math.PI,
                     getTemplate().getNumFragments(), getTemplate().getNumFragments(),
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
-                    new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f, -fade_speed),
+                    Color.Linear.WHITE.alpha(energy * fade_speed), Color.LinearDelta.ZERO.alpha(-fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                    getOwner().getWorld().getRacesResources().getWoodFragments());
+                    getOwner().getWorld().getRacesResources().getWoodFragments(),
+                    true, true);
             new PointEmitterModel(getOwner().getWorld(), emitter, getOwner().getWorld().getAnimationManagerRealTime());
         }
 
@@ -733,8 +778,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
                         ? getUnitContainer().map(SupplyContainer::getNumSupplies).orElse(0) +
                                 getSupplyContainer(RockAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0) +
-                                getSupplyContainer(IronAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0) * 3 +
-                                getSupplyContainer(RubberAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0) * 8
+                                getSupplyContainer(IronAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0)
+                                        * 3 +
+                                getSupplyContainer(RubberAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0)
+                                        * 8
                 : 0;
     }
 
@@ -747,10 +794,14 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             IO.println("Tree = " + getSupplyContainer(TreeSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
             IO.println("Rock = " + getSupplyContainer(RockSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
             IO.println("Iron = " + getSupplyContainer(IronSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
-            IO.println("Rubber = " + getSupplyContainer(RubberSupply.class).map(SupplyContainer::getNumSupplies).orElse(0));
-            IO.println("Rock Weapons = " + getSupplyContainer(RockAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0));
-            IO.println("Iron Weapons = " + getSupplyContainer(IronAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0));
-            IO.println("Rubber Weapons = " + getSupplyContainer(RubberAxeWeapon.class).map(SupplyContainer::getNumSupplies).orElse(0));
+            IO.println("Rubber = " + getSupplyContainer(RubberSupply.class).map(SupplyContainer::getNumSupplies).orElse(
+                    0));
+            IO.println("Rock Weapons = " + getSupplyContainer(RockAxeWeapon.class).map(SupplyContainer::getNumSupplies)
+                    .orElse(0));
+            IO.println("Iron Weapons = " + getSupplyContainer(IronAxeWeapon.class).map(SupplyContainer::getNumSupplies)
+                    .orElse(0));
+            IO.println("Rubber Weapons = " + getSupplyContainer(RubberAxeWeapon.class).map(
+                    SupplyContainer::getNumSupplies).orElse(0));
         }
     }
 }

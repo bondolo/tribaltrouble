@@ -31,7 +31,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
 
     private static final Color.Linear FACTOR_START = new Color.Linear(1.5f, 0.6f);
     private static final Color.Linear FACTOR_END = new Color.Linear(0.3f, 1.0f);
-    private static final Color.LinearDelta SOOT_DELTA = Color.LinearDelta.red(0.15f);
+    private static final Color.LinearDelta SOOT_DELTA = Color.LinearDelta.red(0.05f);
     private static final Color.Linear SOOT_TINT = new Color.Linear(1.0f, 0.9f, 0.7f, 1.0f);
 
     private final @NonNull Building building;

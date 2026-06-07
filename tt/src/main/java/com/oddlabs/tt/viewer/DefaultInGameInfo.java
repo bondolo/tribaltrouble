@@ -89,17 +89,18 @@ public class DefaultInGameInfo implements InGameInfo {
         GUIObject last_team = null;
         for (Player player : players) {
             PlayerInfo player_info = player.getPlayerInfo();
-            var color_floats = player.getColor();
-            var color = viewer.getPeerHub().isAlive(player) ? color_floats : color_floats.alpha(.25f);
+            var player_color = player.getColor();
+            var display_color = viewer.getPeerHub().isAlive(player) ? player_color : player_color.desaturate(0.3f)
+                    .alpha(0.8f);
             Label name = new Label(player_info.getName(), Skin.getSkin().getHeadlineFont())
-                    .setColor(color);
+                    .setColor(display_color);
             String race_str = RacesResources.getRaceName(player_info.getRace());
             Label race = new Label(race_str, Skin.getSkin().getHeadlineFont())
-                    .setColor(color);
+                    .setColor(display_color);
             String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.getTeam()
                     + 1));
             Label team = new Label(team_str, Skin.getSkin().getHeadlineFont())
-                    .setColor(color);
+                    .setColor(display_color);
             names.addChild(name);
             if (last_name != null)
                 name.place(last_name, BOTTOM_LEFT);

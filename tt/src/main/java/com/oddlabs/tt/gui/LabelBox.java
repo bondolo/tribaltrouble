@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 public class LabelBox extends TextField implements Comparable<LabelBox>, Clipped {
     private @NonNull TextLayout textLayout;
 
-    private @NonNull Color color = Color.Linear.WHITE;
+    private Color.@NonNull Linear color = Color.Linear.WHITE;
 
     public LabelBox(@NonNull CharSequence text, @NonNull Font font, int width) {
         super(text, font, Integer.MAX_VALUE);
@@ -44,7 +44,7 @@ public class LabelBox extends TextField implements Comparable<LabelBox>, Clipped
 
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
-        var c = isDisabled() ? Label.DISABLED_COLOR : color;
+        var c = isDisabled() ? color.desaturate(0.3f).alpha(color.a() * 0.8f) : color;
         TextLineRenderer.render(renderer, textLayout, 0, getHeight() - getFont().getHeight(), c);
     }
 
