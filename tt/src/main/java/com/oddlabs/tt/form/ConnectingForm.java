@@ -17,8 +17,8 @@ import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 
@@ -58,8 +58,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     @Override
     public void connected(@NonNull Client client, @NonNull Game game, WorldGenerator generator, int player_slot) {
         if (multiplayer) {
-            Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
-            random.nextFloat(); // first one always in same area
+            var random = ThreadLocalRandom.current();
             int race = random.nextInt(RacesResources.getNumRaces());
             int team = player_slot;
             if (game.isRated())

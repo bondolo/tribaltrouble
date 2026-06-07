@@ -13,6 +13,7 @@ import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -197,8 +198,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     }
 
     protected final void damageTarget(@NonNull Selectable<?> target) {
-        if (target instanceof Unit) {
-            float pitchRange = ((UnitTemplate) target.getTemplate()).getDeathPitch();
+        if (target instanceof Unit unit) {
+            float pitchRange = unit.getTemplate().getDeathPitch();
             var params = new AudioParameters(hit_sounds[ThreadLocalRandom.current().nextInt(
                     hit_sounds.length)],
                     AudioAssets.AUDIO_RANK_WEAPON_HIT,

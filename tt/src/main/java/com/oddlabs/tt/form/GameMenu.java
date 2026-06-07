@@ -42,11 +42,11 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
@@ -218,9 +218,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                 if (new_ai || race_changed || team_changed || difficulty_changed) {
                     slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(i18n("open"));
                     if (new_ai) {
-                        team_index = player_slot;
-                        race_index = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager()
-                                .getTick()).nextInt(RacesResources.getNumRaces());
+                       team_index = player_slot;
+                       race_index = ThreadLocalRandom.current().nextInt(RacesResources.getNumRaces());
                     }
                     game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race_index,
                             team_index, true, difficulty_index);

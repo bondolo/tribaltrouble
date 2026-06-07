@@ -99,7 +99,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
 
         if (duration - age < FADEOUT_DURATION) {
             float t = (duration - age) / FADEOUT_DURATION;
-            dest.scale(Math.max(0.0f, Math.min(1.0f, t)));
+            dest.scale(Math.clamp(t, 0.0f, 1.0f));
         }
     }
 
@@ -111,7 +111,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     public float getAlpha() {
         if (duration - age < FADEOUT_DURATION) {
             float t = (duration - age) / FADEOUT_DURATION;
-            return Math.max(0.0f, Math.min(1.0f, t));
+            return Math.clamp(t, 0.0f, 1.0f);
         }
         return 1.0f;
     }

@@ -18,8 +18,8 @@ import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 /**
@@ -130,7 +130,7 @@ public final class ProgressForm {
         delegate.addChild(image);
         delegate.addChild(progress_bar);
         if (show_tip) {
-            Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
+            var random = ThreadLocalRandom.current();
             CharSequence tip_string = LOADING_TIPS[random.nextInt(LOADING_TIPS.length)];
             int tip_width = Math.min(gui_root.getWidth() - 10, Skin.getSkin().getEditFont().getWidth(tip_string));
             LabelBox tip = new LabelBox(tip_string, Skin.getSkin().getEditFont(), tip_width);

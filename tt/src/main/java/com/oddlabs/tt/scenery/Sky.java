@@ -40,7 +40,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 /**
@@ -137,7 +137,6 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private float densityChangeInterval = 60f;
 
     private float lastTime = 0f;
-    private final Random random = new Random();
 
     public Sky(@NonNull LandscapeRenderer renderer, Landscape.@NonNull TerrainType terrain, @NonNull Texture detail,
             @NonNull Texture detailNormal) {
@@ -280,6 +279,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         if (dt < 0 || dt > 1.0f) dt = 0.016f;
         lastTime = currentTime;
 
+        var random = ThreadLocalRandom.current();
         innerTimeSinceChange += dt;
         if (innerTimeSinceChange > innerChangeInterval) {
             innerTimeSinceChange = 0f;

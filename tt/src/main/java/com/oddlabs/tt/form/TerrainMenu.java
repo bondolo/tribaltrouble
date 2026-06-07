@@ -44,8 +44,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
-import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
@@ -286,9 +286,6 @@ public final class TerrainMenu extends Group {
         PulldownButton<Void>[] difficulty_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         race_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
         team_pulldown_buttons = new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
-        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick()
-                * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
-        random.nextFloat();
         for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
             difficulty_pulldown_menus[i] = new PulldownMenu<>();
             race_pulldown_menus[i] = new PulldownMenu<>();
@@ -563,8 +560,7 @@ public final class TerrainMenu extends Group {
     }
 
     private void randomize() {
-        Random random = new Random(Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick()
-                * (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick());
+        var random = ThreadLocalRandom.current();
         random.nextInt();
         BigInteger rand_int = new BigInteger(100, random);
         parseBigInteger(rand_int);

@@ -32,7 +32,7 @@ import java.util.ArrayDeque;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Queue;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Renders water surfaces.
@@ -109,7 +109,6 @@ public final class Water implements AutoCloseable {
     private float timeSinceChange = 0f;
     private float changeInterval = 20f;
     private float lastTime = 0f;
-    private final Random random = new Random();
 
     private float waveTime = 0f;
     private final float @NonNull [] waveAmplitudes;
@@ -358,6 +357,7 @@ public final class Water implements AutoCloseable {
         lastTime = currentTime;
         waveTime += dt;
 
+        var random = ThreadLocalRandom.current();
         timeSinceChange += dt;
         if (timeSinceChange > changeInterval) {
             timeSinceChange = 0f;

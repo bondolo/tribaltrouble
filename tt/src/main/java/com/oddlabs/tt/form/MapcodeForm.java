@@ -17,9 +17,10 @@ import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigInteger;
-import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
@@ -93,11 +94,7 @@ public final class MapcodeForm extends Form {
     private final class RandButtonListener implements MouseClickListener {
         @Override
         public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
-            var seed = Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick() *
-                    (long) Renderer.getRenderer().getEventQueue().getHighPrecisionManager().getTick();
-            Random random = new Random(seed);
-            random.nextInt();
-            BigInteger rand_int = new BigInteger(60, random);
+            BigInteger rand_int = new BigInteger(60, ThreadLocalRandom.current());
             String rand_string = RegistrationKey.createString(rand_int);
             editline_seed.clear();
             editline_seed.append(rand_string);

@@ -78,6 +78,7 @@ public final class AmbientAudio implements AutoCloseable {
         return currentCount;
     }
 
+    @SuppressWarnings("MathClampMigration")
     private static boolean intersects(@NonNull BoundingBox box, float x, float y, float radiusSq) {
         float dx = x - Math.max(box.bmin_x, Math.min(x, box.bmax_x));
         float dy = y - Math.max(box.bmin_y, Math.min(y, box.bmax_y));

@@ -100,19 +100,19 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         }
         if (rally_point != null) {
             Target unit_target;
-            if (rally_point instanceof LandscapeTarget) {
+            if (rally_point instanceof LandscapeTarget lt) {
                 UnitGrid grid = getUnitGrid();
                 List<Target> temp_occupants = new ArrayList<>();
                 for (var s : getOwner().getUnits().getSet()) {
-                    if (s.getCurrentController() instanceof WalkController) {
-                        Target target = ((WalkController) s.getCurrentController()).getTarget();
+                    if (s.getCurrentController() instanceof WalkController wc) {
+                        Target target = wc.getTarget();
                         if (!grid.isGridOccupied(target.getGridX(), target.getGridY())) {
                             grid.occupyGrid(target.getGridX(), target.getGridY(), this);
                             temp_occupants.add(target);
                         }
                     }
                 }
-                unit_target = grid.findGridTargets(rally_point.getGridX(), rally_point.getGridY(), 1, true)[0];
+                unit_target = grid.findGridTargets(lt.getGridX(), lt.getGridY(), 1, true)[0];
                 for (Target target : temp_occupants) {
                     grid.freeGrid(target.getGridX(), target.getGridY(), this);
                 }
