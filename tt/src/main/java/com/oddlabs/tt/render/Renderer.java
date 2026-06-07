@@ -532,17 +532,17 @@ public final class Renderer implements AutoCloseable {
             switch (args[i]) {
             case "--grabframes" -> grab_frames = true;
             case "--eventload" -> {
-                eventload = true;
-                i++;
-                switch (args[i]) {
-                    case "zipped":
-                        zipped = true;
-                        break;
-                    case "normal":
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
-                }
+                    eventload = true;
+                    i++;
+                    switch (args[i]) {
+                        case "zipped":
+                            zipped = true;
+                            break;
+                        case "normal":
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
+                    }
             }
             case "--silent" -> silent = true;
             default -> throw new IllegalArgumentException("Unknown command line flag: " + args[i]);
