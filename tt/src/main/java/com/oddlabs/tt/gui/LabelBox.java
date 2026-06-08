@@ -44,7 +44,7 @@ public class LabelBox extends TextField implements Comparable<LabelBox>, Clipped
 
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
-        var c = isDisabled() ? color.desaturate(0.3f).alpha(color.a() * 0.8f) : color;
+        var c = isDisabled() ? color.desaturate(0.3f).mul(0.5f).alpha(color.a() * 0.8f) : color;
         TextLineRenderer.render(renderer, textLayout, 0, getHeight() - getFont().getHeight(), c);
     }
 

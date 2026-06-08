@@ -131,7 +131,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
         @Override
         public @NonNull Linear desaturate(float factor) {
             float gray = 0.2126f * r + 0.7152f * g + 0.0722f * b;
-            return this.lerp(new Linear(gray, gray, gray, a), factor);
+            return this.lerp(new Linear(gray, a), factor);
         }
 
         @Override

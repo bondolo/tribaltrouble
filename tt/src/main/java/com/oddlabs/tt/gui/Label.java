@@ -40,7 +40,7 @@ public class Label extends TextField implements Comparable<Label> {
 
     @Override
     protected void renderGeometry(@NonNull GUIRenderer renderer) {
-        var c = isDisabled() ? color.desaturate(0.3f).alpha(color.a() * 0.8f) : color;
+        var c = isDisabled() ? color.desaturate(0.3f).mul(0.5f).alpha(color.a() * 0.8f) : color;
         int textWidth = getFont().getWidth(getText());
         int x = switch (align) {
             case AT_START -> 0;
