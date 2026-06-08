@@ -23,7 +23,12 @@ public final class IronSupply extends SupplyModel {
     private static final float SPAWN_OFFSET_Z = 75.0f;
     private static final float FALL_DURATION_RATIO = 0.12f;
 
-    private Color.@NonNull Linear spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
+    private static final Color.Linear COLOR_FALLING = new Color.Standard(0xFF_FF_CC_00).linear();
+    private static final Color.Linear COLOR_RED_HOT = new Color.Standard(0xFF_FF_00_00).linear();
+    private static final Color.Linear COLOR_COOLING = new Color.Standard(0xFF_6B_6B_7A).linear();
+    private static final Color.Linear COLOR_DECAL_COOLED = new Color.Standard(0xFF_00_00_00).linear();
+
+    private Color.@Nullable Linear spawnColorTint = COLOR_FALLING;
     private Color.@Nullable Linear crackDecalColor = null;
     private float crackDecalOpacity = 0.0f;
     private float crackDecalDiameter = 0.0f;
@@ -95,7 +100,7 @@ public final class IronSupply extends SupplyModel {
         super.animateSpawn(t, progress);
         if (progress < FALL_DURATION_RATIO) {
             // falling
-            spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
+            spawnColorTint = COLOR_FALLING;
 
             Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
             if (trailEmitter == null) {
