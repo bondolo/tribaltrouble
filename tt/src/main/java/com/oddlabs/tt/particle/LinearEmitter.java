@@ -174,7 +174,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         float a = random.nextFloat(0f, (float) Math.PI * 2);
         float x = (float) Math.cos(a) * r;
         float y = (float) Math.sin(a) * r;
-        float z = random.nextFloat(0f, emitter_height);
+        float z = emitter_height > 0f ? random.nextFloat(0f, emitter_height) : 0f;
 
         randomized_position.set(getX() + x, getY() + y, getZ() + z);
         return randomized_position;

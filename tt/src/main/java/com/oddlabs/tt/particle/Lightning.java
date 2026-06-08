@@ -79,8 +79,8 @@ public final class Lightning extends Element<Lightning> implements Animated {
             float base_dx = (dst.x() - x) / (num_particles - i);
             float base_dy = (dst.y() - y) / (num_particles - i);
             float halfLimit = 0.5f * random_limit;
-            float dx = base_dx + random.nextFloat(-halfLimit, halfLimit);
-            float dy = base_dy + random.nextFloat(-halfLimit, halfLimit);
+            float dx = base_dx + (halfLimit > 0f ? random.nextFloat(-halfLimit, halfLimit) : 0f);
+            float dy = base_dy + (halfLimit > 0f ? random.nextFloat(-halfLimit, halfLimit) : 0f);
             StretchParticle particle = new StretchParticle(world);
             particle.setSrc(x, y, z);
 

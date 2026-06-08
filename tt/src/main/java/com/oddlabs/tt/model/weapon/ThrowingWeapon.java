@@ -203,7 +203,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
                     AudioAssets.AUDIO_RANK_WEAPON_HIT,
                     AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
                     AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange));
+                    1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange) : 0f));
             getWorld().getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }
         target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());

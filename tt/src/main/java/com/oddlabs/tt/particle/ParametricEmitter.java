@@ -182,9 +182,9 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
     protected final @NonNull Vector3f randomOffset(float a, float b, float c) {
         Random random = ThreadLocalRandom.current();
-        float x = random.nextFloat(-a, a);
-        float y = random.nextFloat(-b, b);
-        float z = random.nextFloat(-c, c);
+        float x = a > 0f ? random.nextFloat(-a, a) : 0f;
+        float y = b > 0f ? random.nextFloat(-b, b) : 0f;
+        float z = c > 0f ? random.nextFloat(-c, c) : 0f;
 
         randomized_offset.set(x, y, z);
         return randomized_offset;

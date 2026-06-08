@@ -264,8 +264,8 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     private void randomizeVelocity() {
         Random random = ThreadLocalRandom.current();
         float halfJump = .5f * angle_max_jump;
-        float dx_angle = random.nextFloat(-halfJump, halfJump);
-        float dy_angle = random.nextFloat(-halfJump, halfJump);
+        float dx_angle = halfJump > 0f ? random.nextFloat(-halfJump, halfJump) : 0f;
+        float dy_angle = halfJump > 0f ? random.nextFloat(-halfJump, halfJump) : 0f;
 
         if ((x_angle + dx_angle < -angle_bound) || (x_angle + dx_angle > angle_bound))
             x_angle -= dx_angle;
