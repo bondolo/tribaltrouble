@@ -55,10 +55,9 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     public RubberSupply(@NonNull World world, int grid_x, int grid_y,
             float x, float y, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
-        super(world, 2f, grid_x, grid_y, x, y, 0f, INITIAL_SUPPLIES, false,
-                world.getLandscapeResources().getChickenBounds());
         var spawn_z = world.getRandom().nextFloat(MIN_TREE_FALL_HEIGHT, MAX_TREE_FALL_HEIGHT);
-        this.offset_z = spawn_z;
+        super(world, 2f, grid_x, grid_y, x, y, spawn_z, 0f, INITIAL_SUPPLIES, false,
+                world.getLandscapeResources().getChickenBounds());
         this.path_tracker = new PathTracker(world.getUnitGrid(), this);
         this.group = group;
         start_grid_x = grid_x;
@@ -96,16 +95,15 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         float x = spawn_x + (UnitGrid.coordinateFromGrid(getGridX()) - spawn_x) * progress;
         float y = spawn_y + (UnitGrid.coordinateFromGrid(getGridY()) - spawn_y) * progress;
         setPosition(x, y);
-        offset_z = spawn_z - spawn_z * progress * progress;
+        setOffsetZ(spawn_z - spawn_z * progress * progress);
         reinsert();
     }
 
     @Override
     public void spawnComplete() {
-        offset_z = 0;
+        super.spawnComplete();
         spawning = false;
         setNewAnimation(Animation.IDLING);
-        setShowShadow(true);
     }
 
     @Override
@@ -134,7 +132,6 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void setGridPosition(int grid_x, int grid_y) {
         Region current_region = getWorld().getUnitGrid().getRegion(getGridX(), getGridY());
         Region new_region = getWorld().getUnitGrid().getRegion(grid_x, grid_y);
@@ -203,16 +200,9 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         switch (state) {
             case OK, OK_INTERRUPTIBLE -> {
             }
-            case DONE, BLOCKED, SOFTBLOCKED -> {
-                setNewAnimation(Animation.IDLING);
-            }
+            case DONE, BLOCKED, SOFTBLOCKED -> setNewAnimation(Animation.IDLING);
             default -> throw new IllegalStateException("Invalid tracker state: " + state);
         }
-    }
-
-    @Override
-    public float getOffsetZ() {
-        return offset_z;
     }
 
     private void setNewAnimation(@NonNull Animation animation) {

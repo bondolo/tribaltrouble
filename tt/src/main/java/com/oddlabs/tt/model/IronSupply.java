@@ -27,15 +27,14 @@ public final class IronSupply extends SupplyModel {
     private float crackDecalOpacity = 0.0f;
     private float crackDecalDiameter = 0.0f;
     private float crackDecalPattern = 0.0f;
-    private float offsetZ = 0.0f;
     private @Nullable PointEmitterModel trailEmitter = null;
     private @Nullable PointEmitterModel coolingEmitter = null;
     private boolean landed = false;
 
     public IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
-        var rotation = (float) (ThreadLocalRandom.current().nextDouble() * 2d * Math.PI);
+        var rotation = ThreadLocalRandom.current().nextFloat((float) -Math.PI, (float) Math.PI);
         var fragmentIndex = ThreadLocalRandom.current().nextInt(LandscapeResources.SUPPLY_FRAGMENT_COUNT);
-        super(world, 2f, grid_x, grid_y, x, y, rotation, INITIAL_SUPPLIES, increase,
+        super(world, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, rotation, INITIAL_SUPPLIES, increase,
                 world.getLandscapeResources().getIronBounds(fragmentIndex));
     }
 
@@ -75,18 +74,13 @@ public final class IronSupply extends SupplyModel {
     }
 
     @Override
-    public float getOffsetZ() {
-        return offsetZ + calculateSlopeOffset();
-    }
-
-    @Override
     public void animateSpawn(float t, float progress) {
         if (progress < FALL_DURATION_RATIO) {
             float fallProgress = progress / FALL_DURATION_RATIO;
-            offsetZ = SPAWN_OFFSET_Z * (1.0f - fallProgress);
+            setOffsetZ(SPAWN_OFFSET_Z * (1.0f - fallProgress));
             spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
 
-            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + offsetZ);
+            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + getOffsetZ());
             if (trailEmitter == null) {
                 RandomVelocityEmitter emitter = new RandomVelocityEmitter(
                         getWorld(), pos, 0.0f, 0.0f,
@@ -101,11 +95,11 @@ public final class IronSupply extends SupplyModel {
                 );
                 trailEmitter = new PointEmitterModel(getWorld(), emitter);
             } else {
-                trailEmitter.setPositionZ(getPositionZ() + offsetZ);
+                trailEmitter.setPositionZ(getPositionZ() + getOffsetZ());
             }
             setShowShadow(false);
         } else {
-            offsetZ = 0.0f;
+            setOffsetZ(0f);
 
             if (trailEmitter != null) {
                 trailEmitter.getEmitter().done();
@@ -210,9 +204,7 @@ public final class IronSupply extends SupplyModel {
         crackDecalOpacity = 0.0f;
         crackDecalDiameter = 0.0f;
         crackDecalPattern = 0.0f;
-        offsetZ = 0.0f;
         landed = false;
-        setShowShadow(true);
         if (trailEmitter != null) {
             trailEmitter.getEmitter().done();
             trailEmitter = null;
@@ -221,5 +213,6 @@ public final class IronSupply extends SupplyModel {
             coolingEmitter.getEmitter().done();
             coolingEmitter = null;
         }
+        reinsert();
     }
 }

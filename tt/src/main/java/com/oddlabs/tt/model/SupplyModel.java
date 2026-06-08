@@ -15,19 +15,18 @@ import com.oddlabs.util.Color;
  */
 public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply,
         RubberSupply, RockSupply {
-    private static final float SPAWN_OFFSET_Z = -2f;
-
-    @Override
-    public abstract @NonNull SupplyType getSupplyType();
-
     /** This is also known to be a SpriteKey */
     private final @NonNull BoundsProvider boundsProvider;
 
     private final float size;
     private final float rotation;
 
+    /** if true, then the shadow is visible */
+    private boolean showShadow;
+
     /** z-position relative to the ground height at (x,y) */
-    protected float offset_z;
+    private final float spawn_offset_z;
+    private float offset_z;
 
     private int grid_x;
     private int grid_y;
@@ -36,8 +35,23 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     private int num_supplies;
     private int hit_counter = 0;
 
+    /**
+     * Constructs a SupplyModel instance, which represents a supply object in the game world.
+     *
+     * @param world world instance where this supply model exists; must not be null
+     * @param size size of the supply model
+     * @param grid_x x-coordinate of the grid position
+     * @param grid_y y-coordinate of the grid position
+     * @param x x-coordinate of the initial position
+     * @param y y-coordinate of the initial position
+     * @param offset_z z-axis offset for the supply model's position
+     * @param rotation rotation of the supply model in radians
+     * @param num_supplies initial number of supplies in this model
+     * @param increase_count a flag indicating whether to notify the supply manager to increment the supply count
+     * @param boundsProvider a provider for bounds of the supply model; must not be null. Also, sneakily the SpriteKey
+     */
     public SupplyModel(@NonNull World world, float size, int grid_x, int grid_y,
-            float x, float y, float rotation, int num_supplies, boolean increase_count,
+            float x, float y, float offset_z, float rotation, int num_supplies, boolean increase_count,
             @NonNull BoundsProvider boundsProvider) {
         super(world);
         this.boundsProvider = boundsProvider;
@@ -47,8 +61,9 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         this.rotation = rotation;
         this.num_supplies = num_supplies;
         this.max_supplies = num_supplies;
-        this.offset_z = SPAWN_OFFSET_Z;
         setPosition(x, y);
+        spawn_offset_z = offset_z;
+        setOffsetZ(offset_z);
         updateBounds();
         world.getNotificationListener().registerTarget(this);
         UnitGrid unit_grid = world.getUnitGrid();
@@ -63,20 +78,25 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     }
 
 
+    /** {@return radians to rotate the model about the z-axis} */
     public final float getRotation() {
         return rotation;
     }
 
     @Override
+    public abstract @NonNull SupplyType getSupplyType();
+
+    @Override
     public void animateSpawn(float t, float progress) {
-        offset_z = SPAWN_OFFSET_Z * (1 - progress);
+        setOffsetZ(spawn_offset_z * (1 - progress));
         reinsert();
     }
 
     @Override
     public void spawnComplete() {
-        offset_z = 0.0f;
+        setOffsetZ(0f);
         showShadow = true;
+        // reinsert();
     }
 
     public Color.@Nullable Linear getSpawnColorTint() {
@@ -152,8 +172,6 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         return 7.0f * getSupplyRatio();
     }
 
-    private boolean showShadow = true;
-
     protected final void setShowShadow(boolean showShadow) {
         this.showShadow = showShadow;
     }
@@ -199,11 +217,17 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     }
 
     @Override
-    public float getOffsetZ() {
-        return offset_z + calculateSlopeOffset();
+    public final float getOffsetZ() {
+        return offset_z;
     }
 
-    protected float calculateSlopeOffset() {
+    protected final void setOffsetZ(float offset_z) {
+        var slopeOffset = calculateSlopeOffset();
+        this.offset_z = Math.abs(offset_z) < Math.abs(slopeOffset)
+                ? slopeOffset : offset_z;
+    }
+
+    private float calculateSlopeOffset() {
         // Check surrounding heights to lift object on slopes
         float r = getSize() * 0.2f;
         float x = getPositionX();

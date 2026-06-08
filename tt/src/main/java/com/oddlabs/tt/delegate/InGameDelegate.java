@@ -7,8 +7,12 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.IronSupply;
 import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.model.RockSupply;
+import com.oddlabs.tt.model.SupplySpawnAnimation;
 import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.viewer.Cheat;
@@ -35,6 +39,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
         Cheat cheat = viewer.getCheat();
         if (!cheat.isEnabled())
             return false;
+
         var pickLocation = viewer.getPicker().pickLocation(getCamera().getState());
 
         if (actions.contains(GameAction.CHEAT_1)) {
@@ -108,6 +113,35 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
             FogInfo fog_info = viewer.getGUIRoot().getDelegate().getCamera().getState().getFog();
             fog_info.setEnabled(!fog_info.isEnabled());
             return true;
+        }
+
+        if (actions.contains(GameAction.CHEAT_11)) {
+            // ALT-F11 spawns a rock
+            if (pickLocation.isPresent()) {
+                var loc = pickLocation.get();
+                int gx = UnitGrid.toGridCoordinate(loc.x());
+                int gy = UnitGrid.toGridCoordinate(loc.y());
+                var world = viewer.getWorld();
+                if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
+                    RockSupply rock = new RockSupply(world, gx, gy, loc.x(), loc.y(), false);
+                    new SupplySpawnAnimation(rock, rock.getSpawnTime());
+                    return true;
+                }
+            }
+        }
+        if (actions.contains(GameAction.CHEAT_12)) {
+            // ALT-F12 spawns a meteor
+            if (pickLocation.isPresent()) {
+                var loc = pickLocation.get();
+                int gx = UnitGrid.toGridCoordinate(loc.x());
+                int gy = UnitGrid.toGridCoordinate(loc.y());
+                var world = viewer.getWorld();
+                if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
+                    IronSupply iron = new IronSupply(world, gx, gy, loc.x(), loc.y(), false);
+                    new SupplySpawnAnimation(iron, iron.getSpawnTime());
+                    return true;
+                }
+            }
         }
 
         // If in developer mode

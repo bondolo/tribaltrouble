@@ -196,6 +196,9 @@ public final class InputManager {
         def(GameAction.CHEAT_7, Key.F7);
         def(GameAction.CHEAT_8, Key.F8);
         def(GameAction.CHEAT_9, Key.F9);
+        def(GameAction.CHEAT_10, Key.F10);
+        def(GameAction.CHEAT_11, Key.F11, Modifier.ALT);
+        def(GameAction.CHEAT_12, Key.F12, Modifier.ALT);
 
         // Debug
         def(GameAction.DEBUG_PRINT_INFO, Key.I, Modifier.CONTROL);

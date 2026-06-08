@@ -157,5 +157,4 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
         float y = base_acceleration.y() + acceleration_factor * (float) Math.sin(y_angle);
         current_acceleration.set(x, y, base_acceleration.z());
     }
-
 }

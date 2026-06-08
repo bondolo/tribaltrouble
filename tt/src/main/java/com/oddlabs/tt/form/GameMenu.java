@@ -218,8 +218,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
                 if (new_ai || race_changed || team_changed || difficulty_changed) {
                     slot_button.getMenu().getItem(OPEN_INDEX).setLabelString(i18n("open"));
                     if (new_ai) {
-                       team_index = player_slot;
-                       race_index = ThreadLocalRandom.current().nextInt(RacesResources.getNumRaces());
+                        team_index = player_slot;
+                        race_index = ThreadLocalRandom.current().nextInt(RacesResources.getNumRaces());
                     }
                     game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race_index,
                             team_index, true, difficulty_index);

@@ -88,29 +88,25 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
     }
 
     private static void buildRockSupplies(@NonNull World world, @NonNull List<int[]> positions) {
-        int num_supplies = positions.size();
-        IO.println("num_rocks = " + num_supplies);
-        for (int i = 0; i < num_supplies; i++) {
-            int[] coords = positions.get(i);
+        IO.println("num_rocks = " + positions.size());
+        positions.forEach(coords -> {
             int grid_x = coords[0];
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
-            new RockSupply(world, grid_x, grid_y, x, y, true);
-        }
+            new RockSupply(world, grid_x, grid_y, x, y, true).spawnComplete();
+        });
     }
 
     private static void buildIronSupplies(@NonNull World world, @NonNull List<int[]> positions) {
-        int num_supplies = positions.size();
-        IO.println("num_iron = " + num_supplies);
-        for (int i = 0; i < num_supplies; i++) {
-            int[] coords = positions.get(i);
+        IO.println("num_iron = " + positions.size());
+        positions.forEach(coords -> {
             int grid_x = coords[0];
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
-            new IronSupply(world, grid_x, grid_y, x, y, true);
-        }
+            new IronSupply(world, grid_x, grid_y, x, y, true).spawnComplete();
+        });
     }
 
     public static void addPlants(@NonNull World world, float @NonNull [] @NonNull [] plants,
