@@ -75,6 +75,20 @@ public final class RockSupply extends SupplyModel {
         return crackDecalPattern;
     }
 
+    @Override
+    public float getOffsetZ() {
+        float slope = getSlopeOffset();
+        if (isSpawning()) {
+            float progress = getSpawnProgress();
+            if (progress < 0.3f) return SPAWN_OFFSET_Z + slope;
+            if (progress < 0.7f) {
+                float riseProgress = (progress - 0.3f) / 0.4f;
+                return (1.0f - riseProgress) * SPAWN_OFFSET_Z + slope;
+            }
+        }
+        return slope;
+    }
+
     private void ensureSmokeEmitter() {
         if (smokeEmitter == null) {
             Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
@@ -95,6 +109,7 @@ public final class RockSupply extends SupplyModel {
 
     @Override
     public void animateSpawn(float t, float progress) {
+        super.animateSpawn(t, progress);
         if (progress < 0.3f) {
             float progressRatio = progress / 0.3f;
             crackDecalOpacity = progressRatio;
@@ -115,13 +130,10 @@ public final class RockSupply extends SupplyModel {
             crackDecalDiameter = getSize() * 2.0f;
             crackDecalPattern = 10.5f;
             crackDecalColor = Color.Linear.WHITE;
-            float riseProgress = (progress - 0.3f) / 0.4f;
-            setOffsetZ(SPAWN_OFFSET_Z * (1.0f - riseProgress));
             spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
             ensureSmokeEmitter();
         } else {
             float coolProgress = (progress - 0.7f) / 0.3f;
-            setOffsetZ(0.0f);
             setShowShadow(true);
             crackDecalOpacity = 1.0f - coolProgress;
             crackDecalDiameter = getSize() * 2.0f;

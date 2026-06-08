@@ -37,6 +37,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private final @NonNull AudioFile @NonNull [] hit_sounds;
     private final boolean hit;
     private final @NonNull Unit src;
+    /** rendering offset */
+    private final float deterministic_z;
 
     /** the target of the weapon. Mutable because rubber weapons bounce and change targets **/
     private @NonNull Selectable<?> target;
@@ -49,32 +51,27 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private float time_limit;
     private float time;
     private float z_speed;
-    /**
-     * absolute height in the world
-     */
+
+    /** absolute height in the world */
     private float current_z;
-    /**
-     * rendering offset
-     */
-    private float deterministic_z;
 
     public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target,
-            @NonNull AudioFile throw_sound,
-            @NonNull AudioFile @NonNull [] hit_sounds) {
+            @NonNull AudioFile throw_sound, @NonNull AudioFile @NonNull [] hit_sounds) {
         super(src.getOwner().getWorld());
         this.src = src;
         this.hit = hit;
         this.hit_sounds = hit_sounds;
 
-        setPosition(src.getPositionX() + OFFSET_X * src.getDirectionX() - OFFSET_Y * src.getDirectionY(), src
-                .getPositionY() + OFFSET_X * src.getDirectionY() - OFFSET_Y * src.getDirectionX());
+        float x = src.getPositionX() + OFFSET_X * src.getDirectionX() - OFFSET_Y * src.getDirectionY();
+        float y = src.getPositionY() + OFFSET_X * src.getDirectionY() - OFFSET_Y * src.getDirectionX();
         deterministic_z = OFFSET_Z + src.getMountOffset();
-        current_z = getWorld().getHeightMap().getNearestHeight(getPositionX(), getPositionY()) + deterministic_z;
+        current_z = getWorld().getHeightMap().getNearestHeight(x, y) + deterministic_z;
+
+        setPosition(x, y, current_z - deterministic_z);
 
         setTarget(target);
 
         register();
-        reinsert();
 
         var params = new AudioParameters(throw_sound, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
                 AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
@@ -180,10 +177,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         current_z += z_speed * t;
         z_speed += GRAVITY * t;
 
-        setPosition(x, y);
-        deterministic_z = current_z - getWorld().getHeightMap().getNearestHeight(x, y);
+        setPosition(x, y, current_z - deterministic_z);
 
-        reinsert();
         audio_player.setPosition(getPositionX(), getPositionY(), getPositionZ());
     }
 

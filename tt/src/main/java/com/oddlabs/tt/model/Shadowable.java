@@ -7,7 +7,7 @@ import org.jspecify.annotations.NonNull;
  * Interface for world objects that can cast a dynamic shadow decal.
  */
 public interface Shadowable {
-    /** diameter of the shadow */
+    /** diameter of the shadow or zero for no shadow */
     float getShadowDiameter();
 
     /** darkness of the shadow */

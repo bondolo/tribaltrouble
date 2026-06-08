@@ -6,9 +6,9 @@ import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import com.oddlabs.util.Color;
 
 /**
  * Abstract base class for non-tree harvestable resources in the world such as rocks and iron.
@@ -25,8 +25,9 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     private boolean showShadow;
 
     /** z-position relative to the ground height at (x,y) */
-    private final float spawn_offset_z;
-    private float offset_z;
+    protected final float spawn_offset_z;
+    private float spawnProgress = 0f;
+    private boolean spawning = true;
 
     private int grid_x;
     private int grid_y;
@@ -61,10 +62,8 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         this.rotation = rotation;
         this.num_supplies = num_supplies;
         this.max_supplies = num_supplies;
-        setPosition(x, y);
-        spawn_offset_z = offset_z;
-        setOffsetZ(offset_z);
-        updateBounds();
+        this.spawn_offset_z = offset_z;
+        super.setPosition(x, y); // Set raw coordinates without triggering height lookup yet
         world.getNotificationListener().registerTarget(this);
         UnitGrid unit_grid = world.getUnitGrid();
         unit_grid.occupyGrid(grid_x, grid_y, this);
@@ -72,7 +71,6 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         @SuppressWarnings("unchecked") var supplyClass = (Class<Supply>) getSupplyType().getSupplyClass();
         region.registerObject(supplyClass, this);
         register();
-        reinsert();
         if (increase_count)
             world.getSupplyManager(getSupplyType()).newSupply();
     }
@@ -88,15 +86,24 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
 
     @Override
     public void animateSpawn(float t, float progress) {
-        setOffsetZ(spawn_offset_z * (1 - progress));
+        this.spawnProgress = progress;
         reinsert();
     }
 
     @Override
     public void spawnComplete() {
-        setOffsetZ(0f);
+        this.spawning = false;
+        this.spawnProgress = 1.0f;
         showShadow = true;
-        // reinsert();
+        reinsert();
+    }
+
+    protected final float getSpawnProgress() {
+        return spawnProgress;
+    }
+
+    protected final boolean isSpawning() {
+        return spawning;
     }
 
     public Color.@Nullable Linear getSpawnColorTint() {
@@ -217,40 +224,12 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     }
 
     @Override
-    public final float getOffsetZ() {
-        return offset_z;
+    public float getOffsetZ() {
+        return getSlopeOffset();
     }
 
-    protected final void setOffsetZ(float offset_z) {
-        var slopeOffset = calculateSlopeOffset();
-        this.offset_z = Math.abs(offset_z) < Math.abs(slopeOffset)
-                ? slopeOffset : offset_z;
-    }
-
-    private float calculateSlopeOffset() {
-        // Check surrounding heights to lift object on slopes
-        float r = getSize() * 0.2f;
-        float x = getPositionX();
-        float y = getPositionY();
-        var hm = getWorld().getHeightMap();
-
-        float h_center = hm.getNearestHeight(x, y);
-        float h_max = h_center;
-
-        // Axis-aligned
-        h_max = Math.max(h_max, hm.getNearestHeight(x + r, y));
-        h_max = Math.max(h_max, hm.getNearestHeight(x - r, y));
-        h_max = Math.max(h_max, hm.getNearestHeight(x, y + r));
-        h_max = Math.max(h_max, hm.getNearestHeight(x, y - r));
-
-        // Diagonals
-        float d = r * 0.707f;
-        h_max = Math.max(h_max, hm.getNearestHeight(x + d, y + d));
-        h_max = Math.max(h_max, hm.getNearestHeight(x - d, y + d));
-        h_max = Math.max(h_max, hm.getNearestHeight(x + d, y - d));
-        h_max = Math.max(h_max, hm.getNearestHeight(x - d, y - d));
-
-        return Math.max(0f, h_max - h_center);
+    protected final float getSlopeOffset() {
+        return getSlopeOffset(getSize() * 0.2f);
     }
 
     public final @NonNull BoundsProvider getBoundsProvider() {

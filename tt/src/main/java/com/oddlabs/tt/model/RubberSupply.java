@@ -44,14 +44,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private final int start_grid_y;
     private final float spawn_x;
     private final float spawn_y;
-    private final float spawn_z;
 
     private final @NonNull RubberGroup group;
 
     private float anim_time = 0;
     private @NonNull Animation animation = Animation.IDLING;
     private boolean is_hit = false;
-    private boolean spawning;
 
     public RubberSupply(@NonNull World world, int grid_x, int grid_y,
             float x, float y, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
@@ -64,14 +62,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         start_grid_y = grid_y;
         this.spawn_x = spawn_x;
         this.spawn_y = spawn_y;
-        this.spawn_z = spawn_z;
-        spawning = true;
+
         float dx = x - spawn_x;
         float dy = y - spawn_y;
         float inv_len = 1f / (float) Math.hypot(dx, dy);
         setDirection(dx * inv_len, dy * inv_len);
         setNewAnimation(Animation.FLYING);
-        setShowShadow(false);
     }
 
     @Override
@@ -91,18 +87,16 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public void animateSpawn(float t, float progress) {
+        super.animateSpawn(t, progress);
         anim_time += animation.getSpeed() * t;
         float x = spawn_x + (UnitGrid.coordinateFromGrid(getGridX()) - spawn_x) * progress;
         float y = spawn_y + (UnitGrid.coordinateFromGrid(getGridY()) - spawn_y) * progress;
         setPosition(x, y);
-        setOffsetZ(spawn_z - spawn_z * progress * progress);
-        reinsert();
     }
 
     @Override
     public void spawnComplete() {
         super.spawnComplete();
-        spawning = false;
         setNewAnimation(Animation.IDLING);
     }
 
@@ -118,7 +112,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
 
     @Override
     public boolean isMoving() {
-        return false;
+        return animation == Animation.FLYING || animation == Animation.RUNNING;
     }
 
     @Override
@@ -153,7 +147,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     @Override
     public void animate(float t) {
         animateClientState(t);
-        if (spawning)
+        if (isSpawning())
             return;
         anim_time += animation.getSpeed() * t;
         if (animation == Animation.FLYING || animation == Animation.RUNNING) {
@@ -166,24 +160,27 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                     getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
                             AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
                                     AudioAssets.CHICKEN_IDLES.length)]);
-                    getClientState(ModelClient.class).ifPresent(client -> {
-                        client.addVisualSound(EmojiType.CHICKEN_CLUCK,
-                                ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
-                    });
+                    getClientState(ModelClient.class).ifPresent(client ->
+                            client.addVisualSound(EmojiType.CHICKEN_CLUCK,
+                                    ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN));
                 }
             } else if (random < .85) {
-                // fly
-                int new_grid_x = start_grid_x + (int) (getWorld().getRandom().nextFloat(-1f, 1f) * MAX_MOVE_GRIDS);
-                int new_grid_y = start_grid_y + (int) (getWorld().getRandom().nextFloat(-1f, 1f) * MAX_MOVE_GRIDS);
-                Target target = getWorld().getUnitGrid().findGridTargets(new_grid_x, new_grid_y, 1, false)[0];
-                path_tracker.setTarget(new TargetTrackerAlgorithm(getWorld().getUnitGrid(), 0f, target));
-                float move_random = getWorld().getRandom().nextFloat();
-                if (move_random < .25f) {
-                    setNewAnimation(Animation.FLYING);
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            AudioAssets.CHICKEN_PECK);
-                } else {
-                    setNewAnimation(Animation.RUNNING);
+                // move
+                int max_grids = (int) MAX_MOVE_GRIDS;
+                int new_grid_x = start_grid_x + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
+                int new_grid_y = start_grid_y + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
+                UnitGrid grid = getWorld().getUnitGrid();
+                if (new_grid_x >= 0 && new_grid_y >= 0 && new_grid_x < grid.getGridSize() && new_grid_y < grid.getGridSize()) {
+                    Target target = grid.findGridTargets(new_grid_x, new_grid_y, 1, false)[0];
+                    path_tracker.setTarget(new TargetTrackerAlgorithm(grid, 0f, target));
+                    float move_random = getWorld().getRandom().nextFloat();
+                    if (move_random < .25f) {
+                        setNewAnimation(Animation.FLYING);
+                        getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                                AudioAssets.CHICKEN_PECK);
+                    } else {
+                        setNewAnimation(Animation.RUNNING);
+                    }
                 }
             } else {
                 setNewAnimation(Animation.PECKING);
@@ -231,6 +228,16 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             group.remove(this);
         }
         return super.hit();
+    }
+
+    @Override
+    public float getOffsetZ() {
+        float slope = getSlopeOffset();
+        if (isSpawning()) {
+            float progress = getSpawnProgress();
+            return (1 - progress * progress) * spawn_offset_z + slope;
+        }
+        return slope;
     }
 
     @Override

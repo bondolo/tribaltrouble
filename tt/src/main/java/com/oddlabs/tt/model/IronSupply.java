@@ -74,13 +74,22 @@ public final class IronSupply extends SupplyModel {
     }
 
     @Override
+    public float getOffsetZ() {
+        float slope = getSlopeOffset();
+        if (isSpawning()) {
+            float fallProgress = Math.min(1.0f, getSpawnProgress() / FALL_DURATION_RATIO);
+            return (1.0f - fallProgress) * SPAWN_OFFSET_Z + slope;
+        }
+        return slope;
+    }
+
+    @Override
     public void animateSpawn(float t, float progress) {
+        super.animateSpawn(t, progress);
         if (progress < FALL_DURATION_RATIO) {
-            float fallProgress = progress / FALL_DURATION_RATIO;
-            setOffsetZ(SPAWN_OFFSET_Z * (1.0f - fallProgress));
             spawnColorTint = new Color.Linear(2.0f, 0.8f, 0.0f, 1.0f);
 
-            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + getOffsetZ());
+            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
             if (trailEmitter == null) {
                 RandomVelocityEmitter emitter = new RandomVelocityEmitter(
                         getWorld(), pos, 0.0f, 0.0f,
@@ -95,12 +104,10 @@ public final class IronSupply extends SupplyModel {
                 );
                 trailEmitter = new PointEmitterModel(getWorld(), emitter);
             } else {
-                trailEmitter.setPositionZ(getPositionZ() + getOffsetZ());
+                trailEmitter.setPosition(getPositionX(), getPositionY(), getPositionZ());
             }
             setShowShadow(false);
         } else {
-            setOffsetZ(0f);
-
             if (trailEmitter != null) {
                 trailEmitter.getEmitter().done();
                 trailEmitter = null;

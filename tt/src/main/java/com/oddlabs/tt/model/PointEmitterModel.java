@@ -16,7 +16,6 @@ import org.jspecify.annotations.Nullable;
 public class PointEmitterModel extends Model implements Animated {
     protected final @NonNull Emitter<?> emitter;
     private final @NonNull AnimationManager manager;
-    private final float height;
 
     public PointEmitterModel(@NonNull World world, @NonNull Emitter<?> emitter) {
         this(world, emitter, world.getAnimationManagerGameTime());
@@ -29,11 +28,8 @@ public class PointEmitterModel extends Model implements Animated {
         float x = emitter.getPosition().x();
         float y = emitter.getPosition().y();
         float z = emitter.getPosition().z();
-        float ground = world.getHeightMap().getNearestHeight(x, y);
-        this.height = z - ground;
 
-        setPosition(x, y);
-        setPositionZ(z);
+        setPosition(x, y, z);
         register();
         manager.registerAnimation(this);
     }
@@ -42,11 +38,6 @@ public class PointEmitterModel extends Model implements Animated {
     public void remove() {
         super.remove();
         manager.removeAnimation(this);
-    }
-
-    @Override
-    public float getOffsetZ() {
-        return height;
     }
 
     @Override
