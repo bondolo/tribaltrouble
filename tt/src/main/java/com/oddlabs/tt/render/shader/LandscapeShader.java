@@ -160,19 +160,25 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         float h_minus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(-1, 0)).r;
                         float h_plus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, 1)).r;
                         float h_minus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, -1)).r;
-                        // Mathematically accurate normal (each texel spacing represents 2.0 meters, making 4.0 meters between plus and minus samples)
+
+                        // Calculate two normals:
+                        // 1. A mathematically accurate normal for triplanar mapping and specular
+                        // 2. A "soft" normal for diffuse lighting to replicate legacy FFP look
+                        // (Each texel spacing represents 2.0 meters, making 4.0 meters between plus and minus samples)
+                        vec3 worldNormalGeom = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
                         vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
 
                         // Smoothly blend worldNormal to flat (0,0,1) near the world edges to match the seabottom normal
+                        worldNormalGeom = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormalGeom, edgeBlend));
                         worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
 
                         // Sample detail map and detail normal map using branching-optimized triplanar mapping for steep slopes (cliffs)
-                        if (worldNormal.z > 0.85) {
+                        if (worldNormalGeom.z > 0.85) {
                             detailColor = texture(u_DetailMap, v_texCoord1);
                             detailNormalColor = texture(u_DetailNormalMap, v_texCoord1);
                         } else {
                             vec3 coord = vec3(worldPos, v_height) * u_DetailScale;
-                            vec3 blendWeights = abs(worldNormal);
+                            vec3 blendWeights = abs(worldNormalGeom);
                             blendWeights = pow(blendWeights, vec3(4.0));
                             blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
 
@@ -187,7 +193,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space)
                         // Steep slopes (high slope) get full contrast; flat terrain gets reduced contrast
-                        float slope = 1.0 - worldNormal.z;
+                        float slope = 1.0 - worldNormalGeom.z;
                         vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
                         float detailFade = clamp(detailColor.a / 0.15, 0.0, 1.0);
                         float detailStrength = mix(0.15, 0.4, slope) * normalMapStrength * detailFade;
@@ -198,13 +204,22 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         // Apply dynamic wetness darkening (wet surfaces scatter less light)
                         diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.55, wetness);
 
+                        vec3 viewNormalGeom = normalize((u_viewMatrix * vec4(worldNormalGeom, 0.0)).xyz);
                         vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
 
                         // Perturb using normal map
-                        vec3 baseNormal = perturbNormal(viewNormal, normalize(v_viewPosition), v_texCoordColormap, normalMapVal.rgb);
+                        // We use a manual TBN frame derived from the grid to avoid patch boundary seams caused by dFdx/dFdy
+                        vec3 worldTangentX = vec3(4.0, 0.0, h_plus_x - h_minus_x);
+                        vec3 worldTangentY = vec3(0.0, 4.0, h_plus_y - h_minus_y);
+                        vec3 vTangentX = normalize((u_viewMatrix * vec4(worldTangentX, 0.0)).xyz);
+                        vec3 vTangentY = normalize((u_viewMatrix * vec4(worldTangentY, 0.0)).xyz);
+                        mat3 TBN = mat3(vTangentX, vTangentY, viewNormalGeom);
+
+                        vec3 map = normalMapVal.rgb * (255.0/127.0) - (128.0/127.0);
+                        vec3 baseNormal = normalize(TBN * map);
 
                         // Reduce the normal map perturbation strength under water to smooth the underwater terrain
-                        baseNormal = normalize(mix(viewNormal, baseNormal, normalMapStrength));
+                        baseNormal = normalize(mix(viewNormalGeom, baseNormal, normalMapStrength));
 
                         // Blend baseNormal back to the flat viewNormal near the boundary to eliminate TBN/derivative mismatches
                         baseNormal = normalize(mix(viewNormal, baseNormal, edgeBlend));

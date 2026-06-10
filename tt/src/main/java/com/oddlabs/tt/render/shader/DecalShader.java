@@ -65,10 +65,31 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         vec2 localPos = in_Position * in_InstanceSize;
                         vec2 worldPos = in_InstancePos + localPos;
 
-                        // Map world position to heightmap UV
-                        // Add half-texel offset to align vertex-centered heightmap (1 grid unit = 2 meters)
-                        vec2 mapUV = (worldPos + 1.0) / u_WorldSize;
-                        float h = texture(u_HeightMap, mapUV).r;
+                        // Calculate planar height matching the terrain triangulation:
+                        // Each grid unit = 2.0 meters.
+                        vec2 gridPos = worldPos * 0.5;
+                        vec2 cell = floor(gridPos);
+                        vec2 f = gridPos - cell;
+
+                        ivec2 size = textureSize(u_HeightMap, 0);
+                        vec2 sizeVec = vec2(size);
+
+                        ivec2 c00 = ivec2(mod(cell, sizeVec));
+                        ivec2 c10 = ivec2(mod(cell + vec2(1.0, 0.0), sizeVec));
+                        ivec2 c01 = ivec2(mod(cell + vec2(0.0, 1.0), sizeVec));
+                        ivec2 c11 = ivec2(mod(cell + vec2(1.0, 1.0), sizeVec));
+
+                        float h00 = texelFetch(u_HeightMap, c00, 0).r;
+                        float h10 = texelFetch(u_HeightMap, c10, 0).r;
+                        float h01 = texelFetch(u_HeightMap, c01, 0).r;
+                        float h11 = texelFetch(u_HeightMap, c11, 0).r;
+
+                        float h;
+                        if (f.x + f.y < 1.0) {
+                            h = h00 + f.x * (h10 - h00) + f.y * (h01 - h00);
+                        } else {
+                            h = h11 + (1.0 - f.x) * (h01 - h11) + (1.0 - f.y) * (h10 - h11);
+                        }
 
                         vec4 viewPosition = u_modelViewMatrix * vec4(worldPos, h, 1.0);
                         viewPosition.z += u_DepthBias;
