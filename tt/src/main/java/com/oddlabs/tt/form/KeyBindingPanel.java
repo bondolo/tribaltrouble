@@ -111,7 +111,7 @@ public class KeyBindingPanel extends Panel {
                 name = action.name();
             }
 
-            List<InputBinding> bindings = Renderer.getLocalInput().getInputManager().getBindings(action);
+            var bindings = Renderer.getLocalInput().getInputManager().getBindings(action);
             Label l2;
 
             if (bindings.isEmpty()) {
@@ -120,19 +120,19 @@ public class KeyBindingPanel extends Panel {
             } else {
                 boolean isMac = System.getProperty("os.name", "").toLowerCase().contains("mac");
                 String bindingStr = bindings.stream().map(b -> {
-                    String s = b.key().getDisplayName();
+                    String s = "";
                     if (isMac) {
-                        if (b.meta()) s = "⌘" + s;
-                        if (b.alt()) s = "⌥" + s;
-                        if (b.control()) s = "⌃" + s;
-                        if (b.shift()) s = "⇧" + s;
+                        if (b.control()) s = s + "⌃";
+                        if (b.alt()) s = s + "⌥";
+                        if (b.shift()) s = s + "⇧";
+                        if (b.meta()) s = s + "⌘";
                     } else {
-                        if (b.shift()) s = "Shift+" + s;
-                        if (b.control()) s = "Ctrl+" + s;
-                        if (b.alt()) s = "Alt+" + s;
-                        if (b.meta()) s = "Meta+" + s;
+                        if (b.control()) s = s + "Ctrl+";
+                        if (b.alt()) s = s + "Alt+";
+                        if (b.shift()) s = s + "Shift+";
+                        if (b.meta()) s = s + "Meta+";
                     }
-                    return s;
+                    return s + b.key().getDisplayName();
                 }).collect(Collectors.joining(", "));
                 l2 = new Label(bindingStr, Skin.getSkin().getMultiColumnComboBoxData().font());
             }
