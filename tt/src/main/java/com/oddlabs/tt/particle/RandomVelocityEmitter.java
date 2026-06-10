@@ -20,7 +20,6 @@ public final class RandomVelocityEmitter extends LinearEmitter {
     private final float angle_bound;
     private final float angle_max_jump;
     private final @NonNull Vector3f current_velocity;
-    private final @NonNull Vector3fc base_velocity;
     private final boolean randomizeRotation;
     private final boolean randomizeScale;
 
@@ -70,7 +69,6 @@ public final class RandomVelocityEmitter extends LinearEmitter {
                 velocity, acceleration, color, delta_color, particle_radius, growth_rate, energy, friction,
                 src_blend_func, dst_blend_func, textures, sprite_renderers, types);
         this.uv_angle = uv_angle;
-        this.base_velocity = velocity;
         this.current_velocity = new Vector3f(velocity);
         this.angle_bound = angle_bound;
         this.angle_max_jump = angle_max_jump;
@@ -277,9 +275,9 @@ public final class RandomVelocityEmitter extends LinearEmitter {
         else
             y_angle += dy_angle;
 
-        float x = base_velocity.x() + base_velocity.z() * (float) Math.sin(x_angle);
-        float y = base_velocity.y() + base_velocity.z() * (float) Math.sin(y_angle);
-        current_velocity.set(x, y, base_velocity.z());
+        float x = velocity.x() + velocity.z() * (float) Math.sin(x_angle);
+        float y = velocity.y() + velocity.z() * (float) Math.sin(y_angle);
+        current_velocity.set(x, y, velocity.z());
     }
 
 }

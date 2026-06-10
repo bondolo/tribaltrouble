@@ -94,8 +94,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     public void spawnComplete() {
         this.spawning = false;
         this.spawnProgress = 1.0f;
-        showShadow = true;
-        reinsert();
+        setShowShadow(true);
     }
 
     protected final float getSpawnProgress() {
@@ -231,7 +230,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         return getSlopeOffset(getSize() * 0.2f);
     }
 
-    public final @NonNull BoundsProvider getBoundsProvider() {
+    public @NonNull BoundsProvider getBoundsProvider() {
         return boundsProvider;
     }
 

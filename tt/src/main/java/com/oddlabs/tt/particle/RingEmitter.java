@@ -3,6 +3,7 @@ package com.oddlabs.tt.particle;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.util.Color;
+import java.util.concurrent.ThreadLocalRandom;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
@@ -67,22 +68,38 @@ public final class RingEmitter extends LinearEmitter {
 
     @Override
     protected int initParticle(@NonNull Vector3f position, @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
+            Color.@NonNull Linear templateColor, Color.@NonNull LinearDelta templateDeltaColor,
             @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy) {
-        float angle = 2 * (float) Math.PI / num_particles;
+        float baseAngle = 2 * (float) Math.PI / num_particles;
         for (int i = 0; i < num_particles; i++) {
             LinearParticle particle = new LinearParticle(getWorld());
             Vector3f pos = position;
             particle.setPos(pos.x(), pos.y(), pos.z());
+            
+            // Randomize radial velocity and energy for "blotchy" expansion
+            float velocityMultiplier = ThreadLocalRandom.current().nextFloat(0.7f, 1.3f);
+            float energyMultiplier = ThreadLocalRandom.current().nextFloat(0.4f, 1.6f);
+            
+            // Per-particle color (called per-particle for individual variation within the ring)
+            Color.Linear particleColor = nextParticleColor(this.color);
+            float actualEnergy = energy * energyMultiplier;
+            float baseFadeRate = actualEnergy > 0f ? -particleColor.a() / actualEnergy : 0f;
+            float fadeMultiplier = ThreadLocalRandom.current().nextFloat(0.8f, 1.2f);
+            Color.LinearDelta particleDeltaColor = templateDeltaColor.alpha(baseFadeRate * fadeMultiplier);
+
+            // Jitter the angle to break up perfect rings
+            float angle = baseAngle * i + ThreadLocalRandom.current().nextFloat(-0.1f, 0.1f);
+
             // in this special case velocity.getZ() is the actual velocity. not the velocity in the z direction
-            particle.setVelocity(velocity.z() * (float) Math.cos(angle * i), velocity.z() * (float) Math.sin(angle * i),
+            particle.setVelocity(velocity.z() * velocityMultiplier * (float) Math.cos(angle), 
+                                 velocity.z() * velocityMultiplier * (float) Math.sin(angle),
                     0);
             particle.setAcceleration(acceleration.x(), acceleration.y(), acceleration.z());
-            particle.setColor(color);
-            particle.setDeltaColor(delta_color);
+            particle.setColor(particleColor);
+            particle.setDeltaColor(particleDeltaColor);
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
             particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
-            particle.setEnergy(energy);
+            particle.setEnergy(energy * energyMultiplier);
             particle.setType(nextType());
             add(particle);
         }

@@ -326,7 +326,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
         while (particle_counter >= 1 && (remaining_particles == -1 || remaining_particles != 0) && started) {
             int initiated = initParticles(1);
-            assert initiated <= remaining_particles || remaining_particles == -1 : "Too many particles initiated";
+            assert remaining_particles == -1 || remaining_particles > 0 || initiated == 0 : "Too many particles initiated";
             particle_counter -= initiated;
             if (remaining_particles > 0)
                 remaining_particles = Math.max(0, remaining_particles - initiated);

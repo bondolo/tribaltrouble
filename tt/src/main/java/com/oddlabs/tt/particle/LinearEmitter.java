@@ -26,12 +26,12 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private final float offset_z;
     private final float emitter_radius;
     private final float emitter_height;
-    private final @NonNull Vector3fc velocity;
-    private final @NonNull Vector3fc acceleration;
+    protected final @NonNull Vector3f velocity;
+    protected final @NonNull Vector3f acceleration;
     protected final Color.@NonNull Linear color;
-    protected final @NonNull Vector3fc particle_radius;
-    protected final @NonNull Vector3fc growth_rate;
-    private final float friction;
+    protected final @NonNull Vector3f particle_radius;
+    protected final @NonNull Vector3f growth_rate;
+    protected final float friction;
     private final BoundingBox bounds = new BoundingBox();
 
     protected Color.@NonNull LinearDelta delta_color;
@@ -74,15 +74,47 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.offset_z = offset_z;
         this.emitter_radius = emitter_radius;
         this.emitter_height = emitter_height;
-        this.velocity = velocity;
-        this.acceleration = acceleration;
+        this.velocity = new Vector3f(velocity);
+        this.acceleration = new Vector3f(acceleration);
         this.color = color;
         this.delta_color = delta_color;
-        this.particle_radius = particle_radius;
-        this.growth_rate = growth_rate;
+        this.particle_radius = new Vector3f(particle_radius);
+        this.growth_rate = new Vector3f(growth_rate);
         this.energy = energy;
         this.friction = friction;
         position.set(position.x(), position.y(), position.z() + offset_z);
+    }
+
+    public final void setParticleRadius(@NonNull Vector3fc radius) {
+        this.particle_radius.set(radius);
+    }
+
+    public final void setParticleRadius(float x, float y, float z) {
+        this.particle_radius.set(x, y, z);
+    }
+
+    public final void setGrowthRate(@NonNull Vector3fc growth_rate) {
+        this.growth_rate.set(growth_rate);
+    }
+
+    public final void setGrowthRate(float x, float y, float z) {
+        this.growth_rate.set(x, y, z);
+    }
+
+    public final void setVelocity(@NonNull Vector3fc velocity) {
+        this.velocity.set(velocity);
+    }
+
+    public final void setVelocity(float x, float y, float z) {
+        this.velocity.set(x, y, z);
+    }
+
+    public final void setAcceleration(@NonNull Vector3fc acceleration) {
+        this.acceleration.set(acceleration);
+    }
+
+    public final void setAcceleration(float x, float y, float z) {
+        this.acceleration.set(x, y, z);
     }
 
     public final void setDeltaColor(Color.@NonNull LinearDelta delta_color) {

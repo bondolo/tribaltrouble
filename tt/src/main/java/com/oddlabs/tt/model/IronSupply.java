@@ -5,7 +5,6 @@ import com.oddlabs.tt.landscape.World;
 import java.util.concurrent.ThreadLocalRandom;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.particle.RingEmitter;
-import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.LandscapeResources;
 import com.oddlabs.tt.resource.AudioAssets;
@@ -20,13 +19,16 @@ import org.lwjgl.opengl.GL11;
  */
 public final class IronSupply extends SupplyModel {
     private static final int INITIAL_SUPPLIES = 10;
-    private static final float SPAWN_OFFSET_Z = 75.0f;
+    private static final float SPAWN_OFFSET_Z = 200.0f;
     private static final float FALL_DURATION_RATIO = 0.12f;
 
-    private static final Color.Linear COLOR_FALLING = new Color.Standard(0xFF_FF_CC_00).linear();
-    private static final Color.Linear COLOR_RED_HOT = new Color.Standard(0xFF_FF_00_00).linear();
+    private static final Color.Linear COLOR_FALLING = new Color.Linear(2.0f, 0.5f, 0.05f, 1.0f);
+    private static final Color.Linear COLOR_LANDING = new Color.Linear(2.0f, 1.0f, 0.2f, 1.0f); // Overdriven
+    private static final Color.Linear COLOR_HOT = new Color.Linear(2.0f, 0.2f, 0.1f, 1.0f); // Overdriven
+    private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f); // Overdriven
     private static final Color.Linear COLOR_COOLING = new Color.Standard(0xFF_6B_6B_7A).linear();
-    private static final Color.Linear COLOR_DECAL_COOLED = new Color.Standard(0xFF_00_00_00).linear();
+    private static final Color.Linear COLOR_DECAL_COOLED = Color.Linear.BLACK;
+    private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f; // Lower density
 
     private Color.@Nullable Linear spawnColorTint = COLOR_FALLING;
     private Color.@Nullable Linear crackDecalColor = null;
@@ -35,14 +37,29 @@ public final class IronSupply extends SupplyModel {
     private float crackDecalPattern = 0.0f;
     private @Nullable PointEmitterModel trailEmitter = null;
     private @Nullable PointEmitterModel coolingEmitter = null;
+    private final int fragmentIndex;
     private boolean landed = false;
     private boolean cooling = false;
+    private boolean airBurstPlayed = false;
+    private boolean useRockTexture = true;
 
     public IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
-        var rotation = ThreadLocalRandom.current().nextFloat((float) -Math.PI, (float) Math.PI);
-        var fragmentIndex = ThreadLocalRandom.current().nextInt(LandscapeResources.SUPPLY_FRAGMENT_COUNT);
-        super(world, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, rotation, INITIAL_SUPPLIES, increase,
+        this(world, grid_x, grid_y, x, y, increase, ThreadLocalRandom.current().nextInt(LandscapeResources.SUPPLY_FRAGMENT_COUNT));
+    }
+
+    private IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase, int fragmentIndex) {
+        super(world, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, ThreadLocalRandom.current().nextFloat((float) -Math.PI, (float) Math.PI), INITIAL_SUPPLIES, increase,
                 world.getLandscapeResources().getIronBounds(fragmentIndex));
+        this.fragmentIndex = fragmentIndex;
+    }
+
+    @Override
+    public @NonNull BoundsProvider getBoundsProvider() {
+        // Use rock texture while hot to show tinting better
+        if (useRockTexture) {
+            return getWorld().getLandscapeResources().getRockBounds(fragmentIndex);
+        }
+        return super.getBoundsProvider();
     }
 
     @Override
@@ -57,7 +74,7 @@ public final class IronSupply extends SupplyModel {
 
     @Override
     public float getSpawnTime() {
-        return 6.0f;
+        return 4.5f;
     }
 
     @Override
@@ -102,27 +119,37 @@ public final class IronSupply extends SupplyModel {
             // falling
             spawnColorTint = COLOR_FALLING;
 
-            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
-            if (trailEmitter == null) {
-                // Legacy baseline physical parameters (rate 400, spreads)
-                RandomVelocityEmitter emitter = new RandomVelocityEmitter(
-                        getWorld(), pos, 0.0f, 0.0f,
-                        getSize() * 0.8f, 0.5f, 0.1f, 0.05f,
-                        -1, 400f,
-                        new Vector3f(0f, 0f, -120.0f), new Vector3f(0f, 0f, 150.0f),
-                        new Color.Linear(0.02f, 0.75f), new Color.LinearDelta(0f, 0f, 0f, -0.75f),
-                        new Vector3f(1.0f, 1.0f, 2.0f), new Vector3f(3.5f, 3.5f, 7.0f), // Vertically Stretched
-                        0.8f, 0.1f,
-                        GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                        getWorld().getRacesResources().getSmokeTextures()
-                );
-                // Specifically requested sooty/black anchor
-                emitter.setSpectrumRange(0.2f, 0.2f);
-                emitter.setJitterIntensity(0.005f);
-                trailEmitter = new PointEmitterModel(getWorld(), emitter);
-            } else {
-                trailEmitter.setPosition(getPositionX(), getPositionY(), getPositionZ());
+            if (!airBurstPlayed) {
+                airBurstPlayed = true;
+                getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                        new AudioParameters(AudioAssets.SFX_LURBLAST, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.8f
+                        ));
             }
+
+            float fallProgress = progress / FALL_DURATION_RATIO;
+            var emitterModel = ensureTrailEmitter();
+            var emitter = (RandomVelocityEmitter) emitterModel.getEmitter();
+
+            // Dynamic Parameters:
+            // PPS: Scaling 800 to 2400 (Tripled at landing)
+            float pps = 800f + 1600f * fallProgress;
+            emitter.setParticlesPerSecond(pps);
+
+            // Size/Stretch: 
+            // Start: 1.6 X/Z, 2.0 Y (Double size and moderate stretch)
+            // Landing: 0.8 X/Z, 0.75 Y (Baseline size, halved stretch)
+            float radiusXZ = 1.6f - 0.8f * fallProgress;
+            float radiusY = 2.0f - 1.25f * fallProgress;
+            emitter.setParticleRadius(radiusXZ, radiusY, radiusXZ);
+
+            // Growth scales proportionally
+            float growthXZ = 2.4f - 1.2f * fallProgress;
+            float growthY = 3.0f - 2.25f * fallProgress;
+            emitter.setGrowthRate(growthXZ, growthY, growthXZ);
+
+            emitterModel.setPosition(getPositionX(), getPositionY(), getPositionZ());
         } else {
             if (trailEmitter != null) {
                 trailEmitter.getEmitter().done();
@@ -134,118 +161,172 @@ public final class IronSupply extends SupplyModel {
                 setShowShadow(true);
 
                 Vector3f landingPos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + 0.15f);
-                new SonicBlastEffect(getWorld(), landingPos, 3.5f, 0.4f, new Color.Linear(0.2f, 0.25f, 0.3f, 1.0f));
 
-                // Fewer particles (24), more vertical stretch (1.5 radius, 15.0 growth)
+                // Bright impact flash (additive)
+                RingEmitter flash = new RingEmitter(
+                        getWorld(), landingPos, 0.0f,
+                        0.0f, 0.0f,
+                        1, 1000f,
+                        new Vector3f(0f, 0f, 0.0f),
+                        new Vector3f(0f, 0f, 0.0f),
+                        COLOR_WHITE_HOT, Color.LinearDelta.ZERO.alpha(-10.0f), // Very fast fade
+                        new Vector3f(10.0f, 10.0f, 10.0f),
+                        new Vector3f(0.0f, 0.0f, 0.0f),
+                        0.1f, 0.0f,
+                        GL11.GL_SRC_ALPHA, GL11.GL_ONE,
+                        getWorld().getRacesResources().getSmokeTextures()
+                );
+                new PointEmitterModel(getWorld(), flash);
+
+                // Primary energetic dust puff (high speed, explosive)
                 RingEmitter puff = new RingEmitter(
                         getWorld(), landingPos, 0.0f,
-                        0.2f, 0.1f,
-                        24, 2000f,
-                        new Vector3f(0f, 0f, 15.0f),
-                        new Vector3f(0f, 0f, 16.0f),
-                        new Color.Linear(0.05f, 0.75f), Color.LinearDelta.ZERO.alpha(-0.2f),
-                        new Vector3f(0.8f, 0.8f, 1.5f), // Stretched Radius Z=1.5
-                        new Vector3f(8.5f, 8.5f, 15.0f), // Stretched Growth Z=15.0
-                        0.5f, 0.1f,
+                        0.5f, 0.0f, // Lowered emitter height
+                        48, 10f,
+                        new Vector3f(0f, 0f, 40.0f), // Balanced expansion
+                        new Vector3f(0f, 0f, 0.0f), // No lift
+                        Color.Linear.WHITE.alpha(0.30f), Color.LinearDelta.ZERO,
+                        new Vector3f(1.0f, 1.0f, 0.0f), // Flat (radius.z)
+                        new Vector3f(15.0f, 15.0f, 0.0f), // Flat (growth.z)
+                        0.6f, 0.1f, // Shorter energy
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                         getWorld().getRacesResources().getSmokeTextures()
                 );
 
-                puff.setSpectrumRange(0.0f, 0.6f);
+                puff.setSpectrumRange(0.0f, 0.9f);
                 puff.setBaseColor(Landscape.getDustColor(getWorld().getTerrainType()));
+                puff.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.5f));
                 puff.setTransition(0.1f, 0.1f, 0.0f, 0.5f);
-                puff.setJitterIntensity(0.01f);
+                puff.setJitterIntensity(0.15f);
 
                 new PointEmitterModel(getWorld(), puff);
 
-                getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                        new AudioParameters(AudioAssets.SFX_LURBLAST, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
-                                AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
-                                AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.8f
-                        ));
+                // Secondary lingering debris cloud (ground sweeping)
+                RingEmitter debris = new RingEmitter(
+                        getWorld(), landingPos, 0.0f,
+                        0.5f, 0.0f, // Halved emitter radius
+                        64, 10f,
+                        new Vector3f(0f, 0f, 6.0f), // Halved radial expansion speed
+                        new Vector3f(0f, 0f, 0.0f), // No lift
+                        Color.Linear.WHITE.alpha(0.15f), Color.LinearDelta.ZERO,
+                        new Vector3f(1.0f, 0.2f, 0.0f), // Halved particle radius
+                        new Vector3f(4.0f, 0.25f, 0.0f), // Halved growth rate
+                        1.0f, 0.45f, // Halved lifetime/energy (adjusts fadeout)
+                        GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                        getWorld().getRacesResources().getSmokeTextures()
+                );
+                debris.setBaseColor(Landscape.getDustColor(getWorld().getTerrainType()));
+                debris.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.4f));
+                debris.setSpectrumRange(0.1f, 0.9f);
+                debris.setJitterIntensity(0.20f);
+                new PointEmitterModel(getWorld(), debris);
             }
 
-            // Cracks pulse logic (orange fading to black over 0.5s)
-            float crackTime = 0.5f / 3.0f; // 0.5s duration
-            if (progress >= FALL_DURATION_RATIO && progress < FALL_DURATION_RATIO + crackTime) {
-                float crackProgress = (progress - FALL_DURATION_RATIO) / crackTime;
+            // Cracks pulse logic (fading out smoothly)
+            float crackDuration = 0.6f; 
+            if (progress >= FALL_DURATION_RATIO && progress < FALL_DURATION_RATIO + crackDuration) {
+                float crackProgress = (progress - FALL_DURATION_RATIO) / crackDuration;
                 crackDecalOpacity = 1.0f - crackProgress;
-                crackDecalDiameter = getSize() * 2.0f;
+                crackDecalDiameter = getSize() * 2.5f; // Matched RockSupply
                 crackDecalPattern = 10.5f;
-                float colorVal = 1.0f - crackProgress;
-                crackDecalColor = new Color.Linear(colorVal, colorVal, colorVal, 1.0f);
+                // Fade color from White to Cooled (Black)
+                crackDecalColor = Color.Linear.WHITE.lerp(COLOR_DECAL_COOLED, crackProgress);
             } else {
                 crackDecalOpacity = 0.0f;
                 crackDecalColor = null;
             }
 
-            float coolProgress = (progress - 0.4f) / 0.6f;
-            if (coolingEmitter == null && !cooling) {
-                Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
-                // Legacy baseline physical parameters
-                RandomVelocityEmitter emitter = new RandomVelocityEmitter(
-                        getWorld(), pos, 0.0f, 0.0f,
-                        getSize() * 0.5f, 0.1f, 0.1f, 0.05f,
-                        -1, 150f,
-                        new Vector3f(0f, 0f, 1.5f), new Vector3f(0f, 0f, -0.3f),
-                        new Color.Linear(0.1f, 0.1f, 0.1f, 0.5f), new Color.LinearDelta(0f, 0f, 0f, -0.6f),
-                        new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(2.5f, 2.5f, 2.5f),
-                        0.8f, 0.1f,
-                        GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                        getWorld().getRacesResources().getSmokeTextures()
-                );
-                coolingEmitter = new PointEmitterModel(getWorld(), emitter);
-            }
+            float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
 
-            if (coolProgress >= 0.0f) {
-                float spawnRate = 150.0f * (1.0f - coolProgress);
-                if (coolingEmitter != null) {
-                    coolingEmitter.getEmitter().setParticlesPerSecond(spawnRate);
-                }
-                if (!cooling) {
-                    cooling = true;
-                    var sizzle = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            new AudioParameters(AudioAssets.SFX_GAS, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.65f
-                            ));
-                    sizzle.stop(10f);
-                }
+            if (!cooling) {
+                cooling = true;
+                ensureCoolingEmitter();
+                var sizzle = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
+                        new AudioParameters(AudioAssets.SFX_GAS, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
+                                AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.65f
+                        ));
+                sizzle.stop(1.3f);
             }
+            ensureCoolingEmitter().getEmitter().setParticlesPerSecond(SMOKE_PARTICLES_PER_SECOND * (1.0f - coolProgress));
 
             if (coolProgress < 0.3f) {
                 float factor = coolProgress / 0.3f;
-                spawnColorTint = new Color.Linear(
-                        2.0f - 0.5f * factor,
-                        0.8f - 0.8f * factor,
-                        0.0f,
-                        1.0f
-                );
-            } else if (coolProgress < 0.7f) {
-                float factor = (coolProgress - 0.3f) / 0.4f;
-                spawnColorTint = new Color.Linear(
-                        1.5f - 1.35f * factor,
-                        0.15f * factor,
-                        0.2f * factor,
-                        1.0f
-                );
+                spawnColorTint = COLOR_FALLING.lerp(COLOR_LANDING, factor);
+            } else if (coolProgress < 0.6f) {
+                float factor = (coolProgress - 0.3f) / 0.3f;
+                spawnColorTint = COLOR_LANDING.lerp(COLOR_HOT, factor);
+            } else if (coolProgress < 0.8f) {
+                float factor = (coolProgress - 0.6f) / 0.2f;
+                spawnColorTint = COLOR_HOT.lerp(COLOR_COOLING, factor);
+            } else if (coolProgress < 0.9f) {
+                float factor = (coolProgress - 0.8f) / 0.1f;
+                spawnColorTint = COLOR_COOLING.lerp(COLOR_COOLING.mul(0.35f), factor);
+            } else if (coolProgress < 1.0f) {
+                useRockTexture = false; // Transition to iron texture as we hit cool grey
+                float factor = (coolProgress - 0.9f) / 0.1f;
+                Color.Linear ironStartTint = COLOR_COOLING.mul(0.9f);
+                spawnColorTint = ironStartTint.lerp(Color.Linear.WHITE, factor);
             } else {
-                float factor = (coolProgress - 0.7f) / 0.3f;
-                spawnColorTint = new Color.Linear(
-                        0.15f + 0.85f * factor,
-                        0.15f + 0.85f * factor,
-                        0.2f + 0.8f * factor,
-                        1.0f
-                );
+                spawnColorTint = null;
             }
         }
-        reinsert();
+    }
+
+    private PointEmitterModel ensureTrailEmitter() {
+        if (trailEmitter == null) {
+            // Offset UP more to ensure trail starts behind meteor center
+            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + 10.0f);
+            RandomVelocityEmitter emitter = new RandomVelocityEmitter(
+                    getWorld(), pos, 0.0f, 0.0f, // world, position, offset_z, uv_angle
+                    0.02f, 5.0f, // Narrow vertical column
+                    0.1f, 0.02f, // Reduced drift to keep column straight
+                    -1, 800f, // Initial PPS (will be updated dynamically)
+                    new Vector3f(0f, 0f, 10.0f), new Vector3f(0f, 0f, 5.0f), 
+                    new Color.Linear(0.08f, 0.6f), new Color.LinearDelta(0f, -0.6f),
+                    new Vector3f(1.6f, 2.0f, 1.6f), new Vector3f(2.4f, 3.0f, 2.4f), 
+                    1.2f, 0.1f, 
+                    GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                    getWorld().getRacesResources().getSmokeTextures(),
+                    null, getWorld().getRacesResources().getSmokeTextures().length,
+                    true, true 
+            );
+            // Specifically requested sooty/black anchor
+            emitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
+            emitter.setSpectrumRange(0.2f, 0.2f);
+            emitter.setJitterIntensity(0.5f); // High jitter for distinct particles
+            trailEmitter = new PointEmitterModel(getWorld(), emitter);
+        }
+        return trailEmitter;
+    }
+
+    private PointEmitterModel ensureCoolingEmitter() {
+        if (coolingEmitter == null) {
+            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
+            RandomVelocityEmitter emitter = new RandomVelocityEmitter(
+                    getWorld(), pos, 0.0f, 0.0f,
+                    getSize() * 0.5f, 0.1f, 0.2f, 0.1f,
+                    -1, SMOKE_PARTICLES_PER_SECOND,
+                    new Vector3f(0f, 0f, 1.5f), new Vector3f(0f, 0f, -0.3f),
+                    new Color.Linear(0.15f, 0.5f), new Color.LinearDelta(0f, -0.4f),
+                    new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(2.5f, 2.5f, 2.5f),
+                    1.2f, 0.1f,
+                    GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                    getWorld().getRacesResources().getSmokeTextures()
+            );
+            // Spectrum 0.2 (dark grey, visible) → 0.8 (light grey, faint)
+            emitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
+            emitter.setSpectrumRange(0.2f, 0.8f);
+            emitter.setJitterIntensity(0.02f);
+            emitter.setTransition(0f, 3.0f, 0.8f, 0f);
+            coolingEmitter = new PointEmitterModel(getWorld(), emitter);
+        }
+        return coolingEmitter;
     }
 
     @Override
     public void spawnComplete() {
         super.spawnComplete();
-        setShowShadow(true);
 
         spawnColorTint = null;
         crackDecalColor = null;
@@ -253,6 +334,8 @@ public final class IronSupply extends SupplyModel {
         crackDecalDiameter = 0.0f;
         crackDecalPattern = 0.0f;
         landed = false;
+        airBurstPlayed = false;
+        useRockTexture = false;
         if (trailEmitter != null) {
             trailEmitter.getEmitter().done();
             trailEmitter = null;

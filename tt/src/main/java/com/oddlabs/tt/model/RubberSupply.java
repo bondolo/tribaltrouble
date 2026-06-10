@@ -98,6 +98,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     public void spawnComplete() {
         super.spawnComplete();
         setNewAnimation(Animation.IDLING);
+        reinsert();
     }
 
     @Override
