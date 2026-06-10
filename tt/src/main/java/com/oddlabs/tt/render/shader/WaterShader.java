@@ -110,10 +110,19 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         vec3 normal = vec3(0.0, 0.0, 1.0);
 
                         if (u_enableWaves) {
-                            float waveScale = 1.0;
+                            float distToEdgeX = min(baseXY.x, u_WorldSize - baseXY.x);
+                            float distToEdgeY = min(baseXY.y, u_WorldSize - baseXY.y);
+                            float distToEdge = min(distToEdgeX, distToEdgeY);
+
+                            float waveScale;
                             if (u_waterHeight == 0.0) {
-                                waveScale = clamp(in_Position.z / u_fogParams.w, 0.0, 1.0);
+                                float edgeFade = clamp(-distToEdge / 16.0, 0.0, 1.0);
+                                float distanceFade = clamp(in_Position.z / u_fogParams.w, 0.0, 1.0);
+                                waveScale = edgeFade * distanceFade;
+                            } else {
+                                waveScale = clamp(distToEdge / 16.0, 0.0, 1.0);
                             }
+
                             addGerstnerWave(0, baseXY, waveScale, disp, normal);
                             addGerstnerWave(1, baseXY, waveScale, disp, normal);
                             addGerstnerWave(2, baseXY, waveScale, disp, normal);

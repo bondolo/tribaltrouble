@@ -299,7 +299,8 @@ public final class Water implements AutoCloseable {
                     WaterShader.Uniforms.WAVE_AMPLITUDE,
                     WaterShader.Uniforms.WAVE_STEEPNESS,
                     WaterShader.Uniforms.WAVE_LENGTH,
-                    WaterShader.Uniforms.WAVE_DIR);
+                    WaterShader.Uniforms.WAVE_DIR,
+                    !state.inNoDetailMode());
 
             // Render Sky Water (Infinite Plane)
             waterShader.setUniform(WaterShader.Uniforms.WATER_HEIGHT, 0.0f);
@@ -335,7 +336,7 @@ public final class Water implements AutoCloseable {
 
                 if (oceanCount > 0) {
                     waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, minAlpha);
-                    waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, true);
+                    waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, !state.inNoDetailMode());
                     oceanInstanceVBO = uploadAndDraw(context, oceanCount, oceanInstanceBuffer, oceanInstanceVBO);
                 }
 
@@ -453,8 +454,15 @@ public final class Water implements AutoCloseable {
             @NonNull String enableWavesKey,
             @NonNull String amplitudeKey, @NonNull String steepnessKey, @NonNull String lengthKey,
             @NonNull String dirKey) {
+        uploadWaveUniforms(program, timeKey, enableWavesKey, amplitudeKey, steepnessKey, lengthKey, dirKey, true);
+    }
+
+    public void uploadWaveUniforms(@NonNull ShaderProgram program, @NonNull String timeKey,
+            @NonNull String enableWavesKey,
+            @NonNull String amplitudeKey, @NonNull String steepnessKey, @NonNull String lengthKey,
+            @NonNull String dirKey, boolean enableWaves) {
         program.setUniform(timeKey, waveTime * waveSpeed);
-        program.setUniform(enableWavesKey, true);
+        program.setUniform(enableWavesKey, enableWaves);
         for (int i = 0; i < WAVE_COUNT; i++) {
             program.setUniform(amplitudeKey + "[" + i + "]", waveAmplitudes[i]);
             program.setUniform(steepnessKey + "[" + i + "]", waveSteepness[i]);

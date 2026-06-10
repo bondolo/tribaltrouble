@@ -144,7 +144,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
 
             // Upload wave uniforms from Water animation if active
             Water activeWater = water;
-            if (activeWater != null) {
+            if (activeWater != null && !state.inNoDetailMode()) {
                 activeWater.uploadWaveUniforms(shader,
                         LandscapeShader.Uniforms.TIME,
                         LandscapeShader.Uniforms.ENABLE_WAVES,
