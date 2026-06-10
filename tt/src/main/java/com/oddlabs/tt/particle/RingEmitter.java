@@ -75,11 +75,11 @@ public final class RingEmitter extends LinearEmitter {
             LinearParticle particle = new LinearParticle(getWorld());
             Vector3f pos = position;
             particle.setPos(pos.x(), pos.y(), pos.z());
-            
+
             // Randomize radial velocity and energy for "blotchy" expansion
             float velocityMultiplier = ThreadLocalRandom.current().nextFloat(0.7f, 1.3f);
             float energyMultiplier = ThreadLocalRandom.current().nextFloat(0.4f, 1.6f);
-            
+
             // Per-particle color (called per-particle for individual variation within the ring)
             Color.Linear particleColor = nextParticleColor(this.color);
             float actualEnergy = energy * energyMultiplier;
@@ -91,8 +91,8 @@ public final class RingEmitter extends LinearEmitter {
             float angle = baseAngle * i + ThreadLocalRandom.current().nextFloat(-0.1f, 0.1f);
 
             // in this special case velocity.getZ() is the actual velocity. not the velocity in the z direction
-            particle.setVelocity(velocity.z() * velocityMultiplier * (float) Math.cos(angle), 
-                                 velocity.z() * velocityMultiplier * (float) Math.sin(angle),
+            particle.setVelocity(velocity.z() * velocityMultiplier * (float) Math.cos(angle),
+                    velocity.z() * velocityMultiplier * (float) Math.sin(angle),
                     0);
             particle.setAcceleration(acceleration.x(), acceleration.y(), acceleration.z());
             particle.setColor(particleColor);

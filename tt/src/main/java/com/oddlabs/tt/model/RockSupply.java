@@ -173,7 +173,7 @@ public final class RockSupply extends SupplyModel {
                     getSize() * 0.4f, 0.1f, 0.2f, 0.1f, // spread/area
                     -1, 15.0f, // rate
                     new Vector3f(0f, 0f, 2.0f), new Vector3f(0f, 0f, -0.5f), // velocity/accel
-                    new Color.Linear(0.1f, 0.75f), new Color.LinearDelta(0f,-0.6f),
+                    new Color.Linear(0.1f, 0.75f), new Color.LinearDelta(0f, -0.6f),
                     new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f(1.0f, 1.0f, 1.0f), // size/growth
                     1.0f, 0.2f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,

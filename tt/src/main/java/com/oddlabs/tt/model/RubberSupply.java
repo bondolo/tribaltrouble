@@ -161,9 +161,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                     getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
                             AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
                                     AudioAssets.CHICKEN_IDLES.length)]);
-                    getClientState(ModelClient.class).ifPresent(client ->
-                            client.addVisualSound(EmojiType.CHICKEN_CLUCK,
-                                    ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN));
+                    getClientState(ModelClient.class).ifPresent(client -> client.addVisualSound(EmojiType.CHICKEN_CLUCK,
+                            ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN));
                 }
             } else if (random < .85) {
                 // move
@@ -171,7 +170,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                 int new_grid_x = start_grid_x + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
                 int new_grid_y = start_grid_y + getWorld().getRandom().nextInt(-max_grids, max_grids + 1);
                 UnitGrid grid = getWorld().getUnitGrid();
-                if (new_grid_x >= 0 && new_grid_y >= 0 && new_grid_x < grid.getGridSize() && new_grid_y < grid.getGridSize()) {
+                if (new_grid_x >= 0 && new_grid_y >= 0 && new_grid_x < grid.getGridSize() && new_grid_y < grid
+                        .getGridSize()) {
                     Target target = grid.findGridTargets(new_grid_x, new_grid_y, 1, false)[0];
                     path_tracker.setTarget(new TargetTrackerAlgorithm(grid, 0f, target));
                     float move_random = getWorld().getRandom().nextFloat();

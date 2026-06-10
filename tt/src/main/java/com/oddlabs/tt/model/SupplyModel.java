@@ -52,7 +52,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
      * @param boundsProvider a provider for bounds of the supply model; must not be null. Also, sneakily the SpriteKey
      */
     public SupplyModel(@NonNull World world, float size, int grid_x, int grid_y,
-            float x, float y, float offset_z, float  rotation, int num_supplies, boolean increase_count,
+            float x, float y, float offset_z, float rotation, int num_supplies, boolean increase_count,
             @NonNull BoundsProvider boundsProvider) {
         super(world);
         this.boundsProvider = boundsProvider;

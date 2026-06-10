@@ -42,7 +42,8 @@ public final class InstantHitFactory extends WeaponFactory {
                     AudioAssets.AUDIO_RANK_WEAPON_HIT,
                     AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
                     AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange) : 0f));
+                    1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange)
+                            : 0f));
             world.getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
         }
         target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());

@@ -52,6 +52,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private static final float SKYDOME_HEIGHT = 0f;
     private static final int SKYDOME_GRADIENT_LENGTH = 20;
     private static final int SKYDOME_DEFAULT_COLOR = 8;
+    private static final int FLOATS_PER_VERTEX = 13;
 
     private static final Map<Landscape.TerrainType, @NonNull Color> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
             Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_E5_F2_FF),
@@ -162,7 +163,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
         // Create interleaved VBO for the sky
         int num_vertices_sky = subdiv_axis * (subdiv_height - 1) + 1;
-        int stride = (3 + 3 + 2 + 2 + 3) * Float.BYTES; // pos, norm, uv0, uv1, color
+        int stride = FLOATS_PER_VERTEX * Float.BYTES; // pos, norm, uv0, uv1, color
         try (var stack = MemoryStack.stackPush()) {
             FloatBuffer skyBuffer = stack.mallocFloat(num_vertices_sky * (stride / Float.BYTES));
             makeSkyVertices(radius, outer_utile, outer_vtile, inner_utile, inner_vtile, origin_x, origin_y, origin_z,
@@ -537,7 +538,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         int size = subdiv_axis + 2;
         try (var stack = MemoryStack.stackPush()) {
             ShortBuffer temp = stack.mallocShort(size);
-            temp.put(0, (short) (sky_vbo.capacity() / ((3 + 3 + 2 + 2 + 3) * Float.BYTES) - 1));
+            temp.put(0, (short) (sky_vbo.capacity() / FLOATS_PER_VERTEX - 1));
             for (int i = 0; i < subdiv_axis; i++) {
                 temp.put(i + 1, (short) ((subdiv_height - 1) * subdiv_axis - i - 1));
             }

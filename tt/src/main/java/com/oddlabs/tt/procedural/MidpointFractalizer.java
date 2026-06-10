@@ -30,7 +30,8 @@ public final class MidpointFractalizer {
                 for (int y_block = 0; y_block < (1 << base_freq); y_block++) {
                     int x = x_block * block_size;
                     int y = y_block * block_size;
-                    channel.putPixel(x, y, base.getPixel(x_block, y_block) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f));
+                    channel.putPixel(x, y, base.getPixel(x_block, y_block) + (amp_half > 0f ? random.nextFloat(
+                            -amp_half, amp_half) : 0f));
                 }
             }
         }

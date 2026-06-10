@@ -44,11 +44,14 @@ public final class IronSupply extends SupplyModel {
     private boolean useRockTexture = true;
 
     public IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
-        this(world, grid_x, grid_y, x, y, increase, ThreadLocalRandom.current().nextInt(LandscapeResources.SUPPLY_FRAGMENT_COUNT));
+        this(world, grid_x, grid_y, x, y, increase, ThreadLocalRandom.current().nextInt(
+                LandscapeResources.SUPPLY_FRAGMENT_COUNT));
     }
 
-    private IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase, int fragmentIndex) {
-        super(world, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, ThreadLocalRandom.current().nextFloat((float) -Math.PI, (float) Math.PI), INITIAL_SUPPLIES, increase,
+    private IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase,
+            int fragmentIndex) {
+        super(world, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, ThreadLocalRandom.current().nextFloat((float) -Math.PI,
+                (float) Math.PI), INITIAL_SUPPLIES, increase,
                 world.getLandscapeResources().getIronBounds(fragmentIndex));
         this.fragmentIndex = fragmentIndex;
     }
@@ -137,7 +140,7 @@ public final class IronSupply extends SupplyModel {
             float pps = 800f + 1600f * fallProgress;
             emitter.setParticlesPerSecond(pps);
 
-            // Size/Stretch: 
+            // Size/Stretch:
             // Start: 1.6 X/Z, 2.0 Y (Double size and moderate stretch)
             // Landing: 0.8 X/Z, 0.75 Y (Baseline size, halved stretch)
             float radiusXZ = 1.6f - 0.8f * fallProgress;
@@ -223,7 +226,7 @@ public final class IronSupply extends SupplyModel {
             }
 
             // Cracks pulse logic (fading out smoothly)
-            float crackDuration = 0.6f; 
+            float crackDuration = 0.6f;
             if (progress >= FALL_DURATION_RATIO && progress < FALL_DURATION_RATIO + crackDuration) {
                 float crackProgress = (progress - FALL_DURATION_RATIO) / crackDuration;
                 crackDecalOpacity = 1.0f - crackProgress;
@@ -248,7 +251,8 @@ public final class IronSupply extends SupplyModel {
                         ));
                 sizzle.stop(1.3f);
             }
-            ensureCoolingEmitter().getEmitter().setParticlesPerSecond(SMOKE_PARTICLES_PER_SECOND * (1.0f - coolProgress));
+            ensureCoolingEmitter().getEmitter().setParticlesPerSecond(SMOKE_PARTICLES_PER_SECOND * (1.0f
+                    - coolProgress));
 
             if (coolProgress < 0.3f) {
                 float factor = coolProgress / 0.3f;
@@ -282,14 +286,14 @@ public final class IronSupply extends SupplyModel {
                     0.02f, 5.0f, // Narrow vertical column
                     0.1f, 0.02f, // Reduced drift to keep column straight
                     -1, 800f, // Initial PPS (will be updated dynamically)
-                    new Vector3f(0f, 0f, 10.0f), new Vector3f(0f, 0f, 5.0f), 
+                    new Vector3f(0f, 0f, 10.0f), new Vector3f(0f, 0f, 5.0f),
                     new Color.Linear(0.08f, 0.6f), new Color.LinearDelta(0f, -0.6f),
-                    new Vector3f(1.6f, 2.0f, 1.6f), new Vector3f(2.4f, 3.0f, 2.4f), 
-                    1.2f, 0.1f, 
+                    new Vector3f(1.6f, 2.0f, 1.6f), new Vector3f(2.4f, 3.0f, 2.4f),
+                    1.2f, 0.1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                     getWorld().getRacesResources().getSmokeTextures(),
                     null, getWorld().getRacesResources().getSmokeTextures().length,
-                    true, true 
+                    true, true
             );
             // Specifically requested sooty/black anchor
             emitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));

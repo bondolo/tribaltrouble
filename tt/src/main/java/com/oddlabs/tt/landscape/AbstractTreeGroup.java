@@ -98,7 +98,8 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
             final float tree_x = UnitGrid.coordinateFromGrid(center_grid_x);
             final float tree_y = UnitGrid.coordinateFromGrid(center_grid_y);
             float rotation = world.getRandom().nextFloat(0f, 360f);
-            float scale_base = scale_factor > 0f ? world.getRandom().nextFloat(min_size, min_size + scale_factor) : min_size;
+            float scale_base = scale_factor > 0f ? world.getRandom().nextFloat(min_size, min_size + scale_factor)
+                    : min_size;
             float scale_x = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
             float scale_y = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
             float scale_z = scale_base + world.getRandom().nextFloat(-0.1f, 0.1f);
