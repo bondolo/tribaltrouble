@@ -1,6 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.animation.TimerAnimation;
+import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.delegate.CameraDelegate;
 import com.oddlabs.tt.delegate.ModalDelegate;
 import com.oddlabs.tt.delegate.NullDelegate;
@@ -26,6 +27,8 @@ import java.util.Deque;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+
+import static com.oddlabs.tt.camera.Camera.FOVMode.DIAGONAL;
 
 /**
  * Root of a GUI component tree
@@ -478,12 +481,15 @@ public final class GUIRoot extends GUIObject {
     }
 
     public Matrix4f multProjection(@NonNull Matrix4f matrix) {
-        float fovy = Globals.FOV;
+        float aspect = (float) getWidth() / getHeight();
+        CameraDelegate<?> delegate = getDelegate();
+        float fovy = delegate.getCamera() != null
+                ? Camera.calculateDynamicFOV(delegate.getCamera().getState().getCurrentZ(), aspect, DIAGONAL)
+                : Camera.calculateDynamicFOV(Globals.VIEW_MIN, aspect, DIAGONAL);
         float zNear = Globals.VIEW_MIN;
         float zFar = Globals.VIEW_MAX;
 
-        Matrix4f perspectiveMatrix = new Matrix4f().perspective((float) Math.toRadians(fovy), (float) getWidth()
-                / getHeight(), zNear, zFar);
+        Matrix4f perspectiveMatrix = new Matrix4f().perspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
         return matrix.mul(perspectiveMatrix);
     }
 

@@ -274,13 +274,13 @@ public final class GameCamera extends Camera {
 
     public int getRotateY() {
         int center_y = viewer.getGUIRoot().getHeight() / 2;
-        if (getState().getTargetVertAngle() < ROTATE_PICKING_ANGLE_MAX) {
+        float aspect = (float) viewer.getGUIRoot().getWidth() / viewer.getGUIRoot().getHeight();
+        float currentFov = Camera.calculateDynamicFOV(getState().getTargetZ(), aspect, Camera.FOVMode.DIAGONAL);
+        float rotatePickingAngleMax = (-currentFov - 10) * ((float) Math.PI / 180) * .5f;
+        if (getState().getTargetVertAngle() < rotatePickingAngleMax) {
             return center_y;
         } else {
-            float da = getState().getTargetVertAngle() - ROTATE_PICKING_ANGLE_MAX;
-            // float pixels_per_unit = 1f/GUIRoot.getUnitsPerPixel(Globals.VIEW_MIN);
-            // int pixels_to_screen = (int)(Globals.VIEW_MIN*pixels_per_unit);
-            // int dy = (int)(((float)Math.tan(da))*pixels_to_screen);
+            float da = getState().getTargetVertAngle() - rotatePickingAngleMax;
             int dy = (int) (Math.tan(da) * Globals.VIEW_MIN);
             int y = center_y - dy;
             return y;

@@ -93,8 +93,8 @@ public abstract class Camera implements Animated {
 
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
-                float fovy = Globals.FOV;
                 float aspect = (float) width / height;
+                float fovy = calculateDynamicFOV(z, aspect, FOVMode.DIAGONAL);
                 float zNear = Globals.VIEW_MIN;
                 float zFar = Globals.VIEW_MAX;
                 proj.setPerspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
@@ -159,5 +159,40 @@ public abstract class Camera implements Animated {
     }
 
     public void mouseMoved(int x, int y) {
+    }
+
+    public enum FOVMode {
+        FIXED,
+        DIAGONAL,
+        ADAPTIVE
+    }
+
+    public static float calculateDynamicFOV(float z, float aspect, @NonNull FOVMode mode) {
+        return switch (mode) {
+            case ADAPTIVE -> {
+                float zMin = 15.0f;
+                float zMax = 100.0f;
+                float t = Math.clamp((z - zMin) / (zMax - zMin), 0.0f, 1.0f);
+
+                float fovWideRad = (float) Math.toRadians(68.0);
+                float fovNarrowRad = (float) Math.toRadians(18.0);
+
+                float tanWide = (float) Math.tan(fovWideRad / 2.0f);
+                float tanNarrow = (float) Math.tan(fovNarrowRad / 2.0f);
+
+                float interpolatedTan = (1.0f - t) * tanWide + t * tanNarrow;
+                float fovyRad = 2.0f * (float) Math.atan(interpolatedTan);
+
+                yield (float) Math.toDegrees(fovyRad);
+            }
+            case DIAGONAL -> {
+                float tanDiagHalf = (float) (Math.tan(Math.toRadians(22.5)) * 5.0 / 3.0);
+                float tanVertHalf = tanDiagHalf / (float) Math.sqrt(1.0f + aspect * aspect);
+                float fovyRad = 2.0f * (float) Math.atan(tanVertHalf);
+
+                yield (float) Math.toDegrees(fovyRad);
+            }
+            case FIXED -> Globals.FOV;
+        };
     }
 }
