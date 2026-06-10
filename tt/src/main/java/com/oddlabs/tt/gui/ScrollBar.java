@@ -92,9 +92,9 @@ public final class ScrollBar extends GUIObject {
         ScrollBarData data = Skin.getSkin().getScrollBarData();
         int max_height = getHeight() - less_button.getHeight() - more_button.getHeight() - data.bottomOffset() - data
                 .topOffset();
-        float ratio = owner.getScrollBarRatio();
+        float ratio = Math.min(owner.getScrollBarRatio(), 1.0f);
         int size = Math.max((int) (ratio * max_height), data.scrollButton().getMinHeight());
-        return size;
+        return Math.clamp(size, 0, max_height);
     }
 
     @Override
@@ -154,15 +154,16 @@ public final class ScrollBar extends GUIObject {
         }
 
         @Override
-        public void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
-                int abs_y) {
+        public void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y,
+                int abs_x, int abs_y) {
             int max_height = getHeight() - less_button.getHeight() - more_button.getHeight() - data.bottomOffset()
                     - data.topOffset();
-            float ratio = owner.getScrollBarRatio();
-            int size = (int) (ratio * max_height);
+            int size = getButtonHeight();
             int scroll_button_space = max_height - size;
-            owner.setScrollBarOffset(start_offset - abs_y / (float) scroll_button_space);
-            scroll_button.setupPos(ScrollBar.this);
+            if (scroll_button_space > 0) {
+                owner.setScrollBarOffset(start_offset - abs_y / (float) scroll_button_space);
+                scroll_button.setupPos(ScrollBar.this);
+            }
         }
 
         @Override

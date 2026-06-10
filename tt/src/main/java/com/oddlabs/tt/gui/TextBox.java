@@ -106,6 +106,9 @@ public class TextBox extends TextField implements Scrollable, Clipped {
         int text_height = textLayout.getTextHeight();
         Box edit_box = Skin.getSkin().getEditBox();
         int inner_height = getHeight() - edit_box.getBottomOffset() - edit_box.getTopOffset();
+        if (text_height <= inner_height) {
+            return 1.0f;
+        }
         return (float) inner_height / text_height;
     }
 
