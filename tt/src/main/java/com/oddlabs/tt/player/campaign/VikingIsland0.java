@@ -14,6 +14,7 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.IronSupply;
 import com.oddlabs.tt.model.RockSupply;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
@@ -21,7 +22,6 @@ import com.oddlabs.tt.player.AI;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.PlayerEleminatedTrigger;
 import com.oddlabs.tt.trigger.campaign.SupplyGatheredTrigger;
@@ -49,7 +49,7 @@ public final class VikingIsland0 extends Island {
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(network, gui_root, 256, Landscape.TerrainType.NATIVE, .5f, 1f, .1f,
+        GameNetwork game_network = startNewGame(network, gui_root, 256, Terrain.NATIVE, .5f, 1f, .1f,
                 45363, 0, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,

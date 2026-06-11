@@ -4,6 +4,7 @@ import com.oddlabs.tt.model.Race;
 
 import com.oddlabs.tt.model.Difficulty;
 
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
@@ -17,7 +18,6 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
@@ -42,7 +42,7 @@ public final class VikingIsland7 extends Island {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
-        GameNetwork game_network = startNewGame(network, gui_root, 512, Landscape.TerrainType.NATIVE, .75f, 1f, .5f,
+        GameNetwork game_network = startNewGame(network, gui_root, 512, Terrain.NATIVE, .75f, 1f, .5f,
                 725925, 7, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,

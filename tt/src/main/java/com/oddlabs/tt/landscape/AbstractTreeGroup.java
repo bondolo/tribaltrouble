@@ -1,8 +1,8 @@
 package com.oddlabs.tt.landscape;
 /**/
 
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.pathfinder.UnitGrid;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.util.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -56,7 +56,7 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
     }
 
     public static @NonNull AbstractTreeGroup newRoot(@NonNull World world, @NonNull List<int[]> tree_positions,
-            @NonNull List<int[]> palm_tree_positions, Landscape.@NonNull TerrainType terrain) {
+            @NonNull List<int[]> palm_tree_positions, @NonNull Terrain terrain) {
         AbstractTreeGroup root = new TreeGroup(null, 0);
 
         switch (terrain) {

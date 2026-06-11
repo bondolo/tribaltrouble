@@ -6,6 +6,7 @@ import com.oddlabs.tt.model.Difficulty;
 
 import com.oddlabs.tt.model.BuildingType;
 
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
@@ -22,7 +23,6 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.VisualRegistry;
 import com.oddlabs.tt.trigger.campaign.DeathTrigger;
@@ -57,7 +57,7 @@ public final class NativeIsland1 extends Island {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
-        GameNetwork game_network = startNewGame(network, gui_root, 256, Landscape.TerrainType.VIKING, .75f, 1f, .5f, 1,
+        GameNetwork game_network = startNewGame(network, gui_root, 256, Terrain.VIKING, .75f, 1f, .5f, 1,
                 1, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,

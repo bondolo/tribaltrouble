@@ -7,6 +7,7 @@ import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.model.RacesResources;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.resource.BlendInfo;
 import com.oddlabs.tt.resource.BlendLighting;
 import com.oddlabs.tt.resource.BlendOcclusion;
@@ -38,9 +39,9 @@ public final class Landscape {
 
     private static final int NUM_PLANT_TYPES = 4;
 
-    static final Map<TerrainType, @NonNull Color> FOG_COLOR = new EnumMap<>(Map.of(
-            TerrainType.NATIVE, new Color.Standard(0xFF_A5_BF_FF),
-            TerrainType.VIKING, new Color.Standard(0xFF_33_66_8C)
+    static final Map<Terrain, @NonNull Color> FOG_COLOR = new EnumMap<>(Map.of(
+            Terrain.NATIVE, new Color.Standard(0xFF_A5_BF_FF),
+            Terrain.VIKING, new Color.Standard(0xFF_33_66_8C)
     ));
     private static final float NATIVE_FOG_DENSITY = 0.001f;
     private static final float VIKING_FOG_DENSITY = 0.0015f;
@@ -65,18 +66,13 @@ public final class Landscape {
     private static final Color BLEND_LIGHTING_COLOR = new Color.Standard(0xFF_FF_E6_99); // 1.0, 0.9, 0.6
     private static final Color AO_COLOR = new Color.Standard(0xFF_55_4C_66);
 
-    public enum TerrainType {
-        NATIVE,
-        VIKING
-    }
-
     /**
      * Returns the baseline dust color for a given landscape terrain type.
      *
      * @param terrain the terrain type
      * @return the linear color representing the terrain's dust/soil
      */
-    public static Color.@NonNull Linear getDustColor(@NonNull TerrainType terrain) {
+    public static Color.@NonNull Linear getDustColor(@NonNull Terrain terrain) {
         return switch (terrain) {
             case NATIVE -> new Color.Linear(NATIVE_SAND_COLOR);
             case VIKING -> new Color.Linear(VIKING_SOIL_COLOR);
@@ -127,14 +123,14 @@ public final class Landscape {
     private final int max_plants;
     private final float access_threshold;
     private final float build_threshold;
-    private final @NonNull TerrainType terrain;
+    private final @NonNull Terrain terrain;
 
     private byte @NonNull [] @NonNull [] build;
     private float @NonNull [] @NonNull [] player_locations;
     private int @NonNull [] @NonNull [] supply_locations;
     private float @NonNull [] @NonNull [] plants;
 
-    public Landscape(int num_players, int meters_per_world, @NonNull TerrainType terrain, float detail_alpha_value,
+    public Landscape(int num_players, int meters_per_world, @NonNull Terrain terrain, float detail_alpha_value,
             float hills, float vegetation_amount, float supplies_amount, int seed, int initial_unit_count,
             float random_start_pos) {
         this.terrain = terrain;
@@ -183,7 +179,7 @@ public final class Landscape {
         area = size_multiplier * 10000f;
         max_plants = size_multiplier * 64;
 
-        if (terrain == TerrainType.NATIVE) {
+        if (terrain == Terrain.NATIVE) {
             max_trees = (int) Math.pow(2, 2 * Utils.powerOf2Log2(meters_per_world) - 9);
             max_palmtrees = max_trees >> 1;
         } else {
@@ -878,7 +874,7 @@ public final class Landscape {
     }
 
     // generate seabottom alpha
-    private static @NonNull Channel generateSeabottomAlpha(@NonNull TerrainType terrain, @NonNull Channel height) {
+    private static @NonNull Channel generateSeabottomAlpha(@NonNull Terrain terrain, @NonNull Channel height) {
         Channel seabottom_alpha = height.copy().invert().dynamicRange(1f - Globals.SEA_LEVEL, 1f, 0f, 1f);
         return switch (terrain) {
             case NATIVE -> seabottom_alpha.grow(0f, 1).gamma(0.5f);
@@ -1183,7 +1179,7 @@ public final class Landscape {
     // * GET METHODS *
     // ***************
 
-    public static @NonNull FogInfo getFogInfo(@NonNull TerrainType terrain, int meters_per_world) {
+    public static @NonNull FogInfo getFogInfo(@NonNull Terrain terrain, int meters_per_world) {
         return switch (terrain) {
             case NATIVE ->
                 new DistanceFogInfo(FogInfo.Mode.EXP2, FOG_COLOR.get(terrain), NATIVE_FOG_DENSITY, NATIVE_FOG_HEIGHT

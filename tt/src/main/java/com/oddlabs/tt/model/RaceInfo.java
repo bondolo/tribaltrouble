@@ -7,14 +7,16 @@ import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
+import java.util.EnumMap;
+
 /**
  * Info for a playable race in the game (e.g., Natives or Vikings).
  * Defines the templates for buildings, units, and magical abilities available to the race.
  */
 public final class RaceInfo {
     private final @NonNull Race race;
-    private final @NonNull BuildingTemplate[] buildings = new BuildingTemplate[BuildingType.values().length];
-    private final @NonNull UnitTemplate[] units = new UnitTemplate[5];
+    private final @NonNull EnumMap<BuildingType, BuildingTemplate> buildings = new EnumMap<>(BuildingType.class);
+    private final @NonNull EnumMap<UnitType, UnitTemplate> units = new EnumMap<>(UnitType.class);
     private final @NonNull AudioParameters attack_notification;
     private final @NonNull AudioParameters building_notification;
     private final @NonNull MagicFactory @NonNull [] magic_factory;
@@ -31,14 +33,14 @@ public final class RaceInfo {
             @NonNull ChieftainAI chieftain_ai,
             @NonNull AudioParameters music) {
         this.race = race;
-        buildings[BuildingType.QUARTERS.ordinal()] = quarters;
-        buildings[BuildingType.ARMORY.ordinal()] = armory;
-        buildings[BuildingType.TOWER.ordinal()] = tower;
-        units[UnitType.WARRIOR_ROCK.ordinal()] = warrior_rock;
-        units[UnitType.WARRIOR_IRON.ordinal()] = warrior_iron;
-        units[UnitType.WARRIOR_RUBBER.ordinal()] = warrior_rubber;
-        units[UnitType.PEON.ordinal()] = peon;
-        units[UnitType.CHIEFTAIN.ordinal()] = chieftain;
+        buildings.put(BuildingType.QUARTERS, quarters);
+        buildings.put(BuildingType.ARMORY, armory);
+        buildings.put(BuildingType.TOWER, tower);
+        units.put(UnitType.WARRIOR_ROCK, warrior_rock);
+        units.put(UnitType.WARRIOR_IRON, warrior_iron);
+        units.put(UnitType.WARRIOR_RUBBER, warrior_rubber);
+        units.put(UnitType.PEON, peon);
+        units.put(UnitType.CHIEFTAIN, chieftain);
         this.attack_notification = new AudioParameters(attack_notification, AudioAssets.AUDIO_RANK_NOTIFICATION,
                 AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
                 AudioAssets.AUDIO_RADIUS_NOTIFICATION,
@@ -57,11 +59,19 @@ public final class RaceInfo {
     }
 
     public @NonNull BuildingTemplate getBuildingTemplate(@NonNull BuildingType type) {
-        return buildings[type.ordinal()];
+        BuildingTemplate template = buildings.get(type);
+        if (template == null) {
+            throw new IllegalArgumentException("No template registered for building type: " + type);
+        }
+        return template;
     }
 
     public @NonNull UnitTemplate getUnitTemplate(@NonNull UnitType type) {
-        return units[type.ordinal()];
+        UnitTemplate template = units.get(type);
+        if (template == null) {
+            throw new IllegalArgumentException("No template registered for unit type: " + type);
+        }
+        return template;
     }
 
     public @NonNull AudioParameters getAttackNotificationAudio() {

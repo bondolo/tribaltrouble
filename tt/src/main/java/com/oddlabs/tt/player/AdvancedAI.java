@@ -3,6 +3,8 @@ package com.oddlabs.tt.player;
 import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.model.Difficulty;
 
+import java.util.EnumMap;
+import java.util.Map;
 import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
@@ -35,25 +37,81 @@ public final class AdvancedAI extends AI {
     private static final int SCORE_WARRIOR_IRON = 5;
     private static final int SCORE_WARRIOR_RUBBER = 10;
     private static final int SCORE_CHIEFTAIN = 25;
-    private static final float[] DEFENSE_FACTOR = new float[]{1f, 1.5f, 2f};
+    private static final EnumMap<Difficulty, Float> DEFENSE_FACTOR = new EnumMap<>(Map.of(
+            Difficulty.EASY, 1f,
+            Difficulty.NORMAL, 1.5f,
+            Difficulty.HARD, 2f
+    ));
 
-    private static final int[] MIN_UNITS_BUILDING_WEAPONS = new int[]{0, 3, 8};
-    private static final int[] MIN_WEAPONS_IN_STOCK = new int[]{10, 5, 0}; // rushing penalty
-    private static final int[] MIN_UNITS_REPRODUCING = new int[]{0, 5, 20};
-    private static final int[] MAX_UNITS_GATHERING_TREE = new int[]{2, 5, 15};
-    private static final int[] MAX_UNITS_GATHERING_ROCK = new int[]{1, 3, 9};
-    private static final int[] MAX_UNITS_GATHERING_IRON = new int[]{1, 3, 10};
-    private static final int[] MAX_UNITS_GATHERING_RUBBER = new int[]{0, 0, 3};
+    private static final EnumMap<Difficulty, Integer> MIN_UNITS_BUILDING_WEAPONS = new EnumMap<>(Map.of(
+            Difficulty.EASY, 0,
+            Difficulty.NORMAL, 3,
+            Difficulty.HARD, 8
+    ));
+    private static final EnumMap<Difficulty, Integer> MIN_WEAPONS_IN_STOCK = new EnumMap<>(Map.of(
+            Difficulty.EASY, 10,
+            Difficulty.NORMAL, 5,
+            Difficulty.HARD, 0
+    )); // rushing penalty
+    private static final EnumMap<Difficulty, Integer> MIN_UNITS_REPRODUCING = new EnumMap<>(Map.of(
+            Difficulty.EASY, 0,
+            Difficulty.NORMAL, 5,
+            Difficulty.HARD, 20
+    ));
+    private static final EnumMap<Difficulty, Integer> MAX_UNITS_GATHERING_TREE = new EnumMap<>(Map.of(
+            Difficulty.EASY, 2,
+            Difficulty.NORMAL, 5,
+            Difficulty.HARD, 15
+    ));
+    private static final EnumMap<Difficulty, Integer> MAX_UNITS_GATHERING_ROCK = new EnumMap<>(Map.of(
+            Difficulty.EASY, 1,
+            Difficulty.NORMAL, 3,
+            Difficulty.HARD, 9
+    ));
+    private static final EnumMap<Difficulty, Integer> MAX_UNITS_GATHERING_IRON = new EnumMap<>(Map.of(
+            Difficulty.EASY, 1,
+            Difficulty.NORMAL, 3,
+            Difficulty.HARD, 10
+    ));
+    private static final EnumMap<Difficulty, Integer> MAX_UNITS_GATHERING_RUBBER = new EnumMap<>(Map.of(
+            Difficulty.EASY, 0,
+            Difficulty.NORMAL, 0,
+            Difficulty.HARD, 3
+    ));
 
-    private static final int[] UNITS_PER_TOWER1 = new int[]{1000, 1000, 90};
-    private static final int[] UNITS_PER_TOWER2 = new int[]{1000, 1000, 120};
+    private static final EnumMap<Difficulty, Integer> UNITS_PER_TOWER1 = new EnumMap<>(Map.of(
+            Difficulty.EASY, 1000,
+            Difficulty.NORMAL, 1000,
+            Difficulty.HARD, 90
+    ));
+    private static final EnumMap<Difficulty, Integer> UNITS_PER_TOWER2 = new EnumMap<>(Map.of(
+            Difficulty.EASY, 1000,
+            Difficulty.NORMAL, 1000,
+            Difficulty.HARD, 120
+    ));
 
     private final @NonNull Difficulty difficulty;
 
-    private final int[] NUM_WARRIORS = new int[]{3, 7, 10};
-    private final int[] NUM_WARRIORS_INCREASE = new int[]{1, 3, 5};
-    private final int[] NUM_WARRIORS_MAX = new int[]{10, 19, 40};
-    private final int[] NUM_WARRIORS_FOR_CHIEFTAIN = new int[]{1000, 1000, 20};
+    private final EnumMap<Difficulty, Integer> NUM_WARRIORS = new EnumMap<>(Map.of(
+            Difficulty.EASY, 3,
+            Difficulty.NORMAL, 7,
+            Difficulty.HARD, 10
+    ));
+    private final EnumMap<Difficulty, Integer> NUM_WARRIORS_INCREASE = new EnumMap<>(Map.of(
+            Difficulty.EASY, 1,
+            Difficulty.NORMAL, 3,
+            Difficulty.HARD, 5
+    ));
+    private final EnumMap<Difficulty, Integer> NUM_WARRIORS_MAX = new EnumMap<>(Map.of(
+            Difficulty.EASY, 10,
+            Difficulty.NORMAL, 19,
+            Difficulty.HARD, 40
+    ));
+    private final EnumMap<Difficulty, Integer> NUM_WARRIORS_FOR_CHIEFTAIN = new EnumMap<>(Map.of(
+            Difficulty.EASY, 1000,
+            Difficulty.NORMAL, 1000,
+            Difficulty.HARD, 20
+    ));
 
     private @Nullable LandscapeTarget defense_target = null;
 
@@ -69,14 +127,14 @@ public final class AdvancedAI extends AI {
         reclassify();
         nodeDefendBase();
         reclassify();
-        if (getOwner().getUnitCountContainer().getNumSupplies() > UNITS_PER_TOWER2[difficulty.ordinal()])
+        if (getOwner().getUnitCountContainer().getNumSupplies() > UNITS_PER_TOWER2.get(difficulty))
             nodeGuardTowers(2);
-        else if (getOwner().getUnitCountContainer().getNumSupplies() > UNITS_PER_TOWER1[difficulty.ordinal()])
+        else if (getOwner().getUnitCountContainer().getNumSupplies() > UNITS_PER_TOWER1.get(difficulty))
             nodeGuardTowers(1);
 
         reclassify();
-        nodeAttackWithWarriorsAndChieftain(NUM_WARRIORS[difficulty.ordinal()], NUM_WARRIORS[difficulty.ordinal()]
-                >= NUM_WARRIORS_FOR_CHIEFTAIN[difficulty.ordinal()]);
+        nodeAttackWithWarriorsAndChieftain(NUM_WARRIORS.get(difficulty), NUM_WARRIORS.get(difficulty)
+                >= NUM_WARRIORS_FOR_CHIEFTAIN.get(difficulty));
         nodeAssignIdlePeons();
         if (getOwner().hasActiveChieftain()) {
             getOwner().getRaceInfo().getChieftainAI().decide(getOwner().getChieftain().orElseThrow());
@@ -91,7 +149,7 @@ public final class AdvancedAI extends AI {
         if (getArmory() != null && enemy_score == 0) {
             enemy_score = scanForEnemies(getArmory()[0]);
         }
-        enemy_score = (int) (DEFENSE_FACTOR[difficulty.ordinal()] * enemy_score);
+        enemy_score = (int) (DEFENSE_FACTOR.get(difficulty) * enemy_score);
         if (getDefendingUnits() != null) {
             for (Selectable<?> defendingUnit : getDefendingUnits()) {
                 enemy_score -= getUnitScore((Unit) defendingUnit);
@@ -107,8 +165,8 @@ public final class AdvancedAI extends AI {
         if (getArmory() != null) {
             Building armory = (Building) getArmory()[0];
             int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies()
-                    - MIN_UNITS_BUILDING_WEAPONS[difficulty.ordinal()];
-            int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK[difficulty.ordinal()];
+                    - MIN_UNITS_BUILDING_WEAPONS.get(difficulty);
+            int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK.get(difficulty);
             if (num_units <= 0 || num_weapons <= 0)
                 return;
 
@@ -290,8 +348,8 @@ public final class AdvancedAI extends AI {
             Target target = findTarget(warriors[0].getGridX(), warriors[0].getGridY());
             if (target != null) {
                 getOwner().setLandscapeTarget(warriors, target.getGridX(), target.getGridY(), Action.ATTACK, true);
-                if (NUM_WARRIORS[difficulty.ordinal()] < NUM_WARRIORS_MAX[difficulty.ordinal()])
-                    NUM_WARRIORS[difficulty.ordinal()] += NUM_WARRIORS_INCREASE[difficulty.ordinal()];
+                if (NUM_WARRIORS.get(difficulty) < NUM_WARRIORS_MAX.get(difficulty))
+                    NUM_WARRIORS.put(difficulty, NUM_WARRIORS.get(difficulty) + NUM_WARRIORS_INCREASE.get(difficulty));
             }
         } else {
             if (getIdleWarriors() != null) {
@@ -320,8 +378,8 @@ public final class AdvancedAI extends AI {
         if (armory != null) {
             if (!armory.isDead()) {
                 int num_units = armory.getUnitContainer().orElseThrow().getNumSupplies()
-                        - MIN_UNITS_BUILDING_WEAPONS[difficulty.ordinal()];
-                int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK[difficulty.ordinal()];
+                        - MIN_UNITS_BUILDING_WEAPONS.get(difficulty);
+                int num_weapons = numWeapons(armory) - MIN_WEAPONS_IN_STOCK.get(difficulty);
 
                 if (num_units >= num_warriors && num_weapons >= num_warriors) {
                     int num_rubber_units = Math.min(num_warriors, armory.getSupplyContainer(RubberAxeWeapon.class)
@@ -365,38 +423,38 @@ public final class AdvancedAI extends AI {
         if (getGatherRubberPeons() != null)
             rubber = getGatherRubberPeons().length;
 
-        if (tree >= MAX_UNITS_GATHERING_TREE[difficulty.ordinal()])
+        if (tree >= MAX_UNITS_GATHERING_TREE.get(difficulty))
             tree = Integer.MAX_VALUE;
-        if (rock >= MAX_UNITS_GATHERING_ROCK[difficulty.ordinal()])
+        if (rock >= MAX_UNITS_GATHERING_ROCK.get(difficulty))
             rock = Integer.MAX_VALUE;
-        if (iron >= MAX_UNITS_GATHERING_IRON[difficulty.ordinal()])
+        if (iron >= MAX_UNITS_GATHERING_IRON.get(difficulty))
             iron = Integer.MAX_VALUE;
-        if (rubber >= MAX_UNITS_GATHERING_RUBBER[difficulty.ordinal()])
+        if (rubber >= MAX_UNITS_GATHERING_RUBBER.get(difficulty))
             rubber = Integer.MAX_VALUE;
 
         boolean deployed;
         do {
             deployed = false;
-            if (num_units > 0 && tree < MAX_UNITS_GATHERING_TREE[difficulty.ordinal()] && tree <= rock && tree <= iron
+            if (num_units > 0 && tree < MAX_UNITS_GATHERING_TREE.get(difficulty) && tree <= rock && tree <= iron
                     && tree
                             <= rubber) {
                 getOwner().deployUnits(armory, DeployType.PEON_HARVEST_TREE, 1);
                 deployed = true;
                 tree++;
-            } else if (num_units > 0 && rock < MAX_UNITS_GATHERING_ROCK[difficulty.ordinal()] && rock <= tree && rock
+            } else if (num_units > 0 && rock < MAX_UNITS_GATHERING_ROCK.get(difficulty) && rock <= tree && rock
                     <= iron
                     && rock <= rubber) {
                         getOwner().deployUnits(armory, DeployType.PEON_HARVEST_ROCK, 1);
                         deployed = true;
                         rock++;
-                    } else if (num_units > 0 && iron < MAX_UNITS_GATHERING_IRON[difficulty.ordinal()] && iron <= tree
+                    } else if (num_units > 0 && iron < MAX_UNITS_GATHERING_IRON.get(difficulty) && iron <= tree
                             && iron
                                     <= rock && iron <= rubber) {
                                         getOwner().deployUnits(armory, DeployType.PEON_HARVEST_IRON, 1);
                                         deployed = true;
                                         iron++;
-                                    } else if (num_units > 0 && rubber < MAX_UNITS_GATHERING_RUBBER[difficulty
-                                            .ordinal()] && rubber
+                                    } else if (num_units > 0 && rubber < MAX_UNITS_GATHERING_RUBBER.get(difficulty)
+                                            && rubber
                                                     <= tree && rubber <= rock && rubber <= iron) {
                                                         getOwner().deployUnits(armory, DeployType.PEON_HARVEST_RUBBER,
                                                                 1);
@@ -415,10 +473,10 @@ public final class AdvancedAI extends AI {
         if (quarters != null) {
             if (!quarters.isDead()) {
                 quarters.setRallyPoint(armory);
-                if (quarters.getUnitContainer().orElseThrow().getNumSupplies() > MIN_UNITS_REPRODUCING[difficulty
-                        .ordinal()]) {
+                if (quarters.getUnitContainer().orElseThrow().getNumSupplies() > MIN_UNITS_REPRODUCING.get(
+                        difficulty)) {
                     int units = Math.min(num_units, quarters.getUnitContainer().orElseThrow().getNumSupplies()
-                            - MIN_UNITS_REPRODUCING[difficulty.ordinal()]);
+                            - MIN_UNITS_REPRODUCING.get(difficulty));
                     getOwner().deployUnits(quarters, DeployType.PEON, units);
                 }
             }
@@ -456,7 +514,7 @@ public final class AdvancedAI extends AI {
 
     private void nodeBuildQuarters() {
         if (!quartersUnderConstruction() && getQuarters() == null) {
-            Selectable<?>[] builders = getPeons(MIN_UNITS_REPRODUCING[difficulty.ordinal()]);
+            Selectable<?>[] builders = getPeons(MIN_UNITS_REPRODUCING.get(difficulty));
             if (builders.length == 0)
                 return;
 

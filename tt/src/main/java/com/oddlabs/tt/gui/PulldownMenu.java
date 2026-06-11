@@ -10,9 +10,13 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+/**
+ * A dropdown menu group containing list items that can be chosen.
+ */
 public final class PulldownMenu<T> extends Group {
     private final Set<@NonNull ItemChosenListener<T>> chosen_listeners = new CopyOnWriteArraySet<>();
 
@@ -24,8 +28,8 @@ public final class PulldownMenu<T> extends Group {
         setFocusCycle(true);
     }
 
-    public @NonNull PulldownItem<T> getItem(int index) {
-        return items.get(index);
+    public @NonNull Optional<PulldownItem<T>> getItem(int index) {
+        return index >= 0 && index < items.size() ? Optional.of(items.get(index)) : Optional.empty();
     }
 
     public int getSize() {
@@ -79,10 +83,20 @@ public final class PulldownMenu<T> extends Group {
         return this;
     }
 
+    public @NonNull Optional<PulldownItem<T>> getChosenItem() {
+        return -1 != chosen_item_index ? Optional.of(items.get(chosen_item_index)) : Optional.empty();
+    }
+
+    /** {@return index of the chosen item, or -1 if no item is chosen} */
     public int getChosenItemIndex() {
         return chosen_item_index;
     }
 
+    /**
+     * Chooses an item by its index.
+     *
+     * @param index index of the item to choose or -1 to clear the chosen item
+     */
     public void chooseItem(int index) {
         chosen_item_index = index;
         itemChosenAll();

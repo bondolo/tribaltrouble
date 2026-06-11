@@ -1,6 +1,7 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.model.BoundsProvider;
+import com.oddlabs.tt.model.Terrain;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -15,7 +16,7 @@ public interface LandscapeBoundsProvider {
     BoundsProvider getIronBounds(int index);
 
     @NonNull
-    BoundsProvider getPlantBounds(int terrain, int index);
+    BoundsProvider getPlantBounds(Terrain terrain, int index);
 
     @NonNull
     BoundsProvider getChickenBounds();

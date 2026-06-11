@@ -27,10 +27,11 @@ import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.landscape.NotificationListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.state.GLRenderContext;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.AudioAssets;
@@ -783,7 +784,8 @@ public final class Renderer implements AutoCloseable {
 
     private static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui,
             final boolean first_progress) {
-        final WorldGenerator generator = new IslandGenerator(Landscape.TerrainType.NATIVE, 256, Globals.LANDSCAPE_HILLS,
+        final WorldGenerator generator = new IslandGenerator(
+                Terrain.NATIVE, 256, Globals.LANDSCAPE_HILLS,
                 Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
         return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root,
                 first_progress, generator), first_progress);
@@ -792,7 +794,7 @@ public final class Renderer implements AutoCloseable {
     private static @NonNull UIRenderer finishMainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
             boolean first_progress, @NonNull WorldGenerator generator) {
         AnimationManager.freezeTime();
-        PlayerInfo player_info = new PlayerInfo(0, 0, "");
+        PlayerInfo player_info = new PlayerInfo(0, Race.NATIVES, "");
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);

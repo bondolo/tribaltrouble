@@ -1,6 +1,7 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.matchmaking.Game;
+import com.oddlabs.tt.model.Gamespeed;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -20,11 +21,14 @@ import java.util.function.IntConsumer;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/**
+ * UI panel for general settings, such as camera behavior, unit aggression, and delays.
+ */
 public class GeneralPanel extends Panel {
     private static final int SLIDER_WIDTH = 270;
     private static final int MAX_VALUE = 20;
 
-    private final PulldownMenu<Void> pm_gamespeed = new PulldownMenu<>();
+    private final PulldownMenu<Gamespeed> pm_gamespeed = new PulldownMenu<>();
 
     public GeneralPanel(@NonNull GUIRoot gui_root, @NonNull IntConsumer onGamespeedChange) {
         super(AbstractOptionsMenu.i18n("general_settings_caption"));
@@ -102,14 +106,20 @@ public class GeneralPanel extends Panel {
         Label label_gamespeed = new Label(AbstractOptionsMenu.i18n("gamespeed"), Skin.getSkin().getEditFont());
         group_gamespeed.addChild(label_gamespeed);
 
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_PAUSE)));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_SLOW)));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_NORMAL)));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_FAST)));
-        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_LUDICROUS)));
+        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_PAUSE),
+                Gamespeed.PAUSE));
+        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_SLOW),
+                Gamespeed.SLOW));
+        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_NORMAL),
+                Gamespeed.NORMAL));
+        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_FAST),
+                Gamespeed.FAST));
+        pm_gamespeed.addItem(new PulldownItem<>(ServerMessageBundler.getGamespeedString(Game.GAMESPEED_LUDICROUS),
+                Gamespeed.LUDICROUS));
 
-        PulldownButton<Void> pb_gamespeed = new PulldownButton<>(gui_root, pm_gamespeed, 150);
-        pm_gamespeed.addItemChosenListener((_, item_index) -> onGamespeedChange.accept(item_index));
+        PulldownButton<Gamespeed> pb_gamespeed = new PulldownButton<>(gui_root, pm_gamespeed, 150);
+        pm_gamespeed.addItemChosenListener((_, _) -> onGamespeedChange.accept(pm_gamespeed.getChosenItem()
+                .map(PulldownItem::getAttachment).map(Gamespeed::getValue).orElse(Game.GAMESPEED_NORMAL)));
         group_gamespeed.addChild(pb_gamespeed);
         label_gamespeed.place();
         pb_gamespeed.place(label_gamespeed, RIGHT_MID);

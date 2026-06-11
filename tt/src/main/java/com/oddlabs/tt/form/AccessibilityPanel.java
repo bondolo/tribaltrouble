@@ -1,5 +1,6 @@
 package com.oddlabs.tt.form;
 
+import com.oddlabs.tt.model.CVDMode;
 import com.oddlabs.tt.global.Settings;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIObject;
@@ -131,17 +132,17 @@ public final class AccessibilityPanel extends Panel {
         group_cvd.setFixedWidth(GROUP_WIDTH);
         addChild(group_cvd);
 
-        PulldownMenu<Void> pm_cvd = new PulldownMenu<>();
-        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_standard")));
-        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_protanopia")));
-        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_deuteranopia")));
-        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_tritanopia")));
+        PulldownMenu<CVDMode> pm_cvd = new PulldownMenu<>();
+        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_standard"), CVDMode.NONE));
+        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_protanopia"), CVDMode.PROTANOPIA));
+        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_deuteranopia"), CVDMode.DEUTERANOPIA));
+        pm_cvd.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("cvd_tritanopia"), CVDMode.TRITANOPIA));
 
         Label label_cvd_mode = new Label(AbstractOptionsMenu.i18n("colour_vision"), Skin.getSkin().getEditFont());
         label_cvd_mode.setDim(label_area_width, label_cvd_mode.getHeight());
         group_cvd.addChild(label_cvd_mode);
 
-        PulldownButton<Void> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, Renderer.getRenderer()
+        PulldownButton<CVDMode> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, Renderer.getRenderer()
                 .getSettings().cvd_mode, contrast_slider_width);
         group_cvd.addChild(pb_cvd);
 
@@ -156,10 +157,11 @@ public final class AccessibilityPanel extends Panel {
         slider_cvd.setDisabled(Renderer.getRenderer().getSettings().cvd_mode == 0);
         group_cvd.addChild(slider_cvd);
 
-        pm_cvd.addItemChosenListener((_, index) -> {
-            Renderer.getRenderer().getSettings().cvd_mode = index;
-            slider_cvd.setDisabled(index == 0);
-            label_cvd_intensity.setDisabled(index == 0);
+        pm_cvd.addItemChosenListener((_, _) -> {
+            CVDMode mode = pm_cvd.getChosenItem().map(PulldownItem::getAttachment).orElse(CVDMode.NONE);
+            Renderer.getRenderer().getSettings().cvd_mode = mode.getValue();
+            slider_cvd.setDisabled(mode == CVDMode.NONE);
+            label_cvd_intensity.setDisabled(mode == CVDMode.NONE);
         });
         slider_cvd.addValueListener(value -> Renderer.getRenderer().getSettings().cvd_intensity = (float) value
                 / MAX_VALUE);
@@ -175,14 +177,14 @@ public final class AccessibilityPanel extends Panel {
         group_team_colours.setFixedWidth(GROUP_WIDTH);
         addChild(group_team_colours);
 
-        PulldownMenu<Void> pm_team = new PulldownMenu<>();
+        PulldownMenu<Integer> pm_team = new PulldownMenu<>();
         for (int i = 0; i < Renderer.getRenderer().getSettings().team_colours.length; i++) {
             String player_str = AbstractOptionsMenu.i18n("player", Integer.toString(i + 1));
-            PulldownItem<Void> item = new PulldownItem<>(player_str);
+            PulldownItem<Integer> item = new PulldownItem<>(player_str, i);
             item.setLabelColor(Renderer.getRenderer().getSettings().team_colours[i]);
             pm_team.addItem(item);
         }
-        PulldownButton<Void> pb_team = new PulldownButton<>(gui_root, pm_team, 0, 150);
+        PulldownButton<Integer> pb_team = new PulldownButton<>(gui_root, pm_team, 0, 150);
         group_team_colours.addChild(pb_team);
 
         // Colour Preview Box
@@ -215,7 +217,7 @@ public final class AccessibilityPanel extends Panel {
 
         // Update logic
         Runnable updateColour = () -> {
-            int teamIndex = pm_team.getChosenItemIndex();
+            int teamIndex = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             float hue = slider_hue.getValue();
             int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1f, 1f);
             var newColour = new Color.Standard(rgb);
@@ -223,12 +225,12 @@ public final class AccessibilityPanel extends Panel {
             colourBox.setColour(newColour);
 
             // Update the pulldown item colour
-            pm_team.getItem(teamIndex).setLabelColor(newColour);
+            pm_team.getChosenItem().ifPresent(pi -> pi.setLabelColor(newColour));
             pb_team.setLabelColor(newColour);
         };
 
         Runnable refreshUI = () -> {
-            int index = pm_team.getChosenItemIndex();
+            int index = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             var currentColour = Renderer.getRenderer().getSettings().team_colours[index];
             float[] hsb = java.awt.Color.RGBtoHSB(Math.round(currentColour.r() * 255), Math.round(currentColour.g()
                     * 255),
@@ -243,11 +245,12 @@ public final class AccessibilityPanel extends Panel {
         slider_hue.addValueListener(_ -> updateColour.run());
 
         button_reset.addMouseClickListener((_, _, _, _) -> {
-            int index = pm_team.getChosenItemIndex();
+            int index = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             Renderer.getRenderer().getSettings().team_colours[index] = new Color.Standard(
                     Settings.DEFAULT_TEAM_COLOURS[index]);
             refreshUI.run();
-            pm_team.getItem(index).setLabelColor(Renderer.getRenderer().getSettings().team_colours[index]);
+            pm_team.getChosenItem().ifPresent(pi -> pi.setLabelColor(Renderer.getRenderer()
+                    .getSettings().team_colours[index]));
             pb_team.setLabelColor(Renderer.getRenderer().getSettings().team_colours[index]);
         });
 

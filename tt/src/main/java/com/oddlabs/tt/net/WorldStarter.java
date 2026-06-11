@@ -90,7 +90,7 @@ final class WorldStarter implements LoadCallback {
             else
                 host_id = -1;
             Participant p = new Participant(host_id, player.getPlayerInfo().getName(), player.getPlayerInfo().getTeam(),
-                    player.getPlayerInfo().getRace());
+                    player.getPlayerInfo().getRace().getValue());
             participant_list.add(p);
         }
         Participant[] participants = new Participant[participant_list.size()];

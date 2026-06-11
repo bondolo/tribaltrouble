@@ -5,6 +5,7 @@ import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.procedural.GeneratorClouds;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.TextureGenerator;
@@ -54,29 +55,29 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private static final int SKYDOME_DEFAULT_COLOR = 8;
     private static final int FLOATS_PER_VERTEX = 13;
 
-    private static final Map<Landscape.TerrainType, @NonNull Color> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_E5_F2_FF),
-            Landscape.TerrainType.VIKING, new Color.Standard(0xFF_FF_E5_A5)
+    private static final Map<Terrain, @NonNull Color> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
+            Terrain.NATIVE, new Color.Standard(0xFF_E5_F2_FF),
+            Terrain.VIKING, new Color.Standard(0xFF_FF_E5_A5)
     ));
 
-    private static final Map<Landscape.TerrainType, Color.@NonNull Linear> SKYDOME_INTENSITY = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, (Color.Linear) Color.Linear.WHITE,
-            Landscape.TerrainType.VIKING, new Color.Linear(1.5f, 1f, 1f, 1f)
+    private static final Map<Terrain, Color.@NonNull Linear> SKYDOME_INTENSITY = new EnumMap<>(Map.of(
+            Terrain.NATIVE, (Color.Linear) Color.Linear.WHITE,
+            Terrain.VIKING, new Color.Linear(1.5f, 1f, 1f, 1f)
     ));
 
-    private static final Map<Landscape.TerrainType, Color.@NonNull Standard> SKYDOME_GRADIENT = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_BF_D2_F2),
-            Landscape.TerrainType.VIKING, new Color.Standard(0xFF_99_99_D8)
+    private static final Map<Terrain, Color.@NonNull Standard> SKYDOME_GRADIENT = new EnumMap<>(Map.of(
+            Terrain.NATIVE, new Color.Standard(0xFF_BF_D2_F2),
+            Terrain.VIKING, new Color.Standard(0xFF_99_99_D8)
     ));
 
-    private static final Map<Landscape.TerrainType, Color.@NonNull Linear> TEX_ENV_COLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_F2_F8_FF).linear(),
-            Landscape.TerrainType.VIKING, new Color.Standard(0xFF_FF_F2_CC).linear()
+    private static final Map<Terrain, Color.@NonNull Linear> TEX_ENV_COLOR = new EnumMap<>(Map.of(
+            Terrain.NATIVE, new Color.Standard(0xFF_F2_F8_FF).linear(),
+            Terrain.VIKING, new Color.Standard(0xFF_FF_F2_CC).linear()
     ));
 
-    public static final Map<Landscape.TerrainType, Color.@NonNull Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
-            Landscape.TerrainType.NATIVE, new Color.Standard(0xFF_73_40_99).linear(),
-            Landscape.TerrainType.VIKING, Color.Linear.BLACK
+    public static final Map<Terrain, Color.@NonNull Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
+            Terrain.NATIVE, new Color.Standard(0xFF_73_40_99).linear(),
+            Terrain.VIKING, Color.Linear.BLACK
     ));
 
     private static final float SKYDOME_OUTER_UTILING = 8f;
@@ -100,7 +101,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private final @NonNull Texture @NonNull [] clouds;
     private final int subdiv_axis;
     private final int subdiv_height;
-    private final Landscape.@NonNull TerrainType terrain;
+    private final @NonNull Terrain terrain;
 
     private final SkyShader skyShader = new SkyShader();
     private final SeaBottomShader seaBottomShader = new SeaBottomShader();
@@ -139,7 +140,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
     private float lastTime = 0f;
 
-    public Sky(@NonNull LandscapeRenderer renderer, Landscape.@NonNull TerrainType terrain, @NonNull Texture detail,
+    public Sky(@NonNull LandscapeRenderer renderer, @NonNull Terrain terrain, @NonNull Texture detail,
             @NonNull Texture detailNormal) {
         this(renderer, terrain, (float) (renderer.getHeightMap().getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 20, 20,
                 SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, renderer
@@ -147,7 +148,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
                 SKYDOME_HEIGHT, detail, detailNormal);
     }
 
-    private Sky(@NonNull LandscapeRenderer landscape_renderer, Landscape.@NonNull TerrainType terrain,
+    private Sky(@NonNull LandscapeRenderer landscape_renderer, @NonNull Terrain terrain,
             float inner_radius, float radius, int subdiv_axis, int subdiv_height, float outer_utile, float outer_vtile,
             float inner_utile, float inner_vtile, float origin_x, float origin_y, float origin_z,
             @NonNull Texture detail, @NonNull Texture detailNormal) {
@@ -588,7 +589,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         return result;
     }
 
-    public static Landscape.@NonNull StructureLayers genSeabottom(Landscape.TerrainType terrain, int size,
+    public static Landscape.@NonNull StructureLayers genSeabottom(
+            Terrain terrain, int size,
             @NonNull Channel noise8, @NonNull Channel noise256, @NonNull Channel voronoi4, @NonNull Channel voronoi8) {
         Color.Standard color = new Color.Standard(SEA_BOTTOM_COLOR.get(terrain));
         Layer bottom = new Layer(

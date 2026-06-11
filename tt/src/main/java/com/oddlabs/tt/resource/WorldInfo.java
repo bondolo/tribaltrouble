@@ -1,13 +1,14 @@
 package com.oddlabs.tt.resource;
 
-import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.render.Texture;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public record WorldInfo(Landscape.@NonNull TerrainType terrain, int meters_per_world, float sea_level_meters,
+public record WorldInfo(
+                        @NonNull Terrain terrain, int meters_per_world, float sea_level_meters,
                         int texels_per_colormap, int chunks_per_colormap,
                         @NonNull Texture @Nullable [] @NonNull [] colormaps, Maps maps, @NonNull Texture detail,
                         @NonNull Texture detailNormal,

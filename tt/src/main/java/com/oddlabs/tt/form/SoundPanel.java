@@ -109,12 +109,12 @@ public class SoundPanel extends Panel {
         Label label_output = new Label(AbstractOptionsMenu.i18n("audio_output"), Skin.getSkin().getEditFont());
         group_output.addChild(label_output);
 
-        PulldownMenu<Void> pm_output = new PulldownMenu<>();
-        pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_speakers")));
-        pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_headphones")));
+        PulldownMenu<Boolean> pm_output = new PulldownMenu<>();
+        pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_speakers"), Boolean.FALSE));
+        pm_output.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("audio_output_headphones"), Boolean.TRUE));
 
         int initialOutput = Renderer.getRenderer().getSettings().headphone_mode ? 1 : 0;
-        PulldownButton<Void> pb_output = new PulldownButton<>(gui_root, pm_output, initialOutput, 150);
+        PulldownButton<Boolean> pb_output = new PulldownButton<>(gui_root, pm_output, initialOutput, 150);
         group_output.addChild(pb_output);
 
         CheckBox cb_visual_alerts = new CheckBox(Renderer.getRenderer().getSettings().sound_emojis,
@@ -135,8 +135,8 @@ public class SoundPanel extends Panel {
 
         if (hrtfSupported) {
             final AudioManager mgr = manager;
-            pm_output.addItemChosenListener((_, index) -> {
-                boolean headphone = (index == 1);
+            pm_output.addItemChosenListener((_, _) -> {
+                boolean headphone = pm_output.getChosenItem().map(PulldownItem::getAttachment).orElse(Boolean.FALSE);
                 Renderer.getRenderer().getSettings().headphone_mode = headphone;
                 manager.setHeadphoneMode(headphone);
             });

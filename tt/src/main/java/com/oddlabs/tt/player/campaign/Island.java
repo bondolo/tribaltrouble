@@ -4,6 +4,7 @@ import com.oddlabs.tt.model.Difficulty;
 
 import com.oddlabs.tt.model.BuildingType;
 
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.matchmaking.Game;
@@ -22,7 +23,6 @@ import com.oddlabs.tt.net.WorldInitAction;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.AI;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.trigger.campaign.DefeatTrigger;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.tt.util.Target;
@@ -60,7 +60,7 @@ public abstract class Island {
     }
 
     protected final @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            int meters_per_world, Landscape.@NonNull TerrainType terrain, float hills, float vegetation_amount,
+            int meters_per_world, @NonNull Terrain terrain, float hills, float vegetation_amount,
             float supplies_amount, int seed, int campaign_num, int initial_units, String[] ai_names) {
         InGameInfo ingame_info = new CampaignInGameInfo(campaign);
         WorldInitAction init_action = (@NonNull WorldViewer viewer) -> {

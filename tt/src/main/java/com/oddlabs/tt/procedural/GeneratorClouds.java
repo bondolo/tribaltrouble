@@ -2,6 +2,7 @@ package com.oddlabs.tt.procedural;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.GLByteImage;
 import com.oddlabs.tt.resource.GLIntImage;
@@ -19,9 +20,9 @@ public final class GeneratorClouds extends TextureGenerator {
     public static final int INNER = 0;
     public static final int OUTER = 1;
 
-    private final Landscape.@NonNull TerrainType terrain;
+    private final @NonNull Terrain terrain;
 
-    public GeneratorClouds(Landscape.@NonNull TerrainType terrain) {
+    public GeneratorClouds(@NonNull Terrain terrain) {
         this.terrain = terrain;
     }
 

@@ -30,23 +30,20 @@ public final class VisualRegistry {
     ) {
     }
 
-    // Indexes: 0 = RACE_NATIVES, 1 = RACE_VIKINGS
-    private final EnumMap<UnitVisualType, SpriteKey>[] units = new EnumMap[2];
-    private final EnumMap<BuildingType, BuildingVisuals>[] buildings = new EnumMap[2];
-    private final EnumMap<WeaponVisualType, SpriteKey>[] weapons = new EnumMap[2];
+    private final EnumMap<Race, EnumMap<UnitVisualType, SpriteKey>> units = new EnumMap<>(Race.class);
+    private final EnumMap<Race, EnumMap<BuildingType, BuildingVisuals>> buildings = new EnumMap<>(Race.class);
+    private final EnumMap<Race, EnumMap<WeaponVisualType, SpriteKey>> weapons = new EnumMap<>(Race.class);
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
-    private final SpriteKey[] rallyPoints = new SpriteKey[2];
+    private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
     private @NonNull SpriteKey @Nullable [] chickenCluckSprites;
     private @Nullable ShadowListKey defaultUnitShadow;
 
-    @SuppressWarnings("unchecked")
     private VisualRegistry() {
-        units[0] = new EnumMap<>(UnitVisualType.class);
-        units[1] = new EnumMap<>(UnitVisualType.class);
-        buildings[0] = new EnumMap<>(BuildingType.class);
-        buildings[1] = new EnumMap<>(BuildingType.class);
-        weapons[0] = new EnumMap<>(WeaponVisualType.class);
-        weapons[1] = new EnumMap<>(WeaponVisualType.class);
+        for (Race race : Race.values()) {
+            units.put(race, new EnumMap<>(UnitVisualType.class));
+            buildings.put(race, new EnumMap<>(BuildingType.class));
+            weapons.put(race, new EnumMap<>(WeaponVisualType.class));
+        }
     }
 
     public void registerChickenCluckSprites(SpriteKey @NonNull [] sprites) {
@@ -54,11 +51,11 @@ public final class VisualRegistry {
     }
 
     public void registerWeapon(@NonNull Race race, @NonNull WeaponVisualType type, @NonNull SpriteKey sprite) {
-        weapons[race.getValue()].put(type, sprite);
+        weapons.get(race).put(type, sprite);
     }
 
     public @NonNull SpriteKey getWeaponSprite(@NonNull Race race, @NonNull WeaponVisualType type) {
-        SpriteKey sprite = weapons[race.getValue()].get(type);
+        SpriteKey sprite = weapons.get(race).get(type);
         if (sprite == null) {
             throw new IllegalStateException("Weapon sprite not registered for race " + race + " and type " + type);
         }
@@ -66,11 +63,11 @@ public final class VisualRegistry {
     }
 
     public void registerRallyPoint(@NonNull Race race, @NonNull SpriteKey sprite) {
-        rallyPoints[race.getValue()] = sprite;
+        rallyPoints.put(race, sprite);
     }
 
     public @NonNull SpriteKey getRallyPoint(@NonNull Race race) {
-        SpriteKey sprite = rallyPoints[race.getValue()];
+        SpriteKey sprite = rallyPoints.get(race);
         if (sprite == null) {
             throw new IllegalStateException("Rally point sprite not registered for race " + race);
         }
@@ -78,11 +75,11 @@ public final class VisualRegistry {
     }
 
     public void registerUnit(@NonNull Race race, @NonNull UnitVisualType type, @NonNull SpriteKey sprite) {
-        units[race.getValue()].put(type, sprite);
+        units.get(race).put(type, sprite);
     }
 
     public @NonNull SpriteKey getUnitSprite(@NonNull Race race, @NonNull UnitVisualType type) {
-        SpriteKey sprite = units[race.getValue()].get(type);
+        SpriteKey sprite = units.get(race).get(type);
         if (sprite == null) {
             throw new IllegalStateException("Unit sprite not registered for race " + race + " and type " + type);
         }
@@ -91,11 +88,11 @@ public final class VisualRegistry {
 
     public void registerBuilding(@NonNull Race race, @NonNull BuildingType type,
             @NonNull BuildingVisuals visuals) {
-        buildings[race.getValue()].put(type, visuals);
+        buildings.get(race).put(type, visuals);
     }
 
     public @NonNull BuildingVisuals getBuildingVisuals(@NonNull Race race, @NonNull BuildingType type) {
-        BuildingVisuals visuals = buildings[race.getValue()].get(type);
+        BuildingVisuals visuals = buildings.get(race).get(type);
         if (visuals == null) {
             throw new IllegalStateException("Building visuals not registered for race " + race + " and type " + type);
         }

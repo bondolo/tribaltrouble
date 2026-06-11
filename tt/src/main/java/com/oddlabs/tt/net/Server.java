@@ -11,6 +11,7 @@ import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;
@@ -193,7 +194,7 @@ public final class Server implements ConnectionListenerInterface {
         } else {
             name = player_slot.getInfo().getName();
         }
-        PlayerInfo player_info = new PlayerInfo(team, race, name);
+        PlayerInfo player_info = new PlayerInfo(team, Race.fromValue(race), name);
         boolean reset_ready = player_slot.getInfo() == null || type != player_slot.getType() || ai_difficulty
                 != player_slot.getAIDifficulty() || !player_info.equals(player_slot.getInfo());
         player_slot.setType(type);
@@ -289,11 +290,9 @@ public final class Server implements ConnectionListenerInterface {
             address = tunnel_id.address();
         }
         player_slot.setReady(false);
-        int max_teams = MatchmakingServerInterface.MAX_PLAYERS;
-        if (game != null && game.isRated())
-            max_teams = 2;
-        PlayerInfo player_info = new PlayerInfo(available_slot % max_teams, random.nextInt(RacesResources
-                .getNumRaces()), name);
+        int max_teams = game != null && game.isRated() ? 2 : MatchmakingServerInterface.MAX_PLAYERS;
+        PlayerInfo player_info = new PlayerInfo(available_slot % max_teams, Race.values()[random.nextInt(Race
+                .values().length)], name);
         player_slot.setRating(rating);
         player_slot.setType(PlayerSlot.HUMAN);
         player_slot.setAddress(address);

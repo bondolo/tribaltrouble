@@ -3,10 +3,12 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeBoundsProvider;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.resource.SpriteFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.stream.IntStream;
 
 /**
@@ -18,7 +20,8 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
 
     private final @NonNull SpriteKey @NonNull [] rock_fragment_sprites;
     private final @NonNull SpriteKey @NonNull [] iron_fragment_sprites;
-    private final @NonNull SpriteKey @NonNull [] @NonNull [] plant_sprites;
+    private final @NonNull EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(
+            Terrain.class);
     private final @NonNull SpriteKey chicken;
 
     public LandscapeResources(@NonNull RenderQueues queues) {
@@ -39,18 +42,18 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
                 .toArray(SpriteKey[]::new);
         ProgressForm.progress(1f / num_progress);
 
-        plant_sprites = new SpriteKey[][]{
-                IntStream.rangeClosed(1, 4)
+        plant_sprites.put(
+                Terrain.NATIVE, IntStream.rangeClosed(1, 4)
                         .mapToObj(i -> String.format("/geometry/misc/plant_%d.binsprite", i))
                         .map(rsrc -> new SpriteFile(rsrc, Globals.NO_MIPMAP_CUTOFF, true, false, true, true, true))
                         .map(queues::register)
-                        .toArray(SpriteKey[]::new),
-                IntStream.rangeClosed(1, 4)
+                        .toArray(SpriteKey[]::new));
+        plant_sprites.put(
+                Terrain.VIKING, IntStream.rangeClosed(1, 4)
                         .mapToObj(i -> String.format("/geometry/misc/viking_plant_%d.binsprite", i))
                         .map(rsrc -> new SpriteFile(rsrc, Globals.NO_MIPMAP_CUTOFF, true, false, true, true, true))
                         .map(queues::register)
-                        .toArray(SpriteKey[]::new)
-        };
+                        .toArray(SpriteKey[]::new));
         ProgressForm.progress(1f / num_progress);
 
         SpriteFile sprite_list_chicken = new SpriteFile("/geometry/misc/chicken.binsprite",
@@ -76,8 +79,8 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
     }
 
     @Override
-    public @NonNull SpriteKey getPlantBounds(int terrain, int index) {
-        var sprites = plant_sprites[terrain];
+    public @NonNull SpriteKey getPlantBounds(Terrain terrain, int index) {
+        var sprites = plant_sprites.get(terrain);
         return sprites[index % sprites.length];
     }
 

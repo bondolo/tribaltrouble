@@ -9,11 +9,11 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SupplyManager;
 import com.oddlabs.tt.model.SupplyManagers;
 import com.oddlabs.tt.model.SupplyType;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.pathfinder.RegionBuilder;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.util.Color;
@@ -54,7 +54,7 @@ public final class World {
     private final @Nullable RacesResources races_resources;
     private final @NonNull LandscapeBoundsProvider landscape_resources;
     private final @NonNull FogInfo fog;
-    private final Landscape.@NonNull TerrainType terrain;
+    private final @NonNull Terrain terrain;
     private final float @NonNull [] @NonNull [] plantCoordinates;
     private final List<@NonNull Plants> activePlants = new ArrayList<>();
 
@@ -80,7 +80,7 @@ public final class World {
         return fog;
     }
 
-    public Landscape.@NonNull TerrainType getTerrainType() {
+    public @NonNull Terrain getTerrainType() {
         return terrain;
     }
 

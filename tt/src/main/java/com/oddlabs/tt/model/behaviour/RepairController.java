@@ -40,7 +40,7 @@ public final class RepairController extends Controller {
         } else if (unit.getSupplyContainer().getSupplyType().orElse(null) == SupplyType.WOOD && unit
                 .getSupplyContainer()
                 .getNumSupplies() > 0) {
-                    resetGiveUpCounter(State.HARVEST.ordinal());
+                    resetGiveUpCounter(State.HARVEST);
                     if (unit.isCloseEnough(0f, building)) {
                         if (building.isDamaged()) {
                             unit.setBehaviour(new RepairBehaviour(unit, building));
@@ -51,15 +51,15 @@ public final class RepairController extends Controller {
                                     unit.popController();
                                 }
                     } else {
-                        if (shouldGiveUp(State.REPAIR.ordinal())) {
+                        if (shouldGiveUp(State.REPAIR)) {
                             unit.popController();
                         } else {
                             unit.setBehaviour(new WalkBehaviour(unit, building, 0, false));
                         }
                     }
                 } else {
-                    resetGiveUpCounter(State.REPAIR.ordinal());
-                    if (!shouldGiveUp(State.HARVEST.ordinal())) {
+                    resetGiveUpCounter(State.REPAIR);
+                    if (!shouldGiveUp(State.HARVEST)) {
                         unit.pushController(new HarvestController<>(unit, null, SupplyType.WOOD));
                     } else {
                         unit.popController();

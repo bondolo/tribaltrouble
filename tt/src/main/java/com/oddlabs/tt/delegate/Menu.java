@@ -18,12 +18,12 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.Server;
 import com.oddlabs.tt.net.WorldInitAction;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.IslandGenerator;
 import com.oddlabs.tt.resource.WorldGenerator;
@@ -281,7 +281,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     public static @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
             SelectGameMenu owner, WorldParameters world_params, @NonNull InGameInfo ingame_info,
-            WorldInitAction init_action, Game game, int meters_per_world, Landscape.@NonNull TerrainType terrain,
+            WorldInitAction init_action, Game game, int meters_per_world, @NonNull Terrain terrain,
             float hills, float vegetation_amount, float supplies_amount, int seed, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
         WorldGenerator generator = new IslandGenerator(terrain, meters_per_world, hills, vegetation_amount,

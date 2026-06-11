@@ -4,8 +4,8 @@ import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.LandscapeLeaf;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.procedural.GeneratorOcean;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.TextureGenerator;
 import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.PatchMesh;
@@ -80,7 +80,7 @@ public final class Water implements AutoCloseable {
     public static final float VIKING_WAVE_LEN_2 = 28.0f;
     public static final float VIKING_WAVE_LEN_3 = 14.0f;
 
-    private final Landscape.@NonNull TerrainType terrain;
+    private final @NonNull Terrain terrain;
     private final @NonNull Sky sky;
     private final @NonNull MatrixStack modelViewStack;
     private final @NonNull MatrixStack projectionStack;
@@ -118,10 +118,10 @@ public final class Water implements AutoCloseable {
     private final float @NonNull [] waveDirsY;
     private final float waveSpeed;
 
-    public Water(@NonNull HeightMap heightmap, Landscape.@NonNull TerrainType terrain, @NonNull Sky sky,
+    public Water(@NonNull HeightMap heightmap, @NonNull Terrain terrain, @NonNull Sky sky,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         this.terrain = terrain;
-        if (terrain == Landscape.TerrainType.VIKING) {
+        if (terrain == Terrain.VIKING) {
             waveAmplitudes = new float[]{
                     WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER,
                     WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER * WAVE_AMPLITUDE_SCALE_2,
@@ -272,9 +272,9 @@ public final class Water implements AutoCloseable {
             waterShader.setUniform(WaterShader.Uniforms.HEIGHT_MAP, 2);
             waterShader.setUniform(WaterShader.Uniforms.WORLD_SIZE, (float) heightMap.getMetersPerWorld());
 
-            float depthScale = terrain == Landscape.TerrainType.NATIVE ? NATIVE_DEPTH_SCALE : VIKING_DEPTH_SCALE;
-            float minAlpha = terrain == Landscape.TerrainType.NATIVE ? NATIVE_MIN_ALPHA : VIKING_MIN_ALPHA;
-            float maxAlpha = terrain == Landscape.TerrainType.NATIVE ? NATIVE_MAX_ALPHA : VIKING_MAX_ALPHA;
+            float depthScale = terrain == Terrain.NATIVE ? NATIVE_DEPTH_SCALE : VIKING_DEPTH_SCALE;
+            float minAlpha = terrain == Terrain.NATIVE ? NATIVE_MIN_ALPHA : VIKING_MIN_ALPHA;
+            float maxAlpha = terrain == Terrain.NATIVE ? NATIVE_MAX_ALPHA : VIKING_MAX_ALPHA;
 
             waterShader.setUniform(WaterShader.Uniforms.DEPTH_SCALE, depthScale);
             waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, minAlpha);

@@ -6,6 +6,7 @@ import com.oddlabs.tt.model.Difficulty;
 
 import com.oddlabs.tt.model.BuildingType;
 
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
@@ -20,7 +21,6 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
@@ -47,7 +47,7 @@ public final class NativeIsland7 extends Island {
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(network, gui_root, 512, Landscape.TerrainType.VIKING, .75f, 1f, .75f,
+        GameNetwork game_network = startNewGame(network, gui_root, 512, Terrain.VIKING, .75f, 1f, .75f,
                 925, 7, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,

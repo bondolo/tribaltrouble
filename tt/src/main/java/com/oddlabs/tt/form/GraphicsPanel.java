@@ -109,15 +109,15 @@ public class GraphicsPanel extends Panel {
         group_detail.addChild(label_detail);
 
         int initial_detail_value = Renderer.getRenderer().getSettings().graphic_detail;
-        PulldownMenu<Void> pm_detail = new PulldownMenu<>();
-        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("low")));
-        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("medium")));
-        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("high")));
-        PulldownButton<Void> pb_detail = new PulldownButton<>(gui_root, pm_detail, initial_detail_value, 150);
+        PulldownMenu<Integer> pm_detail = new PulldownMenu<>();
+        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("low"), 0));
+        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("medium"), 1));
+        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("high"), 2));
+        PulldownButton<Integer> pb_detail = new PulldownButton<>(gui_root, pm_detail, initial_detail_value, 150);
 
         group_detail.addChild(pb_detail);
         options.addCloseListener(() -> {
-            int slider_value = pm_detail.getChosenItemIndex();
+            int slider_value = pm_detail.getChosenItem().map(PulldownItem::getAttachment).orElse(initial_detail_value);
             if (initial_detail_value != slider_value) {
                 Renderer.getRenderer().getSettings().graphic_detail = slider_value;
                 World.updatePlantsDetail(Globals.INSERT_PLANTS[slider_value]);

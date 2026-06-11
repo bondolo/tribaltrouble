@@ -3,6 +3,7 @@ package com.oddlabs.tt.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.procedural.Perlin.Interpolation;
 import com.oddlabs.tt.procedural.Perlin.Summation;
 import com.oddlabs.tt.render.Texture;
@@ -14,9 +15,9 @@ import org.lwjgl.opengl.GL11;
 public final class GeneratorOcean extends TextureGenerator {
     private static final int TEXTURE_SIZE = 512;
 
-    private final Landscape.TerrainType terrain;
+    private final Terrain terrain;
 
-    public GeneratorOcean(Landscape.TerrainType terrain) {
+    public GeneratorOcean(Terrain terrain) {
         this.terrain = terrain;
     }
 
@@ -43,7 +44,7 @@ public final class GeneratorOcean extends TextureGenerator {
         water1.layerAdd(highlight.multiply(0.2f).toLayer());
         water1.addAlpha();
         water1.a.fill(0.5f);
-        if (terrain == Landscape.TerrainType.VIKING) {
+        if (terrain == Terrain.VIKING) {
             water1.multiply(0.4f);
             water1.a.addClip(0.1f);
         }

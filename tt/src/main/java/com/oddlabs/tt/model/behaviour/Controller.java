@@ -22,7 +22,21 @@ public abstract sealed class Controller permits AttackController, DefendControll
         give_up_counters[state_index] = 0;
     }
 
+    protected final void resetGiveUpCounter(Enum<?> state) {
+        give_up_counters[state.ordinal()] = 0;
+    }
+
     protected final boolean shouldGiveUp(int state_index) {
+        if (give_up_counters[state_index] != MAX_TRIES) {
+            give_up_counters[state_index]++;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    protected final boolean shouldGiveUp(Enum<?> state) {
+        int state_index = state.ordinal();
         if (give_up_counters[state_index] != MAX_TRIES) {
             give_up_counters[state_index]++;
             return false;

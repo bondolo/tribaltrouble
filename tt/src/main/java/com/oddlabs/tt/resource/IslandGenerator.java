@@ -4,6 +4,7 @@ import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.LandscapeBaker;
+import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
@@ -24,7 +25,7 @@ public final class IslandGenerator implements WorldGenerator {
     private static final float IDEAL_DETAIL_ALPHA = .15f;
 
     private final int meters_per_world;
-    private final Landscape.@NonNull TerrainType terrain;
+    private final @NonNull Terrain terrain;
     private final int grid_units;
 
     private final float hills;
@@ -32,7 +33,8 @@ public final class IslandGenerator implements WorldGenerator {
     private final float supplies_amount;
     private final int seed;
 
-    public IslandGenerator(Landscape.@NonNull TerrainType terrain, int meters_per_world, float hills,
+    public IslandGenerator(
+            @NonNull Terrain terrain, int meters_per_world, float hills,
             float vegetation_amount, float supplies_amount, int seed) {
         this.hills = hills;
         this.vegetation_amount = vegetation_amount;

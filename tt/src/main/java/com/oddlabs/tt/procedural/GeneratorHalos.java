@@ -12,6 +12,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 
 public final class GeneratorHalos extends TextureGenerator {
     public enum HaloType {
@@ -73,20 +74,22 @@ public final class GeneratorHalos extends TextureGenerator {
         // Blue  = 0
         // Alpha = 1 (Solid)
 
-        Layer[] layers = new Layer[2];
+        EnumMap<HaloType, Layer> layers = new EnumMap<>(HaloType.class);
 
         // SHADOWED: Just the shadow in Green channel
-        layers[HaloType.SHADOWED.ordinal()] = new Layer(channel_black.copy(), channel_shadow.copy(), channel_black
-                .copy(), channel_white.copy());
+        layers.put(HaloType.SHADOWED, new Layer(channel_black.copy(), channel_shadow.copy(), channel_black
+                .copy(), channel_white.copy()));
 
         // SELECTED: Ring in Red, Shadow in Green
-        layers[HaloType.SELECTED.ordinal()] = new Layer(channel_ring.copy(), channel_shadow.copy(), channel_black
-                .copy(), channel_white.copy());
+        layers.put(HaloType.SELECTED, new Layer(channel_ring.copy(), channel_shadow.copy(), channel_black
+                .copy(), channel_white.copy()));
 
-        Texture[] textures = new Texture[layers.length];
-        for (int i = 0; i < layers.length; i++) {
-            if (Landscape.DEBUG) new GLIntImage(layers[i]).saveAsPNG("generator_halos_" + i);
-            textures[i] = new Texture(new GLImage[]{new GLIntImage(layers[i])}, GL11.GL_RGBA8, GL11.GL_LINEAR,
+        Texture[] textures = new Texture[HaloType.values().length];
+        for (HaloType type : HaloType.values()) {
+            Layer layer = layers.get(type);
+            int idx = type.ordinal();
+            if (Landscape.DEBUG) new GLIntImage(layer).saveAsPNG("generator_halos_" + idx);
+            textures[idx] = new Texture(new GLImage[]{new GLIntImage(layer)}, GL11.GL_RGBA8, GL11.GL_LINEAR,
                     GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
         }
         return textures;

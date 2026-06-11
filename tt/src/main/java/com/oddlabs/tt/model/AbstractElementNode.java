@@ -3,7 +3,6 @@ package com.oddlabs.tt.model;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.UnitGrid;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.util.LinkedList;
 import org.jspecify.annotations.NonNull;
@@ -78,7 +77,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
     }
 
     public static void buildSupplies(@NonNull World world, @NonNull List<int[]> iron_positions, @NonNull List<
-            int[]> rock_positions, float @NonNull [] @NonNull [] plants, Landscape.@NonNull TerrainType terrain,
+            int[]> rock_positions, float @NonNull [] @NonNull [] plants, @NonNull Terrain terrain,
             boolean insertPlants) {
         buildRockSupplies(world, rock_positions);
         buildIronSupplies(world, iron_positions);
@@ -110,7 +109,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
     }
 
     public static void addPlants(@NonNull World world, float @NonNull [] @NonNull [] plants,
-            Landscape.@NonNull TerrainType terrain) {
+            @NonNull Terrain terrain) {
         int num_plants = 0;
         for (int t = 0; t < plants.length; t++) {
             num_plants += plants[t].length / 2;
@@ -127,7 +126,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
                     dir_y *= inv_len;
                 }
                 new Plants(world, plants[t][2 * p], plants[t][2 * p + 1], dir_x, dir_y,
-                        world.getLandscapeResources().getPlantBounds(terrain.ordinal(), t));
+                        world.getLandscapeResources().getPlantBounds(terrain, t));
             }
         }
         IO.println("num_plants = " + num_plants);

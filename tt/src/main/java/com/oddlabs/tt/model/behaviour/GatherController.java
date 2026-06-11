@@ -42,15 +42,15 @@ public final class GatherController<S extends Supply> extends Controller {
     }
 
     private void gather() {
-        resetGiveUpCounter(State.DROPOFF.ordinal());
+        resetGiveUpCounter(State.DROPOFF);
         if (supply != null && supply.isDead()) {
             supply = null;
-            resetGiveUpCounter(State.HARVEST.ordinal());
+            resetGiveUpCounter(State.HARVEST);
         }
 
         if (supply != null && unit.isCloseEnough(unit.getRange(supply), supply)) {
             unit.pushController(new HarvestController<>(unit, supply, supplyType));
-        } else if (!shouldGiveUp(State.HARVEST.ordinal())) {
+        } else if (!shouldGiveUp(State.HARVEST)) {
             if (supply == null) {
                 unit.pushController(new HarvestController<>(unit, supply, supplyType));
             } else {
@@ -63,7 +63,7 @@ public final class GatherController<S extends Supply> extends Controller {
     }
 
     private void dropoff() {
-        resetGiveUpCounter(State.HARVEST.ordinal());
+        resetGiveUpCounter(State.HARVEST);
         if (building_tracker != null && building_tracker.getOccupant() != null && unit.isCloseEnough(0f,
                 building_tracker.getOccupant())) {
             Building building = building_tracker.getOccupant();
@@ -78,7 +78,7 @@ public final class GatherController<S extends Supply> extends Controller {
                 unit.pushController(new EnterController(unit, building));
             } else
                 gather();
-        } else if (!shouldGiveUp(State.DROPOFF.ordinal())) {
+        } else if (!shouldGiveUp(State.DROPOFF)) {
             building_tracker = new FinderTrackerAlgorithm<>(unit.getUnitGrid(), new BuildingFinder(unit.getOwner(),
                     Abilities.SUPPLY_CONTAINER));
             unit.setBehaviour(new WalkBehaviour(unit, building_tracker, false));

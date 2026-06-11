@@ -26,6 +26,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -73,7 +74,7 @@ public final class Player implements PlayerInterface {
     private boolean can_build_chieftains = true;
     private boolean can_repair = true;
     private boolean can_attack = true;
-    private final boolean[] can_build = new boolean[BuildingType.values().length];
+    private final EnumSet<BuildingType> can_build = EnumSet.allOf(BuildingType.class);
     private boolean can_move = true;
     private boolean can_exit_towers = true;
     private boolean can_use_rubber = true;
@@ -92,7 +93,6 @@ public final class Player implements PlayerInterface {
         this.world = world;
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         Arrays.fill(can_do_magic, true);
-        Arrays.fill(can_build, true);
         this.player_info = player_info;
         this.unit_count = new SupplyContainer(world.getMaxUnitCount());
 //		this.team_tip = i18n("team", new Object[]{Integer.toString(player_info.getTeam() + 1)});
@@ -173,7 +173,11 @@ public final class Player implements PlayerInterface {
     }
 
     public void enableBuilding(@NonNull BuildingType building, boolean enabled) {
-        can_build[building.ordinal()] = enabled;
+        if (enabled) {
+            can_build.add(building);
+        } else {
+            can_build.remove(building);
+        }
     }
 
     public void enableAttacking(boolean enabled) {
@@ -233,7 +237,7 @@ public final class Player implements PlayerInterface {
     }
 
     public boolean canBuild(@NonNull BuildingType building) {
-        return can_build[building.ordinal()] && getBuildingCountContainer().getNumSupplies()
+        return can_build.contains(building) && getBuildingCountContainer().getNumSupplies()
                 < Player.MAX_BUILDING_COUNT;
     }
 

@@ -225,7 +225,7 @@ public class ChatPanel extends Panel implements ChatListener {
         public void rowChosen(@NonNull ChatRoomUser user) {
             String item_text = ChatCommand.isIgnoring(user.getNick())
                     ? getI18N("unignore") : getI18N("ignore");
-            menu.getItem(PULLDOWN_INDEX_IGNORE).setLabelString(item_text);
+            menu.getItem(PULLDOWN_INDEX_IGNORE).ifPresent(pi -> pi.setLabelString(item_text));
         }
     }
 

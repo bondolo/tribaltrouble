@@ -4,6 +4,9 @@ import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * A button representing a dropdown selection that opens a PulldownMenu.
+ */
 public final class PulldownButton<T> extends GUIObject {
     private final @NonNull PulldownMenu<T> menu;
     private final @NonNull Label label;
@@ -71,7 +74,7 @@ public final class PulldownButton<T> extends GUIObject {
     @Override
     protected void mouseReleased(@NonNull MouseButton button, int x, int y) {
         if (!menu.isActive())
-            menu.getItem(menu.getChosenItemIndex()).setFocus();
+            menu.getChosenItem().ifPresent(GUIObject::setFocus);
         menu.clickItem(button, x, y, 1);
     }
 
@@ -103,10 +106,11 @@ public final class PulldownButton<T> extends GUIObject {
     }
 
     private void itemChosen(@NonNull PulldownMenu<T> menu, int item_index) {
-        PulldownItem<T> item = menu.getItem(item_index);
-        label.set(item.getLabelString());
-        label.setColor(item.getLabelColor());
-        if (menu.isActive())
-            deactivateMenu();
+        menu.getItem(item_index).ifPresent(item -> {
+            label.set(item.getLabelString());
+            label.setColor(item.getLabelColor());
+            if (menu.isActive())
+                deactivateMenu();
+        });
     }
 }

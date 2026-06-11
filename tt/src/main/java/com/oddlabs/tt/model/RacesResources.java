@@ -53,6 +53,13 @@ import java.util.stream.IntStream;
  * Handles textures, sounds, and building templates.
  */
 public final class RacesResources {
+    private static final Logger logger = Logger.getLogger(RacesResources.class.getSimpleName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
+
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+        return Utils.getBundleString(bundle, key, args);
+    }
+
     public static final int QUARTERS_SIZE = 5;
     public static final int ARMORY_SIZE = 5;
     public static final int TOWER_SIZE = 3;
@@ -78,17 +85,10 @@ public final class RacesResources {
 
     public static final GeneratorCrack CRACK_DECAL_DESC = new GeneratorCrack();
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
-    private static final Logger logger = Logger.getLogger(RacesResources.class.getSimpleName());
+    private static final @NonNull EnumMap<Race, String> race_names = new EnumMap<>(
+            Map.of(Race.NATIVES, i18n("natives"),
+                    Race.VIKINGS, i18n("vikings")));
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
-
-    private static final @NonNull String[] race_names = {
-            i18n("natives"),
-            i18n("vikings")
-    };
     private static final int MAX_UNIT_RESOURCES = 1;
 
     private final @NonNull TextureKey[] smoke_textures = new TextureKey[1];
@@ -99,7 +99,7 @@ public final class RacesResources {
     private final @NonNull TextureKey[] star_textures = new TextureKey[1];
     private final @NonNull SpriteKey[] wood_fragment_sprites = new SpriteKey[4];
     private final @NonNull SpriteKey[] treasure_sprites = new SpriteKey[6];
-    private final @NonNull RaceInfo @NonNull [] raceInfos;
+    private final EnumMap<Race, @NonNull RaceInfo> raceInfos = new EnumMap<>(Race.class);
 
     public static boolean isValidRace(int race) {
         return race >= 0 && race < Race.values().length;
@@ -189,9 +189,6 @@ public final class RacesResources {
                 name);
     }
 
-    private final @NonNull Map<@NonNull SupplyType, @NonNull SpriteKey> native_supply_sprites;
-    private final @NonNull Map<@NonNull SupplyType, @NonNull SpriteKey> viking_supply_sprites;
-
     public RacesResources(@NonNull RenderQueues queues) {
         int num_progress = 23;
         SpriteFile native_rock_sprite = new SpriteFile("/geometry/natives/rock_resource.binsprite",
@@ -210,7 +207,6 @@ public final class RacesResources {
         nativeMap.put(SupplyType.ROCK, queues.register(native_rock_sprite));
         nativeMap.put(SupplyType.IRON, queues.register(native_rock_sprite, 1));
         nativeMap.put(SupplyType.RUBBER, queues.register(native_rubber_sprite));
-        native_supply_sprites = nativeMap;
 
         SpriteFile viking_wood_sprite = new SpriteFile("/geometry/vikings/wood_resource.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
@@ -228,7 +224,6 @@ public final class RacesResources {
         vikingMap.put(SupplyType.ROCK, queues.register(viking_rock_sprite));
         vikingMap.put(SupplyType.IRON, queues.register(viking_rock_sprite, 1));
         vikingMap.put(SupplyType.RUBBER, queues.register(viking_rubber_sprite));
-        viking_supply_sprites = vikingMap;
 
         smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(42, 0.6f, 1.0f), 0);
         damage_smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(43, 1.0f, 0.5f), 0);
@@ -578,7 +573,7 @@ public final class RacesResources {
                 vPeonSprite.bounds(),
                 vPeonSprite.animTypes(),
                 shadow_diameter_peon,
-                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, viking_supply_sprites),
+                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, vikingMap),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
@@ -600,7 +595,7 @@ public final class RacesResources {
                 nPeonSprite.bounds(),
                 nPeonSprite.animTypes(),
                 shadow_diameter_peon,
-                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, native_supply_sprites),
+                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, nativeMap),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
@@ -710,7 +705,8 @@ public final class RacesResources {
                 viking_magic,
                 new VikingChieftainAI(),
                 AudioAssets.MUSIC_VIKING);
-        raceInfos = new RaceInfo[]{natives_raceInfo, vikings_raceInfo};
+        raceInfos.put(Race.NATIVES, natives_raceInfo);
+        raceInfos.put(Race.VIKINGS, vikings_raceInfo);
 
         wood_fragment_sprites[0] = queues.register(new SpriteFile("/geometry/misc/wood_2.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
@@ -808,16 +804,12 @@ public final class RacesResources {
         return star_textures;
     }
 
-    public @NonNull RaceInfo getRaceInfo(int i) {
-        return raceInfos[i];
+    public @NonNull RaceInfo getRaceInfo(@NonNull Race race) {
+        return raceInfos.get(race);
     }
 
-    public static @NonNull String getRaceName(int i) {
-        return race_names[i];
-    }
-
-    public static int getNumRaces() {
-        return race_names.length;
+    public static @NonNull String getRaceName(@NonNull Race race) {
+        return race_names.get(race);
     }
 
     public @NonNull SpriteKey @NonNull [] getWoodFragments() {

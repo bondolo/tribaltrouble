@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL12;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -20,17 +21,20 @@ import java.util.function.Supplier;
  * Specialized renderer that handles drawing halos for selected units and regular shadows for other entities.
  */
 final class SelectableShadowRenderer extends ShadowListRenderer {
-    private final @NonNull Texture @NonNull [] halos;
+    private final @NonNull EnumMap<GeneratorHalos.HaloType, Texture> halos = new EnumMap<>(
+            GeneratorHalos.HaloType.class);
 
     private final Deque<@NonNull ModelState<?>> selection_list = new ArrayDeque<>();
     private final Deque<@NonNull Shadowable> shadowed_list = new ArrayDeque<>();
 
     public SelectableShadowRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> halos_desc) {
-        halos = Resources.findResource(halos_desc);
-        for (Texture halo : halos) {
+        Texture[] textures = Resources.findResource(halos_desc);
+        for (int i = 0; i < textures.length; i++) {
+            Texture halo = textures[i];
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, halo.getHandle());
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+            halos.put(GeneratorHalos.HaloType.values()[i], halo);
         }
         setRadial(true);
     }
@@ -63,13 +67,13 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
         try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.WHITE);
             setPattern(Selectable.VisualPattern.NONE);
-            bindShadowTexture(halos[GeneratorHalos.HaloType.SHADOWED.ordinal()]);
+            bindShadowTexture(halos.get(GeneratorHalos.HaloType.SHADOWED));
             while (!shadowed_list.isEmpty()) {
                 var model = shadowed_list.pop();
                 renderShadow(context, renderer, model);
             }
 
-            bindShadowTexture(halos[GeneratorHalos.HaloType.SELECTED.ordinal()]);
+            bindShadowTexture(halos.get(GeneratorHalos.HaloType.SELECTED));
             while (!selection_list.isEmpty()) {
                 var modelState = selection_list.pop();
                 var model = Objects.requireNonNull(modelState.getModel());

@@ -567,7 +567,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     @Override
     protected void removeDying() {
-        final Landscape.TerrainType terrain = getOwner().getWorld().getTerrainType();
+        final Terrain terrain = getOwner().getWorld().getTerrainType();
         final Color.Linear dustColor = Landscape.getDustColor(terrain).desaturate(0.5f);
 
         ColorSpectrum spectrumCallback = (spectrum, baseColor) -> {
