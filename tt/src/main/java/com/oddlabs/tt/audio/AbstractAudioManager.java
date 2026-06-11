@@ -155,7 +155,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
      * Update the listener orientation using forward and up vectors
      *
      * @param forward listener forward vector
-     * @param up      listener up vector
+     * @param up listener up vector
      * @return this
      */
     @Override

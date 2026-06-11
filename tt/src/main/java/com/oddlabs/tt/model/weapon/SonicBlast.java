@@ -9,8 +9,8 @@ import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.resource.AudioAssets;
-import org.joml.Vector3f;
 import com.oddlabs.tt.util.BoundingBox;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

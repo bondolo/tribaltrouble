@@ -14,8 +14,8 @@ public interface ModelClient extends ClientState {
     /**
      * Spawns a visual sound emoji/thought accessory on the model.
      *
-     * @param emoji         The emoji type of the thought.
-     * @param duration      The duration to display the thought.
+     * @param emoji The emoji type of the thought.
+     * @param duration The duration to display the thought.
      * @param audioDistance The maximum distance at which the sound/visual is audible.
      */
     void addVisualSound(@NonNull EmojiType emoji, float duration, float audioDistance);

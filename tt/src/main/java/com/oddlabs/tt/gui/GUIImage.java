@@ -14,12 +14,12 @@ public final class GUIImage extends GUIIcon {
     /**
      * Creates a new GUIImage from a texture file.
      *
-     * @param width        The width of the image or negative value to use texture width and height.
-     * @param height       The height of the image or negative value to use texture width and height.
-     * @param u1           The u-coordinate of the top-left corner of the texture region.
-     * @param v1           The v-coordinate of the top-left corner of the texture region.
-     * @param u2           The u-coordinate of the bottom-right corner of the texture region.
-     * @param v2           The v-coordinate of the bottom-right corner of the texture region.
+     * @param width The width of the image or negative value to use texture width and height.
+     * @param height The height of the image or negative value to use texture width and height.
+     * @param u1 The u-coordinate of the top-left corner of the texture region.
+     * @param v1 The v-coordinate of the top-left corner of the texture region.
+     * @param u2 The u-coordinate of the bottom-right corner of the texture region.
+     * @param v2 The v-coordinate of the bottom-right corner of the texture region.
      * @param texture_name The name of the texture file to load.
      */
     public GUIImage(int width, int height, float u1, float v1, float u2, float v2, String texture_name) {
@@ -37,12 +37,12 @@ public final class GUIImage extends GUIIcon {
     /**
      * Creates a new GUIImage from an existing texture.
      *
-     * @param width   The width of the image or negative value to use texture width and height.
-     * @param height  The height of the image or negative value to use texture width and height.
-     * @param u1      The u-coordinate of the top-left corner of the texture region.
-     * @param v1      The v-coordinate of the top-left corner of the texture region.
-     * @param u2      The u-coordinate of the bottom-right corner of the texture region.
-     * @param v2      The v-coordinate of the bottom-right corner of the texture region.
+     * @param width The width of the image or negative value to use texture width and height.
+     * @param height The height of the image or negative value to use texture width and height.
+     * @param u1 The u-coordinate of the top-left corner of the texture region.
+     * @param v1 The v-coordinate of the top-left corner of the texture region.
+     * @param u2 The u-coordinate of the bottom-right corner of the texture region.
+     * @param v2 The v-coordinate of the bottom-right corner of the texture region.
      * @param texture The texture to display.
      */
     private GUIImage(int width, int height, float u1, float v1, float u2, float v2, @NonNull Texture texture) {

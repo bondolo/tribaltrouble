@@ -6,13 +6,14 @@ import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.particle.LinearEmitter;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.util.Color;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * An accessory that manages the damage smoke for a building.

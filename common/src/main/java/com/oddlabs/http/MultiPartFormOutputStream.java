@@ -57,7 +57,7 @@ public class MultiPartFormOutputStream {
      * but it is recommended to be at least 6 characters. (Or use the
      * static createBoundary() method to create one.)
      *
-     * @param os       the output stream
+     * @param os the output stream
      * @param boundary the boundary
      * @see #createBoundary()
      * @see #getContentType(String)
@@ -73,7 +73,7 @@ public class MultiPartFormOutputStream {
     /**
      * Writes a boolean field value.
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -84,7 +84,7 @@ public class MultiPartFormOutputStream {
     /**
      * Writes a double field value.
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -95,7 +95,7 @@ public class MultiPartFormOutputStream {
     /**
      * Writes a float field value.
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -106,7 +106,7 @@ public class MultiPartFormOutputStream {
     /**
      * Writes a long field value.
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -117,7 +117,7 @@ public class MultiPartFormOutputStream {
     /**
      * Writes an int field value.
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -128,7 +128,7 @@ public class MultiPartFormOutputStream {
     /**
      * Writes a short field value.
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -139,7 +139,7 @@ public class MultiPartFormOutputStream {
     /**
      * Writes a char field value.
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -151,7 +151,7 @@ public class MultiPartFormOutputStream {
      * Writes a string field value. If the value is null, an empty string
      * is sent ("").
      *
-     * @param name  the field name (required)
+     * @param name the field name (required)
      * @param value the field value
      * @throws IOException on input/output errors
      */
@@ -184,9 +184,9 @@ public class MultiPartFormOutputStream {
      * is a directory, a <code>java.lang.IllegalArgumentException</code>
      * will be thrown.
      *
-     * @param name     the field name
+     * @param name the field name
      * @param mimeType the file content type (optional, recommended)
-     * @param file     the file (the file must exist)
+     * @param file the file (the file must exist)
      * @throws IOException on input/output errors
      */
     public void writeFile(String name, @Nullable String mimeType, @NonNull File file) throws IOException {
@@ -218,10 +218,10 @@ public class MultiPartFormOutputStream {
      * Writes an input stream's contents. If the input stream is null, a
      * <code>java.lang.IllegalArgumentException</code> will be thrown.
      *
-     * @param name     the field name
+     * @param name the field name
      * @param mimeType the file content type (optional, recommended)
      * @param fileName the file name (required)
-     * @param is       the input stream
+     * @param is the input stream
      * @throws IOException on input/output errors
      */
     public void writeFile(String name, @Nullable String mimeType, @NonNull String fileName, @NonNull InputStream is)
@@ -255,10 +255,10 @@ public class MultiPartFormOutputStream {
      * of a file, and will be sent as such. If the data is null, a
      * <code>java.lang.IllegalArgumentException</code> will be thrown.
      *
-     * @param name     the field name
+     * @param name the field name
      * @param mimeType the file content type (optional, recommended)
      * @param fileName the file name (required)
-     * @param data     the file data
+     * @param data the file data
      * @throws IOException on input/output errors
      */
     public void writeFile(String name, String mimeType, @NonNull String fileName, byte @NonNull [] data)

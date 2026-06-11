@@ -57,9 +57,9 @@ public final class KeyboardInput {
      * process playback controls.
      *
      * @param event_key_down true if the key is down
-     * @param event_key      the key
-     * @param playback       if true allow magic keys without developer mode or control-shift modifier
-     * @param repeat         not an initial key-press
+     * @param event_key the key
+     * @param playback if true allow magic keys without developer mode or control-shift modifier
+     * @param repeat not an initial key-press
      * @return true if the key was handled
      */
     private boolean checkMagicKey(boolean event_key_down, @NonNull Key event_key, boolean playback, boolean repeat) {

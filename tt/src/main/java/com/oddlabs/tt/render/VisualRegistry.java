@@ -1,15 +1,15 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.model.BuildingVisualType;
-import com.oddlabs.tt.model.UnitVisualType;
 import com.oddlabs.tt.model.EmojiType;
-import java.util.EnumMap;
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
-
+import com.oddlabs.tt.model.UnitVisualType;
 import com.oddlabs.tt.model.WeaponVisualType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.EnumMap;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Client-side registry mapping simulation visual types to graphics-bound SpriteKeys and ShadowListKeys.

@@ -1,10 +1,20 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.*;
+import com.oddlabs.tt.audio.AbstractAudioManager;
+import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioSource;
+import com.oddlabs.tt.audio.ReverbType;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.openal.*;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.AL11;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
@@ -18,7 +28,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.ALC10.ALC_DEFAULT_DEVICE_SPECIFIER;
+import static org.lwjgl.openal.ALC10.ALC_FALSE;
+import static org.lwjgl.openal.ALC10.ALC_TRUE;
+import static org.lwjgl.openal.ALC10.alcCloseDevice;
+import static org.lwjgl.openal.ALC10.alcCreateContext;
+import static org.lwjgl.openal.ALC10.alcDestroyContext;
+import static org.lwjgl.openal.ALC10.alcGetString;
+import static org.lwjgl.openal.ALC10.alcIsExtensionPresent;
+import static org.lwjgl.openal.ALC10.alcMakeContextCurrent;
+import static org.lwjgl.openal.ALC10.alcOpenDevice;
 import static org.lwjgl.openal.SOFTHRTF.ALC_HRTF_SOFT;
 import static org.lwjgl.openal.SOFTHRTF.alcResetDeviceSOFT;
 

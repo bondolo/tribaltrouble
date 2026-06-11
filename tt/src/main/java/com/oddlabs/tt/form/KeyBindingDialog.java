@@ -16,9 +16,7 @@ import com.oddlabs.tt.input.Modifier;
 import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 

@@ -26,7 +26,7 @@ public final class Channel {
     /**
      * Constructs a new Channel with the specified dimensions.
      *
-     * @param width  the width of the channel in pixels.
+     * @param width the width of the channel in pixels.
      * @param height the height of the channel in pixels.
      * @throws IllegalArgumentException if width or height are not positive.
      */
@@ -86,8 +86,8 @@ public final class Channel {
     /**
      * Sets the value of a pixel at the specified coordinates.
      *
-     * @param x     the x-coordinate of the pixel.
-     * @param y     the y-coordinate of the pixel.
+     * @param x the x-coordinate of the pixel.
+     * @param y the y-coordinate of the pixel.
      * @param value the new value for the pixel.
      * @throws IndexOutOfBoundsException if the coordinates are out of bounds.
      */
@@ -124,8 +124,8 @@ public final class Channel {
      * Sets the value of a pixel with wrapping coordinates.
      * If coordinates are out of bounds, they are wrapped around to the other side.
      *
-     * @param x     the x-coordinate.
-     * @param y     the y-coordinate.
+     * @param x the x-coordinate.
+     * @param y the y-coordinate.
      * @param value the new value.
      */
     public void putPixelWrap(int x, int y, float value) {
@@ -182,8 +182,8 @@ public final class Channel {
     /**
      * Sets the value of a pixel safely. If coordinates are out of bounds, the operation is ignored.
      *
-     * @param x     the x-coordinate.
-     * @param y     the y-coordinate.
+     * @param x the x-coordinate.
+     * @param y the y-coordinate.
      * @param value the new value.
      */
     public void putPixelSafe(int x, int y, float value) {
@@ -195,8 +195,8 @@ public final class Channel {
     /**
      * Sets the value of a pixel, clamping it to the [0, 1] range.
      *
-     * @param x     the x-coordinate.
-     * @param y     the y-coordinate.
+     * @param x the x-coordinate.
+     * @param y the y-coordinate.
      * @param value the new value.
      */
     public void putPixelClip(int x, int y, float value) {
@@ -1644,7 +1644,7 @@ public final class Channel {
      * the pixel is skipped. This effectively fills in small cracks and smooths gentle
      * undulations while preserving sharp cliffs and steep features.
      *
-     * @param talus      the maximum height difference allowed for material movement.
+     * @param talus the maximum height difference allowed for material movement.
      * @param iterations number of erosion passes to perform.
      * @return this channel, for chaining.
      */
@@ -1703,7 +1703,7 @@ public final class Channel {
      * greater than or equal to the {@code talus} threshold. This simulates material
      * sliding down steep inclines (like sand or soil) while leaving flat areas unchanged.
      *
-     * @param talus      the minimum height difference required for material movement.
+     * @param talus the minimum height difference required for material movement.
      * @param iterations number of erosion passes to perform.
      * @return this channel, for chaining.
      */

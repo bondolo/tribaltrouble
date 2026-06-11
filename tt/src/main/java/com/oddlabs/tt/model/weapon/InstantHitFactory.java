@@ -2,7 +2,11 @@ package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.*;
+import com.oddlabs.tt.model.Abilities;
+import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.model.UnitTemplate;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;

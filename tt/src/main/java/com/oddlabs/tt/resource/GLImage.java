@@ -120,14 +120,14 @@ public abstract class GLImage {
      * Applies a progressive alpha fade-out effect to a series of mipmaps.
      * This is used to smoothly fade objects out of view at a distance.
      *
-     * @param mipmaps            An array of GLImages representing the mipmap levels.
+     * @param mipmaps An array of GLImages representing the mipmap levels.
      * @param base_fadeout_level The mipmap level at which to start the fade-out.
-     * @param fadeout_factor     The factor by which to reduce the alpha at each successive level.
-     * @param start_x            The starting X coordinate of the area to modify.
-     * @param start_y            The starting Y coordinate of the area to modify.
-     * @param width              The width of the area to modify.
-     * @param height             The height of the area to modify.
-     * @param max_alpha          If true, only pixels with full alpha (255) are faded.
+     * @param fadeout_factor The factor by which to reduce the alpha at each successive level.
+     * @param start_x The starting X coordinate of the area to modify.
+     * @param start_y The starting Y coordinate of the area to modify.
+     * @param width The width of the area to modify.
+     * @param height The height of the area to modify.
+     * @param max_alpha If true, only pixels with full alpha (255) are faded.
      */
     public static void updateMipMapsArea(GLImage @NonNull [] mipmaps, int base_fadeout_level, float fadeout_factor,
             int start_x, int start_y, int width, int height, boolean max_alpha) {
@@ -174,16 +174,16 @@ public abstract class GLImage {
      * used for generating mipmap levels. It can apply a fadeout effect and uses
      * the maximum alpha value from the source block instead of averaging if specified.
      *
-     * @param last_img           The source image (previous mipmap level).
-     * @param x                  The top-left x-coordinate of the block in the source image.
-     * @param y                  The top-left y-coordinate of the block in the source image.
-     * @param height_div         The height of the pixel block to average.
-     * @param width_div          The width of the pixel block to average.
+     * @param last_img The source image (previous mipmap level).
+     * @param x The top-left x-coordinate of the block in the source image.
+     * @param y The top-left y-coordinate of the block in the source image.
+     * @param height_div The height of the pixel block to average.
+     * @param width_div The width of the pixel block to average.
      * @param base_fadeout_level The mipmap level at which to begin applying fadeout.
-     * @param fadeout_factor     The factor by which to reduce color components for fading.
-     * @param current_level      The current mipmap level being generated.
-     * @param max_alpha          If true, the resulting alpha is the maximum from the source block;
-     *                           otherwise, it's the average.
+     * @param fadeout_factor The factor by which to reduce color components for fading.
+     * @param current_level The current mipmap level being generated.
+     * @param max_alpha If true, the resulting alpha is the maximum from the source block;
+     *            otherwise, it's the average.
      * @return The calculated 32-bit ARGB pixel value.
      */
     private static int averagePixel(@NonNull GLImage last_img, int x, int y, int height_div, int width_div,
@@ -260,15 +260,15 @@ public abstract class GLImage {
      * This alternative implementation averages all channels, including alpha, and then
      * applies a simple threshold to the averaged alpha if {@code max_alpha} is true.
      *
-     * @param last_img           The source image (previous mipmap level).
-     * @param x                  The top-left x-coordinate of the block in the source image.
-     * @param y                  The top-left y-coordinate of the block in the source image.
-     * @param height_div         The height of the pixel block to average.
-     * @param width_div          The width of the pixel block to average.
+     * @param last_img The source image (previous mipmap level).
+     * @param x The top-left x-coordinate of the block in the source image.
+     * @param y The top-left y-coordinate of the block in the source image.
+     * @param height_div The height of the pixel block to average.
+     * @param width_div The width of the pixel block to average.
      * @param base_fadeout_level The mipmap level at which to begin applying fadeout.
-     * @param fadeout_factor     The factor by which to reduce color components for fading.
-     * @param current_level      The current mipmap level being generated.
-     * @param max_alpha          If true, sets alpha to 255 if the average is >= 128.
+     * @param fadeout_factor The factor by which to reduce color components for fading.
+     * @param current_level The current mipmap level being generated.
+     * @param max_alpha If true, sets alpha to 255 if the average is >= 128.
      * @return The calculated 32-bit ARGB pixel value.
      */
 

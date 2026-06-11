@@ -1,14 +1,22 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.render.shader.DecalShader;
-import com.oddlabs.tt.render.state.*;
+import com.oddlabs.tt.render.state.BlendMode;
+import com.oddlabs.tt.render.state.CullMode;
+import com.oddlabs.tt.render.state.DepthMode;
+import com.oddlabs.tt.render.state.RenderContext;
+import com.oddlabs.tt.render.state.ScopedState;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;

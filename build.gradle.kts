@@ -4,9 +4,9 @@ import net.ltgt.gradle.errorprone.errorprone
 plugins {
     java
     id("net.ltgt.errorprone") version "5.1.0" apply false
-    id("net.ltgt.nullaway") version "3.0.0" apply false
+    id("net.ltgt.nullaway") version "3.1.0" apply false
     id("com.smushytaco.lwjgl3") version "1.0.2" apply false
-    id("com.diffplug.spotless") version "8.5.1" apply false
+    id("com.diffplug.spotless") version "8.6.0" apply false
 }
 
 allprojects {

@@ -1,9 +1,9 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.ModelClient;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;

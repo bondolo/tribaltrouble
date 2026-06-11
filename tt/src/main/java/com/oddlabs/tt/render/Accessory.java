@@ -60,7 +60,7 @@ public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
     /**
      * Provides the transform relative to the parent's position.
      *
-     * @param dest   The matrix to populate with the relative transform.
+     * @param dest The matrix to populate with the relative transform.
      * @param parent The model this accessory is attached to.
      */
     void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent);

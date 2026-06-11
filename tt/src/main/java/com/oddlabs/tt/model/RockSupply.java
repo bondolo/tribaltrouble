@@ -2,7 +2,6 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
-import java.util.concurrent.ThreadLocalRandom;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.render.LandscapeResources;
 import com.oddlabs.tt.resource.AudioAssets;
@@ -11,6 +10,8 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A rock boulder supply that erupts from the ground.

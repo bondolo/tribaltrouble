@@ -1,10 +1,10 @@
 package com.oddlabs.tt.particle;
 
+import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.animation.Animated;
-import org.joml.Vector3f;
 import com.oddlabs.util.Color;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 
 /**

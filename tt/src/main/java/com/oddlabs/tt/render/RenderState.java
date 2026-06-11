@@ -33,7 +33,6 @@ import com.oddlabs.tt.procedural.GeneratorRing;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.viewer.Selection;
 import com.oddlabs.util.Color;
-import java.util.Optional;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -42,6 +41,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 
 /**

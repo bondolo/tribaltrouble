@@ -164,7 +164,7 @@ public interface AudioSource {
     /**
      * Sets the auxiliary effect slot to send audio to (e.g., for reverb).
      *
-     * @param slotId   The effect slot ID.
+     * @param slotId The effect slot ID.
      * @param filterId The filter ID to apply to the send, or 0 for none.
      */
     void setAuxiliarySend(int slotId, int filterId);

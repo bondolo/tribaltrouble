@@ -1,8 +1,9 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.gui.BuildSpinner;
-import java.util.Map;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Map;
 
 public class BuildProductionContainer extends BuildSupplyContainer {
     private final @NonNull SupplyContainer dest_container;

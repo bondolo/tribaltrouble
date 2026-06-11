@@ -3,7 +3,11 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.pathfinder.*;
+import com.oddlabs.tt.pathfinder.Movable;
+import com.oddlabs.tt.pathfinder.PathTracker;
+import com.oddlabs.tt.pathfinder.Region;
+import com.oddlabs.tt.pathfinder.TargetTrackerAlgorithm;
+import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;

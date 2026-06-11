@@ -1,9 +1,17 @@
 package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.audio.*;
+import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioSource;
+import com.oddlabs.tt.audio.OGGStream;
+import com.oddlabs.tt.audio.QueuedAudioPlayer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.openal.*;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;

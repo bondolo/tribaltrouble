@@ -33,8 +33,8 @@ public final class GeneratorSmoke extends TextureGenerator {
     /**
      * Parameterized constructor for specialized effects.
      *
-     * @param seed            random seed for noise.
-     * @param baseBrightness  base grayscale value [0, 1].
+     * @param seed random seed for noise.
+     * @param baseBrightness base grayscale value [0, 1].
      * @param alphaMultiplier scaling factor for the alpha channel.
      */
     public GeneratorSmoke(int seed, float baseBrightness, float alphaMultiplier) {

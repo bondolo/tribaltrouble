@@ -14,7 +14,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.guievent.RowListener;
 import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
@@ -24,7 +23,6 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;

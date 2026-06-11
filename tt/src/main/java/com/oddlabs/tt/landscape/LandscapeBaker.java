@@ -242,7 +242,8 @@ public final class LandscapeBaker {
                                 shader.setUniform("u_Mode", 2);
                                 shader.setUniformColor3("u_Color", bo.getColor());
                             }
-                            default -> { }
+                            default -> {
+                            }
                         }
 
                         quad.render();

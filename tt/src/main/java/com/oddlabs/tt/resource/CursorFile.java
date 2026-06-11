@@ -7,7 +7,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Objects;
 
 /**
  * A resource file for loading and scaling hardware cursors.
@@ -21,8 +20,8 @@ public final class CursorFile extends File<Cursor> {
      * Create a new cursor instance from an image
      *
      * @param source resource path of cursor image
-     * @param xHot   x location from top left of cursor hot spot
-     * @param yHot   y location from top left of cursor hot spot
+     * @param xHot x location from top left of cursor hot spot
+     * @param yHot y location from top left of cursor hot spot
      */
     public CursorFile(@NonNull String source, int xHot, int yHot) {
         this(source, xHot, yHot, 1.0f);
@@ -32,9 +31,9 @@ public final class CursorFile extends File<Cursor> {
      * Create a new cursor instance from an image with a specific scale.
      *
      * @param source resource path of cursor image
-     * @param xHot   x location from top left of cursor hot spot
-     * @param yHot   y location from top left of cursor hot spot
-     * @param scale  scale factor to apply to the cursor image
+     * @param xHot x location from top left of cursor hot spot
+     * @param yHot y location from top left of cursor hot spot
+     * @param scale scale factor to apply to the cursor image
      */
     public CursorFile(@NonNull String source, int xHot, int yHot, float scale) {
         super(source);

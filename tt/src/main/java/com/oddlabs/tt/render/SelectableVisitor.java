@@ -7,9 +7,10 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.util.Color;
-import java.util.Optional;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Optional;
 
 /**
  * ModelVisitor implementation that resolves visual properties and sprite keys for selectable entities

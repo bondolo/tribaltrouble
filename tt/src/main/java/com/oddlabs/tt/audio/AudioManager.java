@@ -74,8 +74,8 @@ public interface AudioManager {
     /**
      * Blends between two environmental reverb presets.
      *
-     * @param from   The source reverb environment.
-     * @param to     The target reverb environment.
+     * @param from The source reverb environment.
+     * @param to The target reverb environment.
      * @param factor Blending factor [0.0 - 1.0].
      */
     default void setReverb(@NonNull ReverbType from, @NonNull ReverbType to, float factor) {

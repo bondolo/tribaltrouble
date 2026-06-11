@@ -3,10 +3,11 @@ package com.oddlabs.tt.particle;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.util.Color;
-import java.util.concurrent.ThreadLocalRandom;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A linear emitter that spawns particles in a ring formation.

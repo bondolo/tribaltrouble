@@ -3,9 +3,10 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.ModelClient;
+import org.jspecify.annotations.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Manages the client-side visual state (accessories) for a simulation model.

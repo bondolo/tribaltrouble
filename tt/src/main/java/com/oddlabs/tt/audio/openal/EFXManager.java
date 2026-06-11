@@ -131,8 +131,8 @@ public final class EFXManager implements AutoCloseable {
     /**
      * Blends between two reverb environments.
      *
-     * @param from   The source reverb environment.
-     * @param to     The target reverb environment.
+     * @param from The source reverb environment.
+     * @param to The target reverb environment.
      * @param factor Blending factor [0.0 - 1.0]. 0.0 is fully 'from', 1.0 is fully 'to'.
      */
     public void setReverb(@NonNull ReverbType from, @NonNull ReverbType to, float factor) {

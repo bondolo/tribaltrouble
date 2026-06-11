@@ -41,7 +41,7 @@ public final class Layer {
     /**
      * Constructs a new, opaque white Layer with the specified dimensions.
      *
-     * @param width  the width of the layer in pixels.
+     * @param width the width of the layer in pixels.
      * @param height the height of the layer in pixels.
      * @throws IllegalArgumentException if width or height are not positive.
      */
@@ -66,7 +66,7 @@ public final class Layer {
      * @param g the green channel.
      * @param b the blue channel.
      * @param a the alpha channel (optional, can be null).
-     * @throws NullPointerException     if R, G, or B channels are null.
+     * @throws NullPointerException if R, G, or B channels are null.
      * @throws IllegalArgumentException if channels have mismatching dimensions.
      */
     public Layer(@NonNull Channel r, @NonNull Channel g, @NonNull Channel b, @Nullable Channel a)
@@ -93,7 +93,7 @@ public final class Layer {
      * @param r the red channel.
      * @param g the green channel.
      * @param b the blue channel.
-     * @throws NullPointerException     if R, G, or B channels are null.
+     * @throws NullPointerException if R, G, or B channels are null.
      * @throws IllegalArgumentException if channels have mismatching dimensions.
      */
     public Layer(@NonNull Channel r, @NonNull Channel g, @NonNull Channel b)
@@ -105,8 +105,8 @@ public final class Layer {
      * Constructs a new Layer from an existing RGB Layer and a new alpha channel.
      *
      * @param rgb the source RGB layer.
-     * @param a   the new alpha channel.
-     * @throws NullPointerException     if the rgb layer or alpha channel is null.
+     * @param a the new alpha channel.
+     * @throws NullPointerException if the rgb layer or alpha channel is null.
      * @throws IllegalArgumentException if the alpha channel's dimensions do not match the layer's.
      */
     public Layer(@NonNull Layer rgb, @NonNull Channel a)

@@ -4,9 +4,10 @@ import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.util.Color;
-import java.util.Optional;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Optional;
 
 /**
  * Visitor interface for applying specific logic to different types of models during world visitation.

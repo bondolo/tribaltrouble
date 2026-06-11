@@ -8,11 +8,7 @@ import com.oddlabs.util.Quad;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
 
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Transparency;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;

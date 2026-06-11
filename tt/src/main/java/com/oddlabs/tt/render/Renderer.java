@@ -33,7 +33,12 @@ import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.state.GLRenderContext;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.*;
+import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.resource.IslandGenerator;
+import com.oddlabs.tt.resource.NativeResource;
+import com.oddlabs.tt.resource.Resources;
+import com.oddlabs.tt.resource.WorldGenerator;
+import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.util.GLUtils;
 import com.oddlabs.tt.util.StatCounter;
 import com.oddlabs.tt.util.Utils;
@@ -59,7 +64,11 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.logging.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 

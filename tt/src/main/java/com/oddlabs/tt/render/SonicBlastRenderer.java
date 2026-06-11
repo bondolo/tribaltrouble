@@ -72,10 +72,8 @@ public final class SonicBlastRenderer implements AutoCloseable {
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         if (activeEffects.isEmpty()) return;
 
-        try (var _ = shader.use();
-             var _ = context.withBlendMode(BlendMode.ADDITIVE);
-             var _ = context.withDepthMode(DepthMode.READ_ONLY);
-             var _ = context.withCullMode(CullMode.NONE)) {
+        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
+                DepthMode.READ_ONLY); var _ = context.withCullMode(CullMode.NONE)) {
 
             // Bind generated noise texture for ring turbulence
             context.setTexture(0, noiseTextures[0].getHandle());

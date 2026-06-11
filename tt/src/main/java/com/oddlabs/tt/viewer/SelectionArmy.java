@@ -6,9 +6,10 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.player.Player;
-import java.util.Optional;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
 
 public final class SelectionArmy extends Army {
 

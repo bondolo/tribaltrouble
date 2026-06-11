@@ -105,7 +105,7 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     /**
      * Window or, in fullscreen mode the display, dimensions changed.
      *
-     * @param width  width of the window/display in pixels
+     * @param width width of the window/display in pixels
      * @param height height of the window/display in pixels.
      */
     protected void displayChangedNotify(int width, int height) {
