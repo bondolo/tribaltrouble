@@ -74,7 +74,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
             GLOBAL_STATE_BLOCK +
             LIGHTING_CONSTANTS +
             FOG_FUNCTION +
-            PERTURB_NORMAL_FUNC +
             """
                     uniform sampler2D u_DiffuseMap;
                     uniform sampler2D u_NormalMap;
@@ -161,10 +160,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         float h_plus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, 1)).r;
                         float h_minus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, -1)).r;
 
-                        // Calculate two normals:
-                        // 1. A mathematically accurate normal for triplanar mapping and specular
-                        // 2. A "soft" normal for diffuse lighting to replicate legacy FFP look
-                        // (Each texel spacing represents 2.0 meters, making 4.0 meters between plus and minus samples)
+                        // Calculate mathematically accurate normal for triplanar mapping and specular
                         vec3 worldNormalGeom = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
                         vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
 
@@ -172,31 +168,45 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         worldNormalGeom = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormalGeom, edgeBlend));
                         worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
 
-                        // Sample detail map and detail normal map using branching-optimized triplanar mapping for steep slopes (cliffs)
-                        if (worldNormalGeom.z > 0.85) {
+                        // Decode world-space normal from the baked colormap
+                        vec3 bakedWorldNormal = normalMapVal.rgb * (255.0/127.0) - (128.0/127.0);
+                        vec3 baseNormal = normalize((u_viewMatrix * vec4(bakedWorldNormal, 0.0)).xyz);
+
+                        // Sample detail map and detail normal map using triplanar mapping for steep slopes (cliffs)
+                        // This handles high-frequency noise tiling which is too dense to bake into the colormap.
+                        vec3 blendWeights = pow(abs(worldNormalGeom), vec3(4.0));
+                        blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
+
+                        if (worldNormalGeom.z > 0.98) {
                             detailColor = texture(u_DetailMap, v_texCoord1);
-                            detailNormalColor = texture(u_DetailNormalMap, v_texCoord1);
+                            detailNormalColor.rgb = texture(u_DetailNormalMap, v_texCoord1).rgb * 2.0 - 1.0;
                         } else {
-                            vec3 coord = vec3(worldPos, v_height) * u_DetailScale;
-                            vec3 blendWeights = abs(worldNormalGeom);
-                            blendWeights = pow(blendWeights, vec3(4.0));
-                            blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
+                            // Uniform triplanar coordinates (tile every 16 meters)
+                            vec3 coord = vec3(worldPos, v_height) / 16.0;
 
-                            detailColor = texture(u_DetailMap, v_texCoord1) * blendWeights.z +
-                                          texture(u_DetailMap, coord.yz) * blendWeights.x +
-                                          texture(u_DetailMap, coord.xz) * blendWeights.y;
+                            // Calculate continuous derivatives from top-down UVs to prevent seams at projection boundaries
+                            vec2 ddx = dFdx(v_texCoord1);
+                            vec2 ddy = dFdy(v_texCoord1);
 
-                            detailNormalColor = texture(u_DetailNormalMap, v_texCoord1) * blendWeights.z +
-                                                texture(u_DetailNormalMap, coord.yz) * blendWeights.x +
-                                                texture(u_DetailNormalMap, coord.xz) * blendWeights.y;
+                            detailColor = textureGrad(u_DetailMap, v_texCoord1, ddx, ddy) * blendWeights.z +
+                                          textureGrad(u_DetailMap, coord.yz, ddx, ddy) * blendWeights.x +
+                                          textureGrad(u_DetailMap, coord.xz, ddx, ddy) * blendWeights.y;
+
+                            vec3 nXY = textureGrad(u_DetailNormalMap, v_texCoord1, ddx, ddy).rgb * 2.0 - 1.0;
+                            vec3 nYZ = textureGrad(u_DetailNormalMap, coord.yz, ddx, ddy).rgb * 2.0 - 1.0;
+                            vec3 nXZ = textureGrad(u_DetailNormalMap, coord.xz, ddx, ddy).rgb * 2.0 - 1.0;
+
+                            // Rotate side normals to world space based on projection plane and face direction
+                            detailNormalColor.rgb = normalize(nXY * blendWeights.z +
+                                                              vec3(nYZ.z * sign(worldNormalGeom.x), nYZ.x, nYZ.y) * blendWeights.x +
+                                                              vec3(nXZ.x, nXZ.z * sign(worldNormalGeom.y), nXZ.y) * blendWeights.y);
                         }
 
-                        // Subtly modulate diffuse color with detail noise (legacy parity range in sRGB space)
-                        // Steep slopes (high slope) get full contrast; flat terrain gets reduced contrast
+                        // Subtly modulate diffuse color with detail noise
                         float slope = 1.0 - worldNormalGeom.z;
                         vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
                         float detailFade = clamp(detailColor.a / 0.15, 0.0, 1.0);
-                        float detailStrength = mix(0.15, 0.4, slope) * normalMapStrength * detailFade;
+                        float detailStrength = mix(0.15, 0.35, slope) * normalMapStrength * detailFade;
                         float detailOffset = 1.0 - detailStrength * 0.5;
                         srgbDiffuse *= (detailColor.rgb * detailStrength + detailOffset);
                         diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
@@ -207,17 +217,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec3 viewNormalGeom = normalize((u_viewMatrix * vec4(worldNormalGeom, 0.0)).xyz);
                         vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
 
-                        // Perturb using normal map
-                        // We use a manual TBN frame derived from the grid to avoid patch boundary seams caused by dFdx/dFdy
-                        vec3 worldTangentX = vec3(4.0, 0.0, h_plus_x - h_minus_x);
-                        vec3 worldTangentY = vec3(0.0, 4.0, h_plus_y - h_minus_y);
-                        vec3 vTangentX = normalize((u_viewMatrix * vec4(worldTangentX, 0.0)).xyz);
-                        vec3 vTangentY = normalize((u_viewMatrix * vec4(worldTangentY, 0.0)).xyz);
-                        mat3 TBN = mat3(vTangentX, vTangentY, viewNormalGeom);
-
-                        vec3 map = normalMapVal.rgb * (255.0/127.0) - (128.0/127.0);
-                        vec3 baseNormal = normalize(TBN * map);
-
                         // Reduce the normal map perturbation strength under water to smooth the underwater terrain
                         baseNormal = normalize(mix(viewNormalGeom, baseNormal, normalMapStrength));
 
@@ -225,9 +224,11 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         baseNormal = normalize(mix(viewNormal, baseNormal, edgeBlend));
 
                         // Micro-detail normal perturbation from detail map color (adds tactile depth up close)
-                        // Under water or in wet areas, the micro-detail normal is reduced
-                        float detailNormalStrength = mix(0.08, 0.01, wetness) * normalMapStrength * detailFade;
-                        vec3 normal = normalize(baseNormal + (detailNormalColor.rgb - vec3(0.5)) * detailNormalStrength);
+                        // Extract deviation from "flat" geometry normal and transform to view space
+                        vec3 detailDeviation = detailNormalColor.rgb - worldNormalGeom;
+                        vec3 vDetailNormal = (u_viewMatrix * vec4(detailDeviation, 0.0)).xyz;
+                        float detailNormalStrength = mix(0.20, 0.02, wetness) * normalMapStrength * detailFade;
+                        vec3 normal = normalize(baseNormal + vDetailNormal * detailNormalStrength);
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
                         vec3 viewDir = normalize(-v_viewPosition);

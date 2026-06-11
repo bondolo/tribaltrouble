@@ -9,6 +9,7 @@ import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 import java.io.Serial;
 import java.time.Duration;
@@ -91,7 +92,15 @@ public final class IslandGenerator implements WorldGenerator {
 
         float textureScale = meters_per_world * Globals.LANDSCAPE_TEXTURE_SCALE;
         LandscapeBaker baker = new LandscapeBaker(colormap_size, textureScale);
-        WorldInfo.Maps maps = baker.bake(blend_infos);
+
+        // Create temporary heightmap texture for baking
+        int grid_width = meters_per_world / HeightMap.METERS_PER_UNIT_GRID;
+        WorldInfo.Maps maps;
+        try (Texture heightMapTexture = new Texture(landscape.getHeight(), grid_width, grid_width,
+                GL30.GL_R32F, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT)) {
+            baker.setHeightMap(heightMapTexture, meters_per_world);
+            maps = baker.bake(blend_infos);
+        }
         time_after = Instant.now();
         IO.println("Landscape baked in " + Duration.between(time_before, time_after));
 
