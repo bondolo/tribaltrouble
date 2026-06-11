@@ -1,5 +1,9 @@
 package com.oddlabs.tt.form;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.MainMenu;
@@ -13,8 +17,6 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.landscape.WorldParameters;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
@@ -148,7 +150,7 @@ public final class TutorialForm extends Form {
         TutorialInGameInfo ingame_info = new TutorialInGameInfo();
         GameNetwork game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction(factory,
                 ingame_info), Player.INITIAL_UNIT_COUNT, tutorial_num);
-        game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, RacesResources.RACE_NATIVES, 0,
+        game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, Race.NATIVES.getValue(), 0,
                 true, PlayerSlot.AI_NONE);
         game_network.getClient().getServerInterface().startServer();
     }
@@ -193,16 +195,16 @@ public final class TutorialForm extends Form {
                 ingame_info = new TutorialInGameInfo();
                 WorldInitAction action = (WorldViewer viewer) -> {
                     Player player = viewer.getLocalPlayer();
-                    new Unit(player, player.getStartX(), player.getStartY(), null, player.getRace().getUnitTemplate(
-                            Race.UNIT_WARRIOR_ROCK));
+                    new Unit(player, player.getStartX(), player.getStartY(), null, player.getRaceInfo().getUnitTemplate(
+                            UnitType.WARRIOR_ROCK));
                     new Tutorial(viewer, ingame_info, new SelectTowerTrigger(viewer.getLocalPlayer()));
                 };
                 game_network = doStartNewGame(network, gui_root, ingame_info, action, 10, 4);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
-                        RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_TOWER_TUTORIAL);
+                        Race.NATIVES.getValue(), 0, true, PlayerSlot.AI_TOWER_TUTORIAL);
                 game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 10, 0, 0, 0));
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI,
-                        RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_TOWER_TUTORIAL);
+                        Race.VIKINGS.getValue(), 1, true, PlayerSlot.AI_TOWER_TUTORIAL);
                 game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
                 game_network.getClient().getServerInterface().startServer();
             }
@@ -212,9 +214,9 @@ public final class TutorialForm extends Form {
                         WorldViewer viewer) -> new BuildingChieftainTrigger(viewer.getLocalPlayer()), ingame_info),
                         Player.INITIAL_UNIT_COUNT, 5);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
-                        RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_NONE);
+                        Race.NATIVES.getValue(), 0, true, PlayerSlot.AI_NONE);
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI,
-                        RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_CHIEFTAIN_TUTORIAL);
+                        Race.VIKINGS.getValue(), 1, true, PlayerSlot.AI_CHIEFTAIN_TUTORIAL);
                 game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
                 game_network.getClient().getServerInterface().startServer();
             }
@@ -223,9 +225,9 @@ public final class TutorialForm extends Form {
                 game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction((
                         WorldViewer _) -> new TutorialOverTrigger(), ingame_info), Player.INITIAL_UNIT_COUNT, 6);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
-                        RacesResources.RACE_NATIVES, 0, true, PlayerSlot.AI_NONE);
+                        Race.NATIVES.getValue(), 0, true, PlayerSlot.AI_NONE);
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI,
-                        RacesResources.RACE_VIKINGS, 1, true, PlayerSlot.AI_BATTLE_TUTORIAL);
+                        Race.VIKINGS.getValue(), 1, true, PlayerSlot.AI_BATTLE_TUTORIAL);
                 game_network.getClient().setUnitInfo(1, new UnitInfo(true, true, 0, false, 0, 15, 0, 0));
                 game_network.getClient().getServerInterface().startServer();
             }

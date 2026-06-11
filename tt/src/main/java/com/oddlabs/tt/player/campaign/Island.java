@@ -1,5 +1,11 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.BuildingType;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.Menu;
@@ -8,7 +14,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.WorldParameters;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.UnitTemplate;
 import com.oddlabs.tt.model.weapon.IronAxeWeapon;
@@ -72,16 +77,16 @@ public abstract class Island {
             }
             Player[] players = viewer.getWorld().getPlayers();
             switch (campaign.getState().getDifficulty()) {
-                case CampaignState.DIFFICULTY_EASY -> {
+                case Difficulty.EASY -> {
                     for (Player player : players) {
                         if (player.isEnemy(viewer.getLocalPlayer())) {
                             viewer.getLocalPlayer().setHitBonus(CAMPAIGN_DIFFICULTY_BONUS);
                         }
                     }
                 }
-                case CampaignState.DIFFICULTY_NORMAL -> {
+                case Difficulty.NORMAL -> {
                 }
-                case CampaignState.DIFFICULTY_HARD -> {
+                case Difficulty.HARD -> {
                     for (Player player : players) {
                         if (player.isEnemy(viewer.getLocalPlayer())) {
                             player.setHitBonus(CAMPAIGN_DIFFICULTY_BONUS);
@@ -129,13 +134,14 @@ public abstract class Island {
             return null;
     }
 
-    protected final void insertGuardTower(@NonNull Player owner, int warrior_type, int grid_x, int grid_y) {
-        owner.buildBuilding(Race.BUILDING_TOWER, grid_x, grid_y).ifPresent(tower -> {
+    protected final void insertGuardTower(@NonNull Player owner, @NonNull UnitType warrior_type, int grid_x,
+            int grid_y) {
+        owner.buildBuilding(BuildingType.TOWER, grid_x, grid_y).ifPresent(tower -> {
             Unit unit = new Unit(owner,
                     UnitGrid.coordinateFromGrid(grid_x),
                     UnitGrid.coordinateFromGrid(grid_y),
                     null,
-                    owner.getRace().getUnitTemplate(warrior_type));
+                    owner.getRaceInfo().getUnitTemplate(warrior_type));
             unit.setTarget(tower, Action.DEFAULT, false);
         });
     }
@@ -152,24 +158,24 @@ public abstract class Island {
         int ty = (int) (oy - 5f * dy * inv_dist);
         for (int i = 0; i < peons; i++) {
             new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         for (int i = 0; i < rock_warriors; i++) {
             new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         for (int i = 0; i < iron_warriors; i++) {
             new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         for (int i = 0; i < rubber_warriors; i++) {
             new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(ty),
-                    null, captive.getRace().getUnitTemplate(Race.UNIT_PEON));
+                    null, captive.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         if (chieftain) {
             captive.setActiveChieftain(new Unit(captive, UnitGrid.coordinateFromGrid(tx), UnitGrid.coordinateFromGrid(
                     ty),
-                    null, captive.getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN)));
+                    null, captive.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN)));
         }
     }
 

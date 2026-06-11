@@ -1,5 +1,13 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.BuildingType;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.JumpDelegate;
 import com.oddlabs.tt.form.CampaignDialogForm;
@@ -8,8 +16,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
@@ -55,7 +61,7 @@ public final class NativeIsland1 extends Island {
                 1, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -67,14 +73,14 @@ public final class NativeIsland1 extends Island {
                         0));//getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_PASSIVE_CAMPAIGN);
         game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(4,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
@@ -113,25 +119,25 @@ public final class NativeIsland1 extends Island {
 
         // insert local_player
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace()
-                .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
+        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
+                .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
         local_player.getChieftain().ifPresent(c -> {
             c.increaseMagicEnergy(0, 1000);
             c.increaseMagicEnergy(1, 1000);
         });
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_ROCK));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK));
         }
 
         // insert slaves
         final int captive_start_x = 48 * 2;
         final int captive_start_y = 96 * 2;
-        float shadow_diameter = local_player.getRace().getUnitTemplate(Race.UNIT_PEON).getShadowDiameter();
+        float shadow_diameter = local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getShadowDiameter();
         SpriteKey sprite_renderer = VisualRegistry.getInstance().getUnitSprite(
-                local_player.getRace().getRaceType(),
-                local_player.getRace().getUnitTemplate(Race.UNIT_PEON).getVisualType()
+                local_player.getRaceInfo().getRaceType(),
+                local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getVisualType()
         );
 
         final float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
@@ -160,9 +166,10 @@ public final class NativeIsland1 extends Island {
                 sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .34f);
 
         // Insert guards
-        new Unit(guards, 45 * 2, 98 * 2, null, guards.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(guards, 47 * 2, 92 * 2, null, guards.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        Unit trigger = new Unit(guards, 54 * 2, 97 * 2, null, guards.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+        new Unit(guards, 45 * 2, 98 * 2, null, guards.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(guards, 47 * 2, 92 * 2, null, guards.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        Unit trigger = new Unit(guards, 54 * 2, 97 * 2, null, guards.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
 
         // Move start position (for the camera)
         getViewer().getCamera().reset(start_x, start_y);
@@ -175,35 +182,45 @@ public final class NativeIsland1 extends Island {
                 scenery_model.remove();
             }
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 48 * 2 + offset, 96 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 48 * 2 + offset, 96 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 48 * 2 + offset, 95 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 48 * 2 + offset, 95 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 48 * 2 + offset, 98 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 48 * 2 + offset, 98 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 49 * 2 + offset, 98 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 49 * 2 + offset, 98 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 50 * 2 + offset, 97 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 50 * 2 + offset, 97 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 51 * 2 + offset, 96 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 51 * 2 + offset, 96 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 51 * 2 + offset, 94 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 51 * 2 + offset, 94 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 52 * 2 + offset, 96 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 52 * 2 + offset, 96 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 52 * 2 + offset, 94 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 52 * 2 + offset, 94 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
             if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 50 * 2 + offset, 95 * 2 + offset, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(local_player, 50 * 2 + offset, 95 * 2 + offset, null, local_player.getRaceInfo()
+                        .getUnitTemplate(
+                                UnitType.PEON));
         };
         final Runnable dialog5 = () -> {
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header5"),
@@ -279,7 +296,7 @@ public final class NativeIsland1 extends Island {
             deploy(enemy, defense);
         };
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> {
+            case Difficulty.EASY -> {
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 16f * 60f, attack2_runnable);
@@ -289,7 +306,7 @@ public final class NativeIsland1 extends Island {
                 new TimeTrigger(getViewer().getWorld(), 36f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 41f * 60f, attack2_runnable);
             }
-            case CampaignState.DIFFICULTY_NORMAL -> {
+            case Difficulty.NORMAL -> {
                 new TimeTrigger(getViewer().getWorld(), 5f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 8.5f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 13f * 60f, attack2_runnable);
@@ -301,7 +318,7 @@ public final class NativeIsland1 extends Island {
                 new TimeTrigger(getViewer().getWorld(), 37f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 41f * 60f, attack2_runnable);
             }
-            case CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.HARD -> {
                 new TimeTrigger(getViewer().getWorld(), 4f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
@@ -319,33 +336,33 @@ public final class NativeIsland1 extends Island {
         // Insert enemy
         enemy.setStartX(106 * 2);
         enemy.setStartY(54 * 2);
-        enemy.buildBuilding(Race.BUILDING_QUARTERS, 106, 54);
-        enemy.buildBuilding(Race.BUILDING_ARMORY, 97, 50);
+        enemy.buildBuilding(BuildingType.QUARTERS, 106, 54);
+        enemy.buildBuilding(BuildingType.ARMORY, 97, 50);
 
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
+        new Unit(enemy, enemy.getStartX(), enemy.getStartY(), null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.WARRIOR_IRON));
 
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 97, 39);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 90, 52);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 96, 63);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 97, 39);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 90, 52);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 96, 63);
     }
 
     @Override

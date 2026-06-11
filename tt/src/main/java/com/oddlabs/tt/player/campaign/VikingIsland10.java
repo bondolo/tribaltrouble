@@ -1,5 +1,13 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.BuildingType;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.JumpDelegate;
 import com.oddlabs.tt.form.CampaignDialogForm;
@@ -7,8 +15,6 @@ import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
@@ -48,14 +54,14 @@ public final class VikingIsland10 extends Island {
                 -1442873271, 10, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
         game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
@@ -87,21 +93,21 @@ public final class VikingIsland10 extends Island {
         new GameStartedTrigger(getViewer().getWorld(), runnable);
 
         // Disable construction
-        getViewer().getLocalPlayer().enableBuilding(Race.BUILDING_QUARTERS, false);
-        getViewer().getLocalPlayer().enableBuilding(Race.BUILDING_ARMORY, false);
-        getViewer().getLocalPlayer().enableBuilding(Race.BUILDING_TOWER, false);
+        getViewer().getLocalPlayer().enableBuilding(BuildingType.QUARTERS, false);
+        getViewer().getLocalPlayer().enableBuilding(BuildingType.ARMORY, false);
+        getViewer().getLocalPlayer().enableBuilding(BuildingType.TOWER, false);
 
         // Insert viking men
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-        local_player.setActiveChieftain(new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRace()
-                .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
+        local_player.setActiveChieftain(new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRaceInfo()
+                .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
         local_player.getChieftain().ifPresent(chieftain -> {
             chieftain.increaseMagicEnergy(0, 1000);
             chieftain.increaseMagicEnergy(1, 1000);
         });
         // 5 peons
         for (int i = 0; i < 5; i++) {
-            new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
+            new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         // rest as warriors
         int unit_count = getCampaign().getState().getNumPeons()
@@ -109,12 +115,12 @@ public final class VikingIsland10 extends Island {
                 + getCampaign().getState().getNumIronWarriors()
                 + getCampaign().getState().getNumRubberWarriors() - 5;
         for (int i = 0; i < unit_count; i++) {
-            if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_EASY)
-                new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_WARRIOR_IRON));
+            if (getCampaign().getState().getDifficulty() == Difficulty.EASY)
+                new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRaceInfo().getUnitTemplate(
+                        UnitType.WARRIOR_IRON));
             else
-                new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRace().getUnitTemplate(
-                        Race.UNIT_WARRIOR_ROCK));
+                new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRaceInfo().getUnitTemplate(
+                        UnitType.WARRIOR_ROCK));
         }
 
         // Winner prize
@@ -231,76 +237,76 @@ public final class VikingIsland10 extends Island {
                 .getRacesResources().getTreasures()[2], shadow_diameter, true, i18n("statue"));
 
         // Insert native towers
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 177, 159);//*
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 180, 176);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 165, 195);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 169, 198);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 152, 209);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 200, 197);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 199, 169);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 177, 159);//*
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 180, 176);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 165, 195);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 169, 198);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 152, 209);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 200, 197);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 199, 169);
 
         // Blocking army
-        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
-        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 173 * 2, 188 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 175 * 2, 190 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 178 * 2, 192 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 185 * 2, 194 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 181 * 2, 195 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
+        new Unit(enemy, 164 * 2, 203 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
 
         // Scattered resistance
-        new Unit(enemy, 114 * 2, 163 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 114 * 2, 163 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 118 * 2, 170 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 118 * 2, 170 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 109 * 2, 153 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 109 * 2, 153 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 122 * 2, 151 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 122 * 2, 151 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 98 * 2, 137 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 98 * 2, 137 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 93 * 2, 130 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 93 * 2, 130 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 86 * 2, 132 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 86 * 2, 132 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 72 * 2, 146 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 72 * 2, 146 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 158 * 2, 97 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 158 * 2, 97 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 132 * 2, 118 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 132 * 2, 118 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
-        new Unit(enemy, 157 * 2, 135 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(enemy, 157 * 2, 135 * 2, null, enemy.getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+        new Unit(enemy, 114 * 2, 163 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 114 * 2, 163 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 118 * 2, 170 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 118 * 2, 170 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 109 * 2, 153 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 109 * 2, 153 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 122 * 2, 151 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 122 * 2, 151 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 98 * 2, 137 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 98 * 2, 137 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 93 * 2, 130 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 93 * 2, 130 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 86 * 2, 132 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 86 * 2, 132 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 72 * 2, 146 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 72 * 2, 146 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 158 * 2, 97 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 158 * 2, 97 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 132 * 2, 118 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 132 * 2, 118 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
+        new Unit(enemy, 157 * 2, 135 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(enemy, 157 * 2, 135 * 2, null, enemy.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
     }
 
     @Override

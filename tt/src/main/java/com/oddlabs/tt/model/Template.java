@@ -5,7 +5,7 @@ import org.jspecify.annotations.NonNull;
 /**
  * Base abstract template defining properties shared by all unit and building types in the game.
  */
-public abstract class Template {
+public abstract sealed class Template permits BuildingTemplate, UnitTemplate {
     private final @NonNull Abilities abilities;
     private final float @NonNull [] hit_offset_z;
     private final float no_detail_size;

@@ -242,13 +242,13 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     private void createHarvesters(@NonNull SupplyType supplyType, int amount) {
-        Race race = getOwner().getRace();
+        RaceInfo raceInfo = getOwner().getRaceInfo();
         for (int i = 0; i < amount; i++) {
             getUnitContainer().ifPresent(c -> {
                 c.prepareDeploy(-1);
                 c.exit();
             });
-            Unit unit = createUnit(null, race.getUnitTemplate(Race.UNIT_PEON));
+            Unit unit = createUnit(null, raceInfo.getUnitTemplate(UnitType.PEON));
             unit.pushController(new GatherController<>(unit, null, supplyType));
         }
     }
@@ -287,7 +287,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         chieftain_container.stopTraining();
         getOwner().setTrainingChieftain(false);
         is_training_chieftain = false;
-        Unit chieftain = createUnit(null, getOwner().getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN));
+        Unit chieftain = createUnit(null, getOwner().getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
         getOwner().setActiveChieftain(chieftain);
     }
 
@@ -297,21 +297,21 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
 
     public void createArmy(int num_peon, int num_rock, int num_iron, int num_rubber) {
         assert !isDead();
-        createArmy(num_peon, Race.UNIT_PEON);
-        createArmy(num_rock, Race.UNIT_WARRIOR_ROCK);
-        createArmy(num_iron, Race.UNIT_WARRIOR_IRON);
-        createArmy(num_rubber, Race.UNIT_WARRIOR_RUBBER);
+        createArmy(num_peon, UnitType.PEON);
+        createArmy(num_rock, UnitType.WARRIOR_ROCK);
+        createArmy(num_iron, UnitType.WARRIOR_IRON);
+        createArmy(num_rubber, UnitType.WARRIOR_RUBBER);
     }
 
-    private void createArmy(int amount, int template) {
-        Race race = getOwner().getRace();
+    private void createArmy(int amount, @NonNull UnitType template) {
+        RaceInfo raceInfo = getOwner().getRaceInfo();
         checkRallyPoint();
         for (int i = 0; i < amount; i++) {
             getUnitContainer().ifPresent(c -> {
                 c.prepareDeploy(-1);
                 c.exit();
             });
-            Unit unit = createUnit(hasRallyPoint() ? rally_point : null, race.getUnitTemplate(template));
+            Unit unit = createUnit(hasRallyPoint() ? rally_point : null, raceInfo.getUnitTemplate(template));
             if (getAbilities().hasAbilities(Abilities.REPRODUCE) && !hasRallyPoint()) {
                 unit.pushController(new TransferUnitController(unit));
             }
@@ -332,14 +332,14 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     private void createTransporters(int amount, SupplyType supply) {
-        Race race = getOwner().getRace();
+        RaceInfo raceInfo = getOwner().getRaceInfo();
         checkRallyPoint();
         for (int i = 0; i < amount; i++) {
             getUnitContainer().ifPresent(c -> {
                 c.prepareDeploy(-1);
                 c.exit();
             });
-            Unit unit = createUnit(hasRallyPoint() ? rally_point : null, race.getUnitTemplate(Race.UNIT_PEON));
+            Unit unit = createUnit(hasRallyPoint() ? rally_point : null, raceInfo.getUnitTemplate(UnitType.PEON));
             unit.getSupplyContainer().increaseSupply(unit.getSupplyContainer().getMaxSupplyCount(), supply);
         }
 
@@ -386,7 +386,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     public boolean isPlacingLegal() {
-        return !isDead() && getOwner().canBuild(getTemplate().getTemplateID()) &&
+        return !isDead() && getOwner().canBuild(getTemplate().getBuildingType()) &&
                 doIsPlacingLegal(getUnitGrid(), getGridX(), getGridY(), getTemplate().getPlacingSize()
                         - PLACING_BORDER);
     }

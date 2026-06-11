@@ -8,12 +8,11 @@ import org.jspecify.annotations.NonNull;
  * Template defining the static properties, costs, and visual representations of a building type.
  */
 public final class BuildingTemplate extends Template {
-    private final int template_id;
+    private final @NonNull BuildingType building_type;
     private final int placing_size;
     private final float smoke_radius;
     private final float smoke_height;
     private final int num_fragments;
-    private final @NonNull BuildingVisualType visual_type;
     private final @NonNull BoundingBox @NonNull [] built_bounds;
     private final @NonNull BoundingBox @NonNull [] halfbuilt_bounds;
     private final @NonNull BoundingBox @NonNull [] start_bounds;
@@ -30,13 +29,12 @@ public final class BuildingTemplate extends Template {
     private final @NonNull Vector3fc chimney;
 
     public BuildingTemplate(
-            int template_id,
+            @NonNull BuildingType building_type,
             int placing_size,
             float smoke_radius,
             float smoke_height,
             int num_fragments,
             float shadow_diameter,
-            @NonNull BuildingVisualType visual_type,
             @NonNull BoundingBox @NonNull [] built_bounds, float built_selection_radius, float built_selection_height,
             @NonNull BoundingBox @NonNull [] halfbuilt_bounds, float halfbuilt_selection_radius,
             float halfbuilt_selection_height,
@@ -52,7 +50,7 @@ public final class BuildingTemplate extends Template {
             @NonNull Vector3fc chimney,
             @NonNull String name) {
         super(abilities, shadow_diameter, hit_offset_z, no_detail_size, defense_chance, name);
-        this.template_id = template_id;
+        this.building_type = building_type;
         this.built_selection_radius = built_selection_radius;
         this.built_selection_height = built_selection_height;
         this.halfbuilt_selection_radius = halfbuilt_selection_radius;
@@ -63,7 +61,6 @@ public final class BuildingTemplate extends Template {
         this.smoke_radius = smoke_radius;
         this.smoke_height = smoke_height;
         this.num_fragments = num_fragments;
-        this.visual_type = visual_type;
         this.built_bounds = built_bounds;
         this.halfbuilt_bounds = halfbuilt_bounds;
         this.start_bounds = start_bounds;
@@ -75,8 +72,8 @@ public final class BuildingTemplate extends Template {
         this.chimney = chimney;
     }
 
-    public int getTemplateID() {
-        return template_id;
+    public @NonNull BuildingType getBuildingType() {
+        return building_type;
     }
 
     public float getBuiltSelectionRadius() {
@@ -117,10 +114,6 @@ public final class BuildingTemplate extends Template {
 
     public int getNumFragments() {
         return num_fragments;
-    }
-
-    public @NonNull BuildingVisualType getVisualType() {
-        return visual_type;
     }
 
     public @NonNull BoundingBox @NonNull [] getBuiltBounds() {

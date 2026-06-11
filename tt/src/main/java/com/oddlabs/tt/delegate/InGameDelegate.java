@@ -1,5 +1,7 @@
 package com.oddlabs.tt.delegate;
 
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.camera.StaticCamera;
 import com.oddlabs.tt.input.GameAction;
@@ -8,7 +10,6 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.IronSupply;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RockSupply;
 import com.oddlabs.tt.model.SupplySpawnAnimation;
 import com.oddlabs.tt.model.Unit;
@@ -48,7 +49,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
                     .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_PEON));
+                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.PEON));
                 return true;
             }
         }
@@ -58,7 +59,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
                     .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
                 return true;
             }
         }
@@ -68,7 +69,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
                     .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
                 return true;
             }
         }
@@ -78,7 +79,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
                     .getParameters().getMaxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));
                 return true;
             }
         }
@@ -88,7 +89,7 @@ public abstract class InGameDelegate extends CameraDelegate<Camera> {
                     .isTrainingChieftain()) {
                 var location = pickLocation.get();
                 Unit chieftain = new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
-                        viewer.getLocalPlayer().getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN));
+                        viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN));
                 viewer.getLocalPlayer().setActiveChieftain(chieftain);
                 return true;
             }

@@ -1,13 +1,15 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.net.GameNetwork;
@@ -47,7 +49,7 @@ public final class VikingIsland9 extends Island {
                 777777777, 9, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -59,14 +61,14 @@ public final class VikingIsland9 extends Island {
                         getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_PASSIVE_CAMPAIGN);
         game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(3,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 PlayerInfo.TEAM_NEUTRAL,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
@@ -91,22 +93,22 @@ public final class VikingIsland9 extends Island {
         new GameStartedTrigger(getViewer().getWorld(), runnable);
 
         // Insert native chieftain
-        chief_tribe.setActiveChieftain(new Unit(chief_tribe, 56 * 2, 110 * 2, null, chief_tribe.getRace()
-                .getUnitTemplate(Race.UNIT_CHIEFTAIN)));
+        chief_tribe.setActiveChieftain(new Unit(chief_tribe, 56 * 2, 110 * 2, null, chief_tribe.getRaceInfo()
+                .getUnitTemplate(UnitType.CHIEFTAIN)));
 
         // Defeat if netrauls eleminated
         runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));
         new PlayerEleminatedTrigger(runnable, chief_tribe);
 
         // Towers
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 50, 85);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 52, 81);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 54, 96);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 61, 104);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 57, 104);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 78, 90);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 72, 88);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 71, 83);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 50, 85);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 52, 81);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 54, 96);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 61, 104);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 57, 104);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 78, 90);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 72, 88);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 71, 83);
 
         // Fill native armory with units and weapons
         int num_extra_units = 130;

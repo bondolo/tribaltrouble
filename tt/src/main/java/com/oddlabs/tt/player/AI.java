@@ -1,12 +1,15 @@
 package com.oddlabs.tt.player;
 
+import com.oddlabs.tt.model.BuildingType;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.BuildSpinner;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Unit;
@@ -60,10 +63,10 @@ public abstract class AI implements Animated {
             int grid_start_x = UnitGrid.toGridCoordinate(owner.getStartX());
             int grid_start_y = UnitGrid.toGridCoordinate(owner.getStartY());
             if (unit_info.hasQuarters()) {
-                owner.buildBuilding(Race.BUILDING_QUARTERS, grid_start_x, grid_start_y);
+                owner.buildBuilding(BuildingType.QUARTERS, grid_start_x, grid_start_y);
             }
             if (unit_info.hasArmory()) {
-                owner.buildBuilding(Race.BUILDING_ARMORY, grid_start_x, grid_start_y);
+                owner.buildBuilding(BuildingType.ARMORY, grid_start_x, grid_start_y);
             }
             for (int i = 0; i < unit_info.numTowers(); i++) {
                 int center = owner.getWorld().getHeightMap().getGridUnitsPerWorld() / 2;
@@ -72,34 +75,34 @@ public abstract class AI implements Animated {
                 float inv_dist = 1f / (float) Math.sqrt(dx * dx + dy * dy);
                 int tx = (int) (grid_start_x + 10f * dx * inv_dist);
                 int ty = (int) (grid_start_y + 10f * dy * inv_dist);
-                owner.buildBuilding(Race.BUILDING_TOWER, tx, ty);
+                owner.buildBuilding(BuildingType.TOWER, tx, ty);
             }
             Random random = new Random(42);
             if (unit_info.hasChieftain()) {
                 Target t = getTarget(random);
-                Unit chieftain = new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace()
-                        .getUnitTemplate(Race.UNIT_CHIEFTAIN));
+                Unit chieftain = new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo()
+                        .getUnitTemplate(UnitType.CHIEFTAIN));
                 owner.setActiveChieftain(chieftain);
             }
             for (int i = 0; i < unit_info.numPeons(); i++) {
                 Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
+                        UnitType.PEON));
             }
             for (int i = 0; i < unit_info.numRockWarriors(); i++) {
                 Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(
-                        Race.UNIT_WARRIOR_ROCK));
+                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
+                        UnitType.WARRIOR_ROCK));
             }
             for (int i = 0; i < unit_info.numIronWarriors(); i++) {
                 Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(
-                        Race.UNIT_WARRIOR_IRON));
+                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
+                        UnitType.WARRIOR_IRON));
             }
             for (int i = 0; i < unit_info.numRubberWarriors(); i++) {
                 Target t = getTarget(random);
-                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRace().getUnitTemplate(
-                        Race.UNIT_WARRIOR_RUBBER));
+                new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo().getUnitTemplate(
+                        UnitType.WARRIOR_RUBBER));
             }
         }
     }

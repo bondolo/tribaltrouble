@@ -1,12 +1,16 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
@@ -45,7 +49,7 @@ public final class NativeIsland2 extends Island {
                 2, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -57,14 +61,14 @@ public final class NativeIsland2 extends Island {
                         0));//getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(1,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 PlayerInfo.TEAM_NEUTRAL,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_PASSIVE_CAMPAIGN);
@@ -114,27 +118,27 @@ public final class NativeIsland2 extends Island {
         int start_x = 100 * 2;
         int start_y = 73 * 2;
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace()
-                .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
+        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
+                .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
         local_player.getChieftain().ifPresent(chieftain -> {
             chieftain.increaseMagicEnergy(0, 1000);
             chieftain.increaseMagicEnergy(1, 1000);
         });
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         for (int i = 0; i < getCampaign().getState().getNumRockWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_ROCK));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK));
         }
         for (int i = 0; i < getCampaign().getState().getNumIronWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_IRON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON));
         }
         for (int i = 0; i < getCampaign().getState().getNumRubberWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_RUBBER));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER));
         }
 
         // Move start position (for the camera)
@@ -167,7 +171,7 @@ public final class NativeIsland2 extends Island {
             deploy(enemy, defense);
         };
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> {
+            case Difficulty.EASY -> {
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 16f * 60f, attack2_runnable);
@@ -177,7 +181,7 @@ public final class NativeIsland2 extends Island {
                 new TimeTrigger(getViewer().getWorld(), 36f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 41f * 60f, attack2_runnable);
             }
-            case CampaignState.DIFFICULTY_NORMAL -> {
+            case Difficulty.NORMAL -> {
                 new TimeTrigger(getViewer().getWorld(), 5f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 8.5f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 13f * 60f, attack2_runnable);
@@ -189,7 +193,7 @@ public final class NativeIsland2 extends Island {
                 new TimeTrigger(getViewer().getWorld(), 37f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 41f * 60f, attack2_runnable);
             }
-            case CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.HARD -> {
                 new TimeTrigger(getViewer().getWorld(), 4f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 7f * 60f, attack2_runnable);
                 new TimeTrigger(getViewer().getWorld(), 11f * 60f, attack2_runnable);
@@ -209,8 +213,8 @@ public final class NativeIsland2 extends Island {
         new PlayerEleminatedTrigger(runnable, captives);
 
         // Insert towers
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 42, 83);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 63, 89);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 42, 83);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 63, 89);
     }
 
     @Override

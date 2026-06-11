@@ -11,6 +11,7 @@ import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.BuildingTemplate;
+import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.BuildingSiteScanFilter;
 import com.oddlabs.tt.render.BuildingSiteRenderer;
@@ -45,15 +46,16 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
 
     private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
     private final SpriteShader spriteShader = new SpriteShader();
-    private final int building_index;
+    private final @NonNull BuildingType building_type;
 
-    public PlacingDelegate(@NonNull WorldViewer viewer, @NonNull CameraState old_camera, int building_index) {
+    public PlacingDelegate(@NonNull WorldViewer viewer, @NonNull CameraState old_camera,
+            @NonNull BuildingType building_type) {
         super(viewer, new GameCamera(viewer, old_camera));
-        this.building_index = building_index;
+        this.building_type = building_type;
     }
 
     private @NonNull BuildingTemplate getTemplate() {
-        return getViewer().getLocalPlayer().getRace().getBuildingTemplate(building_index);
+        return getViewer().getLocalPlayer().getRaceInfo().getBuildingTemplate(building_type);
     }
 
     public void placeObject() {
@@ -65,7 +67,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
                 var peons = getViewer().getSelection().getCurrentSelection().filter(Abilities.BUILD);
                 if (peons.length > 0) {
                     logger.info("placeObject: Placing building at " + placing_grid_x + "," + placing_grid_y);
-                    getViewer().getPeerHub().getPlayerInterface().placeBuilding(peons, building_index, placing_grid_x,
+                    getViewer().getPeerHub().getPlayerInterface().placeBuilding(peons, building_type, placing_grid_x,
                             placing_grid_y);
                 } else {
                     logger.info("placeObject: No peons selected");
@@ -136,8 +138,8 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
         com.oddlabs.tt.util.GLUtils.checkGLError("Placing: After renderSites");
 
         SpriteKey built_key = VisualRegistry.getInstance().getBuildingVisuals(
-                getViewer().getLocalPlayer().getRace().getRaceType(),
-                getTemplate().getVisualType()
+                getViewer().getLocalPlayer().getRaceInfo().getRaceType(),
+                getTemplate().getBuildingType()
         ).built();
         SpriteRenderer built_renderer = queues.getRenderer(built_key);
         Sprite sprite = built_renderer.getSpriteList().getSprite(0);

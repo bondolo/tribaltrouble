@@ -8,7 +8,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
-public abstract class WeaponFactory {
+public abstract sealed class WeaponFactory permits InstantHitFactory, ThrowingFactory {
     private static final float TERRAIN_MAX_BONUS = .25f;
     private static final float TERRAIN_BONUS_PER_HEIGHT = TERRAIN_MAX_BONUS / 20f;
 

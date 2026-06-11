@@ -1,5 +1,8 @@
 package com.oddlabs.tt.form;
 
+import com.oddlabs.tt.model.Difficulty;
+import com.oddlabs.tt.model.Race;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.Menu;
 import com.oddlabs.tt.gui.ButtonObject;
@@ -169,21 +172,21 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         switch (race_pulldown.getChosenItemIndex()) {
             case 0 -> {
                 campaign = new VikingCampaign(network, gui_root);
-                campaign.getState().setRace(CampaignState.RACE_VIKINGS);
+                campaign.getState().setRace(Race.VIKINGS);
             }
             case 1 -> {
                 campaign = new NativeCampaign(network, gui_root);
-                campaign.getState().setRace(CampaignState.RACE_NATIVES);
+                campaign.getState().setRace(Race.NATIVES);
             }
             default -> throw new IllegalArgumentException();
         }
         campaign.getState().setName(name);
         campaign.getState().setDate(System.currentTimeMillis());
 
-        int difficulty = switch (difficulty_pulldown.getChosenItemIndex()) {
-            case 0 -> CampaignState.DIFFICULTY_EASY;
-            case 1 -> CampaignState.DIFFICULTY_NORMAL;
-            case 2 -> CampaignState.DIFFICULTY_HARD;
+        Difficulty difficulty = switch (difficulty_pulldown.getChosenItemIndex()) {
+            case 0 -> Difficulty.EASY;
+            case 1 -> Difficulty.NORMAL;
+            case 2 -> Difficulty.HARD;
             default -> throw new IllegalArgumentException("unexpected difficulty: " + difficulty_pulldown
                     .getChosenItemIndex());
         };

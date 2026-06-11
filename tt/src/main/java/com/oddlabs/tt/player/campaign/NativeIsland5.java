@@ -1,11 +1,14 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.UnitInfo;
@@ -39,7 +42,7 @@ public final class NativeIsland5 extends Island {
                 NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -51,14 +54,14 @@ public final class NativeIsland5 extends Island {
                         getCampaign().getState().getNumRubberWarriors()));
 
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> 5;
-            case CampaignState.DIFFICULTY_NORMAL -> 10;
-            case CampaignState.DIFFICULTY_HARD -> 25;
+            case Difficulty.EASY -> 5;
+            case Difficulty.NORMAL -> 10;
+            case Difficulty.HARD -> 25;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_HARD);

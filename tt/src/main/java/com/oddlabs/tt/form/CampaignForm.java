@@ -1,5 +1,7 @@
 package com.oddlabs.tt.form;
 
+import com.oddlabs.tt.model.Race;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.Menu;
 import com.oddlabs.tt.gui.CancelButton;
@@ -120,7 +122,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     }
 
     public void load(@NonNull CampaignState campaign_state) {
-        Campaign campaign = campaign_state.getRace() == CampaignState.RACE_VIKINGS
+        Campaign campaign = campaign_state.getRace() == Race.VIKINGS
                 ? new VikingCampaign(network, gui_root, campaign_state)
                 : new NativeCampaign(network, gui_root, campaign_state);
         setDisabled(true);

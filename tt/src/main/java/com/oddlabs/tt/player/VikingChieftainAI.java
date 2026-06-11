@@ -36,7 +36,7 @@ public final class VikingChieftainAI extends ChieftainAI {
         if (chieftain.getMagicProgress(RacesResources.INDEX_MAGIC_BLAST) < 1)
             return;
 
-        float hit_radius = chieftain.getOwner().getRace().getMagicFactory(1).getHitRadius();
+        float hit_radius = chieftain.getOwner().getRaceInfo().getMagicFactory(1).getHitRadius();
         int num_enemy_units = numEnemyUnits(chieftain.getOwner());
 
         int num_enemy_units_close = getNumEnemyUnitsClose(chieftain, hit_radius, Selectable.genericClass());

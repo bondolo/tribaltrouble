@@ -1,5 +1,13 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.BuildingType;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.camera.FirstPersonCamera;
@@ -12,8 +20,6 @@ import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
@@ -54,20 +60,20 @@ public final class NativeIsland0 extends Island {
                 25, 0, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
         game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(1,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 PlayerInfo.TEAM_NEUTRAL,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY, CampaignState.DIFFICULTY_NORMAL, CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.EASY, Difficulty.NORMAL, Difficulty.HARD -> {
             }
             default ->
                 throw new IllegalArgumentException("unexpected difficulty: " + getCampaign().getState()
@@ -75,14 +81,14 @@ public final class NativeIsland0 extends Island {
         }
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_HARD);
         game_network.getClient().setUnitInfo(2, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(3,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
@@ -128,66 +134,67 @@ public final class NativeIsland0 extends Island {
         // Insert initial natives
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
         local_player.setActiveChieftain(new Unit(local_player, chief_start_x, chief_start_y, null, local_player
-                .getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle,
+                .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle,
                         "native_chieftain_name"), false));
 //		local_player.getChieftain().increaseMagicEnergy(0, 1000);
 //		local_player.getChieftain().increaseMagicEnergy(1, 1000);
 
-        natives.buildBuilding(Race.BUILDING_QUARTERS, 135, 128);
-        natives.buildBuilding(Race.BUILDING_ARMORY, 143, 124);
-        new Unit(natives, 145 * 2, 127 * 2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(natives, 149 * 2, 122 * 2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(natives, 145 * 2, 119 * 2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
-        new Unit(natives, 150 * 2, 125 * 2, null, natives.getRace().getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+        natives.buildBuilding(BuildingType.QUARTERS, 135, 128);
+        natives.buildBuilding(BuildingType.ARMORY, 143, 124);
+        new Unit(natives, 145 * 2, 127 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(natives, 149 * 2, 122 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(natives, 145 * 2, 119 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
+        new Unit(natives, 150 * 2, 125 * 2, null, natives.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
 
         // Insert reinforcements
         int num_reinforcements = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> 15;
-            case CampaignState.DIFFICULTY_NORMAL -> 10;
-            case CampaignState.DIFFICULTY_HARD -> 6;
+            case Difficulty.EASY -> 15;
+            case Difficulty.NORMAL -> 10;
+            case Difficulty.HARD -> 6;
             default -> throw new IllegalArgumentException();
         };
         final Unit[] reinforcement_peons = new Unit[num_reinforcements];
 
-        reinforcement_peons[0] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                .getUnitTemplate(Race.UNIT_PEON));
-        reinforcement_peons[1] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                .getUnitTemplate(Race.UNIT_PEON));
-        reinforcement_peons[2] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                .getUnitTemplate(Race.UNIT_PEON));
-        reinforcement_peons[3] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                .getUnitTemplate(Race.UNIT_PEON));
-        reinforcement_peons[4] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                .getUnitTemplate(Race.UNIT_PEON));
-        reinforcement_peons[5] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                .getUnitTemplate(Race.UNIT_PEON));
-        if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_EASY || getCampaign().getState()
-                .getDifficulty() == CampaignState.DIFFICULTY_NORMAL) {
-            reinforcement_peons[6] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
-            reinforcement_peons[7] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
-            reinforcement_peons[8] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
-            reinforcement_peons[9] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
+        reinforcement_peons[0] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                .getUnitTemplate(UnitType.PEON));
+        reinforcement_peons[1] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                .getUnitTemplate(UnitType.PEON));
+        reinforcement_peons[2] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                .getUnitTemplate(UnitType.PEON));
+        reinforcement_peons[3] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                .getUnitTemplate(UnitType.PEON));
+        reinforcement_peons[4] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                .getUnitTemplate(UnitType.PEON));
+        reinforcement_peons[5] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                .getUnitTemplate(UnitType.PEON));
+        if (getCampaign().getState().getDifficulty() == Difficulty.EASY || getCampaign().getState()
+                .getDifficulty() == Difficulty.NORMAL) {
+            reinforcement_peons[6] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
+            reinforcement_peons[7] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
+            reinforcement_peons[8] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
+            reinforcement_peons[9] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
         }
-        if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_EASY) {
-            reinforcement_peons[10] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
-            reinforcement_peons[11] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
-            reinforcement_peons[12] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
-            reinforcement_peons[13] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
-            reinforcement_peons[14] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRace()
-                    .getUnitTemplate(Race.UNIT_PEON));
+        if (getCampaign().getState().getDifficulty() == Difficulty.EASY) {
+            reinforcement_peons[10] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
+            reinforcement_peons[11] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
+            reinforcement_peons[12] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
+            reinforcement_peons[13] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
+            reinforcement_peons[14] = new Unit(reinforcements, 230 * 2, 108 * 2, null, reinforcements.getRaceInfo()
+                    .getUnitTemplate(UnitType.PEON));
         }
 
         // Insert viking men
-        enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
+        enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo()
+                .getUnitTemplate(
+                        UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
         enemy.getChieftain().ifPresent(chieftain -> {
             chieftain.increaseMagicEnergy(0, 1000);
             chieftain.increaseMagicEnergy(1, 1000);
@@ -195,13 +202,13 @@ public final class NativeIsland0 extends Island {
 
         int num_iron = 45;
         for (int i = 0; i < num_iron; i++) {
-            new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_IRON));
+            new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON));
         }
         int num_rubber = 15;
         for (int i = 0; i < num_rubber; i++) {
-            new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_RUBBER));
+            new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER));
         }
         // Initiate attack
         natives.getArmory().ifPresent(armory -> attack(enemy, armory, num_iron + num_rubber + 1));
@@ -304,14 +311,14 @@ public final class NativeIsland0 extends Island {
             int new_viking_start_x = 437 * 2;
             int new_viking_start_y = 140 * 2;
             int num_peons = switch (getCampaign().getState().getDifficulty()) {
-                case CampaignState.DIFFICULTY_EASY -> 5;
-                case CampaignState.DIFFICULTY_NORMAL -> 10;
-                case CampaignState.DIFFICULTY_HARD -> 15;
+                case Difficulty.EASY -> 5;
+                case Difficulty.NORMAL -> 10;
+                case Difficulty.HARD -> 15;
                 default -> throw new IllegalArgumentException();
             };
             for (int i = 0; i < num_peons; i++) {
-                new Unit(enemy, new_viking_start_x, new_viking_start_y, null, enemy.getRace().getUnitTemplate(
-                        Race.UNIT_PEON));
+                new Unit(enemy, new_viking_start_x, new_viking_start_y, null, enemy.getRaceInfo().getUnitTemplate(
+                        UnitType.PEON));
             }
             // Remove natives
             Selectable<?>[] native_selectables = Selectable.newArray(natives.getUnits().getSet().size());

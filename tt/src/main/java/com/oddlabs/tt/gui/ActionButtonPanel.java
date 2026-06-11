@@ -1,5 +1,7 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.model.BuildingType;
+
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.delegate.CameraDelegate;
@@ -136,9 +138,11 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     public ActionButtonPanel(final @NonNull WorldViewer viewer, @NonNull GameCamera camera, int width, int height) {
         this.viewer = viewer;
         this.camera = camera;
-        RaceIcons race_icons = viewer.getLocalPlayer().getRace().getIcons();
-        Skin skin = Skin.getSkin();
         GUIIcons icons = GUIIcons.getIcons();
+        RaceIcons race_icons = viewer.getLocalPlayer().getRaceInfo().getRaceType() == Race.VIKINGS
+                ? icons.getVikingIcons()
+                : icons.getNativeIcons();
+        Skin skin = Skin.getSkin();
         String widest_char = new String(Character.toChars(skin.getEditFont().getWidestCodepoint("0123456789")));
         int label_width = skin.getEditFont().getWidth(widest_char + widest_char + widest_char);
 
@@ -164,18 +168,18 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         quarters_button = new NonFocusIconButton(race_icons.quartersIcon(), i18n("quarters_tip", "Q"));
         peon_group.addChild(quarters_button);
         quarters_button.addMouseClickListener((_, _, _, _) -> pushDelegate(new PlacingDelegate(viewer, camera
-                .getState(), Race.BUILDING_QUARTERS)));
-        quarters_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(Race.BUILDING_QUARTERS));
+                .getState(), BuildingType.QUARTERS)));
+        quarters_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(BuildingType.QUARTERS));
         armory_button = new NonFocusIconButton(race_icons.armoryIcon(), i18n("armory_tip", "R"));
         peon_group.addChild(armory_button);
         armory_button.addMouseClickListener((_, _, _, _) -> pushDelegate(new PlacingDelegate(viewer, camera.getState(),
-                Race.BUILDING_ARMORY)));
-        armory_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(Race.BUILDING_ARMORY));
+                BuildingType.ARMORY)));
+        armory_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(BuildingType.ARMORY));
         tower_button = new NonFocusIconButton(race_icons.towerIcon(), i18n("tower_tip", "T"));
         peon_group.addChild(tower_button);
         tower_button.addMouseClickListener((_, _, _, _) -> pushDelegate(new PlacingDelegate(viewer, camera.getState(),
-                Race.BUILDING_TOWER)));
-        tower_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(Race.BUILDING_TOWER));
+                BuildingType.TOWER)));
+        tower_button.setIconDisabler(() -> !viewer.getLocalPlayer().canBuild(BuildingType.TOWER));
         gather_repair_button.place();
         quarters_button.place(gather_repair_button, Placement.BOTTOM_MID);
         armory_button.place(quarters_button, Placement.BOTTOM_MID);

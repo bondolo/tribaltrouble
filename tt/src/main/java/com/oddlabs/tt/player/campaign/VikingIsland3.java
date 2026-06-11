@@ -1,12 +1,15 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
@@ -42,7 +45,7 @@ public final class VikingIsland3 extends Island {
                 96443, 3, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -54,15 +57,15 @@ public final class VikingIsland3 extends Island {
                         getCampaign().getState().getNumRubberWarriors()));
         int ai_difficulty;
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> {
+            case Difficulty.EASY -> {
                 ai_difficulty = PlayerSlot.AI_NORMAL;
                 yield 2;
             }
-            case CampaignState.DIFFICULTY_NORMAL -> {
+            case Difficulty.NORMAL -> {
                 ai_difficulty = PlayerSlot.AI_HARD;
                 yield 5;
             }
-            case CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.HARD -> {
                 ai_difficulty = PlayerSlot.AI_HARD;
                 yield 15;
             }
@@ -70,7 +73,7 @@ public final class VikingIsland3 extends Island {
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 ai_difficulty);

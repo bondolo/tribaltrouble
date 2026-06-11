@@ -1,11 +1,14 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
@@ -41,7 +44,7 @@ public final class VikingIsland2 extends Island {
                 447363, 2, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -53,14 +56,14 @@ public final class VikingIsland2 extends Island {
                         getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_PASSIVE_CAMPAIGN);
         int ai_units = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> 10;
-            case CampaignState.DIFFICULTY_NORMAL -> 20;
-            case CampaignState.DIFFICULTY_HARD -> 30;
+            case Difficulty.EASY -> 10;
+            case Difficulty.NORMAL -> 20;
+            case Difficulty.HARD -> 30;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, 0, 0, 0, ai_units));
@@ -107,17 +110,17 @@ public final class VikingIsland2 extends Island {
         final int attack2;
         final int defense;
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> {
+            case Difficulty.EASY -> {
                 attack1 = 3;
                 attack2 = 6;
                 defense = 10;
             }
-            case CampaignState.DIFFICULTY_NORMAL -> {
+            case Difficulty.NORMAL -> {
                 attack1 = 5;
                 attack2 = 10;
                 defense = 10;
             }
-            case CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.HARD -> {
                 attack1 = 7;
                 attack2 = 13;
                 defense = 20;
@@ -145,15 +148,15 @@ public final class VikingIsland2 extends Island {
             deploy(enemy, defense);
         };
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> {
+            case Difficulty.EASY -> {
                 new TimeTrigger(getViewer().getWorld(), 10f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 27f * 60f, attack2_runnable);
             }
-            case CampaignState.DIFFICULTY_NORMAL -> {
+            case Difficulty.NORMAL -> {
                 new TimeTrigger(getViewer().getWorld(), 6f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 9f * 60f, attack2_runnable);
             }
-            case CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.HARD -> {
                 new TimeTrigger(getViewer().getWorld(), 4.5f * 60f, attack1_runnable);
                 new TimeTrigger(getViewer().getWorld(), 7.5f * 60f, attack2_runnable);
             }

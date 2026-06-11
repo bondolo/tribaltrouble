@@ -1,8 +1,9 @@
 package com.oddlabs.tt.tutorial;
 
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.player.Player;
@@ -20,8 +21,8 @@ public final class AttackTowerTrigger extends TutorialTrigger {
         this.tower = tower;
         Selectable<?>[] units = Selectable.newArray(NUM_UNITS);
         for (int i = 0; i < units.length; i++) {
-            units[i] = new Unit(ai, tower.getPositionX() - 50, tower.getPositionY() - 50, null, ai.getRace()
-                    .getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+            units[i] = new Unit(ai, tower.getPositionX() - 50, tower.getPositionY() - 50, null, ai.getRaceInfo()
+                    .getUnitTemplate(UnitType.WARRIOR_ROCK));
         }
         ai.setTarget(units, tower, Action.ATTACK, false);
     }

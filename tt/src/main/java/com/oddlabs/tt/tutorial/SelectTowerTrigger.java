@@ -1,8 +1,9 @@
 package com.oddlabs.tt.tutorial;
 
+import com.oddlabs.tt.model.BuildingType;
+
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.player.Player;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -14,8 +15,8 @@ public final class SelectTowerTrigger extends TutorialTrigger {
         super(.1f, 0f, "select_tower");
         player.enableRepairing(false);
         player.enableAttacking(false);
-        player.enableBuilding(Race.BUILDING_QUARTERS, false);
-        player.enableBuilding(Race.BUILDING_ARMORY, false);
+        player.enableBuilding(BuildingType.QUARTERS, false);
+        player.enableBuilding(BuildingType.ARMORY, false);
         //	player.enableTower(false);
         player.enableHarvesting(false);
         player.enableWeapons(false);

@@ -1,13 +1,19 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.BuildingType;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
@@ -45,7 +51,7 @@ public final class NativeIsland7 extends Island {
                 925, 7, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -56,14 +62,14 @@ public final class NativeIsland7 extends Island {
                         getCampaign().getState().getNumIronWarriors(),
                         getCampaign().getState().getNumRubberWarriors()));
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> 10;
-            case CampaignState.DIFFICULTY_NORMAL -> 20;
-            case CampaignState.DIFFICULTY_HARD -> 40;
+            case Difficulty.EASY -> 10;
+            case Difficulty.NORMAL -> 20;
+            case Difficulty.HARD -> 40;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_HARD);
@@ -105,21 +111,21 @@ public final class NativeIsland7 extends Island {
 
         // Insert vikings
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-        enemy.setActiveChieftain(new Unit(enemy, 97 * 2, 60 * 2, null, enemy.getRace().getUnitTemplate(
-                Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        enemy.buildBuilding(Race.BUILDING_QUARTERS, 105, 56);
-        enemy.buildBuilding(Race.BUILDING_ARMORY, 108, 79);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 101, 64);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 90, 59);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 87, 70);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 93, 81);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 109, 89);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 115, 90);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 123, 93);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 132, 78);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 106, 118);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 112, 119);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 126, 117);
+        enemy.setActiveChieftain(new Unit(enemy, 97 * 2, 60 * 2, null, enemy.getRaceInfo().getUnitTemplate(
+                UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
+        enemy.buildBuilding(BuildingType.QUARTERS, 105, 56);
+        enemy.buildBuilding(BuildingType.ARMORY, 108, 79);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 101, 64);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 90, 59);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 87, 70);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 93, 81);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 109, 89);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 115, 90);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 123, 93);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 132, 78);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 106, 118);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 112, 119);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 126, 117);
 
         // Insert treasures
         float shadow_diameter = 2.6f;

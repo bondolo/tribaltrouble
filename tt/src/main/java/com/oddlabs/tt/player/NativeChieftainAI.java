@@ -36,7 +36,7 @@ public final class NativeChieftainAI extends ChieftainAI {
         if (chieftain.getMagicProgress(RacesResources.INDEX_MAGIC_POISON) < 1)
             return;
 
-        float hit_radius = chieftain.getOwner().getRace().getMagicFactory(RacesResources.INDEX_MAGIC_POISON)
+        float hit_radius = chieftain.getOwner().getRaceInfo().getMagicFactory(RacesResources.INDEX_MAGIC_POISON)
                 .getHitRadius();
         int num_enemy_units = numEnemyUnits(chieftain.getOwner());
         int num_enemy_units_close = getNumEnemyUnitsClose(chieftain, hit_radius);

@@ -1,13 +1,17 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
@@ -44,22 +48,22 @@ public final class VikingIsland14 extends Island {
                 25, 14, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
         game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         int ai_difficulty;
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> {
+            case Difficulty.EASY -> {
                 ai_difficulty = PlayerSlot.AI_NORMAL;
                 yield 1;
             }
-            case CampaignState.DIFFICULTY_NORMAL -> {
+            case Difficulty.NORMAL -> {
                 ai_difficulty = PlayerSlot.AI_HARD;
                 yield 5;
             }
-            case CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.HARD -> {
                 ai_difficulty = PlayerSlot.AI_HARD;
                 yield 12;
             }
@@ -67,14 +71,14 @@ public final class VikingIsland14 extends Island {
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_HARD);
         game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, false, ai_peons, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(3,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 ai_difficulty);
@@ -100,27 +104,27 @@ public final class VikingIsland14 extends Island {
         int start_x = 236 * 2;
         int start_y = 362 * 2;
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace()
-                .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
+        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
+                .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
         local_player.getChieftain().ifPresent(chieftain -> {
             chieftain.increaseMagicEnergy(0, 1000);
             chieftain.increaseMagicEnergy(1, 1000);
         });
 
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         for (int i = 0; i < getCampaign().getState().getNumRockWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_ROCK));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK));
         }
         for (int i = 0; i < getCampaign().getState().getNumIronWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_IRON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON));
         }
         for (int i = 0; i < getCampaign().getState().getNumRubberWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_RUBBER));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER));
         }
 
         // Move start position (for the camera)

@@ -1,5 +1,8 @@
 package com.oddlabs.tt.viewer;
 
+import com.oddlabs.tt.model.Difficulty;
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.animation.Animated;
@@ -19,7 +22,6 @@ import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.landscape.NotificationListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.landscape.WorldParameters;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
@@ -220,15 +222,15 @@ public final class WorldViewer implements Animated, AutoCloseable {
             @NonNull Player player, @NonNull UnitInfo unit_info, int initial_gamespeed) {
         if (slot.getType() == PlayerSlot.AI) {
             AI ai = switch (slot.getAIDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(player, unit_info, AdvancedAI.DIFFICULTY_EASY);
+                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, unit_info, Difficulty.NORMAL);
+                case PlayerSlot.AI_HARD -> new AdvancedAI(player, unit_info, Difficulty.HARD);
+                case PlayerSlot.AI_EASY -> new AdvancedAI(player, unit_info, Difficulty.EASY);
                 case PlayerSlot.AI_BATTLE_TUTORIAL -> new PassiveAI(player, unit_info, true);
                 case PlayerSlot.AI_TOWER_TUTORIAL -> null;
                 case PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> {
-                    new Unit(player, 100, 100, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
-                    new Unit(player, 200, 100, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
-                    new Unit(player, 40, 200, null, player.getRace().getUnitTemplate(Race.UNIT_PEON));
+                    new Unit(player, 100, 100, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
+                    new Unit(player, 200, 100, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
+                    new Unit(player, 40, 200, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
                     yield null;
                 }
                 case PlayerSlot.AI_PASSIVE_CAMPAIGN -> new PassiveAI(player, unit_info, true);
@@ -240,33 +242,33 @@ public final class WorldViewer implements Animated, AutoCloseable {
             player.setPreferredGamespeed(initial_gamespeed);
             int i = 0;
             for (int j = 0; j < unit_info.numPeons(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
-                        .getUnitTemplate(Race.UNIT_PEON));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                        .getUnitTemplate(UnitType.PEON));
             }
             for (int j = 0; j < unit_info.numRockWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
-                        .getUnitTemplate(Race.UNIT_WARRIOR_ROCK));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                        .getUnitTemplate(UnitType.WARRIOR_ROCK));
             }
             for (int j = 0; j < unit_info.numIronWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
-                        .getUnitTemplate(Race.UNIT_WARRIOR_IRON));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                        .getUnitTemplate(UnitType.WARRIOR_IRON));
             }
             for (int j = 0; j < unit_info.numRubberWarriors(); j++, i++) {
-                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRace()
-                        .getUnitTemplate(Race.UNIT_WARRIOR_RUBBER));
+                new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player.getRaceInfo()
+                        .getUnitTemplate(UnitType.WARRIOR_RUBBER));
             }
             if (unit_info.hasChieftain()) {
                 Unit chieftain;
-                if (player.getRace().getChieftainAI() instanceof VikingChieftainAI)
+                if (player.getRaceInfo().getChieftainAI() instanceof VikingChieftainAI)
                     chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player
-                            .getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle,
+                            .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(bundle,
                                     "chieftain_name"), false);
-                else if (player.getRace().getChieftainAI() instanceof NativeChieftainAI)
+                else if (player.getRaceInfo().getChieftainAI() instanceof NativeChieftainAI)
                     chieftain = new Unit(player, starting_location[2 * i], starting_location[2 * i + 1], null, player
-                            .getRace().getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(bundle,
+                            .getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(bundle,
                                     "native_chieftain_name"), false);
                 else
-                    throw new IllegalStateException("Unknown chieftain AI: " + player.getRace().getChieftainAI());
+                    throw new IllegalStateException("Unknown chieftain AI: " + player.getRaceInfo().getChieftainAI());
                 chieftain.increaseMagicEnergy(0, 1000);
                 chieftain.increaseMagicEnergy(1, 1000);
                 player.setActiveChieftain(chieftain);

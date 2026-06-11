@@ -97,11 +97,11 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         setShowShadow(true);
     }
 
-    protected final float getSpawnProgress() {
+    public final float getSpawnProgress() {
         return spawnProgress;
     }
 
-    protected final boolean isSpawning() {
+    public final boolean isSpawning() {
         return spawning;
     }
 

@@ -1,5 +1,9 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
@@ -9,7 +13,6 @@ import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.IronSupply;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.RockSupply;
 import com.oddlabs.tt.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.net.GameNetwork;
@@ -50,7 +53,7 @@ public final class VikingIsland0 extends Island {
                 45363, 0, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -62,7 +65,7 @@ public final class VikingIsland0 extends Island {
                         getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(1,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 PlayerInfo.TEAM_NEUTRAL,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
@@ -70,7 +73,7 @@ public final class VikingIsland0 extends Island {
                 new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_PASSIVE_CAMPAIGN);
@@ -136,11 +139,11 @@ public final class VikingIsland0 extends Island {
                 });
             }
         };
-        if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_NORMAL) {
+        if (getCampaign().getState().getDifficulty() == Difficulty.NORMAL) {
             new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, TreeSupply.class, 30);
             new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, RockSupply.class, 30);
             new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, IronSupply.class, 30);
-        } else if (getCampaign().getState().getDifficulty() == CampaignState.DIFFICULTY_HARD) {
+        } else if (getCampaign().getState().getDifficulty() == Difficulty.HARD) {
             new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, TreeSupply.class, 20);
             new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, RockSupply.class, 15);
             new SupplyGatheredTrigger(getViewer().getLocalPlayer(), runnable, IronSupply.class, 15);

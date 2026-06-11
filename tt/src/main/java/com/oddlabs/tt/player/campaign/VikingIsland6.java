@@ -1,12 +1,16 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
@@ -42,7 +46,7 @@ public final class VikingIsland6 extends Island {
                 13462, 6, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -54,20 +58,20 @@ public final class VikingIsland6 extends Island {
                         getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(1,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> 1;
-            case CampaignState.DIFFICULTY_NORMAL -> 3;
-            case CampaignState.DIFFICULTY_HARD -> 15;
+            case Difficulty.EASY -> 1;
+            case Difficulty.NORMAL -> 3;
+            case Difficulty.HARD -> 15;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_HARD);
@@ -108,8 +112,8 @@ public final class VikingIsland6 extends Island {
         new PlayerEleminatedTrigger(runnable, stranded);
 
         // Put warrior in tower
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 39, 43);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_IRON, 35, 53);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 39, 43);
+        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 35, 53);
 
         // Winner prize
         final Runnable prize = () -> {

@@ -6,6 +6,7 @@ import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.BuildingType;
 import org.jspecify.annotations.NonNull;
 
 public interface PlayerInterface {
@@ -29,7 +30,8 @@ public interface PlayerInterface {
 
     void trainChieftain(@NonNull Building building, boolean start);
 
-    void placeBuilding(Selectable<?> @NonNull [] selection, int template_id, int placing_grid_x, int placing_grid_y);
+    void placeBuilding(Selectable<?> @NonNull [] selection, @NonNull BuildingType template_type, int placing_grid_x,
+            int placing_grid_y);
 
     void setRallyPoint(@NonNull Building building, @NonNull Target target);
 

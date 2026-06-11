@@ -1,5 +1,8 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.model.Difficulty;
+import com.oddlabs.tt.model.Race;
+
 import com.oddlabs.tt.form.MessageForm;
 import com.oddlabs.tt.guievent.RowListener;
 import com.oddlabs.tt.player.campaign.CampaignState;
@@ -91,14 +94,14 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         Box box = Skin.getSkin().getMultiColumnComboBoxData().box();
         for (CampaignState campaign_state : campaign_states) {
             String race = switch (campaign_state.getRace()) {
-                case CampaignState.RACE_VIKINGS -> i18n("vikings");
-                case CampaignState.RACE_NATIVES -> i18n("natives");
+                case Race.VIKINGS -> i18n("vikings");
+                case Race.NATIVES -> i18n("natives");
                 default -> throw new IllegalArgumentException("invalid race");
             };
             String difficulty = switch (campaign_state.getDifficulty()) {
-                case CampaignState.DIFFICULTY_EASY -> i18n("easy");
-                case CampaignState.DIFFICULTY_NORMAL -> i18n("normal");
-                case CampaignState.DIFFICULTY_HARD -> i18n("hard");
+                case Difficulty.EASY -> i18n("easy");
+                case Difficulty.NORMAL -> i18n("normal");
+                case Difficulty.HARD -> i18n("hard");
                 default -> throw new IllegalArgumentException("invalid difficulty");
             };
             Row<CampaignState, Label> row = new Row<>(

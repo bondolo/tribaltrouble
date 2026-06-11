@@ -5,7 +5,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 
-public abstract class ChieftainAI {
+public abstract sealed class ChieftainAI permits NativeChieftainAI, VikingChieftainAI {
     public abstract void decide(Unit chieftain);
 
     protected final int numEnemyUnits(@NonNull Player owner) {

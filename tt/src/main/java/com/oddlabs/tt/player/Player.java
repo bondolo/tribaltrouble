@@ -1,5 +1,7 @@
 package com.oddlabs.tt.player;
 
+import com.oddlabs.tt.model.BuildingType;
+
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.landscape.World;
@@ -8,7 +10,7 @@ import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Army;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.model.RaceInfo;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.SupplyContainer;
@@ -71,7 +73,7 @@ public final class Player implements PlayerInterface {
     private boolean can_build_chieftains = true;
     private boolean can_repair = true;
     private boolean can_attack = true;
-    private final boolean[] can_build = new boolean[Race.NUM_BUILDINGS];
+    private final boolean[] can_build = new boolean[BuildingType.values().length];
     private boolean can_move = true;
     private boolean can_exit_towers = true;
     private boolean can_use_rubber = true;
@@ -170,8 +172,8 @@ public final class Player implements PlayerInterface {
         can_repair = enabled;
     }
 
-    public void enableBuilding(int building, boolean enabled) {
-        can_build[building] = enabled;
+    public void enableBuilding(@NonNull BuildingType building, boolean enabled) {
+        can_build[building.ordinal()] = enabled;
     }
 
     public void enableAttacking(boolean enabled) {
@@ -230,8 +232,9 @@ public final class Player implements PlayerInterface {
         return can_move;
     }
 
-    public boolean canBuild(int building) {
-        return can_build[building] && getBuildingCountContainer().getNumSupplies() < Player.MAX_BUILDING_COUNT;
+    public boolean canBuild(@NonNull BuildingType building) {
+        return can_build[building.ordinal()] && getBuildingCountContainer().getNumSupplies()
+                < Player.MAX_BUILDING_COUNT;
     }
 
     public boolean canRepair() {
@@ -259,15 +262,16 @@ public final class Player implements PlayerInterface {
         return Optional.ofNullable(ai);
     }
 
-    public @NonNull Optional<Building> buildBuilding(int building_type, int grid_x, int grid_y) {
-        BuildingSiteScanFilter filter = new BuildingSiteScanFilter(world.getUnitGrid(), getRace().getBuildingTemplate(
-                building_type), 40, true);
+    public @NonNull Optional<Building> buildBuilding(@NonNull BuildingType building_type, int grid_x, int grid_y) {
+        BuildingSiteScanFilter filter = new BuildingSiteScanFilter(world.getUnitGrid(), getRaceInfo()
+                .getBuildingTemplate(
+                        building_type), 40, true);
         world.getUnitGrid().scan(filter, grid_x, grid_y);
         List<LandscapeTarget> target_list = filter.getResult();
         Building b = null;
         if (!target_list.isEmpty()) {
             Target t = target_list.getFirst();
-            b = new Building(this, getRace().getBuildingTemplate(building_type), t.getGridX(), t.getGridY());
+            b = new Building(this, getRaceInfo().getBuildingTemplate(building_type), t.getGridX(), t.getGridY());
             b.place();
             b.repair(1000);
         }
@@ -321,8 +325,8 @@ public final class Player implements PlayerInterface {
         return findNearestEnemy(start_x, start_y, null, Building.class);
     }
 
-    public @NonNull Race getRace() {
-        return getWorld().getRacesResources().getRace(player_info.getRace());
+    public @NonNull RaceInfo getRaceInfo() {
+        return getWorld().getRacesResources().getRaceInfo(player_info.getRace());
     }
 
     public @NonNull SupplyContainer getUnitCountContainer() {
@@ -437,9 +441,10 @@ public final class Player implements PlayerInterface {
     }
 
     @Override
-    public void placeBuilding(Selectable<?> @NonNull [] selection, int template_id, int placing_grid_x,
+    public void placeBuilding(Selectable<?> @NonNull [] selection, @NonNull BuildingType template_type,
+            int placing_grid_x,
             int placing_grid_y) {
-        Building building = new Building(this, getRace().getBuildingTemplate(template_id), placing_grid_x,
+        Building building = new Building(this, getRaceInfo().getBuildingTemplate(template_type), placing_grid_x,
                 placing_grid_y);
         for (var selection1 : selection) {
             if (isValid(selection1)) {

@@ -1,12 +1,16 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
@@ -41,7 +45,7 @@ public final class VikingIsland11 extends Island {
                 83493473, 11, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -52,14 +56,14 @@ public final class VikingIsland11 extends Island {
                         getCampaign().getState().getNumIronWarriors(),
                         getCampaign().getState().getNumRubberWarriors()));
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> 10;
-            case CampaignState.DIFFICULTY_NORMAL -> 25;
-            case CampaignState.DIFFICULTY_HARD -> 40;
+            case Difficulty.EASY -> 10;
+            case Difficulty.NORMAL -> 25;
+            case Difficulty.HARD -> 40;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_HARD);
@@ -157,11 +161,11 @@ public final class VikingIsland11 extends Island {
         new VictoryTrigger(getViewer(), runnable);
 
         // Tower
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 47, 22);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 54, 36);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 68, 36);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 80, 36);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 94, 30);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 47, 22);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 54, 36);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 68, 36);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 80, 36);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 94, 30);
     }
 
     @Override

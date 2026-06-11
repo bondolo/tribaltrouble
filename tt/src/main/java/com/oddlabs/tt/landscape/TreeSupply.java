@@ -23,7 +23,6 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
 
-
     private final @NonNull Matrix4f matrix;
     private final @NonNull TreeType tree_type;
     private final float x;

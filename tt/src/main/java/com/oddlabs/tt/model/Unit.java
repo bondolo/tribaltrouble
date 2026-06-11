@@ -518,7 +518,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         if (canDoMagic(magic_index)) {
             if (clear_stack)
                 clearControllerStack();
-            pushController(new MagicController(this, getOwner().getRace().getMagicFactory(magic_index)));
+            pushController(new MagicController(this, getOwner().getRaceInfo().getMagicFactory(magic_index)));
             Arrays.fill(magic_energy, 0f);
             last_magic_index = magic_index;
 

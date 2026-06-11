@@ -1,5 +1,7 @@
 package com.oddlabs.tt.delegate;
 
+import com.oddlabs.tt.model.Race;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.CameraState;
@@ -62,7 +64,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         this.scale_y = gui_root.getHeight() / BASE_HEIGHT;
 
         switch (campaign.getState().getRace()) {
-            case CampaignState.RACE_VIKINGS -> {
+            case Race.VIKINGS -> {
                 if (campaign.getState().getIslandState(10) != CampaignState.ISLAND_HIDDEN) {
                     addChild(campaign.getIcons().getHiddenRoutes()[0]);
                     addChild(campaign.getIcons().getHiddenRoutes()[1]);
@@ -87,7 +89,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                 }
             }
 
-            case CampaignState.RACE_NATIVES -> {
+            case Race.NATIVES -> {
                 if (campaign.getState().getIslandState(7) != CampaignState.ISLAND_HIDDEN) {
                     addChild(campaign.getIcons().getHiddenRoutes()[0]);
                 }

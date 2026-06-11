@@ -1,8 +1,9 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.BuildingVisualType;
+import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.player.Player;
@@ -21,12 +22,12 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
     @Override
     public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<S> render_state) {
         Selectable<?> selectable = render_state.getModel();
-        int race = selectable.getOwnerNoCheck().getRace().getRaceType();
+        Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
         if (selectable instanceof Unit unit) {
             return Optional.of(VisualRegistry.getInstance().getUnitSprite(race, unit.getTemplate()
                     .getVisualType()));
         } else if (selectable instanceof Building building) {
-            BuildingVisualType bvt = building.getTemplate().getVisualType();
+            BuildingType bvt = building.getTemplate().getBuildingType();
             var visuals = VisualRegistry.getInstance().getBuildingVisuals(race, bvt);
             return Optional.ofNullable(switch (building.getBuildStage()) {
                 case UNPLACED -> null;

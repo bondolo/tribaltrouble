@@ -6,11 +6,12 @@ import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeTargetRespond;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.BuildingVisualType;
+import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.model.Element;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Plants;
 import com.oddlabs.tt.model.PointEmitterModel;
+import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.RubberSupply;
 import com.oddlabs.tt.model.SceneryModel;
@@ -234,11 +235,11 @@ final class RenderState {
             SpriteSorter.DetailMode sort_status = addToRenderList(state, point_on_map);
             if (!picking && selectable.isEnabled() && sort_status == SpriteSorter.DetailMode.POLYGON) {
                 ShadowListKey shadowKey = null;
-                int race = selectable.getOwnerNoCheck().getRace().getRaceType();
+                Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
                 if (selectable instanceof Unit) {
                     shadowKey = VisualRegistry.getInstance().getDefaultUnitShadow();
                 } else if (selectable instanceof Building building) {
-                    BuildingVisualType bvt = building.getTemplate().getVisualType();
+                    BuildingType bvt = building.getTemplate().getBuildingType();
                     shadowKey = VisualRegistry.getInstance().getBuildingVisuals(race, bvt).shadow();
                 }
                 if (shadowKey != null) {
@@ -590,7 +591,7 @@ final class RenderState {
                 public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<
                         DirectedThrowingWeapon> render_state) {
                     DirectedThrowingWeapon model = render_state.getModel();
-                    int race = model.getSrc().getOwner().getRace().getRaceType();
+                    Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
                     return Optional.of(VisualRegistry.getInstance().getWeaponSprite(race, model
                             .getWeaponVisualType()));
                 }
@@ -618,7 +619,7 @@ final class RenderState {
                 public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<
                         RotatingThrowingWeapon> render_state) {
                     RotatingThrowingWeapon model = render_state.getModel();
-                    int race = model.getSrc().getOwner().getRace().getRaceType();
+                    Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
                     return Optional.of(VisualRegistry.getInstance().getWeaponSprite(race, model
                             .getWeaponVisualType()));
                 }

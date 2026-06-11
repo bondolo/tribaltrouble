@@ -1,5 +1,11 @@
 package com.oddlabs.tt.player.campaign;
 
+import com.oddlabs.tt.model.Race;
+
+import com.oddlabs.tt.model.Difficulty;
+
+import com.oddlabs.tt.model.UnitType;
+
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.CounterLabel;
@@ -8,8 +14,6 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
@@ -50,7 +54,7 @@ public final class NativeIsland4 extends Island {
                 * 19, 4, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -62,14 +66,14 @@ public final class NativeIsland4 extends Island {
                         0));//getCampaign().getState().getNumRubberWarriors()));
         game_network.getClient().getServerInterface().setPlayerSlot(1,
                 PlayerSlot.AI,
-                RacesResources.RACE_NATIVES,
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         game_network.getClient().getServerInterface().setPlayerSlot(2,
                 PlayerSlot.AI,
-                RacesResources.RACE_VIKINGS,
+                Race.VIKINGS.getValue(),
                 1,
                 true,
                 PlayerSlot.AI_PASSIVE_CAMPAIGN);
@@ -107,27 +111,27 @@ public final class NativeIsland4 extends Island {
         final int start_y = 44 * 2;
         getViewer().getCamera().reset(start_x, start_y);
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
-        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRace()
-                .getUnitTemplate(Race.UNIT_CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
+        local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
+                .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
         local_player.getChieftain().ifPresent(c -> {
             c.increaseMagicEnergy(0, 1000);
             c.increaseMagicEnergy(1, 1000);
         });
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(Race.UNIT_PEON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }
         for (int i = 0; i < getCampaign().getState().getNumRockWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_ROCK));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_ROCK));
         }
         for (int i = 0; i < getCampaign().getState().getNumIronWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_IRON));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_IRON));
         }
         for (int i = 0; i < getCampaign().getState().getNumRubberWarriors(); i++) {
-            new Unit(local_player, start_x, start_y, null, local_player.getRace().getUnitTemplate(
-                    Race.UNIT_WARRIOR_RUBBER));
+            new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(
+                    UnitType.WARRIOR_RUBBER));
         }
 
 
@@ -135,7 +139,8 @@ public final class NativeIsland4 extends Island {
         final int captive_x = 39;
         final int captive_y = 38;
         for (int i = 0; i < 10; i++) {
-            new Unit(captives, captive_x * 2, captive_y * 2, null, captives.getRace().getUnitTemplate(Race.UNIT_PEON));
+            new Unit(captives, captive_x * 2, captive_y * 2, null, captives.getRaceInfo().getUnitTemplate(
+                    UnitType.PEON));
         }
 
         // Winning condition
@@ -160,24 +165,24 @@ public final class NativeIsland4 extends Island {
         		new DefeatTrigger(getCampaign(), local_player.getChieftain(), runnable);
         */
         // Insert native towers
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 125, 161);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 125, 150);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 136, 153);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 180, 184);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 158, 154);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 163, 177);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 173, 175);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 165, 167);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 104, 192);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 108, 185);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 103, 210);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 115, 205);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 155, 185);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 145, 171);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 108, 150);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 130, 189);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 82, 170);
-        insertGuardTower(enemy, Race.UNIT_WARRIOR_RUBBER, 65, 167);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 125, 161);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 125, 150);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 136, 153);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 180, 184);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 158, 154);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 163, 177);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 173, 175);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 165, 167);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 104, 192);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 108, 185);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 103, 210);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 115, 205);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 155, 185);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 145, 171);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 108, 150);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 130, 189);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 82, 170);
+        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 65, 167);
 
         final int attack1;
         final int attack2;
@@ -186,7 +191,7 @@ public final class NativeIsland4 extends Island {
         final int attack5;
         final int attack6;
         switch (getCampaign().getState().getDifficulty()) {
-            case CampaignState.DIFFICULTY_EASY -> {
+            case Difficulty.EASY -> {
                 attack1 = 5;
                 attack2 = 15;
                 attack3 = 20;
@@ -194,7 +199,7 @@ public final class NativeIsland4 extends Island {
                 attack5 = 35;
                 attack6 = 35;
             }
-            case CampaignState.DIFFICULTY_NORMAL -> {
+            case Difficulty.NORMAL -> {
                 attack1 = 10;
                 attack2 = 30;
                 attack3 = 40;
@@ -202,7 +207,7 @@ public final class NativeIsland4 extends Island {
                 attack5 = 70;
                 attack6 = 70;
             }
-            case CampaignState.DIFFICULTY_HARD -> {
+            case Difficulty.HARD -> {
                 attack1 = 20;
                 attack2 = 60;
                 attack3 = 80;
