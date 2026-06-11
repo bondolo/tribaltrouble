@@ -62,8 +62,9 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         BatchKey key = new BatchKey(spriteList, texture, teamTexture, bumpTexture, respond, blend,
                 depthWrite, depthTest);
         RenderBatch batch = batches.computeIfAbsent(key, RenderBatch::new);
-        batch.addInstance(spriteIndex, frameState.pos1(), frameState.norm1(), frameState.pos2(), frameState.norm2(), frameState
-                .tween(), modelMatrix, color, decalColor);
+        batch.addInstance(spriteIndex, frameState.pos1(), frameState.norm1(), frameState.pos2(), frameState.norm2(),
+                frameState
+                        .tween(), modelMatrix, color, decalColor);
     }
 
     public void renderAll(@NonNull RenderContext context, @NonNull CameraState cameraState,
@@ -166,7 +167,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 for (int i = 0; i < 4; i++) {
                     int loc = 4 + i;
                     GL20.glEnableVertexAttribArray(loc);
-                    GL20.glVertexAttribPointer(loc, 4, GL11.GL_FLOAT, false, instanceStride, (long) i * 4 * Float.BYTES);
+                    GL20.glVertexAttribPointer(loc, 4, GL11.GL_FLOAT, false, instanceStride, (long) i * 4
+                            * Float.BYTES);
                     GL33.glVertexAttribDivisor(loc, 1);
                 }
 
@@ -210,7 +212,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
 
             void add(int pos1, int norm1, int pos2, int norm2, float tween, @NonNull Matrix4f modelMatrix,
-                     @NonNull Color color, @NonNull Color decalColor) {
+                    @NonNull Color color, @NonNull Color decalColor) {
                 if (count >= capacity) {
                     int newCapacity = capacity * 2;
                     FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity * FLOATS_PER_INSTANCE);
@@ -274,6 +276,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         private static final Comparator<@NonNull RenderBatch> COMPARATOR = Comparator
                 .comparing((RenderBatch b) -> b.key.blend)
                 .thenComparingInt(b -> b.key.texture.getHandle())
+                .thenComparingInt(b -> b.key.spriteList.getTBOTextureHandle())
                 .thenComparingInt(b -> b.key.teamTexture != null ? b.key.teamTexture.getHandle() : 0)
                 .thenComparingInt(b -> b.key.bumpTexture != null ? b.key.bumpTexture.getHandle() : 0);
 
@@ -283,7 +286,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
         void addInstance(int spriteIndex, int pos1, int norm1, int pos2, int norm2, float tween,
                 @NonNull Matrix4f modelMatrix, @NonNull Color color, @NonNull Color decalColor) {
-            InstanceGroup group = groups.computeIfAbsent(spriteIndex, k -> new InstanceGroup(k, key, FLOATS_PER_INSTANCE));
+            InstanceGroup group = groups.computeIfAbsent(spriteIndex, k -> new InstanceGroup(k, key,
+                    FLOATS_PER_INSTANCE));
             group.add(pos1, norm1, pos2, norm2, tween, modelMatrix, color, decalColor);
         }
 
@@ -311,8 +315,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             Sprite representativeSprite = spriteList.getSprite(representativeGroup.spriteIndex);
             setupTextures(context, shader, representativeSprite, whiteTexture, state);
 
+            context.setActiveTexture(5);
             if (state.boundTBO != spriteList.getTBOTextureHandle()) {
-                context.setActiveTexture(5);
                 GL11.glBindTexture(GL31.GL_TEXTURE_BUFFER, spriteList.getTBOTextureHandle());
                 state.boundTBO = spriteList.getTBOTextureHandle();
             }
@@ -324,25 +328,22 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
 
             if (key.respond) {
-                try (var _ = context.withColorMask(false, false, false, false);
-                     var _ = context.withDepthMode(DepthMode.READ_WRITE);
-                     var _ = context.withDepthFunc(GL11.GL_LEQUAL);
-                     var _ = context.withBlendMode(BlendMode.NONE);
-                     var _ = context.withSampleAlphaToCoverage(false);
-                     var _ = context.withDrawBuffers(false)) {
+                try (var _ = context.withColorMask(false, false, false, false); var _ = context.withDepthMode(
+                        DepthMode.READ_WRITE); var _ = context.withDepthFunc(GL11.GL_LEQUAL); var _ = context
+                                .withBlendMode(BlendMode.NONE); var _ = context.withSampleAlphaToCoverage(false); var _
+                                        = context.withDrawBuffers(false)) {
                     drawAll(context);
                 }
 
-                try (var _ = context.withColorMask(true, true, true, true);
-                     var _ = context.withDepthMode(DepthMode.READ_ONLY);
-                     var _ = context.withDepthFunc(GL11.GL_EQUAL);
-                     var _ = context.withBlendMode(BlendMode.ALPHA);
-                     var _ = context.withSampleAlphaToCoverage(false);
-                     var _ = context.withDrawBuffers(true)) {
+                try (var _ = context.withColorMask(true, true, true, true); var _ = context.withDepthMode(
+                        DepthMode.READ_ONLY); var _ = context.withDepthFunc(GL11.GL_EQUAL); var _ = context
+                                .withBlendMode(BlendMode.ALPHA); var _ = context.withSampleAlphaToCoverage(false); var _
+                                        = context.withDrawBuffers(true)) {
                     drawAll(context);
                 }
             } else {
-                context.setDepthMode(key.depthTest ? key.depthWrite ? DepthMode.READ_WRITE : DepthMode.READ_ONLY : DepthMode.NONE);
+                context.setDepthMode(key.depthTest ? key.depthWrite ? DepthMode.READ_WRITE : DepthMode.READ_ONLY
+                        : DepthMode.NONE);
 
                 if (key.blend) {
                     context.setBlendMode(BlendMode.ALPHA);
