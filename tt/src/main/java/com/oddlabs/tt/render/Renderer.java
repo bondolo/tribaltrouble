@@ -111,6 +111,7 @@ public final class Renderer implements AutoCloseable {
     private long totalAudioUpdateTime;
     private long totalWindowUpdateTime;
     private long totalDisplayTime;
+    private long totalGLFinishTime;
     private long totalLoopTime;
 
     private @Nullable Cheat cheat = new Cheat();
@@ -653,6 +654,11 @@ public final class Renderer implements AutoCloseable {
                     long t9 = System.nanoTime();
                     totalDisplayTime += (t9 - t8);
 
+                    long tf0 = System.nanoTime();
+                    GL11.glFinish();
+                    long tf1 = System.nanoTime();
+                    totalGLFinishTime += (tf1 - tf0);
+
                     if (first_frame) {
                         Duration startup_time = Duration.between(start_time, Instant.now());
                         logger.info("First frame rendered after " + startup_time);
@@ -684,14 +690,16 @@ public final class Renderer implements AutoCloseable {
                                         + "runGameLoop: %.2f ms | "
                                         + "audioUpdate: %.2f ms | "
                                         + "windowUpdate: %.2f ms | "
-                                        + "display: %.2f ms",
+                                        + "display: %.2f ms | "
+                                        + "glFinish: %.2f ms",
                                 instrumentationFrameCounter,
                                 (totalLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
                                 (totalPollEventsTime / (float) instrumentationFrameCounter) / 1_000_000f,
                                 (totalRunGameLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
                                 (totalAudioUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
                                 (totalWindowUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                                (totalDisplayTime / (float) instrumentationFrameCounter) / 1_000_000f));
+                                (totalDisplayTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                                (totalGLFinishTime / (float) instrumentationFrameCounter) / 1_000_000f));
 
                         instrumentationFrameCounter = 0;
                         totalPollEventsTime = 0;
@@ -699,6 +707,7 @@ public final class Renderer implements AutoCloseable {
                         totalAudioUpdateTime = 0;
                         totalWindowUpdateTime = 0;
                         totalDisplayTime = 0;
+                        totalGLFinishTime = 0;
                         totalLoopTime = 0;
                     }
                 } else {
