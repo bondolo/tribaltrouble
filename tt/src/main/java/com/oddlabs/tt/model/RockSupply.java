@@ -161,6 +161,9 @@ public final class RockSupply extends SupplyModel {
                 spawnColorTint = COLOR_COOLING.lerp(Color.Linear.WHITE, factor);
             }
         }
+        if (smokeEmitter != null) {
+            smokeEmitter.setPosition(getPositionX(), getPositionY(), getPositionZ());
+        }
         reinsert();
     }
 

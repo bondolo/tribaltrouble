@@ -55,8 +55,7 @@ public final class SonicBlast extends Model implements Magic {
         start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
         start_z = src.getPositionZ() + offset_z;
 
-        setPosition(start_x, start_y);
-        setPositionZ(start_z);
+        setPosition(start_x, start_y, start_z);
         register();
 
         var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable

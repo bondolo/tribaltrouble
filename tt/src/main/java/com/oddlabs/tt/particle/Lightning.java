@@ -72,7 +72,7 @@ public final class Lightning extends Element<Lightning> implements Animated {
         float y = src.y();
         float z = src.z();
         float height = dst.z() - src.z();
-        float random_limit = height / 6f;
+        float random_limit = Math.abs(height) / 6f;
         float dz = (height) / num_particles;
 
         for (int i = 0; i < num_particles; i++) {

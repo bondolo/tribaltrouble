@@ -68,12 +68,6 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         this.height = height;
         owner = src.getOwner();
 
-        float start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
-        float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
-        float start_z = world.getHeightMap().getNearestHeight(start_x, start_y) + height;
-        setPosition(start_x, start_y);
-        setPositionZ(start_z);
-
         bubbling_sound = world.getAudio().newAudio(getPositionX(), getPositionY(), world.getHeightMap()
                 .getNearestHeight(getPositionX(), getPositionY()), AudioAssets.BUBBLING);
     }
@@ -172,9 +166,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                 float x = getPositionX() + dx * (meters_per_second * t);
                 float y = getPositionY() + dy * (meters_per_second * t);
                 float z = owner.getWorld().getHeightMap().getNearestHeight(x, y) + height;
-                setPosition(x, y);
-                setPositionZ(z);
-                reinsert();
+                setPosition(x, y, z);
             }
         } else if (prev_target != null && strike_counter < NUM_STRIKES - 1 && hit_timer > (strike_counter + 1)
                 * SECONDS_BETWEEN_STRIKES) {

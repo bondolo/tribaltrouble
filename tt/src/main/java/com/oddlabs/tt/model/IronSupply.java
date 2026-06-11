@@ -21,6 +21,7 @@ public final class IronSupply extends SupplyModel {
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SPAWN_OFFSET_Z = 200.0f;
     private static final float FALL_DURATION_RATIO = 0.12f;
+    private static final float TRAIL_OFFSET_Z = 10.0f;
 
     private static final Color.Linear COLOR_FALLING = new Color.Linear(2.0f, 0.5f, 0.05f, 1.0f);
     private static final Color.Linear COLOR_LANDING = new Color.Linear(2.0f, 1.0f, 0.2f, 1.0f); // Overdriven
@@ -152,7 +153,7 @@ public final class IronSupply extends SupplyModel {
             float growthY = 3.0f - 2.25f * fallProgress;
             emitter.setGrowthRate(growthXZ, growthY, growthXZ);
 
-            emitterModel.setPosition(getPositionX(), getPositionY(), getPositionZ());
+            emitterModel.setPosition(getPositionX(), getPositionY(), getPositionZ() + TRAIL_OFFSET_Z);
         } else {
             if (trailEmitter != null) {
                 trailEmitter.getEmitter().done();
@@ -280,7 +281,7 @@ public final class IronSupply extends SupplyModel {
     private PointEmitterModel ensureTrailEmitter() {
         if (trailEmitter == null) {
             // Offset UP more to ensure trail starts behind meteor center
-            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + 10.0f);
+            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ() + TRAIL_OFFSET_Z);
             RandomVelocityEmitter emitter = new RandomVelocityEmitter(
                     getWorld(), pos, 0.0f, 0.0f, // world, position, offset_z, uv_angle
                     0.02f, 5.0f, // Narrow vertical column

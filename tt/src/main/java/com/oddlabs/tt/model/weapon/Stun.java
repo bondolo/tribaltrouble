@@ -87,9 +87,7 @@ public final class Stun extends PointEmitterModel implements Magic {
             float x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
             float y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
             float z = src.getPositionZ() + offset_z;
-            setPosition(x, y);
-            setPositionZ(z);
-            reinsert();
+            setPosition(x, y, z);
         }
 
         if (!logic_done) {
