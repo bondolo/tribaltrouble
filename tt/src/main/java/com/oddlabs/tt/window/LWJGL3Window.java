@@ -273,7 +273,6 @@ public final class LWJGL3Window implements Window {
     @Override
     public void update() {
         glfwSwapBuffers(windowHandle);
-        pollEvents();
     }
 
     @Override
