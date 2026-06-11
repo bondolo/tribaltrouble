@@ -25,7 +25,10 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -72,7 +75,10 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             shader.setUniform(InstancedSpriteShader.Uniforms.VERT_BUFFER, 5);
 
             RenderState state = new RenderState();
-            for (RenderBatch batch : batches.values()) {
+            List<RenderBatch> sortedBatches = new ArrayList<>(batches.values());
+            sortedBatches.sort(RenderBatch.COMPARATOR);
+
+            for (RenderBatch batch : sortedBatches) {
                 batch.render(context, shader, whiteTexture, state);
             }
         } finally {
@@ -264,6 +270,12 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 vbo.close();
             }
         }
+
+        private static final Comparator<@NonNull RenderBatch> COMPARATOR = Comparator
+                .comparing((RenderBatch b) -> b.key.blend)
+                .thenComparingInt(b -> b.key.texture.getHandle())
+                .thenComparingInt(b -> b.key.teamTexture != null ? b.key.teamTexture.getHandle() : 0)
+                .thenComparingInt(b -> b.key.bumpTexture != null ? b.key.bumpTexture.getHandle() : 0);
 
         RenderBatch(@NonNull BatchKey key) {
             this.key = key;
