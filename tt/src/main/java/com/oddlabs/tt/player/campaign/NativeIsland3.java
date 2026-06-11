@@ -86,8 +86,8 @@ public final class NativeIsland3 extends Island {
     protected void start() {
         Runnable runnable;
         final Player local_player = getViewer().getLocalPlayer();
-        final Player enemy = getViewer().getWorld().getPlayers()[1];
-        final Player reinforcements = getViewer().getWorld().getPlayers()[2];
+        final Player enemy = getViewer().getWorld().getPlayers().get(1);
+        final Player reinforcements = getViewer().getWorld().getPlayers().get(2);
 
         final int start_x = 125 * 2;
         final int start_y = 222 * 2;

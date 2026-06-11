@@ -62,6 +62,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -794,12 +795,11 @@ public final class Renderer implements AutoCloseable {
     private static @NonNull UIRenderer finishMainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
             boolean first_progress, @NonNull WorldGenerator generator) {
         AnimationManager.freezeTime();
-        PlayerInfo player_info = new PlayerInfo(0, Race.NATIVES, "");
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
-        PlayerInfo[] players = new PlayerInfo[]{player_info};
-        WorldInfo world_info = generator.generate(players.length, world_params.getInitialUnitCount(), 0f);
+        var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
+        WorldInfo world_info = generator.generate(players.size(), world_params.getInitialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
         com.oddlabs.tt.form.ProgressForm.progress();
@@ -810,7 +810,7 @@ public final class Renderer implements AutoCloseable {
                 Globals.INSERT_PLANTS[getRenderer().getSettings().graphic_detail]);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
-        Player local_player = world.getPlayers()[0];
+        Player local_player = world.getPlayers().get(0);
         Selection selection = new Selection(local_player);
         UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info,
                 landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer,

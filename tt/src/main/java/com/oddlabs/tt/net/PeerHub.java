@@ -33,6 +33,10 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Manages networking connections, peers, message routing, and synchronization
+ * between players in a multiplayer session.
+ */
 public final class PeerHub implements Animated, RouterHandler {
     private static final String ROUTER_ADDRESS = "127.0.0.1";
     public static final ResourceBundle bundle = ResourceBundle.getBundle(PeerHub.class.getName());
@@ -91,7 +95,7 @@ public final class PeerHub implements Animated, RouterHandler {
 
         GameArgumentReader argument_reader = new GameArgumentReader(distributable_table);
         List<Peer> peer_index_to_peer_list = new ArrayList<>();
-        Player[] players = local_player.getWorld().getPlayers();
+        List<@NonNull Player> players = local_player.getWorld().getPlayers();
         int local_peer_index = -1;
         if (!is_multiplayer) {
             this.router = new Router(network, com.oddlabs.util.Utils.getLoopbackAddress(), 0, Logger
@@ -104,8 +108,8 @@ public final class PeerHub implements Animated, RouterHandler {
             this.router = null;
             this.router_client = new RouterClient(network, ROUTER_ADDRESS, this);
         }
-        for (short i = 0; i < players.length; i++) {
-            Player player = players[i];
+        for (short i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
             if (player_slots[i].getType() != PlayerSlot.HUMAN) {
                 nonhuman_players.add(player);
                 continue;

@@ -141,9 +141,9 @@ public final class NativeIsland6 extends Island {
         new VictoryTrigger(getViewer(), runnable);
 
         // Put warrior in tower
-        final Player friend = getViewer().getWorld().getPlayers()[1];
-        final Player enemy0 = getViewer().getWorld().getPlayers()[2];
-        final Player enemy1 = getViewer().getWorld().getPlayers()[3];
+        final Player friend = getViewer().getWorld().getPlayers().get(1);
+        final Player enemy0 = getViewer().getWorld().getPlayers().get(2);
+        final Player enemy1 = getViewer().getWorld().getPlayers().get(3);
 
         friend.getAI().ifPresent(ai -> ai.manTowers(2)); // TODO: replace with insertGuardTower()
         enemy0.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()

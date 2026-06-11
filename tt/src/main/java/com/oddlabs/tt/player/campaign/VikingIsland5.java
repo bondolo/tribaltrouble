@@ -88,8 +88,8 @@ public final class VikingIsland5 extends Island {
     @Override
     protected void start() {
         Runnable runnable;
-        final Player enemy0 = getViewer().getWorld().getPlayers()[2];
-        final Player enemy1 = getViewer().getWorld().getPlayers()[3];
+        final Player enemy0 = getViewer().getWorld().getPlayers().get(2);
+        final Player enemy1 = getViewer().getWorld().getPlayers().get(3);
 
         // Introduction
         final Runnable answer = () -> {
@@ -135,7 +135,7 @@ public final class VikingIsland5 extends Island {
 
         // Defeat if friends eleminated
         runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));
-        new PlayerEleminatedTrigger(runnable, getViewer().getWorld().getPlayers()[1]);
+        new PlayerEleminatedTrigger(runnable, getViewer().getWorld().getPlayers().get(1));
     }
 
     @Override

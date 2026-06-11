@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+/**
+ * Represents the game world, orchestrating the height map, resources, dynamic entities,
+ * and players within a simulation environment.
+ */
 public final class World {
     public static final int GAMESPEED_DONTCARE = -2;
 
@@ -45,7 +49,7 @@ public final class World {
     private final int max_unit_count;
     private final @NonNull NotificationListener notification_listener;
 
-    private final @NonNull Player @NonNull [] players;
+    private final @NonNull List<@NonNull Player> players;
     private final @NonNull SupplyManagers supply_managers;
     private final @NonNull UnitGrid unit_grid;
     private final @NonNull PatchGroup patch_root;
@@ -64,7 +68,7 @@ public final class World {
     public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation,
             @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
-            @NonNull WorldInfo world_info, @NonNull PlayerInfo @NonNull [] player_infos,
+            @NonNull WorldInfo world_info, List<@NonNull PlayerInfo> player_infos,
             Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants) {
         ProgressForm.progress();
         World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener,
@@ -151,7 +155,7 @@ public final class World {
             @NonNull LandscapeBoundsProvider landscape_resources,
             @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
             @NonNull WorldParameters world_params, @NonNull WorldInfo world_info,
-            @NonNull PlayerInfo @NonNull [] player_infos, Color.@NonNull Linear @NonNull [] teamColors,
+            @NonNull List<@NonNull PlayerInfo> player_infos, Color.@NonNull Linear @NonNull [] teamColors,
             boolean insertPlants) {
         IO.println("****************** Generating landscape ********************");
         this.fog = world_info.fog_info();
@@ -172,10 +176,10 @@ public final class World {
         animation_manager_real_time = new AnimationManager();
         random = new Random(42);
 
-        players = IntStream.range(0, player_infos.length)
-                .mapToObj(i -> new Player(this, player_infos[i], teamColors[i % teamColors.length])
+        players = List.of(IntStream.range(0, player_infos.size())
+                .mapToObj(i -> new Player(this, player_infos.get(i), teamColors[i % teamColors.length])
                         .init(world_info.starting_locations()[i])
-                ).toArray(Player[]::new);
+                ).toArray(Player[]::new));
 
         long time_stop = System.currentTimeMillis();
         IO.println("****************** Finished landscape in " + ((time_stop - time_start) / 1000f)
@@ -212,7 +216,7 @@ public final class World {
         return supply_managers.getSupplyManager(type);
     }
 
-    public @NonNull Player @NonNull [] getPlayers() {
+    public @NonNull List<@NonNull Player> getPlayers() {
         return players;
     }
 

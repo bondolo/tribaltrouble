@@ -21,6 +21,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Triggers world loading, initializes players and matchmaking session information,
+ * and sets up the active gameplay session once loading is complete.
+ */
 final class WorldStarter implements LoadCallback {
     private final UnitInfo[] unit_infos;
     private final PlayerSlot[] player_slots;
@@ -79,9 +83,9 @@ final class WorldStarter implements LoadCallback {
     private static @NonNull Participant @NonNull [] getParticipants(@NonNull WorldViewer viewer,
             @NonNull PlayerSlot @NonNull [] player_slots) {
         List<Participant> participant_list = new ArrayList<>();
-        Player[] players = viewer.getWorld().getPlayers();
-        for (short i = 0; i < players.length; i++) {
-            Player player = players[i];
+        List<@NonNull Player> players = viewer.getWorld().getPlayers();
+        for (short i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
             if (player_slots[i].getType() != PlayerSlot.HUMAN)
                 continue;
             int host_id;

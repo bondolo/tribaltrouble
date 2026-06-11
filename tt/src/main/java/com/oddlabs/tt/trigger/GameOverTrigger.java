@@ -11,8 +11,13 @@ import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Monitors the status of all players during gameplay to detect when the game
+ * is over (e.g. all enemies defeated or the local player is defeated).
+ */
 public final class GameOverTrigger implements Animated {
 
     private final int @NonNull [] teams;
@@ -29,18 +34,18 @@ public final class GameOverTrigger implements Animated {
         this.viewer = viewer;
         viewer.getWorld().getAnimationManagerRealTime().registerAnimation(this);
         teams = new int[MatchmakingServerInterface.MAX_PLAYERS];
-        dead_tribes = new boolean[viewer.getWorld().getPlayers().length];
+        dead_tribes = new boolean[viewer.getWorld().getPlayers().size()];
         Arrays.fill(dead_tribes, false);
     }
 
     @Override
     public void animate(float t) {
-        Player[] players = viewer.getWorld().getPlayers();
+        List<@NonNull Player> players = viewer.getWorld().getPlayers();
         Player local_player = viewer.getLocalPlayer();
         boolean enemy_alive = false;
 
-        for (int i = 0; i < players.length; i++) {
-            Player current = players[i];
+        for (int i = 0; i < players.size(); i++) {
+            Player current = players.get(i);
             if (!dead_tribes[i]) {
                 if (!viewer.getPeerHub().isAlive(current)) {
                     if (current == local_player) {
@@ -65,8 +70,8 @@ public final class GameOverTrigger implements Animated {
         }
     }
 
-    private int countTeams(Player @NonNull [] players) {
-        for (int i = 0; i < players.length; i++) {
+    private int countTeams(List<@NonNull Player> players) {
+        for (int i = 0; i < players.size(); i++) {
             teams[i] = 0;
         }
 

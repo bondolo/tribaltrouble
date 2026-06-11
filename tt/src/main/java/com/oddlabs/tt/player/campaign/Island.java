@@ -31,6 +31,8 @@ import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
+
 
 /**
  * Base class for all campaign islands, defining common logic for game setup,
@@ -75,7 +77,7 @@ public abstract class Island {
             if (!campaign.getState().hasMagic1()) {
                 viewer.getLocalPlayer().enableMagic(1, false);
             }
-            Player[] players = viewer.getWorld().getPlayers();
+            List<@NonNull Player> players = viewer.getWorld().getPlayers();
             switch (campaign.getState().getDifficulty()) {
                 case Difficulty.EASY -> {
                     for (Player player : players) {

@@ -83,7 +83,7 @@ public final class VikingIsland13 extends Island {
 
         Runnable runnable;
         final Player local_player = getViewer().getLocalPlayer();
-        final Player enemy = getViewer().getWorld().getPlayers()[1];
+        final Player enemy = getViewer().getWorld().getPlayers().get(1);
 
         // Introduction
         runnable = () -> {

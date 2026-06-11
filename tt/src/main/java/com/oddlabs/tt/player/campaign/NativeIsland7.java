@@ -80,7 +80,7 @@ public final class NativeIsland7 extends Island {
     @Override
     protected void start() {
         Runnable runnable;
-        final Player enemy = getViewer().getWorld().getPlayers()[1];
+        final Player enemy = getViewer().getWorld().getPlayers().get(1);
 
         // Introduction
         final Runnable dialog1 = () -> {

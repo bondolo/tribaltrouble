@@ -91,8 +91,8 @@ public final class VikingIsland7 extends Island {
 
     @Override
     protected void start() {
-        final Player enemy0 = getViewer().getWorld().getPlayers()[1];
-        final Player enemy1 = getViewer().getWorld().getPlayers()[2];
+        final Player enemy0 = getViewer().getWorld().getPlayers().get(1);
+        final Player enemy1 = getViewer().getWorld().getPlayers().get(2);
 
         // Introduction
         new GameStartedTrigger(getViewer().getWorld(), () -> {

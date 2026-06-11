@@ -73,7 +73,7 @@ public final class VikingIsland10 extends Island {
     protected void start() {
         Runnable runnable;
         final Player local_player = getViewer().getLocalPlayer();
-        final Player enemy = getViewer().getWorld().getPlayers()[1];
+        final Player enemy = getViewer().getWorld().getPlayers().get(1);
 
         // First reset camera direction and then move to rallypoint
         getViewer().getCamera().reset(142 * 2, 182 * 2);

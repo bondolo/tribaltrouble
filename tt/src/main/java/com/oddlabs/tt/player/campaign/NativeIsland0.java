@@ -99,9 +99,9 @@ public final class NativeIsland0 extends Island {
     @Override
     protected void start() {
         final Player local_player = getViewer().getLocalPlayer();
-        final Player reinforcements = getViewer().getWorld().getPlayers()[1];
-        final Player enemy = getViewer().getWorld().getPlayers()[2];
-        final Player natives = getViewer().getWorld().getPlayers()[3];
+        final Player reinforcements = getViewer().getWorld().getPlayers().get(1);
+        final Player enemy = getViewer().getWorld().getPlayers().get(2);
+        final Player natives = getViewer().getWorld().getPlayers().get(3);
 
         final int chief_start_x = 140 * 2;
         final int chief_start_y = 117 * 2;

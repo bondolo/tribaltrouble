@@ -33,7 +33,6 @@ import com.oddlabs.tt.player.AdvancedAI;
 import com.oddlabs.tt.player.NativeChieftainAI;
 import com.oddlabs.tt.player.PassiveAI;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.player.VikingChieftainAI;
 import com.oddlabs.tt.render.DefaultRenderer;
@@ -49,6 +48,8 @@ import com.oddlabs.tt.util.ServerMessageBundler;
 import com.oddlabs.tt.util.Target;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 import java.util.Arrays;
 import java.util.ResourceBundle;
@@ -111,7 +112,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void playerGamespeedChanged() {
-                String result = Arrays.stream(world.getPlayers())
+                String result = world.getPlayers().stream()
                         .filter(p -> World.isValidGamespeed(p.getPreferredGamespeed()))
                         .map(p -> p.getPlayerInfo().getName() + ": " + ServerMessageBundler.getGamespeedString(p
                                 .getPreferredGamespeed()))
@@ -146,8 +147,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
                     getSelection().removeFromArmies(selectable);
             }
         };
-        PlayerInfo[] player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toArray(PlayerInfo[]::new);
-        WorldInfo world_info = generator.generate(player_infos.length, world_params.getInitialUnitCount(), ingame_info
+        var player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toList();
+        WorldInfo world_info = generator.generate(player_infos.size(), world_params.getInitialUnitCount(), ingame_info
                 .getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
         AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
@@ -155,7 +156,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.world = World.newWorld(audio, landscape_resources, races_resources, listener, world_params, world_info,
                 player_infos, renderer.getSettings().linear_team_colours,
                 Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail]);
-        this.local_player = world.getPlayers()[player_slot];
+        this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
@@ -277,11 +278,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
         }
     }
 
-    private void initPlayers(float[][] starting_locations, PlayerSlot @NonNull [] slots, Player[] players,
+    private void initPlayers(float[][] starting_locations, PlayerSlot @NonNull [] slots, List<@NonNull Player> players,
             UnitInfo[] unit_infos, int initial_gamespeed) {
         ResourceBundle bundle = ResourceBundle.getBundle(Player.class.getName());
         for (int i = 0; i < slots.length; i++) {
-            initPlayer(bundle, starting_locations[i], slots[i], players[i], unit_infos[i], initial_gamespeed);
+            initPlayer(bundle, starting_locations[i], slots[i], players.get(i), unit_infos[i], initial_gamespeed);
         }
     }
 

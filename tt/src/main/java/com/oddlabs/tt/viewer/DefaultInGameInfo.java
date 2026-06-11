@@ -16,12 +16,17 @@ import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 
+import java.util.List;
 import java.util.ResourceBundle;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
+/**
+ * Displays in-game information overlay including player names, colors, races,
+ * and current team designations.
+ */
 public class DefaultInGameInfo implements InGameInfo {
     private static final ResourceBundle terrain_menu_bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
     private boolean replay_island_flag;
@@ -80,7 +85,7 @@ public class DefaultInGameInfo implements InGameInfo {
     }
 
     private void addGameInfos(@NonNull WorldViewer viewer, @NonNull Menu menu, @NonNull Group game_infos) {
-        Player[] players = viewer.getWorld().getPlayers();
+        List<@NonNull Player> players = viewer.getWorld().getPlayers();
         Group names = new Group();
         GUIObject last_name = null;
         Group races = new Group();

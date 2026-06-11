@@ -84,7 +84,7 @@ public final class VikingIsland3 extends Island {
     @Override
     protected void start() {
         Runnable runnable;
-        final Player enemy = getViewer().getWorld().getPlayers()[1];
+        final Player enemy = getViewer().getWorld().getPlayers().get(1);
 
         // Introduction
         runnable = () -> {
