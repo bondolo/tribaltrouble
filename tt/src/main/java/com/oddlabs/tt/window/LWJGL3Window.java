@@ -12,9 +12,11 @@ import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.JNI;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.StructBuffer;
+import org.lwjgl.system.macosx.ObjCRuntime;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -37,6 +39,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_AUTO_ICONIFY;
 import static org.lwjgl.glfw.GLFW.GLFW_COCOA_RETINA_FRAMEBUFFER;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
+import static org.lwjgl.glfw.GLFW.GLFW_DECORATED;
 import static org.lwjgl.glfw.GLFW.GLFW_DONT_CARE;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
 import static org.lwjgl.glfw.GLFW.GLFW_FOCUSED;
@@ -71,6 +74,7 @@ import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetFramebufferSizeCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowCloseCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowIcon;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowAttrib;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowMonitor;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
@@ -90,10 +94,49 @@ public final class LWJGL3Window implements Window {
 
     private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
+    private static long objc_msgSend = MemoryUtil.NULL;
+    private static long nsAppClass = MemoryUtil.NULL;
+    private static long sharedApplicationSel = MemoryUtil.NULL;
+    private static long isActiveSel = MemoryUtil.NULL;
+    private static long setPresentationOptionsSel = MemoryUtil.NULL;
+    private static long nsApp = MemoryUtil.NULL;
+    private static boolean macInitialized = false;
+
+    private static void initMacFFI() {
+        if (isMac && !macInitialized) {
+            try {
+                objc_msgSend = ObjCRuntime.getLibrary().getFunctionAddress("objc_msgSend");
+                nsAppClass = ObjCRuntime.objc_getClass("NSApplication");
+                sharedApplicationSel = ObjCRuntime.sel_getUid("sharedApplication");
+                isActiveSel = ObjCRuntime.sel_getUid("isActive");
+                setPresentationOptionsSel = ObjCRuntime.sel_getUid("setPresentationOptions:");
+                nsApp = JNI.invokePPP(nsAppClass, sharedApplicationSel, objc_msgSend);
+                macInitialized = true;
+            } catch (Throwable t) {
+                logger.log(Level.WARNING, "Failed to initialize macOS FFI caching", t);
+            }
+        }
+    }
+
+    private boolean isMacAppActive() {
+        if (isMac) {
+            initMacFFI();
+            if (macInitialized && nsApp != MemoryUtil.NULL) {
+                try {
+                    return JNI.invokePPZ(nsApp, isActiveSel, objc_msgSend);
+                } catch (Throwable t) {
+                    logger.log(Level.WARNING, "Failed to call [NSApp isActive]", t);
+                }
+            }
+        }
+        return false;
+    }
+
     private long windowHandle = MemoryUtil.NULL;
     private @NonNull String title = "Tribal Trouble";
     private boolean resized;
     private boolean closeRequested;
+    private boolean isFullscreen;
 
     public LWJGL3Window() {
         ensureGLFW();
@@ -111,6 +154,7 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public void create(@NonNull SerializableDisplayMode mode, boolean fullscreen) {
+        this.isFullscreen = fullscreen;
 
         if (windowHandle != MemoryUtil.NULL) {
             // Reconfigure existing window
@@ -120,12 +164,27 @@ public final class LWJGL3Window implements Window {
             logger.log(Level.INFO, "Reconfiguring window: " + mode + " (logical: " + logicalW + "x" + logicalH
                     + "), fullscreen: " + fullscreen + ", scale: " + scale);
 
-            long monitor = fullscreen ? glfwGetPrimaryMonitor() : MemoryUtil.NULL;
+            long monitor = (fullscreen && !isMac) ? glfwGetPrimaryMonitor() : MemoryUtil.NULL;
             int refreshRate = fullscreen ? mode.getFrequency() : GLFW_DONT_CARE;
 
             if (fullscreen) {
-                glfwSetWindowMonitor(windowHandle, monitor, 0, 0, logicalW, logicalH, refreshRate);
+                if (isMac) {
+                    glfwSetWindowAttrib(windowHandle, GLFW_DECORATED, GLFW_FALSE);
+                    long currentMonitor = getCurrentMonitor();
+                    GLFWVidMode vidmode = glfwGetVideoMode(currentMonitor);
+                    if (vidmode != null) {
+                        glfwSetWindowMonitor(windowHandle, MemoryUtil.NULL, 0, 0, vidmode.width(), vidmode.height(),
+                                GLFW_DONT_CARE);
+                    }
+                    setMacPresentationOptions(10);
+                } else {
+                    glfwSetWindowMonitor(windowHandle, monitor, 0, 0, logicalW, logicalH, refreshRate);
+                }
             } else {
+                if (isMac) {
+                    glfwSetWindowAttrib(windowHandle, GLFW_DECORATED, GLFW_TRUE);
+                    setMacPresentationOptions(0);
+                }
                 // Windowed mode: center on screen
                 long currentMonitor = getCurrentMonitor();
                 GLFWVidMode vidmode = glfwGetVideoMode(currentMonitor);
@@ -188,6 +247,14 @@ public final class LWJGL3Window implements Window {
 
         if (isMac) {
             glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
+            if (fullscreen) {
+                glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+                GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+                if (vidmode != null) {
+                    logicalW = vidmode.width();
+                    logicalH = vidmode.height();
+                }
+            }
         }
 
         Settings settings = Renderer.getRenderer().getSettings();
@@ -202,7 +269,7 @@ public final class LWJGL3Window implements Window {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
         long monitor = MemoryUtil.NULL;
-        if (fullscreen) {
+        if (fullscreen && !isMac) {
             monitor = glfwGetPrimaryMonitor();
         }
 
@@ -215,8 +282,11 @@ public final class LWJGL3Window implements Window {
                 (int) (SerializableDisplayMode.MIN_HEIGHT / scale),
                 GLFW_DONT_CARE, GLFW_DONT_CARE);
 
-        // Center the window if not fullscreen
-        if (!fullscreen) {
+        // Center the window if not fullscreen, or position at (0,0) if borderless fullscreen on Mac
+        if (fullscreen && isMac) {
+            glfwSetWindowPos(windowHandle, 0, 0);
+            setMacPresentationOptions(10);
+        } else if (!fullscreen) {
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             if (vidmode != null) {
                 glfwSetWindowPos(
@@ -258,6 +328,9 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public void close() {
+        if (isMac) {
+            setMacPresentationOptions(0);
+        }
         if (windowHandle != MemoryUtil.NULL) {
             Callbacks.glfwFreeCallbacks(windowHandle);
             glfwDestroyWindow(windowHandle);
@@ -306,6 +379,9 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public boolean isActive() {
+        if (isMac) {
+            return isMacAppActive() || glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE;
+        }
         return glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE;
     }
 
@@ -578,7 +654,7 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public boolean isFullscreen() {
-        return windowHandle != MemoryUtil.NULL && glfwGetWindowMonitor(windowHandle) != MemoryUtil.NULL;
+        return isFullscreen;
     }
 
     private long getCurrentMonitor() {
@@ -627,5 +703,18 @@ public final class LWJGL3Window implements Window {
     @Override
     public float getPixelDensity() {
         return getWindowContentScale().x;
+    }
+
+    private void setMacPresentationOptions(int options) {
+        if (isMac) {
+            try {
+                initMacFFI();
+                if (macInitialized && nsApp != MemoryUtil.NULL) {
+                    JNI.invokePPPV(nsApp, setPresentationOptionsSel, (long) options, objc_msgSend);
+                }
+            } catch (Throwable t) {
+                logger.log(Level.WARNING, "Failed to set macOS presentation options", t);
+            }
+        }
     }
 }

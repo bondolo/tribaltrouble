@@ -21,6 +21,7 @@ import java.util.Set;
  * Manages mouse/pointer input and hardware cursor state.
  */
 public final class PointerInput {
+    private static final boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
     private final Set<@NonNull MouseButton> buttons = EnumSet.noneOf(MouseButton.class);
     private short last_x;
     private short last_y;
@@ -41,6 +42,10 @@ public final class PointerInput {
     }
 
     public void loadCursors(float scale) {
+        if (IS_MAC) {
+            // macos will scale the cursor in retina mode so reuse the scale.
+            scale /= 2.0f;
+        }
         this.current_scale = scale;
         debug_cursor = Resources.findResource(new CursorFile("/textures/gui/pointer_clientload_32_8.png", 2, 2, scale));
         cursors.put(CursorType.NORMAL, Resources.findResource(new CursorFile("/textures/gui/pointer_32_8.png", 2, 2,

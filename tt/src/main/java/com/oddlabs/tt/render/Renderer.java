@@ -13,6 +13,10 @@ import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.MenuCamera;
 import com.oddlabs.tt.delegate.MainMenu;
+import com.oddlabs.tt.camera.StaticCamera;
+import com.oddlabs.tt.delegate.InGameDelegate;
+import com.oddlabs.tt.delegate.InGameMainMenu;
+import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.form.MessageForm;
 import com.oddlabs.tt.form.ProgressForm;
@@ -614,6 +618,8 @@ public final class Renderer implements AutoCloseable {
         Runnable load_task = setupMainMenu(network, gui, true);
 
         boolean reset_keyboard = false;
+        boolean wasActive = window.isActive();
+        boolean autoPaused = false;
         try {
             while (!finished) {
                 long frameStart = System.nanoTime();
@@ -628,6 +634,39 @@ public final class Renderer implements AutoCloseable {
                 }
                 long t1 = System.nanoTime();
                 totalPollEventsTime += (t1 - t0);
+
+                if (isActive && !wasActive) {
+                    if (window.isIconified()) {
+                        window.restore();
+                    }
+                    if (!window.isVisible()) {
+                        window.show();
+                    }
+                    window.focus();
+                    if (autoPaused) {
+                        var guiRoot = gui.getGUIRoot();
+                        if (guiRoot.getDelegate() instanceof InGameMainMenu igmm) {
+                            igmm.pop();
+                        }
+                        autoPaused = false;
+                    }
+                } else if (!isActive && wasActive) {
+                    if (getSettings().fullscreen) {
+                        window.minimize();
+                    }
+                    var guiRoot = gui.getGUIRoot();
+                    if (guiRoot.getDelegate() instanceof InGameDelegate igd) {
+                        WorldViewer viewer = igd.getViewer();
+                        if (!viewer.isPaused()) {
+                            guiRoot.pushDelegate(new InGameMainMenu(viewer, new StaticCamera(igd.getCamera()
+                                    .getState())));
+                            autoPaused = true;
+                            display(gui);
+                            window.update();
+                        }
+                    }
+                }
+                wasActive = isActive;
 
                 if (first_frame || (window.isVisible() && isActive)) {
                     long t2 = System.nanoTime();
