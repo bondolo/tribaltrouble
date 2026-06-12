@@ -174,7 +174,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         // Sample detail map and detail normal map using triplanar mapping for steep slopes (cliffs)
                         // This handles high-frequency noise tiling which is too dense to bake into the colormap.
-                        vec3 blendWeights = pow(abs(worldNormalGeom), vec3(4.0));
+                        vec3 blendWeights = pow(abs(worldNormalGeom), vec3(8.0));
                         blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
 
                         if (worldNormalGeom.z > 0.98) {
