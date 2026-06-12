@@ -178,24 +178,23 @@ public final class PostProcessShader extends ShaderProgram {
 
                         // Team Stencil Overlay (Linear Space)
                         if (u_teamStencil) {
-                            // Team objects write alpha=1.0. Clear colour is alpha=0.0.
-                            // We check if it's a team unit (alpha > 0.9).
-                            bool isUnit = mask.a > 0.9;
+                            // GUI pixels use alpha=0.5 in the mask buffer.
+                            bool isGui = abs(mask.a - 0.5) < 0.1;
 
-                            if (isUnit) {
-                                if (dot(mask.rgb, vec3(1.0)) > 0.01) {
+                            if (!isGui) {
+                                // Team objects write alpha=1.0. Clear colour is alpha=0.0.
+                                if (mask.a > 0.9 && dot(mask.rgb, vec3(1.0)) > 0.01) {
                                     finalColor = mix(finalColor, mask.rgb, 0.2);
                                 } else {
-                                    vec2 texelSize = 1.0 / textureSize(u_maskTexture, 0);
+                                    vec2 texelSize = 1.0 / vec2(textureSize(u_maskTexture, 0));
                                     int maskCount = 0;
                                     vec3 accumulatedColor = vec3(0.0);
 
-                                    for (int y = -3; y <= 3; y++) {
-                                        for (int x = -3; x <= 3; x++) {
+                                    for (int y = -4; y <= 4; y++) {
+                                        for (int x = -4; x <= 4; x++) {
                                             if (x == 0 && y == 0) continue;
-                                            if (abs(x) + abs(y) > 4) continue;
 
-                                            vec4 neighbor = texture(u_maskTexture, v_texCoord + vec2(float(x) * texelSize.x, float(y) * texelSize.y));
+                                            vec4 neighbor = texture(u_maskTexture, v_texCoord + vec2(float(x), float(y)) * texelSize);
                                             if (dot(neighbor.rgb, vec3(1.0)) > 0.01) {
                                                 maskCount++;
                                                 accumulatedColor += neighbor.rgb;
@@ -203,7 +202,7 @@ public final class PostProcessShader extends ShaderProgram {
                                         }
                                     }
 
-                                    if (maskCount > 4) {
+                                    if (maskCount > 0) {
                                         finalColor = accumulatedColor / float(maskCount);
                                     }
                                 }
