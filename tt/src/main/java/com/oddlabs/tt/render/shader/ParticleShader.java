@@ -95,6 +95,13 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     out vec3 v_viewPos;
                     flat out int v_texSlot;
 
+                    const vec2 OFFSETS[4] = vec2[](
+                        vec2(-1.0, -1.0), // Bottom-left
+                        vec2(1.0, -1.0),  // Bottom-right
+                        vec2(-1.0, 1.0),  // Top-left
+                        vec2(1.0, 1.0)    // Top-right
+                    );
+
                     void main() {
                         vec3 center = in_CenterPosition;
                         vec3 radius = in_Size;
@@ -111,24 +118,16 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         vec4 viewCenter = mv * vec4(center, 1.0);
                         v_fogDist = length(viewCenter.xyz);
 
-                        vec3 p;
-                        if (gl_VertexID == 0) {
-                            // Bottom-left
-                            p = center - scaledRight - scaledUp;
-                            v_texCoord = in_UvCoords1.xy;
-                        } else if (gl_VertexID == 1) {
-                            // Bottom-right
-                            p = center + scaledRight - scaledUp;
-                            v_texCoord = in_UvCoords1.zw;
-                        } else if (gl_VertexID == 2) {
-                            // Top-left
-                            p = center - scaledRight + scaledUp;
-                            v_texCoord = in_UvCoords2.zw;
-                        } else {
-                            // Top-right
-                            p = center + scaledRight + scaledUp;
-                            v_texCoord = in_UvCoords2.xy;
-                        }
+                        vec2 uv_coords[4] = vec2[](
+                            in_UvCoords1.xy, // Bottom-left
+                            in_UvCoords1.zw, // Bottom-right
+                            in_UvCoords2.zw, // Top-left
+                            in_UvCoords2.xy  // Top-right
+                        );
+
+                        vec2 offset = OFFSETS[gl_VertexID];
+                        vec3 p = center + (scaledRight * offset.x) + (scaledUp * offset.y);
+                        v_texCoord = uv_coords[gl_VertexID];
 
                         vec4 viewPosition = mv * vec4(p, 1.0);
                         v_viewPos = viewPosition.xyz;
