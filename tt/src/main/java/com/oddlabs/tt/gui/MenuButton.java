@@ -46,10 +46,12 @@ public final class MenuButton extends ButtonObject {
         if (isActive()) {
             c = color_active;
             scaleHovered(renderer);
-        } else c = isDisabled() ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f) : color_normal;
+        } else c = isDisabled()
+                   ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f)
+                   : color_normal;
 
-        TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f, Float.NEGATIVE_INFINITY,
-                Float.POSITIVE_INFINITY, c);
+        TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f,
+                Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, c);
         renderer.getMatrixStack().pop();
     }
 

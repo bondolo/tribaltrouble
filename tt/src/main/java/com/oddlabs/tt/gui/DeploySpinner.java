@@ -4,10 +4,13 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployContainer;
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.SupplyContainer;
+import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.player.PlayerInterface;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 public final class DeploySpinner extends IconSpinner {
     private final @NonNull PlayerInterface player_interface;
@@ -18,9 +21,10 @@ public final class DeploySpinner extends IconSpinner {
     private int order_size = 0;
 
     public DeploySpinner(@NonNull WorldViewer viewer, @NonNull PlayerInterface player_interface,
-            @NonNull ModeIconQuads icon_quad, @NonNull String tool_tip, @NonNull IconQuad @Nullable [] tool_tip_icons,
-            @NonNull String shortcut_key) {
-        super(viewer, icon_quad, tool_tip, tool_tip_icons, shortcut_key);
+            @NonNull ModeIconQuads icon_quad, @NonNull String tool_tip, @Nullable List<
+                    @NonNull IconQuad> tool_tip_icons,
+            @NonNull GameAction action, @NonNull GameAction dec_action) {
+        super(viewer, icon_quad, tool_tip, tool_tip_icons, action, dec_action);
         this.player_interface = player_interface;
     }
 

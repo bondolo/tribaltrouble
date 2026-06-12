@@ -16,7 +16,6 @@ import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.util.GLUtils;
-import com.oddlabs.tt.util.ToolTip;
 import com.oddlabs.tt.util.Utils;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -406,8 +405,8 @@ public final class GUIRoot extends GUIObject {
         if (target != null && target != current_gui_object) {
             current_gui_object.mouseExitedAll();
             tool_tip_timer.resetTime();
-            boolean old_tip = current_gui_object instanceof ToolTip;
-            boolean new_tip = target instanceof ToolTip;
+            boolean old_tip = current_gui_object.hasToolTip();
+            boolean new_tip = target.hasToolTip();
             if (!old_tip && new_tip) {
                 tool_tip_timer.start();
                 render_tool_tip = false;
@@ -494,7 +493,8 @@ public final class GUIRoot extends GUIObject {
     }
 
     private @Nullable ToolTip getToolTip() {
-        return render_tool_tip && getCurrentGUIObject() instanceof ToolTip tip ? tip : null;
+        GUIObject obj = getCurrentGUIObject();
+        return render_tool_tip && obj.hasToolTip() ? obj : null;
     }
 
     private void renderToolTip(@NonNull GUIRenderer renderer, @NonNull ToolTip hovered) {

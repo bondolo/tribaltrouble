@@ -14,6 +14,7 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.guievent.RowListener;
 import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
@@ -23,6 +24,7 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
@@ -110,33 +112,21 @@ public class KeyBindingPanel extends Panel {
             }
 
             var bindings = Renderer.getLocalInput().getInputManager().getBindings(action);
-            Label l2;
+            Label bindingLabel;
 
             if (bindings.isEmpty()) {
-                l2 = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), Skin.getSkin()
+                bindingLabel = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), Skin.getSkin()
                         .getMultiColumnComboBoxData().font(), COL_BINDINGS_WIDTH);
             } else {
-                boolean isMac = System.getProperty("os.name", "").toLowerCase().contains("mac");
-                String bindingStr = bindings.stream().map(b -> {
-                    String s = "";
-                    if (isMac) {
-                        if (b.control()) s = s + "⌃";
-                        if (b.alt()) s = s + "⌥";
-                        if (b.shift()) s = s + "⇧";
-                        if (b.meta()) s = s + "⌘";
-                    } else {
-                        if (b.control()) s = s + "Ctrl+";
-                        if (b.alt()) s = s + "Alt+";
-                        if (b.shift()) s = s + "Shift+";
-                        if (b.meta()) s = s + "Meta+";
-                    }
-                    return s + b.key().getDisplayName();
-                }).collect(Collectors.joining(", "));
-                l2 = new Label(bindingStr, Skin.getSkin().getMultiColumnComboBoxData().font());
+                var desc = bindings.stream()
+                        .map(InputBinding::toString)
+                        .collect(Collectors.joining(", "));
+                bindingLabel = new Label(desc, Skin.getSkin().getMultiColumnComboBoxData().font());
             }
 
-            Label l1 = new SortedLabel(name, action.ordinal(), Skin.getSkin().getMultiColumnComboBoxData().font());
-            list_box.addRow(new Row<>(new Label[]{l1, l2}, action));
+            Label actionLabel = new SortedLabel(name, action.ordinal(), Skin.getSkin().getMultiColumnComboBoxData()
+                    .font());
+            list_box.addRow(new Row<>(List.of(actionLabel, bindingLabel), action));
         }
     }
 

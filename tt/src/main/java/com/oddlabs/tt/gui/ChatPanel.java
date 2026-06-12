@@ -134,7 +134,7 @@ public class ChatPanel extends Panel implements ChatListener {
                         + Skin.getSkin().getMultiColumnComboBoxData().box().getRightOffset());
                 Label label = new Label(user.getNick(), Skin.getSkin().getMultiColumnComboBoxData().font(),
                         label_width);
-                Row<ChatRoomUser, Label> row = new Row<>(new Label[]{label}, user);
+                Row<ChatRoomUser, Label> row = new Row<>(List.of(label), user);
                 if (!user.isPlaying()) {
                     lobby_users_list_box.addRow(row);
                 } else {

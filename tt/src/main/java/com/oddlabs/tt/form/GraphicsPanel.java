@@ -168,7 +168,7 @@ public class GraphicsPanel extends Panel {
             var m = modes.get(i);
             String mode_string = AbstractOptionsMenu.i18n("mode", m.getWidth(), m.getHeight(), m.getFrequency());
             Label label = new SortedLabel(mode_string, i, Skin.getSkin().getMultiColumnComboBoxData().font());
-            var row = new Row<>(new Label[]{label}, m);
+            var row = new Row<>(List.of(label), m);
             list_box.addRow(row);
             if (m.isEquivalent(currentMode)) {
                 currentRowToSelect = row;

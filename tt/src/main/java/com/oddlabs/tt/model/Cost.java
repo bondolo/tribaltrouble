@@ -5,6 +5,7 @@ import com.oddlabs.tt.gui.IconQuad;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -19,10 +20,10 @@ public record Cost(@NonNull Map<@NonNull SupplyType, @NonNull Integer> costs) {
         return costs.getOrDefault(supplyType, 0);
     }
 
-    public @NonNull IconQuad @NonNull [] toIconArray() {
+    public List<@NonNull IconQuad> iconList() {
         return costs.entrySet().stream()
                 .flatMap(entry -> Stream.generate(() -> getIconQuad(entry.getKey())).limit(entry.getValue()))
-                .toArray(IconQuad[]::new);
+                .toList();
     }
 
     private @NonNull IconQuad getIconQuad(@NonNull SupplyType supply_type) {

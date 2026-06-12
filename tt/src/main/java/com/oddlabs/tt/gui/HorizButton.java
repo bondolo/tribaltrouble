@@ -8,10 +8,9 @@ public class HorizButton extends ButtonObject {
     public HorizButton(@NonNull String caption, int width) {
         super(Skin.getSkin().getButtonFont());
         setDim(width, Skin.getSkin().getHorizButtonPressed().getHeight());
-        Font font = Skin.getSkin().getButtonFont();
-        Label label = new Label(caption, font);
-        label.setPos((width - label.getWidth()) / 2, (Skin.getSkin().getHorizButtonPressed().getHeight() - font
-                .getHeight()) / 2);
+        Label label = new Label(caption, getFont());
+        label.setPos((width - label.getWidth()) / 2,
+                (Skin.getSkin().getHorizButtonPressed().getHeight() - getFont().getHeight()) / 2);
         addChild(label);
     }
 
@@ -21,10 +20,10 @@ public class HorizButton extends ButtonObject {
                 ? ModeIconQuads.Mode.DISABLED
                 : isPressed() && isHovered()
                         ? ModeIconQuads.Mode.ACTIVE
-                : isActive()
-                        ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
+                        : isActive()
+                            ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
 
-        Horizontal horizButton = skinMode == ModeIconQuads.Mode.ACTIVE && isPressed() && isHovered()
+        var horizButton = skinMode == ModeIconQuads.Mode.ACTIVE && isPressed() && isHovered()
                 ? Skin.getSkin().getHorizButtonPressed()
                 : Skin.getSkin().getHorizButtonUnpressed();
 
