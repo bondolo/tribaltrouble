@@ -2,12 +2,17 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.render.state.RenderContext;
+import com.oddlabs.tt.resource.GLImage;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.util.Target;
+import com.oddlabs.util.DXTImage;
 import org.jspecify.annotations.NonNull;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,11 +36,52 @@ public final class RenderQueues implements AutoCloseable {
     private final Map<@NonNull Supplier<@NonNull Texture @NonNull []>, @NonNull ShadowListKey> desc_to_shadow_key
             = new HashMap<>();
     private final List<@NonNull Texture> texture_lookup = new ArrayList<>();
+    // Shared 128x128x32 array for particle effects
+    private final TextureArray effect_texture_array = new TextureArray(128, 128, 32,
+            Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE);
     private final InstancedSpriteRenderer spriteRenderer = new InstancedSpriteRenderer();
     private final DecalRenderer decalRenderer = new DecalRenderer();
     private final EmitterRenderer emitterRenderer = new EmitterRenderer();
 
     public RenderQueues() {
+    }
+
+    public @NonNull TextureArray getEffectTextureArray() {
+        return effect_texture_array;
+    }
+
+    public @NonNull TextureKey registerEffectTexture(@NonNull Supplier<Texture[]> desc, int index, int layer) {
+        TextureKey key = registerTexture(desc, index);
+        Texture texture = getTexture(key);
+        texture.setLayer(layer);
+
+        GLImage[] mipmaps = texture.getSourceMipmaps();
+        DXTImage dxt = texture.getSourceDXT();
+        if (mipmaps != null) {
+            effect_texture_array.uploadLayer(layer, mipmaps, Globals.COMPRESSED_RGBA_FORMAT);
+            texture.setSourceMipmaps(null);
+        } else if (dxt != null) {
+            effect_texture_array.uploadLayer(layer, dxt, Globals.COMPRESSED_RGBA_FORMAT);
+            texture.setSourceDXT(null);
+        }
+        return key;
+    }
+
+    public @NonNull TextureKey registerEffectTexture(@NonNull Supplier<Texture> desc, int layer) {
+        TextureKey key = registerTexture(desc);
+        Texture texture = getTexture(key);
+        texture.setLayer(layer);
+
+        GLImage[] mipmaps = texture.getSourceMipmaps();
+        DXTImage dxt = texture.getSourceDXT();
+        if (mipmaps != null) {
+            effect_texture_array.uploadLayer(layer, mipmaps, Globals.COMPRESSED_RGBA_FORMAT);
+            texture.setSourceMipmaps(null);
+        } else if (dxt != null) {
+            effect_texture_array.uploadLayer(layer, dxt, Globals.COMPRESSED_RGBA_FORMAT);
+            texture.setSourceDXT(null);
+        }
+        return key;
     }
 
     public @NonNull EmitterRenderer getEmitterRenderer() {

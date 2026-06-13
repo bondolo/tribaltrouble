@@ -8,11 +8,10 @@ import org.lwjgl.opengl.GL11;
  * Billboard expansion is performed in the vertex shader using gl_VertexID.
  */
 public final class ParticleShader extends ShaderProgram implements FogShader {
-
     public interface Uniforms {
         String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String TEXTURES = "u_textures";
+        String TEXTURE_ARRAY = "u_textureArray";
         String DEPTH_MAP = "u_depthMap";
         String IS_ADDITIVE = "u_isAdditive";
         String FOG_ENABLED = "u_fogEnabled";
@@ -74,12 +73,9 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
         }
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ +
+    private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             """
-
                     layout(location = 0) in vec3 in_CenterPosition;
                     layout(location = 1) in vec3 in_Size;
                     layout(location = 3) in vec4 in_Color;
@@ -89,11 +85,13 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
 
                     uniform mat4 u_modelViewMatrix;
 
-                    out vec2 v_texCoord;
-                    out vec4 v_color;
-                    out float v_fogDist;
-                    out vec3 v_viewPos;
-                    flat out int v_texSlot;
+                    out VS_OUT {
+                        vec2 texCoord;
+                        vec4 color;
+                        float fogDist;
+                        vec3 viewPos;
+                        flat int texSlot;
+                    } vs_out;
 
                     const vec2 OFFSETS[4] = vec2[](
                         vec2(-1.0, -1.0), // Bottom-left
@@ -105,8 +103,8 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     void main() {
                         vec3 center = in_CenterPosition;
                         vec3 radius = in_Size;
-                        v_color = in_Color;
-                        v_texSlot = int(in_TextureSlot + 0.5);
+                        vs_out.color = in_Color;
+                        vs_out.texSlot = int(in_TextureSlot + 0.5);
 
                         mat4 mv = u_modelViewMatrix;
                         vec3 right = vec3(mv[0][0], mv[1][0], mv[2][0]);
@@ -116,7 +114,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         vec3 scaledUp = up * radius.y;
 
                         vec4 viewCenter = mv * vec4(center, 1.0);
-                        v_fogDist = length(viewCenter.xyz);
+                        vs_out.fogDist = length(viewCenter.xyz);
 
                         vec2 uv_coords[4] = vec2[](
                             in_UvCoords1.xy, // Bottom-left
@@ -127,32 +125,32 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
 
                         vec2 offset = OFFSETS[gl_VertexID];
                         vec3 p = center + (scaledRight * offset.x) + (scaledUp * offset.y);
-                        v_texCoord = uv_coords[gl_VertexID];
+                        vs_out.texCoord = uv_coords[gl_VertexID];
 
                         vec4 viewPosition = mv * vec4(p, 1.0);
-                        v_viewPos = viewPosition.xyz;
+                        vs_out.viewPos = viewPosition.xyz;
                         gl_Position = u_projectionMatrix * viewPosition;
                     }
                     """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             FOG_FUNCTION +
             """
-                    uniform sampler2D u_textures[14];
+                    uniform sampler2DArray u_textureArray;
                     uniform sampler2D u_depthMap;
                     uniform float u_isAdditive;
                     uniform int u_fogEnabled;
                     uniform vec2 u_nearFar;
                     uniform float u_softRange;
 
-                    in vec2 v_texCoord;
-                    in vec4 v_color;
-                    in float v_fogDist;
-                    in vec3 v_viewPos;
-                    flat in int v_texSlot;
+                    in VS_OUT {
+                        vec2 texCoord;
+                        vec4 color;
+                        float fogDist;
+                        vec3 viewPos;
+                        flat int texSlot;
+                    } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
 
@@ -162,12 +160,12 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     }
 
                     vec4 sampleParticle(vec2 uv) {
-                        return texture(u_textures[v_texSlot], uv);
+                        return texture(u_textureArray, vec3(uv, fs_in.texSlot));
                     }
 
                     void main() {
-                        vec4 texColor = sampleParticle(v_texCoord);
-                        vec4 finalColor = v_color * texColor;
+                        vec4 texColor = sampleParticle(fs_in.texCoord);
+                        vec4 finalColor = fs_in.color * texColor;
 
                         if (finalColor.a <= 0.0) {
                             discard;
@@ -177,14 +175,14 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                         if (u_softRange > 0.0) {
                             vec2 screenUV = gl_FragCoord.xy / textureSize(u_depthMap, 0).xy;
                             float sceneDepth = getLinearDepth(texture(u_depthMap, screenUV).r);
-                            float particleDepth = -v_viewPos.z; // view-space Z is negative
+                            float particleDepth = -fs_in.viewPos.z; // view-space Z is negative
                             float depthDiff = sceneDepth - particleDepth;
                             finalColor.a *= clamp(depthDiff / u_softRange, 0.0, 1.0);
                         }
 
                         float fogFactor = 1.0;
                         if (u_fogEnabled != 0) {
-                            fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                            fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
                         }
                         vec3 foggedColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
                         if (u_isAdditive > 0.5) {

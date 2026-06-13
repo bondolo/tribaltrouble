@@ -64,9 +64,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
         }
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ +
+    private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             """
                     layout(location = 0) in vec3 in_Position;
@@ -74,20 +72,20 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
 
                     uniform mat4 u_modelViewMatrix;
 
-                    out vec2 v_texCoord;
-                    out float v_fogDist;
+                    out VS_OUT {
+                        vec2 texCoord;
+                        float fogDist;
+                    } vs_out;
 
                     void main() {
                         vec4 viewPos = u_modelViewMatrix * vec4(in_Position, 1.0);
                         gl_Position = u_projectionMatrix * viewPos;
-                        v_texCoord = in_TexCoord;
-                        v_fogDist = length(viewPos.xyz);
+                        vs_out.texCoord = in_TexCoord;
+                        vs_out.fogDist = length(viewPos.xyz);
                     }
                     """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             FOG_FUNCTION +
             """
@@ -97,8 +95,10 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                     uniform float u_expansionSpeed;
                     uniform vec3 u_color;
 
-                    in vec2 v_texCoord;
-                    in float v_fogDist;
+                    in VS_OUT {
+                        vec2 texCoord;
+                        float fogDist;
+                    } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
 
@@ -109,7 +109,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
 
                     void main() {
                         // Calculate distance from center in UV space (0.0 to 0.5) and scale to world space
-                        float dist_uv = distance(v_texCoord, vec2(0.5));
+                        float dist_uv = distance(fs_in.texCoord, vec2(0.5));
                         float dist = dist_uv * u_maxRadius * 2.0;
 
                         float totalIntensity = 0.0;
@@ -147,7 +147,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                         }
 
                         // Organic noise/turbulence using the noise texture
-                        vec2 noiseCoord = v_texCoord * 2.0 + vec2(u_time * 0.2, u_time * -0.1);
+                        vec2 noiseCoord = fs_in.texCoord * 2.0 + vec2(u_time * 0.2, u_time * -0.1);
                         float noise = texture(u_texture0, noiseCoord).r;
                         totalIntensity *= (0.5 + 0.5 * noise);
 
@@ -161,7 +161,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                         vec3 finalColor = u_color * totalIntensity;
 
                         // Apply fog
-                        float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                        float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
                         finalColor *= fogFactor;
 
                         // Additive blending, alpha 1.0

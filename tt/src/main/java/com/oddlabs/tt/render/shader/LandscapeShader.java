@@ -30,47 +30,47 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
         String INSTANCE_PATCH_OFFSET = "in_InstancePatchOffset";
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ + GLOBAL_STATE_BLOCK + """
-            layout(location = 0) in vec2 in_Position;
-            layout(location = 4) in vec3 in_InstancePatchOffset; // xy = offset, z = wave scale
+    private static final String VERTEX_SHADER = SHADER_HEADER +
+            GLOBAL_STATE_BLOCK +
+            """
+                    layout(location = 0) in vec2 in_Position;
+                    layout(location = 4) in vec3 in_InstancePatchOffset; // xy = offset, z = wave scale
 
-            uniform float u_WorldSize;
-            uniform float u_DetailScale;
-            uniform sampler2D u_HeightMap;
+                    uniform float u_WorldSize;
+                    uniform float u_DetailScale;
+                    uniform sampler2D u_HeightMap;
 
-            out vec2 v_texCoord0;
-            out vec2 v_texCoordColormap;
-            out vec2 v_texCoord1;
-            out float v_fogDist;
-            out vec3 v_viewPosition;
-            out float v_height;
-            out float v_waveScale;
+                    out VS_OUT {
+                        vec2 texCoord0;
+                        vec2 texCoordColormap;
+                        vec2 texCoord1;
+                        float fogDist;
+                        vec3 viewPosition;
+                        float height;
+                        float waveScale;
+                    } vs_out;
 
-            void main() {
-                vec2 worldPos = in_InstancePatchOffset.xy + in_Position;
-                // Add half-texel offset to align vertex-centered heightmap (1 grid unit = 2 meters)
-                vec2 uv = (worldPos + 1.0) / u_WorldSize;
-                float h = texture(u_HeightMap, uv).r;
+                    void main() {
+                        vec2 worldPos = in_InstancePatchOffset.xy + in_Position;
+                        // Add half-texel offset to align vertex-centered heightmap (1 grid unit = 2 meters)
+                        vec2 uv = (worldPos + 1.0) / u_WorldSize;
+                        float h = texture(u_HeightMap, uv).r;
 
-                vec4 worldPosition4 = vec4(worldPos.x, worldPos.y, h, 1.0);
-                vec4 viewPosition = u_viewMatrix * worldPosition4;
-                gl_Position = u_projectionMatrix * viewPosition;
+                        vec4 worldPosition4 = vec4(worldPos.x, worldPos.y, h, 1.0);
+                        vec4 viewPosition = u_viewMatrix * worldPosition4;
+                        gl_Position = u_projectionMatrix * viewPosition;
 
-                v_texCoord0 = uv;
-                v_texCoordColormap = worldPos / u_WorldSize;
-                v_texCoord1 = worldPos * u_DetailScale;
-                v_fogDist = length(viewPosition.xyz);
-                v_viewPosition = viewPosition.xyz;
-                v_height = h;
-                v_waveScale = in_InstancePatchOffset.z;
-            }
-            """;
+                        vs_out.texCoord0 = uv;
+                        vs_out.texCoordColormap = worldPos / u_WorldSize;
+                        vs_out.texCoord1 = worldPos * u_DetailScale;
+                        vs_out.fogDist = length(viewPosition.xyz);
+                        vs_out.viewPosition = viewPosition.xyz;
+                        vs_out.height = h;
+                        vs_out.waveScale = in_InstancePatchOffset.z;
+                    }
+                    """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             LIGHTING_CONSTANTS +
             FOG_FUNCTION +
@@ -81,6 +81,8 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     uniform sampler2D u_DetailNormalMap;
                     uniform sampler2D u_HeightMap;
                     uniform vec3 u_SeaBottomColor;
+                    uniform float u_WorldSize;
+                    uniform float u_DetailScale;
 
                     // Wave uniforms for wetness calculation
                     uniform float u_time;
@@ -89,16 +91,15 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     uniform float u_waveSteepness[3];
                     uniform vec2 u_waveDir[3];
                     uniform float u_waveLength[3];
-                    uniform float u_WorldSize;
-                    uniform float u_DetailScale;
-
-                    in vec2 v_texCoord0;
-                    in vec2 v_texCoordColormap;
-                    in vec2 v_texCoord1;
-                    in float v_fogDist;
-                    in vec3 v_viewPosition;
-                    in float v_height;
-                    in float v_waveScale;
+                    in VS_OUT {
+                        vec2 texCoord0;
+                        vec2 texCoordColormap;
+                        vec2 texCoord1;
+                        float fogDist;
+                        vec3 viewPosition;
+                        float height;
+                        float waveScale;
+                    } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
 
@@ -120,21 +121,21 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     }
 
                     void main() {
-                        vec4 diffuseColor = texture(u_DiffuseMap, v_texCoordColormap);
-                        vec4 normalMapVal = texture(u_NormalMap, v_texCoordColormap);
+                        vec4 diffuseColor = texture(u_DiffuseMap, fs_in.texCoordColormap);
+                        vec4 normalMapVal = texture(u_NormalMap, fs_in.texCoordColormap);
                         vec4 detailColor;
                         vec4 detailNormalColor;
 
                         // Reconstruct world position and calculate dynamic wetness factor
-                        vec2 worldPos = v_texCoordColormap * u_WorldSize;
-                        float waveHeight = getWaveHeight(worldPos) * v_waveScale;
+                        vec2 worldPos = fs_in.texCoordColormap * u_WorldSize;
+                        float waveHeight = getWaveHeight(worldPos) * fs_in.waveScale;
                         float u_seaLevel = u_fogParams.w;
                         float waterHeight = u_seaLevel + waveHeight;
-                        float depth = waterHeight - v_height;
+                        float depth = waterHeight - fs_in.height;
                         float wetness = clamp((depth + 0.05) / 0.20, 0.0, 1.0);
 
                         // Calculate underwater depth relative to sea level (heights above sea level have negative depth)
-                        float depthStatic = u_seaLevel - v_height;
+                        float depthStatic = u_seaLevel - fs_in.height;
                         float normalMapStrength;
                         if (depthStatic < 0.0) {
                             float t = clamp((depthStatic + 0.25) / 0.25, 0.0, 1.0);
@@ -145,8 +146,8 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         }
 
                         // Calculate edge blend factor (ranges from 0.0 at the edge to 1.0 at 2% inside the world)
-                        float distToEdgeX = min(v_texCoordColormap.x, 1.0 - v_texCoordColormap.x);
-                        float distToEdgeY = min(v_texCoordColormap.y, 1.0 - v_texCoordColormap.y);
+                        float distToEdgeX = min(fs_in.texCoordColormap.x, 1.0 - fs_in.texCoordColormap.x);
+                        float distToEdgeY = min(fs_in.texCoordColormap.y, 1.0 - fs_in.texCoordColormap.y);
                         float distToEdge = min(distToEdgeX, distToEdgeY);
                         float edgeBlend = smoothstep(0.0, 0.02, distToEdge);
 
@@ -155,10 +156,10 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         normalMapVal.a = mix(0.0, normalMapVal.a, edgeBlend);
 
                         // Compute view-space normal from heightmap slope
-                        float h_plus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(1, 0)).r;
-                        float h_minus_x = textureOffset(u_HeightMap, v_texCoord0, ivec2(-1, 0)).r;
-                        float h_plus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, 1)).r;
-                        float h_minus_y = textureOffset(u_HeightMap, v_texCoord0, ivec2(0, -1)).r;
+                        float h_plus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(1, 0)).r;
+                        float h_minus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(-1, 0)).r;
+                        float h_plus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, 1)).r;
+                        float h_minus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, -1)).r;
 
                         // Calculate mathematically accurate normal for triplanar mapping and specular
                         vec3 worldNormalGeom = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
@@ -178,21 +179,21 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
 
                         if (worldNormalGeom.z > 0.98) {
-                            detailColor = texture(u_DetailMap, v_texCoord1);
-                            detailNormalColor.rgb = texture(u_DetailNormalMap, v_texCoord1).rgb * 2.0 - 1.0;
+                            detailColor = texture(u_DetailMap, fs_in.texCoord1);
+                            detailNormalColor.rgb = texture(u_DetailNormalMap, fs_in.texCoord1).rgb * 2.0 - 1.0;
                         } else {
                             // Uniform triplanar coordinates (tile every 16 meters)
-                            vec3 coord = vec3(worldPos, v_height) / 16.0;
+                            vec3 coord = vec3(worldPos, fs_in.height) / 16.0;
 
                             // Calculate continuous derivatives from top-down UVs to prevent seams at projection boundaries
-                            vec2 ddx = dFdx(v_texCoord1);
-                            vec2 ddy = dFdy(v_texCoord1);
+                            vec2 ddx = dFdx(fs_in.texCoord1);
+                            vec2 ddy = dFdy(fs_in.texCoord1);
 
-                            detailColor = textureGrad(u_DetailMap, v_texCoord1, ddx, ddy) * blendWeights.z +
+                            detailColor = textureGrad(u_DetailMap, fs_in.texCoord1, ddx, ddy) * blendWeights.z +
                                           textureGrad(u_DetailMap, coord.yz, ddx, ddy) * blendWeights.x +
                                           textureGrad(u_DetailMap, coord.xz, ddx, ddy) * blendWeights.y;
 
-                            vec3 nXY = textureGrad(u_DetailNormalMap, v_texCoord1, ddx, ddy).rgb * 2.0 - 1.0;
+                            vec3 nXY = textureGrad(u_DetailNormalMap, fs_in.texCoord1, ddx, ddy).rgb * 2.0 - 1.0;
                             vec3 nYZ = textureGrad(u_DetailNormalMap, coord.yz, ddx, ddy).rgb * 2.0 - 1.0;
                             vec3 nXZ = textureGrad(u_DetailNormalMap, coord.xz, ddx, ddy).rgb * 2.0 - 1.0;
 
@@ -231,7 +232,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec3 normal = normalize(baseNormal + vDetailNormal * detailNormalStrength);
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
-                        vec3 viewDir = normalize(-v_viewPosition);
+                        vec3 viewDir = normalize(-fs_in.viewPosition);
                         vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
                         vec3 halfDir = normalize(lightDir + viewDir);
 
@@ -259,7 +260,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec3 lightFactor = (ambient + diff * vec3(1.0) + rimLight) * exposure;
                         vec3 litColor = diffuseColor.rgb * lightFactor + specular * exposure;
 
-                        float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                        float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
                         vec3 finalColor = mix(u_fogColor.rgb, litColor, fogFactor);
                         out_FragColor = vec4(finalColor, diffuseColor.a);
                     }

@@ -110,9 +110,10 @@ public final class EmitterRenderer implements AutoCloseable {
 
             shader.setUniform(ParticleShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
-            int[] textureUnits = new int[14];
-            for (int i = 0; i < 14; i++) textureUnits[i] = i + 2; // Offset by 2 (0=UI/Misc, 1=DepthMap)
-            shader.setUniform(ParticleShader.Uniforms.TEXTURES, textureUnits);
+            // Bind global effect texture array to unit 2
+            context.setTexture(2, render_queues.getEffectTextureArray().getHandle(),
+                    render_queues.getEffectTextureArray().getTarget());
+            shader.setUniform(ParticleShader.Uniforms.TEXTURE_ARRAY, 2);
 
             context.setActiveTexture(1);
             context.setTexture(1, depthTexture.getHandle());
@@ -125,6 +126,7 @@ public final class EmitterRenderer implements AutoCloseable {
         } finally {
             vao.unbind();
             context.setTexture(1, 0);
+            context.setTexture(2, 0);
         }
     }
 

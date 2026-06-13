@@ -8,6 +8,13 @@ import org.jspecify.annotations.NonNull;
  * Base interface for OpenGL shaders.
  */
 public interface Shader {
+    // Standard Global Header
+    String SHADER_HEADER = """
+            #version 410 core
+            precision highp float;
+            precision highp int;
+            """;
+
     // Standard Attribute Locations
     int POSITION_LOC = 0;
     int NORMAL_LOC = 1;

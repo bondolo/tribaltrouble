@@ -38,8 +38,14 @@ public interface RenderContext {
 
     void setTexture(int unit, int textureHandle);
 
+    void setTexture(int unit, int textureHandle, int target);
+
     default void setTexture(int unit, @Nullable Texture texture) {
-        setTexture(unit, texture != null ? texture.getHandle() : 0);
+        if (texture != null) {
+            setTexture(unit, texture.getHandle(), texture.getTarget());
+        } else {
+            setTexture(unit, 0);
+        }
     }
 
     // Scissor / Viewport

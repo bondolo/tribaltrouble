@@ -62,9 +62,7 @@ public final class LightningShader extends ShaderProgram implements FogShader {
         }
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ +
+    private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             """
                     layout(location = 0) in vec3 in_Position;
@@ -86,9 +84,7 @@ public final class LightningShader extends ShaderProgram implements FogShader {
                     }
                     """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             FOG_FUNCTION +
             """

@@ -18,33 +18,31 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
         String POSITION = Shader.POSITION;
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ + GLOBAL_STATE_BLOCK + """
-            layout(location = 0) in vec3 in_Position;
+    private static final String VERTEX_SHADER = SHADER_HEADER +
+            GLOBAL_STATE_BLOCK +
+            """
+                    layout(location = 0) in vec3 in_Position;
 
-            uniform mat4 u_modelViewMatrix;
-            uniform float u_detailScale;
+                    uniform mat4 u_modelViewMatrix;
+                    uniform float u_detailScale;
 
-            out vec2 v_texCoordDetail;
-            out float v_fogDist;
-            out vec3 v_viewPosition;
-            out float v_height;
+                    out vec2 v_texCoordDetail;
+                    out float v_fogDist;
+                    out vec3 v_viewPosition;
+                    out float v_height;
 
-            void main() {
-                vec4 worldPosition = u_modelViewMatrix * vec4(in_Position, 1.0);
-                gl_Position = u_projectionMatrix * worldPosition;
+                    void main() {
+                        vec4 worldPosition = u_modelViewMatrix * vec4(in_Position, 1.0);
+                        gl_Position = u_projectionMatrix * worldPosition;
 
-                v_texCoordDetail = in_Position.xy * u_detailScale;
-                v_viewPosition = worldPosition.xyz;
-                v_fogDist = length(worldPosition.xyz);
-                v_height = in_Position.z;
-            }
-            """;
+                        v_texCoordDetail = in_Position.xy * u_detailScale;
+                        v_viewPosition = worldPosition.xyz;
+                        v_fogDist = length(worldPosition.xyz);
+                        v_height = in_Position.z;
+                    }
+                    """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             LIGHTING_CONSTANTS +
             FOG_FUNCTION +

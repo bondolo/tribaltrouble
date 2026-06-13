@@ -69,9 +69,7 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
         }
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ +
+    private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             LIGHTING_CONSTANTS +
             VERTEX_LIGHTING_FUNCTION +
@@ -107,9 +105,7 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
                     }
                     """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             FOG_FUNCTION +
             """

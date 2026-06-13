@@ -39,9 +39,7 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
         String INSTANCE_TWEEN = "in_Tween"; // Location 14
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ +
+    private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             """
                         layout(location = 2) in vec2 in_TexCoord;
@@ -58,13 +56,15 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
 
                         uniform samplerBuffer u_VertBuffer;
 
-                        out vec2 v_texCoord0;
-                        out vec4 v_color;
-                        out vec4 v_decalColor;
-                        out float v_fogDist;
-                        out vec3 v_viewPosition;
-                        out vec3 v_viewNormal;
-                        out vec3 v_worldNormal;
+                        out VS_OUT {
+                            vec2 texCoord0;
+                            vec4 color;
+                            vec4 decalColor;
+                            float fogDist;
+                            vec3 viewPosition;
+                            vec3 viewNormal;
+                            vec3 worldNormal;
+                        } vs_out;
 
                         void main() {
                             // Fetch vertex data for both frames
@@ -89,20 +89,18 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                             vec4 viewPosition = u_viewMatrix * worldPosition;
                             gl_Position = u_projectionMatrix * viewPosition;
 
-                            v_texCoord0 = in_TexCoord;
-                            v_color = in_InstanceColor;
-                            v_decalColor = in_InstanceDecalColor;
-                            v_fogDist = length(viewPosition.xyz);
+                            vs_out.texCoord0 = in_TexCoord;
+                            vs_out.color = in_InstanceColor;
+                            vs_out.decalColor = in_InstanceDecalColor;
+                            vs_out.fogDist = length(viewPosition.xyz);
 
-                            v_viewPosition = viewPosition.xyz;
-                            v_viewNormal = normalize((u_viewMatrix * in_InstanceModelMatrix * vec4(normal, 0.0)).xyz);
-                            v_worldNormal = normalize((in_InstanceModelMatrix * vec4(normal, 0.0)).xyz);
+                            vs_out.viewPosition = viewPosition.xyz;
+                            vs_out.viewNormal = normalize((u_viewMatrix * in_InstanceModelMatrix * vec4(normal, 0.0)).xyz);
+                            vs_out.worldNormal = normalize((in_InstanceModelMatrix * vec4(normal, 0.0)).xyz);
                         }
                     """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             LIGHTING_CONSTANTS +
             FOG_FUNCTION +
@@ -121,19 +119,21 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                     uniform float u_desaturate;
                     uniform float u_alphaTestValue;
 
-                    in vec2 v_texCoord0;
-                    in vec4 v_color; // Instance color
-                    in vec4 v_decalColor; // Instance decal color
-                    in float v_fogDist;
-                    in vec3 v_viewPosition;
-                    in vec3 v_viewNormal;
-                    in vec3 v_worldNormal;
+                    in VS_OUT {
+                        vec2 texCoord0;
+                        vec4 color;
+                        vec4 decalColor;
+                        float fogDist;
+                        vec3 viewPosition;
+                        vec3 viewNormal;
+                        vec3 worldNormal;
+                    } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
                     layout(location = 1) out vec4 out_MaskColor;
 
                     void main() {
-                        vec4 base = texture(u_texture0, v_texCoord0);
+                        vec4 base = texture(u_texture0, fs_in.texCoord0);
                         out_MaskColor = vec4(0.0);
 
                         if (u_desaturate > 0.0) {
@@ -146,42 +146,42 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                         if (u_replaceMode) {
                             finalColor = base;
                         } else if (u_modulateColor) {
-                            finalColor = v_color * base;
+                            finalColor = fs_in.color * base;
                         } else {
                             // Apply lighting
-                            vec3 normal = normalize(v_viewNormal);
+                            vec3 normal = normalize(fs_in.viewNormal);
                             float specularStrength = 0.0;
 
                             if (u_enableNormalMap) {
-                                vec4 normalMapVal = texture(u_normalMap, v_texCoord0);
-                                normal = perturbNormal(normal, normalize(v_viewPosition), v_texCoord0, normalMapVal.rgb);
+                                vec4 normalMapVal = texture(u_normalMap, fs_in.texCoord0);
+                                normal = perturbNormal(normal, normalize(fs_in.viewPosition), fs_in.texCoord0, normalMapVal.rgb);
                                 specularStrength = normalMapVal.a;
                             }
 
                             vec3 lightIntensity = vec3(1.0);
                             if (u_enableLighting) {
-                                lightIntensity = calculateLighting(normal, v_worldNormal, v_viewPosition, specularStrength);
+                                lightIntensity = calculateLighting(normal, fs_in.worldNormal, fs_in.viewPosition, specularStrength);
                             }
 
-                            // v_color is the instance color (e.g. material color)
-                            finalColor = vec4(v_color.rgb * base.rgb * lightIntensity, v_color.a * base.a);
+                            // fs_in.color is the instance color (e.g. material color)
+                            finalColor = vec4(fs_in.color.rgb * base.rgb * lightIntensity, fs_in.color.a * base.a);
 
                             if (u_enableTeamColor) {
-                                vec4 tex1 = texture(u_texture1, v_texCoord0);
+                                vec4 tex1 = texture(u_texture1, fs_in.texCoord0);
                                 // Mix decal color
-                                vec3 mixedColor = mix(finalColor.rgb, v_decalColor.rgb * lightIntensity, tex1.rgb);
+                                vec3 mixedColor = mix(finalColor.rgb, fs_in.decalColor.rgb * lightIntensity, tex1.rgb);
                                 finalColor.rgb = mixedColor;
 
                                 // Write to Mask Buffer (Team Color)
                                 if (base.a > 0.1) {
-                                    out_MaskColor = v_decalColor;
+                                    out_MaskColor = fs_in.decalColor;
                                 }
                             }
                         }
 
                         if (finalColor.a <= u_alphaTestValue) discard;
 
-                        float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
+                        float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
                         vec3 litColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
                         out_FragColor = vec4(litColor, finalColor.a);
                     }

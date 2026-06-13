@@ -32,9 +32,7 @@ public final class SkyShader extends ShaderProgram {
         String COLOR = Shader.COLOR;
     }
 
-    private static final String VERTEX_SHADER = """
-            #version 410 core
-            """ +
+    private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             """
                     layout(location = 0) in vec3 in_Position;
@@ -47,25 +45,25 @@ public final class SkyShader extends ShaderProgram {
                     uniform vec2 u_innerOffset;
                     uniform vec2 u_outerOffset;
 
-                    out vec2 v_texCoord0;
-                    out vec2 v_texCoord1;
-                    out vec4 v_color;
-                    out vec3 v_normal;
+                    out VS_OUT {
+                        vec2 texCoord0;
+                        vec2 texCoord1;
+                        vec4 color;
+                        vec3 normal;
+                    } vs_out;
 
                     void main() {
                         gl_Position = u_projectionMatrix * u_modelViewMatrix * vec4(in_Position, 1.0);
 
-                        v_normal = in_Normal;
+                        vs_out.normal = in_Normal;
 
-                        v_texCoord0 = in_TexCoord0 + u_innerOffset;
-                        v_texCoord1 = in_TexCoord1 + u_outerOffset;
-                        v_color = vec4(in_Color, 1.0);
+                        vs_out.texCoord0 = in_TexCoord0 + u_innerOffset;
+                        vs_out.texCoord1 = in_TexCoord1 + u_outerOffset;
+                        vs_out.color = vec4(in_Color, 1.0);
                     }
                     """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            """ +
+    private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             """
                     uniform sampler2D u_texture0;
@@ -78,16 +76,18 @@ public final class SkyShader extends ShaderProgram {
                     uniform float u_fogFadeStart;
                     uniform float u_fogFadeEnd;
 
-                    in vec2 v_texCoord0;
-                    in vec2 v_texCoord1;
-                    in vec4 v_color; // Vertex color (gradient for sky)
-                    in vec3 v_normal;
+                    in VS_OUT {
+                        vec2 texCoord0;
+                        vec2 texCoord1;
+                        vec4 color;
+                        vec3 normal;
+                    } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
 
                     void main() {
-                        vec4 tex0 = texture(u_texture0, v_texCoord0);
-                        vec4 tex1 = texture(u_texture1, v_texCoord1);
+                        vec4 tex0 = texture(u_texture0, fs_in.texCoord0);
+                        vec4 tex1 = texture(u_texture1, fs_in.texCoord1);
 
                         float exp0 = exp(-u_innerCloudDensity * 2.0);
                         float exp1 = exp(-u_outerCloudDensity * 2.0);
@@ -95,12 +95,12 @@ public final class SkyShader extends ShaderProgram {
                         vec3 cloud0 = pow(vec3(tex0.r), vec3(exp0));
                         vec3 cloud1 = pow(vec3(tex1.r), vec3(exp1));
 
-                        vec3 color0 = mix(v_color.rgb, u_skyColor.rgb, cloud0);
+                        vec3 color0 = mix(fs_in.color.rgb, u_skyColor.rgb, cloud0);
                         vec3 color1 = mix(color0, u_skyColor.rgb, cloud1);
 
                         vec4 finalColor = vec4(color1, 1.0);
 
-                        float fogFactor = 1.0 - smoothstep(u_fogFadeStart, u_fogFadeEnd, v_normal.z);
+                        float fogFactor = 1.0 - smoothstep(u_fogFadeStart, u_fogFadeEnd, fs_in.normal.z);
 
                         if (u_fogHeightFactor > 0.0) {
                             fogFactor *= (1.0 - clamp(u_cameraHeight / u_fogHeightFactor, 0.0, 1.0));

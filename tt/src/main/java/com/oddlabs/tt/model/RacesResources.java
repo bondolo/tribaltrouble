@@ -225,27 +225,27 @@ public final class RacesResources {
         vikingMap.put(SupplyType.IRON, queues.register(viking_rock_sprite, 1));
         vikingMap.put(SupplyType.RUBBER, queues.register(viking_rubber_sprite));
 
-        smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(42, 0.6f, 1.0f), 0);
-        damage_smoke_textures[0] = queues.registerTexture(new GeneratorSmoke(43, 1.0f, 0.5f), 0);
-        poison_textures[0] = queues.registerTexture(new GeneratorPoison(), 0);
-        lightning_texture = queues.registerTexture(new GeneratorLightning(), 0);
+        smoke_textures[0] = queues.registerEffectTexture(new GeneratorSmoke(42, 0.6f, 1.0f), 0, 0);
+        damage_smoke_textures[0] = queues.registerEffectTexture(new GeneratorSmoke(43, 1.0f, 0.5f), 0, 1);
+        poison_textures[0] = queues.registerEffectTexture(new GeneratorPoison(), 0, 2);
+        lightning_texture = queues.registerEffectTexture(new GeneratorLightning(), 0, 3);
 
 
         for (int i = 0; i < note_textures.length; i++) {
-            note_textures[i] = queues.registerTexture(new TextureFile("/textures/effects/note" + (i + 1),
+            note_textures[i] = queues.registerEffectTexture(new TextureFile("/textures/effects/note" + (i + 1),
                     Globals.COMPRESSED_RGBA_FORMAT,
                     GL11.GL_LINEAR_MIPMAP_LINEAR,
                     GL11.GL_LINEAR,
                     org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE,
-                    org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE));
+                    org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE), 4 + i);
         }
 
-        star_textures[0] = queues.registerTexture(new TextureFile("/textures/effects/star",
+        star_textures[0] = queues.registerEffectTexture(new TextureFile("/textures/effects/star",
                 Globals.COMPRESSED_RGBA_FORMAT,
                 GL11.GL_LINEAR_MIPMAP_LINEAR,
                 GL11.GL_LINEAR,
                 org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE,
-                org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE));
+                org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE), 12);
 
         ProgressForm.progress(1f / num_progress);
 

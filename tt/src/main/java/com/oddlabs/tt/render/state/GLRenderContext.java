@@ -63,6 +63,7 @@ public final class GLRenderContext implements RenderContext {
 
     private int activeTextureUnit = -1;
     private final int[] boundTextures = new int[32];
+    private final int[] boundTargets = new int[32];
     private final int[] boundBuffers = new int[2]; // 0: ARRAY_BUFFER, 1: ELEMENT_ARRAY_BUFFER
 
     private int globalUbo = 0;
@@ -75,6 +76,7 @@ public final class GLRenderContext implements RenderContext {
 
     public GLRenderContext() {
         Arrays.fill(boundTextures, -1);
+        Arrays.fill(boundTargets, -1);
         Arrays.fill(boundBuffers, -1);
     }
 
@@ -120,7 +122,9 @@ public final class GLRenderContext implements RenderContext {
         for (int i = 0; i < boundTextures.length; i++) {
             setActiveTexture(i);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-            boundTextures[i] = 0;
+            GL11.glBindTexture(GL30.GL_TEXTURE_2D_ARRAY, 0);
+            boundTextures[i] = -1;
+            boundTargets[i] = -1;
         }
         activeTextureUnit = -1;
         currentVAO = -1;
@@ -134,6 +138,7 @@ public final class GLRenderContext implements RenderContext {
         currentBlendDst = GL11.GL_ZERO;
         currentBlendEquation = GL14.GL_FUNC_ADD;
         Arrays.fill(boundTextures, -1);
+        Arrays.fill(boundTargets, -1);
         Arrays.fill(boundBuffers, -1);
 
         blendEnabled = GLState.UNKNOWN;
@@ -247,15 +252,21 @@ public final class GLRenderContext implements RenderContext {
 
     @Override
     public void setTexture(int unit, int textureHandle) {
+        setTexture(unit, textureHandle, GL11.GL_TEXTURE_2D);
+    }
+
+    @Override
+    public void setTexture(int unit, int textureHandle, int target) {
         if (unit < 0 || unit >= boundTextures.length) {
             throw new IllegalArgumentException("Texture unit " + unit + " is out of bounds (max " + boundTextures.length
                     + ").");
         }
 
-        if (boundTextures[unit] != textureHandle) {
+        if (boundTextures[unit] != textureHandle || boundTargets[unit] != target) {
             setActiveTexture(unit);
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureHandle);
+            GL11.glBindTexture(target, textureHandle);
             boundTextures[unit] = textureHandle;
+            boundTargets[unit] = target;
             checkAndThrow("glBindTexture");
         }
     }
