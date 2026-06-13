@@ -200,23 +200,39 @@ public final class PostProcessShader extends ShaderProgram {
                                     finalColor = mix(finalColor, mask.rgb, 0.2);
                                 } else {
                                     vec2 texelSize = 1.0 / vec2(textureSize(u_maskTexture, 0));
-                                    int maskCount = 0;
+                                    float maskCount = 0.0;
                                     vec3 accumulatedColor = vec3(0.0);
 
-                                    for (int y = -4; y <= 4; y++) {
-                                        for (int x = -4; x <= 4; x++) {
-                                            if (x == 0 && y == 0) continue;
+                                    // Advanced Sampling: use textureGather to fetch 2x2 texel blocks per instruction.
+                                    // 16 gathers cover an 8x8 area (radius 4). This replaces an 81-tap dense loop.
+                                    for (float y = -3.5; y <= 3.5; y += 2.0) {
+                                        for (float x = -3.5; x <= 3.5; x += 2.0) {
+                                            vec2 sampleUV = v_texCoord + vec2(x, y) * texelSize;
 
-                                            vec4 neighbor = texture(u_maskTexture, v_texCoord + vec2(float(x), float(y)) * texelSize);
-                                            if (dot(neighbor.rgb, vec3(1.0)) > 0.01) {
-                                                maskCount++;
-                                                accumulatedColor += neighbor.rgb;
+                                            // Gather Alpha channel (3) to quickly check for team units
+                                            vec4 alphas = textureGather(u_maskTexture, sampleUV, 3);
+
+                                            // Team pixels have alpha ~ 1.0, GUI has 0.5, Background has 0.0
+                                            bvec4 isTeam = greaterThan(alphas, vec4(0.9));
+
+                                            if (any(isTeam)) {
+                                                // Fetch R, G, B only if we hit a team pixel in this 2x2 block
+                                                vec4 r = textureGather(u_maskTexture, sampleUV, 0);
+                                                vec4 g = textureGather(u_maskTexture, sampleUV, 1);
+                                                vec4 b = textureGather(u_maskTexture, sampleUV, 2);
+
+                                                vec4 teamMask = vec4(isTeam);
+                                                maskCount += dot(teamMask, vec4(1.0));
+
+                                                accumulatedColor.r += dot(r, teamMask);
+                                                accumulatedColor.g += dot(g, teamMask);
+                                                accumulatedColor.b += dot(b, teamMask);
                                             }
                                         }
                                     }
 
-                                    if (maskCount > 0) {
-                                        finalColor = accumulatedColor / float(maskCount);
+                                    if (maskCount > 0.0) {
+                                        finalColor = accumulatedColor / maskCount;
                                     }
                                 }
                             }
