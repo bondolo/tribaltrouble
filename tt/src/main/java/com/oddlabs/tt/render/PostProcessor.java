@@ -149,9 +149,9 @@ public final class PostProcessor implements AutoCloseable {
                 DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
 
             Settings settings = Renderer.getRenderer().getSettings();
-            shader.setUniform(PostProcessShader.Uniforms.CVD_MODE, settings.cvd_mode);
+            shader.setSubroutines(settings.cvd_mode, settings.high_contrast);
+            
             shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, settings.cvd_intensity);
-            shader.setUniform(PostProcessShader.Uniforms.HIGH_CONTRAST, settings.high_contrast);
             shader.setUniform(PostProcessShader.Uniforms.CONTRAST_INTENSITY, settings.contrast_intensity);
             shader.setUniform(PostProcessShader.Uniforms.INVERT_COLORS, settings.invert_colours);
             shader.setUniform(PostProcessShader.Uniforms.CONTRAST_BRIGHTNESS, settings.contrast_brightness);
