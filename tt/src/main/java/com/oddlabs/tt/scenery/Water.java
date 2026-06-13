@@ -11,7 +11,6 @@ import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.PatchMesh;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.render.shader.WaterShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
@@ -248,9 +247,6 @@ public final class Water implements AutoCloseable {
 
             waterShader.setUniform(WaterShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
-            waterShader.setUniform(WaterShader.Uniforms.SCROLL_OFFSET_0, scrollOffset0[0], scrollOffset0[1]);
-            waterShader.setUniform(WaterShader.Uniforms.SCROLL_OFFSET_1, scrollOffset1[0], scrollOffset1[1]);
-
             waterShader.setUniform(WaterShader.Uniforms.CAMERA_POS, state.getCurrentX(), state.getCurrentY(), state
                     .getCurrentZ());
 
@@ -260,13 +256,10 @@ public final class Water implements AutoCloseable {
             if (Globals.draw_detail) {
                 context.setTexture(1, ocean[1]);
                 waterShader.setUniform(WaterShader.Uniforms.TEXTURE_1, 1);
-                waterShader.setUniform(WaterShader.Uniforms.WATER_DETAIL_REPEAT_RATE, Globals.WATER_DETAIL_REPEAT_RATE);
                 waterShader.setUniform(WaterShader.Uniforms.ENABLE_DETAIL, true);
             } else {
                 waterShader.setUniform(WaterShader.Uniforms.ENABLE_DETAIL, false);
             }
-
-            waterShader.setUniform(WaterShader.Uniforms.WATER_REPEAT_RATE, Globals.WATER_REPEAT_RATE);
 
             context.setTexture(2, heightMap.getHeightTexture());
             waterShader.setUniform(WaterShader.Uniforms.HEIGHT_MAP, 2);
@@ -292,16 +285,6 @@ public final class Water implements AutoCloseable {
             context.setTexture(4, sky.getClouds()[1]);
             waterShader.setUniform(WaterShader.Uniforms.CLOUD_TEXTURE_1, 4);
 
-            // Upload Gerstner wave parameters.
-            uploadWaveUniforms(waterShader,
-                    WaterShader.Uniforms.TIME,
-                    WaterShader.Uniforms.ENABLE_WAVES,
-                    WaterShader.Uniforms.WAVE_AMPLITUDE,
-                    WaterShader.Uniforms.WAVE_STEEPNESS,
-                    WaterShader.Uniforms.WAVE_LENGTH,
-                    WaterShader.Uniforms.WAVE_DIR,
-                    !state.inNoDetailMode());
-
             // Render Sky Water (Infinite Plane)
             waterShader.setUniform(WaterShader.Uniforms.WATER_HEIGHT, 0.0f);
             skyWaterVao.bind();
@@ -325,10 +308,10 @@ public final class Water implements AutoCloseable {
                         float worldX = px * patchSize;
                         float worldY = py * patchSize;
                         if (oceanPatches.get(py * patchesPerWorld + px)) {
-                            oceanInstanceBuffer = addInstance(oceanInstanceBuffer, worldX, worldY);
+                            oceanInstanceBuffer = addInstance(oceanInstanceBuffer, worldX, worldY, 1.0f);
                             oceanCount++;
                         } else {
-                            inlandInstanceBuffer = addInstance(inlandInstanceBuffer, worldX, worldY);
+                            inlandInstanceBuffer = addInstance(inlandInstanceBuffer, worldX, worldY, 0.0f);
                             inlandCount++;
                         }
                     }
@@ -336,13 +319,11 @@ public final class Water implements AutoCloseable {
 
                 if (oceanCount > 0) {
                     waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, minAlpha);
-                    waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, !state.inNoDetailMode());
                     oceanInstanceVBO = uploadAndDraw(context, oceanCount, oceanInstanceBuffer, oceanInstanceVBO);
                 }
 
                 if (inlandCount > 0) {
                     waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, maxAlpha);
-                    waterShader.setUniform(WaterShader.Uniforms.ENABLE_WAVES, false);
                     inlandInstanceVBO = uploadAndDraw(context, inlandCount, inlandInstanceBuffer, inlandInstanceVBO);
                 }
             }
@@ -397,8 +378,8 @@ public final class Water implements AutoCloseable {
     /**
      * Appends instance offsets to the buffer, resizing the buffer if necessary.
      */
-    private @NonNull FloatBuffer addInstance(@NonNull FloatBuffer buffer, float x, float y) {
-        if (buffer.remaining() < 2) {
+    private @NonNull FloatBuffer addInstance(@NonNull FloatBuffer buffer, float x, float y, float z) {
+        if (buffer.remaining() < 3) {
             int newCapacity = buffer.capacity() * 2;
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity);
             buffer.flip();
@@ -407,6 +388,7 @@ public final class Water implements AutoCloseable {
         }
         buffer.put(x);
         buffer.put(y);
+        buffer.put(z);
         return buffer;
     }
 
@@ -417,7 +399,7 @@ public final class Water implements AutoCloseable {
             @NonNull FloatVBO vbo) {
         buffer.flip();
 
-        int requiredBytes = count * 2 * Float.BYTES;
+        int requiredBytes = count * 3 * Float.BYTES;
         if (vbo.capacity() < requiredBytes) {
             vbo.close();
             vbo = new FloatVBO(GL15.GL_STREAM_DRAW, Math.max(vbo.capacity() * 2, requiredBytes));
@@ -431,7 +413,7 @@ public final class Water implements AutoCloseable {
         // Setup instance attribute (Location 4: in_InstanceOffset)
         int offsetLoc = 4;
         GL20.glEnableVertexAttribArray(offsetLoc);
-        GL20.glVertexAttribPointer(offsetLoc, 2, GL11.GL_FLOAT, false, 0, 0);
+        GL20.glVertexAttribPointer(offsetLoc, 3, GL11.GL_FLOAT, false, 0, 0);
         GL33.glVertexAttribDivisor(offsetLoc, 1);
 
         patchMesh.drawInstanced(count);
@@ -450,25 +432,34 @@ public final class Water implements AutoCloseable {
         return oceanPatches;
     }
 
-    public void uploadWaveUniforms(@NonNull ShaderProgram program, @NonNull String timeKey,
-            @NonNull String enableWavesKey,
-            @NonNull String amplitudeKey, @NonNull String steepnessKey, @NonNull String lengthKey,
-            @NonNull String dirKey) {
-        uploadWaveUniforms(program, timeKey, enableWavesKey, amplitudeKey, steepnessKey, lengthKey, dirKey, true);
-    }
-
-    public void uploadWaveUniforms(@NonNull ShaderProgram program, @NonNull String timeKey,
-            @NonNull String enableWavesKey,
-            @NonNull String amplitudeKey, @NonNull String steepnessKey, @NonNull String lengthKey,
-            @NonNull String dirKey, boolean enableWaves) {
-        program.setUniform(timeKey, waveTime * waveSpeed);
-        program.setUniform(enableWavesKey, enableWaves);
+    public void putGlobalUniforms(java.nio.@NonNull ByteBuffer buffer, boolean enableWaves) {
+        // u_waveDirLength[3] (each element is a vec4 aligned to 16 bytes)
         for (int i = 0; i < WAVE_COUNT; i++) {
-            program.setUniform(amplitudeKey + "[" + i + "]", waveAmplitudes[i]);
-            program.setUniform(steepnessKey + "[" + i + "]", waveSteepness[i]);
-            program.setUniform(lengthKey + "[" + i + "]", waveLengths[i]);
-            program.setUniform(dirKey + "[" + i + "]", waveDirsX[i], waveDirsY[i]);
+            buffer.putFloat(waveDirsX[i]);
+            buffer.putFloat(waveDirsY[i]);
+            buffer.putFloat(waveLengths[i]);
+            buffer.putFloat(0f); // pad
         }
+
+        // u_waveAmpSteep[3] (each element is a vec4 aligned to 16 bytes)
+        for (int i = 0; i < WAVE_COUNT; i++) {
+            buffer.putFloat(enableWaves ? waveAmplitudes[i] : 0.0f);
+            buffer.putFloat(waveSteepness[i]);
+            buffer.putFloat(0f); // pad
+            buffer.putFloat(0f); // pad
+        }
+
+        // u_scrollOffsets (vec4)
+        buffer.putFloat(scrollOffset0[0]);
+        buffer.putFloat(scrollOffset0[1]);
+        buffer.putFloat(scrollOffset1[0]);
+        buffer.putFloat(scrollOffset1[1]);
+
+        // u_waveTime, u_waterRepeatRate, u_waterDetailRepeatRate, _pad2 (4 floats)
+        buffer.putFloat(waveTime * waveSpeed);
+        buffer.putFloat(Globals.WATER_REPEAT_RATE);
+        buffer.putFloat(Globals.WATER_DETAIL_REPEAT_RATE);
+        buffer.putFloat(0f); // _pad2
     }
 
     @Override

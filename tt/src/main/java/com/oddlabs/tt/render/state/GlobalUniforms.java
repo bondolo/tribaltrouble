@@ -5,7 +5,9 @@ import com.oddlabs.tt.render.shader.FogShader;
 import com.oddlabs.tt.resource.DistanceFogInfo;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.RadialFogInfo;
+import com.oddlabs.tt.scenery.Water;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 
@@ -14,7 +16,8 @@ import java.nio.ByteBuffer;
  */
 public final class GlobalUniforms {
 
-    public void update(@NonNull CameraState camera, float time, float seaLevel, @NonNull ByteBuffer buffer) {
+    public void update(@NonNull CameraState camera, float time, float seaLevel, @Nullable Water water,
+            @NonNull ByteBuffer buffer) {
         buffer.clear();
 
         // 0: mat4 projection (64)
@@ -32,7 +35,7 @@ public final class GlobalUniforms {
         buffer.putFloat(linearColor.b());
         buffer.putFloat(linearColor.a());
 
-        // 144: vec3 fogParams (16 aligned)
+        // 144: vec4 fogParams (16)
         // 160: float cameraHeight (4) -- Must be 16-aligned after vec3 in std140
         // 164: float fogHeightFactor (4)
         // 168: float globalTime (4)
@@ -73,6 +76,13 @@ public final class GlobalUniforms {
         buffer.putFloat(time);
         buffer.putInt(mode);
 
-        buffer.position(176); // End of data (176 used, pad to 176 for 16-byte alignment)
+        buffer.position(176); // Ensure position before water params
+
+        if (water != null) {
+            water.putGlobalUniforms(buffer, !camera.inNoDetailMode());
+        } else {
+            // Pad 128 bytes (Water params size) if not present
+            buffer.position(176 + 128);
+        }
     }
 }

@@ -42,6 +42,15 @@ public interface Shader {
                 float u_fogHeightFactor;
                 float u_globalTime;
                 int u_fogMode;
+
+                // --- Water Params ---
+                vec4 u_waveDirLength[3];       // xy = dir, z = length
+                vec4 u_waveAmpSteep[3];        // x = amp, y = steepness
+                vec4 u_scrollOffsets;          // xy = offset0, zw = offset1
+                float u_waveTime;
+                float u_waterRepeatRate;
+                float u_waterDetailRepeatRate;
+                float _pad2;
             };
             """;
 

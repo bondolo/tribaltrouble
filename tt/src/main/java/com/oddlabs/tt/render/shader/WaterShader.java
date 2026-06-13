@@ -10,11 +10,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
         String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
         String TEXTURE_0 = "u_texture0"; // Base water texture
         String TEXTURE_1 = "u_texture1"; // Detail water texture
-        String WATER_REPEAT_RATE = "u_waterRepeatRate";
-        String WATER_DETAIL_REPEAT_RATE = "u_waterDetailRepeatRate";
         String ENABLE_DETAIL = "u_enableDetail";
-        String SCROLL_OFFSET_0 = "u_scrollOffset0";
-        String SCROLL_OFFSET_1 = "u_scrollOffset1";
         String CAMERA_POS = "u_cameraPos";
         String WATER_HEIGHT = "u_waterHeight";
 
@@ -24,14 +20,6 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
         String MIN_ALPHA = "u_minAlpha";
         String MAX_ALPHA = "u_maxAlpha";
         String SKY_COLOR = "u_skyColor";
-
-        // Gerstner wave uniforms
-        String TIME = "u_time";
-        String ENABLE_WAVES = "u_enableWaves";
-        String WAVE_AMPLITUDE = "u_waveAmplitude";
-        String WAVE_STEEPNESS = "u_waveSteepness";
-        String WAVE_DIR = "u_waveDir";
-        String WAVE_LENGTH = "u_waveLength";
 
         // Fog Uniforms
         String FOG_HEIGHT_FACTOR = FogShader.FOG_HEIGHT_FACTOR;
@@ -54,22 +42,11 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
             GLOBAL_STATE_BLOCK +
             """
                     layout(location = 0) in vec3 in_Position;
-                    layout(location = 4) in vec2 in_InstanceOffset;
+                    layout(location = 4) in vec3 in_InstanceOffset;
 
                     uniform mat4 u_modelViewMatrix;
-                    uniform float u_waterRepeatRate;
-                    uniform float u_waterDetailRepeatRate;
-                    uniform vec2 u_scrollOffset0;
-                    uniform vec2 u_scrollOffset1;
                     uniform float u_waterHeight;
                     uniform float u_WorldSize;
-
-                    uniform float u_time;
-                    uniform bool u_enableWaves;
-                    uniform float u_waveAmplitude[3];
-                    uniform float u_waveSteepness[3];
-                    uniform vec2  u_waveDir[3];
-                    uniform float u_waveLength[3];
 
                     out VS_OUT {
                         vec2 texCoord0;
@@ -84,32 +61,37 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     const float GRAVITY = 9.81;
 
                     void addGerstnerWave(int i, vec2 baseXY, float waveScale, inout vec3 disp, inout vec3 normal) {
-                        float k = 2.0 * PI / u_waveLength[i];
+                        float waveLength = u_waveDirLength[i].z;
+                        vec2 waveDir = u_waveDirLength[i].xy;
+                        float waveAmplitude = u_waveAmpSteep[i].x;
+                        float waveSteepness = u_waveAmpSteep[i].y;
+
+                        float k = 2.0 * PI / waveLength;
                         float omega = sqrt(GRAVITY * k);
-                        float phase = k * dot(u_waveDir[i], baseXY) - omega * u_time;
+                        float phase = k * dot(waveDir, baseXY) - omega * u_waveTime;
                         float s = sin(phase);
                         float c = cos(phase);
-                        float A = u_waveAmplitude[i] * waveScale;
-                        float Q = u_waveSteepness[i];
+                        float A = waveAmplitude * waveScale;
 
-                        disp.x += Q * A * u_waveDir[i].x * c;
-                        disp.y += Q * A * u_waveDir[i].y * c;
+                        disp.x += waveSteepness * A * waveDir.x * c;
+                        disp.y += waveSteepness * A * waveDir.y * c;
                         disp.z += A * s;
 
                         float WA = k * A;
-                        normal.x -= WA * u_waveDir[i].x * c;
-                        normal.y -= WA * u_waveDir[i].y * c;
-                        normal.z -= Q * WA * s;
+                        normal.x -= WA * waveDir.x * c;
+                        normal.y -= WA * waveDir.y * c;
+                        normal.z -= waveSteepness * WA * s;
                     }
 
                     void main() {
-                        vec2 baseXY = in_InstanceOffset + in_Position.xy;
+                        vec2 baseXY = in_InstanceOffset.xy + in_Position.xy;
                         float baseZ = u_waterHeight + in_Position.z;
 
                         vec3 disp = vec3(0.0);
                         vec3 normal = vec3(0.0, 0.0, 1.0);
 
-                        if (u_enableWaves) {
+                        // If amplitude is 0, waves are effectively disabled for that channel
+                        if (u_waveAmpSteep[0].x > 0.0001 && in_InstanceOffset.z > 0.0) {
                             float distToEdgeX = min(baseXY.x, u_WorldSize - baseXY.x);
                             float distToEdgeY = min(baseXY.y, u_WorldSize - baseXY.y);
                             float distToEdge = min(distToEdgeX, distToEdgeY);
@@ -122,6 +104,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                             } else {
                                 waveScale = clamp(distToEdge / 16.0, 0.0, 1.0);
                             }
+                            waveScale *= in_InstanceOffset.z;
 
                             addGerstnerWave(0, baseXY, waveScale, disp, normal);
                             addGerstnerWave(1, baseXY, waveScale, disp, normal);
@@ -136,8 +119,8 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         gl_Position = u_projectionMatrix * viewPosition;
 
                         float scaleFix = 4.0;
-                        vs_out.texCoord0 = (worldPos.xy * u_waterRepeatRate * scaleFix) + u_scrollOffset0;
-                        vs_out.texCoord1 = (worldPos.xy * u_waterRepeatRate * scaleFix * 1.3) + u_scrollOffset1;
+                        vs_out.texCoord0 = (worldPos.xy * u_waterRepeatRate * scaleFix) + u_scrollOffsets.xy;
+                        vs_out.texCoord1 = (worldPos.xy * u_waterRepeatRate * scaleFix * 1.3) + u_scrollOffsets.zw;
                         vs_out.texCoordHeightmap = (worldPos.xy + 1.0) / u_WorldSize;
 
                         vs_out.fogDist = length(viewPosition.xyz);

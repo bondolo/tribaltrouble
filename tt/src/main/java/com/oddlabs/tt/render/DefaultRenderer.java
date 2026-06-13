@@ -219,9 +219,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
         // Update Global UBO
         try (var stack = MemoryStack.stackPush()) {
-            java.nio.ByteBuffer buf = stack.malloc(256);
+            java.nio.ByteBuffer buf = stack.malloc(512);
             globalUniforms.update(frustum_state, Renderer.getRenderer().getEventQueue().getTime(),
-                    world.getHeightMap().getSeaLevelMeters(), buf);
+                    world.getHeightMap().getSeaLevelMeters(), water, buf);
             buf.flip();
             context.updateGlobalState(buf);
         }

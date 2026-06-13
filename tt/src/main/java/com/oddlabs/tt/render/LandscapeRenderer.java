@@ -142,20 +142,6 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             context.setTexture(4, detailNormalMap);
             shader.setUniform(LandscapeShader.Uniforms.DETAIL_NORMAL_MAP, 4);
 
-            // Upload wave uniforms from Water animation if active
-            Water activeWater = water;
-            if (activeWater != null && !state.inNoDetailMode()) {
-                activeWater.uploadWaveUniforms(shader,
-                        LandscapeShader.Uniforms.TIME,
-                        LandscapeShader.Uniforms.ENABLE_WAVES,
-                        LandscapeShader.Uniforms.WAVE_AMPLITUDE,
-                        LandscapeShader.Uniforms.WAVE_STEEPNESS,
-                        LandscapeShader.Uniforms.WAVE_LENGTH,
-                        LandscapeShader.Uniforms.WAVE_DIR);
-            } else {
-                shader.setUniform(LandscapeShader.Uniforms.ENABLE_WAVES, false);
-            }
-
             if (Globals.draw_landscape && !render_list.isEmpty()) {
                 int instanceCount = render_list.size();
                 int requiredFloats = instanceCount * 3;
@@ -171,6 +157,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
                 instanceBuffer.clear();
                 float patchSize = world.getHeightMap().getMetersPerPatch();
                 int patchesPerWorld = world.getHeightMap().getPatchesPerWorld();
+                Water activeWater = water;
                 BitSet activeOceanPatches = activeWater != null ? activeWater.getOceanPatches() : null;
                 for (LandscapeLeaf leaf : render_list) {
                     int px = leaf.getPatchX();

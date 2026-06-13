@@ -16,13 +16,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
         String WORLD_SIZE = "u_WorldSize";
         String DETAIL_SCALE = "u_DetailScale";
         String SEA_BOTTOM_COLOR = "u_SeaBottomColor";
-
-        String TIME = "u_time";
-        String ENABLE_WAVES = "u_enableWaves";
-        String WAVE_AMPLITUDE = "u_waveAmplitude";
-        String WAVE_STEEPNESS = "u_waveSteepness";
-        String WAVE_DIR = "u_waveDir";
-        String WAVE_LENGTH = "u_waveLength";
     }
 
     public interface Attributes {
@@ -84,13 +77,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     uniform float u_WorldSize;
                     uniform float u_DetailScale;
 
-                    // Wave uniforms for wetness calculation
-                    uniform float u_time;
-                    uniform bool u_enableWaves;
-                    uniform float u_waveAmplitude[3];
-                    uniform float u_waveSteepness[3];
-                    uniform vec2 u_waveDir[3];
-                    uniform float u_waveLength[3];
                     in VS_OUT {
                         vec2 texCoord0;
                         vec2 texCoordColormap;
@@ -107,15 +93,19 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     const float GRAVITY = 9.81;
 
                     float getWaveHeight(vec2 worldPos) {
-                        if (!u_enableWaves) {
+                        if (u_waveAmpSteep[0].x < 0.0001) {
                             return 0.0;
                         }
                         float waveZ = 0.0;
                         for (int i = 0; i < 3; i++) {
-                            float k = 2.0 * PI / u_waveLength[i];
+                            float waveLength = u_waveDirLength[i].z;
+                            vec2 waveDir = u_waveDirLength[i].xy;
+                            float waveAmplitude = u_waveAmpSteep[i].x;
+
+                            float k = 2.0 * PI / waveLength;
                             float omega = sqrt(GRAVITY * k);
-                            float phase = k * dot(u_waveDir[i], worldPos) - omega * u_time;
-                            waveZ += u_waveAmplitude[i] * sin(phase);
+                            float phase = k * dot(waveDir, worldPos) - omega * u_waveTime;
+                            waveZ += waveAmplitude * sin(phase);
                         }
                         return waveZ;
                     }
