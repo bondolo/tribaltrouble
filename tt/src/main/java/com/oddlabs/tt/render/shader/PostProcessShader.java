@@ -59,36 +59,39 @@ public final class PostProcessShader extends ShaderProgram {
                     subroutine uniform ContrastFilter u_contrastFilter;
 
                     // --- CVD Logic ---
-                    // LMS Colour Space Matrices (Transposed for GLSL Column-Major)
+                    // Matrices must be defined in column-major order for GLSL
+
+                    // RGB to LMS
                     const mat3 RGB_to_LMS = mat3(
-                        17.8824, 3.45565, 0.0299566,
-                        43.5161, 27.1554, 0.184309,
-                        4.11935, 3.86714, 1.46709
+                        17.8824, 43.5161, 4.11935,    // Column 1 (R)
+                        3.45565, 27.1554, 3.86714,    // Column 2 (G)
+                        0.0299566, 0.184309, 1.46709  // Column 3 (B)
                     );
 
+                    // LMS to RGB
                     const mat3 LMS_to_RGB = mat3(
-                        0.0809, -0.0102, -0.0003,
-                        -0.1305, 0.0540, -0.0041,
-                        0.1167, -0.1136, 0.6935
+                        0.0809, -0.1305, 0.1167,      // Column 1 (L)
+                        -0.0102, 0.0540, -0.1136,     // Column 2 (M)
+                        -0.0003, -0.0041, 0.6935      // Column 3 (S)
                     );
 
-                    // Simulation Matrices (Transposed for GLSL Column-Major)
+                    // Simulation Matrices
                     const mat3 Protanopia_Sim = mat3(
-                        0.0, 0.0, 0.0,
-                        2.02344, 1.0, 0.0,
-                        -2.52581, 0.0, 1.0
+                        0.0, 2.02344, -2.52581,       // Column 1
+                        0.0, 1.0, 0.0,                // Column 2
+                        0.0, 0.0, 1.0                 // Column 3
                     );
 
                     const mat3 Deuteranopia_Sim = mat3(
-                        1.0, 0.494207, 0.0,
-                        0.0, 0.0, 0.0,
-                        0.0, 1.24827, 1.0
+                        1.0, 0.0, 0.0,                // Column 1
+                        0.494207, 0.0, 1.24827,       // Column 2
+                        0.0, 0.0, 1.0                 // Column 3
                     );
 
                     const mat3 Tritanopia_Sim = mat3(
-                        1.0, 0.0, -0.395913,
-                        0.0, 1.0, 0.801109,
-                        0.0, 0.0, 0.0
+                        1.0, 0.0, 0.0,                // Column 1
+                        0.0, 1.0, 0.0,                // Column 2
+                        -0.395913, 0.801109, 0.0      // Column 3
                     );
 
                     subroutine(CvdFilter) vec3 cvdNone(vec3 color) {
@@ -100,8 +103,8 @@ public final class PostProcessShader extends ShaderProgram {
                         vec3 simulatedLMS = Protanopia_Sim * lms;
                         vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
                         vec3 error = color - simulatedRGB;
-                        // Protanopia: Shift R/G error to Blue channel
-                        vec3 correction = vec3(0.0, 0.0, (error.r * 0.7) + (error.g * 0.7));
+                        // Protanopia (Red weak): Shift red error to green and blue
+                        vec3 correction = vec3(0.0, error.r * 0.7, error.r * 0.7);
                         return color + correction * u_cvdIntensity;
                     }
 
@@ -110,8 +113,8 @@ public final class PostProcessShader extends ShaderProgram {
                         vec3 simulatedLMS = Deuteranopia_Sim * lms;
                         vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
                         vec3 error = color - simulatedRGB;
-                        // Deuteranopia: Shift R/G error to Blue channel
-                        vec3 correction = vec3(0.0, 0.0, (error.r * 0.7) + (error.g * 0.7));
+                        // Deuteranopia (Green weak): Shift green error to red and blue
+                        vec3 correction = vec3(error.g * 0.7, 0.0, error.g * 0.7);
                         return color + correction * u_cvdIntensity;
                     }
 

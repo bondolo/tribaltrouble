@@ -19,6 +19,7 @@ import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -303,14 +304,17 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
 
     /**
      * Binds a set of subroutines for the fragment shader.
-     * @param uniformToSubroutine A map where the key is the subroutine uniform name and the value is the subroutine function name.
+     *
+     * @param uniformToSubroutine A map where the key is the subroutine uniform name and the value is the subroutine
+     *            function name.
      */
-    protected void setFragmentSubroutines(Map<String, String> uniformToSubroutine) {
-        int count = GL40.glGetProgramStagei(state.programId, GL20.GL_FRAGMENT_SHADER, GL40.GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS);
+    protected void setFragmentSubroutines(Map<@NonNull String, @NonNull String> uniformToSubroutine) {
+        int count = GL40.glGetProgramStagei(state.programId, GL20.GL_FRAGMENT_SHADER,
+                GL40.GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS);
         if (count <= 0) return;
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            java.nio.IntBuffer indices = stack.callocInt(count); // initialized to 0
+            IntBuffer indices = stack.callocInt(count); // initialized to 0
             for (Map.Entry<String, String> entry : uniformToSubroutine.entrySet()) {
                 int loc = GL40.glGetSubroutineUniformLocation(state.programId, GL20.GL_FRAGMENT_SHADER, entry.getKey());
                 if (loc >= 0) {
