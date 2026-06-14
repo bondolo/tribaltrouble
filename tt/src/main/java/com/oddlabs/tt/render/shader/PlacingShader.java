@@ -1,10 +1,10 @@
 package com.oddlabs.tt.render.shader;
 
 /**
- * Shader for rendering animated 3D sprites (units, buildings) with support
- * for lighting, team decals, normal mapping, and environmental fog.
+ * Rendering of building placement.
+ * Uses a two-pass rendering to render the ghost buildings.
  */
-public final class SpriteShader extends ShaderProgram implements FogShader, LitShader {
+public final class PlacingShader extends ShaderProgram implements FogShader, LitShader {
 
     public interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
@@ -150,7 +150,7 @@ public final class SpriteShader extends ShaderProgram implements FogShader, LitS
                     }
                     """;
 
-    public SpriteShader() {
+    public PlacingShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         // bindFragDataLocation(0, "out_FragColor");
         link();

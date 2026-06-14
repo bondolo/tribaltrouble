@@ -48,7 +48,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
     }
 
-    public @NonNull Texture getWhiteTexture() {
+    @NonNull
+    Texture getWhiteTexture() {
         return whiteTexture;
     }
 
@@ -91,6 +92,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             context.setSampleAlphaToCoverage(false);
             context.setDrawBuffers(true);
             context.setColorMask(true, true, true, true);
+            clear();
         }
     }
 

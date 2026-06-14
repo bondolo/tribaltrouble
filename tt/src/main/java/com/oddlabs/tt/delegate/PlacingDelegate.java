@@ -17,16 +17,13 @@ import com.oddlabs.tt.player.BuildingSiteScanFilter;
 import com.oddlabs.tt.render.BuildingSiteRenderer;
 import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.MatrixStack;
+import com.oddlabs.tt.render.PlacingRenderer;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Sprite;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.SpriteRenderer;
 import com.oddlabs.tt.render.VisualRegistry;
-import com.oddlabs.tt.render.shader.SpriteShader;
-import com.oddlabs.tt.render.state.BlendMode;
-import com.oddlabs.tt.render.state.CullMode;
-import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.util.Color;
@@ -45,7 +42,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
     private static final Color.Linear BAD_PLACEMENT = Color.Linear.RED.alpha(0.8f);
 
     private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
-    private final SpriteShader spriteShader = new SpriteShader();
+    private final PlacingRenderer placingRenderer = new PlacingRenderer();
     private final @NonNull BuildingType building_type;
 
     public PlacingDelegate(@NonNull WorldViewer viewer, @NonNull CameraState old_camera,
@@ -58,7 +55,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
         return getViewer().getLocalPlayer().getRaceInfo().getBuildingTemplate(building_type);
     }
 
-    public void placeObject() {
+    private void placeObject() {
         getViewer().getPicker().pickLocation(getCamera().getState()).ifPresentOrElse(landscape_hit -> {
             int placing_grid_x = landscape_hit.getGridX();
             int placing_grid_y = landscape_hit.getGridY();
@@ -144,44 +141,17 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
         SpriteRenderer built_renderer = queues.getRenderer(built_key);
         Sprite sprite = built_renderer.getSpriteList().getSprite(0);
 
-        try (var _ = spriteShader.use()) {
-            spriteShader.setUniform(SpriteShader.Uniforms.DESATURATE, 0.3f);
-            sprite.setupShaderUniforms(context, spriteShader, 0, false);
-            spriteShader.setUniform(SpriteShader.Uniforms.MODULATE_COLOR, true);
-            spriteShader.setUniform(SpriteShader.Uniforms.ALPHA_TEST_VALUE, 0.5f);
+        var placeColor = Building.isPlacingLegal(unit_grid, getTemplate(), placing_center_grid_x,
+                placing_center_grid_y)
+                        ? GOOD_PLACEMENT : BAD_PLACEMENT;
 
-            var placeColor = Building.isPlacingLegal(unit_grid, getTemplate(), placing_center_grid_x,
-                    placing_center_grid_y)
-                            ? GOOD_PLACEMENT : BAD_PLACEMENT;
-            spriteShader.setUniform(SpriteShader.Uniforms.COLOR, placeColor);
+        float z = getViewer().getWorld().getHeightMap().getNearestHeight(center_x, center_y);
 
-            float z = getViewer().getWorld().getHeightMap().getNearestHeight(center_x, center_y);
+        modelViewStack.push();
+        modelViewStack.translate(center_x, center_y, z);
 
-            modelViewStack.push();
-            modelViewStack.translate(center_x, center_y, z);
-            spriteShader.setUniform(SpriteShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
+        placingRenderer.renderGhost(context, sprite, built_renderer.getSpriteList(), placeColor, modelViewStack);
 
-            try (var _ = context.withCullMode(CullMode.BACK)) {
-                // Pass 1: Depth Prime (Write Depth, No Color)
-                try (var _ = context.withDepthMode(DepthMode.READ_WRITE); var _ = context.withColorMask(false, false,
-                        false, false); var _ = context.withBlendMode(BlendMode.NONE)) {
-
-                    sprite.renderShader(spriteShader, 0, 0f, built_renderer.getSpriteList());
-                }
-
-                // Pass 2: Color Render (No Depth Write, Equal Depth)
-                try (var _ = context.withDepthMode(DepthMode.READ_ONLY); var _ = context.withColorMask(true, true, true,
-                        true); var _ = context.withBlendMode(BlendMode.ALPHA)) {
-
-                    sprite.renderShader(spriteShader, 0, 0f, built_renderer.getSpriteList());
-                }
-            } finally {
-                spriteShader.setUniform(SpriteShader.Uniforms.DESATURATE, 0.0f);
-                spriteShader.setUniform(SpriteShader.Uniforms.MODULATE_COLOR, false);
-                spriteShader.setUniform(SpriteShader.Uniforms.ALPHA_TEST_VALUE, 0.3f);
-            }
-
-            modelViewStack.pop();
-        }
+        modelViewStack.pop();
     }
 }

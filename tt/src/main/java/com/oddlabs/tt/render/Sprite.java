@@ -4,12 +4,9 @@ import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.procedural.GeneratorRespond;
-import com.oddlabs.tt.render.shader.SpriteShader;
-import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.TextureFile;
 import com.oddlabs.tt.util.BoundingBox;
-import com.oddlabs.tt.vbo.VertexArray;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
@@ -267,76 +264,6 @@ public final class Sprite {
 
     public int getNumTextures() {
         return textures.length;
-    }
-
-    public void setupShaderUniforms(@NonNull RenderContext context, @NonNull SpriteShader shader, int tex_index,
-            boolean respond) {
-        context.setTexture(0, textures[tex_index][TEXTURE_NORMAL]);
-        shader.setUniform(SpriteShader.Uniforms.TEXTURE_0, 0);
-
-        boolean useLighting = Globals.draw_light && lighted;
-        shader.setUniform(SpriteShader.Uniforms.ENABLE_LIGHTING, useLighting);
-        shader.setUniform(SpriteShader.Uniforms.REPLACE_MODE, !useLighting && !modulate_color);
-
-        if (modulate_color) {
-            shader.setUniform(SpriteShader.Uniforms.MODULATE_COLOR, true);
-            shader.setUniform(SpriteShader.Uniforms.ENABLE_TEAM_COLOR, false);
-            shader.setUniform(SpriteShader.Uniforms.ALPHA_TEST_VALUE, 0.0f);
-        } else {
-            shader.setUniform(SpriteShader.Uniforms.MODULATE_COLOR, false);
-            shader.setUniform(SpriteShader.Uniforms.ALPHA_TEST_VALUE, 0.3f);
-            if (hasTeamDecal() || respond) {
-                shader.setUniform(SpriteShader.Uniforms.ENABLE_TEAM_COLOR, true);
-                context.setTexture(1, respond ? respond_texture : textures[tex_index][TEXTURE_TEAM]);
-                shader.setUniform(SpriteShader.Uniforms.TEXTURE_1, 1);
-            } else {
-                shader.setUniform(SpriteShader.Uniforms.ENABLE_TEAM_COLOR, false);
-            }
-        }
-
-        if (hasBumpMap(tex_index)) {
-            shader.setUniform(SpriteShader.Uniforms.ENABLE_NORMAL_MAP, true);
-            context.setTexture(2, textures[tex_index][TEXTURE_BUMP]);
-            shader.setUniform(SpriteShader.Uniforms.NORMAL_MAP, 2);
-        } else {
-            shader.setUniform(SpriteShader.Uniforms.ENABLE_NORMAL_MAP, false);
-        }
-    }
-
-    public void renderShader(@NonNull SpriteShader shader, int animation, float anim_ticks,
-            @NonNull SpriteList sprite_list) {
-        VertexArray vao = sprite_list.getVAO();
-        if (vao == null) {
-            sprite_list.initVAO(shader);
-            vao = sprite_list.getVAO();
-        }
-
-        int texCoordLoc = shader.getAttributeLocation(SpriteShader.Attributes.TEX_COORD);
-        int posLoc = shader.getAttributeLocation(SpriteShader.Attributes.POSITION);
-        int normLoc = shader.getAttributeLocation(SpriteShader.Attributes.NORMAL);
-
-        vao.bind();
-
-        try {
-            if (texCoordLoc >= 0) {
-                sprite_list.getTexcoords().vertexAttribPointer(texCoordLoc, 2, 0, texcoords_offset * 4L);
-            }
-
-            int vertex_index = getVertexOffset(animation, anim_ticks);
-            int normal_index = getNormalOffset(vertex_index);
-
-            if (posLoc >= 0) {
-                sprite_list.getVerticesAndNormals().vertexAttribPointer(posLoc, 3, 0, vertex_index * 4L);
-            }
-
-            if (normLoc >= 0) {
-                sprite_list.getVerticesAndNormals().vertexAttribPointer(normLoc, 3, 0, normal_index * 4L);
-            }
-
-            sprite_list.getIndices().drawElements(GL11.GL_TRIANGLES, num_triangles * 3, indices_offset);
-        } finally {
-            vao.unbind();
-        }
     }
 
     public int getNumVertices() {

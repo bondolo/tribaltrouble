@@ -2,7 +2,6 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
-import com.oddlabs.tt.render.shader.SpriteShader;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.vbo.FloatVBO;
@@ -13,7 +12,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 
@@ -23,6 +21,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+/**
+ * Manages a collection of 3D sprites and their associated shared OpenGL resources,
+ * including index buffers, vertex attributes, and TBO textures.
+ */
 public final class SpriteList implements AutoCloseable {
     private static final @NonNull SpriteList QUAD_INSTANCE = new SpriteList(new float[]{0, 0, 1, 0, 1, 1, 0, 1});
 
@@ -151,38 +153,8 @@ public final class SpriteList implements AutoCloseable {
         GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGB32F, vertices_and_normals.getHandle());
     }
 
-    public int getTBOTextureHandle() {
+    int getTBOTextureHandle() {
         return tboTextureHandle;
-    }
-
-    public void initVAO(@NonNull SpriteShader shader) {
-        if (vao != null) return;
-
-        vao = new VertexArray();
-        vao.bind();
-
-        int texCoordLoc = shader.getAttributeLocation(SpriteShader.Attributes.TEX_COORD);
-        int posLoc = shader.getAttributeLocation(SpriteShader.Attributes.POSITION);
-        int normLoc = shader.getAttributeLocation(SpriteShader.Attributes.NORMAL);
-
-        indices.bind();
-
-        if (texCoordLoc >= 0) {
-            GL20.glEnableVertexAttribArray(texCoordLoc);
-        }
-
-        if (posLoc >= 0) {
-            GL20.glEnableVertexAttribArray(posLoc);
-        }
-
-        if (normLoc >= 0) {
-            GL20.glEnableVertexAttribArray(normLoc);
-        }
-        vao.unbind();
-    }
-
-    public @Nullable VertexArray getVAO() {
-        return vao;
     }
 
     public float @NonNull [] getClearColor() {
@@ -218,15 +190,18 @@ public final class SpriteList implements AutoCloseable {
         return -1;
     }
 
-    public @NonNull ShortVBO getIndices() {
+    @NonNull
+    ShortVBO getIndices() {
         return indices;
     }
 
-    public @NonNull FloatVBO getVerticesAndNormals() {
+    @NonNull
+    FloatVBO getVerticesAndNormals() {
         return vertices_and_normals;
     }
 
-    public @NonNull FloatVBO getTexcoords() {
+    @NonNull
+    FloatVBO getTexcoords() {
         return texcoords;
     }
 

@@ -12,8 +12,6 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.render.shader.DebugMeshShader;
 import com.oddlabs.tt.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.render.shader.ShaderProgram;
-import com.oddlabs.tt.render.shader.SpriteShader;
-import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.GlobalUniforms;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.WorldInfo;
@@ -28,6 +26,7 @@ import com.oddlabs.tt.viewer.Selection;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
@@ -107,47 +106,44 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
                     SelectableVisitor.getTeamColor(selected_building));
     }
 
-    private static final SpriteShader spriteShader = new SpriteShader(); // For rally point
-
     private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state,
-            @NonNull Target rally_point, @NonNull SpriteKey rally_sprite,
-            Color.@NonNull Linear teamColor) {
-        try (var _ = spriteShader.use(); var _ = context.withBlendMode(BlendMode.ALPHA)) {
+            @NonNull Target rally_point, @NonNull SpriteKey rally_sprite, Color.@NonNull Linear teamColor) {
 
-            SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);
-            Sprite sprite = rally_point_renderer.getSpriteList().getSprite(0);
+        SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);
 
-            sprite.setupShaderUniforms(context, spriteShader, 0, false);
-
-            float x = rally_point.getPositionX();
-            float y = rally_point.getPositionY();
-            float z = world.getHeightMap().getNearestHeight(rally_point.getPositionX(), rally_point.getPositionY());
-            if (rally_point instanceof Building rally_building) {
-                var rally = rally_building.getTemplate().getRally();
-                x += rally.x();
-                y += rally.y();
-                z += rally.z();
-            }
-
-            modelViewStack.push();
-            float dx = camera_state.getCurrentX() - x;
-            float dy = camera_state.getCurrentY() - y;
-            float len = (float) Math.sqrt(dx * dx + dy * dy);
-            if (len > 0.1f) {
-                RenderTools.translateAndRotate(x, y, z, dx / len, dy / len, modelViewStack);
-            } else {
-                modelViewStack.translate(x, y, z);
-            }
-
-            spriteShader.setUniform(SpriteShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
-
-            spriteShader.setUniform(SpriteShader.Uniforms.DECAL_COLOR, teamColor);
-            spriteShader.setUniform(SpriteShader.Uniforms.COLOR, Color.Linear.WHITE);
-
-            sprite.renderShader(spriteShader, 0, 0f, rally_point_renderer.getSpriteList());
-
-            modelViewStack.pop();
+        float x = rally_point.getPositionX();
+        float y = rally_point.getPositionY();
+        float z = world.getHeightMap().getNearestHeight(rally_point.getPositionX(), rally_point.getPositionY());
+        if (rally_point instanceof Building rally_building) {
+            var rally = rally_building.getTemplate().getRally();
+            x += rally.x();
+            y += rally.y();
+            z += rally.z();
         }
+
+        Matrix4f modelMatrix = new Matrix4f();
+        float dx = camera_state.getCurrentX() - x;
+        float dy = camera_state.getCurrentY() - y;
+        float len = (float) Math.sqrt(dx * dx + dy * dy);
+        if (len > 0.1f) {
+            float angle = (float) Math.atan2(dy / len, dx / len);
+            modelMatrix.translation(x, y, z).rotate(angle, 0f, 0f, 1f);
+        } else {
+            modelMatrix.translation(x, y, z);
+        }
+
+        rally_point_renderer.addInstance(
+                0, // spriteIndex
+                0, // animation
+                0f, // animTicks
+                false, // respond
+                true,  // blend
+                true,  // depthWrite
+                true,  // depthTest
+                modelMatrix,
+                Color.Linear.WHITE,
+                teamColor
+        );
     }
 
     @Override
@@ -165,7 +161,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         return picker.getCurrentToolTip();
     }
 
-    public @NonNull TreeRenderer getTreeRenderer() {
+    private @NonNull TreeRenderer getTreeRenderer() {
         return tree_renderer;
     }
 
@@ -319,6 +315,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         // Rally point uses SpriteShader (Mask) -> Enable
         context.setDrawBuffers(true);
         renderRallyPoint(context, frustum_state);
+        render_queues.getInstancedRenderer().renderAll(context, frustum_state, projectionStack);
 
         assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
 

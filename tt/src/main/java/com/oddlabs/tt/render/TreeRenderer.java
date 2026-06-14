@@ -20,24 +20,23 @@ import java.util.logging.Logger;
  * Specialized renderer for forest elements, coordinating the efficient
  * drawing of crown and trunk sprite lists using hardware instancing.
  */
-public final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer {
+final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer {
     private static final Logger logger = Logger.getLogger(TreeRenderer.class.getName());
-    private final InstancedSpriteRenderer instancedSpriteRenderer;
+    private final @NonNull InstancedSpriteRenderer instancedSpriteRenderer;
     private final WaveAnimation wave_animation = new WaveAnimation();
     private final @Nullable Cheat cheat;
     private final Matrix4f tempMatrix = new Matrix4f();
 
-    TreeRenderer(@Nullable Cheat cheat, SpriteSorter sprite_sorter, RespondManager respond_manager,
-            InstancedSpriteRenderer instancedSpriteRenderer) {
+    TreeRenderer(@Nullable Cheat cheat, @NonNull SpriteSorter sprite_sorter, @NonNull RespondManager respond_manager,
+            @NonNull InstancedSpriteRenderer instancedSpriteRenderer
+    ) {
         super(sprite_sorter, respond_manager);
         this.cheat = cheat;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
     }
 
-    public void renderShadows(@NonNull SelectableShadowRenderer shadowRenderer) {
-        Arrays.stream(getRenderLists())
-                .flatMap(List::stream)
-                .forEach(shadowRenderer::addToShadowList);
+    void renderShadows(@NonNull SelectableShadowRenderer shadowRenderer) {
+        Arrays.stream(getRenderLists()).forEach(shadowRenderer::addToShadowList);
     }
 
     @Override
@@ -113,7 +112,7 @@ public final class TreeRenderer extends TreePicker implements AutoCloseable, Sce
         render_list.clear();
     }
 
-    public void debugRender(@NonNull List<TreeSupply> @NonNull [] render_lists, @NonNull List<
+    void debugRender(@NonNull List<TreeSupply> @NonNull [] render_lists, @NonNull List<
             TreeSupply> @NonNull [] respond_render_lists) {
         if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (List<TreeSupply> render_list : render_lists) {

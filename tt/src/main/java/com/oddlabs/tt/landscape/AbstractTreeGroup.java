@@ -17,19 +17,21 @@ import java.util.List;
 public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeGroup, TreeLeaf, TreeSupply {
 
     public enum TreeType {
-        JUNGLE(16.0f, 0.5f, 0.6f),
-        PALM(20.0f, 0.3f, 1.0f),
-        OAK(20.0f, 0.5f, 0.6f),
-        PINE(12.0f, 0.6f, 0.3f);
+        JUNGLE(16.0f, 0.5f, 0.6f, 0.9f),
+        PALM(20.0f, 0.3f, 1.0f, 0.95f),
+        OAK(20.0f, 0.5f, 0.6f, 0.7f),
+        PINE(12.0f, 0.6f, 0.3f, 0.65f);
 
-        public final float shadowDiameter;
-        public final float shadowOpacity;
-        public final float shadowVerticalCenter;
+        final float shadowDiameter;
+        final float shadowOpacity;
+        final float shadowVerticalCenter;
+        public final float heightScale;
 
-        TreeType(float shadowDiameter, float shadowOpacity, float shadowVerticalCenter) {
+        TreeType(float shadowDiameter, float shadowOpacity, float shadowVerticalCenter, float heightScale) {
             this.shadowDiameter = shadowDiameter;
             this.shadowOpacity = shadowOpacity;
             this.shadowVerticalCenter = shadowVerticalCenter;
+            this.heightScale = heightScale;
         }
     }
 

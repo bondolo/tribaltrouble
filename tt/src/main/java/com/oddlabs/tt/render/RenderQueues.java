@@ -15,7 +15,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +45,8 @@ public final class RenderQueues implements AutoCloseable {
     public RenderQueues() {
     }
 
-    public @NonNull TextureArray getEffectTextureArray() {
+    @NonNull
+    TextureArray getEffectTextureArray() {
         return effect_texture_array;
     }
 
@@ -84,11 +84,13 @@ public final class RenderQueues implements AutoCloseable {
         return key;
     }
 
-    public @NonNull EmitterRenderer getEmitterRenderer() {
+    @NonNull
+    EmitterRenderer getEmitterRenderer() {
         return emitterRenderer;
     }
 
-    public @NonNull DecalRenderer getDecalRenderer() {
+    @NonNull
+    DecalRenderer getDecalRenderer() {
         return decalRenderer;
     }
 
@@ -154,21 +156,7 @@ public final class RenderQueues implements AutoCloseable {
         int index = sprite_list_lookup.size();
         SpriteList sprite_list = Resources.findResource(sprite_file);
 
-        Texture[] textures = new Texture[sprite_list.getNumSprites()];
-        Texture[] team_textures = new Texture[sprite_list.getNumSprites()];
-        Texture[] bump_textures = new Texture[sprite_list.getNumSprites()];
-
-        for (int i = 0; i < sprite_list.getNumSprites(); i++) {
-            Sprite sprite = sprite_list.getSprite(i);
-            textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_NORMAL];
-            team_textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_TEAM];
-            if (sprite.hasBumpMap(tex_index)) {
-                bump_textures[i] = sprite.textures[tex_index][Sprite.TEXTURE_BUMP];
-            }
-        }
-
-        SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, textures, team_textures, bump_textures,
-                spriteRenderer);
+        SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, tex_index, spriteRenderer);
         sprite_list_lookup.add(sprite_renderer);
         registerSpriteRenderer(sprite_renderer, sprite_file.getLocation());
         AnimationInfo.AnimationType[] animation_types = sprite_list.getAnimationTypes();
@@ -182,13 +170,7 @@ public final class RenderQueues implements AutoCloseable {
     public @NonNull SpriteKey registerDynamicSprite(@NonNull SpriteList sprite_list, @NonNull Texture texture) {
         int index = sprite_list_lookup.size();
 
-        Texture[] textures = new Texture[sprite_list.getNumSprites()];
-        Arrays.fill(textures, texture);
-        Texture[] team_textures = new Texture[sprite_list.getNumSprites()];
-        Texture[] bump_textures = new Texture[sprite_list.getNumSprites()];
-
-        SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, textures, team_textures, bump_textures,
-                spriteRenderer);
+        SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, texture, spriteRenderer);
         sprite_list_lookup.add(sprite_renderer);
         registerSpriteRenderer(sprite_renderer, "dynamic_emoji");
         AnimationInfo.AnimationType[] animation_types = sprite_list.getAnimationTypes();
@@ -204,7 +186,8 @@ public final class RenderQueues implements AutoCloseable {
         return registerDynamicSprite(sprite_list, icon.getTexture());
     }
 
-    public @NonNull InstancedSpriteRenderer getInstancedRenderer() {
+    @NonNull
+    InstancedSpriteRenderer getInstancedRenderer() {
         return spriteRenderer;
     }
 
