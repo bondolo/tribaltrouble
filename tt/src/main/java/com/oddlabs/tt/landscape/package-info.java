@@ -1,4 +1,4 @@
 /**
- * Classes related to the game world landscape, including terrain, trees, and resources.
+ * Contains the world landscape logic, quadtrees, and height map systems.
  */
 package com.oddlabs.tt.landscape;

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.landscape.LandscapeTargetRespond;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.Resources;
@@ -12,6 +11,9 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.function.Supplier;
 
+/**
+ * Renders target click response indicators on the landscape.
+ */
 public final class TargetRespondRenderer extends ShadowListRenderer {
     private static final float SHADOW_SIZE = 1.6f;
     private final Texture ring;

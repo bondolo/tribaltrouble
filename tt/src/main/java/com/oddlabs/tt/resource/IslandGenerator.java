@@ -3,7 +3,7 @@ package com.oddlabs.tt.resource;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.landscape.LandscapeBaker;
+import com.oddlabs.tt.render.LandscapeBaker;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.render.Renderer;
@@ -16,6 +16,9 @@ import java.io.Serial;
 import java.time.Duration;
 import java.time.Instant;
 
+/**
+ * Generates landscape heights, terrain textures, and structures for game islands.
+ */
 public final class IslandGenerator implements WorldGenerator {
     @Serial
     private static final long serialVersionUID = 1;

@@ -1,7 +1,5 @@
-package com.oddlabs.tt.landscape;
+package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.render.FBO;
-import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.resource.BlendInfo;
 import com.oddlabs.tt.resource.BlendLighting;
@@ -123,7 +121,6 @@ public final class LandscapeBaker {
                 }
             }
             """;
-
 
     private static class BlendShader extends ShaderProgram {
         BlendShader() {

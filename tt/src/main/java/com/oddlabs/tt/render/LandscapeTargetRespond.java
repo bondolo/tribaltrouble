@@ -1,8 +1,8 @@
-package com.oddlabs.tt.landscape;
+package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 /**

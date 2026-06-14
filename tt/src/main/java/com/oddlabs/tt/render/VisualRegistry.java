@@ -3,6 +3,7 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.model.EmojiType;
 import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.UnitVisualType;
 import com.oddlabs.tt.model.WeaponVisualType;
 import org.jspecify.annotations.NonNull;
@@ -33,6 +34,7 @@ public final class VisualRegistry {
     private final EnumMap<Race, EnumMap<UnitVisualType, SpriteKey>> units = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<BuildingType, BuildingVisuals>> buildings = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<WeaponVisualType, SpriteKey>> weapons = new EnumMap<>(Race.class);
+    private final EnumMap<Race, EnumMap<SupplyType, SpriteKey>> carriedSupplies = new EnumMap<>(Race.class);
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
     private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
     private @NonNull SpriteKey @Nullable [] chickenCluckSprites;
@@ -43,6 +45,7 @@ public final class VisualRegistry {
             units.put(race, new EnumMap<>(UnitVisualType.class));
             buildings.put(race, new EnumMap<>(BuildingType.class));
             weapons.put(race, new EnumMap<>(WeaponVisualType.class));
+            carriedSupplies.put(race, new EnumMap<>(SupplyType.class));
         }
     }
 
@@ -121,5 +124,18 @@ public final class VisualRegistry {
             throw new IllegalStateException("Default unit shadow not registered");
         }
         return defaultUnitShadow;
+    }
+
+    public void registerCarriedSupply(@NonNull Race race, @NonNull SupplyType type, @NonNull SpriteKey sprite) {
+        carriedSupplies.get(race).put(type, sprite);
+    }
+
+    public @NonNull SpriteKey getCarriedSupplySprite(@NonNull Race race, @NonNull SupplyType type) {
+        SpriteKey sprite = carriedSupplies.get(race).get(type);
+        if (sprite == null) {
+            throw new IllegalStateException("Carried supply sprite not registered for race " + race + " and type "
+                    + type);
+        }
+        return sprite;
     }
 }

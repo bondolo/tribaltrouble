@@ -20,8 +20,7 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
 
     private final @NonNull SpriteKey @NonNull [] rock_fragment_sprites;
     private final @NonNull SpriteKey @NonNull [] iron_fragment_sprites;
-    private final @NonNull EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(
-            Terrain.class);
+    private final @NonNull EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(Terrain.class);
     private final @NonNull SpriteKey chicken;
 
     public LandscapeResources(@NonNull RenderQueues queues) {

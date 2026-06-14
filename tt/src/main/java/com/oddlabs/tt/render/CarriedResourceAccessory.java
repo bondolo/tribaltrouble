@@ -23,7 +23,9 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     public @Nullable SpriteKey getSpriteRenderer() {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         if (supply_container != null) {
-            return supply_container.getSupplyType().map(supply_container::getSupplySpriteRenderer).orElse(null);
+            return supply_container.getSupplyType().map(type -> VisualRegistry.getInstance().getCarriedSupplySprite(unit
+                    .getOwner().getPlayerInfo().getRace(), type)
+            ).orElse(null);
         }
         return null;
     }

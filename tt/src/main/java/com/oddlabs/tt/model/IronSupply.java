@@ -5,7 +5,7 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.particle.RingEmitter;
 import com.oddlabs.tt.procedural.Landscape;
-import com.oddlabs.tt.render.LandscapeResources;
+import com.oddlabs.tt.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -46,8 +46,8 @@ public final class IronSupply extends SupplyModel {
     private boolean useRockTexture = true;
 
     public IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
-        this(world, grid_x, grid_y, x, y, increase, ThreadLocalRandom.current().nextInt(
-                LandscapeResources.SUPPLY_FRAGMENT_COUNT));
+        var fragmentIndex = ThreadLocalRandom.current().nextInt(LandscapeBoundsProvider.SUPPLY_FRAGMENT_COUNT);
+        this(world, grid_x, grid_y, x, y, increase, fragmentIndex);
     }
 
     private IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase,
@@ -60,11 +60,9 @@ public final class IronSupply extends SupplyModel {
 
     @Override
     public @NonNull BoundsProvider getBoundsProvider() {
-        // Use rock texture while hot to show tinting better
-        if (useRockTexture) {
-            return getWorld().getLandscapeResources().getRockBounds(fragmentIndex);
-        }
-        return super.getBoundsProvider();
+        // Use rock texture while hot to show tinting
+        return useRockTexture ? getWorld().getLandscapeResources().getRockBounds(fragmentIndex)
+                              : super.getBoundsProvider();
     }
 
     @Override

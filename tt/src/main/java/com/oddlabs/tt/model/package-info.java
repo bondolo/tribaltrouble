@@ -1,4 +1,4 @@
 /**
- * Core game entities including units, buildings, and world objects.
+ * Contains the core game state, logic, and simulation models.
  */
 package com.oddlabs.tt.model;

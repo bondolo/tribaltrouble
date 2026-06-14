@@ -40,6 +40,7 @@ import com.oddlabs.tt.util.Utils;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -207,6 +208,9 @@ public final class RacesResources {
         nativeMap.put(SupplyType.ROCK, queues.register(native_rock_sprite));
         nativeMap.put(SupplyType.IRON, queues.register(native_rock_sprite, 1));
         nativeMap.put(SupplyType.RUBBER, queues.register(native_rubber_sprite));
+        for (var entry : nativeMap.entrySet()) {
+            VisualRegistry.getInstance().registerCarriedSupply(Race.NATIVES, entry.getKey(), entry.getValue());
+        }
 
         SpriteFile viking_wood_sprite = new SpriteFile("/geometry/vikings/wood_resource.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
@@ -224,6 +228,9 @@ public final class RacesResources {
         vikingMap.put(SupplyType.ROCK, queues.register(viking_rock_sprite));
         vikingMap.put(SupplyType.IRON, queues.register(viking_rock_sprite, 1));
         vikingMap.put(SupplyType.RUBBER, queues.register(viking_rubber_sprite));
+        for (var entry : vikingMap.entrySet()) {
+            VisualRegistry.getInstance().registerCarriedSupply(Race.VIKINGS, entry.getKey(), entry.getValue());
+        }
 
         smoke_textures[0] = queues.registerEffectTexture(new GeneratorSmoke(42, 0.6f, 1.0f), 0, 0);
         damage_smoke_textures[0] = queues.registerEffectTexture(new GeneratorSmoke(43, 1.0f, 0.5f), 0, 1);
@@ -233,19 +240,13 @@ public final class RacesResources {
 
         for (int i = 0; i < note_textures.length; i++) {
             note_textures[i] = queues.registerEffectTexture(new TextureFile("/textures/effects/note" + (i + 1),
-                    Globals.COMPRESSED_RGBA_FORMAT,
-                    GL11.GL_LINEAR_MIPMAP_LINEAR,
-                    GL11.GL_LINEAR,
-                    org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE,
-                    org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE), 4 + i);
+                    Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                    GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 4 + i);
         }
 
         star_textures[0] = queues.registerEffectTexture(new TextureFile("/textures/effects/star",
-                Globals.COMPRESSED_RGBA_FORMAT,
-                GL11.GL_LINEAR_MIPMAP_LINEAR,
-                GL11.GL_LINEAR,
-                org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE,
-                org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE), 12);
+                Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 12);
 
         ProgressForm.progress(1f / num_progress);
 
@@ -573,7 +574,7 @@ public final class RacesResources {
                 vPeonSprite.bounds(),
                 vPeonSprite.animTypes(),
                 shadow_diameter_peon,
-                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, vikingMap),
+                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
@@ -595,7 +596,7 @@ public final class RacesResources {
                 nPeonSprite.bounds(),
                 nPeonSprite.animTypes(),
                 shadow_diameter_peon,
-                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES, nativeMap),
+                new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
                 AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
