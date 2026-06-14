@@ -25,11 +25,15 @@ import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
+import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Native Island 7, containing objectives and triggers.
+ */
 public final class NativeIsland7 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland7.class.getName());
 
@@ -128,6 +132,7 @@ public final class NativeIsland7 extends Island {
         insertGuardTower(enemy, UnitType.WARRIOR_IRON, 126, 117);
 
         // Insert treasures
+        var treasures = VisualRegistry.getInstance().getTreasures();
         float shadow_diameter = 2.6f;
 
         float dir = (float) Math.sin(Math.PI / 4);
@@ -135,82 +140,82 @@ public final class NativeIsland7 extends Island {
         float w = HeightMap.METERS_PER_UNIT_GRID;
         // From VikingIsland3
         new SceneryModel(getViewer().getWorld(), 98 * 2 + w * r.nextFloat(), 62 * 2 + w * r.nextFloat(), 0, -1,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 83 * 2 + w * r.nextFloat(), 58 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), -1, 0,
-                getViewer().getWorld().getRacesResources().getTreasures()[5], shadow_diameter, true, i18n("statue"));
+                treasures[5], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 97 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 84 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), dir, dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[4], shadow_diameter, true, i18n("statue"));
+                treasures[4], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 96 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), 1, 0,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 100 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[4], shadow_diameter, true, i18n("statue"));
+                treasures[4], shadow_diameter, true, i18n("statue"));
 
         // From VikingIsland7
         new SceneryModel(getViewer().getWorld(), 84 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), -1, 0,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 83 * 2 + w * r.nextFloat(), 64 * 2 + w * r.nextFloat(), -1, 0,
-                getViewer().getWorld().getRacesResources().getTreasures()[4], shadow_diameter, true, i18n("statue"));
+                treasures[4], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 95 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 91 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 97 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), dir, dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[4], shadow_diameter, true, i18n("statue"));
+                treasures[4], shadow_diameter, true, i18n("statue"));
 
         new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), dir, dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[5], shadow_diameter, true, i18n("statue"));
+                treasures[5], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 65 * 2 + w * r.nextFloat(), dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 98 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 96 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 96 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), -1, 0,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 52 * 2 + w * r.nextFloat(), -dir, dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[4], shadow_diameter, true, i18n("statue"));
+                treasures[4], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 97 * 2 + w * r.nextFloat(), 56 * 2 + w * r.nextFloat(), 0, -1,
-                getViewer().getWorld().getRacesResources().getTreasures()[5], shadow_diameter, true, i18n("statue"));
+                treasures[5], shadow_diameter, true, i18n("statue"));
 
         // From VikingIsland14
         new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 91 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), dir, dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 88 * 2 + w * r.nextFloat(), 57 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[4], shadow_diameter, true, i18n("statue"));
+                treasures[4], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, -1,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 90 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[5], shadow_diameter, true, i18n("statue"));
+                treasures[5], shadow_diameter, true, i18n("statue"));
 
         new SceneryModel(getViewer().getWorld(), 91 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), -1, 0,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[5], shadow_diameter, true, i18n("statue"));
+                treasures[5], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), 0, 1,
-                getViewer().getWorld().getRacesResources().getTreasures()[1], shadow_diameter, true, i18n("statue"));
+                treasures[1], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 90 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 1, 0,
-                getViewer().getWorld().getRacesResources().getTreasures()[3], shadow_diameter, true, i18n("statue"));
+                treasures[3], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 92 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), -dir, dir,
-                getViewer().getWorld().getRacesResources().getTreasures()[4], shadow_diameter, true, i18n("statue"));
+                treasures[4], shadow_diameter, true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 0, -1,
-                getViewer().getWorld().getRacesResources().getTreasures()[5], shadow_diameter, true, i18n("statue"));
+                treasures[5], shadow_diameter, true, i18n("statue"));
 
         shadow_diameter = 4.5f;
         float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
-        new SceneryModel(getViewer().getWorld(), 91 * 2 + offset, 51 * 2 + offset, 0, 1, getViewer().getWorld()
-                .getRacesResources().getTreasures()[0], shadow_diameter, true, i18n("statue"));
+        new SceneryModel(getViewer().getWorld(), 91 * 2 + offset, 51 * 2 + offset, 0, 1, treasures[0], shadow_diameter,
+                true, i18n("statue"));
     }
 
     @Override

@@ -40,6 +40,7 @@ import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.LandscapeResources;
 import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.Picker;
+import com.oddlabs.tt.render.RacesVisualsLoader;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.WorldGenerator;
@@ -100,7 +101,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
         ProgressForm.progress();
-        RacesResources races_resources = new RacesResources(render_queues);
+        RacesResources races_resources = RacesVisualsLoader.load(render_queues);
         this.distributable_table = new DistributableTable();
         NotificationListener listener = new NotificationListener() {
             @Override
@@ -270,8 +271,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                                     "native_chieftain_name"), false);
                 else
                     throw new IllegalStateException("Unknown chieftain AI: " + player.getRaceInfo().getChieftainAI());
-                chieftain.increaseMagicEnergy(0, 1000);
-                chieftain.increaseMagicEnergy(1, 1000);
+                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy);
                 player.setActiveChieftain(chieftain);
                 i++;
             }

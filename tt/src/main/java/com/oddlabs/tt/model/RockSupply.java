@@ -10,6 +10,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -181,7 +182,7 @@ public final class RockSupply extends SupplyModel {
                     new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f(1.0f, 1.0f, 1.0f), // size/growth
                     1.0f, 0.2f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    getWorld().getRacesResources().getSmokeTextures()
+                    VisualRegistry.getInstance().getSmokeTextures()
             );
             emitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
             emitter.setSpectrumRange(0.2f, 1.0f);

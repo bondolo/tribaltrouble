@@ -1,6 +1,7 @@
 package com.oddlabs.tt.player;
 
 import com.oddlabs.tt.model.BuildingType;
+import com.oddlabs.tt.model.MagicType;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.landscape.LandscapeTarget;
@@ -11,7 +12,6 @@ import com.oddlabs.tt.model.Army;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.RaceInfo;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.SupplyContainer;
 import com.oddlabs.tt.model.SupplyType;
@@ -25,7 +25,6 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +82,7 @@ public final class Player implements PlayerInterface {
     private boolean can_build_armies = true;
     private boolean can_build_weapons = true;
     private boolean can_transport = true;
-    private final boolean[] can_do_magic = new boolean[RacesResources.NUM_MAGIC];
+    private final EnumSet<MagicType> enabled_magics = EnumSet.allOf(MagicType.class);
 
     private float hit_bonus;
 
@@ -92,7 +91,6 @@ public final class Player implements PlayerInterface {
     public Player(@NonNull World world, @NonNull PlayerInfo player_info, @NonNull Color color) {
         this.world = world;
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
-        Arrays.fill(can_do_magic, true);
         this.player_info = player_info;
         this.unit_count = new SupplyContainer(world.getMaxUnitCount());
 //		this.team_tip = i18n("team", new Object[]{Integer.toString(player_info.getTeam() + 1)});
@@ -216,12 +214,20 @@ public final class Player implements PlayerInterface {
         return can_use_rubber;
     }
 
-    public void enableMagic(int magic_index, boolean enabled) {
-        can_do_magic[magic_index] = enabled;
+    public void enableMagic(@NonNull MagicType type, boolean enabled) {
+        if (enabled) {
+            enabled_magics.add(type);
+        } else {
+            enabled_magics.remove(type);
+        }
+    }
+
+    public boolean canDoMagic(@NonNull MagicType type) {
+        return enabled_magics.contains(type);
     }
 
     public boolean canDoMagic(int magic_index) {
-        return can_do_magic[magic_index];
+        return canDoMagic(getRaceInfo().getMagicType(magic_index));
     }
 
     public boolean canExitTowers() {
@@ -427,9 +433,13 @@ public final class Player implements PlayerInterface {
     }
 
     @Override
-    public void doMagic(@NonNull Unit chieftain, int magic) {
+    public void doMagic(@NonNull Unit chieftain, @NonNull MagicType magic) {
         if (isValid(chieftain))
             chieftain.doMagic(magic, true);
+    }
+
+    public void doMagic(@NonNull Unit chieftain, int magic) {
+        doMagic(chieftain, getRaceInfo().getMagicType(magic));
     }
 
     @Override

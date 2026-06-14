@@ -8,6 +8,7 @@ import com.oddlabs.tt.model.BuildingType;
 
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.model.MagicType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.JumpDelegate;
@@ -27,10 +28,14 @@ import com.oddlabs.tt.trigger.campaign.MagicUsedTrigger;
 import com.oddlabs.tt.trigger.campaign.NearPointTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
+import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Viking Island 10, containing objectives and triggers.
+ */
 public final class VikingIsland10 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland10.class.getName());
 
@@ -101,10 +106,8 @@ public final class VikingIsland10 extends Island {
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
         local_player.setActiveChieftain(new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        local_player.getChieftain().ifPresent(chieftain -> {
-            chieftain.increaseMagicEnergy(0, 1000);
-            chieftain.increaseMagicEnergy(1, 1000);
-        });
+        local_player.getChieftain().ifPresent(chieftain ->
+                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
         // 5 peons
         for (int i = 0; i < 5; i++) {
             new Unit(local_player, 142 * 2, 182 * 2, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
@@ -123,16 +126,16 @@ public final class VikingIsland10 extends Island {
                         UnitType.WARRIOR_ROCK));
         }
 
-        // Winner prize
-        runnable = () -> {
-            getCampaign().getState().setIslandState(10, CampaignState.ISLAND_COMPLETED);
-            getCampaign().getState().setIslandState(13, CampaignState.ISLAND_AVAILABLE);
-            getCampaign().getState().setHasMagic1(true);
-            getCampaign().victory(getViewer());
-        };
 
         // Winning condition
-        new MagicUsedTrigger(local_player.getChieftain().orElseThrow(), 173 * 2, 153 * 2, 7, 1, runnable);
+        new MagicUsedTrigger(local_player.getChieftain().orElseThrow(), 173 * 2, 153 * 2, 7, MagicType.SONIC_BLAST,
+                () -> {
+                    // Winner prize
+                    getCampaign().getState().setIslandState(10, CampaignState.ISLAND_COMPLETED);
+                    getCampaign().getState().setIslandState(13, CampaignState.ISLAND_AVAILABLE);
+                    getCampaign().getState().setHasMagic1(true);
+                    getCampaign().victory(getViewer());
+                });
 
         // Give blast when arrived
         final Runnable dialog11 = () -> {
@@ -222,19 +225,17 @@ public final class VikingIsland10 extends Island {
                     Origin.AT_START,
                     dialog2);
             addModalForm(dialog);
-            getViewer().getLocalPlayer().enableMagic(1, true);
-            local_player.getChieftain().ifPresent(chieftain -> {
-                chieftain.increaseMagicEnergy(0, 1000);
-                chieftain.increaseMagicEnergy(1, 1000);
-            });
+            getViewer().getLocalPlayer().enableMagic(MagicType.SONIC_BLAST, true);
+            local_player.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
+                    chieftain::maxMagicEnergy));
         };
         new NearPointTrigger(173, 153, 3, local_player.getChieftain().orElseThrow(), dialog1);
 
         // Insert statue
         float shadow_diameter = 2.6f;
         float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
-        new SceneryModel(getViewer().getWorld(), 173 * 2 + offset, 153 * 2 + offset, 0, 1, getViewer().getWorld()
-                .getRacesResources().getTreasures()[2], shadow_diameter, true, i18n("statue"));
+        new SceneryModel(getViewer().getWorld(), 173 * 2 + offset, 153 * 2 + offset, 0, 1,
+                VisualRegistry.getInstance().getTreasures()[2], shadow_diameter, true, i18n("statue"));
 
         // Insert native towers
         insertGuardTower(enemy, UnitType.WARRIOR_IRON, 177, 159);//*

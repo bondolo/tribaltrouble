@@ -22,10 +22,14 @@ import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
+import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Viking Island 7, containing objectives and triggers.
+ */
 public final class VikingIsland7 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland7.class.getName());
 
@@ -123,7 +127,7 @@ public final class VikingIsland7 extends Island {
 
         float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
         float dir = (float) Math.sin(Math.PI / 4);
-        var treasures = getViewer().getWorld().getRacesResources().getTreasures();
+        var treasures = VisualRegistry.getInstance().getTreasures();
         new SceneryModel(getViewer().getWorld(), 67 * 2 + offset, 64 * 2 + offset, -1, 0, treasures[3], shadow_diameter,
                 true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 70 * 2 + offset, 52 * 2 + offset, -1, 0, treasures[4], shadow_diameter,

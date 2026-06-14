@@ -1,6 +1,6 @@
 package com.oddlabs.tt.player;
 
-import com.oddlabs.tt.model.RacesResources;
+import com.oddlabs.tt.model.MagicType;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
@@ -8,6 +8,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.stream.StreamSupport;
 
+/**
+ * AI logic controller for Native chieftains, determining when to cast Poison Fog and Lightning Cloud.
+ */
 public final class NativeChieftainAI extends ChieftainAI {
     private static final int NUM_UNITS_FOR_LIGHTNING = 2;
     private static final int NUM_UNITS_FOR_POISON = 5;
@@ -19,7 +22,7 @@ public final class NativeChieftainAI extends ChieftainAI {
     }
 
     private void nodeLightningCloud(@NonNull Unit chieftain) {
-        if (chieftain.getMagicProgress(RacesResources.INDEX_MAGIC_LIGHTNING) < 1)
+        if (chieftain.getMagicProgress(MagicType.LIGHTNING_CLOUD) < 1)
             return;
 
         float hit_radius = 30f;
@@ -28,15 +31,15 @@ public final class NativeChieftainAI extends ChieftainAI {
         if (num_enemy_units_close >= NUM_UNITS_FOR_LIGHTNING
                 || (num_enemy_units < NUM_UNITS_FOR_LIGHTNING && num_enemy_units_close > 1)
                 || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1)) {
-            chieftain.doMagic(RacesResources.INDEX_MAGIC_LIGHTNING, false);
+            chieftain.doMagic(MagicType.LIGHTNING_CLOUD, false);
         }
     }
 
     private void nodePoisonFog(@NonNull Unit chieftain) {
-        if (chieftain.getMagicProgress(RacesResources.INDEX_MAGIC_POISON) < 1)
+        if (chieftain.getMagicProgress(MagicType.POISON_FOG) < 1)
             return;
 
-        float hit_radius = chieftain.getOwner().getRaceInfo().getMagicFactory(RacesResources.INDEX_MAGIC_POISON)
+        float hit_radius = chieftain.getOwner().getRaceInfo().getMagicFactory(MagicType.POISON_FOG)
                 .getHitRadius();
         int num_enemy_units = numEnemyUnits(chieftain.getOwner());
         int num_enemy_units_close = getNumEnemyUnitsClose(chieftain, hit_radius);
@@ -45,7 +48,7 @@ public final class NativeChieftainAI extends ChieftainAI {
                 && (num_enemy_units_close >= NUM_UNITS_FOR_POISON
                         || (num_enemy_units < NUM_UNITS_FOR_POISON && num_enemy_units_close > 1)
                         || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
-            chieftain.doMagic(RacesResources.INDEX_MAGIC_POISON, false);
+            chieftain.doMagic(MagicType.POISON_FOG, false);
         }
     }
 

@@ -11,7 +11,6 @@ import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Plants;
 import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.RubberSupply;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Selectable;
@@ -78,9 +77,9 @@ final class RenderState {
                 new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}}));
         this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(key);
         this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(
-                render_queues.registerSelectableShadowList(RacesResources.DEFAULT_SHADOW_DESC));
+                render_queues.registerSelectableShadowList(VisualRegistry.DEFAULT_SHADOW_DESC));
         this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(
-                render_queues.registerCrackDecalList(RacesResources.CRACK_DECAL_DESC));
+                render_queues.registerCrackDecalList(VisualRegistry.CRACK_DECAL_DESC));
         this.render_state_cache = new RenderStateCache<>(() -> new ElementRenderState<>(RenderState.this));
         this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
     }
@@ -267,13 +266,10 @@ final class RenderState {
                 }
             } else if (model instanceof Building building) {
                 float hitOffsetZ = building.getHitOffsetZ();
-                var racesResources = local_player.getWorld().getRacesResources();
-                if (racesResources != null) {
-                    visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ, racesResources
-                            .getDamageSmokeTextures()));
-                    visualModel.getAccessories().add(new BuildingProductionAccessory(building, racesResources
-                            .getSmokeTextures()));
-                }
+                visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ,
+                        VisualRegistry.getInstance().getDamageSmokeTextures()));
+                visualModel.getAccessories().add(new BuildingProductionAccessory(building,
+                        VisualRegistry.getInstance().getSmokeTextures()));
             }
             return visualModel;
         });
@@ -295,25 +291,22 @@ final class RenderState {
                 if (!hasStunStar) {
                     float timeLeft = stunController.getTime();
                     float velocity = (float) Math.PI / 2;
-                    var racesResources = local_player.getWorld().getRacesResources();
-                    if (racesResources != null) {
-                        BalancedParametricEmitter emitter = new BalancedParametricEmitter(
-                                local_player.getWorld(),
-                                new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
-                                velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
-                                5, 0f, 2f,
-                                Color.Linear.WHITE, Color.LinearDelta.ZERO,
-                                new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), timeLeft,
-                                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                                racesResources.getStarTextures());
+                    BalancedParametricEmitter emitter = new BalancedParametricEmitter(
+                            local_player.getWorld(),
+                            new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
+                            velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
+                            5, 0f, 2f,
+                            Color.Linear.WHITE, Color.LinearDelta.ZERO,
+                            new Vector3f(.1f, .1f, .1f), new Vector3f(0f, 0f, 0f), timeLeft,
+                            GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                            VisualRegistry.getInstance().getStarTextures());
 
-                        float mountOffset = unit.getMountOffset();
-                        var offset = new Vector3f(
-                                unit.getTemplate().getStunX(),
-                                unit.getTemplate().getStunY(),
-                                unit.getTemplate().getStunZ() + mountOffset);
-                        visualModel.getAccessories().add(new EmitterAttachedAccessory(emitter, offset));
-                    }
+                    float mountOffset = unit.getMountOffset();
+                    var offset = new Vector3f(
+                            unit.getTemplate().getStunX(),
+                            unit.getTemplate().getStunY(),
+                            unit.getTemplate().getStunZ() + mountOffset);
+                    visualModel.getAccessories().add(new EmitterAttachedAccessory(emitter, offset));
                 }
             } else {
                 visualModel.getAccessories().removeIf(acc -> acc instanceof EmitterAttachedAccessory);

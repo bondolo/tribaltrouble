@@ -12,6 +12,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -62,7 +63,7 @@ public final class IronSupply extends SupplyModel {
     public @NonNull BoundsProvider getBoundsProvider() {
         // Use rock texture while hot to show tinting
         return useRockTexture ? getWorld().getLandscapeResources().getRockBounds(fragmentIndex)
-                              : super.getBoundsProvider();
+                : super.getBoundsProvider();
     }
 
     @Override
@@ -177,7 +178,7 @@ public final class IronSupply extends SupplyModel {
                         new Vector3f(0.0f, 0.0f, 0.0f),
                         0.1f, 0.0f,
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE,
-                        getWorld().getRacesResources().getSmokeTextures()
+                        VisualRegistry.getInstance().getSmokeTextures()
                 );
                 new PointEmitterModel(getWorld(), flash);
 
@@ -193,7 +194,7 @@ public final class IronSupply extends SupplyModel {
                         new Vector3f(15.0f, 15.0f, 0.0f), // Flat (growth.z)
                         0.6f, 0.1f, // Shorter energy
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                        getWorld().getRacesResources().getSmokeTextures()
+                        VisualRegistry.getInstance().getSmokeTextures()
                 );
 
                 puff.setSpectrumRange(0.0f, 0.9f);
@@ -216,7 +217,7 @@ public final class IronSupply extends SupplyModel {
                         new Vector3f(4.0f, 0.25f, 0.0f), // Halved growth rate
                         1.0f, 0.45f, // Halved lifetime/energy (adjusts fadeout)
                         GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                        getWorld().getRacesResources().getSmokeTextures()
+                        VisualRegistry.getInstance().getSmokeTextures()
                 );
                 debris.setBaseColor(Landscape.getDustColor(getWorld().getTerrainType()));
                 debris.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.4f));
@@ -291,8 +292,8 @@ public final class IronSupply extends SupplyModel {
                     new Vector3f(1.6f, 2.0f, 1.6f), new Vector3f(2.4f, 3.0f, 2.4f),
                     1.2f, 0.1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    getWorld().getRacesResources().getSmokeTextures(),
-                    null, getWorld().getRacesResources().getSmokeTextures().length,
+                    VisualRegistry.getInstance().getSmokeTextures(),
+                    null, VisualRegistry.getInstance().getSmokeTextures().length,
                     true, true
             );
             // Specifically requested sooty/black anchor
@@ -316,7 +317,7 @@ public final class IronSupply extends SupplyModel {
                     new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(2.5f, 2.5f, 2.5f),
                     1.2f, 0.1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    getWorld().getRacesResources().getSmokeTextures()
+                    VisualRegistry.getInstance().getSmokeTextures()
             );
             // Spectrum 0.2 (dark grey, visible) → 0.8 (light grey, faint)
             emitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));

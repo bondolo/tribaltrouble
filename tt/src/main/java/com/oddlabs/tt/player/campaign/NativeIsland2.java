@@ -29,6 +29,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Native Island 2, containing objectives and triggers.
+ */
 public final class NativeIsland2 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland2.class.getName());
 
@@ -121,10 +124,8 @@ public final class NativeIsland2 extends Island {
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
-        local_player.getChieftain().ifPresent(chieftain -> {
-            chieftain.increaseMagicEnergy(0, 1000);
-            chieftain.increaseMagicEnergy(1, 1000);
-        });
+        local_player.getChieftain().ifPresent(chieftain ->
+                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
             new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }

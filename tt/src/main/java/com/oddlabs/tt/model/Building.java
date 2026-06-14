@@ -29,6 +29,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -157,7 +158,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                         new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f,
                                 -fade_speed),
                         new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                        getOwner().getWorld().getRacesResources().getWoodFragments(),
+                        VisualRegistry.getInstance().getWoodFragments(),
                         true, true);
                 new PointEmitterModel(getOwner().getWorld(), emitter);
             }
@@ -599,7 +600,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 Color.Linear.WHITE, Color.LinearDelta.ZERO.alpha(-1f),
                 new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1.2f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                getOwner().getWorld().getRacesResources().getSmokeTextures());
+                VisualRegistry.getInstance().getSmokeTextures());
         collapse_emitter.setColorSpectrum(spectrumCallback);
 
         new PointEmitterModel(getOwner().getWorld(), collapse_emitter, getOwner().getWorld()
@@ -625,7 +626,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
                     Color.Linear.WHITE.alpha(energy * fade_speed), Color.LinearDelta.ZERO.alpha(-fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                    getOwner().getWorld().getRacesResources().getWoodFragments(),
+                    VisualRegistry.getInstance().getWoodFragments(),
                     true, true);
             new PointEmitterModel(getOwner().getWorld(), emitter, getOwner().getWorld().getAnimationManagerRealTime());
         }

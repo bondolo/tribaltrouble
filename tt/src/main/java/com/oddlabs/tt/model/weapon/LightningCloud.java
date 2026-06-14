@@ -19,6 +19,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+import com.oddlabs.tt.render.VisualRegistry;
 
 /**
  * Logic controller for the Lightning Cloud magic effect.
@@ -86,7 +87,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                 Color.Linear.WHITE.alpha(0.8f), Color.LinearDelta.ZERO,
                 new Vector3f(PARTICLE_RADIUS_XY, PARTICLE_RADIUS_XY, PARTICLE_RADIUS_Z), new Vector3f(0f, 0f, 0f),
                 energy,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, world.getRacesResources().getSmokeTextures());
+                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, VisualRegistry.getInstance().getSmokeTextures());
         emitter.setBaseColor(new Color.Standard(.3f, 1f).linear());
         emitter.setColorSpectrum((spectrum, baseColor) -> baseColor);
         emitter.setFogEnabled(false);
@@ -190,7 +191,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
         Vector3f cloudPos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
         Lightning lightning = new Lightning(owner.getWorld(), cloudPos, new Vector3f(x, y, z), .5f,
                 15, Color.Linear.WHITE, DELTA_COLOR,
-                owner.getWorld().getRacesResources().getLightningTexture(), LIGHTNING_TIME,
+                VisualRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME,
                 owner.getWorld().getAnimationManagerGameTime());
         lightning.register();
     }

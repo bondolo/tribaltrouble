@@ -29,8 +29,9 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -43,7 +44,12 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     private static final int PENALTY_INCREMENT = 3;
     private static final int INITIAL_PATH_PENALTY = 5;
-    private static final float[] MAX_MAGIC_ENERGY = new float[]{40f, 70f};
+    private static final EnumMap<MagicType, Float> MAX_MAGIC_ENERGY = new EnumMap<>(Map.of(
+            MagicType.POISON_FOG, 40f,
+            MagicType.LIGHTNING_CLOUD, 70f,
+            MagicType.STUN, 40f,
+            MagicType.SONIC_BLAST, 70f
+    ));
 
     public enum Animation {
         IDLING,
@@ -59,8 +65,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     private final @Nullable UnitSupplyContainer supply_container;
     private final @Nullable String name;
     private final @NonNull PathTracker path_tracker;
-    private final float[] magic_energy = new float[2];
-    private int last_magic_index = -1;
+    private final @NonNull EnumMap<MagicType, Float> magic_energy = new EnumMap<>(MagicType.class);
+    private @Nullable MagicType last_magic_type = null;
 
     private int hit_points;
     private @NonNull Animation animation = Animation.IDLING;
@@ -291,17 +297,25 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         getOwner().getWorld().updateGlobalChecksum(animation.ordinal());
 
         if (getAbilities().hasAbilities(Abilities.MAGIC)) {
-            for (int i = 0; i < magic_energy.length; i++) {
-                increaseMagicEnergy(i, t);
-            }
+            getOwner().getRaceInfo().getMagics().forEach(magic -> increaseMagicEnergy(magic, t));
         }
     }
 
-    public void increaseMagicEnergy(int index, float amount) {
-        magic_energy[index] += amount;
-        if (magic_energy[index] > MAX_MAGIC_ENERGY[index]) {
-            magic_energy[index] = MAX_MAGIC_ENERGY[index];
-        }
+    private float getMagicEnergy(@NonNull MagicType type) {
+        return magic_energy.getOrDefault(type, 0f);
+    }
+
+    private void setMagicEnergy(@NonNull MagicType type, float value) {
+        magic_energy.put(type, value);
+    }
+
+    public void increaseMagicEnergy(@NonNull MagicType type, float amount) {
+        float nextVal = Math.min(MAX_MAGIC_ENERGY.get(type), getMagicEnergy(type) + amount);
+        setMagicEnergy(type, nextVal);
+    }
+
+    public void maxMagicEnergy(@NonNull MagicType type) {
+        setMagicEnergy(type, MAX_MAGIC_ENERGY.get(type));
     }
 
     @Override
@@ -503,36 +517,40 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         IO.println("Primary Controller = " + getPrimaryController());
         if (getAbilities().hasAbilities(Abilities.MAGIC)) {
             IO.println("Hit Points = " + hit_points);
-            IO.println("Magic Energy 0 = " + magic_energy[0]);
-            IO.println("Magic Energy 1 = " + magic_energy[1]);
+            for (MagicType type : getOwner().getRaceInfo().getMagics()) {
+                IO.println("Magic Energy " + type.name() + " = " + getMagicEnergy(type));
+            }
             IO.println("Controller = " + getPrimaryController());
         }
     }
 
-    public boolean canDoMagic(int magic_index) {
-        return !isDead() && magic_index >= 0 && magic_index < RacesResources.NUM_MAGIC && getOwner().canDoMagic(
-                magic_index) && magic_energy[magic_index] == MAX_MAGIC_ENERGY[magic_index];
+    public boolean canDoMagic(@NonNull MagicType type) {
+        return !isDead() && getOwner().canDoMagic(type) && getMagicEnergy(type) == MAX_MAGIC_ENERGY.get(type);
     }
 
-    public void doMagic(int magic_index, boolean clear_stack) {
-        if (canDoMagic(magic_index)) {
+    public boolean canDoMagic(int slotIndex) {
+        return canDoMagic(getOwner().getRaceInfo().getMagicType(slotIndex));
+    }
+
+    public void doMagic(@NonNull MagicType type, boolean clear_stack) {
+        if (canDoMagic(type)) {
             if (clear_stack)
                 clearControllerStack();
-            pushController(new MagicController(this, getOwner().getRaceInfo().getMagicFactory(magic_index)));
-            Arrays.fill(magic_energy, 0f);
-            last_magic_index = magic_index;
+            pushController(new MagicController(this, getOwner().getRaceInfo().getMagicFactory(type)));
+            magic_energy.clear();
+            last_magic_type = type;
 
             // stats
             getOwner().magicCast();
         }
     }
 
-    public int getLastMagicIndex() {
-        return last_magic_index; // for tutorial
+    public @Nullable MagicType getLastMagicType() {
+        return last_magic_type;
     }
 
-    public float getMagicProgress(int magic_index) {
-        return magic_energy[magic_index] / MAX_MAGIC_ENERGY[magic_index];
+    public float getMagicProgress(@NonNull MagicType type) {
+        return getMagicEnergy(type) / MAX_MAGIC_ENERGY.get(type);
     }
 
     public void switchAnimation(float anim_speed, @NonNull Animation animation) {

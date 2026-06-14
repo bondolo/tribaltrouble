@@ -9,6 +9,11 @@ import com.oddlabs.tt.util.Target;
 import com.oddlabs.tt.model.BuildingType;
 import org.jspecify.annotations.NonNull;
 
+import com.oddlabs.tt.model.MagicType;
+
+/**
+ * Interface defining actions a player can take, such as deploying units, building, and casting magic.
+ */
 public interface PlayerInterface {
     void deployUnits(@NonNull Building building, @NonNull DeployType type, int num_units);
 
@@ -24,7 +29,7 @@ public interface PlayerInterface {
 
     void buildRubberWeapons(@NonNull Building building, int num_weapons, boolean infinite);
 
-    void doMagic(@NonNull Unit chieftain, int magic);
+    void doMagic(@NonNull Unit chieftain, @NonNull MagicType magic);
 
     void exitTower(@NonNull Building building);
 

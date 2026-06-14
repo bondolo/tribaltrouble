@@ -72,10 +72,10 @@ public abstract class Island {
                 viewer.getLocalPlayer().enableRubber(false);
             }
             if (!campaign.getState().hasMagic0()) {
-                viewer.getLocalPlayer().enableMagic(0, false);
+                viewer.getLocalPlayer().enableMagic(viewer.getLocalPlayer().getRaceInfo().getMagicType(0), false);
             }
             if (!campaign.getState().hasMagic1()) {
-                viewer.getLocalPlayer().enableMagic(1, false);
+                viewer.getLocalPlayer().enableMagic(viewer.getLocalPlayer().getRaceInfo().getMagicType(1), false);
             }
             List<@NonNull Player> players = viewer.getWorld().getPlayers();
             switch (campaign.getState().getDifficulty()) {

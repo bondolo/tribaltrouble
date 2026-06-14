@@ -8,6 +8,7 @@ import com.oddlabs.tt.model.BuildingType;
 
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.model.MagicType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.JumpDelegate;
@@ -121,10 +122,8 @@ public final class NativeIsland3 extends Island {
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
-        local_player.getChieftain().ifPresent(chieftain -> {
-            chieftain.increaseMagicEnergy(0, 1000);
-            chieftain.increaseMagicEnergy(1, 1000);
-        });
+        local_player.getChieftain().ifPresent(chieftain ->
+                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
         // 5 peons
         for (int i = 0; i < 5; i++) {
             new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
@@ -154,7 +153,8 @@ public final class NativeIsland3 extends Island {
         // Ask for Stinking Stew
         final Runnable dialog8 = () -> {
             // Winning condition
-            new MagicUsedTrigger(local_player.getChieftain().orElseThrow(), thor_x, thor_y, 20, 0, prize);
+            new MagicUsedTrigger(local_player.getChieftain().orElseThrow(), thor_x, thor_y, 20, MagicType.POISON_FOG,
+                    prize);
             changeObjective(1);
 
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header8"),
@@ -218,10 +218,8 @@ public final class NativeIsland3 extends Island {
                     Origin.AT_END,
                     dialog2);
             addModalForm(dialog);
-            local_player.getChieftain().ifPresent(chieftain -> {
-                chieftain.increaseMagicEnergy(0, 1000);
-                chieftain.increaseMagicEnergy(1, 1000);
-            });
+            local_player.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
+                    chieftain::maxMagicEnergy));
         };
         new NearPointTrigger(thor_x / 2, thor_x / 2, 8, local_player.getChieftain().orElseThrow(), dialog1);
 

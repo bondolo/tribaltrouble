@@ -34,10 +34,14 @@ import com.oddlabs.tt.trigger.campaign.NearArmyTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
+import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/**
+ * Campaign level logic for Native Island 0, containing objectives and triggers.
+ */
 public final class NativeIsland0 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland0.class.getName());
 
@@ -195,10 +199,8 @@ public final class NativeIsland0 extends Island {
         enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo()
                 .getUnitTemplate(
                         UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        enemy.getChieftain().ifPresent(chieftain -> {
-            chieftain.increaseMagicEnergy(0, 1000);
-            chieftain.increaseMagicEnergy(1, 1000);
-        });
+        enemy.getChieftain().ifPresent(chieftain ->
+                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
 
         int num_iron = 45;
         for (int i = 0; i < num_iron; i++) {
@@ -249,7 +251,7 @@ public final class NativeIsland0 extends Island {
         float dir = (float) Math.sin(Math.PI / 4);
         float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
         float shadow_diameter = 4.5f;
-        var treasures = getViewer().getWorld().getRacesResources().getTreasures();
+        var treasures = VisualRegistry.getInstance().getTreasures();
         scenery_models[0] = new SceneryModel(getViewer().getWorld(), 163 * 2 + offset, 126 * 2 + offset, 0, 1,
                 treasures[0], shadow_diameter, true, i18n("statue"));
 

@@ -12,6 +12,7 @@ import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
+import com.oddlabs.tt.render.VisualRegistry;
 
 /**
  * Logic controller for the Poison Fog magic effect.
@@ -92,7 +93,7 @@ public final class PoisonFog implements Magic {
                     new Color.Linear(1f, 1f, 1f, alpha), new Color.LinearDelta(0f, 0f, 0f, -alpha / energy),
                     new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    owner.getWorld().getRacesResources().getPoisonTextures());
+                    VisualRegistry.getInstance().getPoisonTextures());
             new PointEmitterModel(owner.getWorld(), emitter);
 
             if (bursts % next_sound == 0) {

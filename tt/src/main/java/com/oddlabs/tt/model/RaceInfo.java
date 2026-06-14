@@ -8,6 +8,8 @@ import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Info for a playable race in the game (e.g., Natives or Vikings).
@@ -19,7 +21,8 @@ public final class RaceInfo {
     private final @NonNull EnumMap<UnitType, UnitTemplate> units = new EnumMap<>(UnitType.class);
     private final @NonNull AudioParameters attack_notification;
     private final @NonNull AudioParameters building_notification;
-    private final @NonNull MagicFactory @NonNull [] magic_factory;
+    private final @NonNull List<@NonNull MagicType> magics;
+    private final @NonNull Map<@NonNull MagicType, @NonNull MagicFactory> magicFactories;
     private final @NonNull ChieftainAI chieftain_ai;
     private final @NonNull AudioParameters music;
 
@@ -29,7 +32,7 @@ public final class RaceInfo {
             @NonNull UnitTemplate warrior_rubber,
             @NonNull UnitTemplate peon, @NonNull UnitTemplate chieftain,
             @NonNull AudioFile attack_notification, @NonNull AudioFile building_notification,
-            @NonNull MagicFactory @NonNull [] magic_factory,
+            @NonNull Map<MagicType, MagicFactory> magicFactories,
             @NonNull ChieftainAI chieftain_ai,
             @NonNull AudioParameters music) {
         this.race = race;
@@ -49,7 +52,11 @@ public final class RaceInfo {
                 AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
                 AudioAssets.AUDIO_RADIUS_NOTIFICATION,
                 1f, false, true);
-        this.magic_factory = magic_factory;
+        this.magics = switch (race) {
+            case Race.NATIVES -> List.of(MagicType.POISON_FOG, MagicType.LIGHTNING_CLOUD);
+            case Race.VIKINGS -> List.of(MagicType.STUN, MagicType.SONIC_BLAST);
+        };
+        this.magicFactories = new EnumMap<>(magicFactories);
         this.chieftain_ai = chieftain_ai;
         this.music = music;
     }
@@ -82,8 +89,20 @@ public final class RaceInfo {
         return building_notification;
     }
 
-    public @NonNull MagicFactory getMagicFactory(int i) {
-        return magic_factory[i];
+    public @NonNull List<@NonNull MagicType> getMagics() {
+        return magics;
+    }
+
+    public @NonNull MagicType getMagicType(int slotIndex) {
+        return magics.get(slotIndex);
+    }
+
+    public @NonNull MagicFactory getMagicFactory(@NonNull MagicType type) {
+        MagicFactory factory = magicFactories.get(type);
+        if (factory == null) {
+            throw new IllegalArgumentException("No magic factory registered for magic type: " + type);
+        }
+        return factory;
     }
 
     public @NonNull ChieftainAI getChieftainAI() {
