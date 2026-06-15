@@ -73,7 +73,7 @@ public final class IslandGenerator implements WorldGenerator {
     }
 
     @Override
-    public @NonNull WorldInfo generate(int num_players, int initial_unit_count, float random_start_pos) {
+    public @NonNull WorldInfo<Texture> generate(int num_players, int initial_unit_count, float random_start_pos) {
         int colormap_size = grid_units * getTexelsPerGridUnit();
         int chunks_per_colormap = colormap_size / TEXELS_PER_CHUNK;
 
@@ -100,7 +100,7 @@ public final class IslandGenerator implements WorldGenerator {
 
         // Create temporary heightmap texture for baking
         int grid_width = meters_per_world / HeightMap.METERS_PER_UNIT_GRID;
-        WorldInfo.Maps maps;
+        WorldInfo.Maps<Texture> maps;
         try (Texture heightMapTexture = new Texture(landscape.getHeight(), grid_width, grid_width,
                 GL30.GL_R32F, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT)) {
             baker.setHeightMap(heightMapTexture, meters_per_world);
@@ -110,7 +110,7 @@ public final class IslandGenerator implements WorldGenerator {
         IO.println("Landscape baked in " + Duration.between(time_before, time_after));
 
         ProgressForm.progress();
-        return new WorldInfo(terrain, meters_per_world, landscape.getSeaLevelMeters(),
+        return new WorldInfo<>(terrain, meters_per_world, landscape.getSeaLevelMeters(),
                 colormap_size, chunks_per_colormap, null, maps, detail, detailNormal,
                 landscape.getHeight(),
                 landscape.getTrees(), landscape.getPalmtrees(), landscape.getRock(), landscape.getIron(), landscape

@@ -60,7 +60,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private @Nullable Building selected_building;
 
     public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues,
-            @NonNull WorldInfo world_info, @NonNull LandscapeRenderer landscape_renderer, @NonNull Picker picker,
+            @NonNull WorldInfo<Texture> world_info, @NonNull LandscapeRenderer landscape_renderer,
+            @NonNull Picker picker,
             @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
@@ -74,7 +75,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.sky = new Sky(landscape_renderer, world_info.terrain(), world_info.detail(), world_info.detailNormal());
         this.modelViewStack = modelViewStack;
         this.projectionStack = projectionStack;
-        this.water = new Water(world.getHeightMap(), world_info.terrain(), sky, modelViewStack, projectionStack);
+        this.water = new Water(world.getHeightMap(), world_info.terrain(), sky, modelViewStack);
         this.landscape_renderer.setWater(this.water);
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();

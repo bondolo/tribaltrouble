@@ -68,7 +68,7 @@ public final class World {
     public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation,
             @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
-            @NonNull WorldInfo world_info, List<@NonNull PlayerInfo> player_infos,
+            @NonNull WorldInfo<?> world_info, List<@NonNull PlayerInfo> player_infos,
             Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants) {
         ProgressForm.progress();
         World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener,
@@ -154,7 +154,7 @@ public final class World {
     private World(@NonNull AudioImplementation audio_implementation,
             @NonNull LandscapeBoundsProvider landscape_resources,
             @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
-            @NonNull WorldParameters world_params, @NonNull WorldInfo world_info,
+            @NonNull WorldParameters world_params, @NonNull WorldInfo<?> world_info,
             @NonNull List<@NonNull PlayerInfo> player_infos, Color.@NonNull Linear @NonNull [] teamColors,
             boolean insertPlants) {
         IO.println("****************** Generating landscape ********************");

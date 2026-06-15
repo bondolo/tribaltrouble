@@ -3,6 +3,8 @@ package com.oddlabs.tt.landscape;
 import com.oddlabs.tt.global.Globals;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import java.util.Optional;
 
 import java.util.List;
 
@@ -32,7 +34,8 @@ public final class HeightMap {
     private final float meters_per_chunk_border;
     private final float chunk_tex_scale;
     private final World world_instance;
-    private final com.oddlabs.tt.render.@NonNull Texture heightTexture;
+    private @Nullable ClientState clientState;
+    private static @Nullable ClientStateFactory clientStateFactory;
 
     public HeightMap(World world_instance, int meters_per_world, float sea_level_meters, int texels_per_colormap,
             int chunks_per_colormap, float @NonNull [] world, List<int[]> trees, boolean[][] access_grid,
@@ -60,15 +63,36 @@ public final class HeightMap {
         chunk_tex_scale = 1f / (meters_per_chunk + 2f * meters_per_chunk_border);
 
         landscape_leaves = new LandscapeLeaf[getPatchesPerWorld()][getPatchesPerWorld()];
-
-        // Create Height Texture
-        heightTexture = new com.oddlabs.tt.render.Texture(world, grid_units_per_world, grid_units_per_world,
-                org.lwjgl.opengl.GL30.GL_R32F, org.lwjgl.opengl.GL11.GL_LINEAR, org.lwjgl.opengl.GL11.GL_LINEAR,
-                org.lwjgl.opengl.GL11.GL_REPEAT);
     }
 
-    public com.oddlabs.tt.render.@NonNull Texture getHeightTexture() {
-        return heightTexture;
+    /**
+     * Client-side visual state for HeightMap.
+     */
+    public interface ClientState {
+        void editHeight(int x, int y, float height);
+    }
+
+    /**
+     * Factory for creating the client-side visual state of HeightMap.
+     */
+    public interface ClientStateFactory {
+        @Nullable
+        ClientState createClientState(@NonNull HeightMap heightMap);
+    }
+
+    public static void setClientStateFactory(@Nullable ClientStateFactory factory) {
+        clientStateFactory = factory;
+    }
+
+    public <C extends ClientState> @NonNull Optional<C> getClientState(@NonNull Class<? extends C> type) {
+        if (clientState == null && clientStateFactory != null) {
+            clientState = clientStateFactory.createClientState(this);
+        }
+        return Optional.ofNullable(type.isInstance(clientState) ? type.cast(clientState) : null);
+    }
+
+    public float @NonNull [] getHeightData() {
+        return world;
     }
 
     public @NonNull World getWorld() {
@@ -268,17 +292,17 @@ public final class HeightMap {
     }
 
     public void editHeight(int grid_x, int grid_y, float height) {
-        grid_x = wrapGridCoord(grid_x);
-        grid_y = wrapGridCoord(grid_y);
-        world[grid_y * grid_units_per_world + grid_x] = height;
+        final int wrappedX = wrapGridCoord(grid_x);
+        final int wrappedY = wrapGridCoord(grid_y);
+        world[wrappedY * grid_units_per_world + wrappedX] = height;
 
-        heightTexture.update(grid_x, grid_y, 1, 1, height);
+        getClientState(ClientState.class).ifPresent(cs -> cs.editHeight(wrappedX, wrappedY, height));
 
-        int patch_x1 = grid_x / GRID_UNITS_PER_PATCH;
+        int patch_x1 = wrappedX / GRID_UNITS_PER_PATCH;
 
-        int patch_y1 = grid_y / GRID_UNITS_PER_PATCH;
-        boolean x_border = patch_x1 * GRID_UNITS_PER_PATCH == grid_x;
-        boolean y_border = patch_y1 * GRID_UNITS_PER_PATCH == grid_y;
+        int patch_y1 = wrappedY / GRID_UNITS_PER_PATCH;
+        boolean x_border = patch_x1 * GRID_UNITS_PER_PATCH == wrappedX;
+        boolean y_border = patch_y1 * GRID_UNITS_PER_PATCH == wrappedY;
         int patch_x0 = (patch_x1 - (x_border ? 1 : 0) + patches_per_world) % patches_per_world;
         int patch_y0 = (patch_y1 - (y_border ? 1 : 0) + patches_per_world) % patches_per_world;
 

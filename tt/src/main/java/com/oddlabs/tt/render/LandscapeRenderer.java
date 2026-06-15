@@ -59,7 +59,8 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         this.water = water;
     }
 
-    public LandscapeRenderer(@NonNull World world, @NonNull WorldInfo world_info, @NonNull AnimationManager manager) {
+    public LandscapeRenderer(@NonNull World world, @NonNull WorldInfo<Texture> world_info,
+            @NonNull AnimationManager manager) {
         this.world = world;
         this.diffuseMap = world_info.maps().diffuse();
         this.normalMap = world_info.maps().normal();
@@ -136,7 +137,9 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             context.setTexture(2, detailMap);
             shader.setUniform(LandscapeShader.Uniforms.DETAIL_MAP, 2);
 
-            context.setTexture(3, world.getHeightMap().getHeightTexture());
+            context.setTexture(3, world.getHeightMap()
+                    .getClientState(HeightMapVisual.class)
+                    .map(HeightMapVisual::getHeightTexture).orElseThrow());
             shader.setUniform(LandscapeShader.Uniforms.HEIGHT_MAP, 3);
 
             context.setTexture(4, detailNormalMap);

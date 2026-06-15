@@ -43,6 +43,7 @@ import com.oddlabs.tt.render.Picker;
 import com.oddlabs.tt.render.RacesVisualsLoader;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.util.ServerMessageBundler;
@@ -149,8 +150,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
         };
         var player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toList();
-        WorldInfo world_info = generator.generate(player_infos.size(), world_params.getInitialUnitCount(), ingame_info
-                .getRandomStartPosition());
+        @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(
+                player_infos.size(), world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
         AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
                 .getAudioManager().newAudio(camera_state, x, y, z, params);
@@ -172,8 +173,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.panel = new ActionButtonPanel(this, camera);
         this.delegate = new SelectionDelegate(this, camera);
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
-        initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos, world_params
-                .getInitialGameSpeed());
+        initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos,
+                world_params.getInitialGameSpeed());
         renderer.getEventQueue().getManager().registerAnimation(this);
     }
 

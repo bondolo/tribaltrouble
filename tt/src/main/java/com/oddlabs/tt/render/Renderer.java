@@ -16,6 +16,7 @@ import com.oddlabs.tt.delegate.MainMenu;
 import com.oddlabs.tt.camera.StaticCamera;
 import com.oddlabs.tt.delegate.InGameDelegate;
 import com.oddlabs.tt.delegate.InGameMainMenu;
+import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.tt.event.LocalEventQueue;
 import com.oddlabs.tt.form.MessageForm;
@@ -125,6 +126,7 @@ public final class Renderer implements AutoCloseable {
             }
             return visualModel;
         });
+        HeightMap.setClientStateFactory(HeightMapVisual::new);
     }
 
     private static final StatCounter fps = new StatCounter(10);
@@ -867,7 +869,8 @@ public final class Renderer implements AutoCloseable {
         MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
-        WorldInfo world_info = generator.generate(players.size(), world_params.getInitialUnitCount(), 0f);
+        @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(players
+                .size(), world_params.getInitialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
         com.oddlabs.tt.form.ProgressForm.progress();

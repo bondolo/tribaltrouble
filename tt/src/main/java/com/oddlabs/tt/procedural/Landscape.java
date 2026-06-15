@@ -179,13 +179,14 @@ public final class Landscape {
         area = size_multiplier * 10000f;
         max_plants = size_multiplier * 64;
 
-        if (terrain == Terrain.NATIVE) {
-            max_trees = (int) Math.pow(2, 2 * Utils.powerOf2Log2(meters_per_world) - 9);
-            max_palmtrees = max_trees >> 1;
-        } else {
-            max_trees = (int) (.75f * Math.pow(2, 2 * Utils.powerOf2Log2(meters_per_world) - 9));
-            max_palmtrees = max_trees;
-        }
+        max_trees = switch (terrain) {
+            case NATIVE -> (int) Math.pow(2, 2 * Utils.powerOf2Log2(meters_per_world) - 9);
+            case VIKING -> (int) (.75f * Math.pow(2, 2 * Utils.powerOf2Log2(meters_per_world) - 9));
+        };
+        max_palmtrees = switch (terrain) {
+            case NATIVE -> max_trees >> 1;
+            case VIKING -> max_trees;
+        };
 
         max_rock = max_trees >> 3;
         max_iron = max_trees >> 4;

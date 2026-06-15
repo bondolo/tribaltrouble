@@ -1,4 +1,5 @@
 /**
- * Contains the client-side graphics rendering engine, shaders, and visual registers.
+ * Rendering subsystem for Tribal Trouble.
+ * Contains components for rendering the world, units, landscape, and user interface.
  */
 package com.oddlabs.tt.render;

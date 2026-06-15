@@ -6,7 +6,7 @@ import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.LandscapeLeaf;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.procedural.GeneratorOcean;
-import com.oddlabs.tt.procedural.TextureGenerator;
+import com.oddlabs.tt.render.HeightMapVisual;
 import com.oddlabs.tt.render.MatrixStack;
 import com.oddlabs.tt.render.PatchMesh;
 import com.oddlabs.tt.render.Renderer;
@@ -79,25 +79,27 @@ public final class Water implements AutoCloseable {
     public static final float VIKING_WAVE_LEN_2 = 28.0f;
     public static final float VIKING_WAVE_LEN_3 = 14.0f;
 
+    private static final float[] WAVE_DIRS_X = new float[]{WAVE_DIR_X_1, WAVE_DIR_X_2, WAVE_DIR_X_3};
+    private static final float[] WAVE_DIRS_Y = new float[]{WAVE_DIR_Y_1, WAVE_DIR_Y_2, WAVE_DIR_Y_3};
+
     private final @NonNull Terrain terrain;
     private final @NonNull Sky sky;
     private final @NonNull MatrixStack modelViewStack;
-    private final @NonNull MatrixStack projectionStack;
     private final @NonNull HeightMap heightMap;
 
     private final @NonNull Texture @NonNull [] ocean;
 
-    private final @NonNull WaterShader waterShader;
-    private final @NonNull VertexArray skyWaterVao;
-    private final @NonNull PatchMesh patchMesh;
+    private final @NonNull WaterShader waterShader = new WaterShader();
+    private final @NonNull VertexArray skyWaterVao = new VertexArray();
+    private final @NonNull PatchMesh patchMesh = new PatchMesh();
 
     private final @NonNull BitSet oceanPatches;
 
     // Non-final to allow resizing
-    private @NonNull FloatVBO oceanInstanceVBO;
-    private @NonNull FloatBuffer oceanInstanceBuffer;
-    private @NonNull FloatVBO inlandInstanceVBO;
-    private @NonNull FloatBuffer inlandInstanceBuffer;
+    private FloatVBO oceanInstanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2 * Float.BYTES);
+    private FloatBuffer oceanInstanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
+    private FloatVBO inlandInstanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2 * Float.BYTES);
+    private FloatBuffer inlandInstanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
 
     private final float[] scrollOffset0 = new float[2];
     private final float[] scrollOffset1 = new float[2];
@@ -113,63 +115,52 @@ public final class Water implements AutoCloseable {
     private final float @NonNull [] waveAmplitudes;
     private final float @NonNull [] waveSteepness;
     private final float @NonNull [] waveLengths;
-    private final float @NonNull [] waveDirsX;
-    private final float @NonNull [] waveDirsY;
     private final float waveSpeed;
 
     public Water(@NonNull HeightMap heightmap, @NonNull Terrain terrain, @NonNull Sky sky,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+            @NonNull MatrixStack modelViewStack) {
         this.terrain = terrain;
-        if (terrain == Terrain.VIKING) {
-            waveAmplitudes = new float[]{
+        waveAmplitudes = switch (terrain) {
+            case VIKING -> new float[]{
                     WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER,
                     WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER * WAVE_AMPLITUDE_SCALE_2,
                     WAVE_AMPLITUDE_BASE * VIKING_AMPLITUDE_MULTIPLIER * WAVE_AMPLITUDE_SCALE_3
             };
-            waveSteepness = new float[]{
-                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER,
-                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER,
-                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER
-            };
-            waveLengths = new float[]{VIKING_WAVE_LEN_1, VIKING_WAVE_LEN_2, VIKING_WAVE_LEN_3};
-            waveDirsX = new float[]{WAVE_DIR_X_1, WAVE_DIR_X_2, WAVE_DIR_X_3};
-            waveDirsY = new float[]{WAVE_DIR_Y_1, WAVE_DIR_Y_2, WAVE_DIR_Y_3};
-            waveSpeed = VIKING_WAVE_SPEED;
-        } else {
-            waveAmplitudes = new float[]{
+            case NATIVE -> new float[]{
                     WAVE_AMPLITUDE_BASE,
                     WAVE_AMPLITUDE_BASE * WAVE_AMPLITUDE_SCALE_2,
                     WAVE_AMPLITUDE_BASE * WAVE_AMPLITUDE_SCALE_3
             };
-            waveSteepness = new float[]{
+        };
+        waveSteepness = switch (terrain) {
+            case VIKING -> new float[]{
+                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER,
+                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER,
+                    WAVE_STEEPNESS_BASE * VIKING_STEEPNESS_MULTIPLIER
+            };
+            case NATIVE -> new float[]{
                     WAVE_STEEPNESS_BASE,
                     WAVE_STEEPNESS_BASE,
                     WAVE_STEEPNESS_BASE
             };
-            waveLengths = new float[]{NATIVE_WAVE_LEN_1, NATIVE_WAVE_LEN_2, NATIVE_WAVE_LEN_3};
-            waveDirsX = new float[]{WAVE_DIR_X_1, WAVE_DIR_X_2, WAVE_DIR_X_3};
-            waveDirsY = new float[]{WAVE_DIR_Y_1, WAVE_DIR_Y_2, WAVE_DIR_Y_3};
-            waveSpeed = NATIVE_WAVE_SPEED;
-        }
-        TextureGenerator ocean_desc = new GeneratorOcean(terrain);
-        ocean = Resources.findResource(ocean_desc);
+        };
+        waveLengths = switch (terrain) {
+            case VIKING -> new float[]{VIKING_WAVE_LEN_1, VIKING_WAVE_LEN_2, VIKING_WAVE_LEN_3};
+            case NATIVE -> new float[]{NATIVE_WAVE_LEN_1, NATIVE_WAVE_LEN_2, NATIVE_WAVE_LEN_3};
+        };
+        waveSpeed = switch (terrain) {
+            case VIKING -> VIKING_WAVE_SPEED;
+            case NATIVE -> NATIVE_WAVE_SPEED;
+        };
+        ocean = Resources.findResource(new GeneratorOcean(terrain));
         this.heightMap = heightmap;
 
         this.sky = sky;
         this.modelViewStack = modelViewStack;
-        this.projectionStack = projectionStack;
-        this.waterShader = new WaterShader();
 
-        this.skyWaterVao = new VertexArray();
         skyWaterVao.bind();
         setupWaterAttributes(sky.getWaterVertices(), waterShader);
         skyWaterVao.unbind();
-
-        this.patchMesh = new PatchMesh();
-        this.oceanInstanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2 * Float.BYTES);
-        this.oceanInstanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
-        this.inlandInstanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2 * Float.BYTES);
-        this.inlandInstanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
 
         int patchesPerWorld = heightmap.getPatchesPerWorld();
         this.oceanPatches = new BitSet(patchesPerWorld * patchesPerWorld);
@@ -261,13 +252,23 @@ public final class Water implements AutoCloseable {
                 waterShader.setUniform(WaterShader.Uniforms.ENABLE_DETAIL, false);
             }
 
-            context.setTexture(2, heightMap.getHeightTexture());
+            context.setTexture(2, heightMap.getClientState(HeightMapVisual.class)
+                    .map(HeightMapVisual::getHeightTexture).orElseThrow());
             waterShader.setUniform(WaterShader.Uniforms.HEIGHT_MAP, 2);
             waterShader.setUniform(WaterShader.Uniforms.WORLD_SIZE, (float) heightMap.getMetersPerWorld());
 
-            float depthScale = terrain == Terrain.NATIVE ? NATIVE_DEPTH_SCALE : VIKING_DEPTH_SCALE;
-            float minAlpha = terrain == Terrain.NATIVE ? NATIVE_MIN_ALPHA : VIKING_MIN_ALPHA;
-            float maxAlpha = terrain == Terrain.NATIVE ? NATIVE_MAX_ALPHA : VIKING_MAX_ALPHA;
+            float depthScale = switch (terrain) {
+                case NATIVE -> NATIVE_DEPTH_SCALE;
+                case VIKING -> VIKING_DEPTH_SCALE;
+            };
+            float minAlpha = switch (terrain) {
+                case NATIVE -> NATIVE_MIN_ALPHA;
+                case VIKING -> VIKING_MIN_ALPHA;
+            };
+            float maxAlpha = switch (terrain) {
+                case NATIVE -> NATIVE_MAX_ALPHA;
+                case VIKING -> VIKING_MAX_ALPHA;
+            };
 
             waterShader.setUniform(WaterShader.Uniforms.DEPTH_SCALE, depthScale);
             waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, minAlpha);
@@ -402,6 +403,7 @@ public final class Water implements AutoCloseable {
         int requiredBytes = count * 3 * Float.BYTES;
         if (vbo.capacity() < requiredBytes) {
             vbo.close();
+            //noinspection resource
             vbo = new FloatVBO(GL15.GL_STREAM_DRAW, Math.max(vbo.capacity() * 2, requiredBytes));
         }
 
@@ -435,8 +437,8 @@ public final class Water implements AutoCloseable {
     public void putGlobalUniforms(java.nio.@NonNull ByteBuffer buffer, boolean enableWaves) {
         // u_waveDirLength[3] (each element is a vec4 aligned to 16 bytes)
         for (int i = 0; i < WAVE_COUNT; i++) {
-            buffer.putFloat(waveDirsX[i]);
-            buffer.putFloat(waveDirsY[i]);
+            buffer.putFloat(WAVE_DIRS_X[i]);
+            buffer.putFloat(WAVE_DIRS_Y[i]);
             buffer.putFloat(waveLengths[i]);
             buffer.putFloat(0f); // pad
         }

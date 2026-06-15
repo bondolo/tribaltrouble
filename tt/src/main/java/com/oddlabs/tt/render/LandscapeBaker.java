@@ -145,7 +145,7 @@ public final class LandscapeBaker {
         this.worldSize = worldSize;
     }
 
-    public WorldInfo.@NonNull Maps bake(@NonNull BlendInfo @NonNull [] blendInfos) {
+    public WorldInfo.@NonNull Maps<Texture> bake(@NonNull BlendInfo @NonNull [] blendInfos) {
         checkGLError("Before bake");
         Texture[] diffuse = new Texture[2];
         Texture[] normal = new Texture[2];
@@ -267,7 +267,7 @@ public final class LandscapeBaker {
                 diffuse[1 - current].close();
                 normal[1 - current].close();
 
-                return new WorldInfo.Maps(diffuse[current], normal[current]);
+                return new WorldInfo.Maps<>(diffuse[current], normal[current]);
             } finally {
                 // Restore state
                 GL11.glViewport(viewport.get(0), viewport.get(1), viewport.get(2), viewport.get(3));
