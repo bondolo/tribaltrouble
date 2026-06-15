@@ -736,10 +736,12 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
                     if (current_unit) {
                         move_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
                     }
+                    event.consume();
                 } else if (event.consumeAction(GameAction.UNIT_BUILD_QUARTERS)) {
                     if (current_unit && current_peon) {
                         quarters_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
                     }
+                    event.consume();
                 } else if (event.consumeAction(GameAction.UNIT_ATTACK) || event.consumeAction(GameAction.PROD_ARMY)) {
                     // A - Attack or Army
                     if (current_unit) {
@@ -749,69 +751,81 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
                     } else if (current_tower) {
                         tower_attack_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
                     }
+                    event.consume();
                 } else if (event.consumeAction(GameAction.UNIT_GATHER) || event.consumeAction(
                         GameAction.PROD_HARVEST)) {
-                            // G - Gather or Harvest
-                            if (current_unit) {
-                                gather_repair_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                            } else if (current_armory) {
-                                harvest_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                            }
-                        } else if (event.consumeAction(GameAction.UNIT_BUILD_TOWER) || event.consumeAction(
-                                GameAction.PROD_TRANSPORT)) {
-                                    // T - Tower or Transport
-                                    if (current_peon) {
-                                        tower_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                    } else if (current_armory && current_submenu == null) {
-                                        transport_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                    }
-                                } else if (event.consumeAction(GameAction.TRAIN_CHIEFTAIN)) {
-                                    if (current_quarters) {
-                                        quarters_chieftain_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                    }
-                                } else if (event.consumeAction(GameAction.MAGIC_2)) {
-                                    if (current_chieftain != null) {
-                                        Player player = viewer.getLocalPlayer();
-                                        if (player.canDoMagic(1)) {
-                                            magic2_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                        }
-                                    }
-                                } else if (event.consumeAction(GameAction.PROD_WEAPONS)) {
-                                    if (current_armory && current_submenu == null)
-                                        build_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                } else if (event.consumeAction(GameAction.GAMEPLAY_BACK)) {
-                                    // Backspace
-                                    if (current_armory && current_submenu != null) {
-                                        if (current_submenu == harvest_group)
-                                            harvest_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                        else if (current_submenu == build_group)
-                                            build_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                        else if (current_submenu == army_group)
-                                            army_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                        else if (current_submenu == transport_group)
-                                            transport_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                    }
-                                } else if (event.consumeAction(GameAction.UNIT_BUILD_ARMORY)) {
-                                    if (current_peon) armory_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                } else if (event.consumeAction(GameAction.UNIT_SET_RALLY)) {
-                                    if (current_armory && current_submenu == null)
-                                        rally_point_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                    else if (current_quarters) quarters_rally_point_button.mouseClickedAll(
-                                            MouseButton.LEFT, 0, 0, 1);
-                                } else if (event.consumeAction(GameAction.UNIT_EXIT_TOWER)) {
-                                    // X - Exit Tower
-                                    if (current_tower) {
-                                        tower_exit_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                    }
-                                } else if (event.consumeAction(GameAction.MAGIC_1)) {
-                                    // S - Magic 1
-                                    if (current_chieftain != null) {
-                                        Player player = viewer.getLocalPlayer();
-                                        if (player.canDoMagic(0)) {
-                                            magic1_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                        }
-                                    }
-                                }
+                    // G - Gather or Harvest
+                    if (current_unit) {
+                        gather_repair_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    } else if (current_armory) {
+                        harvest_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    }
+                    event.consume();
+                } else if (event.consumeAction(GameAction.UNIT_BUILD_TOWER) || event.consumeAction(
+                        GameAction.PROD_TRANSPORT)) {
+                    // T - Tower or Transport
+                    if (current_peon) {
+                        tower_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    } else if (current_armory && current_submenu == null) {
+                        transport_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    }
+                    event.consume();
+                } else if (event.consumeAction(GameAction.TRAIN_CHIEFTAIN)) {
+                    if (current_quarters) {
+                        quarters_chieftain_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    }
+                    event.consume();
+                } else if (event.consumeAction(GameAction.MAGIC_2)) {
+                    if (current_chieftain != null) {
+                        Player player = viewer.getLocalPlayer();
+                        if (player.canDoMagic(1)) {
+                            magic2_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                        }
+                    }
+                    event.consume();
+                } else if (event.consumeAction(GameAction.PROD_WEAPONS)) {
+                    if (current_armory && current_submenu == null) {
+                        build_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    }
+                    event.consume();
+                } else if (event.consumeAction(GameAction.GAMEPLAY_BACK)) {
+                    // Backspace
+                    if (current_armory && current_submenu != null) {
+                        if (current_submenu == harvest_group)
+                            harvest_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                        else if (current_submenu == build_group)
+                            build_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                        else if (current_submenu == army_group)
+                            army_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                        else if (current_submenu == transport_group)
+                            transport_back_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    }
+                    event.consume();
+                } else if (event.consumeAction(GameAction.UNIT_BUILD_ARMORY)) {
+                    if (current_peon) armory_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    event.consume();
+                } else if (event.consumeAction(GameAction.UNIT_SET_RALLY)) {
+                    if (current_armory && current_submenu == null)
+                        rally_point_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    else if (current_quarters) quarters_rally_point_button.mouseClickedAll(
+                            MouseButton.LEFT, 0, 0, 1);
+                    event.consume();
+                } else if (event.consumeAction(GameAction.UNIT_EXIT_TOWER)) {
+                    // X - Exit Tower
+                    if (current_tower) {
+                        tower_exit_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                    }
+                    event.consume();
+                } else if (event.consumeAction(GameAction.MAGIC_1)) {
+                    // S - Magic 1
+                    if (current_chieftain != null) {
+                        Player player = viewer.getLocalPlayer();
+                        if (player.canDoMagic(0)) {
+                            magic1_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                        }
+                    }
+                    event.consume();
+                }
 
                 if (event.isConsumed()) return;
             }
@@ -825,6 +839,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
                 } else if (current_armory && current_submenu == army_group) {
                     army_peon_button.shortcutPressed(peon.decrement(), peon.batch());
                 }
+                event.consume();
             }
 
             // Chicken/Rubber
@@ -833,6 +848,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
             if (chicken.active()) {
                 handleArmoryShortcut(true, chicken, harvest_rubber_button, build_weapon_rubber_button,
                         army_warrior_rubber_button, transport_rubber_button);
+                event.consume();
             }
 
             // Iron
@@ -841,12 +857,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
             if (iron.active()) {
                 handleArmoryShortcut(true, iron, harvest_iron_button, build_weapon_iron_button,
                         army_warrior_iron_button, transport_iron_button);
+                event.consume();
             }
 
             var tree = checkResourceAction(event, GameAction.RES_TREE, GameAction.RES_TREE_DEC,
                     GameAction.RES_TREE_BATCH, GameAction.RES_TREE_BATCH_DEC);
             if (tree.active()) {
                 handleArmoryShortcut(true, tree, harvest_tree_button, null, null, transport_tree_button);
+                event.consume();
             }
 
             var rock = checkResourceAction(event, GameAction.RES_ROCK, GameAction.RES_ROCK_DEC,
@@ -854,6 +872,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
             if (rock.active()) {
                 handleArmoryShortcut(true, rock, harvest_rock_button, build_weapon_rock_button,
                         army_warrior_rock_button, transport_rock_button);
+                event.consume();
             }
         } else if (released) {
             var chicken = checkResourceAction(event, GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC,
@@ -861,6 +880,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
             if (chicken.active()) {
                 handleArmoryShortcut(false, chicken, harvest_rubber_button, build_weapon_rubber_button,
                         army_warrior_rubber_button, transport_rubber_button);
+                event.consume();
             } else {
                 var peon = checkResourceAction(event, GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC,
                         GameAction.TRAIN_PEON_BATCH, GameAction.TRAIN_PEON_BATCH_DEC);
@@ -868,30 +888,35 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
                     if (current_quarters) quarters_peon_button.shortcutReleased(peon.decrement(), peon.batch());
                     else if (current_armory && current_submenu == army_group)
                         army_peon_button.shortcutReleased(peon.decrement(), peon.batch());
+                    event.consume();
                 } else {
                     var iron = checkResourceAction(event, GameAction.RES_IRON, GameAction.RES_IRON_DEC,
                             GameAction.RES_IRON_BATCH, GameAction.RES_IRON_BATCH_DEC);
                     if (iron.active()) {
                         handleArmoryShortcut(false, iron, harvest_iron_button, build_weapon_iron_button,
                                 army_warrior_iron_button, transport_iron_button);
+                        event.consume();
                     } else {
                         var rock = checkResourceAction(event, GameAction.RES_ROCK, GameAction.RES_ROCK_DEC,
                                 GameAction.RES_ROCK_BATCH, GameAction.RES_ROCK_BATCH_DEC);
                         if (rock.active()) {
                             handleArmoryShortcut(false, rock, harvest_rock_button, build_weapon_rock_button,
                                     army_warrior_rock_button, transport_rock_button);
+                            event.consume();
                         } else {
                             var tree = checkResourceAction(event, GameAction.RES_TREE, GameAction.RES_TREE_DEC,
                                     GameAction.RES_TREE_BATCH, GameAction.RES_TREE_BATCH_DEC);
                             if (tree.active()) {
                                 handleArmoryShortcut(false, tree, harvest_tree_button, null, null,
                                         transport_tree_button);
+                                event.consume();
                             } else if (event.consumeAction(GameAction.UNIT_BUILD_TOWER) || event.consumeAction(
                                     GameAction.PROD_TRANSPORT)) {
-                                        if (current_armory && current_submenu == null) {
-                                            transport_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
-                                        }
-                                    }
+                                if (current_armory && current_submenu == null) {
+                                    transport_button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                                }
+                                event.consume();
+                            }
                         }
                     }
                 }
