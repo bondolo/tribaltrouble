@@ -116,6 +116,9 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec4 detailColor;
                         vec4 detailNormalColor;
 
+                        // Surface roughness metadata baked into diffuse alpha (1.0 = rough, 0.0 = smooth)
+                        float roughness = diffuseColor.a;
+
                         // Reconstruct world position and calculate dynamic wetness factor
                         vec2 worldPos = fs_in.texCoordColormap * u_WorldSize;
                         float waveHeight = getWaveHeight(worldPos) * fs_in.waveScale;
@@ -171,6 +174,13 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         if (worldNormalGeom.z > 0.98) {
                             detailColor = texture(u_DetailMap, fs_in.texCoord1);
                             detailNormalColor.rgb = texture(u_DetailNormalMap, fs_in.texCoord1).rgb * 2.0 - 1.0;
+
+                            // Dual-scale blending to break up tiling patterns
+                            vec4 detailColor2 = texture(u_DetailMap, fs_in.texCoord1 * 0.237);
+                            vec3 detailNormalColor2 = texture(u_DetailNormalMap, fs_in.texCoord1 * 0.237).rgb * 2.0 - 1.0;
+                            float blend = smoothstep(0.3, 0.7, detailColor.a);
+                            detailColor = mix(detailColor, detailColor2, blend * 0.5);
+                            detailNormalColor.rgb = normalize(mix(detailNormalColor.rgb, detailNormalColor2, blend * 0.5));
                         } else {
                             // Uniform triplanar coordinates (tile every 16 meters)
                             vec3 coord = vec3(worldPos, fs_in.height) / 16.0;
@@ -191,13 +201,26 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                             detailNormalColor.rgb = normalize(nXY * blendWeights.z +
                                                               vec3(nYZ.z * sign(worldNormalGeom.x), nYZ.x, nYZ.y) * blendWeights.x +
                                                               vec3(nXZ.x, nXZ.z * sign(worldNormalGeom.y), nXZ.y) * blendWeights.y);
+
+                            // Dual-scale blending for triplanar (larger scale at ~67 meters)
+                            vec3 coord2 = coord * 0.237;
+                            vec4 detailColorLow = textureGrad(u_DetailMap, fs_in.texCoord1 * 0.237, ddx * 0.237, ddy * 0.237) * blendWeights.z +
+                                                 textureGrad(u_DetailMap, coord2.yz, ddx * 0.237, ddy * 0.237) * blendWeights.x +
+                                                 textureGrad(u_DetailMap, coord2.xz, ddx * 0.237, ddy * 0.237) * blendWeights.y;
+                            float blend = smoothstep(0.3, 0.7, detailColor.a);
+                            detailColor = mix(detailColor, detailColorLow, blend * 0.5);
+                            // Normal map blending is complex; for simplicity and performance, we mainly blend the diffuse modulation
                         }
 
-                        // Subtly modulate diffuse color with detail noise
+                        // Subtly modulate diffuse color with detail noise (masked by surface roughness)
                         float slope = 1.0 - worldNormalGeom.z;
                         vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
                         float detailFade = clamp(detailColor.a / 0.15, 0.0, 1.0);
-                        float detailStrength = mix(0.15, 0.35, slope) * normalMapStrength * detailFade;
+
+                        // Distance-based detail fade to prevent shimmering
+                        float distFade = 1.0 - clamp((fs_in.fogDist - 100.0) / 400.0, 0.0, 1.0);
+
+                        float detailStrength = mix(0.15, 0.35, slope) * normalMapStrength * detailFade * roughness;
                         float detailOffset = 1.0 - detailStrength * 0.5;
                         srgbDiffuse *= (detailColor.rgb * detailStrength + detailOffset);
                         diffuseColor.rgb = pow(srgbDiffuse, vec3(2.2));
@@ -218,7 +241,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         // Extract deviation from "flat" geometry normal and transform to view space
                         vec3 detailDeviation = detailNormalColor.rgb - worldNormalGeom;
                         vec3 vDetailNormal = (u_viewMatrix * vec4(detailDeviation, 0.0)).xyz;
-                        float detailNormalStrength = mix(0.20, 0.02, wetness) * normalMapStrength * detailFade;
+                        float detailNormalStrength = mix(0.20, 0.02, wetness) * normalMapStrength * detailFade * roughness * distFade;
                         vec3 normal = normalize(baseNormal + vDetailNormal * detailNormalStrength);
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
@@ -229,8 +252,19 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         // For wet surfaces, blend to a sharper and more intense water-film specular highlight
                         float drySpecIntensity = normalMapVal.a * 0.05;
                         float wetSpecIntensity = 0.05;
-                        float specExponent = mix(32.0, 80.0, wetness);
+
+                        // Specular exponent sharpened by surface smoothness (low roughness)
+                        float specExponent = mix(128.0, 32.0, roughness);
+                        specExponent = mix(specExponent, 80.0, wetness);
+
                         float specIntensity = mix(drySpecIntensity, wetSpecIntensity, wetness);
+
+                        // Fresnel reflection (Schlick approximation)
+                        // Smooth surfaces (snow/ice) gain intensity at grazing angles.
+                        float fresnelBase = mix(0.04, 0.20, wetness); // Base reflectivity
+                        float fresnel = fresnelBase + (1.0 - fresnelBase) * pow(clamp(1.0 - dot(normal, viewDir), 0.0, 1.0), 5.0);
+                        specIntensity = mix(specIntensity, specIntensity * 2.0, fresnel * (1.0 - roughness));
+
                         float spec = pow(max(dot(normal, halfDir), 0.0), specExponent);
                         vec3 specular = specIntensity * spec * vec3(1.0);
 

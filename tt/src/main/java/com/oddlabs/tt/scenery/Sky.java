@@ -596,7 +596,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         Layer bottom = new Layer(
                 new Channel(size, size).fill(color.r()),
                 new Channel(size, size).fill(color.g()),
-                new Channel(size, size).fill(color.b())
+                new Channel(size, size).fill(color.b()),
+                new Channel(size, size).fill(0.2f) // Smooth (low detail)
         );
         return new Landscape.StructureLayers(bottom, getFlatNormal(size));
     }
