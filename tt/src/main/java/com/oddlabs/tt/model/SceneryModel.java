@@ -21,6 +21,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     private final int animation;
     private final float seconds_per_animation_cycle;
     private float anim_time = 0;
+    private boolean registeredTarget = false;
 
     public SceneryModel(@NonNull World world, float x, float y, float dir_x, float dir_y,
             @NonNull BoundsProvider boundsProvider) {
@@ -85,6 +86,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
         register();
         reinsert();
         getWorld().getNotificationListener().registerTarget(this);
+        registeredTarget = true;
         if (animation > -1)
             getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
@@ -95,7 +97,10 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
             getWorld().getUnitGrid().freeGrid(getGridX(), getGridY(), this);
         }
         super.remove();
-        getWorld().getNotificationListener().unregisterTarget(this);
+        if (registeredTarget) {
+            getWorld().getNotificationListener().unregisterTarget(this);
+            registeredTarget = false;
+        }
         if (animation > -1)
             getWorld().getAnimationManagerGameTime().removeAnimation(this);
     }
