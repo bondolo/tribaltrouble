@@ -1,30 +1,25 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.model.PointEmitterModel;
+import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.resource.AudioAssets;
-import com.oddlabs.util.Color;
-import org.joml.Vector3f;
+import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.opengl.GL11;
-import com.oddlabs.tt.render.VisualRegistry;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Logic controller for the Poison Fog magic effect.
  * Periodically spawns gas bursts and applies damage to units within its radius.
  */
-public final class PoisonFog implements Magic {
+public final class PoisonFog extends Model implements Magic {
 
     private static final int PARTICLES_PER_BURST = 4;
     private static final float SECONDS_BETWEEN_BURSTS = .15f;
     private static final float BURST_RADIUS = 2f;
     private static final float GAUSSIAN_LIMIT = 2.5f;
-    private static final int MIN_BURSTS_PER_SOUND = 2;
 
 
     private final float hit_radius;
@@ -37,16 +32,14 @@ public final class PoisonFog implements Magic {
     private final float start_y;
     private final float offset_z;
     private final float total_time;
-    private final @NonNull AudioPlayer bubbling_sound;
 
-    private int next_sound = 1;
     private float time = 0f;
     private int bursts = 0;
     private int num_hits = 0;
-    private boolean first_run = true;
 
     public PoisonFog(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance, float interval,
             float time, int damage, @NonNull Unit src) {
+        super(src.getOwner().getWorld());
         this.hit_radius = hit_radius;
         this.hit_chance = hit_chance;
         this.interval = interval;
@@ -58,9 +51,37 @@ public final class PoisonFog implements Magic {
 
         start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
         start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
+        setPosition(start_x, start_y, owner.getWorld().getHeightMap().getNearestHeight(start_x, start_y));
+        register();
+        owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
+    }
 
-        bubbling_sound = owner.getWorld().getAudio().newAudio(start_x, start_y, owner.getWorld().getHeightMap()
-                .getNearestHeight(start_x, start_y), AudioAssets.BUBBLING);
+    public float getHitRadius() {
+        return hit_radius;
+    }
+
+    public float getCloudOffsetZ() {
+        return offset_z;
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+        getClientState(ModelClient.class).ifPresent(ModelClient::close);
+    }
+
+    @Override
+    protected void onReinsert() {
+        float x = getPositionX();
+        float y = getPositionY();
+        float z = getPositionZ();
+        setBounds(x, x, y, y, z, z);
+    }
+
+    @Override
+    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+        return null;
     }
 
     @Override
@@ -69,37 +90,8 @@ public final class PoisonFog implements Magic {
         if (time >= total_time) {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         }
-        if (first_run) {
-            bubbling_sound.stop(15.0f);
-            first_run = false;
-        }
 
         if (bursts * SECONDS_BETWEEN_BURSTS < time) {
-            float gaussian = (float) (GAUSSIAN_LIMIT - Math.abs(Math.clamp(owner.getWorld().getRandom().nextGaussian(),
-                    -GAUSSIAN_LIMIT, GAUSSIAN_LIMIT))) / GAUSSIAN_LIMIT;
-            float r = gaussian * (hit_radius - BURST_RADIUS - 5f);
-            float a = owner.getWorld().getRandom().nextFloat(0f, (float) Math.PI * 2);
-            float x = start_x + (float) Math.cos(a) * r;
-            float y = start_y + (float) Math.sin(a) * r;
-            float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
-            float alpha = 8f;
-            float energy = 2f;
-
-            RandomVelocityEmitter emitter = new RandomVelocityEmitter(owner.getWorld(), new Vector3f(x, y, z), offset_z,
-                    owner.getWorld().getRandom().nextFloat(0f, (float) Math.PI * 2),
-                    BURST_RADIUS, 0f, 0f, 0f,
-                    PARTICLES_PER_BURST, PARTICLES_PER_BURST,
-                    new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f),
-                    new Color.Linear(1f, 1f, 1f, alpha), new Color.LinearDelta(0f, 0f, 0f, -alpha / energy),
-                    new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
-                    GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    VisualRegistry.getInstance().getPoisonTextures());
-            new PointEmitterModel(owner.getWorld(), emitter);
-
-            if (bursts % next_sound == 0) {
-                next_sound = MIN_BURSTS_PER_SOUND + owner.getWorld().getRandom().nextInt(5);
-                owner.getWorld().getAudio().newAudio(x, y, z, AudioAssets.POISON_GAS);
-            }
             bursts++;
         }
 
@@ -107,6 +99,7 @@ public final class PoisonFog implements Magic {
             hitUnits(hit_radius);
             num_hits++;
         }
+        animateClientState(t);
     }
 
     private void hitUnits(float radius) {
@@ -130,6 +123,6 @@ public final class PoisonFog implements Magic {
 
     @Override
     public void interrupt() {
-        bubbling_sound.stop(15.0f);
+        remove();
     }
 }

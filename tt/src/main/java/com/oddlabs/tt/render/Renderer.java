@@ -98,6 +98,35 @@ public final class Renderer implements AutoCloseable {
     private static final int INSTRUMENTATION_FRAME_COUNT = Integer.MAX_VALUE;
 
     private static final Renderer renderer_instance = new Renderer();
+
+    static {
+        com.oddlabs.tt.model.Model.setClientStateFactory(model -> {
+            VisualModel visualModel = new VisualModel(model);
+            if (model instanceof com.oddlabs.tt.model.Unit unit) {
+                if (unit.getAbilities().hasAbilities(com.oddlabs.tt.model.Abilities.BUILD)) {
+                    visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
+                }
+            } else if (model instanceof com.oddlabs.tt.model.Building building) {
+                float hitOffsetZ = building.getHitOffsetZ();
+                visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ));
+                visualModel.getAccessories().add(new BuildingProductionAccessory(building));
+            } else if (model instanceof com.oddlabs.tt.model.IronSupply ironSupply) {
+                visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply));
+            } else if (model instanceof com.oddlabs.tt.model.RockSupply rockSupply) {
+                visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply));
+            } else if (model instanceof com.oddlabs.tt.model.weapon.LightningCloud cloud) {
+                visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud));
+            } else if (model instanceof com.oddlabs.tt.model.weapon.PoisonFog fog) {
+                visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog));
+            } else if (model instanceof com.oddlabs.tt.model.weapon.Stun stun) {
+                visualModel.getAccessories().add(new StunVisualAccessory(stun));
+            } else if (model instanceof com.oddlabs.tt.model.weapon.SonicBlast blast) {
+                visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast));
+            }
+            return visualModel;
+        });
+    }
+
     private static final StatCounter fps = new StatCounter(10);
     private static int num_triangles_rendered;
     private static boolean grab_frames = false;

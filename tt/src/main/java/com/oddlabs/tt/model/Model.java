@@ -173,8 +173,22 @@ public abstract class Model extends Element<Model> implements Shadowable {
         }
     }
 
+    public interface ClientStateFactory {
+        @Nullable
+        ClientState createClientState(@NonNull Model model);
+    }
+
+    private static @Nullable ClientStateFactory clientStateFactory;
+
+    public static void setClientStateFactory(@Nullable ClientStateFactory factory) {
+        clientStateFactory = factory;
+    }
+
     /** {@return the client state of the specified class type, or empty if not set or of a different type} */
     public final <C extends ClientState> @NonNull Optional<C> getClientState(@NonNull Class<? extends C> type) {
+        if (clientState == null && clientStateFactory != null) {
+            clientState = clientStateFactory.createClientState(this);
+        }
         return Optional.ofNullable(type.isInstance(clientState) ? type.cast(clientState) : null);
     }
 
@@ -188,6 +202,9 @@ public abstract class Model extends Element<Model> implements Shadowable {
     }
 
     protected final void animateClientState(float t) {
+        if (clientState == null && clientStateFactory != null) {
+            clientState = clientStateFactory.createClientState(this);
+        }
         if (clientState != null) {
             clientState.update(t);
         }

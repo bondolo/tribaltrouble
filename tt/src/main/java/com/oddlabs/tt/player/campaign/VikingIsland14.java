@@ -110,8 +110,8 @@ public final class VikingIsland14 extends Island {
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        local_player.getChieftain().ifPresent(chieftain ->
-                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
+        local_player.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
+                chieftain::maxMagicEnergy));
 
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
             new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));

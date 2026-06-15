@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  * An {@link AnimatedAccessory} that wraps a particle {@link Emitter}.
  * Allows particle effects to be attached to units or buildings without quadtree overhead.
  */
-public final class EmitterAttachedAccessory implements AnimatedAccessory {
+public final class EmitterAttachedAccessory implements EmitterAccessory {
     private final @NonNull Emitter<?> emitter;
     private final @NonNull Vector3f relativeOffset;
 
@@ -48,6 +48,7 @@ public final class EmitterAttachedAccessory implements AnimatedAccessory {
         return null; // Emitters are handled separately by the emitter_queue
     }
 
+    @Override
     public @NonNull Emitter<?> getEmitter() {
         return emitter;
     }

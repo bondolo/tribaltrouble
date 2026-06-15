@@ -669,8 +669,7 @@ public final class RacesVisualsLoader {
                 AudioAssets.MUSIC_NATIVE);
 
         SpriteKey vikingRallyPoint = queues.register(new SpriteFile("/geometry/vikings/rally_point.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
-                true, true, true, false));
+                Globals.NO_MIPMAP_CUTOFF, true, true, true, false));
         VisualRegistry.getInstance().registerRallyPoint(Race.VIKINGS, vikingRallyPoint);
 
         RaceInfo vikings_raceInfo = new RaceInfo(

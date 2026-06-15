@@ -88,6 +88,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     public void animateSpawn(float t, float progress) {
         this.spawnProgress = progress;
         reinsert();
+        animateClientState(t);
     }
 
     @Override
@@ -95,6 +96,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         this.spawning = false;
         this.spawnProgress = 1.0f;
         setShowShadow(true);
+        animateClientState(0f);
     }
 
     public final float getSpawnProgress() {

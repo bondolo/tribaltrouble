@@ -1,11 +1,13 @@
 package com.oddlabs.tt.render;
 
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.particle.LinearEmitter;
 import com.oddlabs.tt.particle.RandomAccelerationEmitter;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -20,7 +22,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * An accessory that manages the chimney smoke during building production.
  */
-public final class BuildingProductionAccessory implements AnimatedAccessory {
+public final class BuildingProductionAccessory implements EmitterAccessory {
     private static final float EMITTER_ENERGY = 5.0f;
     private static final float EMITTER_ALPHA = 0.75f;
     private static final float GO_IDLE_DURATION = 1.0f;
@@ -48,8 +50,9 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
     private float productionTimer = 0f;
     private float idleTimer = 0f;
     private float goingIdleTimer = 0f;
+    private @Nullable AudioPlayer productionPlayer = null;
 
-    public BuildingProductionAccessory(@NonNull Building building, @NonNull TextureKey @NonNull [] textures) {
+    public BuildingProductionAccessory(@NonNull Building building) {
         this.building = building;
         this.chimneyOffset = building.getTemplate().getChimney();
         this.emitter = new RandomAccelerationEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f),
@@ -58,7 +61,8 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
                 new Color.Linear(1.0f, 1.0f, 1.0f, EMITTER_ALPHA),
                 Color.LinearDelta.ZERO.alpha(-EMITTER_ALPHA / EMITTER_ENERGY),
                 new Vector3f(0.3f, 0.3f, 0.3f), new Vector3f(0.5f, 0.5f, 0.6f), EMITTER_ENERGY, 0.7f,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, textures, null, textures.length);
+                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                VisualRegistry.getInstance().getSmokeTextures());
         this.emitter.stop();
         this.emitter.setBaseColor(new Color.Linear(0.0992f, 0.0992f, 0.0992f, EMITTER_ALPHA));
         this.emitter.setSpectrumRange(0.0f, 1.0f);
@@ -92,6 +96,22 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
 
     @Override
     public void animate(float t) {
+        boolean isProducing = building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
+                && building.isAlive() && building.isProducing();
+
+        if (isProducing) {
+            if (productionPlayer == null) {
+                productionPlayer = building.getOwner().getWorld().getAudio().newAudio(
+                        building.getPositionX(), building.getPositionY(), building.getPositionZ(),
+                        AudioAssets.WEAPONS_PRODUCTION);
+            }
+        } else {
+            if (productionPlayer != null) {
+                productionPlayer.stop();
+                productionPlayer = null;
+            }
+        }
+
         if (!building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
             state = State.IDLE;
             productionTimer = 0f;
@@ -102,7 +122,6 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
             return;
         }
 
-        boolean isProducing = building.isAlive() && building.isProducing();
         if (isProducing) {
             idleTimer = 0f;
             goingIdleTimer = 0f;
@@ -159,7 +178,16 @@ public final class BuildingProductionAccessory implements AnimatedAccessory {
         return null;
     }
 
+    @Override
     public @NonNull LinearEmitter getEmitter() {
         return emitter;
+    }
+
+    @Override
+    public void close() {
+        if (productionPlayer != null) {
+            productionPlayer.stop();
+            productionPlayer = null;
+        }
     }
 }

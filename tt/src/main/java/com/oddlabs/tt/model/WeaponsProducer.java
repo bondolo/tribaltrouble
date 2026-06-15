@@ -1,9 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -22,7 +19,6 @@ public class WeaponsProducer {
 
     private float break_time = 0f;
     private boolean producing;
-    private @Nullable AudioPlayer production_player;
 
     public WeaponsProducer(@NonNull Building building, @NonNull WorkerUnitContainer unit_container,
             @NonNull BuildProductionContainer @NonNull [] production_containers) {
@@ -52,29 +48,13 @@ public class WeaponsProducer {
                     producing = true;
                 }
             }
-            startSound();
             float man_seconds_per_container = unit_container.getNumSupplies() * t / build_list.size();
             while (!build_list.isEmpty()) {
                 build_list.pop().build(man_seconds_per_container);
             }
         } else {
             producing = false;
-            stopSound();
         }
         break_time -= t;
-    }
-
-    private void startSound() {
-        if (production_player == null) {
-            production_player = building.getOwner().getWorld().getAudio().newAudio(building.getPositionX(), building
-                    .getPositionY(), building.getPositionZ(), AudioAssets.WEAPONS_PRODUCTION);
-        }
-    }
-
-    public final void stopSound() {
-        if (production_player != null) {
-            production_player.stop();
-            production_player = null;
-        }
     }
 }

@@ -1,42 +1,23 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.PointEmitterModel;
+import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.particle.CloudFunction;
-import com.oddlabs.tt.particle.Emitter;
-import com.oddlabs.tt.particle.Lightning;
-import com.oddlabs.tt.particle.ParametricEmitter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
-import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.Target;
-import com.oddlabs.util.Color;
-import org.joml.Vector3f;
+import com.oddlabs.tt.player.Player;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
-import com.oddlabs.tt.render.VisualRegistry;
 
 /**
  * Logic controller for the Lightning Cloud magic effect.
  */
-public final class LightningCloud extends PointEmitterModel implements Magic {
+public final class LightningCloud extends Model implements Magic {
     private static final int NUM_STRIKES = 6;
     private static final float SECONDS_BETWEEN_STRIKES = .125f;
-    private static final float BRIGHTNESS = Color.toLinear(.2f);
-    private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, 0);
-    private static final float LIGHTNING_TIME = .1f;
-    private static final Color.LinearDelta DELTA_COLOR = Color.LinearDelta.ZERO.alpha(-1f / LIGHTNING_TIME);
-
-    private static final float CLOUD_RADIUS_XY = 2.5f;
-    private static final float CLOUD_RADIUS_Z = 0.7f;
-    private static final float PARTICLE_RADIUS_XY = 2.0f;
-    private static final float PARTICLE_RADIUS_Z = 0.7f;
-    private static final float LIGHTING_INTENSITY = 0.10f;
 
     private final @NonNull Player owner;
     private final float seconds_per_hit;
@@ -44,83 +25,78 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
     private final float hit_chance;
     private final int damage;
     private final float height;
-    private final @NonNull AudioPlayer bubbling_sound;
-    private @Nullable AudioPlayer cloud_sound;
+    private final float seconds_to_init;
+    private final float offset_z;
 
     private float seconds_to_live;
     private @Nullable Selectable<?> target = null;
     private @Nullable Selectable<?> prev_target = null;
     private float hit_timer = 0f;
     private int strike_counter = 0;
-    private float lightning_timer = 0f;
-    private boolean lighted = false;
-    private boolean first_run = true;
 
     public LightningCloud(@NonNull World world, float offset_x, float offset_y, float offset_z, float seconds_to_live,
             float seconds_per_hit, float seconds_to_init, float meters_per_second, float hit_chance, int damage,
             float height, @NonNull Unit src) {
-        super(world, createEmitter(world, offset_x, offset_y, offset_z, seconds_to_live, seconds_to_init, height, src));
-        this.seconds_to_live = seconds_to_live;
+        super(world);
+        float start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
+        float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
+        setPosition(start_x, start_y, world.getHeightMap().getNearestHeight(start_x, start_y) + height);
+        register();
+        world.getAnimationManagerGameTime().registerAnimation(this);
 
+        this.seconds_to_live = seconds_to_live;
+        this.seconds_to_init = seconds_to_init;
+        this.offset_z = offset_z;
         this.seconds_per_hit = seconds_per_hit;
         this.meters_per_second = meters_per_second;
         this.hit_chance = hit_chance;
         this.damage = damage;
         this.height = height;
         owner = src.getOwner();
-
-        bubbling_sound = world.getAudio().newAudio(getPositionX(), getPositionY(), world.getHeightMap()
-                .getNearestHeight(getPositionX(), getPositionY()), AudioAssets.BUBBLING);
     }
 
-    private static Emitter<?> createEmitter(@NonNull World world, float offset_x, float offset_y, float offset_z,
-            float seconds_to_live, float seconds_to_init, float height, @NonNull Unit src) {
-        float start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
-        float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
-        Vector3f pos = new Vector3f(start_x, start_y, world.getHeightMap().getNearestHeight(start_x, start_y) + height);
+    public float getSecondsToLive() {
+        return seconds_to_live;
+    }
 
-        float energy = seconds_to_live + seconds_to_init;
-        var function = new CloudFunction(CLOUD_RADIUS_XY, CLOUD_RADIUS_Z);
-        var emitter = new ParametricEmitter(world, function, pos,
-                0f, offset_z, .5f, .5f, .2f,
-                45, 150f,
-                Color.Linear.WHITE.alpha(0.8f), Color.LinearDelta.ZERO,
-                new Vector3f(PARTICLE_RADIUS_XY, PARTICLE_RADIUS_XY, PARTICLE_RADIUS_Z), new Vector3f(0f, 0f, 0f),
-                energy,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, VisualRegistry.getInstance().getSmokeTextures());
-        emitter.setBaseColor(new Color.Standard(.3f, 1f).linear());
-        emitter.setColorSpectrum((spectrum, baseColor) -> baseColor);
-        emitter.setFogEnabled(false);
-        emitter.setJitterIntensity(0.05f);
-        emitter.setRandomizeScale(true);
+    public float getSecondsToInit() {
+        return seconds_to_init;
+    }
 
-        float maxLocalZ = CLOUD_RADIUS_Z * CloudFunction.TOP_PUFFINESS_PEAK;
-        emitter.setHeightLighting(LIGHTING_INTENSITY, maxLocalZ);
-        return emitter;
+    public float getCloudHeight() {
+        return height;
+    }
+
+    public float getCloudOffsetZ() {
+        return offset_z;
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+        getClientState(ModelClient.class).ifPresent(ModelClient::close);
+    }
+
+    @Override
+    protected void onReinsert() {
+        float x = getPositionX();
+        float y = getPositionY();
+        float z = getPositionZ();
+        setBounds(x, x, y, y, z, z);
+    }
+
+    @Override
+    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+        return null;
     }
 
     @Override
     public void animate(float t) {
-        if (first_run) {
-            cloud_sound = owner.getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                    AudioAssets.LIGHTNING_CLOUD);
-            first_run = false;
-            bubbling_sound.stop(15.0f);
-        }
-        cloud_sound.setPosition(getPositionX(), getPositionY(), getPositionZ());
         seconds_to_live -= t;
-        if (seconds_to_live <= 2.0f) {
-            emitter.adjustColor(new Color.LinearDelta(0f, -0.8f * t / 2.0f));
-        }
         if (seconds_to_live <= 0f) {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-            cloud_sound.stop(15.0f);
             remove();
-        }
-        lightning_timer -= t;
-        if (lightning_timer <= 0 && lighted) {
-            emitter.adjustColor(BRIGHTNESS_DELTA.negate());
-            lighted = false;
         }
 
         hit_timer += t;
@@ -133,7 +109,7 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                     target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid
                             .toGridCoordinate(getPositionY()), null).orElse(null);
                     if (target == null) {
-                        super.animate(t);
+                        animateClientState(t);
                         return;
                     }
                 }
@@ -149,14 +125,6 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                         .getDefenseChance())) {
                     target.hit(damage, dx, dy, owner);
                 }
-                float x = target.getPositionX();
-                float y = target.getPositionY();
-                float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
-                var params = new AudioParameters(
-                        AudioAssets.SFX_FLASH, AudioAssets.AUDIO_RANK_MAGIC,
-                        AudioAssets.AUDIO_DISTANCE_MAGIC, AudioAssets.AUDIO_GAIN_LIGHTNING,
-                        AudioAssets.AUDIO_RADIUS_LIGHTNING);
-                owner.getWorld().getAudio().newAudio(x, y, z, params);
                 strike(target);
                 strike(target);
                 prev_target = target;
@@ -175,30 +143,19 @@ public final class LightningCloud extends PointEmitterModel implements Magic {
                     strike(prev_target);
                     strike_counter++;
                 }
-        super.animate(t);
+        animateClientState(t);
     }
 
     private void strike(@NonNull Target target) {
-        if (lightning_timer <= 0f) {
-            emitter.adjustColor(BRIGHTNESS_DELTA);
-            lightning_timer = LIGHTNING_TIME;
-            lighted = true;
-        }
         float x = target.getPositionX();
         float y = target.getPositionY();
         float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
 
-        Vector3f cloudPos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
-        Lightning lightning = new Lightning(owner.getWorld(), cloudPos, new Vector3f(x, y, z), .5f,
-                15, Color.Linear.WHITE, DELTA_COLOR,
-                VisualRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME,
-                owner.getWorld().getAnimationManagerGameTime());
-        lightning.register();
+        getClientState(ModelClient.class).ifPresent(client -> client.addLightningStrike(x, y, z));
     }
 
     @Override
     public void interrupt() {
-        bubbling_sound.stop(15.0f);
         remove();
     }
 }

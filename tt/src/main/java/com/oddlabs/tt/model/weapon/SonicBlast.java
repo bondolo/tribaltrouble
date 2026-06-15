@@ -1,14 +1,13 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.util.BoundingBox;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -31,14 +30,10 @@ public final class SonicBlast extends Model implements Magic {
     private final float start_x;
     private final float start_y;
     private final float start_z;
-    private final @NonNull AudioPlayer lur;
-    private final @NonNull AudioPlayer rumble;
 
     private float time = 0f;
     private final @NonNull Iterable<? extends Selectable<?>> blast_targets;
     private final @NonNull SonicBlastEffect sonicBlastEffect;
-
-    private boolean first_ring_sent = false;
 
     public SonicBlast(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance_closest,
             float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, @NonNull Unit src) {
@@ -68,11 +63,6 @@ public final class SonicBlast extends Model implements Magic {
         sonicBlastEffect = new SonicBlastEffect(owner.getWorld(), new Vector3f(start_x, start_y, start_z), hit_radius,
                 seconds);
 
-        lur = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, AudioAssets.SONIC_BLAST_LUR[owner
-                .getWorld().getRandom()
-                .nextInt(AudioAssets.SONIC_BLAST_LUR.length)]);
-        rumble = owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, AudioAssets.SONIC_BLAST_RUMBLE);
-
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
 
@@ -83,14 +73,6 @@ public final class SonicBlast extends Model implements Magic {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
         }
         animateClientState(t);
-
-        if (!first_ring_sent) {
-            first_ring_sent = true;
-
-            owner.getWorld().getAudio().newAudio(start_x, start_y, start_z, AudioAssets.SONIC_BLAST);
-            lur.stop(10.0f);
-            rumble.stop(15.0f);
-        }
 
         float current_radius = hit_radius * time / seconds;
         float squared_radius = current_radius * current_radius;
@@ -127,9 +109,8 @@ public final class SonicBlast extends Model implements Magic {
 
     @Override
     public void interrupt() {
-        lur.stop(15.0f);
-        rumble.stop(15.0f);
         sonicBlastEffect.abort();
+        getClientState(ModelClient.class).ifPresent(ModelClient::close);
     }
 
     @Override

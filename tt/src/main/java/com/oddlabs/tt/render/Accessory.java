@@ -2,6 +2,8 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.particle.Emitter;
+import java.util.Collection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -11,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  * These accessories do not exist independently in the world quadtree and instead
  * share the lifecycle and visibility context of their parent.
  */
-public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
+public sealed interface Accessory extends AutoCloseable permits StaticAccessory, AnimatedAccessory {
     /**
      * Returns the sprite to render, or null if this accessory is rendered via other means (e.g. emitters).
      *
@@ -64,4 +66,19 @@ public sealed interface Accessory permits StaticAccessory, AnimatedAccessory {
      * @param parent The model this accessory is attached to.
      */
     void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent);
+
+    /**
+     * Appends any particle emitters managed by this accessory to the destination collection.
+     *
+     * @param dest The collection to append emitters to.
+     */
+    default void addEmitters(@NonNull Collection<@NonNull Emitter<?>> dest) {
+    }
+
+    /**
+     * Cleans up any resources (like active audio players/loops) when this accessory is removed.
+     */
+    @Override
+    default void close() {
+    }
 }

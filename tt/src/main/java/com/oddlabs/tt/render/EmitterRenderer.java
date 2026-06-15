@@ -58,10 +58,9 @@ public final class EmitterRenderer implements AutoCloseable {
     }
 
     /**
-     * Grouping by blend modes. Inside each blend mode group, we will multi-texture batch.
+     * Grouping by blend modes. Inside each blend mode group, we will batch.
      */
     private final Map<@NonNull BatchKey, @NonNull List<@NonNull BatchEntry<?>>> batches = new LinkedHashMap<>();
-    private final TextureBatcher textureBatcher = new TextureBatcher(14);
 
     public EmitterRenderer() {
         int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
@@ -130,7 +129,7 @@ public final class EmitterRenderer implements AutoCloseable {
         }
     }
 
-    private <P extends Particle> void renderParticle(@NonNull P particle, @NonNull Emitter<P> emitter, float slot) {
+    private <P extends Particle> void renderParticle(@NonNull P particle, @NonNull Emitter<P> emitter, float layer) {
         particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
         particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter
                 .getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
@@ -143,7 +142,7 @@ public final class EmitterRenderer implements AutoCloseable {
         // UV Info 2: u3, v3, u4, v4
         particle_buffer.put(particle.getU3()).put(particle.getV3()).put(particle.getU4()).put(particle.getV4());
 
-        particle_buffer.put(slot);
+        particle_buffer.put(layer);
     }
 
     private <P extends Particle> void collectParticles(@NonNull RenderQueues render_queues, @NonNull Emitter<P> emitter,
@@ -184,58 +183,33 @@ public final class EmitterRenderer implements AutoCloseable {
             shader.setUniform(ParticleShader.Uniforms.FOG_ENABLED, key.fogEnabled());
 
             var batchEntries = entry.getValue();
+            particle_buffer.clear();
+            int particleCount = 0;
 
-            int startEntry = 0;
-            while (startEntry < batchEntries.size()) {
-                textureBatcher.clear();
-                particle_buffer.clear();
-                int particleCount = 0;
-
-                int entryIdx = startEntry;
-                while (entryIdx < batchEntries.size()) {
-                    var batchEntry = batchEntries.get(entryIdx);
-                    int slot = textureBatcher.getOrAssignSlot(batchEntry.texture);
-                    if (slot == -1) {
-                        break;
-                    }
-
-                    particleCount = processBatchEntry(batchEntry, (float) slot, particleCount, context,
-                            floatsPerParticle);
-                    entryIdx++;
-                }
-
-                bindAndDraw(context, particleCount);
-                startEntry = entryIdx;
+            for (var batchEntry : batchEntries) {
+                float layer = (float) batchEntry.texture.getLayer();
+                particleCount = processBatchEntry(batchEntry, layer, particleCount, floatsPerParticle);
             }
+            flush(particleCount);
         }
     }
 
-    private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, float slot, int particleCount,
-            @NonNull RenderContext context, int floatsPerParticle) {
+    private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, float layer, int particleCount,
+            int floatsPerParticle) {
         var particles = batch.particles();
         var emitter = batch.emitter();
 
         // Iterate backwards as per original logic
         for (int i = particles.size() - 1; i >= 0; i--) {
             if (particleCount >= MAX_PARTICLES || particle_buffer.remaining() < floatsPerParticle) {
-                // This internal flush is tricky because it might split an entry's particles.
-                // But we must flush if buffer is full.
-                bindAndDraw(context, particleCount);
+                flush(particleCount);
                 particle_buffer.clear();
                 particleCount = 0;
             }
-            renderParticle(particles.get(i), emitter, slot);
+            renderParticle(particles.get(i), emitter, layer);
             particleCount++;
         }
         return particleCount;
-    }
-
-    private void bindAndDraw(@NonNull RenderContext context, int particleCount) {
-        if (particleCount == 0) return;
-
-        textureBatcher.bindTextures(context, 2);
-
-        flush(particleCount);
     }
 
     private void flush(int particleCount) {

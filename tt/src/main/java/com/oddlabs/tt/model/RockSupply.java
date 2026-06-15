@@ -1,16 +1,10 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
-import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
-import com.oddlabs.tt.render.VisualRegistry;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -30,8 +24,6 @@ public final class RockSupply extends SupplyModel {
     private float crackDecalOpacity = 0.0f;
     private float crackDecalDiameter = 0.0f;
     private float crackDecalPattern = 0.0f;
-    private @Nullable PointEmitterModel smokeEmitter = null;
-    private boolean soundPlayed = false;
 
     public RockSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
         var rotation = ThreadLocalRandom.current().nextFloat((float) -Math.PI, (float) Math.PI);
@@ -120,14 +112,6 @@ public final class RockSupply extends SupplyModel {
             crackDecalPattern = 10.0f + 0.5f * progressRatio;
             crackDecalColor = Color.Linear.WHITE;
             spawnColorTint = null;
-            if (!soundPlayed) {
-                soundPlayed = true;
-                getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                        new AudioParameters(AudioAssets.SFX_RUMBLE, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
-                                AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
-                                AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION));
-            }
-            ensureSmokeEmitter().getEmitter().setTransition(0.0f, 1.8f, 0.2f, 0.3f); // Move towards Sooty Black
         } else if (progress < 0.7f) {
             // Phase 2: Eruption - Mixture of Black and Sooty
             crackDecalOpacity = 1.0f;
@@ -135,10 +119,6 @@ public final class RockSupply extends SupplyModel {
             crackDecalPattern = 10.5f;
             crackDecalColor = Color.Linear.WHITE;
             spawnColorTint = COLOR_ERUPTION;
-
-            if (progress > 0.65f) {
-                ensureSmokeEmitter().getEmitter().setTransition(0.0f, 0.5f, 1.0f, 1.0f); // Shift back to White
-            }
         } else {
             // Phase 3: Dissipating - Back to Whispy White
             setShowShadow(true);
@@ -150,11 +130,6 @@ public final class RockSupply extends SupplyModel {
             // Fade from white (1.0) to grey (0.3)
             crackDecalColor = Color.Linear.WHITE.lerp(COLOR_DECAL_COOLED, coolProgress);
 
-            if (smokeEmitter != null) {
-                smokeEmitter.getEmitter().done();
-                smokeEmitter = null;
-            }
-
             if (coolProgress < 0.5f) {
                 float factor = coolProgress / 0.5f;
                 spawnColorTint = COLOR_ERUPTION.lerp(COLOR_COOLING, factor);
@@ -163,33 +138,7 @@ public final class RockSupply extends SupplyModel {
                 spawnColorTint = COLOR_COOLING.lerp(Color.Linear.WHITE, factor);
             }
         }
-        if (smokeEmitter != null) {
-            smokeEmitter.setPosition(getPositionX(), getPositionY(), getPositionZ());
-        }
         reinsert();
-    }
-
-    private PointEmitterModel ensureSmokeEmitter() {
-        if (smokeEmitter == null) {
-            Vector3f pos = new Vector3f(getPositionX(), getPositionY(), getPositionZ());
-            // Exact baseline physical parameters (size, velocity, spread, rate)
-            RandomVelocityEmitter emitter = new RandomVelocityEmitter(
-                    getWorld(), pos, 0.0f, 0.0f,
-                    getSize() * 0.4f, 0.1f, 0.2f, 0.1f, // spread/area
-                    -1, 15.0f, // rate
-                    new Vector3f(0f, 0f, 2.0f), new Vector3f(0f, 0f, -0.5f), // velocity/accel
-                    new Color.Linear(0.1f, 0.75f), new Color.LinearDelta(0f, -0.6f),
-                    new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f(1.0f, 1.0f, 1.0f), // size/growth
-                    1.0f, 0.2f,
-                    GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    VisualRegistry.getInstance().getSmokeTextures()
-            );
-            emitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
-            emitter.setSpectrumRange(0.2f, 1.0f);
-            smokeEmitter = new PointEmitterModel(getWorld(), emitter);
-        }
-
-        return smokeEmitter;
     }
 
     @Override
@@ -200,11 +149,12 @@ public final class RockSupply extends SupplyModel {
         crackDecalOpacity = 0.0f;
         crackDecalDiameter = 0.0f;
         crackDecalPattern = 0.0f;
-        soundPlayed = false;
-        if (smokeEmitter != null) {
-            smokeEmitter.getEmitter().done();
-            smokeEmitter = null;
-        }
         reinsert();
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        getClientState(ModelClient.class).ifPresent(ModelClient::close);
     }
 }

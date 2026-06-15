@@ -199,8 +199,8 @@ public final class NativeIsland0 extends Island {
         enemy.setActiveChieftain(new Unit(enemy, viking_start_x, viking_start_y, null, enemy.getRaceInfo()
                 .getUnitTemplate(
                         UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        enemy.getChieftain().ifPresent(chieftain ->
-                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
+        enemy.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
+                chieftain::maxMagicEnergy));
 
         int num_iron = 45;
         for (int i = 0; i < num_iron; i++) {

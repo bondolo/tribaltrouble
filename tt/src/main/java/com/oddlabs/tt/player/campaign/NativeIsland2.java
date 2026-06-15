@@ -124,8 +124,8 @@ public final class NativeIsland2 extends Island {
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));
-        local_player.getChieftain().ifPresent(chieftain ->
-                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
+        local_player.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
+                chieftain::maxMagicEnergy));
         for (int i = 0; i < getCampaign().getState().getNumPeons(); i++) {
             new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo().getUnitTemplate(UnitType.PEON));
         }

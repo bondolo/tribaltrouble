@@ -3,7 +3,6 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.model.Element;
@@ -27,7 +26,11 @@ import com.oddlabs.tt.particle.Emitter;
 import com.oddlabs.tt.particle.Lightning;
 import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.particle.StunFunction;
+import com.oddlabs.tt.model.weapon.LightningCloud;
+import com.oddlabs.tt.model.weapon.PoisonFog;
+import com.oddlabs.tt.model.weapon.Stun;
 import com.oddlabs.tt.player.Player;
+import org.lwjgl.opengl.GL11;
 import com.oddlabs.tt.procedural.GeneratorRing;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.viewer.Selection;
@@ -36,7 +39,6 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -108,8 +110,35 @@ final class RenderState {
                     weapon));
             case PointEmitterModel emitterModel -> visitPointEmitterModel(emitterModel);
             case SonicBlast blast -> visitSonicBlast(blast);
+            case LightningCloud cloud -> visitLightningCloud(cloud);
+            case PoisonFog fog -> visitPoisonFog(fog);
+            case Stun stun -> visitStun(stun);
             default -> throw new UnsupportedOperationException("element has no rendering defined " + element);
         }
+    }
+
+    private void visitLightningCloud(final @NonNull LightningCloud cloud) {
+        if (picking) return;
+        float z_offset = getVisuallyCorrectHeight(cloud.getPositionX(), cloud.getPositionY());
+        ElementRenderState<LightningCloud> state = (ElementRenderState<LightningCloud>) getCachedState(
+                WhiteModelVisitor.getInstance(), cloud, z_offset);
+        visitAccessories(cloud, state);
+    }
+
+    private void visitPoisonFog(final @NonNull PoisonFog fog) {
+        if (picking) return;
+        float z_offset = getVisuallyCorrectHeight(fog.getPositionX(), fog.getPositionY());
+        ElementRenderState<PoisonFog> state = (ElementRenderState<PoisonFog>) getCachedState(
+                WhiteModelVisitor.getInstance(), fog, z_offset);
+        visitAccessories(fog, state);
+    }
+
+    private void visitStun(final @NonNull Stun stun) {
+        if (picking) return;
+        float z_offset = getVisuallyCorrectHeight(stun.getPositionX(), stun.getPositionY());
+        ElementRenderState<Stun> state = (ElementRenderState<Stun>) getCachedState(
+                WhiteModelVisitor.getInstance(), stun, z_offset);
+        visitAccessories(stun, state);
     }
 
     private void visitPointEmitterModel(final @NonNull PointEmitterModel emitterModel) {
@@ -258,19 +287,6 @@ final class RenderState {
         return model.getClientState(VisualModel.class).orElseGet(() -> {
             VisualModel visualModel = new VisualModel(model);
             model.setClientState(visualModel);
-
-            // Populate initial accessories
-            if (model instanceof Unit unit) {
-                if (unit.getAbilities().hasAbilities(Abilities.BUILD)) {
-                    visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
-                }
-            } else if (model instanceof Building building) {
-                float hitOffsetZ = building.getHitOffsetZ();
-                visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ,
-                        VisualRegistry.getInstance().getDamageSmokeTextures()));
-                visualModel.getAccessories().add(new BuildingProductionAccessory(building,
-                        VisualRegistry.getInstance().getSmokeTextures()));
-            }
             return visualModel;
         });
     }
@@ -326,17 +342,9 @@ final class RenderState {
         if (picking) return;
 
         switch (accessory) {
-            case EmitterAttachedAccessory e -> {
-                updateEmitterWorldPosition(e.getEmitter(), e, parentState);
-                emitter_queue.add(e.getEmitter());
-            }
-            case BuildingProductionAccessory bpa -> {
-                updateEmitterWorldPosition(bpa.getEmitter(), bpa, parentState);
-                emitter_queue.add(bpa.getEmitter());
-            }
-            case BuildingDamagedAccessory bda -> {
-                updateEmitterWorldPosition(bda.getEmitter(), bda, parentState);
-                emitter_queue.add(bda.getEmitter());
+            case EmitterAccessory ea -> {
+                updateEmitterWorldPosition(ea.getEmitter(), ea, parentState);
+                emitter_queue.add(ea.getEmitter());
             }
             case StaticAccessory s -> {
                 AttachedRenderState state = attached_state_cache.get();
@@ -344,6 +352,7 @@ final class RenderState {
                 addToRenderList(state);
             }
             default -> {
+                accessory.addEmitters(emitter_queue);
                 AttachedRenderState state = attached_state_cache.get();
                 state.setup(parentState, accessory);
                 addToRenderList(state);
@@ -497,6 +506,7 @@ final class RenderState {
                 });
             }
         }
+        visitAccessories(model, state);
     }
 
     private static final ModelVisitor<RubberSupply> rubber_model_visitor = new SupplyModelVisitor<>() {

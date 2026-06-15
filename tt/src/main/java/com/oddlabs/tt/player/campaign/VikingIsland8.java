@@ -109,8 +109,8 @@ public final class VikingIsland8 extends Island {
         ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
         local_player.setActiveChieftain(new Unit(local_player, 170 * 2, 160 * 2, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
-        local_player.getChieftain().ifPresent(chieftain ->
-                chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
+        local_player.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
+                chieftain::maxMagicEnergy));
         int unit_count = getCampaign().getState().getNumPeons()
                 + getCampaign().getState().getNumRockWarriors()
                 + getCampaign().getState().getNumIronWarriors()
@@ -132,8 +132,8 @@ public final class VikingIsland8 extends Island {
                     Origin.AT_START);
             addModalForm(dialog);
             getViewer().getLocalPlayer().enableMagic(MagicType.STUN, true);
-            local_player.getChieftain().ifPresent(chieftain ->
-                    chieftain.getOwner().getRaceInfo().getMagics().forEach(chieftain::maxMagicEnergy));
+            local_player.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(
+                    chieftain::maxMagicEnergy));
             setMagicUsedTrigger();
             changeObjective(1);
         });

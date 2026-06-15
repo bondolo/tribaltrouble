@@ -1,10 +1,15 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.model.PointEmitterModel;
+import com.oddlabs.tt.particle.ColorSpectrum;
 import com.oddlabs.tt.particle.LinearEmitter;
 import com.oddlabs.tt.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -19,7 +24,9 @@ import java.util.concurrent.ThreadLocalRandom;
  * An accessory that manages the damage smoke for a building.
  * Dynamically scales its effect based on the parent building's health.
  */
-public final class BuildingDamagedAccessory implements AnimatedAccessory {
+public final class BuildingDamagedAccessory implements EmitterAccessory {
+    private static final Color.Linear PARTICULATE_COLOR = new Color.Standard(0.08f, 0.06f, 0.05f, 0.8f).linear();
+    private static final Color.Linear DAMAGE_BASE_COLOR = new Color.Standard(0.3f, 0.8f).linear();
     private static final float INITIAL_PARTICLE_ALPHA = 0.8f;
     private static final float MIN_EMITTER_ENERGY = 3.0f;
     private static final float MAX_EMITTER_ENERGY = 5.0f;
@@ -38,9 +45,9 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
     private final @NonNull Building building;
     private final @NonNull LinearEmitter emitter;
     private final float hitOffsetZ;
+    private boolean hasCollapsed = false;
 
-    public BuildingDamagedAccessory(@NonNull Building building, float hitOffsetZ,
-            @NonNull TextureKey @NonNull [] textures) {
+    public BuildingDamagedAccessory(@NonNull Building building, float hitOffsetZ) {
         this.building = building;
         this.hitOffsetZ = hitOffsetZ;
         this.emitter = new RandomVelocityEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f), 0f, 0f,
@@ -48,7 +55,8 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
                 new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, 0f),
                 Color.Linear.WHITE, Color.LinearDelta.ZERO,
                 new Vector3f(1.5f, 1.5f, 1.5f), new Vector3f(0.6f, 0.6f, 0.6f), 1.5f, .75f,
-                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, textures);
+                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                VisualRegistry.getInstance().getDamageSmokeTextures());
         this.emitter.stop();
         this.emitter.setBaseColor(new Color.Standard(0.3f, INITIAL_PARTICLE_ALPHA).linear());
         this.emitter.setSpectrumRange(0.0f, 1.0f);
@@ -102,6 +110,100 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
         if (isDamaged || emitter.hasActiveParticles()) {
             emitter.animate(t);
         }
+
+        if (building.isDead() && !hasCollapsed) {
+            hasCollapsed = true;
+            triggerCollapseEffects();
+        }
+    }
+
+    private void triggerCollapseEffects() {
+        building.getOwner().getWorld().getAudio().newAudio(building.getPositionX(), building.getPositionY(),
+                building.getPositionZ(), AudioAssets.BUILDING_COLLAPSE);
+        final Terrain terrain = building.getOwner().getWorld().getTerrainType();
+        final Color.Linear dustColor = Landscape.getDustColor(terrain).desaturate(0.5f);
+
+        ColorSpectrum spectrumCallback = (spectrum, baseColor) -> {
+            Random rand = ThreadLocalRandom.current();
+            Color.Linear baseDustColor = (rand.nextFloat() < 0.25f) ? PARTICULATE_COLOR : dustColor;
+
+            if (spectrum < 0.15f) {
+                Color.Linear grayColor = DAMAGE_BASE_COLOR.mul(FACTOR_END);
+                return (rand.nextFloat() < 0.6f) ? grayColor : grayColor.mul(SOOT_TINT).add(SOOT_DELTA);
+            } else if (spectrum < 0.25f) {
+                float t1 = (spectrum - 0.15f) / 0.10f;
+                Color.Linear grayColor = DAMAGE_BASE_COLOR.mul(FACTOR_END);
+                Color.Linear smokeColor = (rand.nextFloat() < 0.6f) ? grayColor : grayColor.mul(SOOT_TINT).add(
+                        SOOT_DELTA);
+                return smokeColor.lerp(baseDustColor, t1);
+            } else if (spectrum < 0.67f) {
+                return baseDustColor;
+            } else {
+                float fade = Math.clamp((1.0f - spectrum) / 0.33f, 0.0f, 1.0f);
+                return baseDustColor.alpha(baseDustColor.a() * fade);
+            }
+        };
+
+        RandomVelocityEmitter collapse_emitter = new RandomVelocityEmitter(building.getOwner().getWorld(), new Vector3f(
+                building.getPositionX(), building.getPositionY(), building.getPositionZ()), 0f, 0f,
+                building.getTemplate().getSmokeRadius(), building.getTemplate().getSmokeHeight(), 1f, 1f,
+                120, 80f,
+                new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
+                Color.Linear.WHITE, Color.LinearDelta.ZERO.alpha(-1f),
+                new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1.2f, 0.75f,
+                GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
+                VisualRegistry.getInstance().getSmokeTextures());
+        collapse_emitter.setColorSpectrum(spectrumCallback);
+
+        new PointEmitterModel(building.getOwner().getWorld(), collapse_emitter, building.getOwner().getWorld()
+                .getAnimationManagerRealTime()) {
+            private float elapsed = 0.0f;
+
+            @Override
+            public void animate(float t) {
+                elapsed += t;
+                emitter.setSpectrum(Math.min(1.0f, elapsed / 1.5f));
+                super.animate(t);
+            }
+        };
+
+        {
+            float energy = 3f;
+            float fade_speed = 2.5f;
+
+            RandomVelocityEmitter fragments_emitter = new RandomVelocityEmitter(building.getOwner().getWorld(),
+                    new Vector3f(
+                            building.getPositionX(), building.getPositionY(), building.getPositionZ()), 0f,
+                    building.getTemplate().getSmokeRadius(), building.getTemplate().getSmokeHeight(), 0.5f,
+                    (float) Math.PI,
+                    building.getTemplate().getNumFragments(), building.getTemplate().getNumFragments(),
+                    new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
+                    Color.Linear.WHITE.alpha(energy * fade_speed), Color.LinearDelta.ZERO.alpha(-fade_speed),
+                    new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
+                    VisualRegistry.getInstance().getWoodFragments(),
+                    true, true);
+            new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter, building.getOwner().getWorld()
+                    .getAnimationManagerRealTime());
+        }
+
+        {
+            float energy = 3f;
+            float fade_speed = 2.5f;
+
+            RandomVelocityEmitter fragments_emitter = new RandomVelocityEmitter(building.getOwner().getWorld(),
+                    new Vector3f(
+                            building.getPositionX(), building.getPositionY(), building.getPositionZ()), 0f,
+                    building.getTemplate().getSmokeRadius(), building.getTemplate().getSmokeHeight(), 0.5f,
+                    (float) Math.PI,
+                    building.getTemplate().getNumFragments(), building.getTemplate().getNumFragments(),
+                    new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
+                    new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f,
+                            -fade_speed),
+                    new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
+                    VisualRegistry.getInstance().getWoodFragments(),
+                    true, true);
+            new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter);
+        }
     }
 
     @Override
@@ -130,6 +232,7 @@ public final class BuildingDamagedAccessory implements AnimatedAccessory {
         return null;
     }
 
+    @Override
     public @NonNull LinearEmitter getEmitter() {
         return emitter;
     }

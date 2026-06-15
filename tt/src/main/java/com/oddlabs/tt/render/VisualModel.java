@@ -35,8 +35,21 @@ public final class VisualModel implements ModelClient {
             }
         }
         if (hasExpired) {
+            for (Accessory acc : accessories) {
+                if (acc.isExpired()) {
+                    acc.close();
+                }
+            }
             accessories.removeIf(Accessory::isExpired);
         }
+    }
+
+    @Override
+    public void close() {
+        for (Accessory acc : accessories) {
+            acc.close();
+        }
+        accessories.clear();
     }
 
     @Override
@@ -44,5 +57,14 @@ public final class VisualModel implements ModelClient {
         VisualRegistry.getInstance().getEmojiSprite(emoji)
                 .map(sprite -> new VisualSoundAccessory(sprite, duration, audioDistance))
                 .ifPresent(accessories::add);
+    }
+
+    @Override
+    public void addLightningStrike(float targetX, float targetY, float targetZ) {
+        for (Accessory acc : accessories) {
+            if (acc instanceof LightningCloudVisualAccessory cloudAcc) {
+                cloudAcc.triggerStrike(targetX, targetY, targetZ);
+            }
+        }
     }
 }
