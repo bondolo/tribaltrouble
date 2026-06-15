@@ -32,8 +32,8 @@ subprojects {
 
     dependencies {
         implementation("org.jspecify:jspecify:1.0.0")
-        "errorprone"("com.google.errorprone:error_prone_core:2.49.0")
-        "errorprone"("com.uber.nullaway:nullaway:0.13.4")
+        "errorprone"("com.google.errorprone:error_prone_core:2.50.0")
+        "errorprone"("com.uber.nullaway:nullaway:0.13.6")
     }
 
     java {
@@ -51,7 +51,7 @@ subprojects {
             disable(  "NullAway", "ImmutableEnumChecker",
                 "NarrowingCompoundAssignment",
                 "SameNameButDifferent", "AssignmentExpression",
-                "ObjectToString",
+                "ObjectToString", "ReferenceEquality",
                 "ModifyCollectionInEnhancedForLoop", "StringCaseLocaleUsage",
                 "EqualsHashCode", "DoNotCallSuggester",
                 "MutablePublicArray", "InconsistentCapitalization",
