@@ -202,8 +202,26 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                     return;
                 }
 
+                if (event.consumeAction(GameAction.UNIT_ADD_IDLE)) {
+                    nextIdlePeon(false);
+                    event.consume();
+                    return;
+                }
+
                 if (event.consumeAction(GameAction.UNIT_NEXT_IDLE)) {
-                    nextIdlePeon();
+                    nextIdlePeon(true);
+                    event.consume();
+                    return;
+                }
+
+                if (event.consumeAction(GameAction.UNIT_ADD_ALL_IDLE)) {
+                    allIdlePeons(false);
+                    event.consume();
+                    return;
+                }
+
+                if (event.consumeAction(GameAction.UNIT_ALL_IDLE)) {
+                    allIdlePeons(true);
                     event.consume();
                     return;
                 }
@@ -287,8 +305,14 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         getViewer().getPeerHub().getPlayerInterface().changePreferredGamespeed(delta);
     }
 
-    private void nextIdlePeon() {
-        var set = getViewer().getLocalPlayer().getUnits().getSet();
+    private void nextIdlePeon(boolean replace) {
+        var selection = getViewer().getSelection().getCurrentSelection();
+        if (!replace && selection.getBuilding().isPresent()) {
+            // can't mix units and buildings in selection
+            return;
+        }
+
+        var units = getViewer().getLocalPlayer().getUnits().getSet();
 
         boolean has_idle_peon = false;
         int lowest_name = Integer.MAX_VALUE;
@@ -297,7 +321,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         boolean has_greater_name = false;
         int lowest_greater_name = Integer.MAX_VALUE;
         Selectable<?> lowest_greater_peon = null;
-        for (var s : set) {
+        for (var s : units) {
             if (s.getOwner() != getViewer().getLocalPlayer())
                 continue;
             Abilities abilities = s.getAbilities();
@@ -326,10 +350,34 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         }
 
         if (target != null && getCamera() instanceof GameCamera) {
-            getViewer().getSelection().clearSelection();
+            if (replace) {
+                getViewer().getSelection().clearSelection();
+            }
             getViewer().getSelection().getCurrentSelection().add(target);
             getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), target.getPositionX(),
                     target.getPositionY()));
+        }
+    }
+
+    public void allIdlePeons(boolean replace) {
+        var selection = getViewer().getSelection().getCurrentSelection();
+        if (!replace && selection.getBuilding().isPresent()) {
+            // can't mix units and buildings in selection
+            return;
+        }
+
+        var set = getViewer().getLocalPlayer().getUnits().getSet();
+        var idles = set.stream()
+                .filter(s -> s.getOwner() == getViewer().getLocalPlayer())
+                .filter(s -> s.getAbilities().hasAbilities(Abilities.BUILD)
+                        && s.getPrimaryController() instanceof IdleController)
+                .toList();
+
+        if (!idles.isEmpty()) {
+            if (replace) {
+                getViewer().getSelection().clearSelection();
+            }
+            getViewer().getSelection().getCurrentSelection().addAll(idles);
         }
     }
 
@@ -373,11 +421,11 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
                 break;
             }
         }
-        for (Selectable<?> selectable : friendly_units) {
-            if (add) {
-                if (!current_selection.contains(selectable))
-                    current_selection.add(selectable);
-            } else {
+
+        if (add) {
+            current_selection.addAll(friendly_units);
+        } else {
+            for (Selectable<?> selectable : friendly_units) {
                 current_selection.remove(selectable);
             }
         }
@@ -388,9 +436,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
         Army current_selection = getViewer().getSelection().getCurrentSelection();
         current_selection.clear();
         if (!friendly_units.isEmpty()) {
-            for (Selectable<?> friendlyUnit : friendly_units) {
-                current_selection.add(friendlyUnit);
-            }
+            current_selection.addAll(friendly_units);
         } else if (friendly_building != null) {
             current_selection.add(friendly_building);
         } else if (enemy != null) {

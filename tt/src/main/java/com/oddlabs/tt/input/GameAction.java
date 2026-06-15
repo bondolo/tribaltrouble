@@ -55,6 +55,9 @@ public enum GameAction {
     UNIT_EXIT_TOWER,
     UNIT_BEACON,
     UNIT_NEXT_IDLE,
+    UNIT_ADD_IDLE,
+    UNIT_ALL_IDLE,
+    UNIT_ADD_ALL_IDLE,
     UNIT_SET_RALLY,
     GAMEPLAY_BACK,
 

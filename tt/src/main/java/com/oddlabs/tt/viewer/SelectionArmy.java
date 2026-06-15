@@ -9,6 +9,7 @@ import com.oddlabs.tt.player.Player;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Optional;
 
 public final class SelectionArmy extends Army {
@@ -75,6 +76,12 @@ public final class SelectionArmy extends Army {
     @Override
     public void add(@NonNull Selectable<?> selectable) {
         super.add(selectable);
+        update();
+    }
+
+    @Override
+    public void addAll(@NonNull Collection<? extends @NonNull Selectable<?>> selectable) {
+        super.addAll(selectable);
         update();
     }
 }

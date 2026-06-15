@@ -119,6 +119,9 @@ public final class InputManager {
         def(GameAction.UNIT_EXIT_TOWER, Key.X);
         def(GameAction.UNIT_BEACON, Key.B, Modifier.CONTROL);
         def(GameAction.UNIT_NEXT_IDLE, Key.N);
+//        def(GameAction.UNIT_ADD_IDLE, Key.N, Modifier.SHIFT);
+//        def(GameAction.UNIT_ALL_IDLE, Key.N, Modifier.CONTROL);
+//        def(GameAction.UNIT_ADD_ALL_IDLE, Key.N, Modifier.CONTROL, Modifier.SHIFT);
         def(GameAction.UNIT_SET_RALLY, Key.R);
         def(GameAction.GAMEPLAY_BACK, Key.BACK);
 
