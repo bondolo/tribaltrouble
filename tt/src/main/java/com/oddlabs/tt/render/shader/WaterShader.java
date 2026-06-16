@@ -161,6 +161,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
+                    layout(location = 1) out vec4 out_MaskColor;
 
                     void main() {
                         vec4 baseColor = texture(u_texture0, fs_in.texCoord0);
@@ -220,6 +221,10 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
 
                         float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(mix(u_fogColor.rgb, finalRGB, fogFactor), finalAlpha);
+
+                        // Write water marker to mask buffer (alpha = 0.1)
+                        // This identifies water pixels in the post-processing shader.
+                        out_MaskColor = vec4(0.0, 0.0, 0.0, 0.1);
                     }
                     """;
 

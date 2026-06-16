@@ -27,6 +27,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                     uniform float u_detailScale;
 
                     out vec2 v_texCoordDetail;
+                    out vec2 v_worldPos;
                     out float v_fogDist;
                     out vec3 v_viewPosition;
                     out float v_height;
@@ -36,6 +37,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                         gl_Position = u_projectionMatrix * worldPosition;
 
                         v_texCoordDetail = in_Position.xy * u_detailScale;
+                        v_worldPos = in_Position.xy;
                         v_viewPosition = worldPosition.xyz;
                         v_fogDist = length(worldPosition.xyz);
                         v_height = in_Position.z;
@@ -54,11 +56,33 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                     uniform float u_detailScale;
 
                     in vec2 v_texCoordDetail;
+                    in vec2 v_worldPos;
                     in float v_fogDist;
                     in vec3 v_viewPosition;
                     in float v_height;
 
                     layout(location = 0) out vec4 out_FragColor;
+
+                    const float PI = 3.14159265358979;
+                    const float GRAVITY = 9.81;
+
+                    float getWaveHeight(vec2 worldPos) {
+                        if (u_waveAmpSteep[0].x < 0.0001) {
+                            return 0.0;
+                        }
+                        float waveZ = 0.0;
+                        for (int i = 0; i < 3; i++) {
+                            float waveLength = u_waveDirLength[i].z;
+                            vec2 waveDir = u_waveDirLength[i].xy;
+                            float waveAmplitude = u_waveAmpSteep[i].x;
+
+                            float k = 2.0 * PI / waveLength;
+                            float omega = sqrt(GRAVITY * k);
+                            float phase = k * dot(waveDir, worldPos) - omega * u_waveTime;
+                            waveZ += waveAmplitude * sin(phase);
+                        }
+                        return waveZ;
+                    }
 
                     void main() {
                         vec4 color = u_baseColor;
@@ -117,6 +141,26 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                         float exposure = 1.1;
                         vec3 lightFactor = (ambient + diff * vec3(1.0) + rimLight) * exposure;
                         vec3 litColor = color.rgb * lightFactor + specular * exposure;
+
+                        // --- Underwater Caustics ---
+                        float causticsTime = u_waveTime * 0.15;
+                        vec2 uv1 = v_worldPos * 0.4 + vec2(causticsTime * 0.1, causticsTime * 0.07);
+                        vec2 uv2 = v_worldPos * 0.3 - vec2(causticsTime * 0.08, causticsTime * 0.13);
+
+                        float h1 = getWaveHeight(uv1);
+                        float h2 = getWaveHeight(uv2);
+
+                        // Stable refraction model with robust intensity
+                        float c = 1.0 - abs(h1 - h2);
+                        float caustic = pow(max(0.0, c), 20.0) * 0.4;
+
+                        // Viewing angle dependency: fade out straight down
+                        float vdn = dot(viewDir, normal);
+                        float angleFade = smoothstep(0.1, 0.5, 1.0 - vdn);
+
+                        float depthFade = clamp(1.0 - depth / 4.0, 0.0, 1.0);
+                        vec3 causticColor = vec3(0.95, 0.98, 1.0) * caustic * depthFade * angleFade;
+                        litColor += causticColor;
 
                         float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(mix(u_fogColor.rgb, litColor, fogFactor), color.a);

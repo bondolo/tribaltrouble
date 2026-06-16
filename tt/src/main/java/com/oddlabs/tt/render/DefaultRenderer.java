@@ -293,8 +293,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             renderDebugElements(frustum_state);
         }
 
-        // Water & Particles don't write to mask -> Disable Mask Buffer
-        context.setDrawBuffers(false);
+        // Enable Mask Buffer for Water interaction (occluding submerged unit outlines)
+        context.setDrawBuffers(true);
 
         if (Globals.draw_water) {
             water.render(context, frustum_state, landscape_renderer.getVisiblePatches());
@@ -302,6 +302,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
         if (Globals.process_misc)
             render_queues.renderBlends(context, frustum_state, projectionStack);
+
+        // Water & Particles don't write to mask -> Disable Mask Buffer
+        context.setDrawBuffers(false);
 
         // Copy depth buffer for Soft Particles (smoke/effects)
         postProcessor.copyDepthBuffer();

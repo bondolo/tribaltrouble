@@ -111,6 +111,9 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     }
 
                     void main() {
+                        vec3 viewDir = normalize(-fs_in.viewPosition);
+                        vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
+
                         vec4 diffuseColor = texture(u_DiffuseMap, fs_in.texCoordColormap);
                         vec4 normalMapVal = texture(u_NormalMap, fs_in.texCoordColormap);
                         vec4 detailColor;
@@ -123,11 +126,14 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec2 worldPos = fs_in.texCoordColormap * u_WorldSize;
                         float waveHeight = getWaveHeight(worldPos) * fs_in.waveScale;
                         float u_seaLevel = u_fogParams.w;
-                        float waterHeight = u_seaLevel + waveHeight;
-                        float depth = waterHeight - fs_in.height;
-                        float wetness = clamp((depth + 0.05) / 0.20, 0.0, 1.0);
 
-                        // Calculate underwater depth relative to sea level (heights above sea level have negative depth)
+                        // Add a slow tide oscillation to the water height for the wash effect
+                        float tide = sin(u_waveTime * 0.25) * 0.15;
+                        float waterHeight = u_seaLevel + waveHeight + tide;
+                        float depth = waterHeight - fs_in.height;
+                        float wetness = clamp((depth + 0.10) / 0.30, 0.0, 1.0);
+
+                        // Calculate static depth (below sea level) for caustics and light attenuation
                         float depthStatic = u_seaLevel - fs_in.height;
                         float normalMapStrength;
                         if (depthStatic < 0.0) {
@@ -228,6 +234,11 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         // Apply dynamic wetness darkening (wet surfaces scatter less light)
                         diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.55, wetness);
 
+                        // --- Dynamic Shoreline "Wet Line" (Wash/Foam) ---
+                        // Brighten the leading edge of the water to simulate foam and bubbles
+                        float wash = smoothstep(0.0, 0.08, depth) * (1.0 - smoothstep(0.12, 0.25, depth));
+                        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb + vec3(0.15, 0.2, 0.25), wash * 0.6 * fs_in.waveScale);
+
                         vec3 viewNormalGeom = normalize((u_viewMatrix * vec4(worldNormalGeom, 0.0)).xyz);
                         vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
 
@@ -245,8 +256,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec3 normal = normalize(baseNormal + vDetailNormal * detailNormalStrength);
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
-                        vec3 viewDir = normalize(-fs_in.viewPosition);
-                        vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
                         vec3 halfDir = normalize(lightDir + viewDir);
 
                         // For wet surfaces, blend to a sharper and more intense water-film specular highlight
@@ -283,6 +292,32 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         float exposure = 1.1;
                         vec3 lightFactor = (ambient + diff * vec3(1.0) + rimLight) * exposure;
                         vec3 litColor = diffuseColor.rgb * lightFactor + specular * exposure;
+
+                        // --- Underwater Caustics ---
+                        if (depth > 0.0) {
+                            // Project caustics by sampling overlapping waves at different frequencies
+                            float causticsTime = u_waveTime * 0.15;
+                            vec2 uv1 = worldPos * 0.4 + vec2(causticsTime * 0.1, causticsTime * 0.07);
+                            vec2 uv2 = worldPos * 0.3 - vec2(causticsTime * 0.08, causticsTime * 0.13);
+
+                            float h1 = getWaveHeight(uv1);
+                            float h2 = getWaveHeight(uv2);
+
+                            float c = 1.0 - abs(h1 - h2);
+                            // Robust intensity (0.4) and sharpening (20) to ensure visibility on all terrains
+                            float caustic = pow(max(0.0, c), 20.0) * 0.4;
+
+                            // Viewing angle dependency: caustics fade out when looking straight down (realistic refraction)
+                            float vdn = dot(viewDir, normal);
+                            float angleFade = smoothstep(0.1, 0.5, 1.0 - vdn);
+
+                            // Attenuate caustics with dynamic depth and surface roughness
+                            float depthFade = smoothstep(0.0, 0.1, depth) * clamp(1.0 - depthStatic / 4.0, 0.0, 1.0);
+                            
+                            // Near-white cyan highlights
+                            vec3 causticColor = vec3(0.95, 0.98, 1.0) * caustic * depthFade * angleFade * (1.0 - roughness * 0.5);
+                            litColor += causticColor;
+                        }
 
                         float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
                         vec3 finalColor = mix(u_fogColor.rgb, litColor, fogFactor);
