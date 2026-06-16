@@ -13,6 +13,7 @@ import com.oddlabs.tt.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
@@ -55,6 +56,10 @@ public final class GUIRenderer {
     private final Deque<Color.@NonNull Linear> modulationStack = new ArrayDeque<>();
     private Color.Linear currentModulation = Color.Linear.WHITE;
 
+    // Clip stack (logical coordinates)
+    private final Deque<@NonNull Vector4f> clipStack = new ArrayDeque<>();
+    private @NonNull Vector4f currentClip = new Vector4f();
+
     private @Nullable RenderContext currentContext;
 
     public GUIRenderer() {
@@ -63,7 +68,8 @@ public final class GUIRenderer {
                 GUIShader.Attribute.POSITION,
                 GUIShader.Attribute.COLOR,
                 GUIShader.Attribute.TEX_COORD,
-                GUIShader.Attribute.TEX_INDEX
+                GUIShader.Attribute.TEX_INDEX,
+                GUIShader.Attribute.CLIP_RECT
         );
         this.modulationStack.push(Color.Linear.WHITE);
 
@@ -132,6 +138,10 @@ public final class GUIRenderer {
             modulationStack.clear();
             modulationStack.push(Color.Linear.WHITE);
             currentModulation = Color.Linear.WHITE;
+
+            clipStack.clear();
+            currentClip = new Vector4f(0, 0, width, height);
+            clipStack.push(currentClip);
 
             frameCommands.run();
 
@@ -219,28 +229,32 @@ public final class GUIRenderer {
                 .putFloat(mat.m01() * x1 + mat.m11() * y1 + mat.m31())
                 .putFloat(mat.m02() * x1 + mat.m12() * y1 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u1).putFloat(v1).putFloat(texIndex);
+                .putFloat(u1).putFloat(v1).putFloat(texIndex)
+                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
 
         // P2 (x2, y1)
         vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y1 + mat.m30())
                 .putFloat(mat.m01() * x2 + mat.m11() * y1 + mat.m31())
                 .putFloat(mat.m02() * x2 + mat.m12() * y1 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u2).putFloat(v1).putFloat(texIndex);
+                .putFloat(u2).putFloat(v1).putFloat(texIndex)
+                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
 
         // P3 (x2, y2)
         vertexBuffer.putFloat(mat.m00() * x2 + mat.m10() * y2 + mat.m30())
                 .putFloat(mat.m01() * x2 + mat.m11() * y2 + mat.m31())
                 .putFloat(mat.m02() * x2 + mat.m12() * y2 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u2).putFloat(v2).putFloat(texIndex);
+                .putFloat(u2).putFloat(v2).putFloat(texIndex)
+                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
 
         // P4 (x1, y2)
         vertexBuffer.putFloat(mat.m00() * x1 + mat.m10() * y2 + mat.m30())
                 .putFloat(mat.m01() * x1 + mat.m11() * y2 + mat.m31())
                 .putFloat(mat.m02() * x1 + mat.m12() * y2 + mat.m32())
                 .putFloat(r).putFloat(g).putFloat(b).putFloat(a)
-                .putFloat(u1).putFloat(v2).putFloat(texIndex);
+                .putFloat(u1).putFloat(v2).putFloat(texIndex)
+                .putFloat(currentClip.x).putFloat(currentClip.y).putFloat(currentClip.z).putFloat(currentClip.w);
 
         quadCount++;
     }
@@ -275,21 +289,22 @@ public final class GUIRenderer {
         vertexBuffer.clear();
     }
 
-    public void setScissor(int x, int y, int w, int h) {
-        if (currentContext != null) {
-            currentContext.setScissor(x, y, w, h);
-        } else {
-            GL11.glEnable(GL11.GL_SCISSOR_TEST);
-            GL11.glScissor(x, y, w, h);
-        }
+    public void pushClip(float x, float y, float w, float h) {
+        Vector4f parent = clipStack.peek();
+        assert parent != null;
+        float x1 = Math.max(parent.x, x);
+        float y1 = Math.max(parent.y, y);
+        float x2 = Math.min(parent.z, x + w);
+        float y2 = Math.min(parent.w, y + h);
+
+        currentClip = new Vector4f(x1, y1, x2, y2);
+        clipStack.push(currentClip);
     }
 
-    public void clearScissor() {
-        if (currentContext != null) {
-            currentContext.clearScissor();
-        } else {
-            GL11.glDisable(GL11.GL_SCISSOR_TEST);
-        }
+    public void popClip() {
+        clipStack.pop();
+        currentClip = clipStack.peek();
+        assert currentClip != null;
     }
 
     @NonNull

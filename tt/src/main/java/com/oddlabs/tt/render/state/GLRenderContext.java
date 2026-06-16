@@ -48,7 +48,6 @@ public final class GLRenderContext implements RenderContext {
     private @NonNull DepthMode currentDepth = DepthMode.NONE;
     private @NonNull CullMode currentCull = CullMode.NONE;
     private int currentDepthFunc = -1;
-    private @NonNull GLState scissorEnabled = GLState.UNKNOWN;
     private @NonNull GLState sampleAlphaToCoverageEnabled = GLState.UNKNOWN;
     private @NonNull GLState depthTestEnabled = GLState.UNKNOWN;
     private @NonNull GLState depthMaskEnabled = GLState.UNKNOWN;
@@ -110,8 +109,6 @@ public final class GLRenderContext implements RenderContext {
         currentDepth = DepthMode.NONE;
         currentCull = CullMode.NONE;
         currentDepthFunc = -1;
-        scissorEnabled = GLState.UNKNOWN;
-        GL11.glDisable(GL11.GL_SCISSOR_TEST); // Anchor scissor state
 
         maskR = GLState.UNKNOWN;
         maskG = GLState.UNKNOWN;
@@ -400,23 +397,6 @@ public final class GLRenderContext implements RenderContext {
     public void resetBlendFunc() {
         if (currentBlendSrc != -1 && currentBlendDst != -1) {
             GL11.glBlendFunc(currentBlendSrc, currentBlendDst);
-        }
-    }
-
-    @Override
-    public void setScissor(int x, int y, int w, int h) {
-        if (scissorEnabled != GLState.TRUE) {
-            GL11.glEnable(GL11.GL_SCISSOR_TEST);
-            scissorEnabled = GLState.TRUE;
-        }
-        GL11.glScissor(x, y, w, h);
-    }
-
-    @Override
-    public void clearScissor() {
-        if (scissorEnabled != GLState.FALSE) {
-            GL11.glDisable(GL11.GL_SCISSOR_TEST);
-            scissorEnabled = GLState.FALSE;
         }
     }
 

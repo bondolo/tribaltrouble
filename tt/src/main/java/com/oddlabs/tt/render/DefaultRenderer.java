@@ -209,7 +209,6 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDepthMask(true);
         context.setDepthTest(true);
         context.setDepthFunc(GL11.GL_LEQUAL);
-        context.clearScissor();
         context.clear(true, true);
 
         context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());

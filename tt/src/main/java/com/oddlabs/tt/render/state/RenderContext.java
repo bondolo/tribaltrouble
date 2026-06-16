@@ -48,11 +48,7 @@ public interface RenderContext {
         }
     }
 
-    // Scissor / Viewport
-    void setScissor(int x, int y, int w, int h);
-
-    void clearScissor();
-
+    // Viewport
     void setViewport(int x, int y, int w, int h);
 
     int getViewportWidth();
