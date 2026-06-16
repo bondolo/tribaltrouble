@@ -188,9 +188,9 @@ public final class InputManager {
         def(GameAction.MAGIC_2, Key.C);
 
         // Misc
-        def(GameAction.GAME_SPEED_UP, Key.EQUALS, Modifier.SHIFT);
+        defChar(GameAction.GAME_SPEED_UP, '+');
         def(GameAction.GAME_SPEED_UP, Key.ADD); // Numpad +
-        def(GameAction.GAME_SPEED_DOWN, Key.MINUS); // -
+        defChar(GameAction.GAME_SPEED_DOWN, '-');
         def(GameAction.GAME_SPEED_DOWN, Key.SUBTRACT); // Numpad -
         def(GameAction.NOTIFICATION_JUMP, Key.TAB);
 
@@ -235,6 +235,11 @@ public final class InputManager {
         Collections.addAll(modSet, modifiers);
         DEFAULT_BINDINGS.computeIfAbsent(action, k -> new TreeSet<>())
                 .add(new InputBinding(key, modSet, action));
+    }
+
+    private static void defChar(@NonNull GameAction action, char character) {
+        DEFAULT_BINDINGS.computeIfAbsent(action, k -> new TreeSet<>())
+                .add(new InputBinding(Key.KEY_UNKNOWN, (int) character, EnumSet.noneOf(Modifier.class), action));
     }
 
     private final NavigableSet<@NonNull InputBinding> bindings = new TreeSet<>();
@@ -376,12 +381,17 @@ public final class InputManager {
 
     private @NonNull String serializeBindings(@NonNull Collection<InputBinding> bindings) {
         return bindings.stream()
-                .map(b -> "{\"key\":\"" + b.key().name() + "\"" +
-                        (b.shift() ? ", \"shift\":true" : "") +
-                        (b.control() ? ", \"control\":true" : "") +
-                        (b.alt() ? ", \"alt\":true" : "") +
-                        (b.meta() ? ", \"meta\":true" : "") +
-                        "}")
+                .map(b -> {
+                    if (b.codepoint() != 0) {
+                        return "{\"char\":\"" + (char) b.codepoint() + "\"}";
+                    }
+                    return "{\"key\":\"" + b.key().name() + "\"" +
+                            (b.shift() ? ", \"shift\":true" : "") +
+                            (b.control() ? ", \"control\":true" : "") +
+                            (b.alt() ? ", \"alt\":true" : "") +
+                            (b.meta() ? ", \"meta\":true" : "") +
+                            "}";
+                })
                 .collect(Collectors.joining(", ", "[", "]"));
     }
 
@@ -403,13 +413,14 @@ public final class InputManager {
     }
 
     private @Nullable InputBinding parseBindingObject(@NonNull String content, @NonNull GameAction action) {
-        // Expected: {"key"="KEY", "mod":true}
+        // Expected: {"key"="KEY", "mod":true} or {"char": "+"}
         String inner = content.trim();
         if (inner.startsWith("{")) inner = inner.substring(1);
         if (inner.endsWith("}")) inner = inner.substring(0, inner.length() - 1);
 
         String[] pairs = inner.split(",");
         Key key = Key.KEY_UNKNOWN;
+        int codepoint = 0;
         Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
 
         for (String pair : pairs) {
@@ -417,11 +428,14 @@ public final class InputManager {
             String[] kv = pair.split("[:=]");
             if (kv.length != 2) continue;
             String k = unquote(kv[0].trim()).toLowerCase(Locale.ROOT);
-            String v = unquote(kv[1].trim());
+            String v = unquote(kv[1]); // do not trim; we must allow space, tab, enter, etc.
 
             try {
                 switch (k) {
                     case "key" -> key = Key.valueOf(v);
+                    case "char" -> {
+                        if (!v.isEmpty()) codepoint = v.codePointAt(0);
+                    }
                     case "shift" -> {
                         if (Boolean.parseBoolean(v)) modifiers.add(Modifier.SHIFT);
                     }
@@ -441,6 +455,9 @@ public final class InputManager {
             }
         }
 
+        if (codepoint != 0) {
+            return new InputBinding(Key.KEY_UNKNOWN, codepoint, EnumSet.noneOf(Modifier.class), action);
+        }
         if (key != Key.KEY_UNKNOWN) {
             return new InputBinding(key, modifiers, action);
         }

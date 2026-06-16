@@ -7,11 +7,16 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Binds a key (with modifiers) to an action.
+ * Binds a key (with modifiers) or a character to an action.
  */
-public record InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> modifiers, @NonNull GameAction action)
+public record InputBinding(@NonNull Key key, int codepoint, @NonNull Set<@NonNull Modifier> modifiers,
+                           @NonNull GameAction action)
         implements Comparable<InputBinding> {
     private static final boolean IS_MACOS = System.getProperty("os.name", "").toLowerCase().contains("mac");
+
+    public InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> modifiers, @NonNull GameAction action) {
+        this(key, -1, modifiers, action);
+    }
 
     public InputBinding {
         Objects.requireNonNull(key, "key");
@@ -22,7 +27,9 @@ public record InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> mod
     }
 
     public boolean matches(@NonNull KeyboardEvent event) {
-        return event.keyCode() == key && modifiers.equals(event.modifiers());
+        return (codepoint != -1) && (event.keyCodepoint() != -1)
+               ? event.keyCodepoint() == codepoint
+               : event.keyCode() == key && modifiers.equals(event.modifiers());
     }
 
     public boolean shift() {
@@ -43,6 +50,9 @@ public record InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> mod
 
     @Override
     public @NonNull String toString() {
+        if (codepoint != -1) {
+            return String.valueOf((char) codepoint);
+        }
         String s = "";
         if (IS_MACOS) {
             if (control()) s = s + "⌃";
@@ -60,6 +70,13 @@ public record InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> mod
 
     @Override
     public int compareTo(@NonNull InputBinding o) {
+        if (this.codepoint != o.codepoint) {
+            return Integer.compare(this.codepoint, o.codepoint);
+        }
+        int keyCompare = this.key().getDisplayName().compareTo(o.key().getDisplayName());
+        if (keyCompare != 0) {
+            return keyCompare;
+        }
         if (this.control() != o.control()) {
             return this.control() ? 1 : -1;
         }
@@ -71,10 +88,6 @@ public record InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> mod
         }
         if (this.meta() != o.meta()) {
             return this.meta() ? 1 : -1;
-        }
-        int keyCompare = this.key().getDisplayName().compareTo(o.key().getDisplayName());
-        if (keyCompare != 0) {
-            return keyCompare;
         }
 
         return this.action().compareTo(o.action());
