@@ -595,8 +595,8 @@ public final class LWJGL3Window implements Window {
                         // Only offer one mode per resolution, the highest bpp and frequency
                         mode -> (mode.getWidth() << 16) + mode.getHeight(),
                         Function.identity(),
-                        BinaryOperator.maxBy(Comparator.comparing(SerializableDisplayMode::getBitsPerPixel)
-                                .thenComparing(SerializableDisplayMode::getFrequency))
+                        BinaryOperator.maxBy(Comparator.comparingInt(SerializableDisplayMode::getBitsPerPixel)
+                                .thenComparingInt(SerializableDisplayMode::getFrequency))
                 )).values().stream()
                 .sorted(Comparator.reverseOrder())
                 .toList();
