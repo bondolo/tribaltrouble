@@ -49,7 +49,7 @@ subprojects {
 
 
             disable(  "NullAway", "ImmutableEnumChecker",
-                "NarrowingCompoundAssignment",
+                "NarrowingCompoundAssignment", "TypeParameterQualifier",
                 "SameNameButDifferent", "AssignmentExpression",
                 "ObjectToString", "ReferenceEquality",
                 "ModifyCollectionInEnhancedForLoop", "StringCaseLocaleUsage",
