@@ -438,10 +438,6 @@ public final class Player implements PlayerInterface {
             chieftain.doMagic(magic, true);
     }
 
-    public void doMagic(@NonNull Unit chieftain, int magic) {
-        doMagic(chieftain, getRaceInfo().getMagicType(magic));
-    }
-
     @Override
     public void exitTower(@NonNull Building building) {
         if (isValid(building))
@@ -456,13 +452,12 @@ public final class Player implements PlayerInterface {
 
     @Override
     public void placeBuilding(Selectable<?> @NonNull [] selection, @NonNull BuildingType template_type,
-            int placing_grid_x,
-            int placing_grid_y) {
-        Building building = new Building(this, getRaceInfo().getBuildingTemplate(template_type), placing_grid_x,
-                placing_grid_y);
-        for (var selection1 : selection) {
-            if (isValid(selection1)) {
-                selection1.initTarget(building, Action.DEFAULT, false);
+            int placing_grid_x, int placing_grid_y) {
+        Building building = new Building(this, getRaceInfo().getBuildingTemplate(template_type),
+                placing_grid_x, placing_grid_y);
+        for (var selectable : selection) {
+            if (isValid(selectable)) {
+                selectable.initTarget(building, Action.DEFAULT, false);
             }
         }
     }
@@ -479,25 +474,23 @@ public final class Player implements PlayerInterface {
     }
 
     @Override
-    public void setTarget(Selectable<?> @NonNull [] selection, @NonNull Target target, @NonNull Action action,
+    public void setTarget(@Nullable Selectable<?> @NonNull [] selection, @NonNull Target target, @NonNull Action action,
             boolean aggressive) {
-        for (Selectable<?> selection1 : selection) {
-            if (isValid(selection1)) {
-                selection1.initTarget(target, action, aggressive);
+        for (Selectable<?> selectable : selection) {
+            if (isValid(selectable)) {
+                selectable.initTarget(target, action, aggressive);
             }
         }
     }
 
-    public void killSelection(Selectable<?> @NonNull [] selection) {
-        for (Selectable<?> selection1 : selection) {
-            if (selection1 != null) {
-                selection1.hit(10000, 0f, 1f, this);
-            }
+    public void killSelection(@NonNull Selectable<?> @NonNull [] selection) {
+        for (Selectable<?> selectable : selection) {
+            selectable.hit(10000, 0f, 1f, this);
         }
     }
 
     @Override
-    public void setLandscapeTarget(Selectable<?> @NonNull [] selection, int grid_x, int grid_y, @NonNull Action action,
+    public void setLandscapeTarget(@NonNull Selectable<?> @NonNull [] selection, int grid_x, int grid_y, @NonNull Action action,
             boolean aggressive) {
         if (selection.length == 0)
             return;

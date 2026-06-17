@@ -17,6 +17,7 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.ModelToolTip;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.model.Template;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInterface;
@@ -318,10 +319,10 @@ public final class Picker implements Updatable<TimerAnimation> {
     private void calcPosAndDir(int pixel_x, int pixel_y, int[] viewport) {
         Vector3f hit2 = new Vector3f();
 
-        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 0.5f, viewport, hit_result);
-        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 0.1f, viewport, hit2);
+        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 0.0f, viewport, hit_result);
+        tmp_camera.getProjectionModelView().unproject(pixel_x, pixel_y, 1.0f, viewport, hit2);
 
-        hit_result.sub(hit2, dir_vector).normalize();
+        hit2.sub(hit_result, dir_vector).normalize();
     }
 
     private boolean nearestLandscape(int pixel_x, int pixel_y, int[] viewport) {

@@ -25,7 +25,6 @@ public final class MapCamera extends Camera {
     private static final float MAP_THRESHOLD = .1f;
     private static final float MAP_TIME_FACTOR = 1000f;
     private static final float SMOOTHNESS_FACTOR = 200f;
-    public static final float MAP_Z_FACTOR = 1.3f;
 
     private static final Set<GameAction> BLOCKED_ACTIONS = EnumSet.of(
             GameAction.CAMERA_PAN_LEFT,
@@ -84,9 +83,23 @@ public final class MapCamera extends Camera {
         float dy;
         float dz;
         float da;
-        float map_x = getHeightMap().getMetersPerWorld() / 2f;
-        float map_y = getHeightMap().getMetersPerWorld() / 2f;
-        float map_z = getHeightMap().getMetersPerWorld() * MAP_Z_FACTOR;
+        float meters_per_world = getHeightMap().getMetersPerWorld();
+        float map_x = meters_per_world / 2f;
+        float map_y = meters_per_world / 2f;
+
+        // Calculate altitude based on aspect ratio and FOV to ensure the whole island fits.
+        // We use the diagonal of the world as the bounding sphere radius.
+        float aspect = (float) delegate.getGUIRoot().getWidth() / delegate.getGUIRoot().getHeight();
+        float fovy = Camera.calculateDynamicFOV(0, aspect, FOVMode.DIAGONAL); // Height is independent of target Z for DIAGONAL mode
+        float fovx = 2.0f * (float) Math.atan(Math.tan(Math.toRadians(fovy) * 0.5f) * aspect);
+
+        // Required distance to fit the island width and height
+        float dist_h = (meters_per_world * 0.5f) / (float) Math.tan(fovx * 0.5f);
+        float dist_v = (meters_per_world * 0.5f) / (float) Math.tan(Math.toRadians(fovy) * 0.5f);
+
+        // Add 10% margin to prevent tight clipping at edges
+        float map_z = Math.max(dist_h, dist_v) * 1.1f;
+
         float start_z = original_camera_state.getTargetZ();
 
         // Calculate transition progress (0.0 = at start, 1.0 = at map)
