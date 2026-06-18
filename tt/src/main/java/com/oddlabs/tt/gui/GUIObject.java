@@ -706,14 +706,19 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
+    protected boolean shouldHandleActivate() {
+        return true;
+    }
+
     protected void handleInput(@NonNull InputEvent event) {
-        if (event.consumeAction(GameAction.UI_ACTIVATE)) {
+        if (shouldHandleActivate() && event.consumeAction(GameAction.UI_ACTIVATE)) {
             if (event.getPhase() == InputPhase.PRESSED) {
                 mousePressedAll(MouseButton.LEFT, 0, 0);
             } else if (event.getPhase() == InputPhase.RELEASED) {
                 mouseReleasedAll(MouseButton.LEFT, 0, 0);
                 mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
             }
+            event.consume();
         }
     }
 

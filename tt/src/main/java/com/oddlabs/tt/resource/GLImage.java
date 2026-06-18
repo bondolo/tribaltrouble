@@ -381,7 +381,7 @@ public abstract class GLImage {
     /**
      * Scales the image to the specified dimensions.
      *
-     * @param newWidth  The new width.
+     * @param newWidth The new width.
      * @param newHeight The new height.
      * @return A new GLImage with the scaled content.
      */

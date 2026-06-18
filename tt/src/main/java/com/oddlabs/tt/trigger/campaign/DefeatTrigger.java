@@ -29,7 +29,8 @@ public final class DefeatTrigger extends IntervalTrigger {
         this(viewer, campaign, chieftain, null);
     }
 
-    public DefeatTrigger(@NonNull WorldViewer viewer, @NonNull Campaign campaign, Unit chieftain, @Nullable Runnable runnable) {
+    public DefeatTrigger(@NonNull WorldViewer viewer, @NonNull Campaign campaign, Unit chieftain,
+            @Nullable Runnable runnable) {
         super(viewer.getWorld(), .5f, 0f);
         this.viewer = viewer;
         this.campaign = campaign;

@@ -65,7 +65,8 @@ public final class TextureArray extends Texture {
                 GLImage[] slotMipmaps = sources.get(layer);
                 assert slotMipmaps != null : "Missing source for layer " + layer;
                 GLImage mip = slotMipmaps[level];
-                assert mip.getWidth() == levelWidth && mip.getHeight() == levelHeight : "Mipmap dimension mismatch at level " + level;
+                assert mip.getWidth() == levelWidth && mip.getHeight() == levelHeight
+                        : "Mipmap dimension mismatch at level " + level;
 
                 ByteBuffer pixels = mip.getPixels();
                 pixels.rewind();

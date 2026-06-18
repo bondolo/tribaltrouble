@@ -46,7 +46,8 @@ public final class RenderQueues implements AutoCloseable {
     public RenderQueues() {
     }
 
-    @NonNull TextureArray getEffectTextureArray() {
+    @NonNull
+    TextureArray getEffectTextureArray() {
         return ensureTextureArray();
     }
 
@@ -61,7 +62,8 @@ public final class RenderQueues implements AutoCloseable {
             pending_array_uploads.put(layer, mipmaps);
             texture.setSourceMipmaps(null);
         } else if (texture.getSourceDXT() != null) {
-            throw new IllegalArgumentException("Compressed DXT textures are not supported as source for the effect array.");
+            throw new IllegalArgumentException(
+                    "Compressed DXT textures are not supported as source for the effect array.");
         }
         return key;
     }
@@ -77,7 +79,8 @@ public final class RenderQueues implements AutoCloseable {
             pending_array_uploads.put(layer, mipmaps);
             texture.setSourceMipmaps(null);
         } else if (texture.getSourceDXT() != null) {
-            throw new IllegalArgumentException("Compressed DXT textures are not supported as source for the effect array.");
+            throw new IllegalArgumentException(
+                    "Compressed DXT textures are not supported as source for the effect array.");
         }
         return key;
     }

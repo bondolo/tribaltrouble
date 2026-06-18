@@ -490,7 +490,8 @@ public final class Player implements PlayerInterface {
     }
 
     @Override
-    public void setLandscapeTarget(@NonNull Selectable<?> @NonNull [] selection, int grid_x, int grid_y, @NonNull Action action,
+    public void setLandscapeTarget(@NonNull Selectable<?> @NonNull [] selection, int grid_x, int grid_y,
+            @NonNull Action action,
             boolean aggressive) {
         if (selection.length == 0)
             return;

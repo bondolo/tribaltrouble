@@ -6,6 +6,7 @@ import com.oddlabs.tt.guievent.EnterListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.AudioAssets;
@@ -119,7 +120,9 @@ public class EditLine extends TextField implements Clipped {
     protected void handleInput(@NonNull InputEvent event) {
         if (event.getPhase() == InputPhase.RELEASED) {
             if (event.consumeAction(GameAction.UI_ACTIVATE)) {
-                enterPressedAll();
+                if (event.getKeyCode() == Key.RETURN) {
+                    enterPressedAll();
+                }
                 return;
             }
         }
@@ -150,6 +153,9 @@ public class EditLine extends TextField implements Clipped {
             } else if (!event.isControlDown() && !event.isMetaDown() && !event.isAltDown()) {
                 int c = event.getCodepoint();
                 if (c != 0 && !Character.isISOControl(c)) {
+                    if (c == ' ') { // Check if the character is SPACE
+                        event.consumeAction(GameAction.UI_ACTIVATE);
+                    }
                     consumed = insert(index, c);
                     if (!consumed) triggerError();
                 } else {

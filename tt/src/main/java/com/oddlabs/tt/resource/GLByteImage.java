@@ -68,8 +68,8 @@ public final class GLByteImage extends GLImage {
     @Override
     public @NonNull GLImage scale(int newWidth, int newHeight) {
         return newWidth == getWidth() && newHeight == getHeight()
-               ? this
-               : new GLByteImage(toChannel().scale(newWidth, newHeight), getGLFormat());
+                ? this
+                : new GLByteImage(toChannel().scale(newWidth, newHeight), getGLFormat());
     }
 
     @Override

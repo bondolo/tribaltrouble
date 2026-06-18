@@ -20,6 +20,11 @@ import org.jspecify.annotations.NonNull;
 public abstract class Delegate extends GUIObject {
     private static final Color.Linear BACKGROUND_ALPHA = Color.Linear.BLACK.alpha(0.3f);
 
+    @Override
+    protected boolean shouldHandleActivate() {
+        return false;
+    }
+
     Delegate() {
         setPos(0, 0);
         setCanFocus(true);

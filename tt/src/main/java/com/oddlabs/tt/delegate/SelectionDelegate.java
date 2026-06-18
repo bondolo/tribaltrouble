@@ -121,10 +121,6 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
 
     @Override
     public void handleInput(@NonNull InputEvent event) {
-        // Prevent base GUIObject from handling UI_ACTIVATE (Space/Return as Click)
-        // because we handle Space for Map Mode and Return for Chat.
-        event.consumeAction(GameAction.UI_ACTIVATE);
-
         super.handleInput(event);
         if (event.isConsumed()) return;
 
@@ -147,16 +143,14 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
                     return;
                 }
 
-                if (event.consumeAction(GameAction.NOTIFICATION_JUMP)) {
-                    if (!observer) {
-                        Notification n = getViewer().getNotificationManager().getLatestNotification();
-                        if (n != null) {
-                            if (getCamera() instanceof GameCamera)
-                                getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), n
-                                        .getX(), n.getY()));
-                            else if (getCamera() instanceof MapCamera)
-                                ((MapCamera) getCamera()).mapGoto(n.getX(), n.getY(), true);
-                        }
+                if (!observer && event.consumeAction(GameAction.NOTIFICATION_JUMP)) {
+                    Notification n = getViewer().getNotificationManager().getLatestNotification();
+                    if (n != null) {
+                        if (getCamera() instanceof GameCamera)
+                            getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), n
+                                    .getX(), n.getY()));
+                        else if (getCamera() instanceof MapCamera)
+                            ((MapCamera) getCamera()).mapGoto(n.getX(), n.getY(), true);
                     }
                     event.consume();
                     return;
@@ -164,25 +158,21 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
 
                 // Army Shortcuts
                 for (int i = 0; i <= 9; i++) {
-                    if (event.consumeAction(ARMY_SELECTS[i])) {
-                        if (!map_mode && !observer) {
-                            boolean selected = getViewer().getSelection().enableShortcutArmy(i);
-                            if (selected && event.getClicks() > 1) {
-                                var set = getViewer().getSelection().getCurrentSelection().getSet();
-                                if (!set.isEmpty()) {
-                                    var s = set.iterator().next();
-                                    getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), s
-                                            .getPositionX(), s.getPositionY()));
-                                }
+                    if (!map_mode && !observer && event.consumeAction(ARMY_SELECTS[i])) {
+                        boolean selected = getViewer().getSelection().enableShortcutArmy(i);
+                        if (selected && event.getClicks() > 1) {
+                            var set = getViewer().getSelection().getCurrentSelection().getSet();
+                            if (!set.isEmpty()) {
+                                var s = set.iterator().next();
+                                getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), (GameCamera) getCamera(), s
+                                        .getPositionX(), s.getPositionY()));
                             }
                         }
                         event.consume();
                         return;
                     }
-                    if (event.consumeAction(ARMY_CREATES[i])) {
-                        if (!map_mode && !observer) {
-                            getViewer().getSelection().setShortcutArmy(i);
-                        }
+                    if (!map_mode && !observer && event.consumeAction(ARMY_CREATES[i])) {
+                        getViewer().getSelection().setShortcutArmy(i);
                         event.consume();
                         return;
                     }
@@ -200,10 +190,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
                     event.consume();
                     return;
                 }
-                if (event.consumeAction(GameAction.UNIT_BEACON)) {
-                    if (!map_mode && !observer) {
-                        getGUIRoot().pushDelegate(new BeaconDelegate(getViewer(), (GameCamera) getCamera()));
-                    }
+                if (!map_mode && !observer && event.consumeAction(GameAction.UNIT_BEACON)) {
+                    getGUIRoot().pushDelegate(new BeaconDelegate(getViewer(), (GameCamera) getCamera()));
                     event.consume();
                     return;
                 }
