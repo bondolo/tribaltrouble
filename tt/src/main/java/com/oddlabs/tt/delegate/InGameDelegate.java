@@ -27,10 +27,10 @@ import java.util.Set;
  * Base class for all delegates active during actual gameplay. Provides common functionality
  * such as cheat code handling and opening the in-game main menu.
  */
-public abstract class InGameDelegate extends CameraDelegate<Camera> {
+public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C> {
     private final @NonNull WorldViewer viewer;
 
-    protected InGameDelegate(@NonNull WorldViewer viewer, @Nullable Camera camera) {
+    protected InGameDelegate(@NonNull WorldViewer viewer, @Nullable C camera) {
         super(viewer.getGUIRoot(), camera);
         this.viewer = viewer;
     }

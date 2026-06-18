@@ -482,9 +482,7 @@ public final class GUIRoot extends GUIObject {
     public Matrix4f multProjection(@NonNull Matrix4f matrix) {
         float aspect = (float) getWidth() / getHeight();
         CameraDelegate<?> delegate = getDelegate();
-        float fovy = delegate.getCamera() != null
-                ? Camera.calculateDynamicFOV(delegate.getCamera().getState().getCurrentZ(), aspect, DIAGONAL)
-                : Camera.calculateDynamicFOV(Globals.VIEW_MIN, aspect, DIAGONAL);
+        float fovy = Camera.calculateDynamicFOV(delegate.getCamera().getState().getCurrentZ(), aspect, DIAGONAL);
         float zNear = Globals.VIEW_MIN;
         float zFar = Globals.VIEW_MAX;
 

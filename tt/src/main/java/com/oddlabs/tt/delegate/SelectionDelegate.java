@@ -1,5 +1,6 @@
 package com.oddlabs.tt.delegate;
 
+import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.camera.MapCamera;
 import com.oddlabs.tt.form.InGameChatForm;
@@ -37,7 +38,7 @@ import java.util.ResourceBundle;
  * Handles core in-game interaction, primarily the selection and commanding of units and buildings.
  * It also manages in-game chat, jumping to notifications, and switching to map or observer modes.
  */
-public final class SelectionDelegate extends ControllableCameraDelegate {
+public final class SelectionDelegate extends ControllableCameraDelegate<Camera> {
     private static final Color.Linear SELECTION_COLOR = new Color.Standard(0xFF_4C_FF_00).linear();
     private static final GameAction[] ARMY_CREATES = new GameAction[]{
             GameAction.ARMY_CREATE_0,
@@ -100,6 +101,11 @@ public final class SelectionDelegate extends ControllableCameraDelegate {
 
     public @NonNull InGameChatForm getChatForm() {
         return chat_form;
+    }
+
+    @Override
+    protected void pushZoomDelegate() {
+        getGUIRoot().pushDelegate(new ZoomDelegate(getViewer(), game_camera));
     }
 
     private @NonNull ActionButtonPanel getActionButtonPanel() {

@@ -11,7 +11,7 @@ import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
-public class FirstPersonDelegate extends InGameDelegate {
+public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     private final boolean key_pressed;
     private final int created_tick;
 

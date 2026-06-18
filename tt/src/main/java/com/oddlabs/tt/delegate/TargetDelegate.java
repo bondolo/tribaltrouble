@@ -10,12 +10,17 @@ import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
-public class TargetDelegate extends ControllableCameraDelegate {
+public class TargetDelegate extends ControllableCameraDelegate<GameCamera> {
     private final @NonNull Action action;
 
     public TargetDelegate(@NonNull WorldViewer viewer, @NonNull GameCamera camera, @NonNull Action action) {
         super(viewer, camera);
         this.action = action;
+    }
+
+    @Override
+    protected void pushZoomDelegate() {
+        getGUIRoot().pushDelegate(new ZoomDelegate(getViewer(), getCamera()));
     }
 
     @Override

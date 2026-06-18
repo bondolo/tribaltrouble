@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 /**
  * Handles the user interaction for placing a new building on the landscape.
  */
-public final class PlacingDelegate extends ControllableCameraDelegate {
+public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera> {
     private static final Logger logger = Logger.getLogger(PlacingDelegate.class.getName());
     private static final int GRID_RADIUS = 20;
     private static final Color.Linear GOOD_PLACEMENT = Color.Linear.WHITE.alpha(0.8f);
@@ -53,6 +53,11 @@ public final class PlacingDelegate extends ControllableCameraDelegate {
 
     private @NonNull BuildingTemplate getTemplate() {
         return getViewer().getLocalPlayer().getRaceInfo().getBuildingTemplate(building_type);
+    }
+
+    @Override
+    protected void pushZoomDelegate() {
+        getGUIRoot().pushDelegate(new ZoomDelegate(getViewer(), getCamera()));
     }
 
     private void placeObject() {
