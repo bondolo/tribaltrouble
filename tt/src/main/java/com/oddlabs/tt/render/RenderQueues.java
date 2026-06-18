@@ -8,8 +8,9 @@ import com.oddlabs.tt.resource.GLImage;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.util.Target;
-import com.oddlabs.util.DXTImage;
+import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -34,9 +35,10 @@ public final class RenderQueues implements AutoCloseable {
     private final Map<@NonNull Supplier<@NonNull Texture @NonNull []>, @NonNull ShadowListKey> desc_to_shadow_key
             = new HashMap<>();
     private final List<@NonNull Texture> texture_lookup = new ArrayList<>();
-    // Shared 128x128x32 array for particle effects
-    private final TextureArray effect_texture_array = new TextureArray(128, 128, 32,
-            Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE);
+    /** Shared Array for particle effects */
+    private @Nullable TextureArray effect_texture_array;
+    private final Map<@NonNull Integer, @NonNull GLImage @NonNull []> pending_array_uploads = new HashMap<>();
+
     private final InstancedSpriteRenderer spriteRenderer = new InstancedSpriteRenderer();
     private final DecalRenderer decalRenderer = new DecalRenderer();
     private final EmitterRenderer emitterRenderer = new EmitterRenderer();
@@ -44,43 +46,83 @@ public final class RenderQueues implements AutoCloseable {
     public RenderQueues() {
     }
 
-    @NonNull
-    TextureArray getEffectTextureArray() {
-        return effect_texture_array;
+    @NonNull TextureArray getEffectTextureArray() {
+        return ensureTextureArray();
     }
 
     public @NonNull TextureKey registerEffectTexture(@NonNull Supplier<Texture[]> desc, int index, int layer) {
+        assert effect_texture_array == null : "Cannot register effect textures after the array has been built";
         TextureKey key = registerTexture(desc, index);
         Texture texture = getTexture(key);
         texture.setLayer(layer);
 
         GLImage[] mipmaps = texture.getSourceMipmaps();
-        DXTImage dxt = texture.getSourceDXT();
         if (mipmaps != null) {
-            effect_texture_array.uploadLayer(layer, mipmaps, Globals.COMPRESSED_RGBA_FORMAT);
+            pending_array_uploads.put(layer, mipmaps);
             texture.setSourceMipmaps(null);
-        } else if (dxt != null) {
-            effect_texture_array.uploadLayer(layer, dxt, Globals.COMPRESSED_RGBA_FORMAT);
-            texture.setSourceDXT(null);
+        } else if (texture.getSourceDXT() != null) {
+            throw new IllegalArgumentException("Compressed DXT textures are not supported as source for the effect array.");
         }
         return key;
     }
 
     public @NonNull TextureKey registerEffectTexture(@NonNull Supplier<Texture> desc, int layer) {
+        assert effect_texture_array == null : "Cannot register effect textures after the array has been built";
         TextureKey key = registerTexture(desc);
         Texture texture = getTexture(key);
         texture.setLayer(layer);
 
         GLImage[] mipmaps = texture.getSourceMipmaps();
-        DXTImage dxt = texture.getSourceDXT();
         if (mipmaps != null) {
-            effect_texture_array.uploadLayer(layer, mipmaps, Globals.COMPRESSED_RGBA_FORMAT);
+            pending_array_uploads.put(layer, mipmaps);
             texture.setSourceMipmaps(null);
-        } else if (dxt != null) {
-            effect_texture_array.uploadLayer(layer, dxt, Globals.COMPRESSED_RGBA_FORMAT);
-            texture.setSourceDXT(null);
+        } else if (texture.getSourceDXT() != null) {
+            throw new IllegalArgumentException("Compressed DXT textures are not supported as source for the effect array.");
         }
         return key;
+    }
+
+    public @NonNull TextureArray ensureTextureArray() {
+        if (effect_texture_array != null) {
+            assert pending_array_uploads.isEmpty() : "Pending effect textures found but array is already built";
+            return effect_texture_array;
+        }
+
+        assert !pending_array_uploads.isEmpty() : "No effects textures registered";
+
+        // Determine optimal array size
+        int slotWidth = 0;
+        int slotHeight = 0;
+        for (GLImage[] mipmaps : pending_array_uploads.values()) {
+            slotWidth = Math.max(slotWidth, mipmaps[0].getWidth());
+            slotHeight = Math.max(slotHeight, mipmaps[0].getHeight());
+        }
+        slotWidth = Utils.nextPowerOf2(slotWidth);
+        slotHeight = Utils.nextPowerOf2(slotHeight);
+
+        int maxLayer = -1;
+        for (int layer : pending_array_uploads.keySet()) {
+            maxLayer = Math.max(maxLayer, layer);
+        }
+        int depth = maxLayer + 1;
+        assert pending_array_uploads.size() == depth : "Gaps found in effect texture layers";
+
+        effect_texture_array = new TextureArray(slotWidth, slotHeight, depth,
+                Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE);
+
+        // Pre-scale all sources to match array dimensions
+        for (var entry : pending_array_uploads.entrySet()) {
+            GLImage[] mipmaps = entry.getValue();
+            if (mipmaps[0].getWidth() != slotWidth || mipmaps[0].getHeight() != slotHeight) {
+                GLImage scaled = mipmaps[0].scale(slotWidth, slotHeight);
+                entry.setValue(scaled.createMipMaps());
+            }
+        }
+
+        effect_texture_array.build(pending_array_uploads, Globals.COMPRESSED_RGBA_FORMAT);
+        pending_array_uploads.clear();
+
+        return effect_texture_array;
     }
 
     @NonNull
@@ -245,6 +287,7 @@ public final class RenderQueues implements AutoCloseable {
 
     void renderParticles(@NonNull RenderContext context, @NonNull CameraState state,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
+        assert pending_array_uploads.isEmpty() : "Attempting to render particles before effect array is built";
         emitterRenderer.render(context, this, state, modelViewStack, projectionStack, depthTexture);
     }
 

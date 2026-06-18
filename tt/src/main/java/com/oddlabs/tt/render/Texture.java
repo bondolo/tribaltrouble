@@ -65,7 +65,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
     private final int height;
     private final int target;
     private int layer = 0;
-    private @Nullable GLImage[] source_mipmaps;
+    private @NonNull GLImage[] source_mipmaps;
     private @Nullable DXTImage source_dxt;
 
     private static int initTexture(int target, int min_filter, int mag_filter, int wrap_s, int wrap_t,
@@ -179,15 +179,14 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
             this.source_dxt = dxtImage;
             total_size = uploadDXTTexture(dxtImage, internalFormat, maxMipmapLevel);
         } else {
-            GLImage[] mipmaps;
-            if (minFilter == GL11.GL_LINEAR_MIPMAP_LINEAR || minFilter == GL11.GL_NEAREST_MIPMAP_LINEAR) {
-                boolean isWrapping = wrapS == GL11.GL_REPEAT || wrapT == GL11.GL_REPEAT;
-                mipmaps = image.buildMipMaps(baseFadeoutLevel, fadeoutFactor, isWrapping, max_alpha);
-            } else {
-                mipmaps = new GLImage[]{image};
-            }
-            this.source_mipmaps = mipmaps;
-            total_size = uploadTexture(mipmaps, internalFormat, maxMipmapLevel);
+            this.source_mipmaps = switch (minFilter) {
+                case GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_NEAREST_MIPMAP_LINEAR -> {
+                    boolean isWrapping = wrapS == GL11.GL_REPEAT || wrapT == GL11.GL_REPEAT;
+                    yield image.buildMipMaps(baseFadeoutLevel, fadeoutFactor, isWrapping, max_alpha);
+                }
+                default -> new GLImage[]{image};
+            };
+            total_size = uploadTexture(source_mipmaps, internalFormat, maxMipmapLevel);
         }
         setSize(total_size);
     }
@@ -198,20 +197,20 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
 
     public Texture(int width, int height, int internal_format, int min_filter, int mag_filter, int wrap) {
         this(width, height, min_filter, mag_filter, wrap, wrap, 1000);
-        int format = GL11.GL_RGBA;
         int type = GL11.GL_UNSIGNED_BYTE;
-
-        if (internal_format == GL30.GL_DEPTH_COMPONENT24) {
-            format = GL11.GL_DEPTH_COMPONENT;
-            type = GL11.GL_FLOAT;
-        } else if (internal_format == GL30.GL_RGBA16F) {
-            format = GL11.GL_RGBA;
-            type = GL30.GL_HALF_FLOAT;
-        } else if (internal_format == GL11.GL_RGB || internal_format == GL11.GL_RGB8) {
-            format = GL11.GL_RGB;
-        } else if (internal_format == GL11.GL_RED || internal_format == GL30.GL_R8) {
-            format = GL11.GL_RED;
-        }
+        int format = switch (internal_format) {
+            case GL30.GL_DEPTH_COMPONENT24 -> {
+                type = GL11.GL_FLOAT;
+                yield GL11.GL_DEPTH_COMPONENT;
+            }
+            case GL30.GL_RGBA16F -> {
+                type = GL30.GL_HALF_FLOAT;
+                yield GL30.GL_RGBA;
+            }
+            case GL11.GL_RGB, GL11.GL_RGB8 -> GL11.GL_RGB;
+            case GL11.GL_RED, GL30.GL_R8 -> GL11.GL_RED;
+            default -> GL11.GL_RGBA;
+        };
 
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, type,
                 (java.nio.ByteBuffer) null);

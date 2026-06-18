@@ -378,6 +378,15 @@ public abstract class GLImage {
         return pixel_data;
     }
 
+    /**
+     * Scales the image to the specified dimensions.
+     *
+     * @param newWidth  The new width.
+     * @param newHeight The new height.
+     * @return A new GLImage with the scaled content.
+     */
+    public abstract @NonNull GLImage scale(int newWidth, int newHeight);
+
     public final void drawImage(@NonNull GLImage img, int dx, int dy, int sx, int sy, int w, int h) {
         int pixel_size = getPixelSize();
         assert pixel_size == img.getPixelSize();

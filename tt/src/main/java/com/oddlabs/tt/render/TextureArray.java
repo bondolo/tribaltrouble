@@ -2,14 +2,14 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.resource.GLImage;
 import com.oddlabs.tt.util.GLUtils;
-import com.oddlabs.util.DXTImage;
 import org.jspecify.annotations.NonNull;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL30;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 /**
  * Represents a 2D Array Texture (GL_TEXTURE_2D_ARRAY).
@@ -28,7 +28,7 @@ public final class TextureArray extends Texture {
             default -> GL11.GL_RGBA;
         };
 
-        // Allocate storage for all mipmap levels
+        // Pre-allocate storage for all mipmap levels to ensure we can build it level-by-level
         int numLevels = 1 + (int) Math.floor(Math.log(Math.max(width, height)) / Math.log(2));
         int w = width;
         int h = height;
@@ -43,42 +43,40 @@ public final class TextureArray extends Texture {
     }
 
     /**
-     * Uploads a single layer to the texture array.
+     * Builds the texture array from a map of slot indices to image mipmaps.
+     * All layers for a given level are uploaded at once to avoid alignment issues with compressed formats.
      */
-    public void uploadLayer(int layerIndex, @NonNull GLImage[] mipmaps, int internal_format) {
-        if (layerIndex < 0 || layerIndex >= depth) {
-            throw new IndexOutOfBoundsException("Layer index " + layerIndex + " out of bounds [0, " + depth + ")");
+    public void build(@NonNull Map<@NonNull Integer, @NonNull GLImage[]> sources, int internal_format) {
+        int numLevels = 1 + (int) Math.floor(Math.log(Math.max(getWidth(), getHeight())) / Math.log(2));
+
+        GL11.glBindTexture(GL30.GL_TEXTURE_2D_ARRAY, getHandle());
+
+        int format = GL11.GL_RGBA;
+        int type = GL11.GL_UNSIGNED_BYTE;
+
+        for (int level = 0; level < numLevels; level++) {
+            int levelWidth = Math.max(1, getWidth() >> level);
+            int levelHeight = Math.max(1, getHeight() >> level);
+
+            // Stitch all layers for this level into one big buffer
+            ByteBuffer levelBuffer = BufferUtils.createByteBuffer(levelWidth * levelHeight * depth * Integer.BYTES);
+
+            for (int layer = 0; layer < depth; layer++) {
+                GLImage[] slotMipmaps = sources.get(layer);
+                assert slotMipmaps != null : "Missing source for layer " + layer;
+                GLImage mip = slotMipmaps[level];
+                assert mip.getWidth() == levelWidth && mip.getHeight() == levelHeight : "Mipmap dimension mismatch at level " + level;
+
+                ByteBuffer pixels = mip.getPixels();
+                pixels.rewind();
+                levelBuffer.put(pixels);
+            }
+            levelBuffer.flip();
+
+            GL12.glTexImage3D(GL30.GL_TEXTURE_2D_ARRAY, level, internal_format, levelWidth, levelHeight, depth, 0,
+                    format, type, levelBuffer);
         }
-
-        GL11.glBindTexture(getTarget(), getHandle());
-        for (int level = 0; level < mipmaps.length; level++) {
-            GLImage mip = mipmaps[level];
-            ByteBuffer pixels = mip.getPixels();
-            pixels.rewind();
-
-            GL12.glTexSubImage3D(getTarget(), level, 0, 0, layerIndex, mip.getWidth(), mip.getHeight(), 1,
-                    mip.getGLFormat(), mip.getGLType(), pixels);
-        }
-        GLUtils.checkAndThrow("TextureArray uploadLayer level " + layerIndex);
-    }
-
-    /**
-     * Uploads a single layer to the texture array using compressed data.
-     */
-    public void uploadLayer(int layerIndex, @NonNull DXTImage dxt, int internal_format) {
-        if (layerIndex < 0 || layerIndex >= depth) {
-            throw new IndexOutOfBoundsException("Layer index " + layerIndex + " out of bounds [0, " + depth + ")");
-        }
-
-        GL11.glBindTexture(getTarget(), getHandle());
-        for (int level = 0; level < dxt.getNumMipMaps(); level++) {
-            ByteBuffer pixels = dxt.getMipMap(level);
-            pixels.rewind();
-
-            GL13.glCompressedTexSubImage3D(getTarget(), level, 0, 0, layerIndex, dxt.getWidth(level),
-                    dxt.getHeight(level), 1, internal_format, pixels);
-        }
-        GLUtils.checkAndThrow("TextureArray uploadLayer DXT level " + layerIndex);
+        GLUtils.checkAndThrow("TextureArray build");
     }
 
     @Override

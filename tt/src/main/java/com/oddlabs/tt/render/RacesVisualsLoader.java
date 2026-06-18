@@ -224,6 +224,8 @@ public final class RacesVisualsLoader {
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 12);
         VisualRegistry.getInstance().registerStarTextures(star_textures);
 
+        queues.ensureTextureArray();
+
         ProgressForm.progress(1f / num_progress);
 
         BuildingTemplate viking_quarters_template = createBuildingTemplate(

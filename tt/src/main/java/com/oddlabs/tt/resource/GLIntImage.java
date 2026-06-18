@@ -60,6 +60,14 @@ public final class GLIntImage extends GLImage {
     }
 
     @Override
+    public @NonNull GLImage scale(int newWidth, int newHeight) {
+        if (newWidth == getWidth() && newHeight == getHeight()) {
+            return this;
+        }
+        return new GLIntImage(toLayer().scale(newWidth, newHeight));
+    }
+
+    @Override
     public int getPixel(int x, int y) {
         return pixels.get(y * getWidth() + x);
     }

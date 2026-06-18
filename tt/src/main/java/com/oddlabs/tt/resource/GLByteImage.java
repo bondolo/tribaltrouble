@@ -55,6 +55,23 @@ public final class GLByteImage extends GLImage {
         return new GLByteImage(sourceChannel, format);
     }
 
+    public @NonNull Channel toChannel() {
+        Channel channel = new Channel(getWidth(), getHeight());
+        float[] dest = channel.getPixels();
+        ByteBuffer source = getPixels();
+        for (int i = 0; i < dest.length; i++) {
+            dest[i] = (source.get(i) & 0xff) / 255f;
+        }
+        return channel;
+    }
+
+    @Override
+    public @NonNull GLImage scale(int newWidth, int newHeight) {
+        return newWidth == getWidth() && newHeight == getHeight()
+               ? this
+               : new GLByteImage(toChannel().scale(newWidth, newHeight), getGLFormat());
+    }
+
     @Override
     public int getPixel(int x, int y) {
         return getPixels().get(y * getWidth() + x) & 0xff;
