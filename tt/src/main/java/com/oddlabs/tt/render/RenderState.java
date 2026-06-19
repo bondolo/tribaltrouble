@@ -32,7 +32,7 @@ import com.oddlabs.tt.model.weapon.Stun;
 import com.oddlabs.tt.player.Player;
 import org.lwjgl.opengl.GL11;
 import com.oddlabs.tt.procedural.GeneratorRing;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.viewer.Selection;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

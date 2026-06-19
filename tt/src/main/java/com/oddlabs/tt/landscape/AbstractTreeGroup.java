@@ -3,7 +3,7 @@ package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.pathfinder.UnitGrid;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

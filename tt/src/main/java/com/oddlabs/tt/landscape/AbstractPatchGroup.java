@@ -1,7 +1,7 @@
 package com.oddlabs.tt.landscape;
 
 
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

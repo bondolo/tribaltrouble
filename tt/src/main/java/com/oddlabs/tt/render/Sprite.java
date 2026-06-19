@@ -6,7 +6,7 @@ import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.procedural.GeneratorRespond;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.TextureFile;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.util.BoundingBox;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 

@@ -20,7 +20,7 @@ import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInterface;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.util.DebugRender;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.gui.ToolTip;

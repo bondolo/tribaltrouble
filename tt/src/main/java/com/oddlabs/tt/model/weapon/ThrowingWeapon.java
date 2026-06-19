@@ -10,7 +10,7 @@ import com.oddlabs.tt.model.WeaponVisualType;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

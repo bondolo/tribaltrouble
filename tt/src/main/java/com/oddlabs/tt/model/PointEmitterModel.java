@@ -4,7 +4,6 @@ import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.particle.Emitter;
-import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

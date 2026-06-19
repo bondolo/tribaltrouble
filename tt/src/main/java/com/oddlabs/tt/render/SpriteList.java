@@ -3,7 +3,7 @@ package com.oddlabs.tt.render;
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
 import com.oddlabs.tt.resource.SpriteFile;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.vbo.FloatVBO;
 import com.oddlabs.tt.vbo.ShortVBO;
 import com.oddlabs.tt.vbo.VertexArray;

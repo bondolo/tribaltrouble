@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.util.LinkedList;
 import com.oddlabs.util.ListElement;
 import org.jspecify.annotations.NonNull;

@@ -8,7 +8,7 @@ import com.oddlabs.tt.particle.SonicBlastEffect;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

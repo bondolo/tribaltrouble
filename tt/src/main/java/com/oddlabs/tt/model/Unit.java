@@ -23,7 +23,6 @@ import com.oddlabs.tt.pathfinder.PathTracker;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.resource.AudioAssets;
-import com.oddlabs.tt.util.BoundingBox;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

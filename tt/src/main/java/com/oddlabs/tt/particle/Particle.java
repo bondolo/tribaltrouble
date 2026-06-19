@@ -2,7 +2,7 @@ package com.oddlabs.tt.particle;
 
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.util.BoundingBox;
+import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
