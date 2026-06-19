@@ -445,8 +445,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         float x, y, z;
         float height_coeff;
         float dome_height = radius;
-        float h_angle_inc = ((float) java.lang.Math.PI / 2) / (subdiv_height - 1);
-        float a_angle_inc = (float) java.lang.Math.PI * 2 / subdiv_axis;
+        float h_angle_inc = ((float) Math.PI / 2) / (subdiv_height - 1);
+        float a_angle_inc = (float) Math.PI * 2 / subdiv_axis;
         float offset_angle = a_angle_inc / 2f;
 
         // skydome_default_color is authored to be darker in the original game (sRGB space)
@@ -487,13 +487,13 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         skydome_default_linear.mul(skydome_intensity);
 
         for (int i = 0; i < subdiv_height - 1; i++) {
-            z = (float) java.lang.Math.sin(h_angle_inc * i) * radius;
-            r = (float) java.lang.Math.cos(h_angle_inc * i) * radius;
+            z = (float) Math.sin(h_angle_inc * i) * radius;
+            r = (float) Math.cos(h_angle_inc * i) * radius;
             height_coeff = Math.abs(z) < 250f ? dome_height / 250f : dome_height / z;
 
             for (int j = 0; j < subdiv_axis; j++) {
-                x = (float) java.lang.Math.cos(START_ANGLE + a_angle_inc * j + offset_angle * i) * r;
-                y = (float) java.lang.Math.sin(START_ANGLE + a_angle_inc * j + offset_angle * i) * r;
+                x = (float) Math.cos(START_ANGLE + a_angle_inc * j + offset_angle * i) * r;
+                y = (float) Math.sin(START_ANGLE + a_angle_inc * j + offset_angle * i) * r;
 
                 buffer.put(x + origin_x).put(y + origin_y).put(z + origin_z); // Position
                 float inv_len = 1.0f / (float) Math.sqrt(x * x + y * y + z * z);
@@ -559,8 +559,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
                 .mapToObj(i -> {
                     int index = i + index_offset;
                     return new SkyStitchVertex(heightmap, index, ring_id,
-                            (float) java.lang.Math.cos(START_ANGLE + a_angle_inc * i) * radius + origin_x,
-                            (float) java.lang.Math.sin(START_ANGLE + a_angle_inc * i) * radius + origin_y);
+                            (float) Math.cos(START_ANGLE + a_angle_inc * i) * radius + origin_x,
+                            (float) Math.sin(START_ANGLE + a_angle_inc * i) * radius + origin_y);
                 }).toArray(SkyStitchVertex[]::new);
     }
 
