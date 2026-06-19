@@ -19,7 +19,7 @@ import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
 import com.oddlabs.tt.trigger.campaign.PlayerEleminatedTrigger;
 import com.oddlabs.tt.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

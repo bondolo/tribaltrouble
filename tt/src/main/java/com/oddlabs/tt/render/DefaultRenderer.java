@@ -18,7 +18,7 @@ import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.tt.scenery.Water;
 import com.oddlabs.tt.util.DebugRender;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.viewer.AmbientAudio;
 import com.oddlabs.tt.viewer.Cheat;

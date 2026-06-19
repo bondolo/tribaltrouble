@@ -47,7 +47,7 @@ import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.WorldGenerator;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.util.ServerMessageBundler;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

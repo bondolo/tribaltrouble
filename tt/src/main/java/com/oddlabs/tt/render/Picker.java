@@ -22,7 +22,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInterface;
 import com.oddlabs.tt.util.BoundingBox;
 import com.oddlabs.tt.util.DebugRender;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.viewer.Selection;
 import org.joml.Matrix4f;

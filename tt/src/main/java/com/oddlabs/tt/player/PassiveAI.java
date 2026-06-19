@@ -3,7 +3,7 @@ package com.oddlabs.tt.player;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.behaviour.IdleController;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import org.jspecify.annotations.NonNull;
 
 public final class PassiveAI extends AI {

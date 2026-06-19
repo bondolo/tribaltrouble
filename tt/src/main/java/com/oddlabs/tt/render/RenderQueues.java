@@ -7,7 +7,7 @@ import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.GLImage;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.pathfinder.UnitGrid;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import org.jspecify.annotations.NonNull;
 
 public record LandscapeTarget(int grid_x, int grid_y) implements Target {

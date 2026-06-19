@@ -5,7 +5,7 @@ import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

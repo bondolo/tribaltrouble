@@ -3,7 +3,7 @@ package com.oddlabs.tt.model.weapon;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.util.Target;
+import com.oddlabs.tt.model.Target;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;

@@ -9,7 +9,6 @@ import com.oddlabs.tt.pathfinder.Region;
 import com.oddlabs.tt.pathfinder.TargetTrackerAlgorithm;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.resource.AudioAssets;
-import com.oddlabs.tt.util.Target;
 import org.jspecify.annotations.NonNull;
 
 import java.util.concurrent.ThreadLocalRandom;

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.util;
+package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.net.Distributable;
 
