@@ -181,15 +181,17 @@ public class MultiPartFormOutputStream {
 
     /**
      * Writes a file's contents. If the file is null, does not exist, or
-     * is a directory, a <code>java.lang.IllegalArgumentException</code>
+     * is a directory, an <code>IllegalArgumentException</code>
      * will be thrown.
      *
      * @param name the field name
      * @param mimeType the file content type (optional, recommended)
      * @param file the file (the file must exist)
      * @throws IOException on input/output errors
+     * @throws IllegalArgumentException if the file does not exist or is a directory
      */
-    public void writeFile(String name, @Nullable String mimeType, @NonNull File file) throws IOException {
+    public void writeFile(String name, @Nullable String mimeType, @NonNull File file)
+            throws IllegalArgumentException, IOException {
         if (!file.exists()) {
             throw new IllegalArgumentException("File does not exist.");
         }
@@ -215,17 +217,17 @@ public class MultiPartFormOutputStream {
     }
 
     /**
-     * Writes an input stream's contents. If the input stream is null, a
-     * <code>java.lang.IllegalArgumentException</code> will be thrown.
+     * Writes an input stream's contents.
      *
      * @param name the field name
      * @param mimeType the file content type (optional, recommended)
      * @param fileName the file name (required)
      * @param is the input stream
      * @throws IOException on input/output errors
+     * @throws IllegalArgumentException if the filename is empty
      */
     public void writeFile(String name, @Nullable String mimeType, @NonNull String fileName, @NonNull InputStream is)
-            throws IOException {
+            throws IllegalArgumentException, IOException {
         if (fileName.isEmpty()) {
             throw new IllegalArgumentException("File name cannot be null or empty.");
         }
@@ -252,19 +254,19 @@ public class MultiPartFormOutputStream {
 
     /**
      * Writes the given bytes. The bytes are assumed to be the contents
-     * of a file, and will be sent as such. If the data is null, a
-     * <code>java.lang.IllegalArgumentException</code> will be thrown.
+     * of a file, and will be sent as such.
      *
      * @param name the field name
      * @param mimeType the file content type (optional, recommended)
      * @param fileName the file name (required)
      * @param data the file data
      * @throws IOException on input/output errors
+     * @throws IllegalArgumentException if the filename is empty
      */
     public void writeFile(String name, String mimeType, @NonNull String fileName, byte @NonNull [] data)
-            throws IOException {
+            throws IllegalArgumentException, IOException {
         if (fileName.isEmpty()) {
-            throw new IllegalArgumentException("File name cannot be null or empty.");
+            throw new IllegalArgumentException("File name cannot be empty.");
         }
         /*
            --boundary\r\n
