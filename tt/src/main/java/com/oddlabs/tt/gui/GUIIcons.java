@@ -29,9 +29,13 @@ public class GUIIcons {
     private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
     }
+
     private static final Color.Standard WATCH_MIDPOINT_COLOR = new Color.Standard(0xFFDCE202);
     private static final int WATCH_RIM_COLOR_INT = new Color.Standard(0.75f, 1.0f).toInt();
     private static final int WATCH_NUM_ICONS = 25;
+    private static final int WATCH_ICON_SIZE = 64;
+    private static final int WATCH_RIM_WIDTH = 2;
+    private static final int WATCH_SHADOW_OFFSET = 2;
 
     private static final GUIIcons ICONS = new GUIIcons("/gui/icons.xml");
 
@@ -126,18 +130,16 @@ public class GUIIcons {
     }
 
     private static @NonNull IconQuad @NonNull [] generateWatchIcons() {
-        int textureSize = 512;
-        int perRow = textureSize / WATCH_NUM_ICONS;
-        
+        int textureSize = Utils.roundToTextureSize((int) Math.ceil(Math.sqrt(WATCH_NUM_ICONS)) * WATCH_ICON_SIZE);
+        int perRow = textureSize / WATCH_ICON_SIZE;
+
         assert perRow * perRow >= WATCH_NUM_ICONS : "texture size too small for " + WATCH_NUM_ICONS + " icons";
 
         GLIntImage image = new GLIntImage(textureSize, textureSize, GL11.GL_RGBA);
         image.clearAll(Color.TRANSPARENT_INT);
 
-        int radius = 24;
-        int rimWidth = 2;
-        int outerRadius = radius + rimWidth;
-        int shadowOffset = 2;
+        int radius = WATCH_ICON_SIZE * 3 / 8;
+        int outerRadius = radius + WATCH_RIM_WIDTH;
 
         for (int i = 0; i < WATCH_NUM_ICONS; i++) {
             float progress = i / (float) (WATCH_NUM_ICONS - 1);
@@ -161,22 +163,22 @@ public class GUIIcons {
 
             int col = i % perRow;
             int row = i / perRow;
-            int startX = col * WATCH_NUM_ICONS;
-            int startY = row * WATCH_NUM_ICONS;
+            int startX = col * WATCH_ICON_SIZE;
+            int startY = row * WATCH_ICON_SIZE;
 
-            for (int y = 0; y < WATCH_NUM_ICONS; y++) {
-                for (int x = 0; x < WATCH_NUM_ICONS; x++) {
+            for (int y = 0; y < WATCH_ICON_SIZE; y++) {
+                for (int x = 0; x < WATCH_ICON_SIZE; x++) {
                     int px = startX + x;
                     // GL coordinate (0 is bottom). We want to write to top.
                     // startY is from top. y is from top of icon.
                     int py = textureSize - 1 - (startY + y);
 
-                    float dx = x - WATCH_NUM_ICONS / 2.0f + 0.5f;
-                    float dy = WATCH_NUM_ICONS / 2.0f - y - 0.5f;
+                    float dx = x - WATCH_ICON_SIZE / 2.0f + 0.5f;
+                    float dy = WATCH_ICON_SIZE / 2.0f - y - 0.5f;
                     float dist = (float) Math.hypot(dx, dy);
 
-                    float shadowDx = dx - shadowOffset;
-                    float shadowDy = dy + shadowOffset; // Lower Right Shadow
+                    float shadowDx = dx - WATCH_SHADOW_OFFSET;
+                    float shadowDy = dy + WATCH_SHADOW_OFFSET; // Lower Right Shadow
                     float shadowDist = (float) Math.hypot(shadowDx, shadowDy);
 
                     int finalColor = 0;
@@ -239,12 +241,12 @@ public class GUIIcons {
         return IntStream.range(0, WATCH_NUM_ICONS).mapToObj(i -> {
             int col = i % perRow;
             int row = i / perRow;
-            int startX = col * WATCH_NUM_ICONS;
-            int startY = row * WATCH_NUM_ICONS;
+            int startX = col * WATCH_ICON_SIZE;
+            int startY = row * WATCH_ICON_SIZE;
 
             float u1 = startX / (float) textureSize;
-            float v1 = 1f - (startY + WATCH_NUM_ICONS) / (float) textureSize;
-            float u2 = (startX + WATCH_NUM_ICONS) / (float) textureSize;
+            float v1 = 1f - (startY + WATCH_ICON_SIZE) / (float) textureSize;
+            float u2 = (startX + WATCH_ICON_SIZE) / (float) textureSize;
             float v2 = 1f - startY / (float) textureSize;
 
             return new IconQuad(u1, v1, u2, v2, 22, 22, texture);
