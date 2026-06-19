@@ -4,6 +4,7 @@ import com.oddlabs.tt.delegate.ModalDelegate;
 import com.oddlabs.tt.guievent.EventListener;
 import com.oddlabs.tt.guievent.FocusListener;
 import com.oddlabs.tt.guievent.InputListener;
+import com.oddlabs.tt.guievent.MouseHorizontalWheelListener;
 import com.oddlabs.tt.guievent.MouseButtonListener;
 import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.guievent.MouseMotionListener;
@@ -547,10 +548,27 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
+    final void mouseScrolledHorizontallyAll(int amount) {
+        if (disabled)
+            return;
+        mouseScrolledHorizontally(amount);
+        for (var listener : listeners) {
+            if (listener instanceof MouseHorizontalWheelListener l) {
+                l.mouseScrolledHorizontally(amount);
+            }
+        }
+    }
+
     protected void mouseScrolled(int amount) {
         GUIObject parent = getParent();
         if (parent != null)
             parent.mouseScrolledAll(amount);
+    }
+
+    protected void mouseScrolledHorizontally(int amount) {
+        GUIObject parent = getParent();
+        if (parent != null)
+            parent.mouseScrolledHorizontallyAll(amount);
     }
 
     final void mouseDraggedAll(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y,
@@ -738,6 +756,10 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
     }
 
     public final void addMouseWheelListener(@NonNull MouseWheelListener listener) {
+        listeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public final void addMouseHorizontalWheelListener(@NonNull MouseHorizontalWheelListener listener) {
         listeners.add(Objects.requireNonNull(listener, "listener"));
     }
 

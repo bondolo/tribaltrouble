@@ -33,6 +33,8 @@ public interface InputProvider<C> extends AutoCloseable {
     boolean getEventButtonState();
 
     int getEventDWheel();
+    
+    int getEventDWheelX();
 
     int getEventX();
 

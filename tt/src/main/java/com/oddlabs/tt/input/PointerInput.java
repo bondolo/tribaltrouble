@@ -116,7 +116,7 @@ public final class PointerInput {
         }
     }
 
-    private void updateMouse(@NonNull GUIRoot gui_root, int x, int y, int dz) {
+    private void updateMouse(@NonNull GUIRoot gui_root, int x, int y, int dz, int dx) {
         if (x != last_x || y != last_y) {
             last_x = (short) x;
             last_y = (short) y;
@@ -128,6 +128,8 @@ public final class PointerInput {
         }
         if (dz != 0)
             localInput.mouseScrolled(gui_root, dz);
+        if (dx != 0)
+            localInput.mouseScrolledHorizontally(gui_root, dx);
     }
 
     public void poll(@NonNull GUIRoot gui_root) {
@@ -136,14 +138,17 @@ public final class PointerInput {
         int accum_x = last_x;
         int accum_y = last_y;
         int accum_dz = 0;
+        int accum_dx = 0;
         while (deterministic.log(inputProvider.nextMouseEvent())) {
             accum_x = deterministic.log(inputProvider.getEventX());
             accum_y = deterministic.log(inputProvider.getEventY());
             accum_dz += deterministic.log(inputProvider.getEventDWheel());
+            accum_dx += deterministic.log(inputProvider.getEventDWheelX());
             MouseButton button = MouseButton.fromInt(deterministic.log(inputProvider.getEventButton()));
             if (button != null) {
-                updateMouse(gui_root, accum_x, accum_y, accum_dz);
+                updateMouse(gui_root, accum_x, accum_y, accum_dz, accum_dx);
                 accum_dz = 0;
+                accum_dx = 0;
                 if (deterministic.log(inputProvider.getEventButtonState())) {
                     if (buttons.add(button)) {
                         if (drag_button == null) {
@@ -159,6 +164,6 @@ public final class PointerInput {
                 }
             }
         }
-        updateMouse(gui_root, accum_x, accum_y, accum_dz);
+        updateMouse(gui_root, accum_x, accum_y, accum_dz, accum_dx);
     }
 }

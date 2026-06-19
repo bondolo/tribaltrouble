@@ -1,6 +1,7 @@
 package com.oddlabs.tt.delegate;
 
 import com.oddlabs.tt.camera.Camera;
+import com.oddlabs.tt.guievent.EventListener;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
@@ -9,7 +10,7 @@ import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
-public abstract class ControllableCameraDelegate<C extends Camera> extends InGameDelegate<C> {
+public abstract class ControllableCameraDelegate<C extends Camera> extends InGameDelegate<C> implements EventListener {
     private FirstPersonDelegate first_person_delegate;
 
     public ControllableCameraDelegate(@NonNull WorldViewer viewer, @NonNull C camera) {
@@ -52,6 +53,11 @@ public abstract class ControllableCameraDelegate<C extends Camera> extends InGam
     @Override
     public void mouseScrolled(int amount) {
         getCamera().mouseScrolled(amount);
+    }
+
+    @Override
+    public void mouseScrolledHorizontally(int amount) {
+        getCamera().rotate(amount);
     }
 
     @Override

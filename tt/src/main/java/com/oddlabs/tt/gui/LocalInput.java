@@ -90,6 +90,10 @@ public final class LocalInput implements AutoCloseable {
         gui_root.getInputState().mouseScrolled(dz);
     }
 
+    public void mouseScrolledHorizontally(@NonNull GUIRoot gui_root, int dx) {
+        gui_root.getInputState().mouseScrolledHorizontally(dx);
+    }
+
     public void mouseMoved(@NonNull GUIRoot gui_root, short x, short y) {
         mouse_x = x;
         mouse_y = y;

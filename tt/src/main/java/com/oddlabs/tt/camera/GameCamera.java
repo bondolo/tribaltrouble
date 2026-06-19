@@ -306,6 +306,26 @@ public final class GameCamera extends Camera {
         zoom_time = Math.clamp(zoom_time + amount * .05f, -.15f, .15f);
     }
 
+    @Override
+    public void rotate(int amount) {
+        viewer.getPicker().pickRotate(this);
+        float da = -amount * 0.1f;
+        Vector2fc point = getRotationPoint();
+        float dx;
+        float dy;
+        if (insideWorld(point.x(), point.y())) {
+            dx = getState().getTargetX() - point.x();
+            dy = getState().getTargetY() - point.y();
+        } else {
+            dx = -left_dir_y * default_rotate_radius;
+            dy = left_dir_x * default_rotate_radius;
+        }
+        getState().setTargetHorizAngle(getState().getTargetHorizAngle() + da);
+        getState().setTargetX(getState().getTargetX() - dx + (float) (dx * Math.cos(da) - dy * Math.sin(da)));
+        getState().setTargetY(getState().getTargetY() - dy + (float) (dx * Math.sin(da) + dy * Math.cos(da)));
+        checkPosition();
+    }
+
     public void setRotationPoint(Target target) {
         rotation_point = target;
     }

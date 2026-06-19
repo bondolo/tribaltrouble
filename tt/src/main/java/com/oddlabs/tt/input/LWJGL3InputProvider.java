@@ -61,7 +61,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
         }
     }
 
-    private record MouseEvent(int button, boolean state, int x, int y, int dWheel) {
+    private record MouseEvent(int button, boolean state, int x, int y, int dWheel, int dWheelX) {
     }
 
     public LWJGL3InputProvider(@NonNull LWJGL3Window win) {
@@ -109,13 +109,13 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
             this.mouseX = xpos * scaleX;
             this.mouseY = fh - (ypos * scaleY) - 1; // Invert Y in physical pixel space
             synchronized (mouseEvents) {
-                mouseEvents.add(new MouseEvent(-1, false, (int) mouseX, (int) mouseY, 0));
+                mouseEvents.add(new MouseEvent(-1, false, (int) mouseX, (int) mouseY, 0, 0));
             }
         });
 
         glfwSetMouseButtonCallback(windowHandle, (window, button, action, mods) -> {
             synchronized (mouseEvents) {
-                mouseEvents.add(new MouseEvent(button, action == GLFW_PRESS, (int) mouseX, (int) mouseY, 0));
+                mouseEvents.add(new MouseEvent(button, action == GLFW_PRESS, (int) mouseX, (int) mouseY, 0, 0));
             }
         });
 
@@ -123,7 +123,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
             synchronized (mouseEvents) {
                 // wheel delta usually 120 per click in legacy? Or just +/- 1? LWJGL2 dWheel was usually +/- 120.
                 // GLFW gives floats. Let's say 120 * offset.
-                mouseEvents.add(new MouseEvent(-1, false, (int) mouseX, (int) mouseY, (int) (yoffset * 120)));
+                mouseEvents.add(new MouseEvent(-1, false, (int) mouseX, (int) mouseY, (int) (yoffset * 120), (int) (xoffset * 120)));
             }
         });
     }
@@ -204,6 +204,11 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
     @Override
     public int getEventDWheel() {
         return currentMouseEvent != null ? currentMouseEvent.dWheel() : 0;
+    }
+
+    @Override
+    public int getEventDWheelX() {
+        return currentMouseEvent != null ? currentMouseEvent.dWheelX() : 0;
     }
 
     @Override

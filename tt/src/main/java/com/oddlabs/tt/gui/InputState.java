@@ -78,6 +78,13 @@ public final class InputState {
         gui_hit.mouseScrolledAll(scroll_amount);
     }
 
+    public void mouseScrolledHorizontally(int dx) {
+        GUIObject gui_hit = pick();
+        int scroll_amount = Math.round(dx * Globals.WHEEL_SCALE);
+        gui_hit.setFocus();
+        gui_hit.mouseScrolledHorizontallyAll(scroll_amount);
+    }
+
     public void mousePressed(@NonNull MouseButton button) {
         GUIObject gui_hit = pick();
         var localInput = Renderer.getLocalInput();

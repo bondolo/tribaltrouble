@@ -158,6 +158,9 @@ public abstract class Camera implements Animated {
     public void mouseScrolled(int amount) {
     }
 
+    public void rotate(int amount) {
+    }
+
     public void mouseMoved(int x, int y) {
     }
 
