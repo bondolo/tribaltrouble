@@ -99,7 +99,6 @@ public final class InputEvent {
      * Marks the physical event as fully handled, stopping further propagation.
      */
     public void consume() {
-        logger.log(Level.INFO, "InputEvent: " + this + " consumed", new Throwable("InputEvent.consume()"));
         this.consumed = true;
     }
 
