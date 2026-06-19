@@ -27,8 +27,8 @@ public final class DebugRender {
             new Color.Standard(0xFF_5f_1f_1f).linear(), new Color.Standard(0xFF_5f_1f_5f).linear(),
             new Color.Standard(0xFF_5f_5f_1f).linear(), new Color.Standard(0xFF_5f_5f_5f).linear()
     };
-    private static final float CIRCLE_DELTA = (float) java.lang.Math.PI / 2;
-    private static final float ANGLE_DELTA = (float) java.lang.Math.PI / 20;
+    private static final float CIRCLE_DELTA = (float) Math.PI / 2;
+    private static final float ANGLE_DELTA = (float) Math.PI / 20;
     private static final float SUBDIV = 0.4f;
 
     private static @Nullable DebugShaderRenderer shaderRenderer;
@@ -196,14 +196,14 @@ public final class DebugRender {
     private static void drawCircle(float radius, float origin_x, float origin_y, float origin_z, float r, float g,
             float b) {
         if (null == shaderRenderer) return;
-        float prevX = radius * (float) java.lang.Math.cos(0) + origin_x;
-        float prevY = radius * (float) java.lang.Math.sin(0) + origin_y;
+        float prevX = radius * (float) Math.cos(0) + origin_x;
+        float prevY = radius * (float) Math.sin(0) + origin_y;
         float startX = prevX;
         float startY = prevY;
 
-        for (float phi = ANGLE_DELTA; phi < (float) java.lang.Math.PI * 2; phi += ANGLE_DELTA) {
-            float x = radius * (float) java.lang.Math.cos(phi) + origin_x;
-            float y = radius * (float) java.lang.Math.sin(phi) + origin_y;
+        for (float phi = ANGLE_DELTA; phi < (float) Math.PI * 2; phi += ANGLE_DELTA) {
+            float x = radius * (float) Math.cos(phi) + origin_x;
+            float y = radius * (float) Math.sin(phi) + origin_y;
             drawLine(prevX, prevY, origin_z, x, y, origin_z, r, g, b);
             prevX = x;
             prevY = y;
@@ -217,16 +217,16 @@ public final class DebugRender {
     public static void drawSphere(float origin_x, float origin_y, float origin_z, float radius, float r, float g,
             float b) {
         if (null == shaderRenderer) return;
-        for (float phi = 0; phi < (float) java.lang.Math.PI; phi += CIRCLE_DELTA) {
+        for (float phi = 0; phi < (float) Math.PI; phi += CIRCLE_DELTA) {
             float prevX = 0, prevY = 0, prevZ = 0;
             boolean first = true;
             float startX = 0, startY = 0, startZ = 0;
 
-            for (float rho = 0f; rho < (float) java.lang.Math.PI * 2; rho += ANGLE_DELTA) {
-                float x_local = radius * (float) java.lang.Math.cos(rho);
-                float z_local = radius * (float) java.lang.Math.sin(rho);
-                float y = x_local * (float) java.lang.Math.sin(phi);
-                float x = x_local * (float) java.lang.Math.cos(phi);
+            for (float rho = 0f; rho < (float) Math.PI * 2; rho += ANGLE_DELTA) {
+                float x_local = radius * (float) Math.cos(rho);
+                float z_local = radius * (float) Math.sin(rho);
+                float y = x_local * (float) Math.sin(phi);
+                float x = x_local * (float) Math.cos(phi);
 
                 float worldX = x + origin_x;
                 float worldY = y + origin_y;

@@ -319,7 +319,7 @@ public final class CameraState {
 
         for (float[] frustum1 : frustum) {
             /* Normalize the result */
-            float length_inv = 1f / ((float) java.lang.Math.sqrt(frustum1[0] * frustum1[0] + frustum1[1] * frustum1[1]
+            float length_inv = 1f / ((float) Math.sqrt(frustum1[0] * frustum1[0] + frustum1[1] * frustum1[1]
                     + frustum1[2] * frustum1[2]));
             frustum1[0] *= length_inv;
             frustum1[1] *= length_inv;
