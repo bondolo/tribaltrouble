@@ -352,24 +352,22 @@ public final class Player implements PlayerInterface {
     }
 
     public @NonNull Optional<Building> getArmory() {
-        Selectable<?>[][] lists = classifyUnits();
-        for (Selectable<?>[] list : lists) {
+        for (Selectable<?>[] list : classifyUnits()) {
             Selectable<?> s = list[0];
-            if (s.getPrimaryController() instanceof NullController && s.getAbilities().hasAbilities(
-                    Abilities.BUILD_ARMIES)) {
-                return Optional.of((Building) s);
+            if (s instanceof Building building && s.getPrimaryController() instanceof NullController &&
+                    s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+                return Optional.of(building);
             }
         }
         return Optional.empty();
     }
 
     public @NonNull Optional<Building> getQuarters() {
-        Selectable<?>[][] lists = classifyUnits();
-        for (Selectable<?>[] list : lists) {
+        for (Selectable<?>[] list : classifyUnits()) {
             Selectable<?> s = list[0];
-            if (s.getPrimaryController() instanceof NullController && s.getAbilities().hasAbilities(
-                    Abilities.REPRODUCE)) {
-                return Optional.of((Building) s);
+            if (s instanceof Building building && s.getPrimaryController() instanceof NullController &&
+                    s.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+                return Optional.of(building);
             }
         }
         return Optional.empty();

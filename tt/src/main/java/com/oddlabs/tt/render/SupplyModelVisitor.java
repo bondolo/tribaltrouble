@@ -1,11 +1,11 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.SupplyModel;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 import org.jspecify.annotations.NonNull;
 
-abstract class SupplyModelVisitor<SM extends SupplyModel> extends WhiteModelVisitor<SM> {
+abstract class SupplyModelVisitor<S extends EntitySnapshot> extends WhiteModelVisitor<S> {
     @Override
-    public final void markDetailPoint(@NonNull ElementRenderState<SM> render_state) {
+    public final void markDetailPoint(@NonNull ElementRenderState<S> render_state) {
         markDetailPolygon(render_state, PolyDetail.LOW_POLY);
     }
 }

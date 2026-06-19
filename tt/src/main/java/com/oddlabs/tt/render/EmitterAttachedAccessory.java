@@ -1,13 +1,14 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.particle.Emitter;
+import com.oddlabs.tt.render.particle.Emitter;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots.UnitSnapshot;
 
 /**
  * An {@link AnimatedAccessory} that wraps a particle {@link Emitter}.
@@ -28,17 +29,17 @@ public final class EmitterAttachedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
-        if (parent instanceof Selectable<?> selectable) {
-            return !selectable.isDead();
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
+        if (parent instanceof UnitSnapshot unit) {
+            return !unit.isDead();
         }
         return true;
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
         // Apply rotation based on parent direction
-        float angle = (float) Math.atan2(parent.getDirectionY(), parent.getDirectionX());
+        float angle = (float) Math.atan2(parent.dirY(), parent.dirX());
         dest.rotate(angle, 0f, 0f, 1f);
         dest.translate(relativeOffset);
     }

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.gui.GUIIcons;
-import com.oddlabs.tt.gui.IconQuad;
 import com.oddlabs.tt.gui.ToolTipBox;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
@@ -44,7 +43,9 @@ final class ToolTipAdapter implements ToolTip {
     }
 
     private void visitSelectable(@NonNull ToolTipBox tool_tip, @NonNull Selectable<?> selectable) {
-        assert !selectable.isDead();
+        if (selectable.isDead()) {
+            return;
+        }
         visitPlayer(tool_tip, selectable.getOwner());
         /*      if (Renderer.getRenderer().getSettings().developer_mode) {
         		if (getCurrentBehaviour() instanceof WalkBehaviour)
@@ -56,12 +57,16 @@ final class ToolTipAdapter implements ToolTip {
 
     @Override
     public void appendToolTip(ToolTipBox tool_tip) {
+        if (model instanceof Selectable<?> selectable && selectable.isDead()) {
+            return;
+        }
         switch (model) {
             case Unit unit -> visitUnit(tool_tip, unit);
             case Building building -> visitBuilding(tool_tip, building);
             case Supply supply -> visitSupply(tool_tip, supply);
             case SceneryModel scenery -> visitSceneryModel(tool_tip, scenery);
-            default -> { }
+            default -> {
+            }
         }
     }
 

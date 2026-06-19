@@ -43,8 +43,8 @@ public final class RepairBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
-                    .getPositionZ(), AudioAssets.getHarvestSound(SupplyType.WOOD));
+            unit.getClientState(ModelClient.class).ifPresent(client -> client.playSound(AudioAssets.getHarvestSound(
+                    SupplyType.WOOD)));
 
             var selectedEmoji = ThreadLocalRandom.current().nextBoolean()
                     ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;

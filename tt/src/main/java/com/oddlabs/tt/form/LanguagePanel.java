@@ -11,7 +11,7 @@ import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.guievent.RowListener;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 

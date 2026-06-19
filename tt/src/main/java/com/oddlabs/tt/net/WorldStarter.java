@@ -12,7 +12,7 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.UIRenderer;
-import com.oddlabs.tt.resource.WorldGenerator;
+import com.oddlabs.tt.landscape.worldgen.WorldGenerator;
 import com.oddlabs.tt.viewer.InGameInfo;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;

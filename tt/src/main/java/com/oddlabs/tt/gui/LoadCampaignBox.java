@@ -4,7 +4,7 @@ import com.oddlabs.tt.model.Difficulty;
 import com.oddlabs.tt.model.Race;
 
 import com.oddlabs.tt.form.MessageForm;
-import com.oddlabs.tt.guievent.RowListener;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.player.campaign.CampaignState;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;

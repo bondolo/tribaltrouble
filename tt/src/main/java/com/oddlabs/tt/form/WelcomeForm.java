@@ -1,6 +1,6 @@
 package com.oddlabs.tt.form;
 
-import com.oddlabs.tt.delegate.MainMenu;
+import com.oddlabs.tt.viewer.delegate.MainMenu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;

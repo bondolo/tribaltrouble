@@ -2,13 +2,11 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Terrain;
-import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.landscape.procedural.Landscape;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.PointEmitterModel;
-import com.oddlabs.tt.particle.ColorSpectrum;
-import com.oddlabs.tt.particle.LinearEmitter;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.render.particle.ColorSpectrum;
+import com.oddlabs.tt.render.particle.LinearEmitter;
+import com.oddlabs.tt.render.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -19,6 +17,8 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * An accessory that manages the damage smoke for a building.
@@ -144,9 +144,13 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
             }
         };
 
+        var buildingVisuals = VisualRegistry.getInstance()
+                .getBuildingVisuals(building.getOwner().getRaceInfo().getRaceType(), building.getTemplate()
+                        .getBuildingType());
+
         RandomVelocityEmitter collapse_emitter = new RandomVelocityEmitter(building.getOwner().getWorld(), new Vector3f(
                 building.getPositionX(), building.getPositionY(), building.getPositionZ()), 0f, 0f,
-                building.getTemplate().getSmokeRadius(), building.getTemplate().getSmokeHeight(), 1f, 1f,
+                buildingVisuals.smokeRadius(), buildingVisuals.smokeHeight(), 1f, 1f,
                 120, 80f,
                 new Vector3f(0f, 0f, .1f), new Vector3f(0f, 0f, -2.5f),
                 Color.Linear.WHITE, Color.LinearDelta.ZERO.alpha(-1f),
@@ -155,17 +159,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
                 VisualRegistry.getInstance().getSmokeTextures());
         collapse_emitter.setColorSpectrum(spectrumCallback);
 
-        new PointEmitterModel(building.getOwner().getWorld(), collapse_emitter, building.getOwner().getWorld()
-                .getAnimationManagerRealTime()) {
-            private float elapsed = 0.0f;
-
-            @Override
-            public void animate(float t) {
-                elapsed += t;
-                emitter.setSpectrum(Math.min(1.0f, elapsed / 1.5f));
-                super.animate(t);
-            }
-        };
+        building.getOwner().getWorld().getNotificationListener().emitterSpawned(collapse_emitter, true);
 
         {
             float energy = 3f;
@@ -174,16 +168,15 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
             RandomVelocityEmitter fragments_emitter = new RandomVelocityEmitter(building.getOwner().getWorld(),
                     new Vector3f(
                             building.getPositionX(), building.getPositionY(), building.getPositionZ()), 0f,
-                    building.getTemplate().getSmokeRadius(), building.getTemplate().getSmokeHeight(), 0.5f,
+                    buildingVisuals.smokeRadius(), buildingVisuals.smokeHeight(), 0.5f,
                     (float) Math.PI,
-                    building.getTemplate().getNumFragments(), building.getTemplate().getNumFragments(),
+                    buildingVisuals.numFragments(), buildingVisuals.numFragments(),
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
                     Color.Linear.WHITE.alpha(energy * fade_speed), Color.LinearDelta.ZERO.alpha(-fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                     VisualRegistry.getInstance().getWoodFragments(),
                     true, true);
-            new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter, building.getOwner().getWorld()
-                    .getAnimationManagerRealTime());
+            building.getOwner().getWorld().getNotificationListener().emitterSpawned(fragments_emitter, false);
         }
 
         {
@@ -193,28 +186,28 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
             RandomVelocityEmitter fragments_emitter = new RandomVelocityEmitter(building.getOwner().getWorld(),
                     new Vector3f(
                             building.getPositionX(), building.getPositionY(), building.getPositionZ()), 0f,
-                    building.getTemplate().getSmokeRadius(), building.getTemplate().getSmokeHeight(), 0.5f,
+                    buildingVisuals.smokeRadius(), buildingVisuals.smokeHeight(), 0.5f,
                     (float) Math.PI,
-                    building.getTemplate().getNumFragments(), building.getTemplate().getNumFragments(),
+                    buildingVisuals.numFragments(), buildingVisuals.numFragments(),
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
                     new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f,
                             -fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                     VisualRegistry.getInstance().getWoodFragments(),
                     true, true);
-            new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter);
+            building.getOwner().getWorld().getNotificationListener().emitterSpawned(fragments_emitter, false);
         }
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
-        if (parent instanceof Building b) {
-            Building.BuildStage stage = b.getBuildStage();
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
+        if (parent instanceof VisualSnapshots.BuildingSnapshot) {
+            Building.BuildStage stage = building.getBuildStage();
             boolean isCompleteOrHalfBuilt = stage == Building.BuildStage.HALFBUILT || stage
                     == Building.BuildStage.BUILT;
-            int hp = b.getHitPoints();
-            float damageThreshold = b.getBuildPoints() / 2.0f;
-            boolean isDamaged = b.isAlive() && isCompleteOrHalfBuilt && hp < damageThreshold;
+            int hp = building.getHitPoints();
+            float damageThreshold = building.getBuildPoints() / 2.0f;
+            boolean isDamaged = building.isAlive() && isCompleteOrHalfBuilt && hp < damageThreshold;
 
             return isDamaged || emitter.hasActiveParticles();
         }
@@ -222,8 +215,8 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
-        float z = parent instanceof Building b ? b.getHitOffsetZ() : hitOffsetZ;
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
+        float z = parent instanceof VisualSnapshots.BuildingSnapshot ? building.getHitOffsetZ() : hitOffsetZ;
         dest.translate(0f, 0f, z);
     }
 

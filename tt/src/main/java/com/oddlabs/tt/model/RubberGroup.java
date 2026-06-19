@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.pathfinder.UnitGrid;
@@ -38,7 +37,6 @@ public final class RubberGroup {
                 float y = UnitGrid.coordinateFromGrid(grid_y);
                 RubberSupply supply = new RubberSupply(world, grid_x, grid_y, x, y, this, spawn_x, spawn_y);
                 supplies.add(supply);
-                new SupplySpawnAnimation(supply, supply.getSpawnTime());
             }
             ((RubberSupplyManager) world.getSupplyManager(SupplyType.RUBBER)).newGroup();
         }

@@ -1,7 +1,9 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -11,11 +13,11 @@ import org.jspecify.annotations.Nullable;
  * Tracks the specific rendering properties (position, color, pattern)
  * for an individual world element.
  */
-final class ElementRenderState<M extends Model> implements ModelState<M> {
+final class ElementRenderState<S extends EntitySnapshot> implements ModelState<S> {
 
     final @NonNull RenderState render_state;
-    private ModelVisitor<M> visitor;
-    M model;
+    private ModelVisitor<S> visitor;
+    S entity;
     float f;
     private Color.@NonNull Linear color = Color.Linear.WHITE;
 
@@ -37,8 +39,25 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
     }
 
     @Override
-    public @Nullable M getModel() {
-        return model;
+    public @NonNull S getEntity() {
+        return entity;
+    }
+
+    @Override
+    public float getNoDetailSize() {
+        if (entity instanceof VisualSnapshots.UnitSnapshot unit) {
+            return VisualRegistry.getInstance().getUnitVisuals(unit.race(), unit.visualType()).noDetailSize();
+        } else if (entity instanceof VisualSnapshots.BuildingSnapshot building) {
+            return VisualRegistry.getInstance().getBuildingVisuals(building.race(), building.buildingType())
+                    .noDetailSize();
+        }
+        return 0f;
+    }
+
+    @Override
+    public @Nullable Target getTarget() {
+        var world = render_state.getLocalPlayer().getWorld();
+        return world.getTargetById(entity.id());
     }
 
     @Override
@@ -49,12 +68,12 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
 
     @Override
     public int getAnimation() {
-        return model.getAnimation();
+        return entity.animation();
     }
 
     @Override
     public float getAnimationTicks() {
-        return model.getAnimationTicks();
+        return entity.animationTicks();
     }
 
     @Override
@@ -72,16 +91,16 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
         return visitor.getPattern(this);
     }
 
-    void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model, float f) {
+    void setup(@NonNull ModelVisitor<S> visitor, @NonNull S entity, float f) {
         this.visitor = visitor;
-        this.model = model;
+        this.entity = entity;
         this.f = f;
         resetColor();
     }
 
-    void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model) {
+    void setup(@NonNull ModelVisitor<S> visitor, @NonNull S entity) {
         this.visitor = visitor;
-        this.model = model;
+        this.entity = entity;
         resetColor();
     }
 

@@ -7,7 +7,7 @@ import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.delegate.MainMenu;
+import com.oddlabs.tt.viewer.delegate.MainMenu;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -16,7 +16,7 @@ import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.landscape.WorldParameters;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;

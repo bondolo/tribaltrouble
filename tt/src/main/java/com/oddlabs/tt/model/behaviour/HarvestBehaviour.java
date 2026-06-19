@@ -36,10 +36,8 @@ public final class HarvestBehaviour implements Behaviour {
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
             var params = AudioAssets.getHarvestSound(supply.getSupplyType());
-            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
-                    .getPositionZ(), params);
-
             unit.getClientState(ModelClient.class).ifPresent(client -> {
+                client.playSound(params);
                 client.addVisualSound(EmojiType.fromSupply(supply.getSupplyType()),
                         ModelClient.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_HARVEST);
             });

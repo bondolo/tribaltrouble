@@ -1,13 +1,13 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.model.AbstractElementNode;
 import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.model.ElementLeaf;
-import com.oddlabs.tt.model.ElementNode;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.viewer.Selection;
 import org.jspecify.annotations.NonNull;
+
+import java.util.List;
 
 final class ElementRenderer<T extends Element<T>> {
 
@@ -33,46 +33,20 @@ final class ElementRenderer<T extends Element<T>> {
         render_state.setup(picking, camera);
     }
 
-    public void visit(@NonNull AbstractElementNode<T> node) {
-        RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
-                ? RenderTools.FrustumIntersection.ALL_INSIDE // Force all in frustum for map mode
-                : RenderTools.inFrustum(node, camera.getFrustum());
+    public void renderSnapshot(@NonNull List<@NonNull EntitySnapshot> entities, @NonNull CameraState camera_state) {
+        setup(camera_state);
+        for (EntitySnapshot entity : entities) {
+            RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
+                    ? RenderTools.FrustumIntersection.ALL_INSIDE // Force all in frustum for map mode
+                    : RenderTools.inFrustum(entity.bounds(), camera.getFrustum());
 
-        if (visible_override || frustum_state != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-            boolean old_override = visible_override;
-            visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
-
-            switch (node) {
-                case ElementNode<T> elementNode -> {
-                    for (AbstractElementNode<T> child : elementNode.children()) {
-                        visit(child);
-                    }
-                }
-                case ElementLeaf<T> _ -> {
-                }
+            if (visible_override || frustum_state != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                boolean old_override = visible_override;
+                visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
+                render_state.setVisibleOverride(visible_override);
+                render_state.visit(entity);
+                visible_override = old_override;
             }
-
-            T model = node.getModels().getFirst();
-            while (model != null) {
-                visitElement(model);
-                model = model.getNext();
-            }
-
-            visible_override = old_override;
-        }
-    }
-
-    private void visitElement(@NonNull T element) {
-        RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
-                ? RenderTools.FrustumIntersection.ALL_INSIDE // Force all in frustum for map mode
-                : RenderTools.inFrustum(element, camera.getFrustum());
-
-        if (visible_override || frustum_state != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-            boolean old_override = visible_override;
-            visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
-            render_state.setVisibleOverride(visible_override);
-            render_state.visit(element);
-            visible_override = old_override;
         }
     }
 }

@@ -181,6 +181,74 @@ public final class RenderQueues implements AutoCloseable {
         return key != null ? key : register(desc, new CrackDecalRenderer(desc));
     }
 
+    private TargetRespondRenderer targetRespondRenderer;
+
+    public @NonNull TargetRespondRenderer getTargetRespondRenderer() {
+        if (targetRespondRenderer == null) {
+            ShadowListKey key = registerRespondRenderer(new com.oddlabs.tt.render.procedural.GeneratorRing(
+                    DecalRenderer.HALO_LUT_RESOLUTION,
+                    new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}}));
+            targetRespondRenderer = (TargetRespondRenderer) getShadowRenderer(key);
+        }
+        return targetRespondRenderer;
+    }
+
+    private final List<@NonNull VisualWeapon> active_weapons = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final List<com.oddlabs.tt.render.particle.@NonNull Emitter<?>> active_emitters
+            = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final List<com.oddlabs.tt.render.particle.@NonNull Lightning> active_lightning
+            = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final List<@NonNull ClientSonicBlast> active_sonic_blasts
+            = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public void addVisualWeapon(@NonNull VisualWeapon w) {
+        active_weapons.add(w);
+    }
+
+    public void removeVisualWeapon(@NonNull VisualWeapon w) {
+        active_weapons.remove(w);
+    }
+
+    public @NonNull List<@NonNull VisualWeapon> getActiveWeapons() {
+        return active_weapons;
+    }
+
+    public void addEmitter(com.oddlabs.tt.render.particle.@NonNull Emitter<?> e) {
+        active_emitters.add(e);
+    }
+
+    public void removeEmitter(com.oddlabs.tt.render.particle.@NonNull Emitter<?> e) {
+        active_emitters.remove(e);
+    }
+
+    public @NonNull List<com.oddlabs.tt.render.particle.@NonNull Emitter<?>> getActiveEmitters() {
+        return active_emitters;
+    }
+
+    public void addLightning(com.oddlabs.tt.render.particle.@NonNull Lightning l) {
+        active_lightning.add(l);
+    }
+
+    public void removeLightning(com.oddlabs.tt.render.particle.@NonNull Lightning l) {
+        active_lightning.remove(l);
+    }
+
+    public @NonNull List<com.oddlabs.tt.render.particle.@NonNull Lightning> getActiveLightning() {
+        return active_lightning;
+    }
+
+    public void addSonicBlast(@NonNull ClientSonicBlast s) {
+        active_sonic_blasts.add(s);
+    }
+
+    public void removeSonicBlast(@NonNull ClientSonicBlast s) {
+        active_sonic_blasts.remove(s);
+    }
+
+    public @NonNull List<@NonNull ClientSonicBlast> getActiveSonicBlasts() {
+        return active_sonic_blasts;
+    }
+
     public @NonNull ShadowRenderer getDefaultShadowRenderer() {
         return getShadowRenderer(registerSelectableShadowList(VisualRegistry.DEFAULT_SHADOW_DESC));
     }

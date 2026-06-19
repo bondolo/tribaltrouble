@@ -18,6 +18,7 @@ import org.jspecify.annotations.Nullable;
  * Logic controller for the Stun magic effect.
  */
 public final class Stun extends Model implements Magic {
+    private static final float STUN_MODEL_DURATION = 5.5f;
 
     private final @NonNull Unit src;
     private final float offset_x;
@@ -28,7 +29,8 @@ public final class Stun extends Model implements Magic {
     private final float stun_time_farthest;
     private final @NonNull Player owner;
 
-    private final @NonNull Iterable<? extends Selectable<?>> target_list;
+    private float logic_timer = 0f;
+    private boolean logic_done = false;
 
     public Stun(float offset_x, float offset_y, float offset_z, float hit_radius, float stun_time_closest,
             float stun_time_farthest, @NonNull Unit src) {
@@ -48,13 +50,6 @@ public final class Stun extends Model implements Magic {
         setPosition(start_x, start_y, z);
         register();
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
-
-        var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable
-                .genericClass());
-        UnitGrid unit_grid = owner.getWorld().getUnitGrid();
-        unit_grid.scan(filter, UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src
-                .getPositionY()));
-        target_list = filter.getResult();
     }
 
     @Override
@@ -77,9 +72,6 @@ public final class Stun extends Model implements Magic {
         return null;
     }
 
-    private float logic_timer = 0f;
-    private boolean logic_done = false;
-
     @Override
     public void animate(float t) {
         if (!src.isDead()) {
@@ -90,10 +82,16 @@ public final class Stun extends Model implements Magic {
         }
 
         if (!logic_done) {
-            for (Selectable<?> selectable : target_list) {
+            var filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), hit_radius, src, Selectable
+                    .genericClass());
+            UnitGrid unit_grid = owner.getWorld().getUnitGrid();
+            unit_grid.scan(filter,
+                    UnitGrid.toGridCoordinate(src.getPositionX()), UnitGrid.toGridCoordinate(src.getPositionY()));
+
+            for (Selectable<?> selectable : filter.getResult()) {
                 Unit unit = null;
-                if (selectable instanceof Unit unit1) {
-                    unit = unit1;
+                if (selectable instanceof Unit aUnit) {
+                    unit = aUnit;
                 } else if (selectable instanceof Building building) {
                     if (!building.isDead() && building.getAbilities().hasAbilities(Abilities.ATTACK)) {
                         unit = building.getUnitContainer().map(c -> (MountUnitContainer) c)
@@ -119,7 +117,7 @@ public final class Stun extends Model implements Magic {
         }
 
         logic_timer += t;
-        if (logic_timer > 5.5f) {
+        if (isFinished()) {
             remove();
         }
 
@@ -137,5 +135,15 @@ public final class Stun extends Model implements Magic {
     @Override
     public void interrupt() {
         remove();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return logic_timer > STUN_MODEL_DURATION;
+    }
+
+    @Override
+    public boolean isDead() {
+        return isFinished();
     }
 }

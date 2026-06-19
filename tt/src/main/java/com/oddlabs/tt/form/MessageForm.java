@@ -6,7 +6,7 @@ import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.OKListener;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

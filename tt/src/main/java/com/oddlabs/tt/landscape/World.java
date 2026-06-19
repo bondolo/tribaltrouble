@@ -1,15 +1,20 @@
 package com.oddlabs.tt.landscape;
 
 import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.model.AbstractElementNode;
+import com.oddlabs.tt.model.Element;
+import com.oddlabs.tt.model.ElementNode;
 import com.oddlabs.tt.model.Plants;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.SupplyManager;
 import com.oddlabs.tt.model.SupplyManagers;
 import com.oddlabs.tt.model.SupplyType;
+import com.oddlabs.tt.model.AbstractTreeGroup;
 import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.pathfinder.RegionBuilder;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
@@ -20,9 +25,11 @@ import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.IntStream;
 
 /**
@@ -45,6 +52,7 @@ public final class World {
     private final @NonNull AnimationManager animation_manager_game_time;
     private final @NonNull AnimationManager animation_manager_real_time;
     private final @NonNull AudioImplementation audio_impl;
+    private @Nullable Runnable postTickCallback;
 
     private final int max_unit_count;
     private final @NonNull NotificationListener notification_listener;
@@ -145,6 +153,67 @@ public final class World {
         getAnimationManagerGameTime().runAnimations(getSecondsPerTick() * t
                 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
         getAnimationManagerRealTime().runAnimations(t/*AnimationManager.ANIMATION_SECONDS_PER_TICK*/);
+        cleanupFinishedElements();
+        if (postTickCallback != null) {
+            postTickCallback.run();
+        }
+    }
+
+    public void setPostTickCallback(@Nullable Runnable callback) {
+        this.postTickCallback = callback;
+    }
+
+    public @Nullable Target getTargetById(int id) {
+        return findTargetById(element_root, id);
+    }
+
+    private @Nullable Target findTargetById(AbstractElementNode<?> node, int id) {
+        var models = node.getModels();
+        var model = models.getFirst();
+        while (model != null) {
+            if (model.getId() == id) {
+                if (model instanceof Target target) {
+                    return target;
+                }
+            }
+            model = model.getNext();
+        }
+        if (node instanceof ElementNode<?> elementNode) {
+            for (AbstractElementNode<?> child : elementNode.children()) {
+                var found = findTargetById(child, id);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void collectAllElements(AbstractElementNode<?> node, List<Element<?>> dest) {
+        var models = node.getModels();
+        var model = models.getFirst();
+        while (model != null) {
+            dest.add(model);
+            model = model.getNext();
+        }
+        if (node instanceof ElementNode<?> elementNode) {
+            for (AbstractElementNode<?> child : elementNode.children()) {
+                collectAllElements(child, dest);
+            }
+        }
+    }
+
+    private void cleanupFinishedElements() {
+        List<Element<?>> elements = new ArrayList<>();
+        collectAllElements(element_root, elements);
+        for (Element<?> element : elements) {
+            if (!element.isRegistered() || element.isFinished()) {
+                element.remove();
+                if (element instanceof Animated animated) {
+                    getAnimationManagerGameTime().removeAnimation(animated);
+                }
+            }
+        }
     }
 
     public int getTick() {
@@ -193,7 +262,7 @@ public final class World {
         this.element_root = AbstractElementNode.newRoot(world);
         AbstractElementNode.buildSupplies(this, world_info.iron(), world_info.rocks(), world_info.plants(), terrain,
                 insertPlants);
-        activeWorlds.add(new java.lang.ref.WeakReference<>(this));
+        activeWorlds.add(new WeakReference<>(this));
     }
 
     public @NonNull AbstractElementNode getElementRoot() {
@@ -269,8 +338,8 @@ public final class World {
         }
     }
 
-    private static final java.util.List<java.lang.ref.WeakReference<World>> activeWorlds
-            = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final java.util.List<@NonNull WeakReference<World>> activeWorlds
+            = new CopyOnWriteArrayList<>();
 
     public static void updatePlantsDetail(boolean insertPlants) {
         for (var ref : activeWorlds) {

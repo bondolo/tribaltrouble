@@ -9,7 +9,7 @@ import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.delegate.Menu;
+import com.oddlabs.tt.viewer.delegate.Menu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.WorldParameters;

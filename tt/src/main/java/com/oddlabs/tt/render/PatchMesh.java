@@ -1,9 +1,9 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.vbo.FloatVBO;
-import com.oddlabs.tt.vbo.ShortVBO;
-import com.oddlabs.tt.vbo.VertexArray;
+import com.oddlabs.tt.render.vbo.FloatVBO;
+import com.oddlabs.tt.render.vbo.ShortVBO;
+import com.oddlabs.tt.render.vbo.VertexArray;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;

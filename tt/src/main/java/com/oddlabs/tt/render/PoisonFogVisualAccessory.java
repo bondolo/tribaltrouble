@@ -3,10 +3,8 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.weapon.PoisonFog;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.render.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -17,6 +15,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * Client-side visual accessory for the poison fog magical effect.
@@ -77,7 +76,7 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
                     new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                     VisualRegistry.getInstance().getPoisonTextures());
-            new PointEmitterModel(world, emitter);
+            world.getNotificationListener().emitterSpawned(emitter, false);
 
             if (bursts % nextSound == 0) {
                 nextSound = MIN_BURSTS_PER_SOUND + ThreadLocalRandom.current().nextInt(5);
@@ -93,12 +92,12 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
         return !poisonFog.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
     }
 
     @Override

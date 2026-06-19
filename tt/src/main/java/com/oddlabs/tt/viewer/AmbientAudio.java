@@ -5,11 +5,11 @@ import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.ReverbType;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
-import com.oddlabs.tt.landscape.AbstractTreeGroup;
+import com.oddlabs.tt.model.AbstractTreeGroup;
 import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.landscape.TreeGroup;
-import com.oddlabs.tt.landscape.TreeLeaf;
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.model.TreeGroup;
+import com.oddlabs.tt.model.TreeLeaf;
+import com.oddlabs.tt.model.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.model.BoundingBox;
@@ -60,7 +60,7 @@ public final class AmbientAudio implements AutoCloseable {
                 case TreeLeaf leaf -> {
                     for (TreeSupply tree : leaf.getTrees()) {
                         if (currentCount >= threshold) break;
-                        if (!tree.isHidden()) {
+                        if (!tree.isEmpty()) {
                             float ddx = tree.getCX() - x;
                             float ddy = tree.getCY() - y;
                             if (ddx * ddx + ddy * ddy < radiusSq) {
@@ -70,7 +70,7 @@ public final class AmbientAudio implements AutoCloseable {
                     }
                 }
                 case TreeSupply tree -> {
-                    if (!tree.isHidden()) {
+                    if (!tree.isEmpty()) {
                         float ddx = tree.getCX() - x;
                         float ddy = tree.getCY() - y;
                         if (ddx * ddx + ddy * ddy < radiusSq) {

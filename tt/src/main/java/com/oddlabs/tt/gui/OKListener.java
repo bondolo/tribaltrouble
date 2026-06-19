@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import org.jspecify.annotations.NonNull;
 
 public final class OKListener implements MouseClickListener {

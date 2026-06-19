@@ -1,7 +1,7 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.delegate.GameStatsDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
+import com.oddlabs.tt.viewer.delegate.GameStatsDelegate;
+import com.oddlabs.tt.viewer.delegate.InGameMainMenu;
 import com.oddlabs.tt.gui.Group;
 
 public interface InGameInfo {

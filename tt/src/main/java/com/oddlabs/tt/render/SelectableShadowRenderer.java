@@ -2,41 +2,33 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Shadowable;
-import com.oddlabs.tt.procedural.GeneratorHalos;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots;
+import com.oddlabs.tt.render.procedural.GeneratorHalos;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.EnumMap;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * Specialized renderer that handles drawing halos for selected units and regular shadows for other entities.
+ * Specialized renderer for unit and building shadows and selection rings.
  */
-final class SelectableShadowRenderer extends ShadowListRenderer {
-    private final @NonNull EnumMap<GeneratorHalos.HaloType, Texture> halos = new EnumMap<>(
-            GeneratorHalos.HaloType.class);
+public final class SelectableShadowRenderer extends ShadowListRenderer {
+    private final EnumMap<GeneratorHalos.HaloType, Texture> halos = new EnumMap<>(GeneratorHalos.HaloType.class);
 
     private final Deque<@NonNull ModelState<?>> selection_list = new ArrayDeque<>();
     private final Deque<@NonNull Shadowable> shadowed_list = new ArrayDeque<>();
 
-    SelectableShadowRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> halos_desc) {
-        Texture[] textures = Resources.findResource(halos_desc);
-        for (int i = 0; i < textures.length; i++) {
-            Texture halo = textures[i];
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, halo.getHandle());
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-            halos.put(GeneratorHalos.HaloType.values()[i], halo);
-        }
+    public SelectableShadowRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
+        Texture[] textures = Resources.findResource(desc);
+        halos.put(GeneratorHalos.HaloType.SHADOWED, textures[0]);
+        halos.put(GeneratorHalos.HaloType.SELECTED, textures[1]);
         setRadial(true);
     }
 
@@ -48,9 +40,56 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
 
     void addToShadowList(@NonNull ModelState<?> modelState) {
         if (Globals.process_shadows) {
-            var model = modelState.getModel();
-            if (null != model) {
-                shadowed_list.add(model);
+            Object entityObj = modelState.getEntity();
+            if (entityObj instanceof EntitySnapshot entity) {
+                float shadowDiameter = 0f;
+                if (entity instanceof VisualSnapshots.UnitSnapshot unit) {
+                    shadowDiameter = unit.shadowDiameter();
+                } else if (entity instanceof VisualSnapshots.BuildingSnapshot building) {
+                    shadowDiameter = building.shadowDiameter();
+                } else if (entity instanceof VisualSnapshots.SupplySnapshot supply) {
+                    shadowDiameter = supply.shadowDiameter();
+                }
+
+                if (shadowDiameter > 0f) {
+                    final float finalShadowDiameter = shadowDiameter;
+                    shadowed_list.add(new Shadowable() {
+                        @Override
+                        public float getPositionX() {
+                            return entity.x();
+                        }
+
+                        @Override
+                        public float getPositionY() {
+                            return entity.y();
+                        }
+
+                        @Override
+                        public float getShadowDiameter() {
+                            return finalShadowDiameter;
+                        }
+
+                        @Override
+                        public float getShadowOpacity() {
+                            return 1.0f;
+                        }
+
+                        @Override
+                        public Color.@NonNull Linear getShadowColor() {
+                            return Color.Linear.BLACK;
+                        }
+
+                        @Override
+                        public float getShadowVerticalCenter() {
+                            return 0.5f;
+                        }
+
+                        @Override
+                        public float getShadowPattern() {
+                            return 0.0f;
+                        }
+                    });
+                }
             }
         }
     }
@@ -77,11 +116,55 @@ final class SelectableShadowRenderer extends ShadowListRenderer {
             bindShadowTexture(halos.get(GeneratorHalos.HaloType.SELECTED));
             while (!selection_list.isEmpty()) {
                 var modelState = selection_list.pop();
-                var model = Objects.requireNonNull(modelState.getModel());
-                setShadowColor(modelState.getSelectionColor());
-                setPattern(modelState.getPattern());
+                Object entityObj = modelState.getEntity();
+                if (entityObj instanceof EntitySnapshot entity) {
+                    float shadowDiameter = 0f;
+                    if (entity instanceof VisualSnapshots.UnitSnapshot unit) {
+                        shadowDiameter = unit.shadowDiameter();
+                    } else if (entity instanceof VisualSnapshots.BuildingSnapshot building) {
+                        shadowDiameter = building.shadowDiameter();
+                    }
+                    final float finalShadowDiameter = shadowDiameter;
+                    Shadowable selectionShadowable = new Shadowable() {
+                        @Override
+                        public float getPositionX() {
+                            return entity.x();
+                        }
 
-                renderShadow(context, renderer, model);
+                        @Override
+                        public float getPositionY() {
+                            return entity.y();
+                        }
+
+                        @Override
+                        public float getShadowDiameter() {
+                            return finalShadowDiameter;
+                        }
+
+                        @Override
+                        public float getShadowOpacity() {
+                            return 1.0f;
+                        }
+
+                        @Override
+                        public Color.@NonNull Linear getShadowColor() {
+                            return Color.Linear.BLACK;
+                        }
+
+                        @Override
+                        public float getShadowVerticalCenter() {
+                            return 0.5f;
+                        }
+
+                        @Override
+                        public float getShadowPattern() {
+                            return 0.0f;
+                        }
+                    };
+                    setShadowColor(modelState.getSelectionColor());
+                    setPattern(modelState.getPattern());
+                    renderShadow(context, renderer, selectionShadowable);
+                }
             }
         }
     }

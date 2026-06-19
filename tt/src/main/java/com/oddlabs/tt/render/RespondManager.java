@@ -2,6 +2,8 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.model.Element;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -66,6 +68,17 @@ public final class RespondManager implements Animated {
             return false; // Quick exit in the common case of no responding targets
         else
             return isResponding(respond_targets.get(target));
+    }
+
+    boolean isResponding(@NonNull EntitySnapshot snapshot) {
+        if (respond_targets.isEmpty())
+            return false;
+        for (Object target : respond_targets.keySet()) {
+            if (target instanceof Element<?> element && element.getId() == snapshot.id()) {
+                return isResponding(respond_targets.get(element));
+            }
+        }
+        return false;
     }
 
     private boolean isResponding(@Nullable Timeout timeout) {

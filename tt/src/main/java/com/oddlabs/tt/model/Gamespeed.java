@@ -15,9 +15,9 @@ public enum Gamespeed {
     FAST(3),
     LUDICROUS(4);
 
-    private final int value;
-
     private static final Set<Gamespeed> VALUES = EnumSet.allOf(Gamespeed.class);
+
+    private final int value;
 
     Gamespeed(int value) {
         this.value = value;

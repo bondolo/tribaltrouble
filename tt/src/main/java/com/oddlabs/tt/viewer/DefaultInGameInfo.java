@@ -1,8 +1,8 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.delegate.GameStatsDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
-import com.oddlabs.tt.delegate.Menu;
+import com.oddlabs.tt.viewer.delegate.GameStatsDelegate;
+import com.oddlabs.tt.viewer.delegate.InGameMainMenu;
+import com.oddlabs.tt.viewer.delegate.Menu;
 import com.oddlabs.tt.form.TerrainMenu;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.Group;

@@ -3,6 +3,7 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.global.BoundingMode;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -111,7 +112,10 @@ public final class SpriteRenderer {
             respond_render_lists[i].clear();
         }
         for (ModelState<?> model : no_detail_render_list) {
-            picks.accept((Target) model.getModel());
+            Target target = model.getTarget();
+            if (target != null) {
+                picks.accept(target);
+            }
         }
         clearRenderLists();
     }
@@ -121,8 +125,11 @@ public final class SpriteRenderer {
         for (int i = 0; i < render_list.size(); i++) {
             ModelState<?> model = render_list.get(i);
             render_list.set(i, null);
-            if (model.getModel() instanceof Target target) {
-                picks.accept(target);
+            if (model != null) {
+                Target target = model.getTarget();
+                if (target != null) {
+                    picks.accept(target);
+                }
             }
         }
     }
@@ -140,7 +147,9 @@ public final class SpriteRenderer {
 
         for (ModelState<?> modelState : render_list) {
             if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                RenderTools.draw(modelState.getModel());
+                if (modelState.getEntity() instanceof EntitySnapshot entity) {
+                    RenderTools.draw(entity.bounds());
+                }
             }
             // Standard sprites: If modulate, use Blend. If opaque/alpha, use A2C (Blend=False).
             // Depth Write = !modulate (Opaque writes depth, Effects don't).
@@ -155,7 +164,9 @@ public final class SpriteRenderer {
         if (!render_list.isEmpty()) {
             for (ModelState<?> model : render_list) {
                 if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                    RenderTools.draw(model.getModel());
+                    if (model.getEntity() instanceof EntitySnapshot entity) {
+                        RenderTools.draw(entity.bounds());
+                    }
                 }
                 instancedSpriteRenderer.add(sprite_list, index, model.getAnimation(),
                         model.getAnimationTicks(), texture, teamTexture, bumpTexture, true, true, false,
@@ -169,18 +180,21 @@ public final class SpriteRenderer {
         if (Globals.draw_misc && !no_detail_render_list.isEmpty()) {
             SpriteList quadList = SpriteList.getQuadInstance();
             for (var model : no_detail_render_list) {
-                if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                    RenderTools.draw(model.getModel());
+                if (model.getEntity() instanceof EntitySnapshot entity) {
+                    if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
+                        RenderTools.draw(entity.bounds());
+                    }
+                    float x = entity.x();
+                    float y = entity.y();
+                    float z = entity.z();
+                    float r = model.getNoDetailSize();
+                    tempMatrix.identity().translation(x, y, z + 0.1f).scale(r * 2);
+                    // Quads don't have animation, so pass 0, 0f
+                    // Disable depth test for no-detail sprites (overlays). Enable blend. No Depth Write.
+                    instancedSpriteRenderer.add(quadList, 0, 0, 0f, instancedSpriteRenderer.getWhiteTexture(), null,
+                            null, false, true, false, false, tempMatrix, model.getTeamColor(),
+                            Color.Linear.TRANSPARENT);
                 }
-                float x = model.getModel().getPositionX();
-                float y = model.getModel().getPositionY();
-                float z = model.getModel().getPositionZ();
-                float r = model.getModel().getNoDetailSize();
-                tempMatrix.identity().translation(x, y, z + 0.1f).scale(r * 2);
-                // Quads don't have animation, so pass 0, 0f
-                // Disable depth test for no-detail sprites (overlays). Enable blend. No Depth Write.
-                instancedSpriteRenderer.add(quadList, 0, 0, 0f, instancedSpriteRenderer.getWhiteTexture(), null,
-                        null, false, true, false, false, tempMatrix, model.getTeamColor(), Color.Linear.TRANSPARENT);
             }
         }
         clearRenderLists();

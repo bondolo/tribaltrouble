@@ -1,8 +1,8 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.font.Font;
-import com.oddlabs.tt.guievent.CloseListener;
-import com.oddlabs.tt.guievent.MouseMotionListener;
+import com.oddlabs.tt.render.font.Font;
+import com.oddlabs.tt.gui.event.CloseListener;
+import com.oddlabs.tt.gui.event.MouseMotionListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

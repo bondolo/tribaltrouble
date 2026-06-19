@@ -1,6 +1,6 @@
 package com.oddlabs.tt.form;
 
-import com.oddlabs.tt.font.Font;
+import com.oddlabs.tt.render.font.Font;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -12,7 +12,7 @@ import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.SortedLabel;
-import com.oddlabs.tt.guievent.RowListener;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.render.GUIRenderer;

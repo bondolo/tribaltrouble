@@ -1,6 +1,6 @@
 package com.oddlabs.tt.camera;
 
-import com.oddlabs.tt.delegate.SelectionDelegate;
+import com.oddlabs.tt.viewer.delegate.SelectionDelegate;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;

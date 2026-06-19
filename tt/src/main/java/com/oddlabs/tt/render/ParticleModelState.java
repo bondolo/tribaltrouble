@@ -1,11 +1,13 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.particle.Particle;
+import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.render.particle.Particle;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class ParticleModelState implements ModelState<Particle> {
     private static final Color NO_SELECTION = Color.Linear.TRANSPARENT;
@@ -18,8 +20,18 @@ final class ParticleModelState implements ModelState<Particle> {
     }
 
     @Override
-    public @NonNull Particle getModel() {
+    public @NonNull Particle getEntity() {
         return particle;
+    }
+
+    @Override
+    public float getNoDetailSize() {
+        return 0f;
+    }
+
+    @Override
+    public @Nullable Target getTarget() {
+        return null;
     }
 
     @Override

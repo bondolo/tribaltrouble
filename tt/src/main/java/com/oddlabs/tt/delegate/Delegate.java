@@ -66,7 +66,7 @@ public abstract class Delegate extends GUIObject {
         return false;
     }
 
-    final void renderBackgroundAlpha(@NonNull GUIRenderer renderer) {
+    protected final void renderBackgroundAlpha(@NonNull GUIRenderer renderer) {
         renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), BACKGROUND_ALPHA);
     }
 }

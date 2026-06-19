@@ -2,13 +2,12 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.landscape.procedural.Landscape;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.IronSupply;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.particle.Emitter;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.particle.RingEmitter;
+import com.oddlabs.tt.render.particle.Emitter;
+import com.oddlabs.tt.render.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.render.particle.RingEmitter;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -20,6 +19,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * Client-side visual accessory for iron supply meteors.
@@ -34,6 +34,17 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
 
     private final @NonNull IronSupply ironSupply;
 
+    private static final float SPAWN_DURATION = 4.5f;
+    private float elapsedSpawnTime = 0.0f;
+
+    public float getSpawnProgress() {
+        return Math.min(1.0f, elapsedSpawnTime / SPAWN_DURATION);
+    }
+
+    public boolean isSpawning() {
+        return elapsedSpawnTime < SPAWN_DURATION;
+    }
+
     private boolean landed = false;
     private boolean cooling = false;
     private boolean airBurstPlayed = false;
@@ -43,12 +54,23 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
 
     public IronSupplyVisualAccessory(@NonNull IronSupply ironSupply) {
         this.ironSupply = ironSupply;
+        if (ironSupply.getWorld().getTick() == 0) {
+            this.elapsedSpawnTime = SPAWN_DURATION;
+        }
     }
 
     @Override
     public void animate(float t) {
-        if (ironSupply.isSpawning()) {
-            float progress = ironSupply.getSpawnProgress();
+        elapsedSpawnTime += t;
+        float progress = getSpawnProgress();
+        boolean isSpawning = isSpawning();
+
+        if (isSpawning) {
+            VisualModel visualModel = VisualModel.getById(ironSupply.getId());
+            if (visualModel != null) {
+                float fallProgress = Math.min(1.0f, progress / FALL_DURATION_RATIO);
+                visualModel.setVisualOffsetZ((1.0f - fallProgress) * 200.0f);
+            }
             if (progress < FALL_DURATION_RATIO) {
                 // falling
                 float fallProgress = progress / FALL_DURATION_RATIO;
@@ -178,6 +200,10 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
                 emitter.animate(t);
             }
         } else {
+            VisualModel visualModel = VisualModel.getById(ironSupply.getId());
+            if (visualModel != null) {
+                visualModel.setVisualOffsetZ(0.0f);
+            }
             cleanupEmitters();
         }
 
@@ -267,12 +293,12 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
         return !ironSupply.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
     }
 
     @Override

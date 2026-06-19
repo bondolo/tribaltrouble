@@ -9,7 +9,7 @@ import com.oddlabs.tt.camera.MapCamera;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.LandscapeLeaf;
 import com.oddlabs.tt.landscape.LandscapeTarget;
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.model.TreeSupply;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Army;
@@ -27,6 +27,7 @@ import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.viewer.Selection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import com.oddlabs.tt.render.snapshot.SnapshotManager;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -101,6 +102,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final @NonNull RespondManager respond_manager;
     private final @NonNull Player local_player;
     private final @NonNull GUIRoot gui_root;
+    private final @NonNull AnimationManager manager;
 
     private @Nullable Target current_hovered;
     private @Nullable ToolTip current_tooltip;
@@ -118,9 +120,13 @@ public final class Picker implements Updatable<TimerAnimation> {
     private int old_landscape_target_grid_y;
 
     private @Nullable Target old_set_target_target;
+    private final @NonNull SnapshotManager snapshotManager;
 
     public Picker(@NonNull AnimationManager manager, @NonNull Player local_player, @NonNull GUIRoot gui_root,
-            @NonNull RenderQueues render_queues, @NonNull LandscapeRenderer landscape_renderer, Selection selection) {
+            @NonNull RenderQueues render_queues, @NonNull LandscapeRenderer landscape_renderer, Selection selection,
+            @NonNull SnapshotManager snapshotManager) {
+        this.snapshotManager = snapshotManager;
+        this.manager = manager;
         this.local_player = local_player;
         this.gui_root = gui_root;
         this.render_queues = render_queues;
@@ -133,6 +139,10 @@ public final class Picker implements Updatable<TimerAnimation> {
 
     public @NonNull RespondManager getRespondManager() {
         return respond_manager;
+    }
+
+    public @NonNull AnimationManager getAnimationManager() {
+        return manager;
     }
 
     private <T extends Target> @Nullable T getNearestPick(@NonNull List<? extends T> pick_list, @NonNull Class<
@@ -182,7 +192,8 @@ public final class Picker implements Updatable<TimerAnimation> {
                     player_interface.setTarget(selection, supply, action, Renderer.getRenderer()
                             .getSettings().aggressive_units);
             } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
-                new LandscapeTargetRespond(local_player.getWorld(), patch_hit_x, patch_hit_y);
+                new ActiveTargetRespond(patch_hit_x, patch_hit_y, patch_hit_z, render_queues.getTargetRespondRenderer(),
+                        manager);
                 int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
                 int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
                 if (isNewLandscapeTarget(selection, grid_x, grid_y, action, Renderer.getRenderer()
@@ -595,8 +606,10 @@ public final class Picker implements Updatable<TimerAnimation> {
 
     private void pickObjects() {
         element_pick_list.clear();
-        element_renderer.setup(tmp_camera);
-        element_renderer.visit(local_player.getWorld().getElementRoot());
+        var snapshot = snapshotManager.getLatestSnapshot();
+        if (snapshot != null) {
+            element_renderer.renderSnapshot(snapshot.entities(), tmp_camera);
+        }
         sprite_sorter.distributeModels();
         render_queues.getAllPicks(element_pick_list::add);
     }

@@ -20,7 +20,7 @@ public final class SupplyTrigger extends TutorialTrigger {
             if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
                 if (armory.getSupplyContainer(com.oddlabs.tt.model.RockSupply.class).map(c -> c.getNumSupplies())
                         .orElse(0) >= ROCK &&
-                        armory.getSupplyContainer(com.oddlabs.tt.landscape.TreeSupply.class).map(c -> c
+                        armory.getSupplyContainer(com.oddlabs.tt.model.TreeSupply.class).map(c -> c
                                 .getNumSupplies()).orElse(0) >= TREE)
                     tutorial.next(new BuildMenuTrigger(tutorial.getViewer().getLocalPlayer()));
             }

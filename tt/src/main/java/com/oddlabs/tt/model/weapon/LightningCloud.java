@@ -126,7 +126,6 @@ public final class LightningCloud extends Model implements Magic {
                     target.hit(damage, dx, dy, owner);
                 }
                 strike(target);
-                strike(target);
                 prev_target = target;
                 target = null;
                 hit_timer = 0f;
@@ -139,7 +138,6 @@ public final class LightningCloud extends Model implements Magic {
             }
         } else if (prev_target != null && strike_counter < NUM_STRIKES - 1 && hit_timer > (strike_counter + 1)
                 * SECONDS_BETWEEN_STRIKES) {
-                    strike(prev_target);
                     strike(prev_target);
                     strike_counter++;
                 }
@@ -157,5 +155,15 @@ public final class LightningCloud extends Model implements Magic {
     @Override
     public void interrupt() {
         remove();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return seconds_to_live <= 0f;
+    }
+
+    @Override
+    public boolean isDead() {
+        return isFinished();
     }
 }

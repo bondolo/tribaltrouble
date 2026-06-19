@@ -5,7 +5,7 @@ import com.oddlabs.tt.render.shader.FogShader;
 import com.oddlabs.tt.resource.DistanceFogInfo;
 import com.oddlabs.tt.resource.FogInfo;
 import com.oddlabs.tt.resource.RadialFogInfo;
-import com.oddlabs.tt.scenery.Water;
+import com.oddlabs.tt.render.scenery.Water;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

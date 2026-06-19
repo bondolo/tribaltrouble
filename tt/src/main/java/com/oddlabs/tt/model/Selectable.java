@@ -60,22 +60,12 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         this.template = template;
     }
 
-    @Override
-    public float getShadowDiameter() {
-        return template.getShadowDiameter();
-    }
-
     public final @NonNull T getTemplate() {
         return template;
     }
 
     public float getDefenseChance() {
         return template.getDefenseChance();
-    }
-
-    @Override
-    public final float getNoDetailSize() {
-        return template.getNoDetailSize();
     }
 
     public abstract boolean isEnabled();
@@ -346,8 +336,8 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return (Selectable<T>[]) new Selectable[length];
     }
 
-    public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<T>
-        @NonNull... selectables) {
+    public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<
+            T> @NonNull... selectables) {
         return selectables;
     }
 }

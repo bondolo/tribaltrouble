@@ -12,10 +12,10 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.camera.MenuCamera;
-import com.oddlabs.tt.delegate.MainMenu;
+import com.oddlabs.tt.viewer.delegate.MainMenu;
 import com.oddlabs.tt.camera.StaticCamera;
-import com.oddlabs.tt.delegate.InGameDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
+import com.oddlabs.tt.viewer.delegate.InGameDelegate;
+import com.oddlabs.tt.viewer.delegate.InGameMainMenu;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.tt.event.LocalEventQueue;
@@ -40,15 +40,15 @@ import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.render.state.GLRenderContext;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.AudioAssets;
-import com.oddlabs.tt.resource.IslandGenerator;
+import com.oddlabs.tt.landscape.worldgen.IslandGenerator;
 import com.oddlabs.tt.resource.NativeResource;
 import com.oddlabs.tt.resource.Resources;
-import com.oddlabs.tt.resource.WorldGenerator;
+import com.oddlabs.tt.landscape.worldgen.WorldGenerator;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.util.GLUtils;
 import com.oddlabs.tt.util.StatCounter;
 import com.oddlabs.tt.util.Utils;
-import com.oddlabs.tt.vbo.VBO;
+import com.oddlabs.tt.render.vbo.VBO;
 import com.oddlabs.tt.viewer.AmbientAudio;
 import com.oddlabs.tt.viewer.Cheat;
 import com.oddlabs.tt.viewer.Selection;
@@ -593,13 +593,10 @@ public final class Renderer implements AutoCloseable {
                 eventload = true;
                 i++;
                 switch (args[i]) {
-                    case "zipped":
-                        zipped = true;
-                        break;
-                    case "normal":
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
+                    case "zipped" -> zipped = true;
+                    case "normal" -> {
+                    }
+                    default -> throw new IllegalArgumentException("Unknown event load mode: " + args[i]);
                 }
             }
             case "--silent" -> silent = true;
@@ -897,9 +894,13 @@ public final class Renderer implements AutoCloseable {
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
         Player local_player = world.getPlayers().getFirst();
         Selection selection = new Selection(local_player);
+        com.oddlabs.tt.render.snapshot.SnapshotManager menuSnapshotManager
+                = new com.oddlabs.tt.render.snapshot.SnapshotManager();
+        world.setPostTickCallback(() -> menuSnapshotManager.capture(world));
         UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info,
                 landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer,
-                        selection), selection, modelViewStack, projectionStack);
+                        selection, menuSnapshotManager), selection, modelViewStack, projectionStack,
+                menuSnapshotManager);
         Renderer.getRenderer().setMusic(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);

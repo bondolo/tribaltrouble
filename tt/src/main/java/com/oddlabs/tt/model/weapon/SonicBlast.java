@@ -1,15 +1,15 @@
 package com.oddlabs.tt.model.weapon;
 
+import com.oddlabs.tt.model.MagicVisualType;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.particle.SonicBlastEffect;
+import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.model.BoundingBox;
-import org.joml.Vector3f;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  * Logic controller for the Sonic Blast magic effect.
  */
 public final class SonicBlast extends Model implements Magic {
-
+    public static final Color.@NonNull Linear SONIC_BLAST_COLOR = new Color.Standard(0xFF_DA_ED_FF).linear();
     private final float hit_radius;
     private final float hit_chance_closest;
     private final float hit_chance_farthest;
@@ -28,11 +28,9 @@ public final class SonicBlast extends Model implements Magic {
     private final @NonNull Player owner;
     private final float start_x;
     private final float start_y;
-    private final float start_z;
 
     private float time = 0f;
     private final @NonNull Iterable<? extends Selectable<?>> blast_targets;
-    private final @NonNull SonicBlastEffect sonicBlastEffect;
 
     public SonicBlast(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance_closest,
             float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, @NonNull Unit src) {
@@ -47,7 +45,7 @@ public final class SonicBlast extends Model implements Magic {
 
         start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
         start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
-        start_z = src.getPositionZ() + offset_z;
+        float start_z = src.getPositionZ() + offset_z;
 
         setPosition(start_x, start_y, start_z);
         register();
@@ -59,8 +57,12 @@ public final class SonicBlast extends Model implements Magic {
                 .getPositionY()));
         blast_targets = filter.getResult();
 
-        sonicBlastEffect = new SonicBlastEffect(owner.getWorld(), new Vector3f(start_x, start_y, start_z), hit_radius,
-                seconds);
+        owner.getWorld().getNotificationListener().magicEffectSpawned(
+                start_x, start_y, start_z,
+                MagicVisualType.SONIC_BLAST_EFFECT,
+                hit_radius, seconds,
+                SONIC_BLAST_COLOR
+        );
 
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
     }
@@ -108,21 +110,21 @@ public final class SonicBlast extends Model implements Magic {
 
     @Override
     public void interrupt() {
-        sonicBlastEffect.abort();
         getClientState(ModelClient.class).ifPresent(ModelClient::close);
     }
 
     @Override
     public boolean isFinished() {
-        return time >= seconds && sonicBlastEffect.isFinished();
+        return time >= seconds;
+    }
+
+    @Override
+    public boolean isDead() {
+        return isFinished();
     }
 
     @Override
     protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
         return null;
-    }
-
-    public @NonNull SonicBlastEffect getSonicBlastEffect() {
-        return sonicBlastEffect;
     }
 }

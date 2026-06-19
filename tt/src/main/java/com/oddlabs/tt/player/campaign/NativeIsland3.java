@@ -11,7 +11,7 @@ import com.oddlabs.tt.model.UnitType;
 import com.oddlabs.tt.model.MagicType;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.delegate.JumpDelegate;
+import com.oddlabs.tt.viewer.delegate.JumpDelegate;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;

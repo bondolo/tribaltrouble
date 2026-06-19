@@ -2,10 +2,10 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.matchmaking.ChatRoomUser;
 import com.oddlabs.tt.form.PrivateMessageForm;
-import com.oddlabs.tt.guievent.EnterListener;
-import com.oddlabs.tt.guievent.ItemChosenListener;
-import com.oddlabs.tt.guievent.MouseClickListener;
-import com.oddlabs.tt.guievent.RowListener;
+import com.oddlabs.tt.gui.event.EnterListener;
+import com.oddlabs.tt.gui.event.ItemChosenListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.net.ChatCommand;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;

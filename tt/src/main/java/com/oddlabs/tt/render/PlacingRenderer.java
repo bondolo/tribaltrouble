@@ -6,7 +6,7 @@ import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.vbo.VertexArray;
+import com.oddlabs.tt.render.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

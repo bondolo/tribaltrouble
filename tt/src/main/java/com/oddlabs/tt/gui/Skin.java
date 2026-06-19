@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.font.Font;
+import com.oddlabs.tt.render.font.Font;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.FontFile;
 import com.oddlabs.tt.resource.Resources;

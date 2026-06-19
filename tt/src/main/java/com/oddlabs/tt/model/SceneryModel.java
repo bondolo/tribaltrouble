@@ -14,7 +14,6 @@ import org.jspecify.annotations.Nullable;
  */
 public sealed class SceneryModel extends Model implements Occupant, ModelToolTip, Animated permits Plants {
     private final @NonNull BoundsProvider boundsProvider;
-    private final float shadow_diameter;
     private final boolean occupy;
     private final @Nullable String name;
     private final int animation;
@@ -54,7 +53,6 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
             int animation, float seconds_per_animation_cycle, float anim_offset) {
         super(world);
         this.boundsProvider = boundsProvider;
-        this.shadow_diameter = shadow_diameter;
         this.occupy = occupy;
         this.name = name;
         this.animation = animation;
@@ -74,11 +72,6 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
 
     public final @Nullable String getName() {
         return name;
-    }
-
-    @Override
-    public final float getShadowDiameter() {
-        return shadow_diameter;
     }
 
     protected void doRegister() {

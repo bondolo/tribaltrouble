@@ -1,8 +1,8 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.guievent.MouseButtonListener;
-import com.oddlabs.tt.guievent.MouseMotionListener;
-import com.oddlabs.tt.guievent.ValueListener;
+import com.oddlabs.tt.gui.event.MouseButtonListener;
+import com.oddlabs.tt.gui.event.MouseMotionListener;
+import com.oddlabs.tt.gui.event.ValueListener;
 import com.oddlabs.tt.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 

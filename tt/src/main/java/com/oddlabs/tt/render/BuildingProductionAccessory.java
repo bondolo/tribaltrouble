@@ -4,9 +4,8 @@ import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.particle.LinearEmitter;
-import com.oddlabs.tt.particle.RandomAccelerationEmitter;
+import com.oddlabs.tt.render.particle.LinearEmitter;
+import com.oddlabs.tt.render.particle.RandomAccelerationEmitter;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -18,6 +17,8 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * An accessory that manages the chimney smoke during building production.
@@ -54,7 +55,10 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
 
     public BuildingProductionAccessory(@NonNull Building building) {
         this.building = building;
-        this.chimneyOffset = building.getTemplate().getChimney();
+        this.chimneyOffset = VisualRegistry.getInstance()
+                .getBuildingVisuals(building.getOwner().getRaceInfo().getRaceType(), building.getTemplate()
+                        .getBuildingType())
+                .chimney();
         this.emitter = new RandomAccelerationEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f),
                 0f, 0.15f, 0.05f, 1.5f, 0.1f, -1, 15.0f,
                 new Vector3f(0.15f, 0.05f, 0.5f), new Vector3f(0f, 0f, 1.3f), 0.4f,
@@ -160,16 +164,16 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
-        if (parent instanceof Building b) {
-            return b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES) &&
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
+        if (parent instanceof VisualSnapshots.BuildingSnapshot) {
+            return building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES) &&
                     (state != State.IDLE || !emitter.isFinished());
         }
         return false;
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
         dest.translate(chimneyOffset);
     }
 

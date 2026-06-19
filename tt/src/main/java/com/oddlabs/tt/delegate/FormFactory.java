@@ -6,7 +6,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.function.Supplier;
 
 @FunctionalInterface
-interface FormFactory<F extends Form> extends Supplier<F> {
+public interface FormFactory<F extends Form> extends Supplier<F> {
     @NonNull
     F create();
 

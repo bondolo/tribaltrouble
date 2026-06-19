@@ -1,0 +1,62 @@
+package com.oddlabs.tt.render.vbo;
+
+import com.oddlabs.tt.render.Renderer;
+import org.jspecify.annotations.NonNull;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL31;
+
+import java.nio.ShortBuffer;
+
+public final class ShortVBO extends VBO {
+
+    public ShortVBO(int usage, int size) {
+        super(GL15.GL_ELEMENT_ARRAY_BUFFER, usage, size * Short.BYTES);
+    }
+
+    public ShortVBO(int usage, @NonNull ShortBuffer initial_data) {
+        this(usage, initial_data.remaining());
+        put(initial_data);
+    }
+
+    private static void registerTrianglesRendered(int mode, int count) {
+        int num_triangles = getNumTriangles(mode, count);
+        Renderer.registerTrianglesRendered(num_triangles);
+    }
+
+    private static int getNumTriangles(int mode, int count) {
+        return switch (mode) {
+            case GL11.GL_TRIANGLES -> count / 3;
+            case GL11.GL_QUADS -> count >> 2;
+            case GL11.GL_TRIANGLE_FAN, GL11.GL_TRIANGLE_STRIP -> count - 2;
+            case GL11.GL_QUAD_STRIP -> count - 3;
+            case GL11.GL_LINES -> count; // Assume a line is two triangles
+            case GL11.GL_POINTS -> count * 3; // assume a line is one triangle;
+            case GL11.GL_LINE_STRIP -> (count - 1) * 2;
+            default -> throw new IllegalArgumentException("Unknown primitive type: 0x" + Integer.toHexString(mode));
+        };
+    }
+
+    public void put(@NonNull ShortBuffer buffer) {
+        bind();
+        GL15.glBufferSubData(getTarget(), 0, buffer);
+        buffer.position(buffer.limit());
+    }
+
+    public void drawElements(int mode, int count, int index) {
+        registerTrianglesRendered(mode, count);
+        bind();
+        GL11.glDrawElements(mode, count, GL11.GL_UNSIGNED_SHORT, index << 1);
+    }
+
+    public void drawElementsInstanced(int mode, int count, int index, int primcount) {
+        registerTrianglesRendered(mode, count * primcount);
+        bind();
+        GL31.glDrawElementsInstanced(mode, count, GL11.GL_UNSIGNED_SHORT, index << 1, primcount);
+    }
+
+    @Override
+    public int capacity() {
+        return getSize() / Short.BYTES;
+    }
+}

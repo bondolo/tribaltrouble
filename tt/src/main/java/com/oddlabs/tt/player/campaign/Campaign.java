@@ -1,7 +1,7 @@
 package com.oddlabs.tt.player.campaign;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.delegate.CampaignMapForm;
+import com.oddlabs.tt.viewer.delegate.CampaignMapForm;
 import com.oddlabs.tt.form.MessageForm;
 import com.oddlabs.tt.gui.CampaignIcons;
 import com.oddlabs.tt.gui.GUI;

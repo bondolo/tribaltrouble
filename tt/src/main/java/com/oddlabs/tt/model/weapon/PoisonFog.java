@@ -88,7 +88,8 @@ public final class PoisonFog extends Model implements Magic {
     public void animate(float t) {
         time += t;
         if (time >= total_time) {
-            owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+            remove();
+            return;
         }
 
         if (bursts * SECONDS_BETWEEN_BURSTS < time) {
@@ -124,5 +125,15 @@ public final class PoisonFog extends Model implements Magic {
     @Override
     public void interrupt() {
         remove();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return time >= total_time;
+    }
+
+    @Override
+    public boolean isDead() {
+        return isFinished();
     }
 }

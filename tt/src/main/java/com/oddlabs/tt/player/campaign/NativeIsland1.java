@@ -10,7 +10,7 @@ import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.delegate.JumpDelegate;
+import com.oddlabs.tt.viewer.delegate.JumpDelegate;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -132,7 +132,10 @@ public final class NativeIsland1 extends Island {
         // insert slaves
         final int captive_start_x = 48 * 2;
         final int captive_start_y = 96 * 2;
-        float shadow_diameter = local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getShadowDiameter();
+        float shadow_diameter = VisualRegistry.getInstance().getUnitVisuals(
+                local_player.getRaceInfo().getRaceType(),
+                local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getVisualType()
+        ).shadowDiameter();
         SpriteKey sprite_renderer = VisualRegistry.getInstance().getUnitSprite(
                 local_player.getRaceInfo().getRaceType(),
                 local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getVisualType()

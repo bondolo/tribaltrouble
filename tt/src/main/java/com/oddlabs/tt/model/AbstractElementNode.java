@@ -8,6 +8,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Abstract base class for spatial partition tree nodes in the world entity grid.
@@ -92,7 +93,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
-            new RockSupply(world, grid_x, grid_y, x, y, true).spawnComplete();
+            new RockSupply(world, grid_x, grid_y, x, y, true);
         });
     }
 
@@ -103,7 +104,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             int grid_y = coords[1];
             float x = UnitGrid.coordinateFromGrid(grid_x) + world.getRandom().nextFloat(-.5f, .5f);
             float y = UnitGrid.coordinateFromGrid(grid_y) + world.getRandom().nextFloat(-.5f, .5f);
-            new IronSupply(world, grid_x, grid_y, x, y, true).spawnComplete();
+            new IronSupply(world, grid_x, grid_y, x, y, true);
         });
     }
 
@@ -113,8 +114,8 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         for (int t = 0; t < plants.length; t++) {
             num_plants += plants[t].length / 2;
             for (int p = 0; p < plants[t].length >> 1; p++) {
-                float dir_x = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
-                float dir_y = java.util.concurrent.ThreadLocalRandom.current().nextFloat();
+                float dir_x = ThreadLocalRandom.current().nextFloat();
+                float dir_y = ThreadLocalRandom.current().nextFloat();
                 float len_sqr = dir_x * dir_x + dir_y * dir_y;
                 if (len_sqr < .001) {
                     dir_x = 1f;

@@ -3,7 +3,7 @@ package com.oddlabs.tt.form;
 import com.oddlabs.tt.model.Race;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.delegate.Menu;
+import com.oddlabs.tt.viewer.delegate.Menu;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
@@ -14,7 +14,7 @@ import com.oddlabs.tt.gui.LoadCampaignBox;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.guievent.RowListener;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.player.campaign.Campaign;
 import com.oddlabs.tt.player.campaign.CampaignState;
 import com.oddlabs.tt.player.campaign.NativeCampaign;

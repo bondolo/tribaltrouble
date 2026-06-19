@@ -54,11 +54,17 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     private @NonNull Animation animation = Animation.IDLING;
     private boolean is_hit = false;
 
+    private boolean spawning = true;
+    private float spawnProgress = 0f;
+    private static final float SPAWN_LIMIT = 3.0f;
+    private final float spawn_offset_z;
+
     public RubberSupply(@NonNull World world, int grid_x, int grid_y,
             float x, float y, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
         var spawn_z = world.getRandom().nextFloat(MIN_TREE_FALL_HEIGHT, MAX_TREE_FALL_HEIGHT);
-        super(world, 2f, grid_x, grid_y, x, y, spawn_z, 0f, INITIAL_SUPPLIES, false,
+        super(world, 2f, grid_x, grid_y, x, y, 0f, INITIAL_SUPPLIES, false,
                 world.getLandscapeResources().getChickenBounds());
+        this.spawn_offset_z = spawn_z;
         this.path_tracker = new PathTracker(world.getUnitGrid(), this);
         this.group = group;
         start_grid_x = grid_x;
@@ -86,22 +92,6 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     @Override
     public float getShadowDiameter() {
         return 1.2f;
-    }
-
-    @Override
-    public void animateSpawn(float t, float progress) {
-        super.animateSpawn(t, progress);
-        anim_time += animation.getSpeed() * t;
-        float x = spawn_x + (UnitGrid.coordinateFromGrid(getGridX()) - spawn_x) * progress;
-        float y = spawn_y + (UnitGrid.coordinateFromGrid(getGridY()) - spawn_y) * progress;
-        setPosition(x, y);
-    }
-
-    @Override
-    public void spawnComplete() {
-        super.spawnComplete();
-        setNewAnimation(Animation.IDLING);
-        reinsert();
     }
 
     @Override
@@ -151,8 +141,19 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     @Override
     public void animate(float t) {
         animateClientState(t);
-        if (isSpawning())
+        if (spawning) {
+            spawnProgress = Math.min(1.0f, spawnProgress + t / SPAWN_LIMIT);
+            anim_time += animation.getSpeed() * t;
+            float x = spawn_x + (UnitGrid.coordinateFromGrid(getGridX()) - spawn_x) * spawnProgress;
+            float y = spawn_y + (UnitGrid.coordinateFromGrid(getGridY()) - spawn_y) * spawnProgress;
+            setPosition(x, y);
+            if (spawnProgress >= 1.0f) {
+                spawning = false;
+                setNewAnimation(Animation.IDLING);
+                reinsert();
+            }
             return;
+        }
         anim_time += animation.getSpeed() * t;
         if (animation == Animation.FLYING || animation == Animation.RUNNING) {
             fly(t);
@@ -161,11 +162,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             if (random < .75) {
                 setNewAnimation(Animation.IDLING);
                 if (random < .05) {
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
-                                    AudioAssets.CHICKEN_IDLES.length)]);
-                    getClientState(ModelClient.class).ifPresent(client -> client.addVisualSound(EmojiType.CHICKEN_CLUCK,
-                            ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN));
+                    getClientState(ModelClient.class).ifPresent(client -> {
+                        client.playSound(AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
+                                AudioAssets.CHICKEN_IDLES.length)]);
+                        client.addVisualSound(EmojiType.CHICKEN_CLUCK,
+                                ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
+                    });
                 }
             } else if (random < .85) {
                 // move
@@ -180,8 +182,8 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                     float move_random = getWorld().getRandom().nextFloat();
                     if (move_random < .25f) {
                         setNewAnimation(Animation.FLYING);
-                        getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                                AudioAssets.CHICKEN_PECK);
+                        getClientState(ModelClient.class).ifPresent(client -> client.playSound(
+                                AudioAssets.CHICKEN_PECK));
                     } else {
                         setNewAnimation(Animation.RUNNING);
                     }
@@ -189,8 +191,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             } else {
                 setNewAnimation(Animation.PECKING);
                 if (random > .98f)
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            AudioAssets.CHICKEN_PECK);
+                    getClientState(ModelClient.class).ifPresent(client -> client.playSound(AudioAssets.CHICKEN_PECK));
 
             }
         }
@@ -228,7 +229,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         if (!is_hit) {
             is_hit = true;
             setNewAnimation(Animation.DYING);
-            getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), AudioAssets.CHICKEN_DEATH);
+            getClientState(ModelClient.class).ifPresent(client -> client.playSound(AudioAssets.CHICKEN_DEATH));
             group.remove(this);
         }
         return super.hit();
@@ -237,22 +238,9 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     @Override
     public float getOffsetZ() {
         float slope = getSlopeOffset();
-        if (isSpawning()) {
-            float progress = getSpawnProgress();
-            return (1 - progress * progress) * spawn_offset_z + slope;
+        if (spawning) {
+            return (1.0f - spawnProgress * spawnProgress) * spawn_offset_z + slope;
         }
         return slope;
-    }
-
-    @Override
-    public void register() {
-        super.register();
-        getWorld().getAnimationManagerGameTime().registerAnimation(this);
-    }
-
-    @Override
-    public void remove() {
-        getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        super.remove();
     }
 }

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.font.Index;
-import com.oddlabs.tt.font.TextLineRenderer;
-import com.oddlabs.tt.guievent.EnterListener;
+import com.oddlabs.tt.render.font.Index;
+import com.oddlabs.tt.render.font.TextLineRenderer;
+import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

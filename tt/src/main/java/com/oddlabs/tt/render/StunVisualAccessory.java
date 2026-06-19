@@ -3,10 +3,9 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.weapon.Stun;
-import com.oddlabs.tt.particle.Emitter;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.render.particle.Emitter;
+import com.oddlabs.tt.render.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -16,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import java.util.concurrent.ThreadLocalRandom;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * Client-side visual accessory for the stun spell.
@@ -71,12 +71,12 @@ public final class StunVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
         return !stun.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
     }
 
     @Override

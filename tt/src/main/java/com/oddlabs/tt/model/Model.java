@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Represents a world entity with visual representation and world association.
  */
-public abstract class Model extends Element<Model> implements Shadowable {
+public abstract class Model extends Element<Model> {
     private final @NonNull World world;
     private @Nullable ClientState clientState;
     /** ground height if {@link #groundBased} */
@@ -30,12 +30,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
     @Override
     protected @NonNull Model self() {
         return this;
-    }
-
-    @Override
-    public float getShadowDiameter() {
-        // no shadow
-        return 0f;
     }
 
     /** {@return rendering position offset to the base z of the model */
@@ -87,8 +81,8 @@ public abstract class Model extends Element<Model> implements Shadowable {
         return 0f;
     }
 
-    public float getNoDetailSize() {
-        return 0f;
+    public boolean isDead() {
+        return false;
     }
 
     /** {@return the bounds of the model in the local coordinate system for each animation} */
@@ -106,7 +100,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
                     unit_bounds.bmin_z + z - error, unit_bounds.bmax_z + z + error);
         }
     }
-
 
     protected float getZError() {
         return 0f;

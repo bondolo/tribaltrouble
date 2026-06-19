@@ -1,11 +1,10 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.BuildingType;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots.BuildingSnapshot;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots.UnitSnapshot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -15,21 +14,19 @@ import java.util.Optional;
 
 /**
  * ModelVisitor implementation that resolves visual properties and sprite keys for selectable entities
- * (units/buildings).
+ * (units/buildings) from their snapshots.
  */
-class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
+class SelectableVisitor<S extends EntitySnapshot> extends ModelVisitor<S> {
 
     @Override
     public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<S> render_state) {
-        Selectable<?> selectable = render_state.getModel();
-        Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
-        if (selectable instanceof Unit unit) {
-            return Optional.of(VisualRegistry.getInstance().getUnitSprite(race, unit.getTemplate()
-                    .getVisualType()));
-        } else if (selectable instanceof Building building) {
-            BuildingType bvt = building.getTemplate().getBuildingType();
-            var visuals = VisualRegistry.getInstance().getBuildingVisuals(race, bvt);
-            return Optional.ofNullable(switch (building.getBuildStage()) {
+        EntitySnapshot entity = render_state.getEntity();
+        if (entity instanceof UnitSnapshot unit) {
+            return Optional.of(VisualRegistry.getInstance().getUnitSprite(unit.race(), unit.visualType()));
+        } else if (entity instanceof BuildingSnapshot building) {
+            BuildingType bvt = building.buildingType();
+            var visuals = VisualRegistry.getInstance().getBuildingVisuals(building.race(), bvt);
+            return Optional.ofNullable(switch (building.buildStage()) {
                 case UNPLACED -> null;
                 case START -> visuals.start();
                 case HALFBUILT -> visuals.halfbuilt();
@@ -41,39 +38,95 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
 
     @Override
     public void getTransform(@NonNull ElementRenderState<S> render_state, @NonNull Matrix4f dest) {
-        Model model = render_state.model;
-        float angle = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-        dest.translation(model.getPositionX(), model.getPositionY(), render_state.f)
+        EntitySnapshot entity = render_state.getEntity();
+        float angle = (float) Math.atan2(entity.dirY(), entity.dirX());
+        dest.translation(entity.x(), entity.y(), render_state.f)
                 .rotate(angle, 0f, 0f, 1f);
-    }
-
-    static Color.@NonNull Linear getTeamColor(@NonNull Selectable<?> model) {
-        return model.getOwner().getColor();
     }
 
     @Override
     public final Color.@NonNull Linear getTeamColor(@NonNull ElementRenderState<S> render_state) {
-        return getTeamColor(render_state.getModel());
+        EntitySnapshot entity = render_state.getEntity();
+        if (entity instanceof UnitSnapshot unit) {
+            return unit.teamColor();
+        } else if (entity instanceof BuildingSnapshot building) {
+            return building.teamColor();
+        }
+        return Color.Linear.WHITE;
+    }
+
+    private static Selectable.@NonNull VisualPattern getVisualPattern(@NonNull Player local_player,
+            Color.@NonNull Linear teamColor, boolean isBuilding) {
+        Player owner = null;
+        for (Player p : local_player.getWorld().getPlayers()) {
+            if (p.getColor().equals(teamColor)) {
+                owner = p;
+                break;
+            }
+        }
+        if (owner == null) {
+            return isBuilding ? Selectable.VisualPattern.NEUTRAL_BUILDING : Selectable.VisualPattern.NEUTRAL;
+        }
+        if (owner == local_player) {
+            return isBuilding ? Selectable.VisualPattern.FRIENDLY_BUILDING : Selectable.VisualPattern.FRIENDLY;
+        } else if (local_player.isEnemy(owner)) {
+            return isBuilding ? Selectable.VisualPattern.ENEMY_BUILDING : Selectable.VisualPattern.ENEMY;
+        } else {
+            return isBuilding ? Selectable.VisualPattern.NEUTRAL_BUILDING : Selectable.VisualPattern.NEUTRAL;
+        }
+    }
+
+    private static @NonNull Color getSelectionColor(@NonNull Player local_player, Color.@NonNull Linear teamColor,
+            boolean isBuilding, boolean selected, boolean hovered) {
+        Selectable.VisualPattern pattern = getVisualPattern(local_player, teamColor, isBuilding);
+        return selected
+                ? pattern.selectedColor
+                : hovered
+                        ? pattern.hoveredColor
+                : teamColor;
     }
 
     @Override
     public final @NonNull Color getSelectionColor(@NonNull ElementRenderState<S> render_state) {
         Player local_player = render_state.render_state.getLocalPlayer();
-        S model = render_state.getModel();
-        return model.getSelectionColor(local_player, render_state.render_state.isSelected(model),
-                render_state.render_state.isHovered(model));
+        EntitySnapshot entity = render_state.getEntity();
+        Color.Linear teamColor = Color.Linear.WHITE;
+        boolean isBuilding = false;
+        if (entity instanceof UnitSnapshot unit) {
+            teamColor = unit.teamColor();
+        } else if (entity instanceof BuildingSnapshot building) {
+            teamColor = building.teamColor();
+            isBuilding = true;
+        }
+        boolean selected = render_state.render_state.isSelected(entity);
+        boolean hovered = render_state.render_state.isHovered(entity);
+        return getSelectionColor(local_player, teamColor, isBuilding, selected, hovered);
     }
 
     @Override
     public final Selectable.@NonNull VisualPattern getPattern(@NonNull ElementRenderState<S> render_state) {
         Player local_player = render_state.render_state.getLocalPlayer();
-        return render_state.getModel().getVisualPattern(local_player);
+        EntitySnapshot entity = render_state.getEntity();
+        Color.Linear teamColor = Color.Linear.WHITE;
+        boolean isBuilding = false;
+        if (entity instanceof UnitSnapshot unit) {
+            teamColor = unit.teamColor();
+        } else if (entity instanceof BuildingSnapshot building) {
+            teamColor = building.teamColor();
+            isBuilding = true;
+        }
+        return getVisualPattern(local_player, teamColor, isBuilding);
     }
 
     @Override
     public final void markDetailPoint(@NonNull ElementRenderState<S> render_state) {
-        S selectable = render_state.model;
-        if (!selectable.isDead())
+        EntitySnapshot entity = render_state.getEntity();
+        boolean dead = false;
+        if (entity instanceof UnitSnapshot unit) {
+            dead = unit.isDead();
+        }
+        if (!dead) {
             super.markDetailPoint(render_state);
+        }
     }
 }

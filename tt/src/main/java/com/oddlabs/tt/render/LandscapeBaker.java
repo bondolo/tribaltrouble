@@ -6,7 +6,7 @@ import com.oddlabs.tt.resource.BlendLighting;
 import com.oddlabs.tt.resource.BlendOcclusion;
 import com.oddlabs.tt.resource.StructureBlend;
 import com.oddlabs.tt.resource.WorldInfo;
-import com.oddlabs.tt.vbo.QuadVBO;
+import com.oddlabs.tt.render.vbo.QuadVBO;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;

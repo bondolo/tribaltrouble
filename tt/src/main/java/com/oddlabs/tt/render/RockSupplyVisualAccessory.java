@@ -3,11 +3,10 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.model.RockSupply;
-import com.oddlabs.tt.particle.Emitter;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.render.particle.Emitter;
+import com.oddlabs.tt.render.particle.RandomVelocityEmitter;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -16,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Collection;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * Client-side visual accessory for rock supply eruptions.
@@ -23,17 +23,48 @@ import java.util.Collection;
  */
 public final class RockSupplyVisualAccessory implements AnimatedAccessory {
     private final @NonNull RockSupply rockSupply;
+
+    private static final float SPAWN_DURATION = 6.0f;
+    private float elapsedSpawnTime = 0.0f;
+
+    public float getSpawnProgress() {
+        return Math.min(1.0f, elapsedSpawnTime / SPAWN_DURATION);
+    }
+
+    public boolean isSpawning() {
+        return elapsedSpawnTime < SPAWN_DURATION;
+    }
+
     private @Nullable RandomVelocityEmitter smokeEmitter = null;
     private boolean soundPlayed = false;
 
     public RockSupplyVisualAccessory(@NonNull RockSupply rockSupply) {
         this.rockSupply = rockSupply;
+        if (rockSupply.getWorld().getTick() == 0) {
+            this.elapsedSpawnTime = SPAWN_DURATION;
+        }
     }
 
     @Override
     public void animate(float t) {
-        if (rockSupply.isSpawning()) {
-            float progress = rockSupply.getSpawnProgress();
+        elapsedSpawnTime += t;
+        float progress = getSpawnProgress();
+        boolean isSpawning = isSpawning();
+
+        if (isSpawning) {
+            VisualModel visualModel = VisualModel.getById(rockSupply.getId());
+            if (visualModel != null) {
+                float zOffset;
+                if (progress < 0.3f) {
+                    zOffset = -2.0f;
+                } else if (progress < 0.7f) {
+                    float riseProgress = (progress - 0.3f) / 0.4f;
+                    zOffset = (1.0f - riseProgress) * -2.0f;
+                } else {
+                    zOffset = 0.0f;
+                }
+                visualModel.setVisualOffsetZ(zOffset);
+            }
             if (progress < 0.3f) {
                 ensureSmokeEmitter().setTransition(0.0f, 1.8f, 0.2f, 0.3f);
                 if (!soundPlayed) {
@@ -58,6 +89,10 @@ public final class RockSupplyVisualAccessory implements AnimatedAccessory {
                 smokeEmitter.animate(t);
             }
         } else {
+            VisualModel visualModel = VisualModel.getById(rockSupply.getId());
+            if (visualModel != null) {
+                visualModel.setVisualOffsetZ(0.0f);
+            }
             cleanupEmitters();
             soundPlayed = false;
         }
@@ -105,12 +140,12 @@ public final class RockSupplyVisualAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
         return !rockSupply.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
     }
 
     @Override

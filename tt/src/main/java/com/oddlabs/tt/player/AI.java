@@ -208,17 +208,17 @@ public abstract class AI implements Animated {
                 } else if (supply_type == SupplyType.RUBBER) {
                     INDEX_GATHER_RUBBER_PEONS = i;
                 }
-            } else if (s.getPrimaryController() instanceof NullController) {
-                if (s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
+            } else if (s instanceof Building building && s.getPrimaryController() instanceof NullController) {
+                if (building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
                     INDEX_ARMORY = i;
                     armory_under_construction = false;
-                    getOwner().buildRockWeapons((Building) s, BuildSpinner.INFINITE_LIMIT, true);
-                    getOwner().buildIronWeapons((Building) s, BuildSpinner.INFINITE_LIMIT, true);
-                    getOwner().buildRubberWeapons((Building) s, BuildSpinner.INFINITE_LIMIT, true);
-                } else if (s.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
+                    getOwner().buildRockWeapons(building, BuildSpinner.INFINITE_LIMIT, true);
+                    getOwner().buildIronWeapons(building, BuildSpinner.INFINITE_LIMIT, true);
+                    getOwner().buildRubberWeapons(building, BuildSpinner.INFINITE_LIMIT, true);
+                } else if (building.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
                     INDEX_QUARTERS = i;
                     quarters_under_construction = false;
-                } else if (s.getAbilities().hasAbilities(Abilities.ATTACK)) {
+                } else if (building.getAbilities().hasAbilities(Abilities.ATTACK)) {
                     INDEX_TOWERS = i;
                 } else {
                     INDEX_CONSTRUCTION_SITES = i;
@@ -291,8 +291,8 @@ public abstract class AI implements Animated {
         Selectable<?>[][] lists = owner.classifyUnits();
         for (Selectable<?>[] list : lists) {
             Selectable<?> s = list[0];
-            if (s instanceof Unit unit && !(s.getPrimaryController() instanceof WalkController && ((WalkController) s
-                    .getPrimaryController()).isAgressive())) {
+            if (s instanceof Unit unit && !(s.getPrimaryController() instanceof WalkController walkController
+                    && walkController.isAgressive())) {
                 for (Selectable<?> thrower : list) {
                     if (unit.getAbilities().hasAbilities(Abilities.THROW)) {
                         owner.setLandscapeTarget(Selectable.newArray(thrower), target.getGridX(), target.getGridY(),

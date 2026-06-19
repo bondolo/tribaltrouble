@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.guievent.ValueListener;
+import com.oddlabs.tt.gui.event.ValueListener;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Set;

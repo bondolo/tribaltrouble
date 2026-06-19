@@ -2,9 +2,9 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.UnitSupplyContainer;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -31,7 +31,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         return unit.getAbilities().hasAbilities(Abilities.BUILD) &&
                 supply_container != null &&
@@ -40,7 +40,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
         // Carried resources currently use the parent's exact transform in the old code.
         // We can add offsets here later if needed.
     }

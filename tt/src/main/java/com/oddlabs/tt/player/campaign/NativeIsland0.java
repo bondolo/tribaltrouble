@@ -15,7 +15,7 @@ import com.oddlabs.tt.camera.FirstPersonCamera;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.camera.JumpCamera;
 import com.oddlabs.tt.camera.MapCamera;
-import com.oddlabs.tt.delegate.JumpDelegate;
+import com.oddlabs.tt.viewer.delegate.JumpDelegate;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.gui.GUIRoot;

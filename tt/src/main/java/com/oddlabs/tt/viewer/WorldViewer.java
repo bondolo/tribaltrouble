@@ -1,6 +1,8 @@
 package com.oddlabs.tt.viewer;
 
 import com.oddlabs.tt.model.Difficulty;
+import com.oddlabs.tt.model.MagicVisualType;
+import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
@@ -11,9 +13,9 @@ import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
-import com.oddlabs.tt.delegate.GameStatsDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
-import com.oddlabs.tt.delegate.SelectionDelegate;
+import com.oddlabs.tt.viewer.delegate.GameStatsDelegate;
+import com.oddlabs.tt.viewer.delegate.InGameMainMenu;
+import com.oddlabs.tt.viewer.delegate.SelectionDelegate;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.ActionButtonPanel;
@@ -24,7 +26,9 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.landscape.WorldParameters;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.model.TreeSupply;
 import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.model.WeaponVisualType;
 import com.oddlabs.tt.net.DistributableTable;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.net.PlayerSlot;
@@ -35,6 +39,7 @@ import com.oddlabs.tt.player.PassiveAI;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.player.VikingChieftainAI;
+import com.oddlabs.tt.render.ClientSonicBlast;
 import com.oddlabs.tt.render.DefaultRenderer;
 import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.LandscapeResources;
@@ -44,11 +49,16 @@ import com.oddlabs.tt.render.RacesVisualsLoader;
 import com.oddlabs.tt.render.RenderQueues;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.resource.WorldGenerator;
+import com.oddlabs.tt.render.VisualRegistry;
+import com.oddlabs.tt.render.VisualWeapon;
+import com.oddlabs.tt.landscape.worldgen.WorldGenerator;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.util.ServerMessageBundler;
+import com.oddlabs.tt.render.snapshot.SnapshotManager;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.util.Utils;
+import com.oddlabs.util.Color;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -63,13 +73,12 @@ import java.util.stream.Collectors;
  * Coordinates camera state and audio listener updates for the game world.
  */
 public final class WorldViewer implements Animated, AutoCloseable {
-
     private static final String[] GAMESPEED_STRINGS = new String[]{"paused", "slow", "normal", "fast", "ludicrous"};
 
     private final @NonNull GameCamera camera;
     private final @NonNull ActionButtonPanel panel;
     private final @NonNull SelectionDelegate delegate;
-    private final @NonNull DistributableTable distributable_table;
+    private final @NonNull DistributableTable distributable_table = new DistributableTable();
     private final @NonNull PeerHub peerhub;
     private final @NonNull GUIRoot gui_root;
     private final @NonNull NotificationManager notification_manager;
@@ -82,8 +91,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final @NonNull LandscapeRenderer landscape_renderer;
     private final @NonNull Player local_player;
     private final @NonNull WorldParameters world_params;
-    private final @NonNull AnimationManager animation_manager_local;
+    private final @NonNull AnimationManager animation_manager_local = new AnimationManager();
     private final @NonNull Cheat cheat;
+    private final @NonNull RenderQueues render_queues = new RenderQueues();
+    private final @NonNull SnapshotManager snapshotManager = new SnapshotManager();
 
     public WorldViewer(@NonNull NetworkSelector network, final @NonNull GUIRoot gui_root,
             @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info, @NonNull WorldGenerator generator,
@@ -95,15 +106,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
         var renderer = Renderer.getRenderer();
         renderer.setCheat(cheat);
-        this.animation_manager_local = new AnimationManager();
-        final CameraState camera_state = new CameraState();
-        MatrixStack modelViewStack = new MatrixStack();
-        MatrixStack projectionStack = new MatrixStack();
-        RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
         ProgressForm.progress();
         RacesResources races_resources = RacesVisualsLoader.load(render_queues);
-        this.distributable_table = new DistributableTable();
         NotificationListener listener = new NotificationListener() {
             @Override
             public void gamespeedChanged(int speed) {
@@ -140,6 +145,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
             @Override
             public void registerTarget(@NonNull Target target) {
                 distributable_table.register(target);
+                if (target instanceof TreeSupply tree && WorldViewer.this.renderer != null) {
+                    WorldViewer.this.renderer.getTreeRenderer().onTreeRespawned(tree);
+                }
             }
 
             @Override
@@ -147,11 +155,80 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 distributable_table.unregister(target);
                 if (target instanceof Selectable<?> selectable)
                     getSelection().removeFromArmies(selectable);
+                if (target instanceof TreeSupply tree && WorldViewer.this.renderer != null) {
+                    WorldViewer.this.renderer.getTreeRenderer().onTreeCutDown(tree);
+                }
+            }
+
+            @Override
+            public void weaponThrown(
+                    float startX, float startY, float startZ,
+                    float endX, float endY, float destZ,
+                    float zSpeed, float timeLimit,
+                    @NonNull WeaponVisualType weaponType, @NonNull Race race,
+                    Color.@NonNull Linear teamColor, boolean rotating) {
+                new VisualWeapon(
+                        startX, startY, startZ,
+                        endX, endY, destZ,
+                        zSpeed, timeLimit,
+                        weaponType, race, teamColor, rotating,
+                        world,
+                        render_queues, animation_manager_local
+                );
+            }
+
+            @Override
+            public void magicEffectSpawned(
+                    float x, float y, float z,
+                    @NonNull MagicVisualType type,
+                    float radius, float duration,
+                    Color.@NonNull Linear color) {
+                if (type == MagicVisualType.SONIC_BLAST_EFFECT) {
+                    new ClientSonicBlast(
+                            x, y, z,
+                            radius, duration, color,
+                            render_queues, animation_manager_local
+                    );
+                }
+            }
+
+            @Override
+            public void emitterSpawned(com.oddlabs.tt.render.particle.@NonNull Emitter<?> emitter, boolean isCollapse) {
+                if (isCollapse) {
+                    new com.oddlabs.tt.render.ActiveEmitter(emitter, render_queues, animation_manager_local) {
+                        private float elapsed = 0.0f;
+
+                        @Override
+                        public void animate(float t) {
+                            elapsed += t;
+                            emitter.setSpectrum(Math.min(1.0f, elapsed / 1.5f));
+                            super.animate(t);
+                        }
+                    };
+                } else {
+                    new com.oddlabs.tt.render.ActiveEmitter(emitter, render_queues, animation_manager_local);
+                }
+            }
+
+            @Override
+            public void lightningStrikeSpawned(
+                    float srcX, float srcY, float srcZ,
+                    float dstX, float dstY, float dstZ) {
+                new com.oddlabs.tt.render.particle.Lightning(
+                        world, new Vector3f(srcX, srcY, srcZ), new org.joml.Vector3f(dstX, dstY, dstZ), 0.5f,
+                        15, Color.Linear.WHITE,
+                        new Color.LinearDelta(0.0f, 0.0f, 0.0f, -10.0f),
+                        VisualRegistry.getInstance().getLightningTexture(), 0.1f,
+                        render_queues, animation_manager_local
+                );
             }
         };
         var player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toList();
         @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(
                 player_infos.size(), world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
+        var camera_state = new CameraState();
+        MatrixStack modelViewStack = new MatrixStack();
+        MatrixStack projectionStack = new MatrixStack();
         camera_state.setFog(world_info.fog_info());
         AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
                 .getAudioManager().newAudio(camera_state, x, y, z, params);
@@ -162,9 +239,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
-                selection);
+                selection, snapshotManager);
         this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker,
-                selection, modelViewStack, projectionStack);
+                selection, modelViewStack, projectionStack, snapshotManager);
         this.gui_root = gui_root;
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
                 local_player, player_slots, network, gui_root, notification_manager, distributable_table, session_id,
@@ -175,7 +252,12 @@ public final class WorldViewer implements Animated, AutoCloseable {
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
         initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos,
                 world_params.getInitialGameSpeed());
+        this.world.setPostTickCallback(() -> snapshotManager.capture(world));
         renderer.getEventQueue().getManager().registerAnimation(this);
+    }
+
+    public @NonNull SnapshotManager getSnapshotManager() {
+        return snapshotManager;
     }
 
     public @NonNull AnimationManager getAnimationManagerLocal() {

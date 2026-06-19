@@ -52,7 +52,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     public enum Animation {
         IDLING,
         MOVING,
-        THROWING,
+        THROWING, // also used for harvest
         DYING,
         MAGIC,
         THOR
@@ -405,7 +405,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                         AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH,
                         1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f
                                 * pitchRange) : 0f));
-                getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
+                getClientState(ModelClient.class).ifPresent(client -> client.playSound(params));
                 setDirection(-direction_x, -direction_y);
                 removeDying();
             }

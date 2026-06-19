@@ -1,14 +1,14 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.delegate.ModalDelegate;
-import com.oddlabs.tt.guievent.EventListener;
-import com.oddlabs.tt.guievent.FocusListener;
-import com.oddlabs.tt.guievent.InputListener;
-import com.oddlabs.tt.guievent.MouseHorizontalWheelListener;
-import com.oddlabs.tt.guievent.MouseButtonListener;
-import com.oddlabs.tt.guievent.MouseClickListener;
-import com.oddlabs.tt.guievent.MouseMotionListener;
-import com.oddlabs.tt.guievent.MouseWheelListener;
+import com.oddlabs.tt.gui.event.EventListener;
+import com.oddlabs.tt.gui.event.FocusListener;
+import com.oddlabs.tt.gui.event.InputListener;
+import com.oddlabs.tt.gui.event.MouseHorizontalWheelListener;
+import com.oddlabs.tt.gui.event.MouseButtonListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.gui.event.MouseMotionListener;
+import com.oddlabs.tt.gui.event.MouseWheelListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.model.Target;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Unified interface for accessing the visual state of renderable world objects.
  */
-interface ModelState<M extends Model> extends LODObject {
+interface ModelState<S> extends LODObject {
     @NonNull
     Matrix4f getTransform(@NonNull Matrix4f dest);
 
@@ -29,6 +29,11 @@ interface ModelState<M extends Model> extends LODObject {
 
     Selectable.@NonNull VisualPattern getPattern();
 
+    @NonNull
+    S getEntity();
+
+    float getNoDetailSize();
+
     @Nullable
-    M getModel();
+    Target getTarget();
 }

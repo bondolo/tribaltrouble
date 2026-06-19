@@ -4,12 +4,10 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.weapon.LightningCloud;
-import com.oddlabs.tt.particle.CloudFunction;
-import com.oddlabs.tt.particle.Emitter;
-import com.oddlabs.tt.particle.Lightning;
-import com.oddlabs.tt.particle.ParametricEmitter;
+import com.oddlabs.tt.render.particle.CloudFunction;
+import com.oddlabs.tt.render.particle.Emitter;
+import com.oddlabs.tt.render.particle.ParametricEmitter;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -17,6 +15,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * Client-side visual accessory for the lightning cloud magical effect.
@@ -90,12 +89,9 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
             }
         }
 
-        Vector3f cloudPos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
-        Lightning lightning = new Lightning(cloud.getWorld(), cloudPos, new Vector3f(tx, ty, tz), .5f,
-                15, Color.Linear.WHITE, DELTA_COLOR,
-                VisualRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME,
-                cloud.getWorld().getAnimationManagerGameTime());
-        lightning.register();
+        cloud.getWorld().getNotificationListener().lightningStrikeSpawned(
+                cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ(),
+                tx, ty, tz);
     }
 
     @Override
@@ -146,12 +142,12 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
         return !cloud.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
     }
 
     @Override

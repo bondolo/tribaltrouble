@@ -37,17 +37,19 @@ import com.oddlabs.tt.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.player.NativeChieftainAI;
 import com.oddlabs.tt.player.VikingChieftainAI;
-import com.oddlabs.tt.procedural.DynamicEmojiGenerator;
-import com.oddlabs.tt.procedural.GeneratorHalos;
-import com.oddlabs.tt.procedural.GeneratorLightning;
-import com.oddlabs.tt.procedural.GeneratorPoison;
-import com.oddlabs.tt.procedural.GeneratorSmoke;
+import com.oddlabs.tt.render.procedural.DynamicEmojiGenerator;
+import com.oddlabs.tt.render.procedural.GeneratorHalos;
+import com.oddlabs.tt.render.procedural.GeneratorLightning;
+import com.oddlabs.tt.render.procedural.GeneratorPoison;
+import com.oddlabs.tt.render.procedural.GeneratorSmoke;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.resource.TextureFile;
 import com.oddlabs.tt.util.Utils;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import com.oddlabs.tt.resource.AudioFile;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -124,33 +126,84 @@ public final class RacesVisualsLoader {
         SpriteKey startSprite = queues.register(building_start);
 
         VisualRegistry.getInstance().registerBuilding(race, building_type,
-                new VisualRegistry.BuildingVisuals(startSprite, halfbuiltSprite, builtSprite, shadow_renderer));
+                new VisualRegistry.BuildingVisuals(
+                        startSprite, halfbuiltSprite, builtSprite, shadow_renderer,
+                        smoke_radius, smoke_height, num_fragments,
+                        built_selection_radius, built_selection_height,
+                        halfbuilt_selection_radius, halfbuilt_selection_height,
+                        start_selection_radius, start_selection_height,
+                        new Vector3f(chimney_x, chimney_y, chimney_z),
+                        shadow_diameter, no_detail_size
+                ));
 
         return new BuildingTemplate(building_type,
                 placing_size,
-                smoke_radius,
-                smoke_height,
-                num_fragments,
-                shadow_diameter,
                 builtSprite.bounds(),
-                built_selection_radius,
-                built_selection_height,
                 halfbuiltSprite.bounds(),
-                halfbuilt_selection_radius,
-                halfbuilt_selection_height,
                 startSprite.bounds(),
-                start_selection_radius,
-                start_selection_height,
                 max_hit_points,
                 unit_container_factory,
                 abilities,
                 hit_offset_z,
                 mount_offset,
-                no_detail_size,
                 0f,
                 new Vector3f(rally_x, rally_y, rally_z),
-                new Vector3f(chimney_x, chimney_y, chimney_z),
                 name);
+    }
+
+    private static @NonNull UnitTemplate createUnitTemplate(
+            @NonNull Race race,
+            @NonNull UnitVisualType visual_type,
+            @NonNull SpriteKey sprite,
+            float selection_radius,
+            float selection_height,
+            float shadow_diameter,
+            float no_detail_size,
+            float stun_x,
+            float stun_y,
+            float stun_z,
+            com.oddlabs.geometry.AnimationInfo.AnimationType @NonNull [] anim_types,
+            @NonNull Abilities abilities,
+            float meters_per_second,
+            @NonNull WeaponFactory weapon_factory,
+            @Nullable UnitSupplyContainerFactory supply_container_factory,
+            @NonNull AudioFile death_sound,
+            float death_pitch,
+            float @NonNull [] hit_offset_z,
+            float defense_chance,
+            @NonNull String name,
+            int max_hit_points,
+            int status_value) {
+
+        VisualRegistry.getInstance().registerUnit(race, visual_type,
+                new VisualRegistry.UnitVisuals(
+                        sprite,
+                        selection_radius,
+                        selection_height,
+                        shadow_diameter,
+                        no_detail_size,
+                        stun_x,
+                        stun_y,
+                        stun_z,
+                        anim_types
+                ));
+
+        return new UnitTemplate(
+                abilities,
+                meters_per_second,
+                weapon_factory,
+                visual_type,
+                sprite.bounds(),
+                anim_types,
+                supply_container_factory,
+                death_sound,
+                death_pitch,
+                hit_offset_z,
+                defense_chance,
+                name,
+                max_hit_points,
+                status_value
+        );
     }
 
     public static @NonNull RacesResources load(@NonNull RenderQueues queues) {
@@ -377,261 +430,160 @@ public final class RacesVisualsLoader {
         ProgressForm.progress(1f / num_progress);
 
         WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f,
-                RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+                RacesResources.THROW_RANGE, 29f / 58f);
         VisualRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.ROCK,
-                queues.register(viking_warrior_axe, UnitType.WARRIOR_ROCK.getValue()));
+                queues.register(viking_warrior_axe, UnitType.WARRIOR_ROCK.getValue()),
+                AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
 
         WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f,
-                RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+                RacesResources.THROW_RANGE, 29f / 58f);
         VisualRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.IRON,
-                queues.register(viking_warrior_axe, UnitType.WARRIOR_IRON.getValue()));
+                queues.register(viking_warrior_axe, UnitType.WARRIOR_IRON.getValue()),
+                AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
 
         WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new,
-                0.95f, RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+                0.95f, RacesResources.THROW_RANGE, 29f / 58f);
         VisualRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.RUBBER,
-                queues.register(viking_warrior_axe, UnitType.WARRIOR_RUBBER.getValue()));
+                queues.register(viking_warrior_axe, UnitType.WARRIOR_RUBBER.getValue()),
+                AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
 
         WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new,
-                0.5f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.5f, RacesResources.THROW_RANGE, 46f / 100f);
         VisualRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.ROCK,
-                queues.register(native_warrior_spear, UnitType.WARRIOR_ROCK.getValue()));
+                queues.register(native_warrior_spear, UnitType.WARRIOR_ROCK.getValue()),
+                AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.SFX_IMPACT_MEATS);
 
         WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new,
-                0.75f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.75f, RacesResources.THROW_RANGE, 46f / 100f);
         VisualRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.IRON,
-                queues.register(native_warrior_spear, UnitType.WARRIOR_IRON.getValue()));
+                queues.register(native_warrior_spear, UnitType.WARRIOR_IRON.getValue()),
+                AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.SFX_IMPACT_MEATS);
 
         WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class,
                 RubberSpearWeapon::new,
-                0.95f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.95f, RacesResources.THROW_RANGE, 46f / 100f);
         VisualRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.RUBBER,
-                queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue()));
+                queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue()),
+                AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.SFX_IMPACT_MEATS);
 
         ProgressForm.progress(1f / num_progress);
         ShadowListKey default_shadow_list = queues.registerSelectableShadowList(VisualRegistry.DEFAULT_SHADOW_DESC);
         VisualRegistry.getInstance().registerDefaultUnitShadow(default_shadow_list);
         SpriteKey vRockSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_ROCK.getValue());
-        UnitTemplate viking_warrior_rock_template = new UnitTemplate(.4f,
-                1.2f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f,
-                viking_warrior_rock_weapon,
-                UnitVisualType.WARRIOR_ROCK,
-                vRockSprite.bounds(),
+        UnitTemplate viking_warrior_rock_template = createUnitTemplate(
+                Race.VIKINGS, UnitVisualType.WARRIOR_ROCK, vRockSprite,
+                .4f, 1.2f, shadow_diameter_warrior, 1f, 0f, 0f, 2f,
                 vRockSprite.animTypes(),
-                shadow_diameter_warrior,
-                null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[0],
-                .25f,
-                new float[]{1.2f},
-                1f,
-                .5f,
-                i18n("rock_warrior"),
-                1,
-                0f, 0f, 2f,
-                3);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_ROCK, vRockSprite);
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+                4f, viking_warrior_rock_weapon, null,
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[0], .25f,
+                new float[]{1.2f}, .5f, i18n("rock_warrior"), 1, 3
+        );
 
         SpriteKey vIronSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_IRON.getValue());
-        UnitTemplate viking_warrior_iron_template = new UnitTemplate(.4f,
-                1.2f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f,
-                viking_warrior_iron_weapon,
-                UnitVisualType.WARRIOR_IRON,
-                vIronSprite.bounds(),
+        UnitTemplate viking_warrior_iron_template = createUnitTemplate(
+                Race.VIKINGS, UnitVisualType.WARRIOR_IRON, vIronSprite,
+                .4f, 1.2f, shadow_diameter_warrior, 1f, 0f, 0f, 2f,
                 vIronSprite.animTypes(),
-                shadow_diameter_warrior,
-                null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
-                .25f,
-                new float[]{1.2f},
-                1f,
-                .7f,
-                i18n("iron_warrior"),
-                1,
-                0f, 0f, 2f,
-                5);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_IRON, vIronSprite);
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+                4f, viking_warrior_iron_weapon, null,
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1], .25f,
+                new float[]{1.2f}, .7f, i18n("iron_warrior"), 1, 5
+        );
 
         SpriteKey vRubberSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_RUBBER.getValue());
-        UnitTemplate viking_warrior_rubber_template = new UnitTemplate(.4f,
-                1.2f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f,
-                viking_warrior_rubber_weapon,
-                UnitVisualType.WARRIOR_RUBBER,
-                vRubberSprite.bounds(),
+        UnitTemplate viking_warrior_rubber_template = createUnitTemplate(
+                Race.VIKINGS, UnitVisualType.WARRIOR_RUBBER, vRubberSprite,
+                .4f, 1.2f, shadow_diameter_warrior, 1f, 0f, 0f, 2f,
                 vRubberSprite.animTypes(),
-                shadow_diameter_warrior,
-                null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
-                .25f,
-                new float[]{1.2f},
-                1f,
-                .7f,
-                i18n("chicken_warrior"),
-                1,
-                0f, 0f, 2f,
-                10);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_RUBBER, vRubberSprite);
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+                4f, viking_warrior_rubber_weapon, null,
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1], .25f,
+                new float[]{1.2f}, .7f, i18n("chicken_warrior"), 1, 10
+        );
 
         SpriteKey nRockSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_ROCK.getValue());
-        UnitTemplate native_warrior_rock_template = new UnitTemplate(.4f,
-                1.2f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f,
-                native_warrior_rock_weapon,
-                UnitVisualType.WARRIOR_ROCK,
-                nRockSprite.bounds(),
+        UnitTemplate native_warrior_rock_template = createUnitTemplate(
+                Race.NATIVES, UnitVisualType.WARRIOR_ROCK, nRockSprite,
+                .4f, 1.2f, shadow_diameter_warrior, 1f, 0f, 0f, 2f,
                 nRockSprite.animTypes(),
-                shadow_diameter_warrior,
-                null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[0],
-                .25f,
-                new float[]{1.2f},
-                1f,
-                .5f,
-                i18n("rock_warrior"),
-                1,
-                0f, 0f, 2f,
-                3);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_ROCK, nRockSprite);
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+                4f, native_warrior_rock_weapon, null,
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[0], .25f,
+                new float[]{1.2f}, .5f, i18n("rock_warrior"), 1, 3
+        );
 
         SpriteKey nIronSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_IRON.getValue());
-        UnitTemplate native_warrior_iron_template = new UnitTemplate(.4f,
-                1.2f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f,
-                native_warrior_iron_weapon,
-                UnitVisualType.WARRIOR_IRON,
-                nIronSprite.bounds(),
+        UnitTemplate native_warrior_iron_template = createUnitTemplate(
+                Race.NATIVES, UnitVisualType.WARRIOR_IRON, nIronSprite,
+                .4f, 1.2f, shadow_diameter_warrior, 1f, 0f, 0f, 2f,
                 nIronSprite.animTypes(),
-                shadow_diameter_warrior,
-                null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
-                .25f,
-                new float[]{1.2f},
-                1f,
-                .7f,
-                i18n("iron_warrior"),
-                1,
-                0f, 0f, 2f,
-                5);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_IRON, nIronSprite);
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+                4f, native_warrior_iron_weapon, null,
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1], .25f,
+                new float[]{1.2f}, .7f, i18n("iron_warrior"), 1, 5
+        );
 
         SpriteKey nRubberSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_RUBBER.getValue());
-        UnitTemplate native_warrior_rubber_template = new UnitTemplate(.4f,
-                1.2f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f,
-                native_warrior_rubber_weapon,
-                UnitVisualType.WARRIOR_RUBBER,
-                nRubberSprite.bounds(),
+        UnitTemplate native_warrior_rubber_template = createUnitTemplate(
+                Race.NATIVES, UnitVisualType.WARRIOR_RUBBER, nRubberSprite,
+                .4f, 1.2f, shadow_diameter_warrior, 1f, 0f, 0f, 2f,
                 nRubberSprite.animTypes(),
-                shadow_diameter_warrior,
-                null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
-                .25f,
-                new float[]{1.2f},
-                1f,
-                .7f,
-                i18n("chicken_warrior"),
-                1,
-                0f, 0f, 2f,
-                10);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_RUBBER, nRubberSprite);
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
+                4f, native_warrior_rubber_weapon, null,
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1], .25f,
+                new float[]{1.2f}, .7f, i18n("chicken_warrior"), 1, 10
+        );
 
         SpriteKey vPeonSprite = queues.register(sprite_list_peon);
-        UnitTemplate viking_peon_template = new UnitTemplate(.4f,
-                1.1f,
-                new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
-                5f,
-                new InstantHitFactory(1 / 5f, 0f, 11f / 38f, AudioAssets.SFX_IMPACT_MEATS),
-                UnitVisualType.PEON,
-                vPeonSprite.bounds(),
+        UnitTemplate viking_peon_template = createUnitTemplate(
+                Race.VIKINGS, UnitVisualType.PEON, vPeonSprite,
+                .4f, 1.1f, shadow_diameter_peon, 1f, .1f, 0f, 1.75f,
                 vPeonSprite.animTypes(),
-                shadow_diameter_peon,
+                new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
+                5f, new InstantHitFactory(1 / 5f, 0f, 11f / 38f, AudioAssets.SFX_IMPACT_MEATS),
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
-                AudioAssets.SFX_DEATH_PEON,
-                .25f,
-                new float[]{.7f},
-                1f,
-                0f,
-                i18n("peon"),
-                1,
-                .1f, 0f, 1.75f,
-                1);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.PEON, vPeonSprite);
+                AudioAssets.SFX_DEATH_PEON, .25f,
+                new float[]{.7f}, 0f, i18n("peon"), 1, 1
+        );
 
         SpriteKey nPeonSprite = queues.register(sprite_list_native_peon);
-        UnitTemplate native_peon_template = new UnitTemplate(.4f,
-                1.1f,
-                new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
-                5f,
-                new InstantHitFactory(1 / 5f, 0f, 51f / 83f, AudioAssets.SFX_IMPACT_MEATS),
-                UnitVisualType.PEON,
-                nPeonSprite.bounds(),
+        UnitTemplate native_peon_template = createUnitTemplate(
+                Race.NATIVES, UnitVisualType.PEON, nPeonSprite,
+                .4f, 1.1f, shadow_diameter_peon, 1f, 0f, 0f, 1.75f,
                 nPeonSprite.animTypes(),
-                shadow_diameter_peon,
+                new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
+                5f, new InstantHitFactory(1 / 5f, 0f, 51f / 83f, AudioAssets.SFX_IMPACT_MEATS),
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
-                AudioAssets.SFX_DEATH_PEON,
-                .25f,
-                new float[]{.7f},
-                1f,
-                0f,
-                i18n("peon"),
-                1,
-                0f, 0f, 1.75f,
-                1);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.PEON, nPeonSprite);
+                AudioAssets.SFX_DEATH_PEON, .25f,
+                new float[]{.7f}, 0f, i18n("peon"), 1, 1
+        );
 
         SpriteKey vChieftainSprite = queues.register(sprite_list_chieftain);
-        UnitTemplate viking_chieftain_template = new UnitTemplate(.4f,
-                1.4f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
-                4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 119f, AudioAssets.SFX_VIKING_CHIEFTAIN_HITS),
-                UnitVisualType.CHIEFTAIN,
-                vChieftainSprite.bounds(),
+        UnitTemplate viking_chieftain_template = createUnitTemplate(
+                Race.VIKINGS, UnitVisualType.CHIEFTAIN, vChieftainSprite,
+                .4f, 1.4f, shadow_diameter_chieftain, 1f, -.07f, .312f, 2.7f,
                 vChieftainSprite.animTypes(),
-                shadow_diameter_chieftain,
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
+                4f, new InstantHitFactory(3 / 4f, 0f, 75f / 119f, AudioAssets.SFX_VIKING_CHIEFTAIN_HITS),
                 null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
-                .15f,
-                new float[]{1.7f},
-                1f,
-                0.5f,
-                i18n("chieftain"),
-                RacesResources.VIKING_CHIEFTAIN_HIT_POINTS,
-                -.07f, .312f, 2.7f,
-                40);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.CHIEFTAIN, vChieftainSprite);
+                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1], .15f,
+                new float[]{1.7f}, 0.5f, i18n("chieftain"),
+                RacesResources.VIKING_CHIEFTAIN_HIT_POINTS, 40
+        );
 
         SpriteKey nChieftainSprite = queues.register(sprite_list_native_chieftain);
-        UnitTemplate native_chieftain_template = new UnitTemplate(.4f,
-                1.4f,
-                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
-                4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 129f, AudioAssets.SFX_NATIVE_CHIEFTAIN_HITS),
-                UnitVisualType.CHIEFTAIN,
-                nChieftainSprite.bounds(),
+        UnitTemplate native_chieftain_template = createUnitTemplate(
+                Race.NATIVES, UnitVisualType.CHIEFTAIN, nChieftainSprite,
+                .4f, 1.4f, shadow_diameter_chieftain, 1f, .878f, .151f, 2.8f,
                 nChieftainSprite.animTypes(),
-                shadow_diameter_chieftain,
+                new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
+                4f, new InstantHitFactory(3 / 4f, 0f, 75f / 129f, AudioAssets.SFX_NATIVE_CHIEFTAIN_HITS),
                 null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
-                .15f,
-                new float[]{1.7f},
-                1f,
-                0.5f,
-                i18n("chieftain"),
-                RacesResources.NATIVE_CHIEFTAIN_HIT_POINTS,
-                .878f, .151f, 2.8f,
-                40);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.CHIEFTAIN, nChieftainSprite);
+                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1], .15f,
+                new float[]{1.7f}, 0.5f, i18n("chieftain"),
+                RacesResources.NATIVE_CHIEFTAIN_HIT_POINTS, 40
+        );
 
         EnumMap<MagicType, MagicFactory> native_magic = new EnumMap<>(MagicType.class);
         native_magic.put(MagicType.POISON_FOG, new PoisonFogFactory(0.9f, 0f, 0.55f, 26f, .5f, 2f, 20f, 10, 5f, 80f

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.font.Font;
-import com.oddlabs.tt.font.TextLineRenderer;
+import com.oddlabs.tt.render.font.Font;
+import com.oddlabs.tt.render.font.TextLineRenderer;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;
@@ -47,8 +47,8 @@ public final class MenuButton extends ButtonObject {
             c = color_active;
             scaleHovered(renderer);
         } else c = isDisabled()
-                   ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f)
-                   : color_normal;
+                ? color_normal.desaturate(0.3f).mul(0.5f).alpha(color_normal.a() * 0.8f)
+                : color_normal;
 
         TextLineRenderer.render(renderer, getFont(), text, -getWidth() / 2f, -getHeight() / 2f,
                 Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, c);

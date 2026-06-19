@@ -2,7 +2,7 @@ package com.oddlabs.tt.tutorial;
 
 import com.oddlabs.tt.model.BuildingType;
 
-import com.oddlabs.tt.delegate.PlacingDelegate;
+import com.oddlabs.tt.viewer.delegate.PlacingDelegate;
 import com.oddlabs.tt.player.Player;
 import org.jspecify.annotations.NonNull;
 

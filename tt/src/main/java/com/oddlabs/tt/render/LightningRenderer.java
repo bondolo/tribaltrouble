@@ -1,19 +1,19 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.global.BoundingMode;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.particle.Lightning;
-import com.oddlabs.tt.particle.StretchParticle;
+import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 import com.oddlabs.tt.render.shader.LightningShader;
 import com.oddlabs.tt.render.shader.VertexLayout;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.vbo.FloatVBO;
-import com.oddlabs.tt.vbo.ShortVBO;
-import com.oddlabs.tt.vbo.VertexArray;
+import com.oddlabs.tt.render.vbo.FloatVBO;
+import com.oddlabs.tt.render.vbo.ShortVBO;
+import com.oddlabs.tt.render.vbo.VertexArray;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
@@ -22,10 +22,8 @@ import org.lwjgl.opengl.GL15;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.List;
 import java.util.Objects;
-import java.util.Queue;
 
 /**
  * Specialized renderer for handling transient lightning effects.
@@ -74,12 +72,11 @@ public final class LightningRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    private final Deque<@NonNull Lightning> activeLightnings = new ArrayDeque<>();
+    private final List<com.oddlabs.tt.render.particle.@NonNull Lightning> activeLightnings = new ArrayList<>();
 
-    public void prepare(@NonNull Queue<@NonNull Lightning> queue) {
+    public void prepare(@NonNull Collection<com.oddlabs.tt.render.particle.@NonNull Lightning> list) {
         activeLightnings.clear();
-        activeLightnings.addAll(queue);
-        queue.clear();
+        activeLightnings.addAll(list);
     }
 
     public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
@@ -101,7 +98,7 @@ public final class LightningRenderer implements AutoCloseable {
             vao.bind();
 
             if (Globals.draw_particles) {
-                for (Lightning emitter : activeLightnings) {
+                for (com.oddlabs.tt.render.particle.Lightning emitter : activeLightnings) {
                     renderInternal(context, render_queues, emitter);
                 }
             }
@@ -111,19 +108,15 @@ public final class LightningRenderer implements AutoCloseable {
         }
     }
 
-    private void render2DParticle(@NonNull StretchParticle particle) {
+    private void render2DParticle(com.oddlabs.tt.render.particle.@NonNull StretchParticle particle, float r, float g,
+            float b,
+            float a) {
         float src_x = particle.getSrcX();
         float src_y = particle.getSrcY();
         float src_z = particle.getSrcZ();
         float dst_x = particle.getDstX();
         float dst_y = particle.getDstY();
         float dst_z = particle.getDstZ();
-
-        // Color
-        float r = particle.getColorR();
-        float g = particle.getColorG();
-        float b = particle.getColorB();
-        float a = particle.getColorA();
 
         float sw = particle.getSrcWidth();
         float dw = particle.getDstWidth();
@@ -146,20 +139,25 @@ public final class LightningRenderer implements AutoCloseable {
     }
 
     private void renderInternal(@NonNull RenderContext context, @NonNull RenderQueues render_queues,
-            @NonNull Lightning lightning) {
-        context.setTexture(0, render_queues.getTexture(lightning.getTexture()));
+            com.oddlabs.tt.render.particle.@NonNull Lightning lightning) {
+        context.setTexture(0, render_queues.getTexture(VisualRegistry.getInstance().getLightningTexture()));
 
         particle_buffer.clear();
-        Deque<StretchParticle> particles = lightning.getParticles();
+        var particles = lightning.getParticles();
         int particleCount = 0;
 
-        for (StretchParticle particle : particles) {
+        float r = lightning.getColor().r();
+        float g = lightning.getColor().g();
+        float b = lightning.getColor().b();
+        float a = lightning.getColor().a();
+
+        for (com.oddlabs.tt.render.particle.StretchParticle particle : particles) {
             if (particleCount >= MAX_PARTICLES) {
                 flush(particleCount);
                 particleCount = 0;
                 particle_buffer.clear();
             }
-            render2DParticle(particle);
+            render2DParticle(particle, r, g, b, a);
             particleCount++;
         }
         flush(particleCount);
@@ -178,12 +176,7 @@ public final class LightningRenderer implements AutoCloseable {
         vbo_offset += count;
     }
 
-    public void debugRender(@NonNull Queue<@NonNull Lightning> emitter_queue) {
-        if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
-            for (Lightning emitter : emitter_queue) {
-                RenderTools.draw(emitter, 1f, 1f, 1f);
-            }
-        }
+    public void debugRender(@NonNull Collection<com.oddlabs.tt.render.particle.@NonNull Lightning> emitter_queue) {
     }
 
     @Override

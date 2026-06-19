@@ -13,10 +13,10 @@ public enum Difficulty {
     NORMAL(1, 0),
     HARD(2, 2);
 
+    private static final Set<Difficulty> VALUES = EnumSet.allOf(Difficulty.class);
+
     private final int aiValue;
     private final int campaignValue;
-
-    private static final Set<Difficulty> VALUES = EnumSet.allOf(Difficulty.class);
 
     Difficulty(int aiValue, int campaignValue) {
         this.aiValue = aiValue;

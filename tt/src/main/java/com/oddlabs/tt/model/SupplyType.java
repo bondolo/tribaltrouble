@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.landscape.TreeSupply;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

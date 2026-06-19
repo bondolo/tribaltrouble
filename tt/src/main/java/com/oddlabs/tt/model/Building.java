@@ -1,8 +1,7 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.tt.gui.BuildSpinner;
-import com.oddlabs.tt.landscape.TreeSupply;
-import com.oddlabs.tt.landscape.World;
+
 import com.oddlabs.tt.model.behaviour.AttackController;
 import com.oddlabs.tt.model.behaviour.GatherController;
 import com.oddlabs.tt.model.behaviour.NullController;
@@ -586,14 +585,6 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    public float getShadowOpacity() {
-        return switch (getBuildStage()) {
-            case UNPLACED, START -> 0.0f;
-            case HALFBUILT, BUILT -> super.getShadowOpacity();
-        };
-    }
-
-    @Override
     protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
         return switch (getBuildStage()) {
             case START -> getTemplate().getStartBounds();
@@ -668,10 +659,10 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         super.hit(damage, dir_x, dir_y, owner);
         if (!isDead()) {
             adjustHitPoints(-damage);
-            World world = getOwner().getWorld();
-            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                    AudioAssets.BUILDING_HITS[ThreadLocalRandom.current()
-                            .nextInt(AudioAssets.BUILDING_HITS.length)]);
+            getClientState(ModelClient.class).ifPresent(client -> {
+                client.playSound(AudioAssets.BUILDING_HITS[ThreadLocalRandom.current()
+                        .nextInt(AudioAssets.BUILDING_HITS.length)]);
+            });
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();

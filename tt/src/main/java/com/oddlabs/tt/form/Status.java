@@ -1,6 +1,6 @@
 package com.oddlabs.tt.form;
 
-import com.oddlabs.tt.font.TextLineRenderer;
+import com.oddlabs.tt.render.font.TextLineRenderer;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.guievent.ItemChosenListener;
-import com.oddlabs.tt.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.event.ItemChosenListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

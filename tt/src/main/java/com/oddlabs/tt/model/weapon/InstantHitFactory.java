@@ -1,12 +1,11 @@
 package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.UnitTemplate;
+import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.tt.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
@@ -38,9 +37,8 @@ public final class InstantHitFactory extends WeaponFactory {
         float dx = target.getPositionX() - src.getPositionX();
         float dy = target.getPositionY() - src.getPositionY();
         float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
-        if (target instanceof Unit) {
-            World world = src.getOwner().getWorld();
-            float pitchRange = ((UnitTemplate) target.getTemplate()).getDeathPitch();
+        if (target instanceof Unit unit) {
+            float pitchRange = unit.getTemplate().getDeathPitch();
             var params = new AudioParameters(
                     sounds[ThreadLocalRandom.current().nextInt(sounds.length)],
                     AudioAssets.AUDIO_RANK_WEAPON_HIT,
@@ -48,7 +46,7 @@ public final class InstantHitFactory extends WeaponFactory {
                     AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
                     1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange)
                             : 0f));
-            world.getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
+            target.getClientState(ModelClient.class).ifPresent(client -> client.playSound(params));
         }
         target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());
     }

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.pathfinder.Occupant;
 import com.oddlabs.tt.util.Utils;
@@ -29,14 +28,6 @@ public sealed interface Supply extends Occupant, ModelToolTip permits TreeSupply
     /** Create a new supply at the same location */
     @NonNull
     Supply respawn();
-
-    void animateSpawn(float t, float progress);
-
-    void spawnComplete();
-
-    default float getSpawnTime() {
-        return 3.0f;
-    }
 
     @NonNull
     World getWorld();

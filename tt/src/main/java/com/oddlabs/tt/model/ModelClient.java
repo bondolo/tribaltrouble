@@ -1,5 +1,6 @@
 package com.oddlabs.tt.model;
 
+import com.oddlabs.tt.audio.AudioParameters;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -34,4 +35,11 @@ public interface ModelClient extends ClientState, AutoCloseable {
      */
     @Override
     void close();
+
+    /**
+     * Plays a sound effect at the model's position on the client.
+     *
+     * @param params The audio parameters describing the sound.
+     */
+    void playSound(@NonNull AudioParameters params);
 }

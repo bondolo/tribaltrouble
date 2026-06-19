@@ -1,12 +1,12 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.Unit;
 import org.joml.Matrix4f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import com.oddlabs.tt.model.snapshot.VisualSnapshots;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 
 /**
  * An accessory representing a temporary visual alert for in-game sounds.
@@ -42,7 +42,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera) {
         if (!Renderer.getRenderer().getSettings().sound_emojis) {
             return false;
         }
@@ -50,14 +50,14 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
             return false;
         }
 
-        float x = parent.getPositionX();
-        float y = parent.getPositionY();
-        float z = parent.getPositionZ();
+        float x = parent.x();
+        float y = parent.y();
+        float z = parent.z();
 
         float mountOffset = 0.0f;
-        if (parent instanceof Unit unit) {
-            if (unit.isRegistered() && !unit.isDead()) {
-                mountOffset = unit.getMountOffset();
+        if (parent instanceof VisualSnapshots.UnitSnapshot unit) {
+            if (!unit.isDead()) {
+                mountOffset = unit.mountOffset();
             }
         }
         float drift = DRIFT_HEIGHT * (age / duration);
@@ -83,11 +83,11 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent) {
         float mountOffset = 0.0f;
-        if (parent instanceof Unit unit) {
-            if (unit.isRegistered() && !unit.isDead()) {
-                mountOffset = unit.getMountOffset();
+        if (parent instanceof VisualSnapshots.UnitSnapshot unit) {
+            if (!unit.isDead()) {
+                mountOffset = unit.mountOffset();
             }
         }
 

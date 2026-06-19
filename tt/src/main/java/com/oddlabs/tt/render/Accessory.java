@@ -1,15 +1,15 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.particle.Emitter;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
+import com.oddlabs.tt.render.particle.Emitter;
 import java.util.Collection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * An accessory that is logically attached to a {@link Model}.
+ * An accessory that is logically attached to a {@link EntitySnapshot}.
  * These accessories do not exist independently in the world quadtree and instead
  * share the lifecycle and visibility context of their parent.
  */
@@ -25,11 +25,11 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
     /**
      * Returns true if the accessory should currently be drawn.
      *
-     * @param parent The model this accessory is attached to.
+     * @param parent The snapshot this accessory is attached to.
      * @param camera The current camera state for distance/visibility checks.
      * @return visibility status.
      */
-    boolean isVisible(@NonNull Model parent, @NonNull CameraState camera);
+    boolean isVisible(@NonNull EntitySnapshot parent, @NonNull CameraState camera);
 
     /**
      * Returns true if this accessory has completed its lifecycle and should be removed.
@@ -52,20 +52,20 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
     /**
      * Returns the animation ticks to use for this accessory.
      *
-     * @param parent The model this accessory is attached to.
+     * @param parent The snapshot this accessory is attached to.
      * @return animation ticks.
      */
-    default float getAnimationTicks(@NonNull Model parent) {
-        return parent.getAnimationTicks();
+    default float getAnimationTicks(@NonNull EntitySnapshot parent) {
+        return parent.animationTicks();
     }
 
     /**
      * Provides the transform relative to the parent's position.
      *
      * @param dest The matrix to populate with the relative transform.
-     * @param parent The model this accessory is attached to.
+     * @param parent The snapshot this accessory is attached to.
      */
-    void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent);
+    void getRelativeTransform(@NonNull Matrix4f dest, @NonNull EntitySnapshot parent);
 
     /**
      * Appends any particle emitters managed by this accessory to the destination collection.

@@ -2,10 +2,10 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.landscape.AbstractTreeGroup;
-import com.oddlabs.tt.landscape.TreeGroup;
-import com.oddlabs.tt.landscape.TreeLeaf;
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.model.AbstractTreeGroup;
+import com.oddlabs.tt.model.TreeGroup;
+import com.oddlabs.tt.model.TreeLeaf;
+import com.oddlabs.tt.model.TreeSupply;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.SpriteFile;
 import com.oddlabs.tt.model.BoundingBox;
@@ -17,7 +17,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.oddlabs.tt.landscape.AbstractTreeGroup.TreeType;
+import static com.oddlabs.tt.model.AbstractTreeGroup.TreeType;
 
 
 /**
@@ -157,8 +157,12 @@ class TreePicker {
         return render_state;
     }
 
+    protected boolean isHidden(@NonNull TreeSupply tree_supply) {
+        return false;
+    }
+
     private void visitTree(@NonNull TreeSupply tree_supply) {
-        if (tree_supply.isHidden())
+        if (isHidden(tree_supply))
             return;
 
         boolean in_view;

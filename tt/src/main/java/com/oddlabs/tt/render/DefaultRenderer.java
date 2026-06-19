@@ -15,8 +15,9 @@ import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.render.state.GlobalUniforms;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.WorldInfo;
-import com.oddlabs.tt.scenery.Sky;
-import com.oddlabs.tt.scenery.Water;
+import com.oddlabs.tt.render.scenery.Sky;
+import com.oddlabs.tt.render.scenery.Water;
+import com.oddlabs.tt.render.snapshot.SnapshotManager;
 import com.oddlabs.tt.util.DebugRender;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.gui.ToolTip;
@@ -54,6 +55,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final InstancedSpriteRenderer treeSpriteRenderer = new InstancedSpriteRenderer();
     private final @NonNull PostProcessor postProcessor;
     private final @Nullable Cheat cheat;
+    private final @NonNull SnapshotManager snapshotManager;
 
     private final GlobalUniforms globalUniforms = new GlobalUniforms();
 
@@ -62,7 +64,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues,
             @NonNull WorldInfo<Texture> world_info, @NonNull LandscapeRenderer landscape_renderer,
             @NonNull Picker picker,
-            @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+            @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack,
+            @NonNull SnapshotManager snapshotManager) {
+        this.snapshotManager = snapshotManager;
         this.world = local_player.getWorld();
         this.cheat = cheat;
         this.render_queues = render_queues;
@@ -70,7 +74,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.selection = selection;
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
                 selection);
-        this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
+        this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer,
+                picker.getAnimationManager());
         this.landscape_renderer = landscape_renderer;
         this.sky = new Sky(landscape_renderer, world_info.terrain(), world_info.detail(), world_info.detailNormal());
         this.modelViewStack = modelViewStack;
@@ -104,7 +109,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             doRenderRallyPoint(context, camera_state,
                     selected_building.getRallyPoint(), VisualRegistry.getInstance().getRallyPoint(selected_building
                             .getOwner().getRaceInfo().getRaceType()),
-                    SelectableVisitor.getTeamColor(selected_building));
+                    selected_building.getOwner().getColor());
     }
 
     private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state,
@@ -162,15 +167,19 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         return picker.getCurrentToolTip();
     }
 
-    private @NonNull TreeRenderer getTreeRenderer() {
+    public @NonNull TreeRenderer getTreeRenderer() {
         return tree_renderer;
     }
 
     private void renderDebugElements(@NonNull CameraState frustum_state) {
         if (Globals.draw_axes) drawAxes();
         landscape_renderer.debugRender(frustum_state);
-        lightningRenderer.debugRender(element_renderer.getRenderState().getLightningQueue());
-        render_queues.getEmitterRenderer().debugRender(element_renderer.getRenderState().getEmitterQueue());
+        lightningRenderer.debugRender(render_queues.getActiveLightning());
+        java.util.Queue<com.oddlabs.tt.render.particle.@NonNull Emitter<?>> combinedEmitters
+                = new java.util.ArrayDeque<>(
+                        element_renderer.getRenderState().getEmitterQueue());
+        combinedEmitters.addAll(render_queues.getActiveEmitters());
+        render_queues.getEmitterRenderer().debugRender(combinedEmitters);
         tree_renderer.debugRender(tree_renderer.getRenderLists(), tree_renderer.getRespondRenderLists());
 
         if (Globals.isBoundsEnabled(BoundingMode.REGIONS))
@@ -250,17 +259,48 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             tree_renderer.visit(world.getTreeRoot());
         }
         if (Globals.process_misc) {
-            element_renderer.setup(frustum_state);
-            element_renderer.visit(world.getElementRoot());
+            var snapshot = snapshotManager.getLatestSnapshot();
+            if (snapshot != null) {
+                element_renderer.renderSnapshot(snapshot.entities(), frustum_state);
+            }
+            for (VisualWeapon weapon : render_queues.getActiveWeapons()) {
+                RenderTools.FrustumIntersection intersection = frustum_state.inNoDetailMode()
+                        ? RenderTools.FrustumIntersection.ALL_INSIDE
+                        : RenderTools.inFrustum(weapon.getBounds(), frustum_state.getFrustum());
+                if (intersection != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                    weapon.updateEyeDistance(frustum_state);
+                    sprite_sorter.add(weapon, frustum_state, false);
+                }
+            }
         }
 
         // Process transient effects (smoke, lightning, fragments) immediately after visitation.
         if (Globals.process_misc) {
             var renderState = element_renderer.getRenderState();
-            render_queues.getEmitterRenderer().prepare(render_queues, renderState.getEmitterQueue(), frustum_state,
+
+            java.util.Queue<com.oddlabs.tt.render.particle.@NonNull Emitter<?>> combinedEmitters
+                    = new java.util.ArrayDeque<>(
+                            renderState.getEmitterQueue());
+            for (com.oddlabs.tt.render.particle.@NonNull Emitter<?> emitter : render_queues.getActiveEmitters()) {
+                org.joml.Vector3f pos = emitter.getPosition();
+                com.oddlabs.tt.model.BoundingBox bounds = new com.oddlabs.tt.model.BoundingBox();
+                bounds.setBounds(
+                        pos.x() - 10f, pos.x() + 10f,
+                        pos.y() - 10f, pos.y() + 10f,
+                        pos.z() - 10f, pos.z() + 10f
+                );
+                RenderTools.FrustumIntersection intersection = frustum_state.inNoDetailMode()
+                        ? RenderTools.FrustumIntersection.ALL_INSIDE
+                        : RenderTools.inFrustum(bounds, frustum_state.getFrustum());
+                if (intersection != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                    combinedEmitters.add(emitter);
+                }
+            }
+
+            render_queues.getEmitterRenderer().prepare(render_queues, combinedEmitters, frustum_state,
                     modelViewStack);
-            lightningRenderer.prepare(renderState.getLightningQueue());
-            sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
+            lightningRenderer.prepare(render_queues.getActiveLightning());
+            sonicBlastRenderer.prepare(render_queues.getActiveSonicBlasts());
         }
         sprite_sorter.distributeModels();
         if (Globals.process_shadows) {
@@ -314,7 +354,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         lightningRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
         render_queues.renderParticles(context, frustum_state, modelViewStack, projectionStack, postProcessor
                 .getDepthCopyTexture());
-        sonicBlastRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack);
+        sonicBlastRenderer.render(context, render_queues, frustum_state, modelViewStack, projectionStack, world
+                .getHeightMap());
         // Rally point uses SpriteShader (Mask) -> Enable
         context.setDrawBuffers(true);
         renderRallyPoint(context, frustum_state);
@@ -333,6 +374,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             context.validate();
         }
     }
+
 
     private boolean closed = false;
 

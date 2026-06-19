@@ -9,8 +9,8 @@ import com.oddlabs.tt.model.WeaponVisualType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import com.oddlabs.tt.procedural.GeneratorCrack;
-import com.oddlabs.tt.procedural.GeneratorHalos;
+import com.oddlabs.tt.render.procedural.GeneratorCrack;
+import com.oddlabs.tt.render.procedural.GeneratorHalos;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,13 +34,45 @@ public final class VisualRegistry {
                                   @NonNull SpriteKey start,
                                   @NonNull SpriteKey halfbuilt,
                                   @NonNull SpriteKey built,
-                                  @NonNull ShadowListKey shadow
+                                  @NonNull ShadowListKey shadow,
+                                  float smokeRadius,
+                                  float smokeHeight,
+                                  int numFragments,
+                                  float builtSelectionRadius,
+                                  float builtSelectionHeight,
+                                  float halfbuiltSelectionRadius,
+                                  float halfbuiltSelectionHeight,
+                                  float startSelectionRadius,
+                                  float startSelectionHeight,
+                                  org.joml.@NonNull Vector3fc chimney,
+                                  float shadowDiameter,
+                                  float noDetailSize
     ) {
     }
 
-    private final EnumMap<Race, EnumMap<UnitVisualType, SpriteKey>> units = new EnumMap<>(Race.class);
+    public record UnitVisuals(
+                              @NonNull SpriteKey sprite,
+                              float selectionRadius,
+                              float selectionHeight,
+                              float shadowDiameter,
+                              float noDetailSize,
+                              float stunX,
+                              float stunY,
+                              float stunZ,
+                              com.oddlabs.geometry.AnimationInfo.@NonNull AnimationType @NonNull [] animTypes
+    ) {
+    }
+
+    public record WeaponVisuals(
+                                @NonNull SpriteKey sprite,
+                                com.oddlabs.tt.resource.@NonNull AudioFile throwSound,
+                                com.oddlabs.tt.resource.@NonNull AudioFile @NonNull [] hitSounds
+    ) {
+    }
+
+    private final EnumMap<Race, EnumMap<UnitVisualType, UnitVisuals>> units = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<BuildingType, BuildingVisuals>> buildings = new EnumMap<>(Race.class);
-    private final EnumMap<Race, EnumMap<WeaponVisualType, SpriteKey>> weapons = new EnumMap<>(Race.class);
+    private final EnumMap<Race, EnumMap<WeaponVisualType, WeaponVisuals>> weapons = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<SupplyType, SpriteKey>> carriedSupplies = new EnumMap<>(Race.class);
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
     private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
@@ -68,16 +100,22 @@ public final class VisualRegistry {
         this.chickenCluckSprites = sprites.clone();
     }
 
-    public void registerWeapon(@NonNull Race race, @NonNull WeaponVisualType type, @NonNull SpriteKey sprite) {
-        weapons.get(race).put(type, sprite);
+    public void registerWeapon(@NonNull Race race, @NonNull WeaponVisualType type, @NonNull SpriteKey sprite,
+            com.oddlabs.tt.resource.@NonNull AudioFile throwSound,
+            com.oddlabs.tt.resource.@NonNull AudioFile @NonNull [] hitSounds) {
+        weapons.get(race).put(type, new WeaponVisuals(sprite, throwSound, hitSounds));
+    }
+
+    public @NonNull WeaponVisuals getWeaponVisuals(@NonNull Race race, @NonNull WeaponVisualType type) {
+        WeaponVisuals visuals = weapons.get(race).get(type);
+        if (visuals == null) {
+            throw new IllegalStateException("Weapon visuals not registered for race " + race + " and type " + type);
+        }
+        return visuals;
     }
 
     public @NonNull SpriteKey getWeaponSprite(@NonNull Race race, @NonNull WeaponVisualType type) {
-        SpriteKey sprite = weapons.get(race).get(type);
-        if (sprite == null) {
-            throw new IllegalStateException("Weapon sprite not registered for race " + race + " and type " + type);
-        }
-        return sprite;
+        return getWeaponVisuals(race, type).sprite();
     }
 
     public void registerRallyPoint(@NonNull Race race, @NonNull SpriteKey sprite) {
@@ -92,16 +130,20 @@ public final class VisualRegistry {
         return sprite;
     }
 
-    public void registerUnit(@NonNull Race race, @NonNull UnitVisualType type, @NonNull SpriteKey sprite) {
-        units.get(race).put(type, sprite);
+    public void registerUnit(@NonNull Race race, @NonNull UnitVisualType type, @NonNull UnitVisuals visuals) {
+        units.get(race).put(type, visuals);
+    }
+
+    public @NonNull UnitVisuals getUnitVisuals(@NonNull Race race, @NonNull UnitVisualType type) {
+        UnitVisuals visuals = units.get(race).get(type);
+        if (visuals == null) {
+            throw new IllegalStateException("Unit visuals not registered for race " + race + " and type " + type);
+        }
+        return visuals;
     }
 
     public @NonNull SpriteKey getUnitSprite(@NonNull Race race, @NonNull UnitVisualType type) {
-        SpriteKey sprite = units.get(race).get(type);
-        if (sprite == null) {
-            throw new IllegalStateException("Unit sprite not registered for race " + race + " and type " + type);
-        }
-        return sprite;
+        return getUnitVisuals(race, type).sprite();
     }
 
     public void registerBuilding(@NonNull Race race, @NonNull BuildingType type,

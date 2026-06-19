@@ -1,7 +1,7 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.matchmaking.Profile;
-import com.oddlabs.tt.delegate.Menu;
+import com.oddlabs.tt.viewer.delegate.Menu;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
@@ -14,8 +14,8 @@ import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Row;
 import java.util.List;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.guievent.MouseClickListener;
-import com.oddlabs.tt.guievent.RowListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;

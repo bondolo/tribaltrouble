@@ -1,6 +1,6 @@
 package com.oddlabs.tt.form;
 
-import com.oddlabs.tt.delegate.ControllableCameraDelegate;
+import com.oddlabs.tt.viewer.delegate.ControllableCameraDelegate;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
@@ -10,7 +10,7 @@ import com.oddlabs.tt.gui.RadioButton;
 import com.oddlabs.tt.gui.RadioButtonGroup;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.TextBox;
-import com.oddlabs.tt.guievent.EnterListener;
+import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.net.ChatCommand;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;

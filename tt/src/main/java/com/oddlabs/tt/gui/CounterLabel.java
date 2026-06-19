@@ -2,7 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.font.Font;
+import com.oddlabs.tt.render.font.Font;
 import org.jspecify.annotations.NonNull;
 
 public final class CounterLabel extends Label implements Animated {

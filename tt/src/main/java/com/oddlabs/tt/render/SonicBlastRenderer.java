@@ -1,32 +1,30 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.particle.SonicBlastEffect;
-import com.oddlabs.tt.procedural.GeneratorNoise;
+import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.render.procedural.GeneratorNoise;
 import com.oddlabs.tt.render.shader.SonicBlastShader;
 import com.oddlabs.tt.render.shader.VertexLayout;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.vbo.FloatVBO;
-import com.oddlabs.tt.vbo.VertexArray;
-import com.oddlabs.util.Color;
+import com.oddlabs.tt.render.vbo.FloatVBO;
+import com.oddlabs.tt.render.vbo.VertexArray;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Specialized renderer for the Sonic Blast expanding ring effect.
+ * Specialized renderer for expanding-ring shockwave effects.
  */
 public final class SonicBlastRenderer implements AutoCloseable {
-    private static final Color.Linear BLAST_COLOR = new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f);
     private static final VertexLayout<SonicBlastShader.Attribute> LAYOUT = new VertexLayout<>(
             SonicBlastShader.Attribute.POSITION,
             SonicBlastShader.Attribute.TEX_COORD
@@ -60,16 +58,15 @@ public final class SonicBlastRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    private final @NonNull Deque<SonicBlastEffect> activeEffects = new ArrayDeque<>();
+    private final @NonNull List<@NonNull ClientSonicBlast> activeEffects = new ArrayList<>();
 
-    public void prepare(@NonNull Queue<@NonNull SonicBlastEffect> queue) {
+    public void prepare(@NonNull Collection<@NonNull ClientSonicBlast> blasts) {
         activeEffects.clear();
-        activeEffects.addAll(queue);
-        queue.clear();
+        activeEffects.addAll(blasts);
     }
 
     public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull HeightMap heightMap) {
         if (activeEffects.isEmpty()) return;
 
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(
@@ -81,23 +78,20 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
             vao.bind();
 
-            for (SonicBlastEffect effect : activeEffects) {
-                if (effect.isDead()) continue;
-
+            for (ClientSonicBlast effect : activeEffects) {
                 modelViewStack.push();
 
-                float x = effect.getPositionX();
-                float y = effect.getPositionY();
-                float z = effect.getPositionZ();
+                float x = effect.getX();
+                float y = effect.getY();
+                float z = effect.getZ();
                 // Visual radius is 20% larger than damage radius ("felt but no damage")
                 float visualRadius = effect.getMaxRadius() * 1.2f;
                 float r = visualRadius * 2.0f; // Quad size (diameter)
 
-                var hm = effect.getWorld().getHeightMap();
-                float h_l = hm.getNearestHeight(x - 0.5f, y);
-                float h_r = hm.getNearestHeight(x + 0.5f, y);
-                float h_d = hm.getNearestHeight(x, y - 0.5f);
-                float h_u = hm.getNearestHeight(x, y + 0.5f);
+                float h_l = heightMap.getNearestHeight(x - 0.5f, y);
+                float h_r = heightMap.getNearestHeight(x + 0.5f, y);
+                float h_d = heightMap.getNearestHeight(x, y - 0.5f);
+                float h_u = heightMap.getNearestHeight(x, y + 0.5f);
 
                 float dh_dx = h_r - h_l;
                 float dh_dy = h_u - h_d;

@@ -1,8 +1,9 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.model.snapshot.EntitySnapshot;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -11,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Specialized render state for handling attached accessories.
  */
-final class AttachedRenderState implements ModelState<Model> {
+final class AttachedRenderState implements ModelState<EntitySnapshot> {
     private @Nullable ElementRenderState<?> parentState;
     private @Nullable Accessory accessory;
 
@@ -29,7 +30,7 @@ final class AttachedRenderState implements ModelState<Model> {
         assert accessory != null;
 
         parentState.getTransform(dest);
-        accessory.getRelativeTransform(dest, parentState.model);
+        accessory.getRelativeTransform(dest, parentState.entity);
 
         if (accessory instanceof VisualSoundAccessory) {
             CameraState camera = parentState.render_state.getCamera();
@@ -96,9 +97,21 @@ final class AttachedRenderState implements ModelState<Model> {
     }
 
     @Override
-    public @Nullable Model getModel() {
+    public @NonNull EntitySnapshot getEntity() {
         assert parentState != null;
-        return parentState.model;
+        return parentState.entity;
+    }
+
+    @Override
+    public float getNoDetailSize() {
+        assert parentState != null;
+        return parentState.getNoDetailSize();
+    }
+
+    @Override
+    public @Nullable Target getTarget() {
+        assert parentState != null;
+        return parentState.getTarget();
     }
 
     @Override
@@ -115,7 +128,7 @@ final class AttachedRenderState implements ModelState<Model> {
         SpriteKey key = accessory.getSpriteRenderer();
         if (key != null) {
             parentState.render_state.getRenderQueues().getRenderer(key).addToRenderList(detail, this,
-                    parentState.render_state.isResponding(parentState.model));
+                    parentState.render_state.isResponding(parentState.entity));
         }
     }
 
@@ -143,7 +156,7 @@ final class AttachedRenderState implements ModelState<Model> {
         assert accessory != null;
         assert parentState != null;
 
-        return accessory.getAnimationTicks(parentState.model);
+        return accessory.getAnimationTicks(parentState.entity);
     }
 
     @Override

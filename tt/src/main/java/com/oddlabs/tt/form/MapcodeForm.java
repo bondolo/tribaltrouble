@@ -11,7 +11,7 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

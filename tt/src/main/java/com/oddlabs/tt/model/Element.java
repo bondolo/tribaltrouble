@@ -9,6 +9,8 @@ import org.jspecify.annotations.Nullable;
  * Base class for all world entities that exist within the quadtree.
  */
 public abstract class Element<T extends Element<T>> extends BoundingBox implements ListElement<T> {
+    private static int nextId;
+    private final int id = nextId++;
     private final AbstractElementNode<T> element_root;
     private @Nullable AbstractElementNode<T> node_parent;
 
@@ -128,5 +130,9 @@ public abstract class Element<T extends Element<T>> extends BoundingBox implemen
     @Override
     public final @Nullable T getNext() {
         return next;
+    }
+
+    public final int getId() {
+        return id;
     }
 }
