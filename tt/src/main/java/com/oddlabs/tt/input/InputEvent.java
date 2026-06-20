@@ -5,7 +5,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class InputEvent {
