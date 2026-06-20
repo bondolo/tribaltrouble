@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
 public final class FontRenderer {
@@ -50,10 +51,15 @@ public final class FontRenderer {
     static void main(@NonNull String @NonNull... args) {
         if (args.length < 9) {
             IO.println(
-                    "FontRenderer <font_name> <font_size> <max_image_width> <max_chars> <scale_factor> <font_info_dir> <font_tex_dir> <font_tex_classpath> <additional_chars>");
+                    "FontRenderer <font_name> <font_size> <max_image_width> <max_chars> <scale_factor> <font_info_dir> <font_tex_dir> <font_tex_classpath> <additional_codepoints_hex>");
         }
         try {
-            int[] codepoints = IntStream.concat(IntStream.range(0, Integer.parseInt(args[3])), args[8].codePoints())
+            // additional_codepoints_hex is a comma-separated list of hex codepoints (ASCII only) so
+            // that glyphs outside the platform code page survive the command-line argv boundary.
+            IntStream additional = args[8].isEmpty()
+                    ? IntStream.empty()
+                    : Arrays.stream(args[8].split(",")).mapToInt(s -> Integer.parseInt(s.trim(), 16));
+            int[] codepoints = IntStream.concat(IntStream.range(0, Integer.parseInt(args[3])), additional)
                     .toArray();
 
             new FontRenderer(Path.of(args[0]),

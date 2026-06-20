@@ -149,6 +149,14 @@ val convertPixelPerfect = convertBatch("convertPixelPerfect", "textures/pixelper
 val fontInfoDir = layout.buildDirectory.dir("resources/font")
 val fontTexClasspath = "/textures/font"
 
+// Extra glyphs to bake into the font atlases beyond the base codepoint range.
+// Passed to FontRenderer as ASCII hex codepoints rather than literal characters: command-line
+// arguments are encoded through the JVM's sun.jnu.encoding, which is the legacy ANSI code page on
+// Windows (e.g. Cp1252) and silently replaces non-Latin-1 glyphs like ∞ ← ⌘ with '?'. Hex is ASCII
+// and survives the argv boundary identically on every platform.
+val extraGlyphs = "…–—•°™∞␡␈c←↑→↓⌃⇧⌥⌘□"
+val extraGlyphCodepoints = extraGlyphs.codePoints().toArray().joinToString(",") { Integer.toHexString(it) }
+
 val renderInterLightFont = tasks.register<JavaExec>("renderInterLightFont") {
     group = "build"
     description = "Renders Inter Light TTF font to PNG texture and font metadata."
@@ -160,12 +168,13 @@ val renderInterLightFont = tasks.register<JavaExec>("renderInterLightFont") {
     val outDir = layout.buildDirectory.dir("font_png/light")
     
     inputs.file(ttfFile)
+    inputs.property("glyphs", extraGlyphs)
     outputs.files(
         fontInfoDir.get().file("inter-light_13.font"),
         outDir.get().file("inter-light_13.png")
     )
-    
-    args = listOf(ttfFile.absolutePath, "13", "2048", "1200", "2", fontInfoDir.get().asFile.absolutePath, outDir.get().asFile.absolutePath, fontTexClasspath, "…–—•°™∞␡␈c←↑→↓⌃⇧⌥⌘□")
+
+    args = listOf(ttfFile.absolutePath, "13", "2048", "1200", "2", fontInfoDir.get().asFile.absolutePath, outDir.get().asFile.absolutePath, fontTexClasspath, extraGlyphCodepoints)
     onlyIf { ttfFile.exists() }
 }
 
@@ -184,12 +193,13 @@ val renderInterTightBlackFont = tasks.register<JavaExec>("renderInterTightBlackF
     val outDir = layout.buildDirectory.dir("font_png/black")
     
     inputs.file(ttfFile)
+    inputs.property("glyphs", extraGlyphs)
     outputs.files(
         fontInfoDir.get().file("intertight-black_28.font"),
         outDir.get().file("intertight-black_28.png")
     )
-    
-    args = listOf(ttfFile.absolutePath, "28", "2048", "1200", "2", fontInfoDir.get().asFile.absolutePath, outDir.get().asFile.absolutePath, fontTexClasspath, "…–—•°™∞␡␈c←↑→↓⌃⇧⌥⌘□")
+
+    args = listOf(ttfFile.absolutePath, "28", "2048", "1200", "2", fontInfoDir.get().asFile.absolutePath, outDir.get().asFile.absolutePath, fontTexClasspath, extraGlyphCodepoints)
     onlyIf { ttfFile.exists() }
 }
 
