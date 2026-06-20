@@ -17,7 +17,7 @@ lwjgl {
 }
 
 // Configuration for running internal tools
-val converter by configurations.creating
+val converter = configurations.create("converter")
 dependencies {
     converter(project(":common"))
     converter(project(":tools"))
