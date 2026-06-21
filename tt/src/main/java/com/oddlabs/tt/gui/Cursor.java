@@ -4,15 +4,17 @@ import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.resource.GLImage;
 import com.oddlabs.tt.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.system.MemoryStack;
+import org.lwjgl.sdl.SDL_Surface;
 import org.lwjgl.system.MemoryUtil;
 
-import static org.lwjgl.glfw.GLFW.glfwCreateCursor;
-import static org.lwjgl.glfw.GLFW.glfwDestroyCursor;
+import static org.lwjgl.sdl.SDLMouse.SDL_CreateColorCursor;
+import static org.lwjgl.sdl.SDLMouse.SDL_DestroyCursor;
+import static org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888;
+import static org.lwjgl.sdl.SDLSurface.SDL_CreateSurfaceFrom;
+import static org.lwjgl.sdl.SDLSurface.SDL_DestroySurface;
 
 /**
- * GLFW Cursor
+ * SDL Cursor
  */
 public final class Cursor extends NativeResource<Cursor.NativeCursor> {
     public static final Cursor NULL_CURSOR = new Cursor(MemoryUtil.NULL);
@@ -35,12 +37,22 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
             int width = image.getWidth();
             int height = image.getHeight();
 
-            long nativeCursor;
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-
-                GLFWImage glfwImage = GLFWImage.malloc(stack);
-                glfwImage.set(width, height, image.getPixels());
-                nativeCursor = glfwCreateCursor(glfwImage, xHot, yHot);
+            long nativeCursor = MemoryUtil.NULL;
+            SDL_Surface surface = SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_ABGR8888, image.getPixels(),
+                    width * Integer.BYTES);
+            if (surface != null) {
+                nativeCursor = SDL_CreateColorCursor(surface, xHot, yHot);
+                if (nativeCursor == MemoryUtil.NULL) {
+                    System.err.println("[MouseScale] SDL_CreateColorCursor failed: " + org.lwjgl.sdl.SDLError
+                            .SDL_GetError());
+                } else {
+                    System.err.println("[MouseScale] SDL_CreateColorCursor succeeded: " + nativeCursor + " for size "
+                            + width + "x" + height);
+                }
+                SDL_DestroySurface(surface);
+            } else {
+                System.err.println("[MouseScale] SDL_CreateSurfaceFrom failed: " + org.lwjgl.sdl.SDLError
+                        .SDL_GetError());
             }
 
             this(nativeCursor);
@@ -49,7 +61,7 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
         @Override
         public void close() {
             if (cursor != MemoryUtil.NULL) {
-                glfwDestroyCursor(cursor);
+                SDL_DestroyCursor(cursor);
             }
         }
     }

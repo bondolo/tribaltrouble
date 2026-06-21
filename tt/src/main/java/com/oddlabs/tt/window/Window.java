@@ -6,6 +6,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
+/**
+ * Main interface for window management, display mode handling, and fullscreen controls.
+ */
 public interface Window extends AutoCloseable {
     void create(@NonNull SerializableDisplayMode mode, boolean fullscreen);
 
@@ -27,6 +30,8 @@ public interface Window extends AutoCloseable {
     boolean isVisible();
 
     boolean isIconified();
+
+    boolean isMaximized();
 
     boolean wasResized();
 
@@ -68,7 +73,7 @@ public interface Window extends AutoCloseable {
     void setFullscreen(boolean fullscreen) throws Exception;
 
     /**
-     * Returns a list of resolutions available for fullscreen mode sort from largest to smallest.
+     * Returns a list of resolutions available for fullscreen mode sorted from largest to smallest.
      *
      * @return List of SerializableDisplayMode
      */
@@ -84,9 +89,7 @@ public interface Window extends AutoCloseable {
     @NonNull
     List<@NonNull SerializableDisplayMode> getWindowedDisplayModes();
 
-    @NonNull
-    List<@NonNull SerializableDisplayMode> getAvailableDisplayModes();
-
+    /** {@return the current display mode} */
     @NonNull
     SerializableDisplayMode getDisplayMode();
 
@@ -136,4 +139,26 @@ public interface Window extends AutoCloseable {
      * @return float density
      */
     float getPixelDensity();
+
+    /**
+     * Returns true if the given display mode matches a native hardware exclusive fullscreen mode.
+     *
+     * @param mode the display mode to check
+     * @return true if it corresponds to an exclusive fullscreen mode
+     */
+    boolean isExclusiveFullscreenMode(@NonNull SerializableDisplayMode mode);
+
+    /**
+     * Returns true if the window is currently in native hardware exclusive fullscreen mode.
+     *
+     * @return true if exclusive fullscreen is active
+     */
+    boolean isExclusiveFullscreen();
+
+    /**
+     * Updates the OS system UI visibility (e.g. taskbar, dock, menu bar) based on the game state.
+     *
+     * @param playing true if the game simulation is active (not in a menu)
+     */
+    void updateSystemUI(boolean playing);
 }

@@ -71,12 +71,12 @@ public class Form extends Group {
             w = root.getWidth();
             h = root.getHeight();
         } else {
-            var context = Renderer.getRenderer().getRenderContext();
-            int physW = context.getViewportWidth();
-            int physH = context.getViewportHeight();
-            float scale = GUIRoot.calculateEffectiveScale(physW, physH);
-            w = (int) (physW / scale);
-            h = (int) (physH / scale);
+            var window = Renderer.getRenderer().getWindow();
+            int logW = window.getLogicalWidth();
+            int logH = window.getLogicalHeight();
+            float scale = GUIRoot.calculateEffectiveScale(logW, logH);
+            w = (int) (logW / scale);
+            h = (int) (logH / scale);
         }
         setPos((w - getWidth()) / 2, (h - getHeight()) / 2);
     }

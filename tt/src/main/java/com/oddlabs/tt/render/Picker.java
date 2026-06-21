@@ -568,11 +568,11 @@ public final class Picker implements Updatable<TimerAnimation> {
     private void setupPicking(@NonNull CameraState camera, float x_center, float y_center, int width, int height,
             int @NonNull [] viewport) {
         proj.identity();
-        var context = Renderer.getRenderer().getRenderContext();
+        var window = Renderer.getRenderer().getWindow();
         viewport[0] = 0;
         viewport[1] = 0;
-        viewport[2] = context.getViewportWidth();
-        viewport[3] = context.getViewportHeight();
+        viewport[2] = window.getLogicalWidth();
+        viewport[3] = window.getLogicalHeight();
 
         if (width > 0 && height > 0) {
             Vector3f temp_vector = new Vector3f((viewport[2] - 2 * (x_center - viewport[0])) / width, (viewport[3] - 2

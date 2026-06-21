@@ -1,128 +1,229 @@
 package com.oddlabs.tt.input;
 
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_0;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_1;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_2;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_3;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_4;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_5;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_6;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_7;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_8;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_9;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_A;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_APOSTROPHE;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_B;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_BACKSLASH;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_BACKSPACE;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_C;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_COMMA;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_D;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_DELETE;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_DOWN;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_E;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_END;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_EQUALS;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_ESCAPE;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F1;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F10;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F11;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F12;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F2;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F3;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F4;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F5;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F6;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F7;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F8;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_F9;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_G;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_GRAVE;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_H;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_HOME;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_I;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_INSERT;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_J;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_K;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_0;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_1;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_2;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_3;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_4;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_5;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_6;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_7;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_8;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_9;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_DECIMAL;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_DIVIDE;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_MINUS;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_MULTIPLY;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_KP_PLUS;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_L;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_LALT;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_LCTRL;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_LEFT;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_LEFTBRACKET;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_LGUI;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_LSHIFT;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_M;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_MINUS;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_N;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_O;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_P;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_PAGEDOWN;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_PAGEUP;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_PERIOD;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_Q;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_R;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RALT;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RCTRL;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RETURN;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RGUI;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RIGHT;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RIGHTBRACKET;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_RSHIFT;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_S;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_SEMICOLON;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_SLASH;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_SPACE;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_T;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_TAB;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_U;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_UNKNOWN;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_UP;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_V;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_W;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_X;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_Y;
+import static org.lwjgl.sdl.SDLScancode.SDL_SCANCODE_Z;
+
+/**
+ * Enumeration of physical keyboard keys mapped to SDL scancodes.
+ */
 public enum Key {
-    UP(GLFW.GLFW_KEY_UP),
-    DOWN(GLFW.GLFW_KEY_DOWN),
-    LEFT(GLFW.GLFW_KEY_LEFT),
-    RIGHT(GLFW.GLFW_KEY_RIGHT),
-    ESCAPE(GLFW.GLFW_KEY_ESCAPE),
-    SPACE(GLFW.GLFW_KEY_SPACE),
-    RETURN(GLFW.GLFW_KEY_ENTER),
-    TAB(GLFW.GLFW_KEY_TAB),
-    F1(GLFW.GLFW_KEY_F1),
-    F2(GLFW.GLFW_KEY_F2),
-    F3(GLFW.GLFW_KEY_F3),
-    F4(GLFW.GLFW_KEY_F4),
-    F5(GLFW.GLFW_KEY_F5),
-    F6(GLFW.GLFW_KEY_F6),
-    F7(GLFW.GLFW_KEY_F7),
-    F8(GLFW.GLFW_KEY_F8),
-    F9(GLFW.GLFW_KEY_F9),
-    F10(GLFW.GLFW_KEY_F10),
-    F11(GLFW.GLFW_KEY_F11),
-    F12(GLFW.GLFW_KEY_F12),
-    A(GLFW.GLFW_KEY_A),
-    B(GLFW.GLFW_KEY_B),
-    C(GLFW.GLFW_KEY_C),
-    D(GLFW.GLFW_KEY_D),
-    E(GLFW.GLFW_KEY_E),
-    F(GLFW.GLFW_KEY_F),
-    G(GLFW.GLFW_KEY_G),
-    H(GLFW.GLFW_KEY_H),
-    I(GLFW.GLFW_KEY_I),
-    J(GLFW.GLFW_KEY_J),
-    K(GLFW.GLFW_KEY_K),
-    L(GLFW.GLFW_KEY_L),
-    M(GLFW.GLFW_KEY_M),
-    N(GLFW.GLFW_KEY_N),
-    O(GLFW.GLFW_KEY_O),
-    P(GLFW.GLFW_KEY_P),
-    Q(GLFW.GLFW_KEY_Q),
-    R(GLFW.GLFW_KEY_R),
-    S(GLFW.GLFW_KEY_S),
-    T(GLFW.GLFW_KEY_T),
-    U(GLFW.GLFW_KEY_U),
-    V(GLFW.GLFW_KEY_V),
-    W(GLFW.GLFW_KEY_W),
-    X(GLFW.GLFW_KEY_X),
-    Y(GLFW.GLFW_KEY_Y),
-    Z(GLFW.GLFW_KEY_Z),
-    NUMPAD0(GLFW.GLFW_KEY_KP_0),
-    NUMPAD1(GLFW.GLFW_KEY_KP_1),
-    NUMPAD2(GLFW.GLFW_KEY_KP_2),
-    NUMPAD3(GLFW.GLFW_KEY_KP_3),
-    NUMPAD4(GLFW.GLFW_KEY_KP_4),
-    NUMPAD5(GLFW.GLFW_KEY_KP_5),
-    NUMPAD6(GLFW.GLFW_KEY_KP_6),
-    NUMPAD7(GLFW.GLFW_KEY_KP_7),
-    NUMPAD8(GLFW.GLFW_KEY_KP_8),
-    NUMPAD9(GLFW.GLFW_KEY_KP_9),
-    MULTIPLY(GLFW.GLFW_KEY_KP_MULTIPLY),
-    DIVIDE(GLFW.GLFW_KEY_KP_DIVIDE),
-    DECIMAL(GLFW.GLFW_KEY_KP_DECIMAL),
-    DELETE(GLFW.GLFW_KEY_DELETE),
-    BACK(GLFW.GLFW_KEY_BACKSPACE),
-    HOME(GLFW.GLFW_KEY_HOME),
-    END(GLFW.GLFW_KEY_END),
-    INSERT(GLFW.GLFW_KEY_INSERT),
-    PAGE_UP(GLFW.GLFW_KEY_PAGE_UP),
-    PAGE_DOWN(GLFW.GLFW_KEY_PAGE_DOWN),
-    LSHIFT(GLFW.GLFW_KEY_LEFT_SHIFT),
-    RSHIFT(GLFW.GLFW_KEY_RIGHT_SHIFT),
-    LCONTROL(GLFW.GLFW_KEY_LEFT_CONTROL),
-    RCONTROL(GLFW.GLFW_KEY_RIGHT_CONTROL),
-    LALT(GLFW.GLFW_KEY_LEFT_ALT),
-    RALT(GLFW.GLFW_KEY_RIGHT_ALT),
-    LSUPER(GLFW.GLFW_KEY_LEFT_SUPER),
-    RSUPER(GLFW.GLFW_KEY_RIGHT_SUPER),
-    COMMA(GLFW.GLFW_KEY_COMMA),
-    PERIOD(GLFW.GLFW_KEY_PERIOD),
-    SLASH(GLFW.GLFW_KEY_SLASH),
-    BACKSLASH(GLFW.GLFW_KEY_BACKSLASH),
-    SEMICOLON(GLFW.GLFW_KEY_SEMICOLON),
-    APOSTROPHE(GLFW.GLFW_KEY_APOSTROPHE),
-    LBRACKET(GLFW.GLFW_KEY_LEFT_BRACKET),
-    RBRACKET(GLFW.GLFW_KEY_RIGHT_BRACKET),
-    GRAVE(GLFW.GLFW_KEY_GRAVE_ACCENT),
-    KEY_1(GLFW.GLFW_KEY_1),
-    KEY_2(GLFW.GLFW_KEY_2),
-    KEY_3(GLFW.GLFW_KEY_3),
-    KEY_4(GLFW.GLFW_KEY_4),
-    KEY_5(GLFW.GLFW_KEY_5),
-    KEY_6(GLFW.GLFW_KEY_6),
-    KEY_7(GLFW.GLFW_KEY_7),
-    KEY_8(GLFW.GLFW_KEY_8),
-    KEY_9(GLFW.GLFW_KEY_9),
-    KEY_0(GLFW.GLFW_KEY_0),
-    EQUALS(GLFW.GLFW_KEY_EQUAL),
-    MINUS(GLFW.GLFW_KEY_MINUS),
-    ADD(GLFW.GLFW_KEY_KP_ADD),
-    SUBTRACT(GLFW.GLFW_KEY_KP_SUBTRACT),
-    KEY_UNKNOWN(GLFW.GLFW_KEY_UNKNOWN);
+    UP(SDL_SCANCODE_UP),
+    DOWN(SDL_SCANCODE_DOWN),
+    LEFT(SDL_SCANCODE_LEFT),
+    RIGHT(SDL_SCANCODE_RIGHT),
+    ESCAPE(SDL_SCANCODE_ESCAPE),
+    SPACE(SDL_SCANCODE_SPACE),
+    RETURN(SDL_SCANCODE_RETURN),
+    TAB(SDL_SCANCODE_TAB),
+    F1(SDL_SCANCODE_F1),
+    F2(SDL_SCANCODE_F2),
+    F3(SDL_SCANCODE_F3),
+    F4(SDL_SCANCODE_F4),
+    F5(SDL_SCANCODE_F5),
+    F6(SDL_SCANCODE_F6),
+    F7(SDL_SCANCODE_F7),
+    F8(SDL_SCANCODE_F8),
+    F9(SDL_SCANCODE_F9),
+    F10(SDL_SCANCODE_F10),
+    F11(SDL_SCANCODE_F11),
+    F12(SDL_SCANCODE_F12),
+    A(SDL_SCANCODE_A),
+    B(SDL_SCANCODE_B),
+    C(SDL_SCANCODE_C),
+    D(SDL_SCANCODE_D),
+    E(SDL_SCANCODE_E),
+    F(SDL_SCANCODE_F),
+    G(SDL_SCANCODE_G),
+    H(SDL_SCANCODE_H),
+    I(SDL_SCANCODE_I),
+    J(SDL_SCANCODE_J),
+    K(SDL_SCANCODE_K),
+    L(SDL_SCANCODE_L),
+    M(SDL_SCANCODE_M),
+    N(SDL_SCANCODE_N),
+    O(SDL_SCANCODE_O),
+    P(SDL_SCANCODE_P),
+    Q(SDL_SCANCODE_Q),
+    R(SDL_SCANCODE_R),
+    S(SDL_SCANCODE_S),
+    T(SDL_SCANCODE_T),
+    U(SDL_SCANCODE_U),
+    V(SDL_SCANCODE_V),
+    W(SDL_SCANCODE_W),
+    X(SDL_SCANCODE_X),
+    Y(SDL_SCANCODE_Y),
+    Z(SDL_SCANCODE_Z),
+    NUMPAD0(SDL_SCANCODE_KP_0),
+    NUMPAD1(SDL_SCANCODE_KP_1),
+    NUMPAD2(SDL_SCANCODE_KP_2),
+    NUMPAD3(SDL_SCANCODE_KP_3),
+    NUMPAD4(SDL_SCANCODE_KP_4),
+    NUMPAD5(SDL_SCANCODE_KP_5),
+    NUMPAD6(SDL_SCANCODE_KP_6),
+    NUMPAD7(SDL_SCANCODE_KP_7),
+    NUMPAD8(SDL_SCANCODE_KP_8),
+    NUMPAD9(SDL_SCANCODE_KP_9),
+    MULTIPLY(SDL_SCANCODE_KP_MULTIPLY),
+    DIVIDE(SDL_SCANCODE_KP_DIVIDE),
+    DECIMAL(SDL_SCANCODE_KP_DECIMAL),
+    DELETE(SDL_SCANCODE_DELETE),
+    BACK(SDL_SCANCODE_BACKSPACE),
+    HOME(SDL_SCANCODE_HOME),
+    END(SDL_SCANCODE_END),
+    INSERT(SDL_SCANCODE_INSERT),
+    PAGE_UP(SDL_SCANCODE_PAGEUP),
+    PAGE_DOWN(SDL_SCANCODE_PAGEDOWN),
+    LSHIFT(SDL_SCANCODE_LSHIFT),
+    RSHIFT(SDL_SCANCODE_RSHIFT),
+    LCONTROL(SDL_SCANCODE_LCTRL),
+    RCONTROL(SDL_SCANCODE_RCTRL),
+    LALT(SDL_SCANCODE_LALT),
+    RALT(SDL_SCANCODE_RALT),
+    LSUPER(SDL_SCANCODE_LGUI),
+    RSUPER(SDL_SCANCODE_RGUI),
+    COMMA(SDL_SCANCODE_COMMA),
+    PERIOD(SDL_SCANCODE_PERIOD),
+    SLASH(SDL_SCANCODE_SLASH),
+    BACKSLASH(SDL_SCANCODE_BACKSLASH),
+    SEMICOLON(SDL_SCANCODE_SEMICOLON),
+    APOSTROPHE(SDL_SCANCODE_APOSTROPHE),
+    LBRACKET(SDL_SCANCODE_LEFTBRACKET),
+    RBRACKET(SDL_SCANCODE_RIGHTBRACKET),
+    GRAVE(SDL_SCANCODE_GRAVE),
+    KEY_1(SDL_SCANCODE_1),
+    KEY_2(SDL_SCANCODE_2),
+    KEY_3(SDL_SCANCODE_3),
+    KEY_4(SDL_SCANCODE_4),
+    KEY_5(SDL_SCANCODE_5),
+    KEY_6(SDL_SCANCODE_6),
+    KEY_7(SDL_SCANCODE_7),
+    KEY_8(SDL_SCANCODE_8),
+    KEY_9(SDL_SCANCODE_9),
+    KEY_0(SDL_SCANCODE_0),
+    EQUALS(SDL_SCANCODE_EQUALS),
+    MINUS(SDL_SCANCODE_MINUS),
+    ADD(SDL_SCANCODE_KP_PLUS),
+    SUBTRACT(SDL_SCANCODE_KP_MINUS),
+    KEY_UNKNOWN(SDL_SCANCODE_UNKNOWN);
 
-    private final int glfwCode;
+    private final int sdlCode;
 
-    private static final Map<Integer, Key> from_glfw_map = Arrays.stream(values()).collect(Collectors.toMap(
-            Key::getGlfwCode, Function.identity()));
+    private static final Map<Integer, Key> from_sdl_map = Arrays.stream(values()).collect(Collectors.toMap(
+            Key::getSdlCode, Function.identity()));
 
-    Key(int glfwCode) {
-        this.glfwCode = glfwCode;
+    Key(int sdlCode) {
+        this.sdlCode = sdlCode;
     }
 
-    public int getGlfwCode() {
-        return glfwCode;
+    public int getSdlCode() {
+        return sdlCode;
     }
 
-    public static Key fromGlfwCode(int code) {
-        return from_glfw_map.getOrDefault(code, KEY_UNKNOWN);
+    public static Key fromSdlCode(int code) {
+        return from_sdl_map.getOrDefault(code, KEY_UNKNOWN);
     }
 
     public @NonNull String getDisplayName() {

@@ -20,6 +20,7 @@ import com.oddlabs.tt.guievent.RowListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
+import com.oddlabs.tt.window.Window;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -91,8 +92,8 @@ public class GraphicsPanel extends Panel {
         });
 
         slider_ui_scale.addReleaseListener(() -> {
-            var context = Renderer.getRenderer().getRenderContext();
-            gui_root.displayChanged(context.getViewportWidth(), context.getViewportHeight());
+            var window = Renderer.getRenderer().getWindow();
+            gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
         }
         );
 
@@ -133,12 +134,22 @@ public class GraphicsPanel extends Panel {
         mode_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(@NonNull SerializableDisplayMode mode) {
-                gui_root.addModalForm(new DisplayChangeForm(switch_now -> {
-                    Renderer.getRenderer().switchMode(mode, switch_now);
-                    if (switch_now) {
-                        gui_root.displayChanged(mode.getWidth(), mode.getHeight());
-                    }
-                }));
+                Window window = Renderer.getRenderer().getWindow();
+                boolean currentIsExclusive = window.isExclusiveFullscreen();
+                boolean targetFullscreen = Renderer.getRenderer().getSettings().fullscreen;
+                boolean targetIsExclusive = targetFullscreen && window.isExclusiveFullscreenMode(mode);
+
+                if (currentIsExclusive || targetIsExclusive) {
+                    gui_root.addModalForm(new DisplayChangeForm(switch_now -> {
+                        Renderer.getRenderer().switchMode(mode, switch_now);
+                        if (switch_now) {
+                            gui_root.displayChanged(mode.getWidth(), mode.getHeight());
+                        }
+                    }));
+                } else {
+                    Renderer.getRenderer().switchMode(mode, true);
+                    gui_root.displayChanged(mode.getWidth(), mode.getHeight());
+                }
             }
         });
 
@@ -183,9 +194,8 @@ public class GraphicsPanel extends Panel {
     }
 
     public void updateScaleLabel() {
-        var context = Renderer.getRenderer().getRenderContext();
-
-        float scale = GUIRoot.calculateEffectiveScale(context.getViewportWidth(), context.getViewportHeight());
+        var window = Renderer.getRenderer().getWindow();
+        float scale = GUIRoot.calculateEffectiveScale(window.getLogicalWidth(), window.getLogicalHeight());
         label_pct.setText(String.format("%d%%", (int) (scale * 100)));
     }
 }

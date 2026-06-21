@@ -12,11 +12,10 @@ lwjgl {
     // Add LWJGL modules + the correct native artifacts
     implementation(
         Module.CORE,
-        Module.GLFW,
         Module.OPENAL,
         Module.OPENGL,
-        Module.STB,
-        Module.TINYFD)
+        Module.SDL,
+        Module.STB)
 }
 
 application {
@@ -25,6 +24,8 @@ application {
         "-ea", "-esa", //"-check:JNI",
         "--enable-native-access=ALL-UNNAMED",
         "-Djava.awt.headless=true",
+        "-Dorg.lwjgl.util.Debug=true",
+        "-Dorg.lwjgl.util.DebugLoader=true",
         "-Dcom.oddlabs.tt.developer=true",
         "-Xms80m", "-Xmx512m"
 //        , "-javaagent:/Users/mike/.m2/repository/org/lwjglx/lwjglx-debug/1.0.6/lwjglx-debug-1.0.6.jar=validate;trace;output=trace.log"

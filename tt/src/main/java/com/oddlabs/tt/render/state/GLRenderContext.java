@@ -182,8 +182,9 @@ public final class GLRenderContext implements RenderContext {
         setDepthMode(DepthMode.READ_WRITE); // Enable Test + Mask True
         setDepthFunc(GL11.GL_LEQUAL);
 
-        // Multisample
-        if (Renderer.getRenderer().getSettings().view_samples > 0) {
+        // Multisample: Disable if desktop scale factor > 1.0f (which replaces MSAA with supersampling)
+        float density = Renderer.getRenderer().getWindow().getPixelDensity();
+        if (Renderer.getRenderer().getSettings().view_samples > 0 && density <= 1.0f) {
             GL13.glEnable(GL13.GL_MULTISAMPLE);
         } else {
             GL13.glDisable(GL13.GL_MULTISAMPLE);

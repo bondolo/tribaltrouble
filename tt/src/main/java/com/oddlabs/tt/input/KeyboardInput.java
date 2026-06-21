@@ -11,11 +11,14 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static org.lwjgl.glfw.GLFW.GLFW_MOD_ALT;
-import static org.lwjgl.glfw.GLFW.GLFW_MOD_CONTROL;
-import static org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT;
-import static org.lwjgl.glfw.GLFW.GLFW_MOD_SUPER;
+import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_ALT;
+import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_CTRL;
+import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_GUI;
+import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_SHIFT;
 
+/**
+ * High-level keyboard input processing, including magic developer keys and modifiers.
+ */
 public final class KeyboardInput {
     private static final Logger logger = Logger.getLogger(KeyboardInput.class.getName());
     private static final int LITTLE_WARP = 1000;
@@ -109,7 +112,7 @@ public final class KeyboardInput {
             input.pollKeyboard();
             while (input.nextKeyboardEvent()) {
                 int event_key_code = input.getEventKey();
-                var event_key = Key.fromGlfwCode(event_key_code);
+                var event_key = Key.fromSdlCode(event_key_code);
                 if (Key.KEY_UNKNOWN != event_key) {
                     boolean event_key_state = input.getEventKeyState();
                     checkMagicKey(event_key_state, event_key, true, input.isRepeatEvent());
@@ -123,20 +126,20 @@ public final class KeyboardInput {
         boolean result = false;
         input.pollKeyboard();
         // Update modifiers from raw state to handle lost events or initial state
-        left_shift_down = input.isKeyDown(Key.LSHIFT.getGlfwCode());
-        right_shift_down = input.isKeyDown(Key.RSHIFT.getGlfwCode());
-        left_control_down = input.isKeyDown(Key.LCONTROL.getGlfwCode());
-        right_control_down = input.isKeyDown(Key.RCONTROL.getGlfwCode());
-        left_alt_down = input.isKeyDown(Key.LALT.getGlfwCode());
-        right_alt_down = input.isKeyDown(Key.RALT.getGlfwCode());
-        left_meta_down = input.isKeyDown(Key.LSUPER.getGlfwCode());
-        right_meta_down = input.isKeyDown(Key.RSUPER.getGlfwCode());
+        left_shift_down = input.isKeyDown(Key.LSHIFT.getSdlCode());
+        right_shift_down = input.isKeyDown(Key.RSHIFT.getSdlCode());
+        left_control_down = input.isKeyDown(Key.LCONTROL.getSdlCode());
+        right_control_down = input.isKeyDown(Key.RCONTROL.getSdlCode());
+        left_alt_down = input.isKeyDown(Key.LALT.getSdlCode());
+        right_alt_down = input.isKeyDown(Key.RALT.getSdlCode());
+        left_meta_down = input.isKeyDown(Key.LSUPER.getSdlCode());
+        right_meta_down = input.isKeyDown(Key.RSUPER.getSdlCode());
 
         while (deterministic.log(input.nextKeyboardEvent())) {
             result = true;
             int event_key_code = deterministic.log(input.getEventKey());
             int event_key_mods = deterministic.log(input.getEventKeyMods());
-            Key event_key = Key.fromGlfwCode(event_key_code);
+            Key event_key = Key.fromSdlCode(event_key_code);
             boolean event_key_down = deterministic.log(input.getEventKeyState());
             int event_codepoint = deterministic.log(input.getEventCodepoint());
             boolean repeat_event = deterministic.log(input.isRepeatEvent());
@@ -160,10 +163,10 @@ public final class KeyboardInput {
                 continue;
 
             Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-            if ((event_key_mods & GLFW_MOD_CONTROL) != 0) modifiers.add(Modifier.CONTROL);
-            if ((event_key_mods & GLFW_MOD_SHIFT) != 0) modifiers.add(Modifier.SHIFT);
-            if ((event_key_mods & GLFW_MOD_ALT) != 0) modifiers.add(Modifier.ALT);
-            if ((event_key_mods & GLFW_MOD_SUPER) != 0) modifiers.add(Modifier.META);
+            if ((event_key_mods & SDL_KMOD_CTRL) != 0) modifiers.add(Modifier.CONTROL);
+            if ((event_key_mods & SDL_KMOD_SHIFT) != 0) modifiers.add(Modifier.SHIFT);
+            if ((event_key_mods & SDL_KMOD_ALT) != 0) modifiers.add(Modifier.ALT);
+            if ((event_key_mods & SDL_KMOD_GUI) != 0) modifiers.add(Modifier.META);
 
             // Use passed localInput, not static Renderer
             if (event_key_code == 0 && modifiers.isEmpty()) {

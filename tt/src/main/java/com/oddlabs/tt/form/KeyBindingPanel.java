@@ -17,14 +17,19 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
+import org.lwjgl.sdl.SDLDialog;
+import org.lwjgl.sdl.SDL_DialogFileFilter;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
@@ -136,15 +141,54 @@ public class KeyBindingPanel extends Panel {
             Renderer.getRenderer().toggleFullscreen();
         }
 
-        String path = TinyFileDialogs.tinyfd_saveFileDialog(AbstractOptionsMenu.i18n("dialog_save_bindings"), "", null,
-                AbstractOptionsMenu.i18n("json_files"));
-        if (path != null) {
-            String json = Renderer.getLocalInput().getInputManager().exportBindings();
-            try {
-                Files.writeString(Path.of(path), json);
-            } catch (IOException e) {
-                gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("error_save_failed", e.getMessage())));
+        long window = ((LWJGL3Window) Renderer.getRenderer().getWindow()).getHandle();
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+            filters.get(0).name(stack.UTF8(AbstractOptionsMenu.i18n("json_files"))).pattern(stack.UTF8("json"));
+
+            AtomicBoolean dialogClosed = new AtomicBoolean(false);
+
+            SDLDialog.SDL_ShowSaveFileDialog(
+                    (userdata, filelist, filter) -> {
+                        try {
+                            if (filelist != MemoryUtil.NULL) {
+                                long ptr = MemoryUtil.memGetAddress(filelist);
+                                if (ptr != MemoryUtil.NULL) {
+                                    String path = MemoryUtil.memUTF8(ptr);
+                                    if (path != null) {
+                                        String json = Renderer.getLocalInput().getInputManager().exportBindings();
+                                        try {
+                                            Files.writeString(Path.of(path), json);
+                                        } catch (IOException e) {
+                                            gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n(
+                                                    "error_save_failed", e.getMessage())));
+                                        }
+                                    }
+                                }
+                            }
+                        } finally {
+                            dialogClosed.set(true);
+                        }
+                    },
+                    MemoryUtil.NULL,
+                    window,
+                    filters,
+                    "keybindings.json"
+            );
+
+            // Wait for the async dialog to finish before toggling fullscreen back
+            while (!dialogClosed.get()) {
+                Renderer.getRenderer().getWindow().pollEvents();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
+            updateList();
+            Renderer.getRenderer().getWindow().focus();
         }
 
         if (wasFullscreen) {
@@ -158,16 +202,54 @@ public class KeyBindingPanel extends Panel {
             Renderer.getRenderer().toggleFullscreen();
         }
 
-        String path = TinyFileDialogs.tinyfd_openFileDialog(AbstractOptionsMenu.i18n("dialog_load_bindings"), "", null,
-                AbstractOptionsMenu.i18n("json_files"), false);
-        if (path != null) {
-            try {
-                String json = Files.readString(Path.of(path));
-                Renderer.getLocalInput().getInputManager().importBindings(json);
-                updateList();
-            } catch (IOException e) {
-                gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("error_load_failed", e.getMessage())));
+        long window = ((LWJGL3Window) Renderer.getRenderer().getWindow()).getHandle();
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+            filters.get(0).name(stack.UTF8(AbstractOptionsMenu.i18n("json_files"))).pattern(stack.UTF8("json"));
+
+            AtomicBoolean dialogClosed = new AtomicBoolean(false);
+
+            SDLDialog.SDL_ShowOpenFileDialog((userdata, filelist, filter) -> {
+                try {
+                    if (filelist != MemoryUtil.NULL) {
+                        long ptr = MemoryUtil.memGetAddress(filelist);
+                        if (ptr != MemoryUtil.NULL) {
+                            String path = MemoryUtil.memUTF8(ptr);
+                            if (path != null) {
+                                try {
+                                    String json = Files.readString(Path.of(path));
+                                    Renderer.getLocalInput().getInputManager().importBindings(json);
+                                } catch (IOException e) {
+                                    gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("error_load_failed",
+                                            e.getMessage())));
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    dialogClosed.set(true);
+                }
+            },
+                    MemoryUtil.NULL,
+                    window,
+                    filters,
+                    (CharSequence) null,
+                    false
+            );
+
+            // Wait for the async dialog to finish
+            while (!dialogClosed.get()) {
+                Renderer.getRenderer().getWindow().pollEvents();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
+            updateList();
+            Renderer.getRenderer().getWindow().focus();
         }
 
         if (wasFullscreen) {

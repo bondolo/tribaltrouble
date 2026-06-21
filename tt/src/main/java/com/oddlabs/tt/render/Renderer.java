@@ -141,6 +141,9 @@ public final class Renderer implements AutoCloseable {
     private final Network network = new Network();
     private final LocalInput localInput = new LocalInput(window);
 
+    private int lastDisplayW = -1;
+    private int lastDisplayH = -1;
+
     // Currently only OpenAL is supported
     private @Nullable OpenALManager audioManager;
 
@@ -255,8 +258,16 @@ public final class Renderer implements AutoCloseable {
         NativeResource.processGLCleanupTasks();
         GLUtils.checkGLError("After Cleanup");
 
+        int w = window.getWidth();
+        int h = window.getHeight();
+        if (w != lastDisplayW || h != lastDisplayH) {
+            logger.info("[Renderer] display() viewport changed: " + lastDisplayW + "x" + lastDisplayH + " -> " + w + "x"
+                    + h);
+            lastDisplayW = w;
+            lastDisplayH = h;
+        }
         // Ensure viewport is correct for the main pass
-        renderContext.setViewport(0, 0, window.getWidth(), window.getHeight());
+        renderContext.setViewport(0, 0, w, h);
 
         gui.render(ambient);
 
@@ -667,6 +678,7 @@ public final class Renderer implements AutoCloseable {
                 totalPollEventsTime += (t1 - t0);
 
                 if (isActive && !wasActive) {
+                    logger.info("[Renderer] Focus Gained (isActive=true, wasActive=" + wasActive + ")");
                     if (window.isIconified()) {
                         window.restore();
                     }
@@ -674,6 +686,7 @@ public final class Renderer implements AutoCloseable {
                         window.show();
                     }
                     window.focus();
+                    Renderer.getLocalInput().getPointerInput().reapplyCursor();
                     if (autoPaused) {
                         var guiRoot = gui.getGUIRoot();
                         if (guiRoot.getDelegate() instanceof InGameMainMenu igmm) {
@@ -682,6 +695,7 @@ public final class Renderer implements AutoCloseable {
                         autoPaused = false;
                     }
                 } else if (!isActive && wasActive) {
+                    logger.info("[Renderer] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
                     if (getSettings().fullscreen) {
                         window.minimize();
                     }
@@ -699,6 +713,9 @@ public final class Renderer implements AutoCloseable {
                     }
                 }
                 wasActive = isActive;
+
+                boolean playing = gui.getGUIRoot().getDelegate() instanceof InGameDelegate;
+                window.updateSystemUI(playing);
 
                 long t2 = System.nanoTime();
                 runGameLoop(network, gui);
@@ -723,10 +740,13 @@ public final class Renderer implements AutoCloseable {
                 totalWindowUpdateTime += (t7 - t6);
 
                 if (window.wasResized()) {
-                    int width = window.getWidth();
-                    int height = window.getHeight();
-                    getSettings().view_width = width;
-                    getSettings().view_height = height;
+                    int width = window.getLogicalWidth();
+                    int height = window.getLogicalHeight();
+                    logger.info("[Renderer] window.wasResized() is true! width=" + width + ", height=" + height);
+                    if (!window.isFullscreen() && !window.isMaximized()) {
+                        getSettings().view_width = width;
+                        getSettings().view_height = height;
+                    }
                     initGL();
                     gui.getGUIRoot().displayChanged(width, height);
                 }
@@ -1186,7 +1206,10 @@ public final class Renderer implements AutoCloseable {
         context.applyDefaults();
         // Sync viewport with actual window dimensions
         Window window = getRenderer().window;
-        context.setViewport(0, 0, window.getWidth(), window.getHeight());
+        int w = window.getWidth();
+        int h = window.getHeight();
+        logger.info("[Renderer] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
+        context.setViewport(0, 0, w, h);
     }
 
     public static void clearScreen() {

@@ -1,5 +1,4 @@
 /**
- * Rendering subsystem for Tribal Trouble.
- * Contains components for rendering the world, units, landscape, and user interface.
+ * Core rendering system and display coordination logic.
  */
 package com.oddlabs.tt.render;
