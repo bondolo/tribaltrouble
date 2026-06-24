@@ -154,7 +154,7 @@ val fontTexClasspath = "/textures/font"
 // arguments are encoded through the JVM's sun.jnu.encoding, which is the legacy ANSI code page on
 // Windows (e.g. Cp1252) and silently replaces non-Latin-1 glyphs like ∞ ← ⌘ with '?'. Hex is ASCII
 // and survives the argv boundary identically on every platform.
-val extraGlyphs = "…–—•°™∞␡␈c←↑→↓⌃⇧⌥⌘□"
+val extraGlyphs = "…–—•°™©✔✖︎︎︎∞␡␈←↑→↓⏴⏵⏶⏷⌃⇧⌥⌘□"
 val extraGlyphCodepoints = extraGlyphs.codePoints().toArray().joinToString(",") { Integer.toHexString(it) }
 
 val renderInterLightFont = tasks.register<JavaExec>("renderInterLightFont") {
