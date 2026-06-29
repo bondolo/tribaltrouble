@@ -61,10 +61,6 @@ public final class PointerInput {
         if (current_scale == scale && current_pixel_density == pixelDensity && lastWidth == w && lastHeight == h) {
             return;
         }
-        logger.info("[MouseScale] PointerInput.loadCursors: scale=" + scale
-                + " pixelDensity=" + pixelDensity
-                + " (was scale=" + current_scale + " density=" + current_pixel_density + ")"
-                + " size=" + w + "x" + h);
         lastWidth = w;
         lastHeight = h;
         this.current_scale = scale;
@@ -108,7 +104,6 @@ public final class PointerInput {
         if (active_cursor_type != null) {
             Cursor c = cursors.get(active_cursor_type);
             if (c != null) {
-                logger.info("[MouseScale] Re-applying active cursor: " + active_cursor_type);
                 doSetActiveCursor(c);
             }
         }

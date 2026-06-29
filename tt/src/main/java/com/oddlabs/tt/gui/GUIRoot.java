@@ -276,19 +276,12 @@ public final class GUIRoot extends GUIObject {
         float density = Renderer.getRenderer().getWindow().getPixelDensity();
         physical_scale = effective_scale * density;
 
-        logger.info("[MouseScale] GUIRoot.displayChangedNotify: logicalSize=" + width + "x" + height
-                + " effectiveScale=" + effective_scale + " density=" + density
-                + " physicalScale=" + physical_scale);
-
         var pointerInput = Renderer.getLocalInput().getPointerInput();
-        logger.info("[MouseScale] GUIRoot.displayChangedNotify: calling loadCursors"
-                + " (scale=" + effective_scale + " density=" + density + ")");
         pointerInput.loadCursors(effective_scale, density);
 
         int virtualWidth = (int) (width / effective_scale);
         int virtualHeight = (int) (height / effective_scale);
 
-        logger.info("[MouseScale] GUIRoot.displayChangedNotify: virtualSize=" + virtualWidth + "x" + virtualHeight);
         setDim(virtualWidth, virtualHeight);
     }
 

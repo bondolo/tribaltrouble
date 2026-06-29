@@ -42,8 +42,6 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
     private final @NonNull LWJGL3Window window;
     private long windowHandle;
 
-    private int lastLoggedLogicalHeight = -1;
-
     // Keyboard State
     // @GuardedBy("this")
     private final Deque<@NonNull KeyEvent> keyEvents = new ArrayDeque<>();
@@ -133,13 +131,6 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
                 int logicalHeight = window.getLogicalHeight();
                 this.mouseX = motionEvent.x();
                 this.mouseY = logicalHeight - motionEvent.y() - 1;
-                if (logicalHeight != lastLoggedLogicalHeight) {
-                    lastLoggedLogicalHeight = logicalHeight;
-                    logger.info("[MouseScale] LWJGL3InputProvider.processEvent MOUSE_MOTION: rawSdlX="
-                            + motionEvent.x() + " rawSdlY=" + motionEvent.y()
-                            + " logicalHeight=" + logicalHeight
-                            + " computedGameX=" + (int) mouseX + " computedGameY=" + (int) mouseY);
-                }
                 synchronized (mouseEvents) {
                     mouseEvents.add(new MouseEvent(-1, false, (int) mouseX, (int) mouseY, 0, 0));
                 }

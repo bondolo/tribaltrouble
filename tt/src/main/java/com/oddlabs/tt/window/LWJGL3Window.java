@@ -523,10 +523,6 @@ public final class LWJGL3Window implements Window {
     private void syncViewport() {
         if (windowHandle == MemoryUtil.NULL) return;
         updateCachedDimensions();
-        logger.info("[MouseScale] syncViewport: physical=" + cachedWidth + "x" + cachedHeight
-                + " logical=" + cachedLogicalWidth + "x" + cachedLogicalHeight
-                + " contentScale=" + getMonitorContentScale().x
-                + " pixelDensity=" + getPixelDensity());
         Renderer.getRenderer().getRenderContext().setViewport(0, 0, cachedWidth, cachedHeight);
     }
 
@@ -564,11 +560,6 @@ public final class LWJGL3Window implements Window {
             SerializableDisplayMode mode = lastCreatedMode != null ? lastCreatedMode : getDisplayMode();
             int displayID = SDL_GetDisplayForWindow(windowHandle);
             if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-            logger.info("[MouseScale] checkPendingRestore: mode=" + mode
-                    + " contentScale=" + getMonitorContentScale().x
-                    + " pixelDensity=" + getPixelDensity()
-                    + " physical=" + cachedWidth + "x" + cachedHeight
-                    + " logical=" + cachedLogicalWidth + "x" + cachedLogicalHeight);
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 SDL_DisplayMode sdlMode = findMatchingDisplayMode(stack, displayID, mode);
                 if (sdlMode != null) {
@@ -586,9 +577,6 @@ public final class LWJGL3Window implements Window {
                 syncViewport();
                 resized = true;
                 pendingFullscreenRestore = false;
-                logger.info("[MouseScale] checkPendingRestore: fullscreen restored, resized=true"
-                        + " physical=" + cachedWidth + "x" + cachedHeight
-                        + " logical=" + cachedLogicalWidth + "x" + cachedLogicalHeight);
                 try {
                     Renderer.getLocalInput().getPointerInput().reapplyCursor();
                 } catch (Exception ignored) {
@@ -965,13 +953,6 @@ public final class LWJGL3Window implements Window {
                 }
             }
         }
-        if (cachedWidth != prevWidth || cachedHeight != prevHeight
-                || cachedLogicalWidth != prevLogicalWidth || cachedLogicalHeight != prevLogicalHeight) {
-            logger.info("[MouseScale] updateCachedDimensions: physical " + prevWidth + "x" + prevHeight
-                    + " -> " + cachedWidth + "x" + cachedHeight
-                    + "  logical " + prevLogicalWidth + "x" + prevLogicalHeight
-                    + " -> " + cachedLogicalWidth + "x" + cachedLogicalHeight);
-        }
     }
 
     private void resizeToFullscreenLogicalSize() {
@@ -1286,11 +1267,6 @@ public final class LWJGL3Window implements Window {
                 if (scale > 0.0f) {
                     return new Vector2f(scale, scale);
                 }
-                logger.warning("[MouseScale] getMonitorContentScale: SDL_GetWindowDisplayScale returned " + scale
-                        + ", falling back to desktop display mode");
-            } else {
-                logger.info(
-                        "[MouseScale] getMonitorContentScale: window is minimized, skipping SDL_GetWindowDisplayScale");
             }
             displayID = SDL_GetDisplayForWindow(windowHandle);
         }
@@ -1300,7 +1276,6 @@ public final class LWJGL3Window implements Window {
         SDL_DisplayMode mode = SDL_GetDesktopDisplayMode(displayID);
         float contentScale = (mode != null) ? mode.pixel_density() : 1.0f;
         if (contentScale <= 0.0f) contentScale = 1.0f;
-        logger.info("[MouseScale] getMonitorContentScale: fallback contentScale=" + contentScale);
         return new Vector2f(contentScale, contentScale);
     }
 

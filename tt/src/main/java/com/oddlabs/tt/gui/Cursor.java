@@ -42,17 +42,7 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
                     width * Integer.BYTES);
             if (surface != null) {
                 nativeCursor = SDL_CreateColorCursor(surface, xHot, yHot);
-                if (nativeCursor == MemoryUtil.NULL) {
-                    System.err.println("[MouseScale] SDL_CreateColorCursor failed: " + org.lwjgl.sdl.SDLError
-                            .SDL_GetError());
-                } else {
-                    System.err.println("[MouseScale] SDL_CreateColorCursor succeeded: " + nativeCursor + " for size "
-                            + width + "x" + height);
-                }
                 SDL_DestroySurface(surface);
-            } else {
-                System.err.println("[MouseScale] SDL_CreateSurfaceFrom failed: " + org.lwjgl.sdl.SDLError
-                        .SDL_GetError());
             }
 
             this(nativeCursor);
