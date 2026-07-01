@@ -89,8 +89,8 @@ public final class GeneratorHalos extends TextureGenerator {
             Layer layer = layers.get(type);
             int idx = type.ordinal();
             if (Landscape.DEBUG) new GLIntImage(layer).saveAsPNG("generator_halos_" + idx);
-            textures[idx] = new Texture(new GLImage[]{new GLIntImage(layer)}, GL11.GL_RGBA8, GL11.GL_LINEAR,
-                    GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
+            textures[idx] = new Texture(new GLImage[]{new GLIntImage(layer)}, GL11.GL_RGBA8,
+                    GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
         }
         return textures;
     }

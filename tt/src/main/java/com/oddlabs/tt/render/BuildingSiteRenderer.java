@@ -17,8 +17,8 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
     public BuildingSiteRenderer() {
         GLIntImage img = new GLIntImage(16, 16, GL11.GL_RGBA);
         img.clear(1, 1, img.getWidth() - 2, img.getHeight() - 2, Color.WHITE_INT);
-        green = new Texture(new GLIntImage[]{img}, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
-                GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
+        green = new Texture(new GLIntImage[]{img}, GL11.GL_RGBA8,
+                GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
     }
 
     public void renderSites(@NonNull RenderContext context, @NonNull RenderQueues queues,

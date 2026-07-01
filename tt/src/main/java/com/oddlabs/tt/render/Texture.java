@@ -186,7 +186,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
                 }
                 default -> new GLImage[]{image};
             };
-            total_size = uploadTexture(source_mipmaps, internalFormat, maxMipmapLevel);
+            total_size = uploadTexture(source_mipmaps, internalFormat, minFilter, maxMipmapLevel);
         }
         setSize(total_size);
     }
@@ -250,7 +250,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         this(getCheckedMipmaps(mipmaps)[0].getWidth(), mipmaps[0].getHeight(), min_filter, mag_filter, wrap_s, wrap_t,
                 max_mipmap_level);
         this.source_mipmaps = mipmaps;
-        int total_size = uploadTexture(mipmaps, internal_format, max_mipmap_level);
+        int total_size = uploadTexture(mipmaps, internal_format, min_filter, max_mipmap_level);
         setSize(total_size);
     }
 
@@ -309,7 +309,8 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         return total_size;
     }
 
-    private int uploadTexture(@NonNull GLImage @NonNull [] mipmaps, int internal_format, int max_mipmap_level) {
+    private int uploadTexture(@NonNull GLImage @NonNull [] mipmaps, int internal_format, int min_filter,
+            int max_mipmap_level) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Uploading standard texture: handle=" + getHandle() + ", " + mipmaps[0].getWidth() + "x"
                     + mipmaps[0].getHeight() + ", internal_format=0x" + Integer.toHexString(internal_format) + ", mips="
@@ -338,10 +339,34 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         }
 
         int total_size = 0;
-        for (int i = 0; i < max_index; i++) {
-            GLImage mipmap = mipmaps[i + detail_shift];
-            int size = determineMipMapSize(i, internal_format, mipmap.getWidth(), mipmap.getHeight());
-            total_size += size;
+        boolean hasMipmaps = mipmaps.length > 1;
+        boolean isMipmappedFilter = min_filter == GL11.GL_NEAREST_MIPMAP_NEAREST ||
+                min_filter == GL11.GL_LINEAR_MIPMAP_NEAREST ||
+                min_filter == GL11.GL_NEAREST_MIPMAP_LINEAR ||
+                min_filter == GL11.GL_LINEAR_MIPMAP_LINEAR;
+
+        if (!hasMipmaps && isMipmappedFilter) {
+            GL30.glGenerateMipmap(target);
+            int w = mipmaps[0].getWidth();
+            int h = mipmaps[0].getHeight();
+            int level = 0;
+            while (w > 0 || h > 0) {
+                int levelW = Math.max(1, w);
+                int levelH = Math.max(1, h);
+                total_size += determineMipMapSize(level, internal_format, levelW, levelH);
+                if (levelW == 1 && levelH == 1) {
+                    break;
+                }
+                w /= 2;
+                h /= 2;
+                level++;
+            }
+        } else {
+            for (int i = 0; i < max_index; i++) {
+                GLImage mipmap = mipmaps[i + detail_shift];
+                int size = determineMipMapSize(i, internal_format, mipmap.getWidth(), mipmap.getHeight());
+                total_size += size;
+            }
         }
         GLUtils.checkAndThrow("uploadTexture");
         return total_size;

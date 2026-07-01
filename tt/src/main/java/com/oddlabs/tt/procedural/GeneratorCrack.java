@@ -30,8 +30,8 @@ public final class GeneratorCrack extends TextureGenerator {
         Channel blue = new Channel(TEXTURE_SIZE, TEXTURE_SIZE).fill(0f);
         Layer layer = new Layer(red, green, blue, alpha);
         return new Texture[]{
-                new Texture(new GLIntImage(layer), GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
-                        GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE),
+                new Texture(new GLIntImage(layer), GL11.GL_RGBA8,
+                        GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE),
         };
     }
 
