@@ -265,7 +265,6 @@ public final class GLRenderContext implements RenderContext {
             GL11.glBindTexture(target, textureHandle);
             boundTextures[unit] = textureHandle;
             boundTargets[unit] = target;
-            checkAndThrow("glBindTexture");
         }
     }
 
@@ -518,13 +517,9 @@ public final class GLRenderContext implements RenderContext {
     @Override
     public void setDrawBuffers(boolean mask) {
         GLState newState = GLState.from(mask);
-        // We probe GL_DRAW_FRAMEBUFFER_BINDING to ensure we are truly in sync.
-        int actualFBO = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
 
-        // If state is already cached and FBO hasn't changed behind our back, return.
-        if (maskState == newState && actualFBO == currentFBO) return;
-
-        currentFBO = actualFBO;
+        // If state is already cached, return.
+        if (maskState == newState) return;
 
         if (currentFBO == 0) {
             GL11.glDrawBuffer(GL11.GL_BACK);
@@ -560,19 +555,13 @@ public final class GLRenderContext implements RenderContext {
                     ? stack.ints(GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1)
                     : stack.ints(entry.hasAttachment0 ? GL30.GL_COLOR_ATTACHMENT0 : GL11.GL_NONE);
 
-            // Clear any existing errors before the critical call to isolate the failure
-            GL11.glGetError();
             GL20.glDrawBuffers(buffers);
-            checkAndThrow("glDrawBuffers(" + mask + ") FBO=" + currentFBO + " (att0=" + entry.hasAttachment0
-                    + ", att1=" + entry.hasAttachment1 + ")");
         }
         maskState = newState;
     }
 
     @Override
     public void setDrawBuffers(int @NonNull [] attachments) {
-        currentFBO = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
-
         if (currentFBO == 0) {
             GL11.glDrawBuffer(GL11.GL_BACK);
             maskState = GLState.FALSE;
@@ -580,7 +569,6 @@ public final class GLRenderContext implements RenderContext {
         }
         try (MemoryStack stack = MemoryStack.stackPush()) {
             GL20.glDrawBuffers(stack.ints(attachments));
-            checkAndThrow("glDrawBuffers(int[])");
         }
         // Sync maskState if it matches one of our known configurations
         // Treating GL_NONE as a form of disabled masking for simple FBOs
