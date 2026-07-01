@@ -9,6 +9,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages the collection of rows in a MultiColumnComboBox.
+ * Handles row sorting, rendering layout, selection state, and scroll visibility.
+ */
 final class RowCollection<T> extends GUIObject implements Clipped {
     private final List<@NonNull Row<T, ?>> rows = new ArrayList<>();
     private final @NonNull MultiColumnComboBox<T> multi_box;
@@ -165,6 +169,7 @@ final class RowCollection<T> extends GUIObject implements Clipped {
             selected_row.mark(false);
         selected_row = row;
         selected_row.mark(true);
+        ensureVisible(selected_row);
         return selected_row;
     }
 }
