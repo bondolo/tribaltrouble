@@ -86,6 +86,7 @@ import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 public final class Renderer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
     private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
+    private static final boolean PROFILE = Boolean.getBoolean("com.oddlabs.tt.profile");
 
     private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault()
             .getCountry(), "default");
@@ -756,10 +757,12 @@ public final class Renderer implements AutoCloseable {
                     long t9 = System.nanoTime();
                     totalDisplayTime += (t9 - t8);
 
-                    long tf0 = System.nanoTime();
-                    GL11.glFinish();
-                    long tf1 = System.nanoTime();
-                    totalGLFinishTime += (tf1 - tf0);
+                    if (PROFILE) {
+                        long tf0 = System.nanoTime();
+                        GL11.glFinish();
+                        long tf1 = System.nanoTime();
+                        totalGLFinishTime += (tf1 - tf0);
+                    }
                 }
 
                 if (first_frame) {
