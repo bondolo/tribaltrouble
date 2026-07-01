@@ -124,8 +124,8 @@ public final class EmitterRenderer implements AutoCloseable {
             flushBatches(context);
         } finally {
             vao.unbind();
-            context.setTexture(1, 0);
-            context.setTexture(2, 0);
+            context.setTexture(1, null);
+            context.setTexture(2, null);
         }
     }
 

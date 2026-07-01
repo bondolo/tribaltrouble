@@ -317,9 +317,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             Sprite representativeSprite = spriteList.getSprite(representativeGroup.spriteIndex);
             setupTextures(context, shader, representativeSprite, whiteTexture, state);
 
-            context.setActiveTexture(5);
             if (state.boundTBO != spriteList.getTBOTextureHandle()) {
-                GL11.glBindTexture(GL31.GL_TEXTURE_BUFFER, spriteList.getTBOTextureHandle());
+                context.setTexture(5, spriteList.getTBOTextureHandle(), GL31.GL_TEXTURE_BUFFER);
                 state.boundTBO = spriteList.getTBOTextureHandle();
             }
 

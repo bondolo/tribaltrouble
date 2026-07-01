@@ -2,7 +2,9 @@ package com.oddlabs.tt.render.state;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
+import com.oddlabs.tt.render.Texture;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL14;
@@ -120,6 +122,7 @@ public final class GLRenderContext implements RenderContext {
             setActiveTexture(i);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
             GL11.glBindTexture(GL30.GL_TEXTURE_2D_ARRAY, 0);
+            GL11.glBindTexture(GL31.GL_TEXTURE_BUFFER, 0);
             boundTextures[i] = -1;
             boundTargets[i] = -1;
         }
@@ -249,6 +252,16 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
+    public void setTexture(int unit, @Nullable Texture texture) {
+        if (texture != null) {
+            setTexture(unit, texture.getHandle(), texture.getTarget());
+        } else {
+            int target = boundTargets[unit] != -1 ? boundTargets[unit] : GL11.GL_TEXTURE_2D;
+            setTexture(unit, 0, target);
+        }
+    }
+
+    @Override
     public void setTexture(int unit, int textureHandle) {
         setTexture(unit, textureHandle, GL11.GL_TEXTURE_2D);
     }
@@ -262,6 +275,9 @@ public final class GLRenderContext implements RenderContext {
 
         if (boundTextures[unit] != textureHandle || boundTargets[unit] != target) {
             setActiveTexture(unit);
+            if (boundTargets[unit] != -1 && boundTargets[unit] != target) {
+                GL11.glBindTexture(boundTargets[unit], 0);
+            }
             GL11.glBindTexture(target, textureHandle);
             boundTextures[unit] = textureHandle;
             boundTargets[unit] = target;

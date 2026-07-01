@@ -264,7 +264,7 @@ public final class GUIRenderer {
 
         shader.setUniform(GUIShader.Uniforms.MODEL_VIEW_MATRIX, IDENTITY_MATRIX);
 
-        // Bind all active textures
+        // Bind all active textures and unbind unused units in the sampler array to avoid conflicts
         for (int i = 0; i < textureCount; i++) {
             if (currentContext != null) {
                 currentContext.setTexture(i, currentTextures[i]);
@@ -272,6 +272,14 @@ public final class GUIRenderer {
                 // Fallback if context missing (shouldn't happen in normal flow)
                 GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTextures[i].getHandle());
+            }
+        }
+        for (int i = textureCount; i < MAX_TEXTURES; i++) {
+            if (currentContext != null) {
+                currentContext.setTexture(i, null);
+            } else {
+                GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
             }
         }
 
