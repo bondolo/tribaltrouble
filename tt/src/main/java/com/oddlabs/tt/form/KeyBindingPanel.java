@@ -101,7 +101,10 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void updateList() {
+        GameAction selectedAction = list_box.getSelected();
         list_box.clear();
+        Row<GameAction, ?> rowToSelect = null;
+
         for (GameAction action : GameAction.values()) {
             if (action.name().startsWith("DEBUG_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
                 continue;
@@ -131,7 +134,16 @@ public class KeyBindingPanel extends Panel {
 
             Label actionLabel = new SortedLabel(name, action.ordinal(), Skin.getSkin().getMultiColumnComboBoxData()
                     .font());
-            list_box.addRow(new Row<>(List.of(actionLabel, bindingLabel), action));
+            Row<GameAction, ?> row = new Row<>(List.of(actionLabel, bindingLabel), action);
+            list_box.addRow(row);
+
+            if (action == selectedAction) {
+                rowToSelect = row;
+            }
+        }
+
+        if (rowToSelect != null) {
+            list_box.selectRow(rowToSelect);
         }
     }
 
