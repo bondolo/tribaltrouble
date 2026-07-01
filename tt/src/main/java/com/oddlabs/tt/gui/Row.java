@@ -7,6 +7,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * Represents a row containing columns of comparable GUIObjects within a MultiColumnComboBox.
+ * Coordinates position/dimensions of cells and handles row-level geometry rendering.
+ */
 public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject implements Comparable<Row<T, C>> {
     private final @NonNull List<@NonNull C> columns;
     private final @Nullable T content_object;
@@ -34,6 +38,13 @@ public final class Row<T, C extends GUIObject & Comparable<C>> extends GUIObject
         for (int i = 0; i < column_infos.length; i++) {
             C gui_object = getColumn(i);
             gui_object.setPos(x, 0);
+            int colWidth = column_infos[i].width();
+            if (i == 0) {
+                colWidth -= Skin.getSkin().getMultiColumnComboBoxData().box().getLeftOffset();
+            } else if (i == column_infos.length - 1) {
+                colWidth -= Skin.getSkin().getMultiColumnComboBoxData().box().getRightOffset();
+            }
+            gui_object.setDim(colWidth, gui_object.getHeight());
             addChild(gui_object);
             x += column_infos[i].width();
 
