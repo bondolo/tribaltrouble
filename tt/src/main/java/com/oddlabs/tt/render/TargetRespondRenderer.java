@@ -37,7 +37,7 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
         if (target_list.isEmpty()) return;
 
         try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
-            setShadowColor(Color.Linear.BLUE);
+            setShadowColor(Color.Linear.GREEN);
             setPattern(Selectable.VisualPattern.FRIENDLY);
             bindShadowTexture(ring);
             while (!target_list.isEmpty()) {
