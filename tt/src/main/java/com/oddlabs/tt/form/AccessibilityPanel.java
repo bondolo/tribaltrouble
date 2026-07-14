@@ -219,8 +219,7 @@ public final class AccessibilityPanel extends Panel {
         Runnable updateColour = () -> {
             int teamIndex = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             float hue = slider_hue.getValue();
-            int rgb = java.awt.Color.HSBtoRGB(hue / 360f, 1f, 1f);
-            var newColour = new Color.Standard(rgb);
+            var newColour = Color.Standard.hsbToRgb(hue / 360f, 1f, 1f);
             Renderer.getRenderer().getSettings().team_colours[teamIndex] = newColour;
             colourBox.setColour(newColour);
 
@@ -232,9 +231,7 @@ public final class AccessibilityPanel extends Panel {
         Runnable refreshUI = () -> {
             int index = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             var currentColour = Renderer.getRenderer().getSettings().team_colours[index];
-            float[] hsb = java.awt.Color.RGBtoHSB(Math.round(currentColour.r() * 255), Math.round(currentColour.g()
-                    * 255),
-                    Math.round(currentColour.b() * 255), null);
+            float[] hsb = Color.Standard.rgbToHsb(currentColour);
             slider_hue.setValue((int) (hsb[0] * 360f));
             colourBox.setColour(currentColour);
         };
@@ -281,4 +278,5 @@ public final class AccessibilityPanel extends Panel {
 
         compileCanvas();
     }
+
 }

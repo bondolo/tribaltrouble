@@ -209,6 +209,104 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
         public @NonNull Standard saturate(float factor) {
             return new Standard(this.linear().saturate(factor));
         }
+
+        /**
+         * Converts hue, saturation, and brightness values to an sRGB color.
+         *
+         * @param hue the hue component, typically in range [0, 1]
+         * @param saturation the saturation component, typically in range [0, 1]
+         * @param brightness the brightness component, typically in range [0, 1]
+         * @return a new standard sRGB color with alpha set to 1.0
+         */
+        public static Color.@NonNull Standard hsbToRgb(float hue, float saturation, float brightness) {
+            float r = 0, g = 0, b = 0;
+            if (saturation == 0) {
+                r = g = b = brightness;
+            } else {
+                float h = (hue - (float) Math.floor(hue)) * 6.0f;
+                float f = h - (float) Math.floor(h);
+                float p = brightness * (1.0f - saturation);
+                float q = brightness * (1.0f - saturation * f);
+                float t = brightness * (1.0f - saturation * (1.0f - f));
+                switch ((int) h) {
+                    case 0 -> {
+                        r = brightness;
+                        g = t;
+                        b = p;
+                    }
+                    case 1 -> {
+                        r = q;
+                        g = brightness;
+                        b = p;
+                    }
+                    case 2 -> {
+                        r = p;
+                        g = brightness;
+                        b = t;
+                    }
+                    case 3 -> {
+                        r = p;
+                        g = q;
+                        b = brightness;
+                    }
+                    case 4 -> {
+                        r = t;
+                        g = p;
+                        b = brightness;
+                    }
+                    case 5 -> {
+                        r = brightness;
+                        g = p;
+                        b = q;
+                    }
+                }
+            }
+            return new Color.Standard(r, g, b, 1.0f);
+        }
+
+        /**
+         * Converts the standard sRGB color values to hue, saturation, and brightness.
+         *
+         * @param color the standard sRGB color to convert
+         * @return a new 3-element float array containing the HSB values in order:
+         *         index 0: hue (in range [0, 1]),
+         *         index 1: saturation (in range [0, 1]),
+         *         index 2: brightness (in range [0, 1])
+         */
+        public static float @NonNull [] rgbToHsb(Color.@NonNull Standard color) {
+            float r = color.r();
+            float g = color.g();
+            float b = color.b();
+            float hue, saturation, brightness;
+            float[] vals = new float[3];
+            float cmax = Math.max(Math.max(r, g), b);
+            float cmin = Math.min(Math.min(r, g), b);
+
+            brightness = cmax;
+            saturation = cmax != 0 ? (cmax - cmin) / cmax : 0;
+            if (saturation == 0) {
+                hue = 0;
+            } else {
+                float redc = (cmax - r) / (cmax - cmin);
+                float greenc = (cmax - g) / (cmax - cmin);
+                float bluec = (cmax - b) / (cmax - cmin);
+                if (r == cmax) {
+                    hue = bluec - greenc;
+                } else if (g == cmax) {
+                    hue = 2.0f + redc - bluec;
+                } else {
+                    hue = 4.0f + greenc - redc;
+                }
+                hue = hue / 6.0f;
+                if (hue < 0) {
+                    hue = hue + 1.0f;
+                }
+            }
+            vals[0] = hue;
+            vals[1] = saturation;
+            vals[2] = brightness;
+            return vals;
+        }
     }
 
     /**
