@@ -93,7 +93,9 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
             border_color_buffer.put(0, 0f).put(1, 0f).put(2, 0f).put(3, 0f);
             GL11.glTexParameterfv(target, GL11.GL_TEXTURE_BORDER_COLOR, border_color_buffer);
 
-            if (GL.getCapabilities().GL_EXT_texture_filter_anisotropic) {
+            boolean hasExt = GL.getCapabilities().GL_EXT_texture_filter_anisotropic;
+            boolean hasArb = GL.getCapabilities().GL_ARB_texture_filter_anisotropic;
+            if (hasExt || hasArb) {
                 float max_anisotropy = GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
                 GL11.glTexParameterf(target, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
                         max_anisotropy);
@@ -305,6 +307,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
             GL13.glCompressedTexImage2D(target, i, internalFormat, dxt_image.getWidth(mipmap_level),
                     dxt_image.getHeight(mipmap_level), 0, mipData);
         }
+        GL11.glTexParameteri(target, GL12.GL_TEXTURE_MAX_LEVEL, max_index - 1);
         GLUtils.checkAndThrow("uploadDXTTexture");
         return total_size;
     }
@@ -361,12 +364,14 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
                 h /= 2;
                 level++;
             }
+            GL11.glTexParameteri(target, GL12.GL_TEXTURE_MAX_LEVEL, level);
         } else {
             for (int i = 0; i < max_index; i++) {
                 GLImage mipmap = mipmaps[i + detail_shift];
                 int size = determineMipMapSize(i, internal_format, mipmap.getWidth(), mipmap.getHeight());
                 total_size += size;
             }
+            GL11.glTexParameteri(target, GL12.GL_TEXTURE_MAX_LEVEL, max_index - 1);
         }
         GLUtils.checkAndThrow("uploadTexture");
         return total_size;
