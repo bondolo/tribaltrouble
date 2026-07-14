@@ -2,10 +2,14 @@ package com.oddlabs.tt.font;
 
 import org.jspecify.annotations.NonNull;
 
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Handles text layout operations such as word wrapping and hit testing.
+ */
 public final class TextLayout {
 
     public record Line(CharSequence content, int startIndex) {
@@ -81,18 +85,20 @@ public final class TextLayout {
         int lineIndex = getLineIndexAtY(y, textBlockHeight);
         Line targetLine = lines.get(lineIndex);
 
+        BreakIterator iterator = BreakIterator.getCharacterInstance();
+        iterator.setText(targetLine.content().toString());
+        int start = iterator.first();
         int charIndexInLine = 0;
         float currentWidth = 0;
-        for (int i = 0; i < targetLine.content().length();) {
-            int cp = Character.codePointAt(targetLine.content(), i);
-            float charWidth = font.getWidth(new String(Character.toChars(cp)));
+        for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
+            String grapheme = targetLine.content().subSequence(start, end).toString();
+            float charWidth = font.getWidth(grapheme);
             if (x >= currentWidth && x < currentWidth + charWidth) {
-                charIndexInLine = i;
+                charIndexInLine = start;
                 break;
             }
             currentWidth += charWidth;
-            i += Character.charCount(cp);
-            charIndexInLine = i; // If click is past last char, set to end of line
+            charIndexInLine = end; // If click is past last char, set to end of line
         }
         return targetLine.startIndex() + charIndexInLine;
     }
@@ -151,26 +157,34 @@ public final class TextLayout {
     }
 
     private int findLineEnd(int lineStart) {
-        int i = lineStart;
+        BreakIterator iterator = BreakIterator.getCharacterInstance();
+        iterator.setText(text.toString());
+        if (lineStart > 0) {
+            iterator.following(lineStart - 1);
+        } else {
+            iterator.first();
+        }
+
         int lastSpace = -1;
-
-        while (i < text.length()) {
-            int cp = Character.codePointAt(text, i);
-            if (cp == '\n') {
-                return i; // Forced line break
+        int current = lineStart;
+        int next;
+        while ((next = iterator.next()) != BreakIterator.DONE) {
+            String grapheme = text.subSequence(current, next).toString();
+            if (grapheme.equals("\n")) {
+                return current; // Forced line break
             }
 
-            if (Character.isWhitespace(cp)) {
-                lastSpace = i;
+            int firstCp = grapheme.codePointAt(0);
+            if (Character.isWhitespace(firstCp)) {
+                lastSpace = current;
             }
 
-            int next_i = i + Character.charCount(cp);
-            int currentWidth = font.getWidth(text.subSequence(lineStart, next_i));
+            int currentWidth = font.getWidth(text.subSequence(lineStart, next));
             if (currentWidth > wrapWidth) {
                 // Word is longer than the line, break mid-word
-                return lastSpace != -1 ? lastSpace : i; // Break at the last known space
+                return lastSpace != -1 ? lastSpace : current; // Break at the last known space
             }
-            i = next_i;
+            current = next;
         }
         return text.length(); // End of text
     }

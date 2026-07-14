@@ -5,6 +5,8 @@ import com.oddlabs.util.Color;
 import com.oddlabs.util.Quad;
 import org.jspecify.annotations.NonNull;
 
+import java.text.BreakIterator;
+
 /**
  * Utility class for rendering single or multiple lines of text with clipping.
  */
@@ -36,28 +38,33 @@ public final class TextLineRenderer {
             float x, float y, float clipLeft, float clipRight,
             @NonNull Color color) {
         var linearColor = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
-        return (float) text.codePoints().asDoubleStream().reduce(x, (currentX, codePointAsDouble) -> {
-            int codePoint = (int) codePointAsDouble;
 
-            if (codePoint == '\n') {
+        float currentX = x;
+        BreakIterator iterator = BreakIterator.getCharacterInstance();
+        iterator.setText(text.toString());
+        int start = iterator.first();
+        for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
+            String grapheme = text.subSequence(start, end).toString();
+            if (grapheme.equals("\n")) {
                 // This renderer doesn't handle newlines, that's the layout's job
-                return currentX;
+                continue;
             }
 
-            Quad quad = font.getQuad(codePoint);
+            Quad quad = font.getQuad(grapheme);
             if (quad != null) {
                 float quadWidth = quad.getWidth();
                 float charAdvance = quadWidth - font.getXBorder();
 
                 // Check if the character is completely outside the clipping region
                 if (currentX + quadWidth < clipLeft || currentX > clipRight) {
-                    return currentX + charAdvance;
+                    currentX += charAdvance;
+                    continue;
                 }
 
                 // By this point, we know at least part of the character is visible.
                 // We need to calculate the visible portion and adjust texture coordinates.
 
-                float renderX = (float) currentX;
+                float renderX = currentX;
                 float renderWidth = quadWidth;
                 float u1 = quad.getU1();
                 float u2 = quad.getU2();
@@ -84,9 +91,9 @@ public final class TextLineRenderer {
                     renderer.drawTexture(font.getTexture(), renderX, y, renderWidth, quad.getHeight(), u1, quad.getV1(),
                             u2, quad.getV2(), linearColor);
                 }
-                return currentX + charAdvance;
+                currentX += charAdvance;
             }
-            return currentX;
-        });
+        }
+        return currentX;
     }
 }

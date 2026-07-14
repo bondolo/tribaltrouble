@@ -37,7 +37,7 @@ import com.oddlabs.tt.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.player.NativeChieftainAI;
 import com.oddlabs.tt.player.VikingChieftainAI;
-import com.oddlabs.tt.procedural.DynamicEmojiGenerator;
+import com.oddlabs.tt.font.ColorGraphemeGenerator;
 import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.procedural.GeneratorLightning;
 import com.oddlabs.tt.procedural.GeneratorPoison;
@@ -733,20 +733,20 @@ public final class RacesVisualsLoader {
         logger.info("RacesResources: beginning emoji sprite registration");
         SpriteKey gravestone_emoji_sprite = queues.registerDynamicSprite(
                 SpriteList.getQuadInstance(),
-                queues.registerTexture(new DynamicEmojiGenerator("🪦"), 0)
+                queues.registerTexture(new ColorGraphemeGenerator("🪦"), 0)
         );
         SpriteKey[] chicken_emoji_sprites = "🐓🥚🐣🌽🐛".codePoints()
-                .mapToObj(DynamicEmojiGenerator::new)
+                .mapToObj(ColorGraphemeGenerator::new)
                 .map(tg -> queues.registerTexture(tg, 0))
                 .map(tk -> queues.registerDynamicSprite(SpriteList.getQuadInstance(), tk))
                 .toArray(SpriteKey[]::new);
         SpriteKey saw_emoji_sprite = queues.registerDynamicSprite(
                 SpriteList.getQuadInstance(),
-                queues.registerTexture(new DynamicEmojiGenerator("🪚"), 0)
+                queues.registerTexture(new ColorGraphemeGenerator("🪚"), 0)
         );
         SpriteKey hammer_emoji_sprite = queues.registerDynamicSprite(
                 SpriteList.getQuadInstance(),
-                queues.registerTexture(new DynamicEmojiGenerator("🔨"), 0)
+                queues.registerTexture(new ColorGraphemeGenerator("🔨"), 0)
         );
 
         SpriteKey tree_status_sprite = queues.registerIconSprite(icons.getTreeStatusIcon());

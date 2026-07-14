@@ -3,7 +3,6 @@ package com.oddlabs.fontutil;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.util.FontInfo;
-import com.oddlabs.util.HashTable;
 import com.oddlabs.util.Quad;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
@@ -25,9 +24,16 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.IntStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.text.BreakIterator;
 
+/**
+ * Offline tool to rasterize AWT font glyphs into textured atlases and pack layout metadata.
+ */
 public final class FontRenderer {
     private static final int GLYPH_X_BORDER = 4;
     private static final int GLYPH_Y_BORDER = 3;
@@ -55,13 +61,15 @@ public final class FontRenderer {
         }
         try {
             int baseCharCount = Integer.parseInt(args[3]);
-            IntStream baseCodepoints = IntStream.range(0, baseCharCount);
-            IntStream extraCodepoints = parseHexCodepoints(args[8]);
-            int[] codepoints = IntStream.concat(baseCodepoints, extraCodepoints).toArray();
+            List<String> graphemes = new ArrayList<>();
+            for (int cp = 0; cp < baseCharCount; cp++) {
+                graphemes.add(Character.toString(cp));
+            }
+            graphemes.addAll(parseHexGraphemes(args[8]));
 
             new FontRenderer(Path.of(args[0]),
                     Integer.parseInt(args[1]), Float.parseFloat(args[4]),
-                    Integer.parseInt(args[2]), codepoints,
+                    Integer.parseInt(args[2]), graphemes,
                     Path.of(args[5]), Path.of(args[6]), args[7]);
             IO.println("Conversion complete\n");
         } catch (Throwable all) {
@@ -72,23 +80,36 @@ public final class FontRenderer {
     }
 
     /**
-     * Parses a comma-separated list of hexadecimal Unicode codepoints (e.g. {@code "2026,221e"}).
-     * The codepoints are passed as ASCII hex rather than literal characters so glyphs outside the
-     * platform code page survive the command-line argv boundary (Windows {@code sun.jnu.encoding}
-     * is the legacy ANSI code page and would otherwise replace them with '?').
+     * Parses a comma-separated list of hexadecimal Unicode codepoints (e.g. {@code "2026,221e"}),
+     * combining them into a single string and segmenting them into grapheme clusters via BreakIterator.
      */
-    private static @NonNull IntStream parseHexCodepoints(@NonNull String csv) {
+    private static @NonNull List<String> parseHexGraphemes(@NonNull String csv) {
         if (csv.isEmpty()) {
-            return IntStream.empty();
+            return List.of();
         }
-        return Arrays.stream(csv.split(","))
+        int[] codepoints = Arrays.stream(csv.split(","))
                 .map(String::trim)
-                .mapToInt(hex -> Integer.parseInt(hex, 16));
+                .mapToInt(hex -> Integer.parseInt(hex, 16))
+                .toArray();
+        StringBuilder sb = new StringBuilder();
+        for (int cp : codepoints) {
+            sb.appendCodePoint(cp);
+        }
+        String combined = sb.toString();
+
+        List<String> result = new ArrayList<>();
+        BreakIterator iterator = BreakIterator.getCharacterInstance();
+        iterator.setText(combined);
+        int start = iterator.first();
+        for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
+            result.add(combined.substring(start, end));
+        }
+        return result;
     }
 
     public FontRenderer(@NonNull Path font_file,
             int logical_font_size, float scale_factor,
-            int max_image_size, int @NonNull [] codepoints,
+            int max_image_size, @NonNull List<String> graphemes,
             @NonNull Path font_info_dir, @NonNull Path font_tex_dir,
             @NonNull String font_tex_classpath) throws Exception {
         String font_file_name = font_file.getFileName().toString();
@@ -97,7 +118,7 @@ public final class FontRenderer {
 
         int physical_font_size = Math.round(logical_font_size * scale_factor);
 
-        IO.println("Rendering " + codepoints.length + " codepoints of " + src_font_name + " size " + logical_font_size
+        IO.println("Rendering " + graphemes.size() + " graphemes of " + src_font_name + " size " + logical_font_size
                 + " (phys: " + physical_font_size + ")");
         String dest_font_name = src_font_name.toLowerCase();
         java.awt.Font src_font;
@@ -135,7 +156,7 @@ public final class FontRenderer {
         int image_height = 0;
         int[] heights = null;
         while (image_width > image_height) {
-            heights = calculateImageHeight(src_font, image_width, space_width, codepoints, scaled_x_border,
+            heights = calculateImageHeight(src_font, image_width, space_width, graphemes, scaled_x_border,
                     scaled_y_border);
             image_height = heights[0];
             int area = image_width * image_height;
@@ -154,10 +175,10 @@ public final class FontRenderer {
         int max_under_baseline_height = heights[3];
         Channel white_alpha = drawFont(src_font, font_tex_classpath, font_info_dir, dest_font_name, logical_font_size,
                 scale_factor, max_glyph_height, max_baseline_height, max_under_baseline_height, best_width, best_height,
-                space_width, codepoints, true, scaled_x_border, scaled_y_border);
+                space_width, graphemes, true, scaled_x_border, scaled_y_border);
         Channel shadow = drawFont(src_font, font_tex_classpath, font_info_dir, dest_font_name, logical_font_size,
                 scale_factor, max_glyph_height, max_baseline_height, max_under_baseline_height, best_width, best_height,
-                space_width, codepoints, false, scaled_x_border, scaled_y_border);
+                space_width, graphemes, false, scaled_x_border, scaled_y_border);
 
         Channel black = new Channel(white_alpha.getWidth(), white_alpha.getHeight()).fill(0f);
         Channel white = new Channel(white_alpha.getWidth(), white_alpha.getHeight()).fill(1f);
@@ -177,7 +198,7 @@ public final class FontRenderer {
 
     private int[] calculateImageHeight(@NonNull Font src_font,
             int image_width, int space_width,
-            int @NonNull [] codepoints,
+            @NonNull List<String> graphemes,
             int x_border, int y_border) {
         BufferedImage image = createSrgbAbgrImage(1, 1);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
@@ -188,22 +209,22 @@ public final class FontRenderer {
 
         int max_baseline_height = 0;
         int max_under_baseline_height = 0;
-        int tallest_char = ' ';
-        int lowest_char = ' ';
+        String tallest_char = " ";
+        String lowest_char = " ";
         int num_lines = 1;
         int current_x = 0;
 
         // place chars
         IO.println("Calculating char placement for width = " + image_width);
         IO.print("Progress...");
-        for (int i = 0; i < codepoints.length; i++) {
+        for (int i = 0; i < graphemes.size(); i++) {
             if (i % 1000 == 0) {
                 IO.print(".");
             }
-            int codepoint = codepoints[i];
-            if (src_font.canDisplay(codepoint)) {
-                GlyphVector gv = src_font.createGlyphVector(frc, Character.toChars(codepoint));
-                Shape glyph_shape = gv.getGlyphOutline(0);
+            String grapheme = graphemes.get(i);
+            if (src_font.canDisplayUpTo(grapheme) == -1 && !isColorGrapheme(src_font, grapheme)) {
+                GlyphVector gv = src_font.createGlyphVector(frc, grapheme);
+                Shape glyph_shape = gv.getOutline();
                 Rectangle2D glyph_bounds = glyph_shape.getBounds2D();
                 int min_x = (int) Math.floor(glyph_bounds.getMinX()) - x_border;
                 int min_y = (int) Math.floor(glyph_bounds.getMinY()) - y_border;
@@ -212,14 +233,14 @@ public final class FontRenderer {
                 int baseline_height = -min_y;
                 if (baseline_height > max_baseline_height) {
                     max_baseline_height = baseline_height;
-                    tallest_char = codepoint;
+                    tallest_char = grapheme;
                 }
                 int under_baseline_height = max_y;
                 if (under_baseline_height > max_under_baseline_height) {
                     max_under_baseline_height = under_baseline_height;
-                    lowest_char = codepoint;
+                    lowest_char = grapheme;
                 }
-                int glyph_width = codepoint == 32 ? space_width : max_x - min_x;
+                int glyph_width = grapheme.equals(" ") ? space_width : max_x - min_x;
                 assert glyph_width <= image_width : "character too wide to fit in image";
                 if (current_x + glyph_width > image_width) {
                     current_x = 0;
@@ -229,10 +250,8 @@ public final class FontRenderer {
             }
         }
         IO.println("done.");
-        IO.print(" tallest char='" + tallest_char + "'(\\u" + Integer.toHexString(tallest_char) + "):"
-                + max_baseline_height);
-        IO.println(" lowest char='" + lowest_char + "'(\\u" + Integer.toHexString(lowest_char) + "):"
-                + max_under_baseline_height);
+        IO.print(" tallest char='" + tallest_char + "':" + max_baseline_height);
+        IO.println(" lowest char='" + lowest_char + "':" + max_under_baseline_height);
         int max_glyph_height = max_under_baseline_height + max_baseline_height;
         int image_height = Utils.nextPowerOf2(max_glyph_height * num_lines);
         return new int[]{image_height, max_glyph_height, max_baseline_height, max_under_baseline_height};
@@ -243,11 +262,12 @@ public final class FontRenderer {
             int logical_font_size, float scale_factor,
             int max_glyph_height, int max_baseline_height, int max_under_baseline_height,
             int image_width, int image_height, int space_width,
-            int @NonNull [] codepoints, boolean saveFontInfo,
+            @NonNull List<String> graphemes, boolean saveFontInfo,
             int x_border, int y_border) {
         BufferedImage image = createSrgbAbgrImage(image_width, image_height);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
         g2d.setFont(src_font);
+        g2d.setColor(java.awt.Color.WHITE);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         FontRenderContext frc = g2d.getFontRenderContext();
@@ -256,25 +276,23 @@ public final class FontRenderer {
         int current_x = 0;
         int current_y = 0;
         int valid_chars = 0;
-        HashTable<@NonNull Quad> key_map = saveFontInfo ? new HashTable<>() : null;
+        Map<@NonNull String, @NonNull Quad> key_map = saveFontInfo ? new HashMap<>() : null;
 
         IO.println("Drawing chars for width*height = " + image_width + "*" + image_height);
         IO.print("Progress...");
-        for (int i = 0; i < codepoints.length; i++) {
+        for (int i = 0; i < graphemes.size(); i++) {
             if (i % 1000 == 0) {
                 IO.print(".");
             }
-            int codepoint = codepoints[i];
-            if (src_font.canDisplay(codepoint)) {
+            String grapheme = graphemes.get(i);
+            if (src_font.canDisplayUpTo(grapheme) == -1 && !isColorGrapheme(src_font, grapheme)) {
                 valid_chars++;
-                GlyphVector gv = src_font.createGlyphVector(frc, Character.toChars(codepoint));
-                Shape glyph_shape = gv.getGlyphOutline(0);
+                GlyphVector gv = src_font.createGlyphVector(frc, grapheme);
+                Shape glyph_shape = gv.getOutline();
                 Rectangle2D glyph_bounds = glyph_shape.getBounds2D();
                 int min_x = (int) Math.floor(glyph_bounds.getMinX()) - x_border;
-                //int min_y = (int)Math.floor(glyph_bounds.getMinY()) - GLYPH_Y_BORDER;
                 int max_x = (int) Math.ceil(glyph_bounds.getMaxX()) + x_border;
-                //int max_y = (int)Math.ceil(glyph_bounds.getMaxY()) - GLYPH_Y_BORDER;
-                int glyph_width = codepoint == 32 ? space_width : max_x - min_x;
+                int glyph_width = grapheme.equals(" ") ? space_width : max_x - min_x;
                 assert glyph_width <= image_width : "character too wide to fit in image";
                 if (current_x + glyph_width > image_width) {
                     g2d.translate(-current_x, max_glyph_height);
@@ -288,11 +306,11 @@ public final class FontRenderer {
                     float right = (float) (current_x + glyph_width) / image_width;
                     var quad = new Quad(left, bottom, right, top, Math.round(glyph_width / scale_factor), Math.round(
                             max_glyph_height / scale_factor));
-                    key_map.put(codepoint, quad);
+                    key_map.put(grapheme, quad);
                 }
                 g2d.translate(-min_x, 0);
                 g2d.translate(0, -1);
-                g2d.fill(glyph_shape);
+                g2d.drawString(grapheme, 0, 0);
                 g2d.translate(0, 1);
                 g2d.translate(min_x + glyph_width, 0);
                 current_x += glyph_width;
@@ -318,12 +336,40 @@ public final class FontRenderer {
             for (int x = 0; x < image.getWidth(); x++) {
                 int pos = y * image.getWidth() * Integer.BYTES + x * Integer.BYTES;
                 byte alpha = image_pixels[pos + 3];
-                //byte img = image_pixels[pos + 1];
                 int pixel = alpha & 0xff;
                 float channel_pixel = pixel / 255f;
                 channel.putPixel(x, y, channel_pixel);
             }
         }
         return channel;
+    }
+
+    /** Gross, but there doesn't seem to be any other option for determining whether a glyph is color */
+    private static boolean isColorGrapheme(@NonNull Font font, @NonNull String grapheme) {
+        int size = Math.max(64, font.getSize() * 2);
+        BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = img.createGraphics();
+        try {
+            g2d.setBackground(new java.awt.Color(0, 0, 0, 0));
+            g2d.clearRect(0, 0, size, size);
+            g2d.setFont(font);
+            g2d.setColor(java.awt.Color.WHITE);
+            g2d.drawString(grapheme, size / 4, (size * 3) / 4);
+        } finally {
+            g2d.dispose();
+        }
+
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                int argb = img.getRGB(x, y);
+                int r = (argb >> 16) & 0xff;
+                int g = (argb >> 8) & 0xff;
+                int b = argb & 0xff;
+                if (r != g || g != b) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

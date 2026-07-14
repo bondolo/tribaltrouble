@@ -4,15 +4,20 @@ import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.Resources;
 import com.oddlabs.tt.resource.TextureFile;
 import com.oddlabs.util.FontInfo;
-import com.oddlabs.util.HashTable;
 import com.oddlabs.util.Quad;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import java.text.BreakIterator;
+import java.util.Map;
+
+/**
+ * Represents a pre-rendered font asset at runtime, providing glyph metadata and layout metrics.
+ */
 public final class Font {
-    private final @NonNull HashTable<@NonNull Quad> key_map;
+    private final @NonNull Map<@NonNull String, @NonNull Quad> key_map;
     private final @NonNull Texture texture;
     private final int x_border;
     private final int y_border;
@@ -36,8 +41,12 @@ public final class Font {
         this.max_descension = font_info.getMaxDescension();
     }
 
+    public @Nullable Quad getQuad(@NonNull String grapheme) {
+        return key_map.get(grapheme);
+    }
+
     public @Nullable Quad getQuad(int codepoint) {
-        return key_map.get(codepoint);
+        return getQuad(Character.toString(codepoint));
     }
 
     public int getXBorder() {
@@ -71,7 +80,7 @@ public final class Font {
             var widest = getQuad(current);
             var quad = getQuad(codePoint);
 
-            return null != quad && quad.getWidth() > widest.getWidth() ? codePoint : current;
+            return null != quad && null != widest && quad.getWidth() > widest.getWidth() ? codePoint : current;
         });
     }
 
@@ -79,10 +88,15 @@ public final class Font {
         if (text.isEmpty())
             return 0;
 
-        int width = text.codePoints().reduce(0, (current, codePoint) -> {
-            var quad = getQuad(codePoint);
-            return current + (null != quad ? quad.getWidth() - x_border : 0);
-        });
+        int width = 0;
+        BreakIterator iterator = BreakIterator.getCharacterInstance();
+        iterator.setText(text.toString());
+        int start = iterator.first();
+        for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator.next()) {
+            String grapheme = text.subSequence(start, end).toString();
+            Quad quad = getQuad(grapheme);
+            width += (null != quad ? quad.getWidth() - x_border : 0);
+        }
         return width + x_border;
     }
 }

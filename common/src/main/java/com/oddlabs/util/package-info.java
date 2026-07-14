@@ -1,5 +1,4 @@
 /**
- * Utility classes for the project, including color representations, image utilities,
- * and compressed float arrays.
+ * Provides general-purpose utilities and collection classes.
  */
 package com.oddlabs.util;

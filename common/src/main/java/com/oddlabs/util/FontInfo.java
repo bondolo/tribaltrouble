@@ -12,12 +12,17 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.Map;
+
+/**
+ * Holds layout metrics and glyph key mappings for a pre-rendered font asset.
+ */
 public final class FontInfo implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
     private final @NonNull String texture_name;
-    private final @NonNull HashTable<@NonNull Quad> key_map;
+    private final @NonNull Map<@NonNull String, @NonNull Quad> key_map;
     private final int x_border;
     private final int y_border;
     private final int font_height;
@@ -25,11 +30,11 @@ public final class FontInfo implements Serializable {
     private final int max_descension;
 
     public FontInfo(@NonNull String texture_name,
-            @NonNull HashTable<@NonNull Quad> key_map,
+            @NonNull Map<@NonNull String, @NonNull Quad> key_map,
             int x_border, int y_border,
             int font_height, int max_ascension, int max_descension) {
         this.texture_name = texture_name;
-        this.key_map = key_map;
+        this.key_map = Map.copyOf(key_map);
         this.x_border = x_border;
         this.y_border = y_border;
         this.font_height = font_height;
@@ -41,7 +46,7 @@ public final class FontInfo implements Serializable {
         return texture_name;
     }
 
-    public @NonNull HashTable<Quad> getKeyMap() {
+    public @NonNull Map<String, Quad> getKeyMap() {
         return key_map;
     }
 
