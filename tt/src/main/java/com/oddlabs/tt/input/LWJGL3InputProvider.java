@@ -33,7 +33,7 @@ import static org.lwjgl.sdl.SDLMouse.SDL_SetWindowRelativeMouseMode;
 import static org.lwjgl.sdl.SDLMouse.SDL_WarpMouseInWindow;
 
 /**
- * SDL 3 based implementation of the InputProvider interface.
+ * SDL3 based implementation of the InputProvider interface.
  */
 public final class LWJGL3InputProvider implements InputProvider<Long> {
 
@@ -51,7 +51,8 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
     private final Deque<@NonNull MouseEvent> mouseEvents = new ArrayDeque<>();
     private @Nullable MouseEvent currentMouseEvent;
     private double mouseX, mouseY;
-    private long currentNativeCursor = MemoryUtil.NULL;
+    private int lastLogicalX = Integer.MIN_VALUE;
+    private int lastLogicalY = Integer.MIN_VALUE;
 
     private static class KeyEvent {
         final int key;
@@ -124,15 +125,27 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
                 }
             }
             case SDL_EVENT_MOUSE_MOTION -> {
-                if (currentNativeCursor != MemoryUtil.NULL) {
-                    SDL_SetCursor(currentNativeCursor);
-                }
                 SDL_MouseMotionEvent motionEvent = event.motion();
                 int logicalHeight = window.getLogicalHeight();
                 this.mouseX = motionEvent.x();
                 this.mouseY = logicalHeight - motionEvent.y() - 1;
+                int intX = (int) mouseX;
+                int intY = (int) mouseY;
                 synchronized (mouseEvents) {
-                    mouseEvents.add(new MouseEvent(-1, false, (int) mouseX, (int) mouseY, 0, 0));
+                    MouseEvent last = mouseEvents.peekLast();
+                    if (last != null) {
+                        if (last.x() == intX && last.y() == intY) {
+                            return;
+                        }
+                        if (last.button() == -1 && last.dWheel() == 0 && last.dWheelX() == 0) {
+                            mouseEvents.removeLast();
+                        }
+                    } else {
+                        if (lastLogicalX == intX && lastLogicalY == intY) {
+                            return;
+                        }
+                    }
+                    mouseEvents.add(new MouseEvent(-1, false, intX, intY, 0, 0));
                 }
             }
             case SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP -> {
@@ -223,6 +236,10 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
         synchronized (mouseEvents) {
             if (mouseEvents.isEmpty()) return false;
             currentMouseEvent = mouseEvents.poll();
+            if (currentMouseEvent != null) {
+                lastLogicalX = currentMouseEvent.x();
+                lastLogicalY = currentMouseEvent.y();
+            }
             return true;
         }
     }
@@ -303,10 +320,8 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
         if (windowHandle == MemoryUtil.NULL) return;
 
         if (null != cursor && cursor != MemoryUtil.NULL) {
-            currentNativeCursor = cursor;
             SDL_SetCursor(cursor);
         } else {
-            currentNativeCursor = MemoryUtil.NULL;
             long defaultCursor = SDL_GetDefaultCursor();
             if (defaultCursor != MemoryUtil.NULL) {
                 SDL_SetCursor(defaultCursor);
