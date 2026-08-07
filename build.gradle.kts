@@ -33,7 +33,7 @@ subprojects {
     dependencies {
         implementation("org.jspecify:jspecify:1.0.0")
         "errorprone"("com.google.errorprone:error_prone_core:2.50.0")
-        "errorprone"("com.uber.nullaway:nullaway:0.13.6")
+        "errorprone"("com.uber.nullaway:nullaway:0.13.8")
     }
 
     java {
