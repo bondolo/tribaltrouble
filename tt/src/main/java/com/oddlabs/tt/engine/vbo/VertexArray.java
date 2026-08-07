@@ -1,4 +1,4 @@
-package com.oddlabs.tt.vbo;
+package com.oddlabs.tt.engine.vbo;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.state.RenderContext;

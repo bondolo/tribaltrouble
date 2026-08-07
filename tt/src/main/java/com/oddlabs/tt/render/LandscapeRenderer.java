@@ -18,7 +18,7 @@ import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.resource.WorldInfo;
 import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.tt.scenery.Water;
-import com.oddlabs.tt.vbo.FloatVBO;
+import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

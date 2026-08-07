@@ -1,4 +1,4 @@
-package com.oddlabs.tt.vbo;
+package com.oddlabs.tt.engine.vbo;
 
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -7,6 +7,9 @@ import org.lwjgl.opengl.GL20;
 
 import java.nio.FloatBuffer;
 
+/**
+ * Float array vertex buffer object.
+ */
 public final class FloatVBO extends VBO {
 
     public FloatVBO(int usage, int size) {
