@@ -121,6 +121,15 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
 
     @Override
     public void handleInput(@NonNull InputEvent event) {
+        // Intercept Esc for armory submenu navigation before super reaches InGameDelegate
+        if ((event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT)
+                && !map_mode && !observer
+                && (event.hasAction(GameAction.GLOBAL_MENU) || event.hasAction(GameAction.UI_CANCEL))) {
+            if (getActionButtonPanel().tryCloseSubmenu(event)) {
+                return;
+            }
+        }
+
         super.handleInput(event);
         if (event.isConsumed()) return;
 
