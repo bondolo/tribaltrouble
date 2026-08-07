@@ -1,4 +1,4 @@
-package com.oddlabs.tt.font;
+package com.oddlabs.tt.engine.font;
 
 import org.jspecify.annotations.NonNull;
 

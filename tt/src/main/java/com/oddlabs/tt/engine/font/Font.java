@@ -1,4 +1,4 @@
-package com.oddlabs.tt.font;
+package com.oddlabs.tt.engine.font;
 
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.Resources;

@@ -37,7 +37,7 @@ import com.oddlabs.tt.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
 import com.oddlabs.tt.player.NativeChieftainAI;
 import com.oddlabs.tt.player.VikingChieftainAI;
-import com.oddlabs.tt.font.ColorGraphemeGenerator;
+import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
 import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.procedural.GeneratorLightning;
 import com.oddlabs.tt.procedural.GeneratorPoison;

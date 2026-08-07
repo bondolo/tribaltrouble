@@ -1,6 +1,5 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.font.Font;
 import com.oddlabs.tt.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 
@@ -20,8 +19,8 @@ public class HorizButton extends ButtonObject {
                 ? ModeIconQuads.Mode.DISABLED
                 : isPressed() && isHovered()
                         ? ModeIconQuads.Mode.ACTIVE
-                        : isActive()
-                            ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
+                : isActive()
+                        ? ModeIconQuads.Mode.ACTIVE : ModeIconQuads.Mode.NORMAL;
 
         var horizButton = skinMode == ModeIconQuads.Mode.ACTIVE && isPressed() && isHovered()
                 ? Skin.getSkin().getHorizButtonPressed()

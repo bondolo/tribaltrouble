@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.font.Font;
+import com.oddlabs.tt.engine.font.Font;
 import org.jspecify.annotations.NonNull;
 
 public record FormData(@NonNull Box form,
