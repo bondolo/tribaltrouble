@@ -2,26 +2,39 @@ package com.oddlabs.tt.gui;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.SequencedSet;
+import java.util.Set;
+import java.util.TreeSet;
+
+/**
+ * Supported languages and flag icon mappings.
+ */
 public final class Languages {
-    private static final String[][] languages = new String[][]{{"en", "English"}, {"da", "Dansk"}, {"de", "Deutsch"}, {
-            "es", "Español"}, {"it", "Italiano"}};
+    private static final SequencedSet<@NonNull Locale> LANGUAGES;
 
-    public static boolean hasLanguage(@NonNull String language) {
-        for (String[] aLanguage : languages) {
-            if (aLanguage[0].equals(language)) {
-                return true;
-            }
-        }
-        return false;
+    static {
+        var langs = new TreeSet<>(Comparator.comparing(Locale::toLanguageTag));
+        langs.addAll(Set.of(
+                Locale.forLanguageTag("da"),
+                Locale.forLanguageTag("de"),
+                Locale.forLanguageTag("en"),
+                Locale.forLanguageTag("es"),
+                Locale.forLanguageTag("it"),
+                Locale.forLanguageTag("pt-BR")));
+        LANGUAGES = Collections.unmodifiableSequencedSet(langs);
     }
 
-    public static @NonNull String @NonNull [] @NonNull [] getLanguages() {
-        return languages;
+    private Languages() {
     }
 
-    public static @NonNull IconQuad @NonNull [] getFlags() {
-        IconQuad[] flags = {Skin.getSkin().getFlagEn(), Skin.getSkin().getFlagDa(), Skin.getSkin().getFlagDe(), Skin
-                .getSkin().getFlagEs(), Skin.getSkin().getFlagIt()};
-        return flags;
+    public static boolean hasLanguage(@NonNull Locale locale) {
+        return LANGUAGES.contains(locale) || LANGUAGES.contains(Locale.of(locale.getLanguage()));
+    }
+
+    public static @NonNull SequencedSet<@NonNull Locale> getLanguages() {
+        return LANGUAGES;
     }
 }

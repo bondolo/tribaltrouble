@@ -5,7 +5,12 @@ import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.resource.FontFile;
 import com.oddlabs.tt.resource.Resources;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.SequencedMap;
 
 import static com.oddlabs.tt.gui.Icons.getIconQuads;
 import static com.oddlabs.tt.gui.Icons.getInt;
@@ -18,7 +23,6 @@ import static com.oddlabs.tt.gui.Icons.getNodeByName;
  * Skin for GUI
  */
 public final class Skin {
-
     private static final Skin SKIN = new Skin("/gui/gui_skin.xml");
 
     private final @NonNull Font edit_font;
@@ -49,11 +53,7 @@ public final class Skin {
     private final @NonNull ModeIconQuads diode;
     private final @NonNull PanelData panel_data;
     private final @NonNull IconQuad flag_default;
-    private final @NonNull IconQuad flag_da;
-    private final @NonNull IconQuad flag_en;
-    private final @NonNull IconQuad flag_de;
-    private final @NonNull IconQuad flag_es;
-    private final @NonNull IconQuad flag_it;
+    private final SequencedMap<@NonNull String, @NonNull IconQuad> flags;
 
     public static @NonNull Skin getSkin() {
         return SKIN;
@@ -90,11 +90,14 @@ public final class Skin {
         diode = getNamedIconQuads(root, "diode", texture);
         panel_data = parsePanelData(root, texture);
         flag_default = getNamedIconQuad(root, "flag_default", texture);
-        flag_da = getNamedIconQuad(root, "flag_da", texture);
-        flag_en = getNamedIconQuad(root, "flag_en", texture);
-        flag_de = getNamedIconQuad(root, "flag_de", texture);
-        flag_es = getNamedIconQuad(root, "flag_es", texture);
-        flag_it = getNamedIconQuad(root, "flag_it", texture);
+        var flagMap = new LinkedHashMap<String, IconQuad>();
+        flagMap.put("da", getNamedIconQuad(root, "flag_da", texture));
+        flagMap.put("de", getNamedIconQuad(root, "flag_de", texture));
+        flagMap.put("en", getNamedIconQuad(root, "flag_en", texture));
+        flagMap.put("es", getNamedIconQuad(root, "flag_es", texture));
+        flagMap.put("it", getNamedIconQuad(root, "flag_it", texture));
+        flagMap.put("pt", getNamedIconQuad(root, "flag_pt", texture));
+        flags = Collections.unmodifiableSequencedMap(flagMap);
     }
 
     private @NonNull Horizontal getHorizontal(@NonNull Node n, @NonNull Texture texture) {
@@ -484,23 +487,7 @@ public final class Skin {
         return flag_default;
     }
 
-    public @NonNull IconQuad getFlagDa() {
-        return flag_da;
-    }
-
-    public @NonNull IconQuad getFlagEn() {
-        return flag_en;
-    }
-
-    public @NonNull IconQuad getFlagDe() {
-        return flag_de;
-    }
-
-    public @NonNull IconQuad getFlagEs() {
-        return flag_es;
-    }
-
-    public @NonNull IconQuad getFlagIt() {
-        return flag_it;
+    public @Nullable IconQuad getFlag(@NonNull String language) {
+        return flags.get(language);
     }
 }

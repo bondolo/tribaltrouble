@@ -4,7 +4,6 @@ import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.IconLabel;
-import com.oddlabs.tt.gui.IconQuad;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Languages;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
@@ -20,6 +19,9 @@ import java.util.Locale;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 
+/**
+ * UI panel for selecting the application display language.
+ */
 public class LanguagePanel extends Panel {
     public LanguagePanel(@NonNull GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("language_caption"));
@@ -34,43 +36,42 @@ public class LanguagePanel extends Panel {
         var language_list_box = new MultiColumnComboBox<@NonNull Locale>(gui_root, language_infos, 200, false);
 
         // Check language logic
-        boolean languageFound = false;
-        if (!Renderer.getRenderer().getSettings().language.equals("default")) {
-            for (String[] lang : Languages.getLanguages()) {
-                if (Renderer.getRenderer().getSettings().language.equals(lang[0])) {
-                    languageFound = true;
-                    break;
-                }
-            }
-            if (!languageFound) {
-                Renderer.getRenderer().getSettings().language = "default";
+        String currentLanguage = Renderer.getRenderer().getSettings().language;
+        if (!currentLanguage.equals("default") && !Languages.hasLanguage(Locale.forLanguageTag(currentLanguage))) {
+            Renderer.getRenderer().getSettings().language = "default";
+        }
+
+        // Supported Language list
+        Row<Locale, IconLabel> selectedLanguage = null;
+        for (var langauge : Languages.getLanguages()) {
+            var label = new Label(langauge.getDisplayName(langauge), Skin.getSkin().getMultiColumnComboBoxData()
+                    .font());
+            var flag = Skin.getSkin().getFlag(langauge.getLanguage());
+            var iconLabel = new IconLabel(flag, label);
+            Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), langauge);
+            language_list_box.addRow(row);
+            if (langauge.getLanguage().equals(Renderer.getRenderer().getSettings().language)) {
+                selectedLanguage = row;
             }
         }
 
-        Row<Locale, IconLabel> selectedLanguage = null;
-        IconLabel label = new IconLabel(Skin.getSkin().getFlagDefault(), new Label(AbstractOptionsMenu.i18n(
-                "system_default"), Skin.getSkin().getMultiColumnComboBoxData().font()));
-        Row<Locale, IconLabel> row = new Row<>(List.of(label), Renderer.getRenderer().getDefaultLocale());
+        // System default last
+        var label = new Label(AbstractOptionsMenu.i18n("system_default"), Skin.getSkin().getMultiColumnComboBoxData()
+                .font());
+        var iconLabel = new IconLabel(Skin.getSkin().getFlagDefault(), label);
+        Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), Renderer.getRenderer().getDefaultLocale());
         language_list_box.addRow(row);
-        if (Renderer.getRenderer().getSettings().language.equals("default"))
+        if (null == selectedLanguage || Renderer.getRenderer().getSettings().language.equals("default")) {
             selectedLanguage = row;
-        String[][] languages = Languages.getLanguages();
-        IconQuad[] flags = Languages.getFlags();
-        for (int i = 0; i < languages.length; i++) {
-            label = new IconLabel(flags[i], new Label(languages[i][1], Skin.getSkin().getMultiColumnComboBoxData()
-                    .font()));
-            row = new Row<>(List.of(label), Locale.of(languages[i][0]));
-            language_list_box.addRow(row);
-            if (languages[i][0].equals(Renderer.getRenderer().getSettings().language))
-                selectedLanguage = row;
         }
 
         language_list_box.selectRow(selectedLanguage);
         language_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(@NonNull Locale locale) {
-                Renderer.getRenderer().getSettings().language = locale.getVariant().equals("default") ? "default"
-                        : locale.getLanguage();
+                Renderer.getRenderer().getSettings().language = locale.getVariant().equals("default")
+                        ? "default" : locale.toLanguageTag();
+                IO.println("set language:" + Renderer.getRenderer().getSettings().language);
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("language_change_next_run")));
             }
         });

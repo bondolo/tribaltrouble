@@ -88,6 +88,7 @@ public final class Renderer implements AutoCloseable {
     private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final boolean PROFILE = Boolean.getBoolean("com.oddlabs.tt.profile");
 
+    /** This is expected to be initialized before Locale.setDefault is ever called */
     private static final Locale default_locale = Locale.of(Locale.getDefault().getLanguage(), Locale.getDefault()
             .getCountry(), "default");
 
@@ -137,6 +138,8 @@ public final class Renderer implements AutoCloseable {
     private static volatile boolean finished = false;
 
     private final Settings settings = new Settings();
+    private final Locale locale = default_locale;
+
     private final GLRenderContext renderContext = new GLRenderContext();
     private final Window window = new LWJGL3Window();
     private final Network network = new Network();
@@ -628,13 +631,13 @@ public final class Renderer implements AutoCloseable {
         game_dir = deterministic.log(game_dir);
         event_log_dir = deterministic.log(event_log_dir);
         deterministic.log(settings);
-        String default_language = deterministic.log(default_locale.getLanguage());
-        String language = settings.language;
-        if (language.equals("default"))
-            language = default_language;
-        if (!Languages.hasLanguage(language))
-            language = "en";
-        Locale.setDefault(Locale.of(language));
+        Locale language = "default".equals(settings.language)
+                ? deterministic.log(Renderer.default_locale) : Locale.forLanguageTag(settings.language);
+        IO.println("Trying language " + language);
+        if (null == language || !Languages.hasLanguage(language))
+            language = Locale.of("en");
+        IO.println("Using language " + language);
+        Locale.setDefault(language);
 
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
