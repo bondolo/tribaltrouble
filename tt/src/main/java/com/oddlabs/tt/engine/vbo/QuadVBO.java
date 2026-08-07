@@ -1,4 +1,4 @@
-package com.oddlabs.tt.vbo;
+package com.oddlabs.tt.engine.vbo;
 
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -6,6 +6,9 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
 
+/**
+ * Quad VBO renderer for screen-aligned 2D textured geometry.
+ */
 public final class QuadVBO implements AutoCloseable {
     private static final float[] QUAD_VERTICES = new float[]{
             // Triangle 1

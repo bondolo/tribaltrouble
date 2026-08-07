@@ -1,4 +1,4 @@
-package com.oddlabs.tt.vbo;
+package com.oddlabs.tt.engine.vbo;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.state.RenderContext;
@@ -9,6 +9,9 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
+/**
+ * Base abstract wrapper for OpenGL Vertex Buffer Objects (VBOs).
+ */
 public abstract class VBO extends NativeResource<VBO.Buffer> {
     static final class Buffer extends NativeResource.NativeState {
 

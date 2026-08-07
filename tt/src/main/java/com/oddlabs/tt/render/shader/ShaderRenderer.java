@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render.shader;
 
 import com.oddlabs.tt.render.MatrixStack;
-import com.oddlabs.tt.vbo.VertexArray;
+import com.oddlabs.tt.engine.vbo.VertexArray;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;

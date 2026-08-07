@@ -1,4 +1,4 @@
-package com.oddlabs.tt.vbo;
+package com.oddlabs.tt.engine.vbo;
 
 import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
@@ -8,6 +8,9 @@ import org.lwjgl.opengl.GL31;
 
 import java.nio.ShortBuffer;
 
+/**
+ * Short index array vertex buffer object.
+ */
 public final class ShortVBO extends VBO {
 
     public ShortVBO(int usage, int size) {

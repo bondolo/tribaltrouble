@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render.state;
 
 import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.vbo.VBO;
+import com.oddlabs.tt.engine.vbo.VBO;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
