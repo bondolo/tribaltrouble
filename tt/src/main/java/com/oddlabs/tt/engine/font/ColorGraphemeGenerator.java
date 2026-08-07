@@ -1,4 +1,4 @@
-package com.oddlabs.tt.font;
+package com.oddlabs.tt.engine.font;
 
 import com.oddlabs.tt.procedural.TextureGenerator;
 import com.oddlabs.tt.render.Texture;
@@ -9,12 +9,11 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import java.awt.*;
-import java.awt.Font;
+
 import java.awt.image.BufferedImage;
+import java.text.BreakIterator;
 import java.util.List;
 import java.util.logging.Logger;
-
-import java.text.BreakIterator;
 
 /**
  * Generates an OpenGL texture for a single color grapheme cluster string using platform color fonts.
@@ -91,7 +90,7 @@ public final class ColorGraphemeGenerator extends TextureGenerator {
     }
 
     private static java.awt.@NonNull Font selectEmojiFont(@NonNull String grapheme) {
-        for (Font font : EMOJI_FONTS) {
+        for (java.awt.Font font : EMOJI_FONTS) {
             if (font.canDisplayUpTo(grapheme) == -1) {
                 return font;
             }

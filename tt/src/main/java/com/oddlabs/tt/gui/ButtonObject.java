@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.font.Font;
+import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.input.GameAction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

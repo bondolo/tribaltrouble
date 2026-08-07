@@ -2,7 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.animation.TimerAnimation;
 import com.oddlabs.tt.animation.Updatable;
-import com.oddlabs.tt.font.Index;
+import com.oddlabs.tt.engine.font.Index;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;

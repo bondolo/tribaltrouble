@@ -3,7 +3,7 @@ package com.oddlabs.tt.form;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
-import com.oddlabs.tt.font.Font;
+import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.Diode;
 import com.oddlabs.tt.gui.EditLine;

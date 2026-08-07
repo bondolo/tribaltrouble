@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.font.TextLineRenderer;
+import com.oddlabs.tt.engine.font.TextLineRenderer;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.util.Color;

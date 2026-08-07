@@ -9,7 +9,7 @@ import com.oddlabs.matchmaking.Profile;
 import com.oddlabs.matchmaking.RankingEntry;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.delegate.Menu;
-import com.oddlabs.tt.font.Font;
+import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.gui.ChatPanel;
 import com.oddlabs.tt.gui.ChatRoomInfo;
 import com.oddlabs.tt.gui.ColumnInfo;
