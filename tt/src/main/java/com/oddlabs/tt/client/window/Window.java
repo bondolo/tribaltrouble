@@ -1,4 +1,4 @@
-package com.oddlabs.tt.window;
+package com.oddlabs.tt.client.window;
 
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.joml.Vector2f;

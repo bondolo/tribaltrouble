@@ -10,8 +10,8 @@ import com.oddlabs.tt.client.input.LWJGL3InputProvider;
 import com.oddlabs.tt.client.input.Modifier;
 import com.oddlabs.tt.client.input.PointerInput;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.window.LWJGL3Window;
-import com.oddlabs.tt.window.Window;
+import com.oddlabs.tt.client.window.LWJGL3Window;
+import com.oddlabs.tt.client.window.Window;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

@@ -7,6 +7,9 @@ import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDL_Surface;
 import org.lwjgl.system.MemoryUtil;
 
+import java.util.logging.Logger;
+
+import static org.lwjgl.sdl.SDLError.SDL_GetError;
 import static org.lwjgl.sdl.SDLMouse.SDL_CreateColorCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_DestroyCursor;
 import static org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888;
@@ -17,6 +20,7 @@ import static org.lwjgl.sdl.SDLSurface.SDL_DestroySurface;
  * SDL Cursor
  */
 public final class Cursor extends NativeResource<Cursor.NativeCursor> {
+    private static final Logger logger = Logger.getLogger(Cursor.class.getName());
     public static final Cursor NULL_CURSOR = new Cursor(MemoryUtil.NULL);
 
     static final class NativeCursor extends NativeResource.NativeState {
@@ -42,7 +46,14 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
                     width * Integer.BYTES);
             if (surface != null) {
                 nativeCursor = SDL_CreateColorCursor(surface, xHot, yHot);
+                if (nativeCursor == MemoryUtil.NULL) {
+                    logger.warning("SDL_CreateColorCursor failed for cursor (" + width + "x" + height + "): "
+                            + SDL_GetError());
+                }
                 SDL_DestroySurface(surface);
+            } else {
+                logger.warning("SDL_CreateSurfaceFrom failed for cursor (" + width + "x" + height + "): "
+                        + SDL_GetError());
             }
 
             this(nativeCursor);

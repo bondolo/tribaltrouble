@@ -2,7 +2,7 @@ package com.oddlabs.tt;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.Utils;
-import com.oddlabs.tt.window.LWJGL3Window;
+import com.oddlabs.tt.client.window.LWJGL3Window;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDLMessageBox;
 
