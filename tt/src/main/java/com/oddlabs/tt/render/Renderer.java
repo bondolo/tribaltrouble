@@ -33,7 +33,7 @@ import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.net.Network;
+import com.oddlabs.tt.core.net.Network;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
