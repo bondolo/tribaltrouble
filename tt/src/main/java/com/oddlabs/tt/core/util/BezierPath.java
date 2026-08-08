@@ -1,5 +1,6 @@
-package com.oddlabs.tt.util;
+package com.oddlabs.tt.core.util;
 
+import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.landscape.HeightMap;
 import org.jspecify.annotations.NonNull;
 

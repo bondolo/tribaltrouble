@@ -22,7 +22,7 @@ import com.oddlabs.tt.client.form.InfoForm;
 import com.oddlabs.tt.client.gui.ChatRoomInfo;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

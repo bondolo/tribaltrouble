@@ -2,7 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.util.PocketList;
+import com.oddlabs.tt.core.util.PocketList;
 import org.jspecify.annotations.NonNull;
 
 final class SpriteSorter {

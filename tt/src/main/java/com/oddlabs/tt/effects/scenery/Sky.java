@@ -18,7 +18,7 @@ import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.util.Stitcher;
+import com.oddlabs.tt.engine.util.Stitcher;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VBO;

@@ -13,7 +13,7 @@ import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

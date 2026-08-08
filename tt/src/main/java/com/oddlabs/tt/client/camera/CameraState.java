@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.engine.resource.FogInfo;
-import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.core.event.StateChecksum;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

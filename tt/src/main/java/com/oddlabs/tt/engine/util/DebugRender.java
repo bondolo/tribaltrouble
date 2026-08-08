@@ -1,4 +1,4 @@
-package com.oddlabs.tt.util;
+package com.oddlabs.tt.engine.util;
 
 import com.oddlabs.tt.render.shader.DebugShaderRenderer;
 import com.oddlabs.util.Color;

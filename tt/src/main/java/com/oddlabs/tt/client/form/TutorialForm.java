@@ -33,7 +33,7 @@ import com.oddlabs.tt.simulation.tutorial.Tutorial;
 import com.oddlabs.tt.simulation.tutorial.TutorialInGameInfo;
 import com.oddlabs.tt.simulation.tutorial.trigger.TutorialOverTrigger;
 import com.oddlabs.tt.simulation.tutorial.trigger.TutorialTrigger;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

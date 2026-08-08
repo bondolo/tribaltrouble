@@ -2,7 +2,7 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.tt.client.gui.InfoPrinter;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collections;

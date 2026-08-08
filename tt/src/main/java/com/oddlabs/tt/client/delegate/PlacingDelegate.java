@@ -137,7 +137,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
         site_renderer.renderSites(context, queues, renderer, modelViewStack, projectionStack, target_list, center_x,
                 center_y, 2 * GRID_RADIUS);
 
-        com.oddlabs.tt.util.GLUtils.checkGLError("Placing: After renderSites");
+        com.oddlabs.tt.engine.util.GLUtils.checkGLError("Placing: After renderSites");
 
         SpriteKey built_key = VisualRegistry.getInstance().getBuildingVisuals(
                 getViewer().getLocalPlayer().getRaceInfo().getRaceType(),

@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.model.SupplyCounter;
 import com.oddlabs.tt.render.GUIRenderer;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

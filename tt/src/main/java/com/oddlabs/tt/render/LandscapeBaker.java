@@ -16,7 +16,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
-import static com.oddlabs.tt.util.GLUtils.checkGLError;
+import static com.oddlabs.tt.engine.util.GLUtils.checkGLError;
 
 /**
  * Generates combined diffuse and normal maps for the landscape by baking layers.

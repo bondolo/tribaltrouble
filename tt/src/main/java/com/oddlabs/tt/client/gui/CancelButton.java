@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 
 import java.util.ResourceBundle;
 

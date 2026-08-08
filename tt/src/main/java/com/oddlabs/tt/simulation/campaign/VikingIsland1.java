@@ -20,7 +20,7 @@ import com.oddlabs.tt.simulation.campaign.trigger.PlayerEleminatedTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.TimeTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.VictoryTrigger;
 import com.oddlabs.tt.model.Target;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

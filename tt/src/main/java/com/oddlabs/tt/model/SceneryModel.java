@@ -4,7 +4,7 @@ import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.core.event.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

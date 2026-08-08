@@ -13,7 +13,7 @@ import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

@@ -3,7 +3,7 @@ package com.oddlabs.tt.model;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

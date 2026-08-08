@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.util.PocketList;
+import com.oddlabs.tt.core.util.PocketList;
 import com.oddlabs.tt.model.Target;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

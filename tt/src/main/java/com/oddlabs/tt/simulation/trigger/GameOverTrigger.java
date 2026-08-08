@@ -6,7 +6,7 @@ import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

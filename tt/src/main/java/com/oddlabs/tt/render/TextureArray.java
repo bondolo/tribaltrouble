@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.engine.resource.GLImage;
-import com.oddlabs.tt.util.GLUtils;
+import com.oddlabs.tt.engine.util.GLUtils;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;

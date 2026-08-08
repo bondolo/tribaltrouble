@@ -21,7 +21,7 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.model.BoundingBox;
-import com.oddlabs.tt.util.DebugRender;
+import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.client.gui.ToolTip;
 import com.oddlabs.tt.viewer.Selection;

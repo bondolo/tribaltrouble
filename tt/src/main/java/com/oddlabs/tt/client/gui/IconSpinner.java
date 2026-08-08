@@ -5,7 +5,7 @@ import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.viewer.WorldViewer;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

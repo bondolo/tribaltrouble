@@ -1,4 +1,4 @@
-package com.oddlabs.tt.util;
+package com.oddlabs.tt.engine.util;
 
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;

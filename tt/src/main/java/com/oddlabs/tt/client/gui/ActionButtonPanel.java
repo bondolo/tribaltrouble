@@ -28,7 +28,7 @@ import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

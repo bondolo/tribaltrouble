@@ -11,7 +11,7 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.AudioFile;
 import com.oddlabs.tt.model.BoundingBox;
-import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.core.event.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

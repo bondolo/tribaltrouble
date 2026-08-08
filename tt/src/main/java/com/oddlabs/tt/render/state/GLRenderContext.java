@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static com.oddlabs.tt.util.GLUtils.checkAndThrow;
-import static com.oddlabs.tt.util.GLUtils.checkGLError;
+import static com.oddlabs.tt.engine.util.GLUtils.checkAndThrow;
+import static com.oddlabs.tt.engine.util.GLUtils.checkGLError;
 
 /**
  * RenderContext implementation for LWJGL OpenGL bindings.

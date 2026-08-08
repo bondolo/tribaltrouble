@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.UIRenderer;
-import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.core.event.StateChecksum;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

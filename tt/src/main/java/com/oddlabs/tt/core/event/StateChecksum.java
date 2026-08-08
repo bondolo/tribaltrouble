@@ -1,4 +1,4 @@
-package com.oddlabs.tt.util;
+package com.oddlabs.tt.core.event;
 
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
@@ -11,7 +11,7 @@ public final class StateChecksum {
         int i1 = (int) ((l >> 32) & 0xffffffff);
         update(i0);
         update(i1);
-//		com.oddlabs.tt.util.ChecksumLogger.log(l);
+//		com.oddlabs.tt.core.util.ChecksumLogger.log(l);
     }
 
     public void update(int i) {
@@ -23,13 +23,13 @@ public final class StateChecksum {
         crc.update(b1);
         crc.update(b2);
         crc.update(b3);
-//		com.oddlabs.tt.util.ChecksumLogger.log(i);
+//		com.oddlabs.tt.core.util.ChecksumLogger.log(i);
     }
 
     public void update(float f) {
         int f_int = Float.floatToRawIntBits(f);
         update(f_int);
-//		com.oddlabs.tt.util.ChecksumLogger.log(f);
+//		com.oddlabs.tt.core.util.ChecksumLogger.log(f);
     }
 
     public int getValue() {

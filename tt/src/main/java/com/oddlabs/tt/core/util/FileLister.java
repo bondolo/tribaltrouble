@@ -1,4 +1,4 @@
-package com.oddlabs.tt.util;
+package com.oddlabs.tt.core.util;
 
 import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;

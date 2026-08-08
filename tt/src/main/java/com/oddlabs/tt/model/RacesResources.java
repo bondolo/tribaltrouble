@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumMap;
