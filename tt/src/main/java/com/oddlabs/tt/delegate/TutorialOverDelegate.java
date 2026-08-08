@@ -12,7 +12,7 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.render.GUIRenderer;
-import com.oddlabs.tt.tutorial.TutorialInGameInfo;
+import com.oddlabs.tt.simulation.tutorial.TutorialInGameInfo;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
