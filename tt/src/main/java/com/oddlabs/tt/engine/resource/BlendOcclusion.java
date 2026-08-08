@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.resource;
 
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL13;

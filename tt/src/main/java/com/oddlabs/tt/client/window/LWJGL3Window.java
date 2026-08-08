@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.window;
 
-import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.core.global.Settings;
 import com.oddlabs.tt.client.input.LWJGL3InputProvider;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;

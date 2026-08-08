@@ -6,7 +6,7 @@ import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.registration.RegistrationKey;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.CancelButton;
 import com.oddlabs.tt.client.gui.CheckBox;
 import com.oddlabs.tt.client.gui.EditLine;

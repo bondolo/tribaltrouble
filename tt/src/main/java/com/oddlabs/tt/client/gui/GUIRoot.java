@@ -7,7 +7,7 @@ import com.oddlabs.tt.client.delegate.ModalDelegate;
 import com.oddlabs.tt.client.delegate.NullDelegate;
 import com.oddlabs.tt.client.form.QuitForm;
 import com.oddlabs.tt.client.form.Status;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;

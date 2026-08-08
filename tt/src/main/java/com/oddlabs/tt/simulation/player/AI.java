@@ -5,7 +5,7 @@ import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.BuildSpinner;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;

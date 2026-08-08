@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.render.shader.PlacingShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;

@@ -15,7 +15,7 @@ import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.form.ProgressForm;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.ActionButtonPanel;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.global;
+package com.oddlabs.tt.core.global;
 
 /**
  * Debug visualization modes for rendering bounding boxes and debug overlays.

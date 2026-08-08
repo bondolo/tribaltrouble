@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.core.global.Settings;
 import com.oddlabs.tt.client.input.InputManager;
 import com.oddlabs.tt.client.input.InputProvider;
 import com.oddlabs.tt.client.input.Key;

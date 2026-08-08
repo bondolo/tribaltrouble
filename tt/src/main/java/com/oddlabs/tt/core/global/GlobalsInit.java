@@ -1,4 +1,4 @@
-package com.oddlabs.tt.global;
+package com.oddlabs.tt.core.global;
 
 import org.lwjgl.opengl.GL11;
 

@@ -22,9 +22,9 @@ import com.oddlabs.tt.core.event.LocalEventQueue;
 import com.oddlabs.tt.client.form.MessageForm;
 import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.client.form.WarningForm;
-import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.global.GlobalsInit;
-import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.core.global.GlobalsInit;
+import com.oddlabs.tt.core.global.Settings;
 import com.oddlabs.tt.client.gui.GUI;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Languages;
@@ -308,7 +308,7 @@ public final class Renderer implements AutoCloseable {
                         AnimationManager.setChecksumComplain(false);
                     }
                 }
-                if (!com.oddlabs.tt.global.Globals.frustum_freeze) {
+                if (!com.oddlabs.tt.core.global.Globals.frustum_freeze) {
                     gui.pickHover();
                 }
             }

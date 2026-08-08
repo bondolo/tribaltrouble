@@ -2,7 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.client.camera.CameraState;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.GLImage;
 import com.oddlabs.tt.engine.resource.Resources;

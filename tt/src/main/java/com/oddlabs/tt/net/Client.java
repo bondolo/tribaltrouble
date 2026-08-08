@@ -11,7 +11,7 @@ import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.form.ProgressForm;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.GUI;
 import com.oddlabs.tt.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
