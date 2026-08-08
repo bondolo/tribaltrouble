@@ -17,7 +17,6 @@ import com.oddlabs.tt.engine.resource.FogInfo;
 import com.oddlabs.tt.engine.resource.GLByteImage;
 import com.oddlabs.tt.engine.resource.GLIntImage;
 import com.oddlabs.tt.engine.resource.StructureBlend;
-import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
@@ -64,6 +63,11 @@ public final class Landscape {
 
     // Misc colors
     private static final float DETAIL_GREY = 0.5f;
+
+    private static final Map<Terrain, Color.@NonNull Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
+            Terrain.NATIVE, new Color.Standard(0xFF_73_40_99).linear(),
+            Terrain.VIKING, Color.Linear.BLACK
+    ));
     private static final Color BLEND_LIGHTING_COLOR = new Color.Standard(0xFF_FF_E6_99); // 1.0, 0.9, 0.6
     private static final Color AO_COLOR = new Color.Standard(0xFF_55_4C_66);
 
@@ -294,7 +298,7 @@ public final class Landscape {
 
         structures[5] = Landscape.genBlack();
 
-        structures[6] = Sky.genSeabottom(terrain, structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(),
+        structures[6] = Landscape.genSeabottom(terrain, structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(),
                 voronoi8.copy());
 
         StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
@@ -324,7 +328,7 @@ public final class Landscape {
 
         structures[5] = Landscape.genBlack();
 
-        structures[6] = Sky.genSeabottom(terrain, structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(),
+        structures[6] = Landscape.genSeabottom(terrain, structure_size, noise8.copy(), noise256.copy(), voronoi4.copy(),
                 voronoi8.copy());
 
         StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
@@ -500,6 +504,19 @@ public final class Landscape {
 
     private static @NonNull StructureLayers genBlack() {
         return new StructureLayers(new Channel(1, 1).fill(0f).toLayer(), getFlatNormal(1));
+    }
+
+    private static @NonNull StructureLayers genSeabottom(
+            Terrain terrain, int size,
+            @NonNull Channel noise8, @NonNull Channel noise256, @NonNull Channel voronoi4, @NonNull Channel voronoi8) {
+        Color.Standard color = new Color.Standard(SEA_BOTTOM_COLOR.get(terrain));
+        Layer bottom = new Layer(
+                new Channel(size, size).fill(color.r()),
+                new Channel(size, size).fill(color.g()),
+                new Channel(size, size).fill(color.b()),
+                new Channel(size, size).fill(0.2f) // Smooth (low detail)
+        );
+        return new StructureLayers(bottom, getFlatNormal(size));
     }
 
     private static @NonNull StructureLayers genDetail(int size, float detail_alpha_value, int seed,
