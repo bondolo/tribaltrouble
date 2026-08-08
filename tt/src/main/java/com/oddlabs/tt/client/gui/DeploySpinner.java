@@ -6,7 +6,7 @@ import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

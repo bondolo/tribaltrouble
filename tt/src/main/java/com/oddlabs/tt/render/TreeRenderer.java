@@ -6,7 +6,7 @@ import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.viewer.Cheat;
+import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;

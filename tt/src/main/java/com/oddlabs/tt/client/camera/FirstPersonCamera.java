@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.camera;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 public final class FirstPersonCamera extends Camera {

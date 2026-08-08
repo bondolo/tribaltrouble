@@ -26,8 +26,8 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.campaign.trigger.DefeatTrigger;
 import com.oddlabs.tt.core.event.StateChecksum;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.viewer.InGameInfo;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

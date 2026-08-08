@@ -24,7 +24,7 @@ import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.client.gui.ToolTip;
-import com.oddlabs.tt.viewer.Selection;
+import com.oddlabs.tt.client.viewer.Selection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

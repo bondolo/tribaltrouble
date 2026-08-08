@@ -4,7 +4,7 @@ import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 public final class RallyPointDelegate extends TargetDelegate {

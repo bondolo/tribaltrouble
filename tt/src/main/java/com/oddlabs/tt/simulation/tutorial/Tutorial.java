@@ -7,7 +7,7 @@ import com.oddlabs.tt.client.gui.LabelBox;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.simulation.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.core.util.Utils;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.delegate;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.JumpCamera;
 import com.oddlabs.tt.client.input.InputEvent;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

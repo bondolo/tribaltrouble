@@ -18,7 +18,7 @@ import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.core.event.StateChecksum;
 import com.oddlabs.tt.core.util.Utils;
-import com.oddlabs.tt.viewer.NotificationManager;
+import com.oddlabs.tt.client.viewer.NotificationManager;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
