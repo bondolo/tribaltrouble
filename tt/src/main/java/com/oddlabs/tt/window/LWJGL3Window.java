@@ -1,7 +1,7 @@
 package com.oddlabs.tt.window;
 
 import com.oddlabs.tt.global.Settings;
-import com.oddlabs.tt.input.LWJGL3InputProvider;
+import com.oddlabs.tt.client.input.LWJGL3InputProvider;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import org.joml.Vector2f;

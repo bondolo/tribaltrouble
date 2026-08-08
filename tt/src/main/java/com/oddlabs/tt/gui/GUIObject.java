@@ -9,9 +9,9 @@ import com.oddlabs.tt.guievent.MouseButtonListener;
 import com.oddlabs.tt.guievent.MouseClickListener;
 import com.oddlabs.tt.guievent.MouseMotionListener;
 import com.oddlabs.tt.guievent.MouseWheelListener;
-import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.client.input.GameAction;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.client.input.InputPhase;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

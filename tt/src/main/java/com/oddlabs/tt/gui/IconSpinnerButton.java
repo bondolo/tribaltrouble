@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.client.input.GameAction;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -9,7 +9,8 @@ import java.util.function.Supplier;
 public final class IconSpinnerButton extends NonFocusIconButton {
     private final IconSpinner owner;
 
-    public IconSpinnerButton(@NonNull ModeIconQuads icon_quad, @Nullable GameAction action, @NonNull Supplier<@NonNull String> tool_tip,
+    public IconSpinnerButton(@NonNull ModeIconQuads icon_quad, @Nullable GameAction action, @NonNull Supplier<
+            @NonNull String> tool_tip,
             IconSpinner owner) {
         super(icon_quad, action, tool_tip);
         this.owner = owner;

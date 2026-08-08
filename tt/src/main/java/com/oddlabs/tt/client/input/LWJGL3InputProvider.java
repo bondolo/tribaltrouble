@@ -1,4 +1,4 @@
-package com.oddlabs.tt.input;
+package com.oddlabs.tt.client.input;
 
 import com.oddlabs.tt.window.LWJGL3Window;
 import org.jspecify.annotations.NonNull;

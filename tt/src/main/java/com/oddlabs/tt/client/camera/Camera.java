@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.StateChecksum;

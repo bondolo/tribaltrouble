@@ -10,9 +10,9 @@ import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.client.input.GameAction;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.client.input.InputPhase;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

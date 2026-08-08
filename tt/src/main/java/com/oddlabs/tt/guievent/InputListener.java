@@ -1,6 +1,6 @@
 package com.oddlabs.tt.guievent;
 
-import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.client.input.InputEvent;
 import org.jspecify.annotations.NonNull;
 
 @FunctionalInterface

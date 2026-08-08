@@ -1,4 +1,4 @@
-package com.oddlabs.tt.input;
+package com.oddlabs.tt.client.input;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

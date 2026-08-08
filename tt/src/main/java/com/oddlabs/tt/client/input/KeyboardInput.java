@@ -1,4 +1,4 @@
-package com.oddlabs.tt.input;
+package com.oddlabs.tt.client.input;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.core.animation.AnimationManager;

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.client.input.GameAction;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 
@@ -45,9 +45,9 @@ public final class ArrowButton extends ButtonObject {
                 ? ModeIconQuads.Mode.DISABLED
                 : isPressed() && isHovered()
                         ? ModeIconQuads.Mode.ACTIVE
-                        : isActive()
-                            ? ModeIconQuads.Mode.ACTIVE // Active state for button
-                            : ModeIconQuads.Mode.NORMAL;
+                : isActive()
+                        ? ModeIconQuads.Mode.ACTIVE // Active state for button
+                : ModeIconQuads.Mode.NORMAL;
 
         var quad_to_render_button = (!isDisabled() && isPressed() && isHovered() ? pressed : unpressed);
 

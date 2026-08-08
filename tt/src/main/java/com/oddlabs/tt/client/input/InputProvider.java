@@ -1,4 +1,4 @@
-package com.oddlabs.tt.input;
+package com.oddlabs.tt.client.input;
 
 import org.jspecify.annotations.Nullable;
 
@@ -33,7 +33,7 @@ public interface InputProvider<C> extends AutoCloseable {
     boolean getEventButtonState();
 
     int getEventDWheel();
-    
+
     int getEventDWheelX();
 
     int getEventX();
