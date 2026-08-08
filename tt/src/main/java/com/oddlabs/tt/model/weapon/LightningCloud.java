@@ -5,7 +5,7 @@ import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.pathfinder.UnitGrid;
+import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.player.Player;

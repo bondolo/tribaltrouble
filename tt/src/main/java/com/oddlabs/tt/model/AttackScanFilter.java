@@ -1,7 +1,7 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.pathfinder.Occupant;
-import com.oddlabs.tt.pathfinder.ScanFilter;
+import com.oddlabs.tt.simulation.pathfinder.Occupant;
+import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
 import com.oddlabs.tt.player.Player;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

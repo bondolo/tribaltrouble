@@ -4,7 +4,7 @@ import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.SupplyFinder;
 import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.pathfinder.FinderTrackerAlgorithm;
+import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

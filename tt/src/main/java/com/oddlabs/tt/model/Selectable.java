@@ -3,9 +3,9 @@ package com.oddlabs.tt.model;
 import com.oddlabs.tt.animation.Animated;
 import com.oddlabs.tt.model.behaviour.Behaviour;
 import com.oddlabs.tt.model.behaviour.Controller;
-import com.oddlabs.tt.pathfinder.Occupant;
-import com.oddlabs.tt.pathfinder.ScanFilter;
-import com.oddlabs.tt.pathfinder.UnitGrid;
+import com.oddlabs.tt.simulation.pathfinder.Occupant;
+import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
+import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.util.Color;
@@ -346,8 +346,8 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return (Selectable<T>[]) new Selectable[length];
     }
 
-    public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<T>
-        @NonNull... selectables) {
+    public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<
+            T> @NonNull... selectables) {
         return selectables;
     }
 }

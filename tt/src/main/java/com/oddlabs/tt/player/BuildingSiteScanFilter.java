@@ -3,9 +3,9 @@ package com.oddlabs.tt.player;
 import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.BuildingTemplate;
-import com.oddlabs.tt.pathfinder.Occupant;
-import com.oddlabs.tt.pathfinder.ScanFilter;
-import com.oddlabs.tt.pathfinder.UnitGrid;
+import com.oddlabs.tt.simulation.pathfinder.Occupant;
+import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
+import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;

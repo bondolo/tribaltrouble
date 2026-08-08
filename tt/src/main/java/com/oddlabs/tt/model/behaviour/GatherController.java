@@ -6,8 +6,8 @@ import com.oddlabs.tt.model.BuildingFinder;
 import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.pathfinder.FinderTrackerAlgorithm;
-import com.oddlabs.tt.pathfinder.TargetTrackerAlgorithm;
+import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
+import com.oddlabs.tt.simulation.pathfinder.TargetTrackerAlgorithm;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

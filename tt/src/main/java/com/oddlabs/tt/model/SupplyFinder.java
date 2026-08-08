@@ -1,9 +1,9 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.pathfinder.FinderFilter;
-import com.oddlabs.tt.pathfinder.Occupant;
-import com.oddlabs.tt.pathfinder.Region;
-import com.oddlabs.tt.pathfinder.RegionBuilder;
+import com.oddlabs.tt.simulation.pathfinder.FinderFilter;
+import com.oddlabs.tt.simulation.pathfinder.Occupant;
+import com.oddlabs.tt.simulation.pathfinder.Region;
+import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
