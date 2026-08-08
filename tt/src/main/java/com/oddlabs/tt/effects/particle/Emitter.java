@@ -1,7 +1,7 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.tt.core.event.StateChecksum;

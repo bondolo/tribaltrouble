@@ -16,7 +16,7 @@ import com.oddlabs.tt.client.form.CampaignDialogForm;
 import com.oddlabs.tt.client.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Unit;

@@ -12,7 +12,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;
 import com.oddlabs.tt.client.gui.Form;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.Unit;

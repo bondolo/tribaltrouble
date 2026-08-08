@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;

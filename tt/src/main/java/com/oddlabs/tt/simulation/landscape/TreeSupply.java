@@ -1,4 +1,4 @@
-package com.oddlabs.tt.landscape;
+package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.model.Shadowable;

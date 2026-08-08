@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;

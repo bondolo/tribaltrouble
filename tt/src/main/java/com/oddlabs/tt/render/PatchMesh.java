@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;

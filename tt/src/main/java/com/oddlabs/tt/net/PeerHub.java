@@ -12,7 +12,7 @@ import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.render.Renderer;

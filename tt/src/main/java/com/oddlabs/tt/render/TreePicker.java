@@ -2,10 +2,10 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.landscape.AbstractTreeGroup;
-import com.oddlabs.tt.landscape.TreeGroup;
-import com.oddlabs.tt.landscape.TreeLeaf;
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
+import com.oddlabs.tt.simulation.landscape.TreeGroup;
+import com.oddlabs.tt.simulation.landscape.TreeLeaf;
+import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.model.BoundingBox;
@@ -17,7 +17,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.oddlabs.tt.landscape.AbstractTreeGroup.TreeType;
+import static com.oddlabs.tt.simulation.landscape.AbstractTreeGroup.TreeType;
 
 
 /**

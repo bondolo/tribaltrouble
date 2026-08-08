@@ -5,7 +5,7 @@ import com.oddlabs.tt.model.Difficulty;
 
 import java.util.EnumMap;
 import java.util.Map;
-import com.oddlabs.tt.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Building;

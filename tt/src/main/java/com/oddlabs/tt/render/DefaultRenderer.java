@@ -5,7 +5,7 @@ import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.BoundingMode;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;

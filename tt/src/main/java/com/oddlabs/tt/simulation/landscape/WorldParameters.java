@@ -1,4 +1,4 @@
-package com.oddlabs.tt.landscape;
+package com.oddlabs.tt.simulation.landscape;
 
 import org.jspecify.annotations.NonNull;
 

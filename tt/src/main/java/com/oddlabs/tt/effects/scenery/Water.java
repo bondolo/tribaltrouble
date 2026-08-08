@@ -2,8 +2,8 @@ package com.oddlabs.tt.effects.scenery;
 
 import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.landscape.LandscapeLeaf;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.engine.procedural.GeneratorOcean;
 import com.oddlabs.tt.render.HeightMapVisual;

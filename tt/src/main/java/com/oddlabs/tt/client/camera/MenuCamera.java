@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import org.jspecify.annotations.NonNull;
 
 public final class MenuCamera extends Camera {

@@ -17,7 +17,7 @@ import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.gui.Slider;
 import com.oddlabs.tt.client.gui.SortedLabel;
 import com.oddlabs.tt.client.guievent.RowListener;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
 import com.oddlabs.tt.client.window.Window;

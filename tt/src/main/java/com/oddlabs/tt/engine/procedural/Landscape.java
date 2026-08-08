@@ -6,7 +6,7 @@ import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
 import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.engine.resource.BlendInfo;

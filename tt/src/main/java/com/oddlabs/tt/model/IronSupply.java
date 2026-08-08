@@ -1,7 +1,7 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.landscape.World;
-import com.oddlabs.tt.landscape.LandscapeBoundsProvider;
+import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.landscape.HeightMap;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.LinkedList;
 import org.jspecify.annotations.NonNull;

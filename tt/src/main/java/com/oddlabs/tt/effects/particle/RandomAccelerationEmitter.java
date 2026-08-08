@@ -1,6 +1,6 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
 import com.oddlabs.util.Color;

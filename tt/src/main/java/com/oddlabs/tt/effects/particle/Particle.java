@@ -1,6 +1,6 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.util.Color;

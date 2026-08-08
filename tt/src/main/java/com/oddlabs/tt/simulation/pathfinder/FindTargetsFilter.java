@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Target;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

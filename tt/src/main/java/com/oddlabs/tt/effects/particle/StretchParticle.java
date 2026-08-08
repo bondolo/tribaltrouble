@@ -1,6 +1,6 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import org.jspecify.annotations.NonNull;
 
 public final class StretchParticle extends Particle {

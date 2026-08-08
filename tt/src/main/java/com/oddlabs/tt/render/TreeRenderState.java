@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.camera.CameraState;
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import org.jspecify.annotations.NonNull;
 
 /**

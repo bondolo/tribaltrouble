@@ -17,7 +17,7 @@ import com.oddlabs.tt.client.gui.MenuButton;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.GameNetwork;

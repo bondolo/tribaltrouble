@@ -2,7 +2,7 @@ package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.render.LandscapeBaker;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Landscape;

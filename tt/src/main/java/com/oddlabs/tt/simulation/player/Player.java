@@ -4,8 +4,8 @@ import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.model.MagicType;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.landscape.LandscapeTarget;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Army;

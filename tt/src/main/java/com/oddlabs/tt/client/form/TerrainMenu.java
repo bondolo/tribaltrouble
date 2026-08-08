@@ -28,7 +28,7 @@ import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.gui.Slider;
 import com.oddlabs.tt.client.guievent.MouseClickListener;
 import com.oddlabs.tt.client.guievent.ValueListener;
-import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RacesResources;
 import com.oddlabs.tt.model.Terrain;
