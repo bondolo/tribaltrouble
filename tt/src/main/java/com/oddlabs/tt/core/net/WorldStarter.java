@@ -13,8 +13,8 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.UIRenderer;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
-import com.oddlabs.tt.viewer.InGameInfo;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

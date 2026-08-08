@@ -6,7 +6,7 @@ import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.ElementLeaf;
 import com.oddlabs.tt.simulation.model.ElementNode;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.viewer.Selection;
+import com.oddlabs.tt.client.viewer.Selection;
 import org.jspecify.annotations.NonNull;
 
 final class ElementRenderer<T extends Element<T>> {

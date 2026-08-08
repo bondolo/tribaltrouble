@@ -9,7 +9,7 @@ import com.oddlabs.tt.render.UIRenderer;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.render.state.ScopedState;
-import com.oddlabs.tt.viewer.AmbientAudio;
+import com.oddlabs.tt.client.viewer.AmbientAudio;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.viewer;
+package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.client.form.WaitingForPlayersForm;
 import com.oddlabs.tt.core.net.StallHandler;

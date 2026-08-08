@@ -1,4 +1,4 @@
-package com.oddlabs.tt.viewer;
+package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.UnitType;

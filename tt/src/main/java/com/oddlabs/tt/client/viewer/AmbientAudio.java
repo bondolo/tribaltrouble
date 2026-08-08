@@ -1,4 +1,4 @@
-package com.oddlabs.tt.viewer;
+package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.engine.audio.AudioManager;
 import com.oddlabs.tt.engine.audio.AudioPlayer;

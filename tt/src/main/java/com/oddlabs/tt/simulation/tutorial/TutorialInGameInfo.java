@@ -7,8 +7,8 @@ import com.oddlabs.tt.client.form.TutorialForm;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.viewer.InGameInfo;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 public final class TutorialInGameInfo implements InGameInfo {

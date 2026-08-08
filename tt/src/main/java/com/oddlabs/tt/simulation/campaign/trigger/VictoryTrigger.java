@@ -2,7 +2,7 @@ package com.oddlabs.tt.simulation.campaign.trigger;
 
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

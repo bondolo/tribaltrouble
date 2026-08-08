@@ -14,7 +14,7 @@ import com.oddlabs.tt.client.guievent.MouseClickListener;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.simulation.tutorial.TutorialInGameInfo;
 import com.oddlabs.tt.core.util.Utils;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

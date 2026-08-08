@@ -38,9 +38,9 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.core.net.ServerMessageBundler;
 import com.oddlabs.tt.core.util.Utils;
-import com.oddlabs.tt.viewer.DefaultInGameInfo;
-import com.oddlabs.tt.viewer.InGameInfo;
-import com.oddlabs.tt.viewer.MultiplayerInGameInfo;
+import com.oddlabs.tt.client.viewer.DefaultInGameInfo;
+import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.MultiplayerInGameInfo;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

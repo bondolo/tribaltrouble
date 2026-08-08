@@ -33,7 +33,7 @@ import com.oddlabs.tt.simulation.player.Player;
 import org.lwjgl.opengl.GL11;
 import com.oddlabs.tt.engine.procedural.GeneratorRing;
 import com.oddlabs.tt.simulation.model.BoundingBox;
-import com.oddlabs.tt.viewer.Selection;
+import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

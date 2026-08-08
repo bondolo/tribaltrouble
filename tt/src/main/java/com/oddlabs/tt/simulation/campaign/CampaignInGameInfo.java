@@ -9,8 +9,8 @@ import com.oddlabs.tt.client.gui.LabelBox;
 import com.oddlabs.tt.client.gui.OKButton;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.viewer.InGameInfo;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;

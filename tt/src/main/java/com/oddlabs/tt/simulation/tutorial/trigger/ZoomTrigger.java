@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
 import com.oddlabs.tt.client.camera.GameCamera;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 public final class ZoomTrigger extends TutorialTrigger {

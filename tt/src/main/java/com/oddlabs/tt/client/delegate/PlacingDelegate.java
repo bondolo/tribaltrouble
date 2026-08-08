@@ -25,7 +25,7 @@ import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.SpriteRenderer;
 import com.oddlabs.tt.render.VisualRegistry;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.viewer.WorldViewer;
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

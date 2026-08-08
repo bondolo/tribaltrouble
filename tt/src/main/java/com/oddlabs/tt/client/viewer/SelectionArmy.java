@@ -1,4 +1,4 @@
-package com.oddlabs.tt.viewer;
+package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Army;

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.viewer;
+package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.client.gui.GUIRoot;
