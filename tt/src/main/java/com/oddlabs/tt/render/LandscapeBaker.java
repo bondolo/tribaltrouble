@@ -1,11 +1,11 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.render.shader.ShaderProgram;
-import com.oddlabs.tt.resource.BlendInfo;
-import com.oddlabs.tt.resource.BlendLighting;
-import com.oddlabs.tt.resource.BlendOcclusion;
-import com.oddlabs.tt.resource.StructureBlend;
-import com.oddlabs.tt.resource.WorldInfo;
+import com.oddlabs.tt.engine.resource.BlendInfo;
+import com.oddlabs.tt.engine.resource.BlendLighting;
+import com.oddlabs.tt.engine.resource.BlendOcclusion;
+import com.oddlabs.tt.engine.resource.StructureBlend;
+import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.vbo.QuadVBO;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

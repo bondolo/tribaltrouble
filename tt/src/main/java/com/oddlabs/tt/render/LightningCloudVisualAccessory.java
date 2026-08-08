@@ -10,7 +10,7 @@ import com.oddlabs.tt.effects.particle.CloudFunction;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.ParametricEmitter;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

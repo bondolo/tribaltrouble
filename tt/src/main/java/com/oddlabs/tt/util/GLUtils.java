@@ -1,7 +1,7 @@
 package com.oddlabs.tt.util;
 
-import com.oddlabs.tt.resource.GLImage;
-import com.oddlabs.tt.resource.GLIntImage;
+import com.oddlabs.tt.engine.resource.GLImage;
+import com.oddlabs.tt.engine.resource.GLIntImage;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;

@@ -35,7 +35,7 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.resource.WorldGenerator;
+import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -1,0 +1,252 @@
+package com.oddlabs.tt.engine.resource;
+
+import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.render.Texture;
+import com.oddlabs.util.DXTImage;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.EXTTextureCompressionS3TC;
+import org.lwjgl.opengl.EXTTextureSRGB;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL21;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Defines the properties and loading parameters for a texture resource.
+ * This class specifies how a texture should be loaded and configured in OpenGL.
+ */
+public final class TextureFile extends File<Texture> {
+    private static final Logger logger = Logger.getLogger(TextureFile.class.getSimpleName());
+    private static final String[] EXTENSIONS = {".dds", ".image", ".png", ".jpg", ".jpeg"};
+    /**
+     * The internal format of the texture, e.g., GL_RGBA or a compressed format.
+     */
+    private final int internal_format;
+    /**
+     * The minification filter, used when the texture is scaled down.
+     */
+    private final int min_filter;
+    /**
+     * The magnification filter, used when the texture is scaled up.
+     */
+    private final int mag_filter;
+    /**
+     * The wrap mode for the S (U) texture coordinate.
+     */
+    private final int wrap_s;
+    /**
+     * The wrap mode for the T (V) texture coordinate.
+     */
+    private final int wrap_t;
+    /**
+     * The base mipmap level for fadeout effects.
+     */
+    private final int base_fadeout_level;
+    /**
+     * The maximum mipmap level to generate and use.
+     */
+    private final int max_mipmap_level;
+    /**
+     * The factor by which mipmap levels fade out.
+     */
+    private final float fadeout_factor;
+    /**
+     * If true, alpha values are maximized during processing.
+     */
+    private final boolean max_alpha;
+    /**
+     * If true, the texture contains non-color data (e.g., normal maps, height maps)
+     * and should not be treated as sRGB.
+     */
+    private final boolean is_data;
+    /**
+     * If true, the texture contains color data in sRGB space and should be
+     * hardware-decoded to Linear space on fetch.
+     */
+    private final boolean is_srgb;
+    /**
+     * If true, the texture is a DXT compressed image.
+     */
+    private final boolean is_dxt;
+
+    public TextureFile(String location) {
+        this(location, Globals.COMPRESSED_RGBA_FORMAT);
+    }
+
+    public TextureFile(String location, int internal_format) {
+        this(location, internal_format, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+    }
+
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t) {
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, Globals.NO_MIPMAP_CUTOFF, 10000, 1.0f);
+    }
+
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor) {
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level,
+                fadeout_factor, false);
+    }
+
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha) {
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level,
+                fadeout_factor, max_alpha, false);
+    }
+
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data) {
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level, base_fadeout_level,
+                fadeout_factor, max_alpha, is_data, !is_data);
+    }
+
+    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+            int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data,
+            boolean is_srgb) {
+        super(locateTexture(location));
+        this.is_dxt = getURL().toString().endsWith(".dds");
+        this.internal_format = internal_format;
+        this.min_filter = min_filter;
+        this.mag_filter = mag_filter;
+        this.wrap_s = wrap_s;
+        this.wrap_t = wrap_t;
+        this.base_fadeout_level = base_fadeout_level;
+        this.max_mipmap_level = max_mipmap_level;
+        this.fadeout_factor = fadeout_factor;
+        this.max_alpha = max_alpha;
+        this.is_data = is_data;
+        this.is_srgb = is_srgb;
+    }
+
+    private static @NonNull URI locateTexture(String location) {
+        return Arrays.stream(EXTENSIONS)
+                .map(ext -> locate(location + ext))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst()
+                .orElseThrow(() -> {
+                    String msg = "Failed to locate texture: " + location + " (tried extensions: " + Arrays.toString(
+                            EXTENSIONS) + ")";
+                    logger.log(Level.SEVERE, msg);
+                    return new IllegalArgumentException(msg);
+                });
+    }
+
+    public boolean isDXTImage() {
+        return is_dxt;
+    }
+
+    public @NonNull DXTImage getDXTImage() {
+        try {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Loading DXT image from: " + getURL());
+            }
+            return DXTImage.read(getURL());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to read DXT image: " + getURL(), e);
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    public @NonNull GLImage getImage() {
+        try {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Loading image from: " + getURL());
+            }
+            return GLIntImage.loadImage(getURL());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to load image: " + getURL(), e);
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Override
+    public @NonNull Texture get() {
+        return new Texture(this);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        return o instanceof TextureFile other &&
+                internal_format == other.internal_format &&
+                min_filter == other.min_filter && mag_filter == other.mag_filter &&
+                max_mipmap_level == other.max_mipmap_level &&
+                wrap_s == other.wrap_s && wrap_t == other.wrap_t &&
+                base_fadeout_level == other.base_fadeout_level && fadeout_factor == other.fadeout_factor &&
+                max_alpha == other.max_alpha &&
+                is_srgb == other.is_srgb &&
+                is_data == other.is_data &&
+                super.equals(o);
+    }
+
+
+    public int getInternalFormat() {
+        if (is_dxt) {
+            return switch (getDXTImage().getFourCC()) {
+                case DXTImage.FOURCC_DXT1 -> (is_srgb && !is_data) ? EXTTextureSRGB.GL_COMPRESSED_SRGB_S3TC_DXT1_EXT
+                        : EXTTextureCompressionS3TC.GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+                case DXTImage.FOURCC_DXT5 -> (is_srgb && !is_data)
+                        ? EXTTextureSRGB.GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
+                        : EXTTextureCompressionS3TC.GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                default -> {
+                    String msg = "Unsupported DXT format (FourCC): " + Integer.toHexString(getDXTImage().getFourCC())
+                            + " for texture: " + getURL();
+                    logger.severe(msg);
+                    throw new IllegalArgumentException(msg);
+                }
+            };
+        }
+
+        if (is_srgb && !is_data) {
+            if (internal_format == GL11.GL_RGB || internal_format == GL11.GL_RGB8) return GL21.GL_SRGB8;
+            if (internal_format == GL11.GL_RGBA || internal_format == GL11.GL_RGBA8) return GL21.GL_SRGB8_ALPHA8;
+            if (internal_format == GL13.GL_COMPRESSED_RGB) return EXTTextureSRGB.GL_COMPRESSED_SRGB_EXT;
+            if (internal_format == GL13.GL_COMPRESSED_RGBA) return EXTTextureSRGB.GL_COMPRESSED_SRGB_ALPHA_EXT;
+        }
+
+        return internal_format;
+    }
+
+    public boolean isData() {
+        return is_data;
+    }
+
+    public int getMinFilter() {
+        return min_filter;
+    }
+
+    public int getMagFilter() {
+        return mag_filter;
+    }
+
+    public int getWrapS() {
+        return wrap_s;
+    }
+
+    public int getWrapT() {
+        return wrap_t;
+    }
+
+    public int getBaseFadeoutLevel() {
+        return base_fadeout_level;
+    }
+
+    public int getMaxMipmapLevel() {
+        return max_mipmap_level;
+    }
+
+    public float getFadeoutFactor() {
+        return fadeout_factor;
+    }
+
+    public boolean hasMaxAlpha() {
+        return max_alpha;
+    }
+}

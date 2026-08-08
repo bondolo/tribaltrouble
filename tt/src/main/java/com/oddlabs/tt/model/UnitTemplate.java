@@ -2,7 +2,7 @@ package com.oddlabs.tt.model;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.model.weapon.WeaponFactory;
-import com.oddlabs.tt.resource.AudioFile;
+import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

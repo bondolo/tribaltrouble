@@ -1,7 +1,7 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.resource.WorldGenerator;
+import com.oddlabs.tt.engine.resource.WorldGenerator;
 
 public interface GameClientInterface {
     void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator generator, short player_slot);

@@ -37,7 +37,7 @@ import com.oddlabs.tt.net.ChatCommand;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.MatchmakingListener;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.resource.WorldGenerator;
+import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.util.ServerMessageBundler;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;

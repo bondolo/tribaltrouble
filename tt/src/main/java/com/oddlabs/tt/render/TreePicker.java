@@ -6,8 +6,8 @@ import com.oddlabs.tt.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.landscape.TreeGroup;
 import com.oddlabs.tt.landscape.TreeLeaf;
 import com.oddlabs.tt.landscape.TreeSupply;
-import com.oddlabs.tt.resource.Resources;
-import com.oddlabs.tt.resource.SpriteFile;
+import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.model.BoundingBox;
 import org.jspecify.annotations.NonNull;
 

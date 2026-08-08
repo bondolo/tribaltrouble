@@ -9,8 +9,8 @@ import com.oddlabs.tt.model.WeaponVisualType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import com.oddlabs.tt.procedural.GeneratorCrack;
-import com.oddlabs.tt.procedural.GeneratorHalos;
+import com.oddlabs.tt.engine.procedural.GeneratorCrack;
+import com.oddlabs.tt.engine.procedural.GeneratorHalos;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;

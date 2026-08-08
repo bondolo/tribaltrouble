@@ -1,8 +1,8 @@
 package com.oddlabs.tt.engine.font;
 
 import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.resource.Resources;
-import com.oddlabs.tt.resource.TextureFile;
+import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.FontInfo;
 import com.oddlabs.util.Quad;
 import org.jspecify.annotations.NonNull;

@@ -4,7 +4,7 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.model.RockSupply;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;

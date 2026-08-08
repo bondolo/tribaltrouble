@@ -14,7 +14,7 @@ import com.oddlabs.tt.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.render.state.GlobalUniforms;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.WorldInfo;
+import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.tt.scenery.Water;
 import com.oddlabs.tt.util.DebugRender;

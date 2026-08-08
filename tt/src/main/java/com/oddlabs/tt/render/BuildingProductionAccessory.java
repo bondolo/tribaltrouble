@@ -7,7 +7,7 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomAccelerationEmitter;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

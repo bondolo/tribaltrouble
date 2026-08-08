@@ -15,7 +15,7 @@ import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.WorldInfo;
+import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.scenery.Sky;
 import com.oddlabs.tt.scenery.Water;
 import com.oddlabs.tt.engine.vbo.FloatVBO;

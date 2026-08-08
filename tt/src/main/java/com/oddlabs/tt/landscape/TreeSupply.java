@@ -7,7 +7,7 @@ import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.model.Target;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;

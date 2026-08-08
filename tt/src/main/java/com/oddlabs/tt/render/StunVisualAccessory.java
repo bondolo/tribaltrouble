@@ -7,7 +7,7 @@ import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.weapon.Stun;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
