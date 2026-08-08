@@ -17,7 +17,7 @@ import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputBinding;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.window.LWJGL3Window;
+import com.oddlabs.tt.client.window.LWJGL3Window;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDLDialog;

@@ -20,7 +20,7 @@ import com.oddlabs.tt.guievent.RowListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.SerializableDisplayMode;
-import com.oddlabs.tt.window.Window;
+import com.oddlabs.tt.client.window.Window;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

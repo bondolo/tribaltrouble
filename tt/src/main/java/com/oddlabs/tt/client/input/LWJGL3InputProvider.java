@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.input;
 
-import com.oddlabs.tt.window.LWJGL3Window;
+import com.oddlabs.tt.client.window.LWJGL3Window;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.sdl.SDL_Event;
@@ -30,6 +30,7 @@ import static org.lwjgl.sdl.SDLMouse.SDL_GetMouseState;
 import static org.lwjgl.sdl.SDLMouse.SDL_GetWindowRelativeMouseMode;
 import static org.lwjgl.sdl.SDLMouse.SDL_SetCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_SetWindowRelativeMouseMode;
+import static org.lwjgl.sdl.SDLMouse.SDL_ShowCursor;
 import static org.lwjgl.sdl.SDLMouse.SDL_WarpMouseInWindow;
 
 /**
@@ -321,10 +322,12 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
 
         if (null != cursor && cursor != MemoryUtil.NULL) {
             SDL_SetCursor(cursor);
+            SDL_ShowCursor();
         } else {
             long defaultCursor = SDL_GetDefaultCursor();
             if (defaultCursor != MemoryUtil.NULL) {
                 SDL_SetCursor(defaultCursor);
+                SDL_ShowCursor();
             }
         }
     }
