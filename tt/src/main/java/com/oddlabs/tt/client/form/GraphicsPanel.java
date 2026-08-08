@@ -18,8 +18,8 @@ import com.oddlabs.tt.client.gui.Slider;
 import com.oddlabs.tt.client.gui.SortedLabel;
 import com.oddlabs.tt.client.guievent.RowListener;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.render.SerializableDisplayMode;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import com.oddlabs.tt.client.window.Window;
 import org.jspecify.annotations.NonNull;
 

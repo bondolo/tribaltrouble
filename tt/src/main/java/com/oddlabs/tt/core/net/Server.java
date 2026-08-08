@@ -14,7 +14,7 @@ import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;

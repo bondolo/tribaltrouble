@@ -4,7 +4,7 @@ import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Element;
-import com.oddlabs.tt.render.TextureKey;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;

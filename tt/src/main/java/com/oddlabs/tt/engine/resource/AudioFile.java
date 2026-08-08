@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.engine.audio.Audio;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

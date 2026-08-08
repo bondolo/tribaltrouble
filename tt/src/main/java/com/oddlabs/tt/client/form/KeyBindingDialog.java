@@ -13,7 +13,7 @@ import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.client.input.Key;
 import com.oddlabs.tt.client.input.Modifier;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;

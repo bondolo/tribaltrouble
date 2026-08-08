@@ -14,8 +14,8 @@ import com.oddlabs.tt.client.gui.PulldownMenu;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.gui.Slider;
 import com.oddlabs.tt.client.gui.TitledBorderGroup;
-import com.oddlabs.tt.render.GUIRenderer;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

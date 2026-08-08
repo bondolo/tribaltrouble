@@ -8,7 +8,7 @@ import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Perlin.Interpolation;
 import com.oddlabs.tt.engine.procedural.Perlin.Summation;
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.GLImage;
 import com.oddlabs.tt.engine.resource.GLIntImage;
 import org.jspecify.annotations.NonNull;

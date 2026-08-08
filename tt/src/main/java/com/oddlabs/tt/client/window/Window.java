@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.window;
 
-import com.oddlabs.tt.render.SerializableDisplayMode;
+import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
 

@@ -6,7 +6,7 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.client.form.MessageForm;
 import com.oddlabs.tt.client.guievent.RowListener;
 import com.oddlabs.tt.simulation.campaign.CampaignState;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.util.DeterministicSerializer;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;

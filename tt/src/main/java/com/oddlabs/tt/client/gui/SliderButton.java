@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.gui;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.client.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 
 public final class SliderButton extends ButtonObject {

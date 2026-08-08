@@ -35,7 +35,7 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.core.net.GameNetwork;
 import com.oddlabs.tt.core.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.net.ServerMessageBundler;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.DefaultInGameInfo;

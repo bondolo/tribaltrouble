@@ -9,7 +9,7 @@ import com.oddlabs.tt.client.input.KeyboardInput;
 import com.oddlabs.tt.client.input.LWJGL3InputProvider;
 import com.oddlabs.tt.client.input.Modifier;
 import com.oddlabs.tt.client.input.PointerInput;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.window.LWJGL3Window;
 import com.oddlabs.tt.client.window.Window;
 import org.jspecify.annotations.NonNull;

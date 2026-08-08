@@ -36,7 +36,7 @@ import com.oddlabs.tt.client.guievent.RowListener;
 import com.oddlabs.tt.core.net.ChatCommand;
 import com.oddlabs.tt.core.net.GameNetwork;
 import com.oddlabs.tt.core.net.MatchmakingListener;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.core.net.ServerMessageBundler;
 import com.oddlabs.tt.core.util.Utils;

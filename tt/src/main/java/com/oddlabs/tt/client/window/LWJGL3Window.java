@@ -2,8 +2,8 @@ package com.oddlabs.tt.client.window;
 
 import com.oddlabs.tt.core.global.Settings;
 import com.oddlabs.tt.client.input.LWJGL3InputProvider;
-import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.render.SerializableDisplayMode;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.form;
 
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.render.UIRenderer;
+import com.oddlabs.tt.client.render.UIRenderer;
 import org.jspecify.annotations.NonNull;
 
 @FunctionalInterface

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.font;
 
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.FontInfo;

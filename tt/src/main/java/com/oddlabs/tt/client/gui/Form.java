@@ -6,8 +6,8 @@ import com.oddlabs.tt.client.guievent.MouseMotionListener;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.render.GUIRenderer;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

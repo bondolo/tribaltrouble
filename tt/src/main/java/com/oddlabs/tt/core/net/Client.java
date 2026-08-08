@@ -16,7 +16,7 @@ import com.oddlabs.tt.client.gui.GUI;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.util.Utils;

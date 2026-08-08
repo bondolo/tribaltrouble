@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.procedural;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.GLIntImage;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

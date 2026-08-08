@@ -28,7 +28,7 @@ import com.oddlabs.tt.simulation.campaign.trigger.MagicUsedTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.NearPointTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.render.VisualRegistry;
+import com.oddlabs.tt.engine.render.VisualRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
