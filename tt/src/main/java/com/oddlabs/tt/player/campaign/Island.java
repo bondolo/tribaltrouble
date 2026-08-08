@@ -23,7 +23,7 @@ import com.oddlabs.tt.net.WorldInitAction;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.AI;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.trigger.campaign.DefeatTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.DefeatTrigger;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.viewer.InGameInfo;

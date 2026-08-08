@@ -1,4 +1,4 @@
-package com.oddlabs.tt.trigger;
+package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.core.animation.Updatable;

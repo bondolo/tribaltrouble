@@ -1,8 +1,8 @@
-package com.oddlabs.tt.trigger.campaign;
+package com.oddlabs.tt.simulation.trigger.campaign;
 
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.trigger.IntervalTrigger;
+import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;
 
 

@@ -1,7 +1,7 @@
-package com.oddlabs.tt.trigger.campaign;
+package com.oddlabs.tt.simulation.trigger.campaign;
 
 import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.trigger.IntervalTrigger;
+import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;
 
 public final class DeathTrigger extends IntervalTrigger {
