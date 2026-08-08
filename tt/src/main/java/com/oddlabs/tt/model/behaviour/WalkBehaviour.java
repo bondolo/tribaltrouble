@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model.behaviour;
 
-import com.oddlabs.tt.gui.ToolTipBox;
+import com.oddlabs.tt.client.gui.ToolTipBox;
 import com.oddlabs.tt.model.AttackScanFilter;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;

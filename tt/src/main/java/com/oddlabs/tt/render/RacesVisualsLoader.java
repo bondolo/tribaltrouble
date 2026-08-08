@@ -1,8 +1,8 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.form.ProgressForm;
+import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
-import com.oddlabs.tt.gui.GUIIcons;
+import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.BuildingTemplate;
 import com.oddlabs.tt.model.BuildingType;

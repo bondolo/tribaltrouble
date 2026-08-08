@@ -1,8 +1,8 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.delegate.GameStatsDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
-import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.client.delegate.GameStatsDelegate;
+import com.oddlabs.tt.client.delegate.InGameMainMenu;
+import com.oddlabs.tt.client.gui.Group;
 
 public interface InGameInfo {
     void addGUI(WorldViewer viewer, InGameMainMenu menu, Group game_infos);

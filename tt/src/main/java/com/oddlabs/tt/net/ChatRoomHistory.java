@@ -1,7 +1,7 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.ChatRoomUser;
-import com.oddlabs.tt.gui.ChatPanel;
+import com.oddlabs.tt.client.gui.ChatPanel;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

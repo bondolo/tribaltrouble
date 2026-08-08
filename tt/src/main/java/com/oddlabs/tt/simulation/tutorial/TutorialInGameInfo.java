@@ -1,11 +1,11 @@
 package com.oddlabs.tt.simulation.tutorial;
 
-import com.oddlabs.tt.delegate.GameStatsDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
-import com.oddlabs.tt.delegate.Menu;
-import com.oddlabs.tt.form.TutorialForm;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.client.delegate.GameStatsDelegate;
+import com.oddlabs.tt.client.delegate.InGameMainMenu;
+import com.oddlabs.tt.client.delegate.Menu;
+import com.oddlabs.tt.client.form.TutorialForm;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.Group;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.viewer.InGameInfo;
 import com.oddlabs.tt.viewer.WorldViewer;

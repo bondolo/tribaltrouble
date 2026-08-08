@@ -1,0 +1,70 @@
+package com.oddlabs.tt.client.delegate;
+
+import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.input.InputEvent;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+public abstract class CameraDelegate<C extends Camera> extends Delegate {
+    private final @NonNull GUIRoot gui_root;
+    private @Nullable C camera;
+
+    public CameraDelegate(@NonNull GUIRoot gui_root, @Nullable C camera) {
+        this.camera = camera;
+        this.gui_root = gui_root;
+    }
+
+    public final @NonNull GUIRoot getGUIRoot() {
+        return gui_root;
+    }
+
+    public final void setCamera(@NonNull C camera) {
+        this.camera = camera;
+    }
+
+    public final @NonNull C getCamera() {
+        if (camera == null) {
+            throw new IllegalStateException("Camera not set");
+        }
+        return camera;
+    }
+
+    @Override
+    public void handleInput(@NonNull InputEvent event) {
+        if (camera != null) {
+            camera.handleInput(event);
+        }
+        if (!event.isConsumed()) {
+            super.handleInput(event);
+        }
+    }
+
+    @Override
+    protected void doAdd() {
+        super.doAdd();
+        getCamera().enable();
+    }
+
+    @Override
+    protected void doRemove() {
+        super.doRemove();
+        getCamera().disable();
+    }
+
+    public boolean renderCursor() {
+        return true;
+    }
+
+    public boolean canScroll() {
+        return false;
+    }
+
+    public boolean forceRender() {
+        return false;
+    }
+
+    public final void pop() {
+        gui_root.removeDelegate(this);
+    }
+}

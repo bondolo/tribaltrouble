@@ -1,7 +1,7 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.gui.GUIIcons;
-import com.oddlabs.tt.gui.IconQuad;
+import com.oddlabs.tt.client.gui.GUIIcons;
+import com.oddlabs.tt.client.gui.IconQuad;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumMap;

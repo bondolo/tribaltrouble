@@ -1,0 +1,35 @@
+package com.oddlabs.tt.client.delegate;
+
+import com.oddlabs.tt.client.camera.GameCamera;
+import com.oddlabs.tt.client.gui.MouseButton;
+import com.oddlabs.tt.model.Action;
+import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.viewer.WorldViewer;
+import org.jspecify.annotations.NonNull;
+
+public final class RallyPointDelegate extends TargetDelegate {
+    private final @NonNull Building building;
+
+    public RallyPointDelegate(@NonNull WorldViewer viewer, @NonNull GameCamera camera, @NonNull Building building) {
+        super(viewer, camera, Action.DEFAULT);
+        this.building = building;
+    }
+
+    @Override
+    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+        if (building.isDead()) {
+            pop();
+            return;
+        }
+        getViewer().getPicker().pickRallyPoint(getViewer().getGUIRoot().getDelegate().getCamera()
+                .getState(), x, y, building).ifPresent(target -> {
+                    if (building.isValidRallyPoint(target)) {
+                        getViewer().getPeerHub().getPlayerInterface().setRallyPoint(building, target);
+                    } else {
+                        getViewer().getPeerHub().getPlayerInterface().setRallyPoint(building, target.getGridX(), target
+                                .getGridY());
+                    }
+                    pop();
+                });
+    }
+}

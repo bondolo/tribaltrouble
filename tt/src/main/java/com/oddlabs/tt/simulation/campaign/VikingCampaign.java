@@ -2,12 +2,12 @@ package com.oddlabs.tt.simulation.campaign;
 
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.form.CampaignDialogForm;
-import com.oddlabs.tt.gui.CampaignIcons;
-import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.VikingCampaignIcons;
+import com.oddlabs.tt.client.form.CampaignDialogForm;
+import com.oddlabs.tt.client.gui.CampaignIcons;
+import com.oddlabs.tt.client.gui.Form;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.Origin;
+import com.oddlabs.tt.client.gui.VikingCampaignIcons;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

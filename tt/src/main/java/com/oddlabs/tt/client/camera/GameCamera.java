@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.camera;
 
-import com.oddlabs.tt.delegate.SelectionDelegate;
+import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;

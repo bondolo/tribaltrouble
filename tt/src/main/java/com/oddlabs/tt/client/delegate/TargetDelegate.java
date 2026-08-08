@@ -1,0 +1,60 @@
+package com.oddlabs.tt.client.delegate;
+
+import com.oddlabs.tt.client.camera.GameCamera;
+import com.oddlabs.tt.client.gui.CursorType;
+import com.oddlabs.tt.client.gui.MouseButton;
+import com.oddlabs.tt.client.input.GameAction;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.model.Action;
+import com.oddlabs.tt.viewer.WorldViewer;
+import org.jspecify.annotations.NonNull;
+
+public class TargetDelegate extends ControllableCameraDelegate<GameCamera> {
+    private final @NonNull Action action;
+
+    public TargetDelegate(@NonNull WorldViewer viewer, @NonNull GameCamera camera, @NonNull Action action) {
+        super(viewer, camera);
+        this.action = action;
+    }
+
+    @Override
+    protected void pushZoomDelegate() {
+        getGUIRoot().pushDelegate(new ZoomDelegate(getViewer(), getCamera()));
+    }
+
+    @Override
+    public boolean canHoverBehind() {
+        return true;
+    }
+
+    @Override
+    protected final @NonNull CursorType getCursorType() {
+        return CursorType.TARGET;
+    }
+
+    @Override
+    public void handleInput(@NonNull InputEvent event) {
+        if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
+            if (event.consumeAction(GameAction.UI_CANCEL)) {
+                pop();
+                event.consume();
+                return;
+            }
+        }
+        super.handleInput(event);
+        if (event.isConsumed()) return;
+    }
+
+    @Override
+    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+        if (button == MouseButton.LEFT) {
+            getViewer().getPicker().pickTarget(getViewer().getSelection().getCurrentSelection(), getViewer()
+                    .getGUIRoot().getDelegate().getCamera().getState(), getViewer().getPeerHub().getPlayerInterface(),
+                    x, y, action);
+            pop();
+        } else {
+            super.mousePressed(button, x, y);
+        }
+    }
+}

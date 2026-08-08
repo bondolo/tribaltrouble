@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.gui.ToolTipBox;
+import com.oddlabs.tt.client.gui.ToolTipBox;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.util.BezierPath;
 import com.oddlabs.tt.util.DebugRender;

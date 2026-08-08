@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.gui.BuildSpinner;
+import com.oddlabs.tt.client.gui.BuildSpinner;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Map;

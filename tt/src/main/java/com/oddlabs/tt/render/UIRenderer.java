@@ -1,9 +1,9 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.camera.CameraState;
-import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.gui.ToolTip;
+import com.oddlabs.tt.client.gui.ToolTip;
 import com.oddlabs.tt.viewer.AmbientAudio;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -12,23 +12,23 @@ import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.audio.openal.OpenALManager;
 import com.oddlabs.tt.client.camera.MenuCamera;
-import com.oddlabs.tt.delegate.MainMenu;
+import com.oddlabs.tt.client.delegate.MainMenu;
 import com.oddlabs.tt.client.camera.StaticCamera;
-import com.oddlabs.tt.delegate.InGameDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
+import com.oddlabs.tt.client.delegate.InGameDelegate;
+import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.tt.core.event.LocalEventQueue;
-import com.oddlabs.tt.form.MessageForm;
-import com.oddlabs.tt.form.ProgressForm;
-import com.oddlabs.tt.form.WarningForm;
+import com.oddlabs.tt.client.form.MessageForm;
+import com.oddlabs.tt.client.form.ProgressForm;
+import com.oddlabs.tt.client.form.WarningForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.global.GlobalsInit;
 import com.oddlabs.tt.global.Settings;
-import com.oddlabs.tt.gui.GUI;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.Languages;
-import com.oddlabs.tt.gui.LocalInput;
+import com.oddlabs.tt.client.gui.GUI;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.Languages;
+import com.oddlabs.tt.client.gui.LocalInput;
 import com.oddlabs.tt.landscape.NotificationListener;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.landscape.WorldParameters;
@@ -285,7 +285,7 @@ public final class Renderer implements AutoCloseable {
                     if (gui.getGUIRoot().isShowingQuitForm()) {
                         shutdown();
                     } else {
-                        gui.getGUIRoot().addModalForm(new com.oddlabs.tt.form.QuitForm(gui.getGUIRoot()));
+                        gui.getGUIRoot().addModalForm(new com.oddlabs.tt.client.form.QuitForm(gui.getGUIRoot()));
                     }
                 }
                 AnimationManager.pathfindsPerTick.updateAbsolute(
@@ -961,7 +961,7 @@ public final class Renderer implements AutoCloseable {
                 .size(), world_params.getInitialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
-        com.oddlabs.tt.form.ProgressForm.progress();
+        com.oddlabs.tt.client.form.ProgressForm.progress();
         World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null,
                 new NotificationListener() {
                 }, world_params, world_info, players,

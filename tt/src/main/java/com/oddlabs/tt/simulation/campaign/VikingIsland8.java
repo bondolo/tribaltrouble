@@ -9,11 +9,11 @@ import com.oddlabs.tt.model.UnitType;
 import com.oddlabs.tt.model.MagicType;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.delegate.JumpDelegate;
-import com.oddlabs.tt.form.CampaignDialogForm;
-import com.oddlabs.tt.form.InGameCampaignDialogForm;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.client.delegate.JumpDelegate;
+import com.oddlabs.tt.client.form.CampaignDialogForm;
+import com.oddlabs.tt.client.form.InGameCampaignDialogForm;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.SceneryModel;
 import com.oddlabs.tt.model.Selectable;

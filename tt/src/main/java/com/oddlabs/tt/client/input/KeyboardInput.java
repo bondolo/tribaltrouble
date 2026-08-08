@@ -2,8 +2,8 @@ package com.oddlabs.tt.client.input;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.LocalInput;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.LocalInput;
 import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
