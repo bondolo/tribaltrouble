@@ -2,8 +2,8 @@ package com.oddlabs.tt.delegate;
 
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.core.animation.Updatable;
-import com.oddlabs.tt.camera.Camera;
-import com.oddlabs.tt.camera.StaticCamera;
+import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.form.TutorialForm;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;

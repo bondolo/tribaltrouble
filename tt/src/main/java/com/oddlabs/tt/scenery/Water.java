@@ -1,6 +1,6 @@
 package com.oddlabs.tt.scenery;
 
-import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.landscape.LandscapeLeaf;

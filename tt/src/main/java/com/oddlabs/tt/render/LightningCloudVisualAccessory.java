@@ -2,7 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
-import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.weapon.LightningCloud;

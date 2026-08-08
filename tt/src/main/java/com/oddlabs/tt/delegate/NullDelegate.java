@@ -1,6 +1,6 @@
 package com.oddlabs.tt.delegate;
 
-import com.oddlabs.tt.camera.NullCamera;
+import com.oddlabs.tt.client.camera.NullCamera;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;

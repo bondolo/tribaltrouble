@@ -10,11 +10,11 @@ import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.camera.Camera;
-import com.oddlabs.tt.camera.FirstPersonCamera;
-import com.oddlabs.tt.camera.GameCamera;
-import com.oddlabs.tt.camera.JumpCamera;
-import com.oddlabs.tt.camera.MapCamera;
+import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.client.camera.FirstPersonCamera;
+import com.oddlabs.tt.client.camera.GameCamera;
+import com.oddlabs.tt.client.camera.JumpCamera;
+import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.delegate.JumpDelegate;
 import com.oddlabs.tt.form.CampaignDialogForm;
 import com.oddlabs.tt.form.InGameCampaignDialogForm;

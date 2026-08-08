@@ -1,4 +1,4 @@
-package com.oddlabs.tt.camera;
+package com.oddlabs.tt.client.camera;
 
 
 public final class NullCamera extends Camera {

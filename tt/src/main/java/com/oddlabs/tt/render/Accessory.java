@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.effects.particle.Emitter;
 import java.util.Collection;

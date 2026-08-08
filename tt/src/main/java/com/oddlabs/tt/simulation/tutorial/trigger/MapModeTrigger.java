@@ -2,7 +2,7 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.camera.MapCamera;
+import com.oddlabs.tt.client.camera.MapCamera;
 import org.jspecify.annotations.NonNull;
 
 public final class MapModeTrigger extends TutorialTrigger {

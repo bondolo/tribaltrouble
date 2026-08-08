@@ -1,4 +1,4 @@
-package com.oddlabs.tt.camera;
+package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.landscape.HeightMap;

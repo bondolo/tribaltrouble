@@ -3,7 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.model.BuildingType;
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.camera.GameCamera;
+import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.delegate.CameraDelegate;
 import com.oddlabs.tt.delegate.PlacingDelegate;
 import com.oddlabs.tt.delegate.RallyPointDelegate;

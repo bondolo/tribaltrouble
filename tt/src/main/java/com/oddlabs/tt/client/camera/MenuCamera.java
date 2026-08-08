@@ -1,4 +1,4 @@
-package com.oddlabs.tt.camera;
+package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;

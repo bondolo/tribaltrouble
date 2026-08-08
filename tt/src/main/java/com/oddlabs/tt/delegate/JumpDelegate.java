@@ -1,7 +1,7 @@
 package com.oddlabs.tt.delegate;
 
-import com.oddlabs.tt.camera.GameCamera;
-import com.oddlabs.tt.camera.JumpCamera;
+import com.oddlabs.tt.client.camera.GameCamera;
+import com.oddlabs.tt.client.camera.JumpCamera;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
