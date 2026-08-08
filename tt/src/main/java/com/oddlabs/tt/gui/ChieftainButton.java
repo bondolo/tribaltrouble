@@ -2,7 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.player.PlayerInterface;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.viewer.WorldViewer;

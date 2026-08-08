@@ -13,7 +13,7 @@ import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.BuildingTemplate;
 import com.oddlabs.tt.model.BuildingType;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.player.BuildingSiteScanFilter;
+import com.oddlabs.tt.simulation.player.BuildingSiteScanFilter;
 import com.oddlabs.tt.render.BuildingSiteRenderer;
 import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.MatrixStack;

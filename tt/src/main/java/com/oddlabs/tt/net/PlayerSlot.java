@@ -1,7 +1,7 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.TunnelAddress;
-import com.oddlabs.tt.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
 
 import java.io.Serial;
 import java.io.Serializable;

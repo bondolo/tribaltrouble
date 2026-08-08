@@ -29,7 +29,7 @@ import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.model.weapon.LightningCloud;
 import com.oddlabs.tt.model.weapon.PoisonFog;
 import com.oddlabs.tt.model.weapon.Stun;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import org.lwjgl.opengl.GL11;
 import com.oddlabs.tt.engine.procedural.GeneratorRing;
 import com.oddlabs.tt.model.BoundingBox;

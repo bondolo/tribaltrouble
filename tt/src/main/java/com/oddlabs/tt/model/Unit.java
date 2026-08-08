@@ -21,7 +21,7 @@ import com.oddlabs.tt.simulation.pathfinder.Movable;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.PathTracker;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -8,7 +8,7 @@ import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.model.Target;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

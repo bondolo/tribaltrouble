@@ -13,7 +13,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.model.Race;
 import com.oddlabs.tt.model.RacesResources;
-import com.oddlabs.tt.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;

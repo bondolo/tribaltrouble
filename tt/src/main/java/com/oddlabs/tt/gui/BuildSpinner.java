@@ -8,7 +8,7 @@ import com.oddlabs.tt.model.weapon.RockAxeWeapon;
 import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.player.PlayerInterface;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

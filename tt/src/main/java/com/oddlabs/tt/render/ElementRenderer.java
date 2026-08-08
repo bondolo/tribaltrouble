@@ -5,7 +5,7 @@ import com.oddlabs.tt.model.AbstractElementNode;
 import com.oddlabs.tt.model.Element;
 import com.oddlabs.tt.model.ElementLeaf;
 import com.oddlabs.tt.model.ElementNode;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.viewer.Selection;
 import org.jspecify.annotations.NonNull;
 

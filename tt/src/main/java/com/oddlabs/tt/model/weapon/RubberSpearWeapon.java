@@ -4,7 +4,7 @@ import com.oddlabs.tt.model.AttackScanFilter;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.WeaponVisualType;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
