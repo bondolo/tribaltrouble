@@ -1,13 +1,10 @@
-package com.oddlabs.tt.scenery;
+package com.oddlabs.tt.effects.scenery;
 
-import com.oddlabs.procedural.Channel;
-import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.engine.procedural.GeneratorClouds;
-import com.oddlabs.tt.engine.procedural.Landscape;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.render.LandscapeRenderer;
 import com.oddlabs.tt.render.MatrixStack;
@@ -587,28 +584,6 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             result[index] = new SkyStitchVertex(heightmap, index, 0, metersPerWorld - i * metersPerUnit, 0);
         }
         return result;
-    }
-
-    public static Landscape.@NonNull StructureLayers genSeabottom(
-            Terrain terrain, int size,
-            @NonNull Channel noise8, @NonNull Channel noise256, @NonNull Channel voronoi4, @NonNull Channel voronoi8) {
-        Color.Standard color = new Color.Standard(SEA_BOTTOM_COLOR.get(terrain));
-        Layer bottom = new Layer(
-                new Channel(size, size).fill(color.r()),
-                new Channel(size, size).fill(color.g()),
-                new Channel(size, size).fill(color.b()),
-                new Channel(size, size).fill(0.2f) // Smooth (low detail)
-        );
-        return new Landscape.StructureLayers(bottom, getFlatNormal(size));
-    }
-
-    private static @NonNull Layer getFlatNormal(int size) {
-        return new Layer(
-                new Channel(size, size).fill(0.5f),
-                new Channel(size, size).fill(0.5f),
-                new Channel(size, size).fill(1.0f),
-                new Channel(size, size).fill(0.0f) // Specular = 0
-        );
     }
 
     private static class SkyStitchVertex extends Stitcher.Vertex<SkyStitchVertex> {
