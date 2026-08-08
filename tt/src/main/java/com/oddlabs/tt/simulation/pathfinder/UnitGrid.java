@@ -2,7 +2,7 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.engine.util.DebugRender;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

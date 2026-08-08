@@ -1,8 +1,8 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Shadowable;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import org.jspecify.annotations.NonNull;
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 /**
  * Renders ground-crack decals for supply impact events using the decal instancing pipeline.
- * Crack texture and per-instance colour are driven by the owning {@link com.oddlabs.tt.model.SupplyModel}.
+ * Crack texture and per-instance colour are driven by the owning {@link com.oddlabs.tt.simulation.model.SupplyModel}.
  */
 public final class CrackDecalRenderer extends ShadowListRenderer {
     private final @NonNull Texture crackTexture;

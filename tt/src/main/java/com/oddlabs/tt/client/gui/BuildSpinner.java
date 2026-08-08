@@ -1,12 +1,12 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.model.BuildProductionContainer;
-import com.oddlabs.tt.model.BuildSupplyContainer;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
-import com.oddlabs.tt.model.weapon.ThrowingWeapon;
+import com.oddlabs.tt.simulation.model.BuildProductionContainer;
+import com.oddlabs.tt.simulation.model.BuildSupplyContainer;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
+import com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon;
+import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
+import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.viewer.WorldViewer;

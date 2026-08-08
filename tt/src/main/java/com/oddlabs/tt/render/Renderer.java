@@ -32,9 +32,9 @@ import com.oddlabs.tt.client.gui.LocalInput;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.net.Network;
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.render.state.GLRenderContext;
@@ -103,27 +103,27 @@ public final class Renderer implements AutoCloseable {
     private static final Renderer renderer_instance = new Renderer();
 
     static {
-        com.oddlabs.tt.model.Model.setClientStateFactory(model -> {
+        com.oddlabs.tt.simulation.model.Model.setClientStateFactory(model -> {
             VisualModel visualModel = new VisualModel(model);
-            if (model instanceof com.oddlabs.tt.model.Unit unit) {
-                if (unit.getAbilities().hasAbilities(com.oddlabs.tt.model.Abilities.BUILD)) {
+            if (model instanceof com.oddlabs.tt.simulation.model.Unit unit) {
+                if (unit.getAbilities().hasAbilities(com.oddlabs.tt.simulation.model.Abilities.BUILD)) {
                     visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
                 }
-            } else if (model instanceof com.oddlabs.tt.model.Building building) {
+            } else if (model instanceof com.oddlabs.tt.simulation.model.Building building) {
                 float hitOffsetZ = building.getHitOffsetZ();
                 visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ));
                 visualModel.getAccessories().add(new BuildingProductionAccessory(building));
-            } else if (model instanceof com.oddlabs.tt.model.IronSupply ironSupply) {
+            } else if (model instanceof com.oddlabs.tt.simulation.model.IronSupply ironSupply) {
                 visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply));
-            } else if (model instanceof com.oddlabs.tt.model.RockSupply rockSupply) {
+            } else if (model instanceof com.oddlabs.tt.simulation.model.RockSupply rockSupply) {
                 visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply));
-            } else if (model instanceof com.oddlabs.tt.model.weapon.LightningCloud cloud) {
+            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.LightningCloud cloud) {
                 visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud));
-            } else if (model instanceof com.oddlabs.tt.model.weapon.PoisonFog fog) {
+            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.PoisonFog fog) {
                 visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog));
-            } else if (model instanceof com.oddlabs.tt.model.weapon.Stun stun) {
+            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.Stun stun) {
                 visualModel.getAccessories().add(new StunVisualAccessory(stun));
-            } else if (model instanceof com.oddlabs.tt.model.weapon.SonicBlast blast) {
+            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.SonicBlast blast) {
                 visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast));
             }
             return visualModel;

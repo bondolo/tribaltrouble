@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

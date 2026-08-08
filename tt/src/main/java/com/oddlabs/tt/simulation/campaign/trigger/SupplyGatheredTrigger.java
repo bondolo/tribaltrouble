@@ -1,10 +1,10 @@
 package com.oddlabs.tt.simulation.campaign.trigger;
 
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Supply;
-import com.oddlabs.tt.model.behaviour.NullController;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Supply;
+import com.oddlabs.tt.simulation.behaviour.NullController;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;

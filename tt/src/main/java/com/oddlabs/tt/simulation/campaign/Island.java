@@ -1,11 +1,11 @@
 package com.oddlabs.tt.simulation.campaign;
 
-import com.oddlabs.tt.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Difficulty;
 
-import com.oddlabs.tt.model.BuildingType;
+import com.oddlabs.tt.simulation.model.BuildingType;
 
-import com.oddlabs.tt.model.Terrain;
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
@@ -13,11 +13,11 @@ import com.oddlabs.tt.client.delegate.Menu;
 import com.oddlabs.tt.client.gui.Form;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.model.Action;
-import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.UnitTemplate;
-import com.oddlabs.tt.model.weapon.IronAxeWeapon;
+import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitTemplate;
+import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.WorldInitAction;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -25,7 +25,7 @@ import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.campaign.trigger.DefeatTrigger;
 import com.oddlabs.tt.core.event.StateChecksum;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.viewer.InGameInfo;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.geometry.AnimationInfo;
-import com.oddlabs.tt.model.BoundsProvider;
-import com.oddlabs.tt.model.BoundingBox;
+import com.oddlabs.tt.simulation.model.BoundsProvider;
+import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.jspecify.annotations.NonNull;
 
 /**

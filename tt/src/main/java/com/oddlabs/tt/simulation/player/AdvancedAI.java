@@ -1,25 +1,25 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.model.BuildingType;
-import com.oddlabs.tt.model.Difficulty;
+import com.oddlabs.tt.simulation.model.BuildingType;
+import com.oddlabs.tt.simulation.model.Difficulty;
 
 import java.util.EnumMap;
 import java.util.Map;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Action;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.model.weapon.IronSpearWeapon;
-import com.oddlabs.tt.model.weapon.RockAxeWeapon;
-import com.oddlabs.tt.model.weapon.RockSpearWeapon;
-import com.oddlabs.tt.model.weapon.RubberAxeWeapon;
-import com.oddlabs.tt.model.weapon.RubberSpearWeapon;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
+import com.oddlabs.tt.simulation.model.weapon.IronSpearWeapon;
+import com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon;
+import com.oddlabs.tt.simulation.model.weapon.RockSpearWeapon;
+import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
+import com.oddlabs.tt.simulation.model.weapon.RubberSpearWeapon;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

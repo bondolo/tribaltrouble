@@ -2,8 +2,8 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Unit;
 import org.jspecify.annotations.NonNull;
 
 public final class ChieftainBuiltTrigger extends TutorialTrigger {

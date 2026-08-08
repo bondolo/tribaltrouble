@@ -1,9 +1,9 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.DeployContainer;
-import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.SupplyContainer;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.DeployContainer;
+import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.viewer.WorldViewer;

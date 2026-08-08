@@ -2,8 +2,8 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 
@@ -19,7 +19,7 @@ public final class WeaponTrigger extends TutorialTrigger {
     public void run(@NonNull Tutorial tutorial) {
         for (var s : tutorial.getViewer().getSelection().getCurrentSelection().getSet()) {
             if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                if (armory.getSupplyContainer(com.oddlabs.tt.model.weapon.RockAxeWeapon.class)
+                if (armory.getSupplyContainer(com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon.class)
                         .map(c -> c.getNumSupplies()).orElse(0) >= WEAPONS)
                     tutorial.next(new ArmyMenuTrigger(tutorial.getViewer().getLocalPlayer()));
             }

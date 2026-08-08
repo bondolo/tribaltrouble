@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.SupplyModel;
+import com.oddlabs.tt.simulation.model.SupplyModel;
 import org.jspecify.annotations.NonNull;
 
 abstract class SupplyModelVisitor<SM extends SupplyModel> extends WhiteModelVisitor<SM> {

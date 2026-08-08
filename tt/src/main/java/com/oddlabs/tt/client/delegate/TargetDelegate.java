@@ -6,7 +6,7 @@ import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.model.Action;
+import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

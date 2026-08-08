@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.core.animation.Animated;

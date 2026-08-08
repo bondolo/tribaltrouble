@@ -1,11 +1,11 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.camera.CameraState;
-import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Landscape;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.PointEmitterModel;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.PointEmitterModel;
 import com.oddlabs.tt.effects.particle.ColorSpectrum;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;

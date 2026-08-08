@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 
 public interface Occupant extends Target {
     int STATIC = 10;

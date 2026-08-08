@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Unit;
 import org.jspecify.annotations.NonNull;
 
 

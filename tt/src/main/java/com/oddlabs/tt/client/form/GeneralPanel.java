@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.form;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.model.Gamespeed;
+import com.oddlabs.tt.simulation.model.Gamespeed;
 import com.oddlabs.tt.client.gui.CheckBox;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.campaign.trigger;
 
-import com.oddlabs.tt.model.DeployType;
+import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;

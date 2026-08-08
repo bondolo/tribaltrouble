@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.model.SupplyType;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.render.Texture;

@@ -12,7 +12,7 @@ import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.model.BoundingBox;
+import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 

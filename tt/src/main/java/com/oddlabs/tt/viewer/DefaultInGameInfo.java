@@ -9,7 +9,7 @@ import com.oddlabs.tt.client.gui.Group;
 import com.oddlabs.tt.client.gui.HorizButton;
 import com.oddlabs.tt.client.gui.Label;
 import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.model.RacesResources;
+import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;

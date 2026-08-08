@@ -1,11 +1,11 @@
 package com.oddlabs.tt.simulation.campaign;
 
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Race;
 
-import com.oddlabs.tt.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Difficulty;
 
-import com.oddlabs.tt.model.Terrain;
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.form.CampaignDialogForm;

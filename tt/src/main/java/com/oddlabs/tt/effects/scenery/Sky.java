@@ -3,7 +3,7 @@ package com.oddlabs.tt.effects.scenery;
 import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.GeneratorClouds;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.render.LandscapeRenderer;

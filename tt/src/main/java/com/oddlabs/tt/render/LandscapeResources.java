@@ -3,7 +3,7 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
-import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import org.jspecify.annotations.NonNull;
 

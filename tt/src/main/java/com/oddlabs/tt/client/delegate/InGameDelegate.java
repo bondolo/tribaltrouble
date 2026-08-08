@@ -1,18 +1,18 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.IronSupply;
-import com.oddlabs.tt.model.RockSupply;
-import com.oddlabs.tt.model.SupplySpawnAnimation;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.IronSupply;
+import com.oddlabs.tt.simulation.model.RockSupply;
+import com.oddlabs.tt.simulation.model.SupplySpawnAnimation;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.engine.resource.FogInfo;

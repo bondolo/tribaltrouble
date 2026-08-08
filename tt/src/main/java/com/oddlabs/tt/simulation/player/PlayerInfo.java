@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Race;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

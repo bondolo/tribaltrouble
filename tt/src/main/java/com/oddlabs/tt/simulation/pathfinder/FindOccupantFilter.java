@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.simulation.model.Selectable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

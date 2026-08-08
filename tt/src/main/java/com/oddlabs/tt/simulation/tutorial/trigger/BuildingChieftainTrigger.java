@@ -2,9 +2,9 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.model.BuildingType;
+import com.oddlabs.tt.simulation.model.BuildingType;
 
-import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 

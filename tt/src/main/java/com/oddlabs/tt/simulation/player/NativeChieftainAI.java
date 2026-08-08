@@ -1,8 +1,8 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.model.MagicType;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.MagicType;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import org.jspecify.annotations.NonNull;
 

@@ -1,10 +1,10 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.camera.CameraState;
-import com.oddlabs.tt.model.AbstractElementNode;
-import com.oddlabs.tt.model.Element;
-import com.oddlabs.tt.model.ElementLeaf;
-import com.oddlabs.tt.model.ElementNode;
+import com.oddlabs.tt.simulation.model.AbstractElementNode;
+import com.oddlabs.tt.simulation.model.Element;
+import com.oddlabs.tt.simulation.model.ElementLeaf;
+import com.oddlabs.tt.simulation.model.ElementNode;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.viewer.Selection;
 import org.jspecify.annotations.NonNull;

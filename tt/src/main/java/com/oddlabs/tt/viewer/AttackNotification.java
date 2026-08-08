@@ -3,9 +3,9 @@ package com.oddlabs.tt.viewer;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

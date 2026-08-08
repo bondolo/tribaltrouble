@@ -5,7 +5,7 @@ import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Perlin.Interpolation;
 import com.oddlabs.tt.engine.procedural.Perlin.Summation;
 import com.oddlabs.tt.render.Texture;

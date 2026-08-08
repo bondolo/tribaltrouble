@@ -2,7 +2,7 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.model.BuildingType;
+import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.simulation.player.Player;

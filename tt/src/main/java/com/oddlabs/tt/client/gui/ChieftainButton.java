@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.client.input.GameAction;
-import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;

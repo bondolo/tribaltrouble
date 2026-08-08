@@ -1,11 +1,11 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.BuildingType;
-import com.oddlabs.tt.model.EmojiType;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.SupplyType;
-import com.oddlabs.tt.model.UnitVisualType;
-import com.oddlabs.tt.model.WeaponVisualType;
+import com.oddlabs.tt.simulation.model.BuildingType;
+import com.oddlabs.tt.simulation.model.EmojiType;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.SupplyType;
+import com.oddlabs.tt.simulation.model.UnitVisualType;
+import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

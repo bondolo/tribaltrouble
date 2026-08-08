@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.util.Color;

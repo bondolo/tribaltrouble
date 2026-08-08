@@ -1,9 +1,9 @@
 package com.oddlabs.tt.simulation.landscape;
 /**/
 
-import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.model.BoundingBox;
+import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
