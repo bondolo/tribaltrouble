@@ -1,9 +1,9 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.guievent.RowListener;
-import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.client.input.GameAction;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

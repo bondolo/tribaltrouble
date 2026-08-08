@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -16,7 +16,8 @@ public class IconButton extends ButtonObject {
         this(icon, null, tool_tip);
     }
 
-    public IconButton(@NonNull ModeIconQuads icon, @Nullable GameAction action, @Nullable Supplier<@NonNull String> tool_tip) {
+    public IconButton(@NonNull ModeIconQuads icon, @Nullable GameAction action, @Nullable Supplier<
+            @NonNull String> tool_tip) {
         super(Skin.getSkin().getEditFont(), action, tool_tip);
         this.icon = icon;
         var normal = icon.quad(ModeIconQuads.Mode.NORMAL);

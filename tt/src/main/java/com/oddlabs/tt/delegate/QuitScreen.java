@@ -6,8 +6,8 @@ import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MouseButton;
-import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputPhase;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 

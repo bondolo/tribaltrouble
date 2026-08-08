@@ -7,12 +7,12 @@ import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputBinding;
-import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.input.Key;
-import com.oddlabs.tt.input.Modifier;
+import com.oddlabs.tt.client.input.GameAction;
+import com.oddlabs.tt.client.input.InputBinding;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.client.input.Key;
+import com.oddlabs.tt.client.input.Modifier;
 import com.oddlabs.tt.render.Renderer;
 import org.jspecify.annotations.NonNull;
 

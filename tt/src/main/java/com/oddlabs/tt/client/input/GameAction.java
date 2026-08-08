@@ -1,4 +1,4 @@
-package com.oddlabs.tt.input;
+package com.oddlabs.tt.client.input;
 
 public enum GameAction {
     // Global

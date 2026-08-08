@@ -2,7 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.model.SupplyType;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.engine.resource.GLImage;
 import com.oddlabs.tt.engine.resource.GLIntImage;

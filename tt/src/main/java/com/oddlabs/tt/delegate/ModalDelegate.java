@@ -1,7 +1,7 @@
 package com.oddlabs.tt.delegate;
 
 import com.oddlabs.tt.gui.MouseButton;
-import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.client.input.InputEvent;
 import org.jspecify.annotations.NonNull;
 
 /**
