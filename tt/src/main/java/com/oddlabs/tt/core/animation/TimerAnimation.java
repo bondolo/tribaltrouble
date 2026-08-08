@@ -1,4 +1,4 @@
-package com.oddlabs.tt.animation;
+package com.oddlabs.tt.core.animation;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.StateChecksum;

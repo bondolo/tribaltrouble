@@ -4,7 +4,7 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.Participant;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.form.LoadCallback;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.WorldParameters;

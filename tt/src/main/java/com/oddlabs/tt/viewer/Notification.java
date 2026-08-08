@@ -1,8 +1,8 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.animation.TimerAnimation;
-import com.oddlabs.tt.animation.Updatable;
+import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.core.animation.Updatable;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.gui.Arrow;
 import com.oddlabs.tt.gui.GUIRoot;

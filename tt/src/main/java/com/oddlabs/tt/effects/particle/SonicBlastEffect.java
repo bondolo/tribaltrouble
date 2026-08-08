@@ -1,6 +1,6 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Element;
 import com.oddlabs.util.Color;

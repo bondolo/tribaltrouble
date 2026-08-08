@@ -5,8 +5,8 @@ import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.CameraState;

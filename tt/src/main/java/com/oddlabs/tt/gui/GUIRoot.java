@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.animation.TimerAnimation;
+import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.camera.Camera;
 import com.oddlabs.tt.delegate.CameraDelegate;
 import com.oddlabs.tt.delegate.ModalDelegate;

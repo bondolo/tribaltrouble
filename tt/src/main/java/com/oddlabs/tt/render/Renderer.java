@@ -4,9 +4,9 @@ import com.oddlabs.event.Deterministic;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.Main;
-import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.animation.TimerAnimation;
-import com.oddlabs.tt.animation.Updatable;
+import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.core.animation.Updatable;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -245,7 +245,75 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void runGameLoop(@NonNull NetworkSelector network, @NonNull GUI gui) {
-        AnimationManager.runGameLoop(network, gui, grab_frames);
+        getLocalInput().checkMagicKeys();
+        if (AnimationManager.isTimeFrozen() && !AnimationManager.isTimeStopped())
+            AnimationManager.unfreezeTime();
+        long current_time;
+        if (grab_frames) {
+            AnimationManager.warpTime(settings.frame_grab_milliseconds_per_frame);
+            current_time = AnimationManager.getSystemTime();
+        } else {
+            current_time = AnimationManager.getSystemTime();
+        }
+        long last_frame_time = AnimationManager.getLastFrameTime();
+        long time_diff = current_time - last_frame_time;
+        AnimationManager.setLastFrameTime(current_time);
+        com.oddlabs.event.Deterministic deterministic = getEventQueue().getDeterministic();
+        if (time_diff > AnimationManager.MAX_STEP_MILLIS && !java.util.Objects.requireNonNull(deterministic)
+                .isPlayback()) {
+            java.util.logging.Logger.getLogger(Renderer.class.getName()).warning("Skipping large time diff: "
+                    + time_diff + " ms.");
+            time_diff = 0;
+        }
+
+        AnimationManager.getFrameTimeCounter().updateAbsolute(time_diff);
+        AnimationManager.addExecutionTimePrecision(AnimationManager.getFrameTimeCounter().getAveragePerUpdate());
+        java.util.Objects.requireNonNull(deterministic).setEnabled(true);
+        while (AnimationManager.getExecutionTimePrecision()
+                >= AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK && !isFinished()) {
+            AnimationManager.addExecutionTimePrecision(
+                    (float) -AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
+            AnimationManager.addExecutionTime(AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
+            getEventQueue().tickHighPrecision(AnimationManager.ANIMATION_SECONDS_PER_PRECISION_TICK);
+            while (AnimationManager.getExecutionTime() >= AnimationManager.ANIMATION_MILLISECONDS_PER_TICK
+                    && !isFinished()) {
+                network.tick();
+
+                getLocalInput().poll(gui.getGUIRoot());
+                if (deterministic.log(getWindow().isOpen() && getWindow().isCloseRequested())) {
+                    getWindow().setCloseRequested(false);
+                    if (gui.getGUIRoot().isShowingQuitForm()) {
+                        shutdown();
+                    } else {
+                        gui.getGUIRoot().addModalForm(new com.oddlabs.tt.form.QuitForm(gui.getGUIRoot()));
+                    }
+                }
+                AnimationManager.pathfindsPerTick.updateAbsolute(
+                        com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame);
+                com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame = 0;
+                getEventQueue().tickLowPrecision(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+                AnimationManager.addExecutionTime(-AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
+                AnimationManager.addChecksumMillisecondCounter(AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
+                if (AnimationManager.getChecksumMillisecondCounter()
+                        >= AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM) {
+                    AnimationManager.addChecksumMillisecondCounter(
+                            -AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM);
+                    int checksum = getEventQueue().computeChecksum();
+                    int logged_checksum = deterministic.log(checksum);
+                    if (checksum != logged_checksum && AnimationManager.shouldComplainChecksum()) {
+                        java.util.logging.Logger.getLogger(Renderer.class.getName()).severe(
+                                "********** ERROR: Checksum mismatch at tick " + getEventQueue()
+                                        .getHighPrecisionManager().getTick() + " | checksum = " + checksum
+                                        + " | logged_checksum = " + logged_checksum + " **********");
+                        AnimationManager.setChecksumComplain(false);
+                    }
+                }
+                if (!com.oddlabs.tt.global.Globals.frustum_freeze) {
+                    gui.pickHover();
+                }
+            }
+        }
+        deterministic.setEnabled(false);
     }
 
     public static void registerTrianglesRendered(int count) {

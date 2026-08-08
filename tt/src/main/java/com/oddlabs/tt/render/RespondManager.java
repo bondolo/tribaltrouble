@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.core.animation.AnimationManager;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

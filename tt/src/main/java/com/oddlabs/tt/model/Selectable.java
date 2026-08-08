@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.model.behaviour.Behaviour;
 import com.oddlabs.tt.model.behaviour.Controller;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;

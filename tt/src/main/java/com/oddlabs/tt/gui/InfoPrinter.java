@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;

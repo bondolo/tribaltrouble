@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.font;
 
-import com.oddlabs.tt.animation.TimerAnimation;
-import com.oddlabs.tt.animation.Updatable;
+import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.core.animation.Updatable;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

@@ -4,7 +4,7 @@ import com.oddlabs.event.Deterministic;
 import com.oddlabs.event.LoadDeterministic;
 import com.oddlabs.event.NotDeterministic;
 import com.oddlabs.event.SaveDeterministic;
-import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.util.StateChecksum;
 import org.jspecify.annotations.NonNull;
 
