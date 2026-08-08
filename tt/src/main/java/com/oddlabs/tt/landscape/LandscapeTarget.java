@@ -1,6 +1,6 @@
 package com.oddlabs.tt.landscape;
 
-import com.oddlabs.tt.pathfinder.UnitGrid;
+import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.model.Target;
 import org.jspecify.annotations.NonNull;
 

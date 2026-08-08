@@ -4,7 +4,7 @@ import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.BuildingFinder;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.pathfinder.FinderTrackerAlgorithm;
+import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
 
 public final class TransferUnitController extends Controller {
     private final Unit unit;

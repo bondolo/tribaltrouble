@@ -3,7 +3,7 @@ package com.oddlabs.tt.player;
 import com.oddlabs.tt.model.MagicType;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.pathfinder.FindOccupantFilter;
+import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import org.jspecify.annotations.NonNull;
 
 import java.util.stream.StreamSupport;

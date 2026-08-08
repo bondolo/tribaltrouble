@@ -6,7 +6,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.form.QuitForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.gui.GUI;
-import com.oddlabs.tt.pathfinder.PathFinder;
+import com.oddlabs.tt.simulation.pathfinder.PathFinder;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.util.StatCounter;
 import com.oddlabs.tt.util.StateChecksum;
