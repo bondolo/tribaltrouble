@@ -17,7 +17,7 @@ import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.MouseClickListener;
-import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Selectable;

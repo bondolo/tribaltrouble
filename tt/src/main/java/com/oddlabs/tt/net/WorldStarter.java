@@ -7,7 +7,7 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.client.form.LoadCallback;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.render.Renderer;

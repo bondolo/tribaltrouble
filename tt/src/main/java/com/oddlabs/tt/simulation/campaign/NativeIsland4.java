@@ -13,7 +13,7 @@ import com.oddlabs.tt.client.gui.CounterLabel;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.landscape.LandscapeTarget;
+import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;

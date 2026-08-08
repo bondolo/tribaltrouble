@@ -1,4 +1,4 @@
-package com.oddlabs.tt.landscape;
+package com.oddlabs.tt.simulation.landscape;
 
 public final class PlayerInit {
     final int ai_difficulty;

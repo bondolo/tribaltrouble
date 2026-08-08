@@ -1,4 +1,4 @@
-package com.oddlabs.tt.landscape;
+package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.core.global.Globals;
 import org.joml.Vector3f;

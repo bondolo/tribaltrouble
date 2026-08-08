@@ -6,7 +6,7 @@ import com.oddlabs.tt.core.animation.Updatable;
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.client.gui.Arrow;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

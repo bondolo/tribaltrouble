@@ -1,7 +1,7 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.client.gui.ToolTipBox;
-import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.core.util.BezierPath;
 import com.oddlabs.tt.engine.util.DebugRender;
 import org.jspecify.annotations.NonNull;

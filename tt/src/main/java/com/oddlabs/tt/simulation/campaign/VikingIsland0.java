@@ -9,7 +9,7 @@ import com.oddlabs.tt.client.form.CampaignDialogForm;
 import com.oddlabs.tt.client.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.DeployType;
 import com.oddlabs.tt.model.IronSupply;

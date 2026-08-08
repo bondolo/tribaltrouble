@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.delegate.TargetDelegate;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Action;
 import com.oddlabs.tt.model.Building;

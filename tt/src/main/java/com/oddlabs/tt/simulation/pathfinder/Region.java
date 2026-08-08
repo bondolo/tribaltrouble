@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.engine.util.DebugRender;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

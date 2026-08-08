@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.util.Color;

@@ -5,7 +5,7 @@ import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.model.Target;
 import com.oddlabs.tt.viewer.WorldViewer;

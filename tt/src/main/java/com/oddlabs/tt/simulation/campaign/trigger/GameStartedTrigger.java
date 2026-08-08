@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.campaign.trigger;
 
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;
 

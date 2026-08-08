@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.form;
 
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.landscape.World;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
