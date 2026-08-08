@@ -1,4 +1,4 @@
-package com.oddlabs.tt.audio.openal;
+package com.oddlabs.tt.engine.audio.openal;
 
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.AL10;

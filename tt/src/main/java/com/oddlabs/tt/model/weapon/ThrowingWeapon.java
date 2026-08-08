@@ -1,8 +1,8 @@
 package com.oddlabs.tt.model.weapon;
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.engine.audio.AudioParameters;
+import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;

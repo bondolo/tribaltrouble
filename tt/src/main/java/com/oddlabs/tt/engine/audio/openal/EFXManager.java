@@ -1,6 +1,6 @@
-package com.oddlabs.tt.audio.openal;
+package com.oddlabs.tt.engine.audio.openal;
 
-import com.oddlabs.tt.audio.ReverbType;
+import com.oddlabs.tt.engine.audio.ReverbType;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;

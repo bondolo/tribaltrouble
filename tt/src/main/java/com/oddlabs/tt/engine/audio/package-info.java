@@ -1,4 +1,4 @@
 /**
  * Provides high-level audio abstractions and playback management.
  */
-package com.oddlabs.tt.audio;
+package com.oddlabs.tt.engine.audio;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.model;
 
 import com.oddlabs.geometry.AnimationInfo;
-import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.landscape.LandscapeTarget;
 import com.oddlabs.tt.model.behaviour.DefendController;
 import com.oddlabs.tt.model.behaviour.DieBehaviour;

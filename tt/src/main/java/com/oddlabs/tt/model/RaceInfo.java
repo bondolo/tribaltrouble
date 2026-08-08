@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.model.weapon.MagicFactory;
 import com.oddlabs.tt.simulation.player.ChieftainAI;
 import com.oddlabs.tt.engine.resource.AudioAssets;
