@@ -16,7 +16,7 @@ import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;

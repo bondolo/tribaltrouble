@@ -1,7 +1,6 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.gui.GUIIcons;
-import com.oddlabs.tt.gui.IconQuad;
 import com.oddlabs.tt.gui.ToolTipBox;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;
@@ -12,7 +11,7 @@ import com.oddlabs.tt.model.Supply;
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.model.behaviour.Controller;
 import com.oddlabs.tt.model.behaviour.GatherController;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.gui.ToolTip;
 import org.jspecify.annotations.NonNull;
 
@@ -61,7 +60,8 @@ final class ToolTipAdapter implements ToolTip {
             case Building building -> visitBuilding(tool_tip, building);
             case Supply supply -> visitSupply(tool_tip, supply);
             case SceneryModel scenery -> visitSceneryModel(tool_tip, scenery);
-            default -> { }
+            default -> {
+            }
         }
     }
 

@@ -3,9 +3,9 @@ package com.oddlabs.tt.net;
 import com.oddlabs.net.ARMIEvent;
 import com.oddlabs.net.ARMIInterfaceMethods;
 import com.oddlabs.net.IllegalARMIEventException;
-import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.player.PlayerInfo;
-import com.oddlabs.tt.player.PlayerInterface;
+import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;

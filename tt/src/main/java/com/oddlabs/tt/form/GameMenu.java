@@ -33,7 +33,7 @@ import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
-import com.oddlabs.tt.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.util.Utils;

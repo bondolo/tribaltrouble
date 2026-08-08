@@ -17,7 +17,7 @@ import com.oddlabs.tt.model.weapon.RubberSpearWeapon;
 import com.oddlabs.tt.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

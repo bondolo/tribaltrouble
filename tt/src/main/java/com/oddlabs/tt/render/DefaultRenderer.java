@@ -8,7 +8,7 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.player.Player;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.render.shader.DebugMeshShader;
 import com.oddlabs.tt.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.render.shader.ShaderProgram;

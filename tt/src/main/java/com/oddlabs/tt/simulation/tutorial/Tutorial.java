@@ -5,6 +5,7 @@ import com.oddlabs.tt.delegate.TutorialOverDelegate;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.simulation.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -30,7 +31,7 @@ public final class Tutorial {
         old_after_done_time = first_trigger.getAfterDoneTime();
     }
 
-    WorldViewer getViewer() {
+    public WorldViewer getViewer() {
         return viewer;
     }
 
@@ -39,14 +40,14 @@ public final class Tutorial {
             info.remove();
     }
 
-    void done(int next_tutorial) {
+    public void done(int next_tutorial) {
         timer.stop();
         removeInfo();
         viewer.getGUIRoot().pushDelegate(new TutorialOverDelegate(viewer, tutorial_info, viewer.getGUIRoot()
                 .getDelegate().getCamera(), next_tutorial));
     }
 
-    void next(final @NonNull TutorialTrigger trigger) {
+    public void next(final @NonNull TutorialTrigger trigger) {
         timer.stop();
         TimerAnimation delay_timer = new TimerAnimation(viewer.getAnimationManagerLocal(), (TimerAnimation anim) -> {
             anim.stop();

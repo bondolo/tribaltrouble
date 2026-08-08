@@ -3,7 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.model.MagicType;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.player.PlayerInterface;
+import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
