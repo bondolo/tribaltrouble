@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Abilities;
 import com.oddlabs.tt.model.Building;

@@ -1,6 +1,6 @@
-package com.oddlabs.tt.audio.openal;
+package com.oddlabs.tt.engine.audio.openal;
 
-import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.engine.audio.Audio;
 import com.oddlabs.tt.engine.resource.NativeResource;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
+import static com.oddlabs.tt.engine.audio.openal.OpenALManager.checkALError;
 
 /**
  * OpenAL buffered audio

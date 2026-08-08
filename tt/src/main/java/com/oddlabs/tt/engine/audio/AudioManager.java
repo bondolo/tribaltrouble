@@ -1,4 +1,4 @@
-package com.oddlabs.tt.audio;
+package com.oddlabs.tt.engine.audio;
 
 import com.oddlabs.tt.camera.CameraState;
 import org.joml.Vector3fc;
