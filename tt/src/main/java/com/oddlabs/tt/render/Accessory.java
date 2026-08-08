@@ -2,7 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.particle.Emitter;
+import com.oddlabs.tt.effects.particle.Emitter;
 import java.util.Collection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;

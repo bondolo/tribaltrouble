@@ -1,4 +1,4 @@
-package com.oddlabs.tt.particle;
+package com.oddlabs.tt.effects.particle;
 
 public interface ParametricFunction {
     float getX(float u, float v);

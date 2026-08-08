@@ -6,7 +6,7 @@ import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.model.weapon.PoisonFog;
-import com.oddlabs.tt.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

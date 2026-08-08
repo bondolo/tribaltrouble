@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.particle.Emitter;
+import com.oddlabs.tt.effects.particle.Emitter;
 import org.jspecify.annotations.NonNull;
 
 /**

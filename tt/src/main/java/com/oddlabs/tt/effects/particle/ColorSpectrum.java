@@ -1,4 +1,4 @@
-package com.oddlabs.tt.particle;
+package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

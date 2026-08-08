@@ -1,4 +1,4 @@
-package com.oddlabs.tt.particle;
+package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.SpriteKey;
