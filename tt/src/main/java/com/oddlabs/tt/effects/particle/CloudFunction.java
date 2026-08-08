@@ -1,4 +1,4 @@
-package com.oddlabs.tt.particle;
+package com.oddlabs.tt.effects.particle;
 
 public final class CloudFunction implements ParametricFunction {
     public static final float TOP_PUFFINESS_BASE = 1.0f;

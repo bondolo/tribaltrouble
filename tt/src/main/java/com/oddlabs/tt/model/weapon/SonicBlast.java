@@ -4,7 +4,7 @@ import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.ModelClient;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.particle.SonicBlastEffect;
+import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;

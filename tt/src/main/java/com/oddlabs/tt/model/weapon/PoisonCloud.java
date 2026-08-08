@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model.weapon;
 
-import com.oddlabs.tt.particle.ParametricEmitter;
+import com.oddlabs.tt.effects.particle.ParametricEmitter;
 import org.jspecify.annotations.NonNull;
 
 /**
