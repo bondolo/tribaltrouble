@@ -1,7 +1,7 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.model.BoundsProvider;
-import com.oddlabs.tt.model.Terrain;
+import com.oddlabs.tt.simulation.model.BoundsProvider;
+import com.oddlabs.tt.simulation.model.Terrain;
 import org.jspecify.annotations.NonNull;
 
 /**

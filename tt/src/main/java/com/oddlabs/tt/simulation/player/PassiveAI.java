@@ -1,9 +1,9 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.model.Action;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.behaviour.IdleController;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.behaviour.IdleController;
+import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.NonNull;
 
 public final class PassiveAI extends AI {

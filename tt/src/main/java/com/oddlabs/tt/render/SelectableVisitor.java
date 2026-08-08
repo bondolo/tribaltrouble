@@ -1,11 +1,11 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.BuildingType;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.Race;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.BuildingType;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

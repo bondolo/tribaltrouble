@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.campaign.trigger;
 
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;

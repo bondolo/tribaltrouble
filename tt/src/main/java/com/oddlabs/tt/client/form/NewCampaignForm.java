@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.form;
 
-import com.oddlabs.tt.model.Difficulty;
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;

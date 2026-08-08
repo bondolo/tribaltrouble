@@ -1,14 +1,14 @@
 package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.model.Shadowable;
-import com.oddlabs.tt.model.Supply;
-import com.oddlabs.tt.model.SupplyType;
+import com.oddlabs.tt.simulation.model.Shadowable;
+import com.oddlabs.tt.simulation.model.Supply;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;

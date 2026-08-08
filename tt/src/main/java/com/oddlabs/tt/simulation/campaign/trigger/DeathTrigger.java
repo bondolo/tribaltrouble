@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.campaign.trigger;
 
-import com.oddlabs.tt.model.Selectable;
+import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;
 

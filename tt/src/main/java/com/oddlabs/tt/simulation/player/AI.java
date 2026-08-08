@@ -1,26 +1,26 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.model.BuildingType;
+import com.oddlabs.tt.simulation.model.BuildingType;
 
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.BuildSpinner;
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Action;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.SupplyType;
-import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.behaviour.DefendController;
-import com.oddlabs.tt.model.behaviour.GatherController;
-import com.oddlabs.tt.model.behaviour.IdleController;
-import com.oddlabs.tt.model.behaviour.NullController;
-import com.oddlabs.tt.model.behaviour.PlaceBuildingController;
-import com.oddlabs.tt.model.behaviour.WalkController;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.SupplyType;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.behaviour.DefendController;
+import com.oddlabs.tt.simulation.behaviour.GatherController;
+import com.oddlabs.tt.simulation.behaviour.IdleController;
+import com.oddlabs.tt.simulation.behaviour.NullController;
+import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
+import com.oddlabs.tt.simulation.behaviour.WalkController;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

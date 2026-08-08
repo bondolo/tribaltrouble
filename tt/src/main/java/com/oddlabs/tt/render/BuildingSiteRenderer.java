@@ -2,7 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.GLIntImage;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

@@ -7,7 +7,7 @@ import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;

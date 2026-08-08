@@ -1,0 +1,23 @@
+package com.oddlabs.tt.simulation.behaviour;
+
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.Target;
+
+public final class DefendController extends Controller {
+    private final Unit unit;
+    private final Target target;
+
+    public DefendController(Unit unit, Target t) {
+        super(1);
+        this.unit = unit;
+        this.target = t;
+    }
+
+    @Override
+    public void decide() {
+        if (shouldGiveUp(0))
+            unit.popController();
+        else
+            unit.setBehaviour(new WalkBehaviour(unit, target, 0f, true));
+    }
+}

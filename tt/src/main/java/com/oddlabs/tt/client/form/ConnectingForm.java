@@ -7,7 +7,7 @@ import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.HorizButton;
 import com.oddlabs.tt.client.gui.Label;
 import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;

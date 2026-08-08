@@ -1,8 +1,8 @@
 package com.oddlabs.tt.simulation.player;
 
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.BuildingTemplate;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.BuildingTemplate;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;

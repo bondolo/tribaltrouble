@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.model.Action;
+import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

@@ -1,10 +1,10 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Army;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Army;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

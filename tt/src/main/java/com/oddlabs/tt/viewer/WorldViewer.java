@@ -1,7 +1,7 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.model.Difficulty;
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
@@ -22,9 +22,9 @@ import com.oddlabs.tt.client.gui.Group;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.model.RacesResources;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.RacesResources;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.DistributableTable;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.net.PlayerSlot;
@@ -47,7 +47,7 @@ import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.net.ServerMessageBundler;
-import com.oddlabs.tt.model.Target;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 

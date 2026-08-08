@@ -2,8 +2,8 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 
@@ -20,7 +20,8 @@ public final class SupplyTrigger extends TutorialTrigger {
     public void run(@NonNull Tutorial tutorial) {
         for (var s : tutorial.getViewer().getSelection().getCurrentSelection().getSet()) {
             if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                if (armory.getSupplyContainer(com.oddlabs.tt.model.RockSupply.class).map(c -> c.getNumSupplies())
+                if (armory.getSupplyContainer(com.oddlabs.tt.simulation.model.RockSupply.class).map(c -> c
+                        .getNumSupplies())
                         .orElse(0) >= ROCK &&
                         armory.getSupplyContainer(com.oddlabs.tt.simulation.landscape.TreeSupply.class).map(c -> c
                                 .getNumSupplies()).orElse(0) >= TREE)

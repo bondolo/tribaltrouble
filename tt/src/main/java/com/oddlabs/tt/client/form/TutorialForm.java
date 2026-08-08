@@ -1,9 +1,9 @@
 package com.oddlabs.tt.client.form;
 
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Race;
 
-import com.oddlabs.tt.model.Terrain;
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
@@ -18,7 +18,7 @@ import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.MouseClickListener;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.net.WorldInitAction;

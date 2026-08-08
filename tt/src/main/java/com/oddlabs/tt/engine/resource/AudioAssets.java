@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.engine.audio.AudioParameters;
-import com.oddlabs.tt.model.SupplyType;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;

@@ -1,18 +1,18 @@
 package com.oddlabs.tt.simulation.campaign;
 
-import com.oddlabs.tt.model.Race;
+import com.oddlabs.tt.simulation.model.Race;
 
-import com.oddlabs.tt.model.Terrain;
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.form.CampaignDialogForm;
 import com.oddlabs.tt.client.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.weapon.IronAxeWeapon;
+import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;

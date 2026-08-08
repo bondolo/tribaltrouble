@@ -1,8 +1,8 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.core.global.BoundingMode;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.BoundingBox;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.engine.util.DebugRender;
 import org.jspecify.annotations.NonNull;
 

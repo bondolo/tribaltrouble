@@ -1,15 +1,15 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.model.Action;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.DeployType;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.Target;
-import com.oddlabs.tt.model.BuildingType;
+import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.DeployType;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.model.BuildingType;
 import org.jspecify.annotations.NonNull;
 
-import com.oddlabs.tt.model.MagicType;
+import com.oddlabs.tt.simulation.model.MagicType;
 
 /**
  * Interface defining actions a player can take, such as deploying units, building, and casting magic.

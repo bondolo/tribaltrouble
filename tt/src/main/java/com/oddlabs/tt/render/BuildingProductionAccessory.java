@@ -2,9 +2,9 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.client.camera.CameraState;
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Model;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomAccelerationEmitter;
 import com.oddlabs.tt.engine.resource.AudioAssets;

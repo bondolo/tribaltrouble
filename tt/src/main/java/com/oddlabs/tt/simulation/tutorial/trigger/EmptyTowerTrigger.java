@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
 import com.oddlabs.tt.client.form.TutorialForm;
-import com.oddlabs.tt.model.Building;
+import com.oddlabs.tt.simulation.model.Building;
 import org.jspecify.annotations.NonNull;
 
 public final class EmptyTowerTrigger extends TutorialTrigger {

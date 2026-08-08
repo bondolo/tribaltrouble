@@ -2,12 +2,12 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.model.UnitType;
+import com.oddlabs.tt.simulation.model.UnitType;
 
-import com.oddlabs.tt.model.Action;
-import com.oddlabs.tt.model.Building;
-import com.oddlabs.tt.model.Selectable;
-import com.oddlabs.tt.model.Unit;
+import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.model.EmojiType;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.ModelClient;
+import com.oddlabs.tt.simulation.model.EmojiType;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.ModelClient;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;

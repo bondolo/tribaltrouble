@@ -1,10 +1,10 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.camera.CameraState;
-import com.oddlabs.tt.model.Abilities;
-import com.oddlabs.tt.model.Model;
-import com.oddlabs.tt.model.Unit;
-import com.oddlabs.tt.model.UnitSupplyContainer;
+import com.oddlabs.tt.simulation.model.Abilities;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitSupplyContainer;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
