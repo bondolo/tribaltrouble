@@ -1,4 +1,4 @@
-package com.oddlabs.tt.event;
+package com.oddlabs.tt.core.event;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.event.LoadDeterministic;
