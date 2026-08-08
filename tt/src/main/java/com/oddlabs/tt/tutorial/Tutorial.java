@@ -1,6 +1,6 @@
 package com.oddlabs.tt.tutorial;
 
-import com.oddlabs.tt.animation.TimerAnimation;
+import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.delegate.TutorialOverDelegate;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.LabelBox;

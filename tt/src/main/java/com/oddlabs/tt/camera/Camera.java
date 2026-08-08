@@ -1,7 +1,7 @@
 package com.oddlabs.tt.camera;
 
 
-import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.landscape.HeightMap;

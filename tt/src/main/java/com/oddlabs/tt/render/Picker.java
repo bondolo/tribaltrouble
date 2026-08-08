@@ -1,8 +1,8 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.animation.AnimationManager;
-import com.oddlabs.tt.animation.TimerAnimation;
-import com.oddlabs.tt.animation.Updatable;
+import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.core.animation.Updatable;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.GameCamera;
 import com.oddlabs.tt.camera.MapCamera;

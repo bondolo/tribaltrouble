@@ -1,4 +1,4 @@
-package com.oddlabs.tt.animation;
+package com.oddlabs.tt.core.animation;
 
 import org.jspecify.annotations.NonNull;
 

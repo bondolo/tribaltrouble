@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.animation.Animated;
-import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.engine.font.Font;
 import org.jspecify.annotations.NonNull;
 

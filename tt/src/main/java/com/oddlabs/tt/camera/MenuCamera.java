@@ -1,6 +1,6 @@
 package com.oddlabs.tt.camera;
 
-import com.oddlabs.tt.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.landscape.World;
 import org.jspecify.annotations.NonNull;
 

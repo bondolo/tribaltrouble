@@ -3,7 +3,7 @@ package com.oddlabs.tt.delegate;
 import com.oddlabs.tt.model.Race;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.animation.Animated;
+import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.camera.StaticCamera;
 import com.oddlabs.tt.form.CampaignDialogForm;
