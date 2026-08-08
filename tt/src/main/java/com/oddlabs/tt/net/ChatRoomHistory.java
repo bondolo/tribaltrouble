@@ -2,7 +2,7 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.ChatRoomUser;
 import com.oddlabs.tt.client.gui.ChatPanel;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;

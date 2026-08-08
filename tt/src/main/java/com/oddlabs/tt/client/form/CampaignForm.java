@@ -19,7 +19,7 @@ import com.oddlabs.tt.simulation.campaign.Campaign;
 import com.oddlabs.tt.simulation.campaign.CampaignState;
 import com.oddlabs.tt.simulation.campaign.NativeCampaign;
 import com.oddlabs.tt.simulation.campaign.VikingCampaign;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
 import org.jspecify.annotations.NonNull;
 

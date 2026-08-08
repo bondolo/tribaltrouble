@@ -1,8 +1,8 @@
 package com.oddlabs.tt.core.animation;
 
 import com.oddlabs.net.MonotoneTimeManager;
-import com.oddlabs.tt.util.StatCounter;
-import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.core.util.StatCounter;
+import com.oddlabs.tt.core.event.StateChecksum;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Set;

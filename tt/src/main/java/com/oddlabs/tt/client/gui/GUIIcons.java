@@ -6,7 +6,7 @@ import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.render.Texture;
 import com.oddlabs.tt.engine.resource.GLImage;
 import com.oddlabs.tt.engine.resource.GLIntImage;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

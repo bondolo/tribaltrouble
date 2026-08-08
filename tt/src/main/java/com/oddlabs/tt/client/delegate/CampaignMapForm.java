@@ -23,7 +23,7 @@ import com.oddlabs.tt.simulation.campaign.Campaign;
 import com.oddlabs.tt.simulation.campaign.CampaignState;
 import com.oddlabs.tt.render.GUIRenderer;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

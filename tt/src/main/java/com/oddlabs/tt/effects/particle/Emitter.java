@@ -4,7 +4,7 @@ import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.TextureKey;
-import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.core.event.StateChecksum;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

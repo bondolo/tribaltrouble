@@ -13,7 +13,7 @@ import com.oddlabs.tt.client.gui.PulldownMenu;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.gui.Slider;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.ServerMessageBundler;
+import com.oddlabs.tt.net.ServerMessageBundler;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.IntConsumer;

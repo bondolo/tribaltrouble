@@ -78,7 +78,7 @@ public final class GLIntImage extends GLImage {
     }
 
     public static @NonNull GLIntImage loadImage(@NonNull URL url) throws IOException {
-        ByteBuffer fileData = com.oddlabs.tt.util.Utils.ioResourceToByteBuffer(url);
+        ByteBuffer fileData = com.oddlabs.tt.core.util.Utils.ioResourceToByteBuffer(url);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer w = stack.mallocInt(1);
             IntBuffer h = stack.mallocInt(1);

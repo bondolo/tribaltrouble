@@ -22,7 +22,7 @@ import com.oddlabs.tt.simulation.campaign.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.PlayerEleminatedTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.ReinforcementsTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.VictoryTrigger;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

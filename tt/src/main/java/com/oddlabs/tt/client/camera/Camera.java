@@ -6,7 +6,7 @@ import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.render.Renderer;
-import com.oddlabs.tt.util.StateChecksum;
+import com.oddlabs.tt.core.event.StateChecksum;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

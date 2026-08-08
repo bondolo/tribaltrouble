@@ -15,7 +15,7 @@ import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.campaign.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.VictoryTrigger;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

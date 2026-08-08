@@ -8,7 +8,7 @@ import com.oddlabs.tt.render.shader.VertexLayout;
 import com.oddlabs.tt.render.state.CullMode;
 import com.oddlabs.tt.render.state.DepthMode;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.util.GLUtils;
+import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

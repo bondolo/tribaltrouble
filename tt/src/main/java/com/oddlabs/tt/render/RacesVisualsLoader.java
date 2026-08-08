@@ -45,7 +45,7 @@ import com.oddlabs.tt.engine.procedural.GeneratorSmoke;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.engine.resource.TextureFile;
-import com.oddlabs.tt.util.Utils;
+import com.oddlabs.tt.core.util.Utils;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

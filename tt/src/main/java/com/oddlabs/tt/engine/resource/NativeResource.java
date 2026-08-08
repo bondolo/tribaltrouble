@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.resource;
 
-import com.oddlabs.tt.util.GLUtils;
+import com.oddlabs.tt.engine.util.GLUtils;
 import org.jspecify.annotations.NonNull;
 
 import java.lang.ref.Cleaner;

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.net;
 
-import com.oddlabs.tt.util.SpamFilter;
 import org.jspecify.annotations.NonNull;
 
 public record ChatMessage(@NonNull String nick, @NonNull String message, @NonNull Type type) {

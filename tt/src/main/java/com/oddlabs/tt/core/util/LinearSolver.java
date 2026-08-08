@@ -1,4 +1,4 @@
-package com.oddlabs.tt.util;
+package com.oddlabs.tt.core.util;
 
 import org.jspecify.annotations.NonNull;
 
