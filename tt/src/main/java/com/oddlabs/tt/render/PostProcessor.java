@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.global.Settings;
+import com.oddlabs.tt.core.global.Settings;
 import com.oddlabs.tt.render.shader.PostProcessShader;
 import com.oddlabs.tt.render.state.BlendMode;
 import com.oddlabs.tt.render.state.CullMode;

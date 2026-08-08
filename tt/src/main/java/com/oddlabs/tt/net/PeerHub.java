@@ -10,7 +10,7 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.router.SessionInfo;
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.simulation.player.Player;

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.form;
 
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.CheckBox;
 import com.oddlabs.tt.client.gui.ColumnInfo;
 import com.oddlabs.tt.client.gui.Form;

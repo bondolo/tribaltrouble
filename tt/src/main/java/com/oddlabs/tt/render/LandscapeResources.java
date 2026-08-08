@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.client.form.ProgressForm;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.engine.resource.SpriteFile;

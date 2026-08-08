@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.gui;
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.core.animation.Updatable;
 import com.oddlabs.tt.engine.font.Index;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;

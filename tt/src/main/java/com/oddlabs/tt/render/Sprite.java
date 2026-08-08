@@ -2,7 +2,7 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.engine.procedural.GeneratorRespond;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;

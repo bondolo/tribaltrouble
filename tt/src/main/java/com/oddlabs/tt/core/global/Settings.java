@@ -1,4 +1,4 @@
-package com.oddlabs.tt.global;
+package com.oddlabs.tt.core.global;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.util.Color;

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.util;
 
-import com.oddlabs.tt.global.Globals;
+import com.oddlabs.tt.core.global.Globals;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

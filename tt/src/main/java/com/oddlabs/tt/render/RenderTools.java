@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.global.BoundingMode;
+import com.oddlabs.tt.core.global.BoundingMode;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.BoundingBox;
 import com.oddlabs.tt.util.DebugRender;
