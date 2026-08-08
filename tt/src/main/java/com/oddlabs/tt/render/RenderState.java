@@ -20,7 +20,7 @@ import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.simulation.model.weapon.RotatingThrowingWeapon;
 import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
-import com.oddlabs.tt.net.PeerHub;
+import com.oddlabs.tt.core.net.PeerHub;
 import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Lightning;
