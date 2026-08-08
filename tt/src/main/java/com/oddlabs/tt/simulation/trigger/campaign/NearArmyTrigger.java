@@ -1,9 +1,9 @@
-package com.oddlabs.tt.trigger.campaign;
+package com.oddlabs.tt.simulation.trigger.campaign;
 
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.player.Player;
-import com.oddlabs.tt.trigger.IntervalTrigger;
+import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import org.jspecify.annotations.NonNull;
 
 public final class NearArmyTrigger extends IntervalTrigger {

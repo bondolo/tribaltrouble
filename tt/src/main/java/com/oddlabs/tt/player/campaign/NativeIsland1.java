@@ -25,10 +25,10 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.render.SpriteKey;
 import com.oddlabs.tt.render.VisualRegistry;
-import com.oddlabs.tt.trigger.campaign.DeathTrigger;
-import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
-import com.oddlabs.tt.trigger.campaign.TimeTrigger;
-import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.DeathTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.GameStartedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.TimeTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

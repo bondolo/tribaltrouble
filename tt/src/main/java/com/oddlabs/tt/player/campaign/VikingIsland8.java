@@ -24,11 +24,11 @@ import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.render.VisualRegistry;
-import com.oddlabs.tt.trigger.campaign.DeathTrigger;
-import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
-import com.oddlabs.tt.trigger.campaign.MagicUsedTrigger;
-import com.oddlabs.tt.trigger.campaign.NearArmyTrigger;
-import com.oddlabs.tt.trigger.campaign.NearPointTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.DeathTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.GameStartedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.MagicUsedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.NearArmyTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.NearPointTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

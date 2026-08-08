@@ -25,10 +25,10 @@ import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
 import com.oddlabs.tt.render.VisualRegistry;
-import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
-import com.oddlabs.tt.trigger.campaign.MagicUsedTrigger;
-import com.oddlabs.tt.trigger.campaign.NearPointTrigger;
-import com.oddlabs.tt.trigger.campaign.TimeTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.GameStartedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.MagicUsedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.NearPointTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

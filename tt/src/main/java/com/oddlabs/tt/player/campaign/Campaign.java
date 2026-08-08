@@ -7,7 +7,7 @@ import com.oddlabs.tt.gui.CampaignIcons;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LoadCampaignBox;
-import com.oddlabs.tt.trigger.GameOverDelayTrigger;
+import com.oddlabs.tt.simulation.trigger.GameOverDelayTrigger;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;

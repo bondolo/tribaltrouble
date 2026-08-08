@@ -20,9 +20,9 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.UnitInfo;
-import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
-import com.oddlabs.tt.trigger.campaign.PlayerEleminatedTrigger;
-import com.oddlabs.tt.trigger.campaign.TimeTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.GameStartedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.PlayerEleminatedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.TimeTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

@@ -22,10 +22,10 @@ import com.oddlabs.tt.player.AI;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
 import com.oddlabs.tt.player.UnitInfo;
-import com.oddlabs.tt.trigger.campaign.GameStartedTrigger;
-import com.oddlabs.tt.trigger.campaign.PlayerEleminatedTrigger;
-import com.oddlabs.tt.trigger.campaign.SupplyGatheredTrigger;
-import com.oddlabs.tt.trigger.campaign.VictoryTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.GameStartedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.PlayerEleminatedTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.SupplyGatheredTrigger;
+import com.oddlabs.tt.simulation.trigger.campaign.VictoryTrigger;
 import com.oddlabs.tt.util.Utils;
 import org.jspecify.annotations.NonNull;
 

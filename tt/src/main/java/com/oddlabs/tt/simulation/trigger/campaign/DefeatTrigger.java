@@ -1,9 +1,9 @@
-package com.oddlabs.tt.trigger.campaign;
+package com.oddlabs.tt.simulation.trigger.campaign;
 
 import com.oddlabs.tt.model.Unit;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.campaign.Campaign;
-import com.oddlabs.tt.trigger.IntervalTrigger;
+import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
