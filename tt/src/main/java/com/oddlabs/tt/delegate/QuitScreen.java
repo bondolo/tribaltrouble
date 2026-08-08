@@ -2,7 +2,7 @@ package com.oddlabs.tt.delegate;
 
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.core.animation.Updatable;
-import com.oddlabs.tt.camera.Camera;
+import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MouseButton;

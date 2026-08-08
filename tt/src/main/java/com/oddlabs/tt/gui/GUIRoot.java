@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.core.animation.TimerAnimation;
-import com.oddlabs.tt.camera.Camera;
+import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.delegate.CameraDelegate;
 import com.oddlabs.tt.delegate.ModalDelegate;
 import com.oddlabs.tt.delegate.NullDelegate;
@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import static com.oddlabs.tt.camera.Camera.FOVMode.DIAGONAL;
+import static com.oddlabs.tt.client.camera.Camera.FOVMode.DIAGONAL;
 
 /**
  * Root of a GUI component tree

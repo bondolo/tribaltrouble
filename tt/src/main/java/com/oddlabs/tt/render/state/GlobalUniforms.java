@@ -1,6 +1,6 @@
 package com.oddlabs.tt.render.state;
 
-import com.oddlabs.tt.camera.CameraState;
+import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.render.shader.FogShader;
 import com.oddlabs.tt.engine.resource.DistanceFogInfo;
 import com.oddlabs.tt.engine.resource.FogInfo;

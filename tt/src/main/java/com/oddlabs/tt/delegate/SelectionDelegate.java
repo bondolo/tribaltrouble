@@ -1,8 +1,8 @@
 package com.oddlabs.tt.delegate;
 
-import com.oddlabs.tt.camera.Camera;
-import com.oddlabs.tt.camera.GameCamera;
-import com.oddlabs.tt.camera.MapCamera;
+import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.client.camera.GameCamera;
+import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.form.InGameChatForm;
 import com.oddlabs.tt.gui.ActionButtonPanel;
 import com.oddlabs.tt.gui.CursorType;

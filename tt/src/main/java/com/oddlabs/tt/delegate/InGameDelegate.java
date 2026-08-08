@@ -2,8 +2,8 @@ package com.oddlabs.tt.delegate;
 
 import com.oddlabs.tt.model.UnitType;
 
-import com.oddlabs.tt.camera.Camera;
-import com.oddlabs.tt.camera.StaticCamera;
+import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

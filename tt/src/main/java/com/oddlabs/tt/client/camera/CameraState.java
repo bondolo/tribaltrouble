@@ -1,4 +1,4 @@
-package com.oddlabs.tt.camera;
+package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.engine.resource.FogInfo;
 import com.oddlabs.tt.util.StateChecksum;

@@ -4,7 +4,7 @@ import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
 import com.oddlabs.tt.model.BuildingType;
 
-import com.oddlabs.tt.camera.GameCamera;
+import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 

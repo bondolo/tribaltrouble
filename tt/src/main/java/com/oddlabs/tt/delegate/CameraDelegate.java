@@ -1,6 +1,6 @@
 package com.oddlabs.tt.delegate;
 
-import com.oddlabs.tt.camera.Camera;
+import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.input.InputEvent;
 import org.jspecify.annotations.NonNull;

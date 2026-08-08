@@ -1,7 +1,7 @@
 package com.oddlabs.tt.delegate;
 
-import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.camera.GameCamera;
+import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.delegate;
 
 
-import com.oddlabs.tt.camera.Camera;
+import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.form.InGameOptionsMenu;
 import com.oddlabs.tt.form.QuestionForm;
 import com.oddlabs.tt.gui.Group;

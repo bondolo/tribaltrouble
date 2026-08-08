@@ -1,7 +1,7 @@
 package com.oddlabs.tt.form;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.camera.NullCamera;
+import com.oddlabs.tt.client.camera.NullCamera;
 import com.oddlabs.tt.delegate.CameraDelegate;
 import com.oddlabs.tt.delegate.NullDelegate;
 import com.oddlabs.tt.gui.Fadable;

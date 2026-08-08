@@ -1,7 +1,7 @@
 package com.oddlabs.tt.delegate;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.camera.Camera;
+import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.form.CampaignForm;
 import com.oddlabs.tt.form.LoginForm;
 import com.oddlabs.tt.form.SelectGameMenu;
