@@ -4,7 +4,7 @@ import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.model.Terrain;
-import com.oddlabs.tt.resource.SpriteFile;
+import com.oddlabs.tt.engine.resource.SpriteFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;

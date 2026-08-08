@@ -2,7 +2,7 @@ package com.oddlabs.tt.engine.vbo;
 
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.NativeResource;
+import com.oddlabs.tt.engine.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;

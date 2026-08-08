@@ -3,7 +3,7 @@ package com.oddlabs.tt.render;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.render.state.RenderContext;
-import com.oddlabs.tt.resource.Resources;
+import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

@@ -14,8 +14,8 @@ import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.player.Player;
 import com.oddlabs.tt.player.PlayerInfo;
-import com.oddlabs.tt.resource.FogInfo;
-import com.oddlabs.tt.resource.WorldInfo;
+import com.oddlabs.tt.engine.resource.FogInfo;
+import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -80,7 +80,7 @@ public final class World {
         return world;
     }
 
-    public com.oddlabs.tt.resource.@NonNull FogInfo getFog() {
+    public com.oddlabs.tt.engine.resource.@NonNull FogInfo getFog() {
         return fog;
     }
 

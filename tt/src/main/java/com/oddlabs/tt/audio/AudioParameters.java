@@ -1,6 +1,6 @@
 package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.resource.AudioFile;
+import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;

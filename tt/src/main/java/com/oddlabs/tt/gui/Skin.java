@@ -2,8 +2,8 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.resource.FontFile;
-import com.oddlabs.tt.resource.Resources;
+import com.oddlabs.tt.engine.resource.FontFile;
+import com.oddlabs.tt.engine.resource.Resources;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;

@@ -2,9 +2,9 @@ package com.oddlabs.tt.render.state;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.render.shader.FogShader;
-import com.oddlabs.tt.resource.DistanceFogInfo;
-import com.oddlabs.tt.resource.FogInfo;
-import com.oddlabs.tt.resource.RadialFogInfo;
+import com.oddlabs.tt.engine.resource.DistanceFogInfo;
+import com.oddlabs.tt.engine.resource.FogInfo;
+import com.oddlabs.tt.engine.resource.RadialFogInfo;
 import com.oddlabs.tt.scenery.Water;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

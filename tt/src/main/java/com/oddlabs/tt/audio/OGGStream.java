@@ -1,6 +1,6 @@
 package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.resource.NativeResource;
+import com.oddlabs.tt.engine.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBVorbis;

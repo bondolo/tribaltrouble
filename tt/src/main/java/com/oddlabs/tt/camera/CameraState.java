@@ -1,6 +1,6 @@
 package com.oddlabs.tt.camera;
 
-import com.oddlabs.tt.resource.FogInfo;
+import com.oddlabs.tt.engine.resource.FogInfo;
 import com.oddlabs.tt.util.StateChecksum;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

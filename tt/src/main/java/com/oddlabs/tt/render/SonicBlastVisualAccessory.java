@@ -5,7 +5,7 @@ import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.weapon.SonicBlast;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

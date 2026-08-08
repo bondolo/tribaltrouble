@@ -2,14 +2,14 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.camera.CameraState;
-import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.engine.procedural.Landscape;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.IronSupply;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.particle.RingEmitter;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

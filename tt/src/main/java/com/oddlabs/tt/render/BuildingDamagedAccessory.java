@@ -2,14 +2,14 @@ package com.oddlabs.tt.render;
 
 import com.oddlabs.tt.camera.CameraState;
 import com.oddlabs.tt.model.Terrain;
-import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.engine.procedural.Landscape;
 import com.oddlabs.tt.model.Building;
 import com.oddlabs.tt.model.Model;
 import com.oddlabs.tt.model.PointEmitterModel;
 import com.oddlabs.tt.effects.particle.ColorSpectrum;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.resource.Resources;
-import com.oddlabs.tt.resource.TextureFile;
+import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
