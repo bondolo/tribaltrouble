@@ -18,7 +18,7 @@ import com.oddlabs.tt.delegate.InGameDelegate;
 import com.oddlabs.tt.delegate.InGameMainMenu;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.viewer.WorldViewer;
-import com.oddlabs.tt.event.LocalEventQueue;
+import com.oddlabs.tt.core.event.LocalEventQueue;
 import com.oddlabs.tt.form.MessageForm;
 import com.oddlabs.tt.form.ProgressForm;
 import com.oddlabs.tt.form.WarningForm;
