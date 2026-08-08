@@ -223,7 +223,7 @@ public final class RenderQueues implements AutoCloseable {
         return registerDynamicSprite(sprite_list, getTexture(texture_key));
     }
 
-    public @NonNull SpriteKey registerIconSprite(com.oddlabs.tt.gui.@NonNull IconQuad icon) {
+    public @NonNull SpriteKey registerIconSprite(com.oddlabs.tt.client.gui.@NonNull IconQuad icon) {
         SpriteList sprite_list = SpriteList.createQuadInstance(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2());
         return registerDynamicSprite(sprite_list, icon.getTexture());
     }

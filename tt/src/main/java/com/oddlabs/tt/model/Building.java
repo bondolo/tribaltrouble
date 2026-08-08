@@ -1,6 +1,6 @@
 package com.oddlabs.tt.model;
 
-import com.oddlabs.tt.gui.BuildSpinner;
+import com.oddlabs.tt.client.gui.BuildSpinner;
 import com.oddlabs.tt.landscape.TreeSupply;
 import com.oddlabs.tt.landscape.World;
 import com.oddlabs.tt.model.behaviour.AttackController;

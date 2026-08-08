@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.gui.Cursor;
+import com.oddlabs.tt.client.gui.Cursor;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

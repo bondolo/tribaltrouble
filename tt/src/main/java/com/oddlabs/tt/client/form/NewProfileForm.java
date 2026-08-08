@@ -1,0 +1,121 @@
+package com.oddlabs.tt.client.form;
+
+import com.oddlabs.tt.client.delegate.Menu;
+import com.oddlabs.tt.client.gui.ButtonObject;
+import com.oddlabs.tt.client.gui.CancelButton;
+import com.oddlabs.tt.client.gui.EditLine;
+import com.oddlabs.tt.client.gui.FocusDirection;
+import com.oddlabs.tt.client.gui.Form;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.Group;
+import com.oddlabs.tt.client.gui.HorizButton;
+import com.oddlabs.tt.client.gui.Label;
+import com.oddlabs.tt.client.gui.MouseButton;
+import com.oddlabs.tt.client.gui.Skin;
+import com.oddlabs.tt.client.guievent.EnterListener;
+import com.oddlabs.tt.client.guievent.MouseClickListener;
+import com.oddlabs.tt.util.Utils;
+import org.jspecify.annotations.NonNull;
+
+import java.util.ResourceBundle;
+
+import static com.oddlabs.tt.client.gui.Origin.AT_END;
+import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
+
+public final class NewProfileForm extends Form {
+    private static final int BUTTON_WIDTH = 100;
+    private static final int BUTTON_WIDTH_LONG = 150;
+    private static final int EDITLINE_WIDTH = 240;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(NewProfileForm.class.getName());
+
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+        return Utils.getBundleString(bundle, key, args);
+    }
+
+    private final Menu main_menu;
+    private final ProfilesForm profiles_form;
+    private final @NonNull EditLine editline_nick;
+    private final GUIRoot gui_root;
+
+    public NewProfileForm(GUIRoot gui_root, Menu main_menu, ProfilesForm profiles_form) {
+        this.gui_root = gui_root;
+        this.main_menu = main_menu;
+        this.profiles_form = profiles_form;
+
+
+        // headline
+        Label label_headline = new Label(i18n("create_profile_caption"), Skin.getSkin().getHeadlineFont());
+        addChild(label_headline);
+
+        // login
+        Label label_nick = new Label(i18n("nick"), Skin.getSkin().getEditFont());
+        editline_nick = new EditLine(EDITLINE_WIDTH, 255);
+        editline_nick.addEnterListener(new CreateProfileListener());
+        addChild(label_nick);
+        addChild(editline_nick);
+
+        label_headline.place();
+        label_nick.place(label_headline, BOTTOM_LEFT);
+        editline_nick.place(label_nick, RIGHT_MID);
+
+        Group group_buttons = new Group();
+        ButtonObject button_create = new HorizButton(i18n("create_profile"), BUTTON_WIDTH_LONG);
+        button_create.addMouseClickListener(new CreateProfileListener());
+        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
+
+        group_buttons.addChild(button_create);
+        group_buttons.addChild(button_cancel);
+
+        button_cancel.place();
+        button_create.place(button_cancel, LEFT_MID);
+
+        group_buttons.compileCanvas();
+        addChild(group_buttons);
+
+        group_buttons.place(AT_END);
+
+        compileCanvas();
+    }
+
+    @Override
+    public void setFocus(@NonNull FocusDirection direction) {
+        if (direction == FocusDirection.BACKWARD) {
+            super.setFocus(direction);
+        } else {
+            editline_nick.setFocus(direction);
+        }
+    }
+
+    @Override
+    public void doCancel() {
+        done();
+    }
+
+    private void done() {
+        main_menu.setMenuCentered(profiles_form);
+    }
+
+    private void createProfile() {
+        String nick = editline_nick.getContents();
+        gui_root.addModalForm(new CreatingProfileForm(gui_root, profiles_form, main_menu, nick));
+    }
+
+    public void connectionLost() {
+        remove();
+    }
+
+    private final class CreateProfileListener implements MouseClickListener, EnterListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            createProfile();
+        }
+
+        @Override
+        public void enterPressed(@NonNull CharSequence text) {
+            createProfile();
+        }
+    }
+}

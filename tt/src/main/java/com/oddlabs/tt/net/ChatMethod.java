@@ -1,6 +1,6 @@
 package com.oddlabs.tt.net;
 
-import com.oddlabs.tt.gui.InfoPrinter;
+import com.oddlabs.tt.client.gui.InfoPrinter;
 
 @FunctionalInterface
 public interface ChatMethod {

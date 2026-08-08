@@ -1,7 +1,7 @@
 package com.oddlabs.tt.viewer;
 
 import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;

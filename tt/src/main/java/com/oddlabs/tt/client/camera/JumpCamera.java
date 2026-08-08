@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
-import com.oddlabs.tt.delegate.CameraDelegate;
-import com.oddlabs.tt.delegate.JumpDelegate;
+import com.oddlabs.tt.client.delegate.CameraDelegate;
+import com.oddlabs.tt.client.delegate.JumpDelegate;
 import org.joml.Vector2fc;
 import org.jspecify.annotations.NonNull;
 

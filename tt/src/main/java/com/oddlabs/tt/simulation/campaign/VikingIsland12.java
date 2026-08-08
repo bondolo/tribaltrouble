@@ -8,10 +8,10 @@ import com.oddlabs.tt.model.Terrain;
 import com.oddlabs.tt.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.form.CampaignDialogForm;
-import com.oddlabs.tt.form.InGameCampaignDialogForm;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.client.form.CampaignDialogForm;
+import com.oddlabs.tt.client.form.InGameCampaignDialogForm;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;

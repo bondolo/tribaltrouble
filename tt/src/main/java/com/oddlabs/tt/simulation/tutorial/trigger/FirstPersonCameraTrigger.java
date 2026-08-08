@@ -2,8 +2,8 @@ package com.oddlabs.tt.simulation.tutorial.trigger;
 
 import com.oddlabs.tt.simulation.tutorial.Tutorial;
 
-import com.oddlabs.tt.delegate.Delegate;
-import com.oddlabs.tt.delegate.FirstPersonDelegate;
+import com.oddlabs.tt.client.delegate.Delegate;
+import com.oddlabs.tt.client.delegate.FirstPersonDelegate;
 import org.jspecify.annotations.NonNull;
 
 public final class FirstPersonCameraTrigger extends TutorialTrigger {

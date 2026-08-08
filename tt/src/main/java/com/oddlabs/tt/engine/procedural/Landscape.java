@@ -4,7 +4,7 @@ package com.oddlabs.tt.engine.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
-import com.oddlabs.tt.form.ProgressForm;
+import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.global.Globals;
 import com.oddlabs.tt.landscape.HeightMap;
 import com.oddlabs.tt.model.RacesResources;

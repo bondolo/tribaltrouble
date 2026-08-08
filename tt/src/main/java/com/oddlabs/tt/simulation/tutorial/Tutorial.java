@@ -1,10 +1,10 @@
 package com.oddlabs.tt.simulation.tutorial;
 
 import com.oddlabs.tt.core.animation.TimerAnimation;
-import com.oddlabs.tt.delegate.TutorialOverDelegate;
-import com.oddlabs.tt.gui.GUIObject;
-import com.oddlabs.tt.gui.LabelBox;
-import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.client.delegate.TutorialOverDelegate;
+import com.oddlabs.tt.client.gui.GUIObject;
+import com.oddlabs.tt.client.gui.LabelBox;
+import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.simulation.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.util.Utils;
 import com.oddlabs.tt.viewer.WorldViewer;

@@ -1,11 +1,11 @@
 package com.oddlabs.tt.client.input;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.gui.Cursor;
-import com.oddlabs.tt.gui.CursorType;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.LocalInput;
-import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.client.gui.Cursor;
+import com.oddlabs.tt.client.gui.CursorType;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.LocalInput;
+import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.render.Renderer;
 import com.oddlabs.tt.engine.resource.CursorFile;
 import org.jspecify.annotations.NonNull;

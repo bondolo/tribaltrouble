@@ -1,9 +1,9 @@
 package com.oddlabs.tt.viewer;
 
-import com.oddlabs.tt.delegate.GameStatsDelegate;
-import com.oddlabs.tt.delegate.InGameMainMenu;
-import com.oddlabs.tt.gui.FreeQuitLabel;
-import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.client.delegate.GameStatsDelegate;
+import com.oddlabs.tt.client.delegate.InGameMainMenu;
+import com.oddlabs.tt.client.gui.FreeQuitLabel;
+import com.oddlabs.tt.client.gui.Group;
 import org.jspecify.annotations.NonNull;
 
 public final class MultiplayerInGameInfo extends DefaultInGameInfo {

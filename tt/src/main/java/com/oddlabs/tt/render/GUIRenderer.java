@@ -1,7 +1,7 @@
 package com.oddlabs.tt.render;
 
-import com.oddlabs.tt.gui.IconQuad;
-import com.oddlabs.tt.gui.ModeIconQuads;
+import com.oddlabs.tt.client.gui.IconQuad;
+import com.oddlabs.tt.client.gui.ModeIconQuads;
 import com.oddlabs.tt.render.shader.GUIShader;
 import com.oddlabs.tt.render.shader.ShaderProgram;
 import com.oddlabs.tt.render.shader.VertexLayout;
