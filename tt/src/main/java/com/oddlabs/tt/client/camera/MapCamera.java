@@ -6,7 +6,7 @@ import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.FogInfo;
 import com.oddlabs.tt.engine.resource.RadialFogInfo;
 import com.oddlabs.tt.core.util.Utils;

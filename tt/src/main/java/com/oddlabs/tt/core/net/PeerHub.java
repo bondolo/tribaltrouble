@@ -15,7 +15,7 @@ import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.event.StateChecksum;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.NotificationManager;

@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.gui;
 import com.oddlabs.tt.client.guievent.MouseButtonListener;
 import com.oddlabs.tt.client.guievent.MouseMotionListener;
 import com.oddlabs.tt.client.guievent.ValueListener;
-import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.client.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Set;

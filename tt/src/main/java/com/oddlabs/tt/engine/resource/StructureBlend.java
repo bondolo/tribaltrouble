@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;

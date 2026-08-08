@@ -5,7 +5,7 @@ import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.event.StateChecksum;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

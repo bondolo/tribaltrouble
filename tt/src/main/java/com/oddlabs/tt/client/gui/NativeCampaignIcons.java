@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Node;
 

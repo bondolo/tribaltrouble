@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.engine.font.TextLineRenderer;
-import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

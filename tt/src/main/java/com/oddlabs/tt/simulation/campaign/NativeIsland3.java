@@ -24,7 +24,7 @@ import com.oddlabs.tt.core.net.GameNetwork;
 import com.oddlabs.tt.core.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.render.VisualRegistry;
+import com.oddlabs.tt.engine.render.VisualRegistry;
 import com.oddlabs.tt.simulation.campaign.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.MagicUsedTrigger;
 import com.oddlabs.tt.simulation.campaign.trigger.NearPointTrigger;

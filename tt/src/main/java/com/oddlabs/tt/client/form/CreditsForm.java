@@ -9,7 +9,7 @@ import com.oddlabs.tt.client.gui.Panel;
 import com.oddlabs.tt.client.gui.PanelGroup;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.gui.TextBox;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 

@@ -24,7 +24,7 @@ import com.oddlabs.tt.core.net.GameNetwork;
 import com.oddlabs.tt.core.net.Server;
 import com.oddlabs.tt.core.net.WorldInitAction;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.simulation.trigger.GameOverTrigger;

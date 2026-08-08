@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.util.DXTImage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

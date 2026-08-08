@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.gui.PulldownItem;
 import com.oddlabs.tt.client.gui.PulldownMenu;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.gui.Slider;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 
 import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;

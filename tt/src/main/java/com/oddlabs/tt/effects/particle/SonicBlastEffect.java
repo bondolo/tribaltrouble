@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 
 /**
- * A transient expanding-ring effect rendered by {@link com.oddlabs.tt.render.SonicBlastRenderer}.
+ * A transient expanding-ring effect rendered by {@link com.oddlabs.tt.effects.render.SonicBlastRenderer}.
  * Advances through its animation each game tick and removes itself when its duration elapses.
  */
 public final class SonicBlastEffect extends Element<SonicBlastEffect> implements Animated {

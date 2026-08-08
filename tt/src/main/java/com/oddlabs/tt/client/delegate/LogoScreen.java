@@ -11,8 +11,8 @@ import com.oddlabs.tt.client.gui.IconQuad;
 import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.render.Texture;
-import com.oddlabs.tt.render.UIRenderer;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.client.render.UIRenderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

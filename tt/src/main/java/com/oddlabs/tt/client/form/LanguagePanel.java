@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.gui.Panel;
 import com.oddlabs.tt.client.gui.Row;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.RowListener;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

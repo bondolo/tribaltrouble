@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.gui.Label;
 import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.MouseClickListener;
-import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.simulation.tutorial.TutorialInGameInfo;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;

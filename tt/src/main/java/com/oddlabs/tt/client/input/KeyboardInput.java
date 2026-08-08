@@ -4,7 +4,7 @@ import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.LocalInput;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;

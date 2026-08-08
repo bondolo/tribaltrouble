@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.client.form.WaitingForPlayersForm;
 import com.oddlabs.tt.core.net.StallHandler;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

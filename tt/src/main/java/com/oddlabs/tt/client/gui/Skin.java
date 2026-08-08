@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.engine.font.Font;
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.FontFile;
 import com.oddlabs.tt.engine.resource.Resources;
 import org.jspecify.annotations.NonNull;

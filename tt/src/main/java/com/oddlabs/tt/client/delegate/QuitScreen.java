@@ -8,7 +8,7 @@ import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 public final class QuitScreen extends CameraDelegate<Camera> implements Updatable<TimerAnimation> {

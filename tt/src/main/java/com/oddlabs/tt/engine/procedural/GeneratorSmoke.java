@@ -5,7 +5,7 @@ import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.render.Texture;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.GLIntImage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

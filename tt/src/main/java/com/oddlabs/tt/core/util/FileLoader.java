@@ -1,6 +1,6 @@
 package com.oddlabs.tt.core.util;
 
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 import java.io.File;

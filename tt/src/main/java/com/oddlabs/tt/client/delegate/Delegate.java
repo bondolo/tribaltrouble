@@ -5,10 +5,10 @@ import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.client.gui.FocusDirection;
 import com.oddlabs.tt.client.gui.GUIObject;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.render.GUIRenderer;
-import com.oddlabs.tt.render.LandscapeRenderer;
-import com.oddlabs.tt.render.MatrixStack;
-import com.oddlabs.tt.render.RenderQueues;
+import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

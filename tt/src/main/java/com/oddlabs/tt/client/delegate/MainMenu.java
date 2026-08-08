@@ -9,7 +9,7 @@ import com.oddlabs.tt.client.form.TerrainMenuForm;
 import com.oddlabs.tt.client.form.TutorialForm;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.MenuButton;
-import com.oddlabs.tt.render.Renderer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 /**

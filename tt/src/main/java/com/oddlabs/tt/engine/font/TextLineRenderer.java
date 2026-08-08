@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.font;
 
-import com.oddlabs.tt.render.GUIRenderer;
+import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Quad;
 import org.jspecify.annotations.NonNull;
