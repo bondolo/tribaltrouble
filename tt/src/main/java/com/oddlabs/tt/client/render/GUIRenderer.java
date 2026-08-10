@@ -2,6 +2,8 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.*;
 
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.client.gui.IconQuad;
 import com.oddlabs.tt.client.gui.ModeIconQuads;
 import com.oddlabs.tt.engine.render.shader.GUIShader;

@@ -1,6 +1,9 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.render.*;
+import com.oddlabs.tt.engine.render.*;
+
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.core.animation.Animated;
@@ -23,7 +26,7 @@ public final class RespondManager implements Animated {
 
     private float time;
 
-    RespondManager(@NonNull AnimationManager manager) {
+    public RespondManager(@NonNull AnimationManager manager) {
         manager.registerAnimation(this);
     }
 
@@ -44,7 +47,7 @@ public final class RespondManager implements Animated {
         addResponder(target, null);
     }
 
-    void addResponder(@NonNull Object target, Runnable stop_action) {
+    public void addResponder(@NonNull Object target, Runnable stop_action) {
         addResponder(SECONDS_PER_PICK_RESPOND, target, null);
     }
 
@@ -64,7 +67,7 @@ public final class RespondManager implements Animated {
         }
     }
 
-    boolean isResponding(Object target) {
+    public boolean isResponding(Object target) {
         if (respond_targets.isEmpty())
             return false; // Quick exit in the common case of no responding targets
         else

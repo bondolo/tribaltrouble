@@ -3,4 +3,6 @@
  */
 package com.oddlabs.tt.effects.render;
 
+import com.oddlabs.tt.client.render.*;
+
 import com.oddlabs.tt.engine.render.*;

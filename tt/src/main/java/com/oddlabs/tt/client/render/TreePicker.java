@@ -1,6 +1,9 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.render.*;
+import com.oddlabs.tt.engine.render.*;
+
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.core.global.Globals;
@@ -84,15 +87,15 @@ class TreePicker {
         return trees;
     }
 
-    protected final @NonNull List<@NonNull TreeSupply> @NonNull [] getRenderLists() {
+    public final @NonNull List<@NonNull TreeSupply> @NonNull [] getRenderLists() {
         return render_lists;
     }
 
-    protected final @NonNull List<@NonNull TreeSupply> @NonNull [] getRespondRenderLists() {
+    public final @NonNull List<@NonNull TreeSupply> @NonNull [] getRespondRenderLists() {
         return respond_render_lists;
     }
 
-    final void getAllPicks(@NonNull List<@NonNull TreeSupply> pick_list) {
+    public final void getAllPicks(@NonNull List<@NonNull TreeSupply> pick_list) {
         for (List<@NonNull TreeSupply> render_list : render_lists) {
             pick_list.addAll(render_list);
             render_list.clear();
@@ -117,24 +120,35 @@ class TreePicker {
                 tree_supply));
     }
 
-    final void setup(CameraState camera_state) {
+    public final void setup(CameraState camera_state) {
         this.camera = camera_state;
         render_state_cache.clear();
     }
 
-    final void visit(@NonNull AbstractTreeGroup node) {
-        switch (node) {
-            case TreeGroup group -> {
-                for (AbstractTreeGroup child : group.children()) {
-                    visit(child);
+    public final void visit(@NonNull AbstractTreeGroup node) {
+        RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
+                ? RenderTools.FrustumIntersection.ALL_INSIDE
+                : RenderTools.inFrustum(node, camera.getFrustum());
+
+        if (visible_override || frustum_state != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+            boolean old_override = visible_override;
+            visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
+
+            switch (node) {
+                case TreeGroup group -> {
+                    for (AbstractTreeGroup child : group.children()) {
+                        visit(child);
+                    }
                 }
-            }
-            case TreeLeaf leaf -> {
-                for (TreeSupply tree : leaf.getTrees()) {
-                    visitTree(tree);
+                case TreeLeaf leaf -> {
+                    for (TreeSupply tree : leaf.getTrees()) {
+                        visitTree(tree);
+                    }
                 }
+                case TreeSupply tree -> visitTree(tree);
             }
-            case TreeSupply tree -> visitTree(tree);
+
+            visible_override = old_override;
         }
     }
 
@@ -164,7 +178,6 @@ class TreePicker {
             return;
 
         boolean in_view;
-        // ... culling logic ...
         if (isPicking())
             in_view = !tree_supply.isDead() && (visible_override || pickingInFrustum(tree_supply, camera.getFrustum()));
         else

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.client.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.simulation.model.Model;
@@ -13,14 +13,14 @@ import org.jspecify.annotations.Nullable;
 /**
  * Specialized render state for handling attached accessories.
  */
-final class AttachedRenderState implements ModelState<Model> {
+public final class AttachedRenderState implements ModelState<Model> {
     private @Nullable ElementRenderState<?> parentState;
     private @Nullable Accessory accessory;
 
-    AttachedRenderState() {
+    public AttachedRenderState() {
     }
 
-    void setup(@NonNull ElementRenderState<?> parentState, @NonNull Accessory accessory) {
+    public void setup(@NonNull ElementRenderState<?> parentState, @NonNull Accessory accessory) {
         this.parentState = parentState;
         this.accessory = accessory;
     }

@@ -2,6 +2,8 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.*;
 
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.client.gui.ToolTipBox;
 import com.oddlabs.tt.simulation.model.Abilities;

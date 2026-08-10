@@ -15,7 +15,7 @@ import org.jspecify.annotations.NonNull;
  */
 public final class RenderTools {
 
-    enum FrustumIntersection {
+    public enum FrustumIntersection {
         ALL_OUTSIDE,
         INTERSECTING,
         ALL_INSIDE
@@ -39,7 +39,7 @@ public final class RenderTools {
         stack.translate(x, y, z).rotate(angle, 0f, 0f, 1f);
     }
 
-    static @NonNull FrustumIntersection inFrustum(@NonNull BoundingBox box, float[][] frustum) {
+    public static @NonNull FrustumIntersection inFrustum(@NonNull BoundingBox box, float[][] frustum) {
         boolean all_corners_in_all_planes = true;
 
         for (int f = 0; f < 6; f++) {
@@ -82,20 +82,22 @@ public final class RenderTools {
         return all_corners_in_all_planes ? FrustumIntersection.ALL_INSIDE : FrustumIntersection.INTERSECTING;
     }
 
-    static float getEyeDistanceSquared(@NonNull BoundingBox box, float camera_x, float camera_y, float camera_z) {
+    public static float getEyeDistanceSquared(@NonNull BoundingBox box, float camera_x, float camera_y,
+            float camera_z) {
         float distx = camera_x - box.getCX();
         float disty = camera_y - box.getCY();
         float distz = camera_z - box.getCZ();
         return distx * distx + disty * disty + distz * distz;
     }
 
-    static float getCameraDistanceXYSquared(@NonNull BoundingBox box, float camera_x, float camera_y) {
+    public static float getCameraDistanceXYSquared(@NonNull BoundingBox box, float camera_x, float camera_y) {
         float dx = camera_x - box.getCX();
         float dy = camera_y - box.getCY();
         return dx * dx + dy * dy;
     }
 
-    static float getCameraDistanceSquared(@NonNull BoundingBox box, float camera_x, float camera_y, float camera_z) {
+    public static float getCameraDistanceSquared(@NonNull BoundingBox box, float camera_x, float camera_y,
+            float camera_z) {
         return getEyeDistanceSquared(box, camera_x, camera_y, camera_z);
     }
 

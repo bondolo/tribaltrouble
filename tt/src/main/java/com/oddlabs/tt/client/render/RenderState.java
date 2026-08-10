@@ -1,9 +1,11 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.render.*;
+import com.oddlabs.tt.engine.render.*;
+
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.core.animation.Animated;
@@ -53,7 +55,7 @@ import java.util.Queue;
 /**
  * Manages the rendering state and visit logic for world entities and their accessories.
  */
-final class RenderState {
+public final class RenderState {
     private final Queue<@NonNull Emitter<?>> emitter_queue = new ArrayDeque<>();
     private final Queue<@NonNull Lightning> lightning_queue = new ArrayDeque<>();
     private final Queue<@NonNull SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
@@ -169,12 +171,11 @@ final class RenderState {
         return local_player;
     }
 
-    boolean isResponding(Object target) {
+    public boolean isResponding(Object target) {
         return picker.getRespondManager().isResponding(target);
     }
 
-    @NonNull
-    RenderQueues getRenderQueues() {
+    public @NonNull RenderQueues getRenderQueues() {
         return render_queues;
     }
 
@@ -200,7 +201,7 @@ final class RenderState {
     }
 
     @Nullable
-    CameraState getCamera() {
+    public CameraState getCamera() {
         return camera;
     }
 

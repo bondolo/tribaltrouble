@@ -2,6 +2,8 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.*;
 
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;

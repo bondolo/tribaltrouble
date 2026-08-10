@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.client.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.simulation.model.Model;
@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * Visitor interface for applying specific logic to different types of models during world visitation.
  */
-abstract class ModelVisitor<M extends Model> {
+public abstract class ModelVisitor<M extends Model> {
     public void markDetailPoint(@NonNull ElementRenderState<M> render_state) {
         getSpriteKey(render_state).ifPresent(sprite -> render_state.getRenderer(sprite).addToNoDetailList(
                 render_state));

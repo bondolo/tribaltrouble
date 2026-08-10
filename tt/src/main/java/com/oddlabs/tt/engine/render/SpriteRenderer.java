@@ -189,7 +189,7 @@ public final class SpriteRenderer {
         clearRenderLists();
     }
 
-    void addInstance(int spriteIndex, int animation, float animTicks,
+    public void addInstance(int spriteIndex, int animation, float animTicks,
             boolean respond, boolean blend, boolean depthWrite, boolean depthTest,
             @NonNull Matrix4f modelMatrix, @NonNull Color color, @NonNull Color decalColor) {
         instancedSpriteRenderer.add(sprite_list, spriteIndex, animation, animTicks,

@@ -1,6 +1,9 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.render.*;
+import com.oddlabs.tt.engine.render.*;
+
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.simulation.model.Building;
@@ -20,7 +23,7 @@ import java.util.Optional;
  * ModelVisitor implementation that resolves visual properties and sprite keys for selectable entities
  * (units/buildings).
  */
-class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
+public class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
 
     @Override
     public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<S> render_state) {
@@ -50,7 +53,7 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
                 .rotate(angle, 0f, 0f, 1f);
     }
 
-    static Color.@NonNull Linear getTeamColor(@NonNull Selectable<?> model) {
+    public static Color.@NonNull Linear getTeamColor(@NonNull Selectable<?> model) {
         return model.getOwner().getColor();
     }
 
