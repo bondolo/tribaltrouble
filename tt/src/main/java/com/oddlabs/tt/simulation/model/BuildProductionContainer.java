@@ -1,11 +1,12 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.client.gui.BuildSpinner;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
 public class BuildProductionContainer extends BuildSupplyContainer {
+    public static final int INFINITE_LIMIT = 30;
+
     private final @NonNull SupplyContainer dest_container;
     private final @NonNull Building building;
     private final @NonNull Cost cost;
@@ -29,7 +30,7 @@ public class BuildProductionContainer extends BuildSupplyContainer {
     public void orderSupply(int amount, boolean infinite) {
         this.infinite = infinite;
         if (infinite)
-            super.orderSupply(BuildSpinner.INFINITE_LIMIT - getNumSupplies(), amount);
+            super.orderSupply(INFINITE_LIMIT - getNumSupplies(), amount);
         else
             super.orderSupply(amount);
     }

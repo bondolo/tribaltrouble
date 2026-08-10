@@ -373,19 +373,19 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
 
         build_weapon_rock_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRockIcon(),
-                i18n("build_rock_tip"), Building.COST_ROCK_WEAPON.iconList(),
+                i18n("build_rock_tip"), GUIIcons.toIconList(Building.COST_ROCK_WEAPON),
                 GameAction.RES_ROCK, GameAction.RES_ROCK_DEC
         );
         build_group.addChild(build_weapon_rock_button);
         build_weapon_iron_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponIronIcon(),
-                i18n("build_iron_tip"), Building.COST_IRON_WEAPON.iconList(),
+                i18n("build_iron_tip"), GUIIcons.toIconList(Building.COST_IRON_WEAPON),
                 GameAction.RES_IRON, GameAction.RES_IRON_DEC
         );
         build_group.addChild(build_weapon_iron_button);
         build_weapon_rubber_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRubberIcon(),
-                i18n("build_chicken_tip"), Building.COST_RUBBER_WEAPON.iconList(),
+                i18n("build_chicken_tip"), GUIIcons.toIconList(Building.COST_RUBBER_WEAPON),
                 GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC
         );
         build_group.addChild(build_weapon_rubber_button);
