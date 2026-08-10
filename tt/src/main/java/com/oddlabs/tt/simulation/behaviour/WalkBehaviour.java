@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.behaviour;
 
-import com.oddlabs.tt.client.gui.ToolTipBox;
+import com.oddlabs.tt.simulation.util.TextAppender;
 import com.oddlabs.tt.simulation.model.AttackScanFilter;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -48,7 +48,7 @@ public final class WalkBehaviour implements Behaviour {
         return state == PathTracker.State.BLOCKED;
     }
 
-    public void appendToolTip(@NonNull ToolTipBox tool_tip_box) {
+    public void appendToolTip(@NonNull TextAppender tool_tip_box) {
         tool_tip_box.append("WalkBehaviour: state=");
         tool_tip_box.append(state.toString());
         tool_tip_box.append(" | retry_delay=");

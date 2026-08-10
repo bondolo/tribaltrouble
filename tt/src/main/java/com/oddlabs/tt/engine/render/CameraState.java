@@ -1,4 +1,4 @@
-package com.oddlabs.tt.client.camera;
+package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.resource.FogInfo;
 import com.oddlabs.tt.core.event.StateChecksum;
@@ -13,9 +13,9 @@ import org.jspecify.annotations.NonNull;
  * matrices, and frustum for culling and rendering.
  */
 public final class CameraState {
-    static final float MIN_ANGLE = -(float) Math.PI / 2f;//+ 0.01f;
+    public static final float MIN_ANGLE = -(float) Math.PI / 2f;//+ 0.01f;
     //  private static final float MAX_ANGLE = (float)Math.PI/2f;// - 0.0001f;
-    static final float MAX_ANGLE = -0.0001f;
+    public static final float MAX_ANGLE = -0.0001f;
 
     private final Matrix4f modl = new Matrix4f();
     private final Matrix4f proj = new Matrix4f();
@@ -73,11 +73,11 @@ public final class CameraState {
         return camera_x;
     }
 
-    void setTargetX(float x) {
+    public void setTargetX(float x) {
         target_camera_x = x;
     }
 
-    void setCurrentX(float x) {
+    public void setCurrentX(float x) {
         camera_x = target_camera_x = x;
     }
 
@@ -89,11 +89,11 @@ public final class CameraState {
         return camera_y;
     }
 
-    void setTargetY(float y) {
+    public void setTargetY(float y) {
         target_camera_y = y;
     }
 
-    void setCurrentY(float y) {
+    public void setCurrentY(float y) {
         camera_y = target_camera_y = y;
     }
 
@@ -129,15 +129,15 @@ public final class CameraState {
         return current + (target - current) * Math.min(delta_t * smoothness_factor, 1f);
     }
 
-    void setTargetZ(float z) {
+    public void setTargetZ(float z) {
         target_camera_z = z;
     }
 
-    void setCurrentZ(float z) {
+    public void setCurrentZ(float z) {
         camera_z = target_camera_z = z;
     }
 
-    void setTargetVertAngle(float angle) {
+    public void setTargetVertAngle(float angle) {
         target_vert_angle = capVertAngle(angle);
     }
 
@@ -145,7 +145,7 @@ public final class CameraState {
         return no_detail_mode;
     }
 
-    void setNoDetailMode(boolean s) {
+    public void setNoDetailMode(boolean s) {
         no_detail_mode = s;
     }
 
@@ -176,7 +176,7 @@ public final class CameraState {
         height = camera.height;
     }
 
-    void setCurrentVertAngle(float angle) {
+    public void setCurrentVertAngle(float angle) {
         vert_angle = target_vert_angle = capVertAngle(angle);
     }
 
@@ -194,11 +194,11 @@ public final class CameraState {
         return vert_angle;
     }
 
-    void setTargetHorizAngle(float angle) {
+    public void setTargetHorizAngle(float angle) {
         target_horiz_angle = angle;
     }
 
-    void setCurrentHorizAngle(float angle) {
+    public void setCurrentHorizAngle(float angle) {
         horiz_angle = target_horiz_angle = angle;
     }
 

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.audio;
 
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 

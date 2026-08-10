@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
+import com.oddlabs.tt.engine.render.CameraState;
+
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.engine.render.Renderer;

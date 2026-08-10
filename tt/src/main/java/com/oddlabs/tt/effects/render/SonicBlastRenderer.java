@@ -2,7 +2,7 @@ package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.engine.procedural.GeneratorNoise;
 import com.oddlabs.tt.engine.render.shader.SonicBlastShader;

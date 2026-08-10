@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
+import com.oddlabs.tt.engine.render.CameraState;
+
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
 import org.jspecify.annotations.NonNull;

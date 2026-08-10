@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;

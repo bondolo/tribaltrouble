@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.FirstPersonCamera;
 import com.oddlabs.tt.client.gui.CursorType;
 import com.oddlabs.tt.client.gui.MouseButton;

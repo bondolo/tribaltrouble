@@ -5,7 +5,6 @@ import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.BoundingMode;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.AbstractPatchGroup;

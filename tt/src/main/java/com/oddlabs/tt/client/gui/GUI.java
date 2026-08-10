@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;

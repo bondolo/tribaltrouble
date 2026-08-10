@@ -9,7 +9,6 @@ import com.oddlabs.tt.effects.render.*;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.core.animation.Updatable;
-import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.client.gui.GUIRoot;

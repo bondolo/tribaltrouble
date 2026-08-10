@@ -4,7 +4,7 @@ import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.form.CampaignDialogForm;
 import com.oddlabs.tt.client.gui.FocusDirection;

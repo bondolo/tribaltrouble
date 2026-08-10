@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.client.gui.ToolTipBox;
+import com.oddlabs.tt.simulation.util.TextAppender;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.core.util.BezierPath;
 import com.oddlabs.tt.engine.util.DebugRender;
@@ -48,7 +48,7 @@ public final class PathTracker {
         this.unit = unit;
     }
 
-    public void appendToolTip(@NonNull ToolTipBox tool_tip_box) {
+    public void appendToolTip(@NonNull TextAppender tool_tip_box) {
         tool_tip_box.append(" next_x=");
         tool_tip_box.append(next_unit_grid_x);
         tool_tip_box.append(" next_y=");
