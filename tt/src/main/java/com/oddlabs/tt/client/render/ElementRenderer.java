@@ -1,11 +1,10 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.render.*;
-import com.oddlabs.tt.effects.render.*;
+import com.oddlabs.tt.engine.render.*;
 
+import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Element;
-import com.oddlabs.tt.simulation.model.ElementLeaf;
 import com.oddlabs.tt.simulation.model.ElementNode;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.client.viewer.Selection;
@@ -44,36 +43,15 @@ final class ElementRenderer<T extends Element<T>> {
             boolean old_override = visible_override;
             visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
 
-            switch (node) {
-                case ElementNode<T> elementNode -> {
-                    for (AbstractElementNode<T> child : elementNode.children()) {
-                        visit(child);
-                    }
-                }
-                case ElementLeaf<T> _ -> {
+            for (T element = node.getModels().getFirst(); element != null; element = element.getNext()) {
+                render_state.visit(element);
+            }
+            if (node instanceof ElementNode<T> elementNode) {
+                for (AbstractElementNode<T> child : elementNode.children()) {
+                    visit(child);
                 }
             }
 
-            T model = node.getModels().getFirst();
-            while (model != null) {
-                visitElement(model);
-                model = model.getNext();
-            }
-
-            visible_override = old_override;
-        }
-    }
-
-    private void visitElement(@NonNull T element) {
-        RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
-                ? RenderTools.FrustumIntersection.ALL_INSIDE // Force all in frustum for map mode
-                : RenderTools.inFrustum(element, camera.getFrustum());
-
-        if (visible_override || frustum_state != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-            boolean old_override = visible_override;
-            visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
-            render_state.setVisibleOverride(visible_override);
-            render_state.visit(element);
             visible_override = old_override;
         }
     }

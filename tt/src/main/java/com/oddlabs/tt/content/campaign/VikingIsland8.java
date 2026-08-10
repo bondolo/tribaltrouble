@@ -23,7 +23,7 @@ import com.oddlabs.tt.core.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.engine.render.VisualRegistry;
+import com.oddlabs.tt.client.render.VisualRegistry;
 import com.oddlabs.tt.simulation.trigger.DeathTrigger;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;

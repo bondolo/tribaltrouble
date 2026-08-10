@@ -25,7 +25,7 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.VictoryTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.engine.render.VisualRegistry;
+import com.oddlabs.tt.client.render.VisualRegistry;
 
 import java.util.Random;
 import java.util.ResourceBundle;

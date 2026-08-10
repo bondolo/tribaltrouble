@@ -1,6 +1,9 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.render.*;
+import com.oddlabs.tt.engine.render.*;
+
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
 import org.jspecify.annotations.NonNull;
@@ -11,21 +14,20 @@ import java.util.List;
 /**
  * Caches render state objects for reuse.
  */
-final class RenderStateCache<RS extends LODObject> {
+public final class RenderStateCache<RS extends LODObject> {
     private final @NonNull RenderStateFactory<RS> factory;
     private final List<@NonNull RS> cache = new ArrayList<>();
     private int current_index;
 
-    RenderStateCache(@NonNull RenderStateFactory<@NonNull RS> factory) {
+    public RenderStateCache(@NonNull RenderStateFactory<@NonNull RS> factory) {
         this.factory = factory;
     }
 
-    void clear() {
+    public void clear() {
         current_index = 0;
     }
 
-    @NonNull
-    RS get() {
+    public @NonNull RS get() {
         if (current_index == cache.size()) {
             cache.add(factory.create());
         }

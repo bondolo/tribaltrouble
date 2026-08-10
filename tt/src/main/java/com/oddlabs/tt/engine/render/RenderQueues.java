@@ -127,13 +127,11 @@ public final class RenderQueues implements AutoCloseable {
         return effect_texture_array;
     }
 
-    @NonNull
-    EmitterRenderer getEmitterRenderer() {
+    public @NonNull EmitterRenderer getEmitterRenderer() {
         return emitterRenderer;
     }
 
-    @NonNull
-    DecalRenderer getDecalRenderer() {
+    public @NonNull DecalRenderer getDecalRenderer() {
         return decalRenderer;
     }
 
@@ -185,8 +183,7 @@ public final class RenderQueues implements AutoCloseable {
         return getShadowRenderer(registerSelectableShadowList(VisualRegistry.DEFAULT_SHADOW_DESC));
     }
 
-    @NonNull
-    ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {
+    public @NonNull ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {
         return shadow_renderer_lookup.get(key.key());
     }
 
@@ -228,8 +225,7 @@ public final class RenderQueues implements AutoCloseable {
         return registerDynamicSprite(sprite_list, icon.getTexture());
     }
 
-    @NonNull
-    InstancedSpriteRenderer getInstancedRenderer() {
+    public @NonNull InstancedSpriteRenderer getInstancedRenderer() {
         return spriteRenderer;
     }
 
@@ -243,7 +239,7 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    void getAllPicks(@NonNull Consumer<@NonNull Target> pick_list) {
+    public void getAllPicks(@NonNull Consumer<@NonNull Target> pick_list) {
         for (SpriteRenderer spriteRenderer : sprite_renderers) {
             spriteRenderer.getAllPicks(pick_list);
         }
@@ -258,25 +254,25 @@ public final class RenderQueues implements AutoCloseable {
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
-    void renderPlants(@NonNull RenderContext context, @NonNull CameraState camera_state,
+    public void renderPlants(@NonNull RenderContext context, @NonNull CameraState camera_state,
             @NonNull MatrixStack projectionStack) {
         plant_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
-    void renderBlends(@NonNull RenderContext context, @NonNull CameraState camera_state,
+    public void renderBlends(@NonNull RenderContext context, @NonNull CameraState camera_state,
             @NonNull MatrixStack projectionStack) {
         blend_sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
-    void renderNoDetail() {
+    public void renderNoDetail() {
         sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
         plant_renderers.forEach(SpriteRenderer::renderNoDetail);
         blend_sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
     }
 
-    void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
+    public void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         decalRenderer.clear();
         try (var _ = decalRenderer.setup(context, renderer, modelViewStack, projectionStack)) {
@@ -286,7 +282,7 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    void renderParticles(@NonNull RenderContext context, @NonNull CameraState state,
+    public void renderParticles(@NonNull RenderContext context, @NonNull CameraState state,
             @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
         assert pending_array_uploads.isEmpty() : "Attempting to render particles before effect array is built";
         emitterRenderer.render(context, this, state, modelViewStack, projectionStack, depthTexture);

@@ -1,9 +1,11 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.render.*;
+import com.oddlabs.tt.engine.render.*;
+
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.core.global.BoundingMode;
@@ -32,7 +34,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     private final @Nullable Cheat cheat;
     private final Matrix4f tempMatrix = new Matrix4f();
 
-    TreeRenderer(@Nullable Cheat cheat, @NonNull SpriteSorter sprite_sorter, @NonNull RespondManager respond_manager,
+    TreeRenderer(@Nullable Cheat cheat, @NonNull SpriteSorter sprite_sorter,
+            @NonNull RespondManager respond_manager,
             @NonNull InstancedSpriteRenderer instancedSpriteRenderer
     ) {
         super(sprite_sorter, respond_manager);
@@ -40,7 +43,7 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         this.instancedSpriteRenderer = instancedSpriteRenderer;
     }
 
-    void renderShadows(@NonNull SelectableShadowRenderer shadowRenderer) {
+    public void renderShadows(@NonNull SelectableShadowRenderer shadowRenderer) {
         Arrays.stream(getRenderLists()).forEach(shadowRenderer::addToShadowList);
     }
 
@@ -117,7 +120,7 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         render_list.clear();
     }
 
-    void debugRender(@NonNull List<TreeSupply> @NonNull [] render_lists, @NonNull List<
+    public void debugRender(@NonNull List<TreeSupply> @NonNull [] render_lists, @NonNull List<
             TreeSupply> @NonNull [] respond_render_lists) {
         if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (List<TreeSupply> render_list : render_lists) {

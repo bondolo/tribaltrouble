@@ -1,6 +1,7 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.client.render.*;
+
+import com.oddlabs.tt.client.render.RenderState;
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.simulation.model.Model;
@@ -14,15 +15,15 @@ import org.jspecify.annotations.Nullable;
  * Tracks the specific rendering properties (position, color, pattern)
  * for an individual world element.
  */
-final class ElementRenderState<M extends Model> implements ModelState<M> {
+public final class ElementRenderState<M extends Model> implements ModelState<M> {
 
-    final @NonNull RenderState render_state;
-    private ModelVisitor<M> visitor;
-    M model;
-    float f;
+    public final @NonNull RenderState render_state;
+    public ModelVisitor<M> visitor;
+    public M model;
+    public float f;
     private Color.@NonNull Linear color = Color.Linear.WHITE;
 
-    ElementRenderState(@NonNull RenderState render_state) {
+    public ElementRenderState(@NonNull RenderState render_state) {
         this.render_state = render_state;
     }
 
@@ -75,14 +76,14 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
         return visitor.getPattern(this);
     }
 
-    void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model, float f) {
+    public void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model, float f) {
         this.visitor = visitor;
         this.model = model;
         this.f = f;
         resetColor();
     }
 
-    void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model) {
+    public void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model) {
         this.visitor = visitor;
         this.model = model;
         resetColor();
@@ -108,8 +109,7 @@ final class ElementRenderState<M extends Model> implements ModelState<M> {
         return visitor.getEyeDistanceSquared(this);
     }
 
-    @NonNull
-    SpriteRenderer getRenderer(@NonNull SpriteKey key) {
+    public @NonNull SpriteRenderer getRenderer(@NonNull SpriteKey key) {
         return render_state.getRenderQueues().getRenderer(key);
     }
 }

@@ -2,6 +2,8 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.*;
 
+import com.oddlabs.tt.engine.render.*;
+
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.engine.render.shader.PlacingShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
