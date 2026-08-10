@@ -6,6 +6,8 @@ import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.registration.RegistrationKey;
 import com.oddlabs.tt.client.delegate.Menu;
+import com.oddlabs.tt.content.skirmish.SkirmishPlayerSlot;
+import com.oddlabs.tt.content.skirmish.SkirmishSetup;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.CancelButton;
 import com.oddlabs.tt.client.gui.CheckBox;
@@ -33,6 +35,7 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.core.net.GameNetwork;
+import com.oddlabs.tt.core.net.MultiplayerSetup;
 import com.oddlabs.tt.core.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -644,6 +647,52 @@ public final class TerrainMenu extends Group {
                 != SlotDifficultyOption.CLOSED;
     }
 
+    private @NonNull SkirmishSetup buildSkirmishSetup(@NonNull Terrain terrain, int hills, int vegetation_amount,
+            int supplies_amount) {
+        Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
+        int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+        var slots = new java.util.ArrayList<SkirmishPlayerSlot>();
+        slots.add(new SkirmishPlayerSlot(0, true, p0_race, p0_team, PlayerSlot.AI_NONE));
+        for (int i = 1; i < race_pulldown_menus.length; i++) {
+            if (isChosen(difficulty_pulldown_menus[i])) {
+                SlotDifficultyOption option = difficulty_pulldown_menus[i].getChosenItem().map(
+                        PulldownItem::getAttachment).orElse(SlotDifficultyOption.CLOSED);
+                Race current_race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(
+                        Race.NATIVES);
+                int current_team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+                slots.add(new SkirmishPlayerSlot(i, false, current_race, current_team, option.getAIDifficulty()));
+            }
+        }
+        int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
+        return new SkirmishSetup(Globals.gamespeed, label_mapcode.getContents(),
+                Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT, terrain, SIZES[size],
+                hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
+                supplies_amount / (float) SLIDER_MAX_VALUE, (long) seed * (long) seed, slots);
+    }
+
+    private @Nullable MultiplayerSetup buildMultiplayerSetup(@NonNull Terrain terrain, int hills, int vegetation_amount,
+            int supplies_amount, boolean rated) {
+        String game_name = editline_name.getContents();
+        if (game_name.length() < Game.MIN_LENGTH) {
+            String min_name = i18n("min_name_length", Game.MIN_LENGTH);
+            gui_root.addModalForm(new MessageForm(min_name));
+            return null;
+        }
+        float random_start_pos = Renderer.getRenderer().getEventQueue().getTime() % 1f;
+        int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
+        byte gamespeed = pm_gamespeed.getChosenItem().map(PulldownItem::getAttachment).map(Gamespeed::getValue)
+                .map(Integer::byteValue).orElse((byte) Game.GAMESPEED_NORMAL);
+        Game game = new Game(game_name, (byte) size, (byte) terrain.getValue(),
+                (byte) hills, (byte) vegetation_amount, (byte) supplies_amount, rated, gamespeed,
+                label_mapcode.getContents(), random_start_pos, Player.DEFAULT_MAX_UNIT_COUNT);
+        Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
+        int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+        return new MultiplayerSetup(game.getGamespeed(), label_mapcode.getContents(), Player.INITIAL_UNIT_COUNT,
+                game.getMaxUnitCount(), game, terrain, SIZES[size], hills / (float) SLIDER_MAX_VALUE,
+                vegetation_amount / (float) SLIDER_MAX_VALUE, supplies_amount / (float) SLIDER_MAX_VALUE,
+                (long) seed * (long) seed, p0_race, p0_team);
+    }
+
     public boolean startGame() {
         int hills = slider_hills.getValue();
         int vegetation_amount = slider_vegetation.getValue();
@@ -655,32 +704,17 @@ public final class TerrainMenu extends Group {
             int first_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             team_pulldown_menus[0].chooseItem(first_team % 2);
         }
+        SkirmishSetup skirmish_setup = null;
+        MultiplayerSetup multiplayer_setup = null;
         if (multiplayer) {
-            String game_name = editline_name.getContents();
-            if (game_name.length() < Game.MIN_LENGTH) {
-                String min_name = i18n("min_name_length", Game.MIN_LENGTH);
-                gui_root.addModalForm(new MessageForm(min_name));
+            multiplayer_setup = buildMultiplayerSetup(terrain, hills, vegetation_amount, supplies_amount, rated);
+            if (multiplayer_setup == null) {
                 return false;
             }
-            float random_start_pos = Renderer.getRenderer().getEventQueue().getTime() % 1f;
-            int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
-            byte gamespeed = pm_gamespeed.getChosenItem().map(PulldownItem::getAttachment).map(Gamespeed::getValue)
-                    .map(Integer::byteValue).orElse((byte) Game.GAMESPEED_NORMAL);
-            game = new Game(game_name, (byte) size, (byte) terrain.getValue(),
-                    (byte) hills, (byte) vegetation_amount, (byte) supplies_amount, rated, gamespeed,
-                    label_mapcode.getContents(), random_start_pos,
-                    Player.DEFAULT_MAX_UNIT_COUNT);
+            game = multiplayer_setup.getGame();
         } else {
-            boolean has_enemy = false;
-            int player0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            for (int i = 1; i < race_pulldown_menus.length; i++) {
-                int current_team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-                if (isChosen(difficulty_pulldown_menus[i]) && current_team != player0_team) {
-                    has_enemy = true;
-                    break;
-                }
-            }
-            if (!has_enemy) {
+            skirmish_setup = buildSkirmishSetup(terrain, hills, vegetation_amount, supplies_amount);
+            if (!skirmish_setup.hasEnemyTeams()) {
                 String min_name = i18n("min_num_teams", 2);
                 gui_root.addModalForm(new MessageForm(min_name));
                 return false;
@@ -699,16 +733,15 @@ public final class TerrainMenu extends Group {
         String ai_string = i18n("ai");
         InGameInfo ingame_info = multiplayer ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
                 : new DefaultInGameInfo();
-        int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
+        WorldParameters parameters = multiplayer ? multiplayer_setup : skirmish_setup;
+        int map_size = multiplayer ? multiplayer_setup.getMapSize() : skirmish_setup.getMapSize();
         GameNetwork game_network = Menu.startNewGame(network, gui_root,
                 menu,
-                new WorldParameters(multiplayer ? game.getGamespeed() : Globals.gamespeed,
-                        label_mapcode.getContents(), Player.INITIAL_UNIT_COUNT,
-                        multiplayer ? game.getMaxUnitCount() : Player.DEFAULT_MAX_UNIT_COUNT),
+                parameters,
                 ingame_info,
                 new Menu.DefaultWorldInitAction(),
                 game,
-                SIZES[size],
+                map_size,
                 terrain,
                 hills / (float) SLIDER_MAX_VALUE,
                 vegetation_amount / (float) SLIDER_MAX_VALUE,
@@ -716,27 +749,15 @@ public final class TerrainMenu extends Group {
                 seed * seed,
                 new String[]{ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4",
                         ai_string + "5"});
-        Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
-        int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-        game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, p0_race.getValue(), p0_team,
-                !multiplayer, PlayerSlot.AI_NONE);
         if (!multiplayer) {
-            for (int i = 1; i < race_pulldown_menus.length; i++) {
-                if (isChosen(difficulty_pulldown_menus[i])) {
-                    SlotDifficultyOption option = difficulty_pulldown_menus[i].getChosenItem().map(
-                            PulldownItem::getAttachment).orElse(SlotDifficultyOption.CLOSED);
-                    Race current_race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(
-                            Race.NATIVES);
-                    int current_team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(
-                            0);
-                    game_network.getClient().getServerInterface().setPlayerSlot(i, PlayerSlot.AI, current_race
-                            .getValue(), current_team, true,
-                            option.getAIDifficulty());
-                }
-            }
-            game_network.getClient().getServerInterface().startServer();
+            skirmish_setup.startSkirmishServer(game_network);
             IO.println("Start server");
+        } else {
+            game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
+                    multiplayer_setup.getPlayer0Race().getValue(), multiplayer_setup.getPlayer0Team(),
+                    false, PlayerSlot.AI_NONE);
         }
+        IO.println("Map code: " + label_mapcode.getContents());
         IO.println("Map code: " + label_mapcode.getContents());
         return true;
     }
