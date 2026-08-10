@@ -157,7 +157,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 .getAudioManager().newAudio(camera_state, x, y, z, params);
         this.world = World.newWorld(audio, landscape_resources, races_resources, listener, world_params, world_info,
                 player_infos, renderer.getSettings().linear_team_colours,
-                Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail]);
+                Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressForm::progress);
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);

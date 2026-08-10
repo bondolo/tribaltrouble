@@ -261,7 +261,7 @@ public final class Renderer implements AutoCloseable {
         long last_frame_time = AnimationManager.getLastFrameTime();
         long time_diff = current_time - last_frame_time;
         AnimationManager.setLastFrameTime(current_time);
-        com.oddlabs.event.Deterministic deterministic = getEventQueue().getDeterministic();
+        Deterministic deterministic = getEventQueue().getDeterministic();
         if (time_diff > AnimationManager.MAX_STEP_MILLIS && !java.util.Objects.requireNonNull(deterministic)
                 .isPlayback()) {
             java.util.logging.Logger.getLogger(Renderer.class.getName()).warning("Skipping large time diff: "
@@ -964,12 +964,13 @@ public final class Renderer implements AutoCloseable {
                 .size(), world_params.getInitialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
-        com.oddlabs.tt.client.form.ProgressForm.progress();
+        ProgressForm.progress();
         World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null,
                 new NotificationListener() {
                 }, world_params, world_info, players,
                 getRenderer().getSettings().linear_team_colours,
-                Globals.INSERT_PLANTS[getRenderer().getSettings().graphic_detail]);
+                Globals.INSERT_PLANTS[getRenderer().getSettings().graphic_detail],
+                ProgressForm::progress);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
         Player local_player = world.getPlayers().getFirst();
