@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.simulation.model.Cost;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.input.GameAction;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import java.util.stream.IntStream;
 
 /**
@@ -95,6 +97,22 @@ public class GUIIcons {
                 SupplyType.ROCK, List.of(rock_status_icon),
                 SupplyType.IRON, List.of(iron_status_icon),
                 SupplyType.RUBBER, List.of(rubber_status_icon)));
+    }
+
+    public static @NonNull List<@NonNull IconQuad> toIconList(@NonNull Cost cost) {
+        var icons = getIcons();
+        return cost.costs().entrySet().stream()
+                .flatMap(entry -> Stream.generate(() -> getIconQuad(icons, entry.getKey())).limit(entry.getValue()))
+                .toList();
+    }
+
+    private static @NonNull IconQuad getIconQuad(@NonNull GUIIcons icons, @NonNull SupplyType supply_type) {
+        return switch (supply_type) {
+            case WOOD -> icons.getTreeStatusIcon();
+            case ROCK -> icons.getRockStatusIcon();
+            case IRON -> icons.getIronStatusIcon();
+            case RUBBER -> icons.getRubberStatusIcon();
+        };
     }
 
     private static @NonNull RaceIcons parseRaceIcons(@NonNull Node n, @NonNull String head,

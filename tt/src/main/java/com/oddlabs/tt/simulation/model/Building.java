@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.client.gui.BuildSpinner;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.behaviour.AttackController;
@@ -417,18 +416,20 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
             SupplyContainer rubber_spear_weapon = new SupplyContainer(MAX_SUPPLY_COUNT);
             supply_containers.put(RubberSpearWeapon.class, rubber_spear_weapon);
 
-            BuildProductionContainer rock_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
+            BuildProductionContainer rock_axe_weapon = new BuildProductionContainer(
+                    BuildProductionContainer.INFINITE_LIMIT,
                     rock_weapon_container,
                     this,
                     COST_ROCK_WEAPON,
                     40f);
-            BuildProductionContainer iron_axe_weapon = new BuildProductionContainer(BuildSpinner.INFINITE_LIMIT,
+            BuildProductionContainer iron_axe_weapon = new BuildProductionContainer(
+                    BuildProductionContainer.INFINITE_LIMIT,
                     iron_weapon_container,
                     this,
                     COST_IRON_WEAPON,
                     80f);
             BuildProductionContainer rubber_axe_weapon = new BuildProductionContainer(
-                    BuildSpinner.INFINITE_LIMIT,
+                    BuildProductionContainer.INFINITE_LIMIT,
                     rubber_weapon_container,
                     this,
                     COST_RUBBER_WEAPON,

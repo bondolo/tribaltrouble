@@ -6,9 +6,9 @@ import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.client.gui.BuildSpinner;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
+import com.oddlabs.tt.simulation.model.BuildProductionContainer;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyType;
@@ -212,9 +212,9 @@ public abstract class AI implements Animated {
                 if (s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
                     INDEX_ARMORY = i;
                     armory_under_construction = false;
-                    getOwner().buildRockWeapons((Building) s, BuildSpinner.INFINITE_LIMIT, true);
-                    getOwner().buildIronWeapons((Building) s, BuildSpinner.INFINITE_LIMIT, true);
-                    getOwner().buildRubberWeapons((Building) s, BuildSpinner.INFINITE_LIMIT, true);
+                    getOwner().buildRockWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
+                    getOwner().buildIronWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
+                    getOwner().buildRubberWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
                 } else if (s.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
                     INDEX_QUARTERS = i;
                     quarters_under_construction = false;

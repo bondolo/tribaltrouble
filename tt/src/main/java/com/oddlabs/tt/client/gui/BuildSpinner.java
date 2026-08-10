@@ -15,7 +15,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.List;
 
 public final class BuildSpinner extends IconSpinner {
-    public static final int INFINITE_LIMIT = 30;
+    public static final int INFINITE_LIMIT = BuildProductionContainer.INFINITE_LIMIT;
 
     private final @NonNull PlayerInterface player_interface;
 
