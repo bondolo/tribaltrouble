@@ -1,7 +1,8 @@
-package com.oddlabs.tt.simulation.trigger;
+package com.oddlabs.tt.client.trigger;
 
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import com.oddlabs.tt.content.campaign.Campaign;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
