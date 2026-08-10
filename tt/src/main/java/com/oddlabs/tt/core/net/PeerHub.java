@@ -10,9 +10,8 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.router.SessionInfo;
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.SimulationClock;
 import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -82,7 +81,7 @@ public final class PeerHub implements Animated, RouterHandler {
 //private int ignore_peer = -1;
 
     public PeerHub(@NonNull AnimationManager manager, boolean is_multiplayer, boolean is_rated,
-            @NonNull Player local_player, PlayerSlot[] player_slots, @NonNull NetworkSelector network, GUIRoot gui_root,
+            @NonNull Player local_player, PlayerSlot[] player_slots, @NonNull NetworkSelector network,
             NotificationManager notification_manager, DistributableTable distributable_table, SessionID session_id,
             StallHandler stall_handler) {
         this.stall_handler = stall_handler;
@@ -341,7 +340,7 @@ public final class PeerHub implements Animated, RouterHandler {
     private void removePeerFromActiveList(@NonNull Peer peer) {
         IO.println("Removing from active list:" + peer);
         peer_index_to_peer[peer.getPeerIndex()] = null;
-        peer.getPlayer().setPreferredGamespeed(World.GAMESPEED_DONTCARE);
+        peer.getPlayer().setPreferredGamespeed(SimulationClock.GAMESPEED_DONTCARE);
     }
 
     @Override
@@ -421,12 +420,12 @@ public final class PeerHub implements Animated, RouterHandler {
         IO.println("PeerHub closed");
     }
 
-    private static int getFreeQuitTicksLeft(@NonNull World world) {
-        return (int) (FREE_QUIT_TIME / world.getSecondsPerTick()) - world.getTick();
+    private static int getFreeQuitTicksLeft(@NonNull SimulationClock clock) {
+        return (int) (FREE_QUIT_TIME / clock.getSecondsPerTick()) - clock.getTick();
     }
 
-    public static float getFreeQuitTimeLeft(@NonNull World world) {
-        int left = getFreeQuitTicksLeft(world);
+    public static float getFreeQuitTimeLeft(@NonNull SimulationClock clock) {
+        int left = getFreeQuitTicksLeft(clock);
         return left * AnimationManager.ANIMATION_SECONDS_PER_TICK;
     }
 

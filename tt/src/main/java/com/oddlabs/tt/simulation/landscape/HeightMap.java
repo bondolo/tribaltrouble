@@ -4,11 +4,10 @@ import com.oddlabs.tt.core.global.Globals;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import java.util.List;
 import java.util.Optional;
 
-import java.util.List;
-
-public final class HeightMap {
+public final class HeightMap implements LandscapeEnvironment {
     public static final int METERS_PER_UNIT_GRID = 2;
     public static final int GRID_UNITS_PER_PATCH_EXP = 4;
     public static final int GRID_UNITS_PER_PATCH = 1 << GRID_UNITS_PER_PATCH_EXP;
@@ -84,17 +83,20 @@ public final class HeightMap {
         clientStateFactory = factory;
     }
 
-    public <C extends ClientState> @NonNull Optional<C> getClientState(@NonNull Class<? extends C> type) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public <C> Optional<C> getClientState(Class<C> type) {
         if (clientState == null && clientStateFactory != null) {
             clientState = clientStateFactory.createClientState(this);
         }
-        return Optional.ofNullable(type.isInstance(clientState) ? type.cast(clientState) : null);
+        return Optional.ofNullable(type.isInstance(clientState) ? (C) clientState : null);
     }
 
     public float @NonNull [] getHeightData() {
         return world;
     }
 
+    @Override
     public @NonNull World getWorld() {
         return world_instance;
     }
@@ -109,6 +111,7 @@ public final class HeightMap {
         return inside_world;
     }
 
+    @Override
     public int getMetersPerWorld() {
         return meters_per_world;
     }
@@ -121,18 +124,22 @@ public final class HeightMap {
         return inv_meters_per_grid_unit;
     }
 
+    @Override
     public int getPatchesPerWorld() {
         return patches_per_world;
     }
 
+    @Override
     public int getMetersPerPatch() {
         return meters_per_patch;
     }
 
+    @Override
     public int getGridUnitsPerWorld() {
         return grid_units_per_world;
     }
 
+    @Override
     public float getSeaLevelMeters() {
         return sea_level_meters;
     }
@@ -203,6 +210,7 @@ public final class HeightMap {
         return planeHeight(x, y, plane);
     }
 
+    @Override
     public boolean isBelowSeaLevel(int patch_x, int patch_y) {
         int offset_x = patch_x * getGridUnitsPerPatch();
         int offset_y = patch_y * getGridUnitsPerPatch();
@@ -251,6 +259,11 @@ public final class HeightMap {
         float h1 = h01 * (1 - dx) + h11 * dx;
 
         return h0 * (1 - dy) + h1 * dy;
+    }
+
+    @Override
+    public float getHeight(float x, float y) {
+        return computeInterpolatedHeight(0, x, y);
     }
 
     public float getNearestHeight(float x_f, float y_f) {

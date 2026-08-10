@@ -33,11 +33,11 @@ public final class JumpCamera extends Camera {
 
     public JumpCamera(@NonNull JumpDelegate delegate, @NonNull GameCamera old_camera, float x, float y,
             float meters_per_second, float max_seconds) {
-        super(old_camera.getHeightMap(), old_camera.getState());
+        super(old_camera.getLandscapeEnvironment(), old_camera.getState());
         this.delegate = delegate;
         delegate.getViewer().getPicker().pickRotate(old_camera);
         Vector2fc target = old_camera.getRotationPoint();
-        float target_z = getHeightMap().getNearestHeight(target.x(), target.y());
+        float target_z = getLandscapeEnvironment().getHeight(target.x(), target.y());
         float dx_to_landscape = target.x() - getState().getTargetX();
         float dy_to_landscape = target.y() - getState().getTargetY();
         float dz_to_landscape = target_z - getState().getTargetZ();
@@ -50,7 +50,7 @@ public final class JumpCamera extends Camera {
 
         dst_x = (int) x - dir_x * distance_to_landscape;
         dst_y = (int) y - dir_y * distance_to_landscape;
-        dst_z = getHeightMap().getNearestHeight((int) x, (int) y) - dir_z * distance_to_landscape;
+        dst_z = getLandscapeEnvironment().getHeight((int) x, (int) y) - dir_z * distance_to_landscape;
         this.dx = dst_x - getState().getTargetX();
         this.dy = dst_y - getState().getTargetY();
         this.dz = dst_z - getState().getTargetZ();
