@@ -2,7 +2,7 @@ package com.oddlabs.tt.simulation.landscape;
 
 import org.jspecify.annotations.NonNull;
 
-public final class WorldParameters {
+public class WorldParameters {
     private final @NonNull String map_code;
     private final int initial_unit_count;
     private final int max_unit_count;
