@@ -2,8 +2,8 @@ package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.animation.SimulationClock;
+import com.oddlabs.tt.core.util.ProgressListener;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
-import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.RacesResources;
@@ -71,12 +71,22 @@ public final class World implements SimulationClock {
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
             @NonNull WorldInfo<?> world_info, List<@NonNull PlayerInfo> player_infos,
             Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants) {
-        ProgressForm.progress();
+        return newWorld(audio_implementation, landscape_resources, races_resources, notification_listener, world_params,
+                world_info, player_infos, teamColors, insertPlants, ProgressListener.NONE);
+    }
+
+    public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation,
+            @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
+            @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
+            @NonNull WorldInfo<?> world_info, List<@NonNull PlayerInfo> player_infos,
+            Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants,
+            @NonNull ProgressListener progress_listener) {
+        progress_listener.onProgress();
         World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener,
-                world_params, world_info, player_infos, teamColors, insertPlants);
-        ProgressForm.progress();
-        ProgressForm.progress(1 / 5f);
-        ProgressForm.progress();
+                world_params, world_info, player_infos, teamColors, insertPlants, progress_listener);
+        progress_listener.onProgress();
+        progress_listener.onProgress(1 / 5f);
+        progress_listener.onProgress();
 
         return world;
     }
@@ -159,7 +169,7 @@ public final class World implements SimulationClock {
             @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
             @NonNull WorldParameters world_params, @NonNull WorldInfo<?> world_info,
             @NonNull List<@NonNull PlayerInfo> player_infos, Color.@NonNull Linear @NonNull [] teamColors,
-            boolean insertPlants) {
+            boolean insertPlants, @NonNull ProgressListener progress_listener) {
         IO.println("****************** Generating landscape ********************");
         this.fog = world_info.fog_info();
         this.terrain = world_info.terrain();
@@ -190,7 +200,7 @@ public final class World implements SimulationClock {
         this.supply_managers = new SupplyManagers(this);
         this.unit_grid = new UnitGrid(world);
         RegionBuilder.buildRegions(unit_grid, world_info.starting_locations()[0][0], world_info
-                .starting_locations()[0][1]);
+                .starting_locations()[0][1], progress_listener);
         this.patch_root = new PatchGroup(this);
         this.tree_root = AbstractTreeGroup.newRoot(this, world_info.trees(), world_info.palm_trees(), terrain);
         this.element_root = AbstractElementNode.newRoot(world);
