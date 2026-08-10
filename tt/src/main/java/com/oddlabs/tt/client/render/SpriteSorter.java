@@ -10,7 +10,7 @@ import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.core.util.PocketList;
 import org.jspecify.annotations.NonNull;
 
-public final class SpriteSorter {
+final class SpriteSorter {
     public enum DetailMode {
         POINT,
         POLYGON

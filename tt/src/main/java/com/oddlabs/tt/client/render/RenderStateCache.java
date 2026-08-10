@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Caches render state objects for reuse.
  */
-public final class RenderStateCache<RS extends LODObject> {
+final class RenderStateCache<RS extends LODObject> {
     private final @NonNull RenderStateFactory<RS> factory;
     private final List<@NonNull RS> cache = new ArrayList<>();
     private int current_index;
