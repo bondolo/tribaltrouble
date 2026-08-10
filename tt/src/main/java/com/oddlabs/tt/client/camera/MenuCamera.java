@@ -18,11 +18,11 @@ public final class MenuCamera extends Camera {
     private float center_angle;
 
     public MenuCamera(@NonNull World world, @NonNull AnimationManager manager) {
-        super(world.getHeightMap(), new CameraState());
+        super(world.getLandscapeEnvironment(), new CameraState());
         this.world = world;
         this.manager = manager;
-        this.centerX = world.getHeightMap().getMetersPerWorld() / 2f;
-        this.centerY = world.getHeightMap().getMetersPerWorld() / 2f;
+        this.centerX = world.getLandscapeEnvironment().getMetersPerWorld() / 2f;
+        this.centerY = world.getLandscapeEnvironment().getMetersPerWorld() / 2f;
         reset();
     }
 

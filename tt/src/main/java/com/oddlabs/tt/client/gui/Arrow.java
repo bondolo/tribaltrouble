@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.HeightQuery;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.util.Color;
@@ -22,12 +22,12 @@ public final class Arrow extends GUIObject {
     private final boolean show_always;
     private final @NonNull GUIRoot gui_root;
 
-    public Arrow(@NonNull HeightMap heightmap, @NonNull GUIRoot gui_root, float target_x, float target_y,
+    public Arrow(@NonNull HeightQuery heightQuery, @NonNull GUIRoot gui_root, float target_x, float target_y,
             @NonNull Color color, boolean show_always) {
         this.gui_root = gui_root;
         this.target_x = target_x;
         this.target_y = target_y;
-        this.target_z = heightmap.getNearestHeight(target_x, target_y);
+        this.target_z = heightQuery.getHeight(target_x, target_y);
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         this.show_always = show_always;
         displayChangedNotify(gui_root.getWidth(), gui_root.getHeight());

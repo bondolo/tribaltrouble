@@ -2,6 +2,7 @@ package com.oddlabs.tt.effects.scenery;
 
 import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.GeneratorClouds;
@@ -363,7 +364,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         return new FloatVBO(GL15.GL_STATIC_DRAW, vertex_buffer);
     }
 
-    private static @NonNull FloatVBO toBottomVBO(SkyStitchVertex @NonNull [] vertices, @NonNull HeightMap heightmap) {
+    private static @NonNull FloatVBO toBottomVBO(SkyStitchVertex @NonNull [] vertices,
+            @NonNull LandscapeEnvironment heightmap) {
         float metersPerWorld = heightmap.getMetersPerWorld();
         float cx = metersPerWorld * 0.5f;
         float cy = metersPerWorld * 0.5f;
@@ -384,7 +386,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
                 bx = Math.clamp(cx + t * dx, 0f, metersPerWorld);
                 by = Math.clamp(cy + t * dy, 0f, metersPerWorld);
             }
-            float boundaryHeight = heightmap.getNearestHeight(bx, by);
+            float boundaryHeight = heightmap.getHeight(bx, by);
             float z = (boundaryHeight * (NUM_WATER_RINGS - vertex.getSide())) / NUM_WATER_RINGS;
 
             if (vertex.getSide() == 0) {
@@ -549,7 +551,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         }
     }
 
-    private @NonNull SkyStitchVertex @NonNull [] makeDomeVertices(@NonNull HeightMap heightmap, int ring_id,
+    private @NonNull SkyStitchVertex @NonNull [] makeDomeVertices(@NonNull LandscapeEnvironment heightmap, int ring_id,
             int index_offset, float radius, float origin_x, float origin_y) {
         float a_angle_inc = (float) Math.PI * 2 / subdiv_axis;
         return IntStream.range(0, subdiv_axis)
@@ -561,7 +563,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
                 }).toArray(SkyStitchVertex[]::new);
     }
 
-    private @NonNull SkyStitchVertex @NonNull [] makeLandscapeVertices(@NonNull HeightMap heightmap) {
+    private @NonNull SkyStitchVertex @NonNull [] makeLandscapeVertices(@NonNull LandscapeEnvironment heightmap) {
         int gridUnitsPerWorld = heightmap.getGridUnitsPerWorld();
         int size = 4 * gridUnitsPerWorld;
         SkyStitchVertex[] result = new SkyStitchVertex[size];
@@ -590,9 +592,9 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         private final float x;
         private final float y;
         private final float theta;
-        private final @NonNull HeightMap heightmap;
+        private final @NonNull LandscapeEnvironment heightmap;
 
-        private SkyStitchVertex(@NonNull HeightMap heightmap, int index, int side, float x, float y) {
+        private SkyStitchVertex(@NonNull LandscapeEnvironment heightmap, int index, int side, float x, float y) {
             super(index, side);
             this.heightmap = heightmap;
             this.x = x;

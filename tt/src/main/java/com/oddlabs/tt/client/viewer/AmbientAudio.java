@@ -1,12 +1,12 @@
 package com.oddlabs.tt.client.viewer;
 
+import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.engine.audio.AudioManager;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.audio.ReverbType;
 import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
@@ -97,7 +97,7 @@ public final class AmbientAudio implements AutoCloseable {
         ambient_wind.stop();
     }
 
-    public void updateSoundListener(@NonNull CameraState camera, @NonNull HeightMap heightmap) {
+    public void updateSoundListener(@NonNull CameraState camera, @NonNull LandscapeEnvironment landscapeEnvironment) {
         if (!audioManager.isSfxEnabled()) {
             return;
         }
@@ -107,13 +107,13 @@ public final class AmbientAudio implements AutoCloseable {
                 .setListenerPosition(camera.getCurrentX(), camera.getCurrentY(), camera.getCurrentZ())
                 .setListenerOrientation(f, u);
 
-        int meters_per_world = heightmap.getMetersPerWorld();
+        int meters_per_world = landscapeEnvironment.getMetersPerWorld();
         float dx = Math.abs(camera.getCurrentX() - meters_per_world / 2f);
         float dy = Math.abs(camera.getCurrentY() - meters_per_world / 2f);
         float dr = 2f * (float) Math.sqrt(dx * dx + dy * dy) / meters_per_world;
 
         // update placement and gain of ambient forest source
-        ambient_forest.setPosition(0f, 0f, heightmap.getNearestHeight(camera.getCurrentX(), camera.getCurrentY())
+        ambient_forest.setPosition(0f, 0f, landscapeEnvironment.getHeight(camera.getCurrentX(), camera.getCurrentY())
                 - camera.getCurrentZ() + 8f);
         ambient_forest.setGain(AudioAssets.AUDIO_GAIN_AMBIENT_FOREST * Math.clamp(1f - dr + 0.5f, 0f, 1f));
 
@@ -123,7 +123,8 @@ public final class AmbientAudio implements AutoCloseable {
             factor = 1f / dr - 1f;
         float beach_x = (camera.getCurrentX() - meters_per_world / 2f) * factor;
         float beach_y = (camera.getCurrentY() - meters_per_world / 2f) * factor;
-        float beach_z = heightmap.getNearestHeight(camera.getCurrentX(), camera.getCurrentY()) - camera.getCurrentZ();
+        float beach_z = landscapeEnvironment.getHeight(camera.getCurrentX(), camera.getCurrentY()) - camera
+                .getCurrentZ();
         float beach_gain = AudioAssets.AUDIO_GAIN_AMBIENT_BEACH * Math.clamp(1f - Math.abs(4f * dr - 3.75f), 0f, 1f);
         ambient_beach.setPosition(beach_x, beach_y, beach_z);
         ambient_beach.setGain(beach_gain);
@@ -136,16 +137,17 @@ public final class AmbientAudio implements AutoCloseable {
             float camZ = camera.getCurrentZ();
             float camX = camera.getCurrentX();
             float camY = camera.getCurrentY();
-            float hCurrent = heightmap.getNearestHeight(camX, camY);
+            float hCurrent = landscapeEnvironment.getHeight(camX, camY);
 
-            if (camZ < heightmap.getSeaLevelMeters()) {
+            if (camZ < landscapeEnvironment.getSeaLevelMeters()) {
                 audioManager.setReverb(ReverbType.UNDERWATER);
             } else {
                 float heightAboveGround = camZ - hCurrent;
 
                 // Check for forest density
-                World world = heightmap.getWorld();
-                int treeCount = countTrees(world.getTreeRoot(), camX, camY, 25f * 25f, TREES_FOREST_THRESHOLD, 0);
+                World world = landscapeEnvironment.getWorld() instanceof World w ? w : null;
+                int treeCount = world != null ? countTrees(world.getTreeRoot(), camX, camY, 25f * 25f,
+                        TREES_FOREST_THRESHOLD, 0) : 0;
 
                 if (treeCount >= TREES_FOREST_THRESHOLD) {
                     // Forest reverb: Blend from FOREST (fully active at 15m) to NONE (fully silent at 30m)
@@ -153,10 +155,10 @@ public final class AmbientAudio implements AutoCloseable {
                     audioManager.setReverb(ReverbType.NONE, ReverbType.FOREST, blend);
                 } else {
                     // Check for valley/enclosure by sampling terrain height around camera
-                    float hN = heightmap.getNearestHeight(camX, camY + CANYON_PROXIMITY_DISTANCE);
-                    float hS = heightmap.getNearestHeight(camX, camY - CANYON_PROXIMITY_DISTANCE);
-                    float hE = heightmap.getNearestHeight(camX + CANYON_PROXIMITY_DISTANCE, camY);
-                    float hW = heightmap.getNearestHeight(camX - CANYON_PROXIMITY_DISTANCE, camY);
+                    float hN = landscapeEnvironment.getHeight(camX, camY + CANYON_PROXIMITY_DISTANCE);
+                    float hS = landscapeEnvironment.getHeight(camX, camY - CANYON_PROXIMITY_DISTANCE);
+                    float hE = landscapeEnvironment.getHeight(camX + CANYON_PROXIMITY_DISTANCE, camY);
+                    float hW = landscapeEnvironment.getHeight(camX - CANYON_PROXIMITY_DISTANCE, camY);
 
                     float avgSurround = (hN + hS + hE + hW) * 0.25f;
                     float valleyDepth = avgSurround - hCurrent;

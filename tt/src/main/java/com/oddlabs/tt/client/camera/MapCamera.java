@@ -63,10 +63,10 @@ public final class MapCamera extends Camera {
         CameraState mapCameraState = new CameraState(radialFog);
         mapCameraState.set(old_camera.getState());
         mapCameraState.setFog(radialFog);
-        super(old_camera.getHeightMap(), mapCameraState);
+        super(old_camera.getLandscapeEnvironment(), mapCameraState);
         this.delegate = delegate;
         Vector2fc target = old_camera.getRotationPoint();
-        float target_z = getHeightMap().getNearestHeight(target.x(), target.y());
+        float target_z = getLandscapeEnvironment().getHeight(target.x(), target.y());
         float dx = target.x() - original_camera_state.getTargetX();
         float dy = target.y() - original_camera_state.getTargetY();
         float dz = target_z - original_camera_state.getTargetZ();
@@ -83,7 +83,7 @@ public final class MapCamera extends Camera {
         float dy;
         float dz;
         float da;
-        float meters_per_world = getHeightMap().getMetersPerWorld();
+        float meters_per_world = getLandscapeEnvironment().getMetersPerWorld();
         float map_x = meters_per_world / 2f;
         float map_y = meters_per_world / 2f;
 
@@ -208,7 +208,8 @@ public final class MapCamera extends Camera {
             // Adjust the position of the original camera.
             original_camera_state.setTargetX(x - old_dir_x * distance_to_landscape);
             original_camera_state.setTargetY(y - old_dir_y * distance_to_landscape);
-            original_camera_state.setTargetZ(getHeightMap().getNearestHeight(x, y) - old_dir_z * distance_to_landscape);
+            original_camera_state.setTargetZ(getLandscapeEnvironment().getHeight(x, y) - old_dir_z
+                    * distance_to_landscape);
             changeMode(MapMode.FROM_MAP);
         }
     }

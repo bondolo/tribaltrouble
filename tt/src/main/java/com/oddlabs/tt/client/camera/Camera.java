@@ -2,11 +2,11 @@ package com.oddlabs.tt.client.camera;
 
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.client.input.InputEvent;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.event.StateChecksum;
+import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
+import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -38,18 +38,18 @@ public abstract class Camera implements Animated {
 
     private final Vector3f hit_result = new Vector3f();
 
-    private final @Nullable HeightMap heightmap;
+    private final @Nullable LandscapeEnvironment landscapeEnvironment;
 
     private final @NonNull CameraState state;
     private float smoothness_factor = SMOOTHNESS_FACTOR;
 
-    public Camera(@Nullable HeightMap heightmap, @NonNull CameraState state) {
-        this.heightmap = heightmap;
+    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, @NonNull CameraState state) {
+        this.landscapeEnvironment = landscapeEnvironment;
         this.state = state;
     }
 
-    protected final @Nullable HeightMap getHeightMap() {
-        return heightmap;
+    protected final @Nullable LandscapeEnvironment getLandscapeEnvironment() {
+        return landscapeEnvironment;
     }
 
     protected final void setSmoothnessFactor(float f) {
@@ -71,12 +71,13 @@ public abstract class Camera implements Animated {
     protected abstract void doAnimate(float delta_t);
 
     protected final void checkPosition() {
-        int mid = heightmap.getMetersPerWorld() / 2;
+        assert landscapeEnvironment != null;
+        int mid = landscapeEnvironment.getMetersPerWorld() / 2;
         float dx = (state.getTargetX() - mid);
         float dy = (state.getTargetY() - mid);
         float squared_dist = dx * dx + dy * dy;
-        if (squared_dist > heightmap.getMetersPerWorld() * heightmap.getMetersPerWorld()) {
-            float scale = heightmap.getMetersPerWorld() / (float) Math.sqrt(squared_dist);
+        if (squared_dist > landscapeEnvironment.getMetersPerWorld() * landscapeEnvironment.getMetersPerWorld()) {
+            float scale = landscapeEnvironment.getMetersPerWorld() / (float) Math.sqrt(squared_dist);
             state.setTargetX(dx * scale + mid);
             state.setTargetY(dy * scale + mid);
         }
@@ -115,8 +116,8 @@ public abstract class Camera implements Animated {
                 dy1 *= inv_length;
                 dz1 *= inv_length;
 
-                float min_height = Math.max(heightmap.getNearestHeight(x + dx1, y + dy1),
-                        heightmap.getSeaLevelMeters());
+                float min_height = Math.max(getLandscapeEnvironment().getHeight(x + dx1, y + dy1),
+                        getLandscapeEnvironment().getSeaLevelMeters());
                 hit_z = z + dz1;
                 if (hit_z < min_height) {
                     bounced = true;
@@ -124,7 +125,7 @@ public abstract class Camera implements Animated {
                 }
             }
         }
-        float min_height = heightmap.getNearestHeight(x, y) + GROUND_CLEARANCE;
+        float min_height = getLandscapeEnvironment().getHeight(x, y) + GROUND_CLEARANCE;
         if (z < min_height) {
             bounced = true;
             z = min_height;

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.core.animation.SimulationClock;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
@@ -29,7 +30,7 @@ import java.util.stream.IntStream;
  * Represents the game world, orchestrating the height map, resources, dynamic entities,
  * and players within a simulation environment.
  */
-public final class World {
+public final class World implements SimulationClock {
     public static final int GAMESPEED_DONTCARE = -2;
 
     private static final float[] GAMESPEEDS = new float[]{
@@ -113,6 +114,7 @@ public final class World {
         return gamespeed;
     }
 
+    @Override
     public float getSecondsPerTick() {
         return GAMESPEEDS[gamespeed];
     }
@@ -147,6 +149,7 @@ public final class World {
         getAnimationManagerRealTime().runAnimations(t/*AnimationManager.ANIMATION_SECONDS_PER_TICK*/);
     }
 
+    @Override
     public int getTick() {
         return getAnimationManagerRealTime().getTick();
     }
@@ -229,6 +232,10 @@ public final class World {
     }
 
     public @NonNull HeightMap getHeightMap() {
+        return world;
+    }
+
+    public @NonNull LandscapeEnvironment getLandscapeEnvironment() {
         return world;
     }
 

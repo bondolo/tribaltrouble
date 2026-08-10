@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.client.input.GameAction;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -14,7 +14,7 @@ public final class FirstPersonCamera extends Camera {
     private final int last_y;
     private final @NonNull WorldViewer viewer;
 
-    public FirstPersonCamera(@NonNull WorldViewer viewer, HeightMap heightmap, @NonNull CameraState camera) {
+    public FirstPersonCamera(@NonNull WorldViewer viewer, LandscapeEnvironment heightmap, @NonNull CameraState camera) {
         super(heightmap, camera);
         this.viewer = viewer;
         var localInput = Renderer.getLocalInput();

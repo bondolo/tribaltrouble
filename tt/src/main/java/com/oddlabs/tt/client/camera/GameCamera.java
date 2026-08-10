@@ -55,8 +55,8 @@ public final class GameCamera extends Camera {
     private boolean rotate_right;
 
     public GameCamera(@NonNull WorldViewer viewer, @NonNull CameraState camera) {
-        super(viewer.getWorld().getHeightMap(), camera);
-        this.default_rotate_radius = viewer.getWorld().getHeightMap().getMetersPerWorld() / 4f;
+        super(viewer.getWorld().getLandscapeEnvironment(), camera);
+        this.default_rotate_radius = viewer.getWorld().getLandscapeEnvironment().getMetersPerWorld() / 4f;
         this.viewer = viewer;
         checkPosition();
         updateDirection();
@@ -105,15 +105,15 @@ public final class GameCamera extends Camera {
     float old_dir_z = (float)Math.sin(old_vert_angle);
     old_x = x - old_dir_x*distance_to_landscape;
     old_y = y - old_dir_y*distance_to_landscape;
-    old_z = World.getHeightMap().getNearestHeight(x, y) - old_dir_z*distance_to_landscape;
+    old_z = World.getLandscapeEnvironment().getHeight(x, y) - old_dir_z*distance_to_landscape;
 
     */
     public void reset() {
     }
 
     public void reset(float x, float y) {
-        float dx = x - .5f * getHeightMap().getMetersPerWorld();
-        float dy = y - .5f * getHeightMap().getMetersPerWorld();
+        float dx = x - .5f * getLandscapeEnvironment().getMetersPerWorld();
+        float dy = y - .5f * getLandscapeEnvironment().getMetersPerWorld();
         float r = (float) Math.sqrt(dx * dx + dy * dy);
         if (dy > 0) {
             getState().setCurrentHorizAngle((float) (Math.PI + Math.acos(dx / r)));
@@ -136,7 +136,7 @@ public final class GameCamera extends Camera {
         float dir_z = (float) Math.sin(getState().getTargetVertAngle());
         getState().setCurrentX(x - dir_x * INIT_DISTANCE);
         getState().setCurrentY(y - dir_y * INIT_DISTANCE);
-        getState().setCurrentZ(getHeightMap().getNearestHeight(x, y) - dir_z * INIT_DISTANCE);
+        getState().setCurrentZ(getLandscapeEnvironment().getHeight(x, y) - dir_z * INIT_DISTANCE);
         checkPosition();
     }
 
@@ -171,18 +171,19 @@ public final class GameCamera extends Camera {
             float temp_y = getState().getTargetY() + dir_y * zoom_factor;
             float temp_z = getState().getTargetZ() + dir_z * zoom_factor;
 
-            float min_z_level = getHeightMap().getSeaLevelMeters() + GROUND_CLEARANCE;
+            float min_z_level = getLandscapeEnvironment().getSeaLevelMeters() + GROUND_CLEARANCE;
             temp_z = Math.max(temp_z, min_z_level);
             float backup_x = getState().getTargetX();
             float backup_y = getState().getTargetY();
             float backup_z = getState().getTargetZ();
 
-            int mid = getHeightMap().getMetersPerWorld() / 2;
+            int mid = getLandscapeEnvironment().getMetersPerWorld() / 2;
             float dx = (temp_x - mid);
             float dy = (temp_y - mid);
             float squared_dist = dx * dx + dy * dy;
-            if (squared_dist < getHeightMap().getMetersPerWorld() * getHeightMap().getMetersPerWorld() && temp_z
-                    < MAX_Z) {
+            if (squared_dist < getLandscapeEnvironment().getMetersPerWorld() * getLandscapeEnvironment()
+                    .getMetersPerWorld() && temp_z
+                            < MAX_Z) {
                 getState().setTargetX(temp_x);
                 getState().setTargetY(temp_y);
                 getState().setTargetZ(temp_z);
@@ -288,7 +289,8 @@ public final class GameCamera extends Camera {
     }
 
     private boolean insideWorld(float x, float y) {
-        return x > 0 && x < getHeightMap().getMetersPerWorld() && y > 0 && y < getHeightMap().getMetersPerWorld();
+        return x > 0 && x < getLandscapeEnvironment().getMetersPerWorld() && y > 0 && y < getLandscapeEnvironment()
+                .getMetersPerWorld();
     }
 
     @Override
@@ -374,7 +376,7 @@ public final class GameCamera extends Camera {
     private void setScrollSpeed() {
         viewer.getPicker().pickRotate(this);
         Vector2fc landscape_point = getRotationPoint();
-        float landscape_z = getHeightMap().getNearestHeight(landscape_point.x(), landscape_point.y());
+        float landscape_z = getLandscapeEnvironment().getHeight(landscape_point.x(), landscape_point.y());
         float dx = landscape_point.x() - getState().getTargetX();
         float dy = landscape_point.y() - getState().getTargetY();
         float dz = landscape_z - getState().getTargetZ();
