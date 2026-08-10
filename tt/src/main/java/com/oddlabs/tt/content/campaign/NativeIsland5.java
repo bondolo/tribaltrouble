@@ -14,7 +14,7 @@ import com.oddlabs.tt.core.net.GameNetwork;
 import com.oddlabs.tt.core.net.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
-import com.oddlabs.tt.simulation.trigger.VictoryTrigger;
+import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 

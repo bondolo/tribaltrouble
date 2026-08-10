@@ -27,7 +27,7 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
-import com.oddlabs.tt.simulation.trigger.GameOverTrigger;
+import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.MultiplayerInGameInfo;

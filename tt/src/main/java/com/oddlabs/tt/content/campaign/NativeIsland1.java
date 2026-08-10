@@ -28,7 +28,7 @@ import com.oddlabs.tt.client.render.VisualRegistry;
 import com.oddlabs.tt.simulation.trigger.DeathTrigger;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.TimeTrigger;
-import com.oddlabs.tt.simulation.trigger.VictoryTrigger;
+import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
