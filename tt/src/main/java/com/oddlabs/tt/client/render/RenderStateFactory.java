@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface RenderStateFactory<RS extends LODObject> extends Supplier<RS> {
+interface RenderStateFactory<RS extends LODObject> extends Supplier<RS> {
     @NonNull
     RS create();
 

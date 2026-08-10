@@ -23,7 +23,7 @@ import java.util.Optional;
  * ModelVisitor implementation that resolves visual properties and sprite keys for selectable entities
  * (units/buildings).
  */
-public class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
+class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
 
     @Override
     public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<S> render_state) {
