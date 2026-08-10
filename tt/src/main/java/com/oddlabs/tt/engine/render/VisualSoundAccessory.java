@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;
 import org.joml.Matrix4f;

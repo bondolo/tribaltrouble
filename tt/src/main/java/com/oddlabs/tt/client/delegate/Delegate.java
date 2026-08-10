@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.delegate;
 
 
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.gui.FocusDirection;
 import com.oddlabs.tt.client.gui.GUIObject;
 import com.oddlabs.tt.client.gui.GUIRoot;

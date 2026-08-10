@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
+import com.oddlabs.tt.engine.render.CameraState;
+
 
 import org.jspecify.annotations.NonNull;
 

@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.core.animation.Updatable;
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.gui.Fadable;
 import com.oddlabs.tt.client.gui.GUIIcon;

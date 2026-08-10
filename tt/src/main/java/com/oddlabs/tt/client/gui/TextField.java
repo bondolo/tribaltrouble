@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.tt.simulation.util.TextAppender;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
@@ -8,7 +9,7 @@ import org.jspecify.annotations.NonNull;
 /**
  * A mutable text field that allows text to be appended
  */
-public abstract class TextField extends GUIObject implements CharSequence {
+public abstract class TextField extends GUIObject implements CharSequence, TextAppender {
     private final @NonNull StringBuilder text;
     private final @NonNull Font font;
     /**
@@ -91,6 +92,11 @@ public abstract class TextField extends GUIObject implements CharSequence {
         appendNotify(text);
 
         return true;
+    }
+
+    @Override
+    public void append(Object obj) {
+        append(String.valueOf(obj));
     }
 
     public final void append(long i) {

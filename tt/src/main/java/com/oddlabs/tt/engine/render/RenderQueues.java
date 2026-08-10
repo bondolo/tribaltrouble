@@ -4,7 +4,6 @@ import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.geometry.AnimationInfo;
-import com.oddlabs.tt.client.camera.CameraState;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.GLImage;

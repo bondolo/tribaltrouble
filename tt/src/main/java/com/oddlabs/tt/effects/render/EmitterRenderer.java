@@ -2,7 +2,7 @@ package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.core.global.BoundingMode;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.effects.particle.Emitter;

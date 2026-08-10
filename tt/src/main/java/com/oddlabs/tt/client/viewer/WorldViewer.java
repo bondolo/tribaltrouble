@@ -9,7 +9,7 @@ import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.audio.AudioParameters;
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;

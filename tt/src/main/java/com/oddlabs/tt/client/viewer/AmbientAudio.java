@@ -4,7 +4,7 @@ import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.engine.audio.AudioManager;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.audio.ReverbType;
-import com.oddlabs.tt.client.camera.CameraState;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;

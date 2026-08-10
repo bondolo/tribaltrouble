@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.camera;
 
+
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
 import org.joml.Vector2fc;
