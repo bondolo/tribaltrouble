@@ -31,12 +31,12 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final SelectGameMenu owner;
+    private final MultiplayerLobby owner;
     private final boolean multiplayer;
     private final GUIRoot gui_root;
     private final GameNetwork game_network;
 
-    public ConnectingForm(GameNetwork game_network, GUIRoot gui_root, SelectGameMenu owner, boolean multiplayer) {
+    public ConnectingForm(GameNetwork game_network, GUIRoot gui_root, MultiplayerLobby owner, boolean multiplayer) {
         this.game_network = game_network;
         this.gui_root = gui_root;
         this.owner = owner;

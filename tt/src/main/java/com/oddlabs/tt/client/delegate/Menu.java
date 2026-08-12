@@ -4,9 +4,9 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.form.ConnectingForm;
+import com.oddlabs.tt.client.form.MultiplayerLobby;
 import com.oddlabs.tt.client.form.OptionsMenu;
 import com.oddlabs.tt.client.form.QuitForm;
-import com.oddlabs.tt.client.form.SelectGameMenu;
 import com.oddlabs.tt.client.gui.FocusDirection;
 import com.oddlabs.tt.client.gui.Form;
 import com.oddlabs.tt.client.gui.GUI;
@@ -30,7 +30,6 @@ import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
-import com.oddlabs.tt.client.viewer.MultiplayerInGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
@@ -44,8 +43,8 @@ import java.util.ResourceBundle;
  * It provides common UI elements like the background logo and layout helpers for menu buttons.
  */
 public abstract class Menu extends CameraDelegate<Camera> {
-    static final Color COLOR_NORMAL = Color.Standard.WHITE;
-    static final Color COLOR_ACTIVE = new Color.Standard(0xFF_FF_CC_9F);
+    public static final Color COLOR_NORMAL = Color.Standard.WHITE;
+    public static final Color COLOR_ACTIVE = new Color.Standard(0xFF_FF_CC_9F);
     private static final int MENU_X = 160;
     private static final int OVERLAY_TEXTURE_WIDTH = 1024;
     private static final int OVERLAY_TEXTURE_HEIGHT = 1024;
@@ -53,7 +52,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private static final int OVERLAY_IMAGE_HEIGHT = 600;
     private static final String OVERLAY_TEXTURE_NAME = "/textures/gui/mainmenu";
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(MainMenu.class.getName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.menu.MainMenu");
 
     public static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);
@@ -74,7 +73,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         setFocusCycle(true);
     }
 
-    final @NonNull NetworkSelector getNetwork() {
+    protected final @NonNull NetworkSelector getNetwork() {
         return network;
     }
 
@@ -98,7 +97,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         addChild(logo);
     }
 
-    final void addDefaultOptionsButton() {
+    protected final void addDefaultOptionsButton() {
         addOptionsButton(() -> new OptionsMenu(getGUIRoot()));
     }
 
@@ -108,7 +107,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         addChild(options);
     }
 
-    final void addExitButton() {
+    protected final void addExitButton() {
         MenuButton exit = new MenuButton(i18n("quit"), COLOR_NORMAL, COLOR_ACTIVE);
         exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(getGUIRoot())));
         addChild(exit);
@@ -116,7 +115,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     protected abstract void addButtons();
 
-    final void reload() {
+    protected final void reload() {
         init();
         addButtons();
 
@@ -264,13 +263,14 @@ public abstract class Menu extends CameraDelegate<Camera> {
         }
     }
 
-    public final @NonNull GameNetwork joinGame(@NonNull NetworkSelector network, GUI gui, int host_id, boolean rated,
-            int gamespeed, @NonNull String map_code, SelectGameMenu owner, float random_start_pos, int max_unit_count) {
+    public final @NonNull GameNetwork joinGame(@NonNull NetworkSelector network, GUI gui, int host_id,
+            int gamespeed, @NonNull String map_code, MultiplayerLobby owner, @NonNull InGameInfo ingame_info,
+            int max_unit_count) {
         GUIRoot gui_root = getGUIRoot();
         Client client = new Client(null, network, gui, host_id, new WorldParameters(gamespeed, map_code,
                 Player.INITIAL_UNIT_COUNT,
                 max_unit_count),
-                new MultiplayerInGameInfo(random_start_pos, rated),
+                ingame_info,
                 new DefaultWorldInitAction());
         GameNetwork game_network = new GameNetwork(null, client);
         ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, true);
@@ -280,7 +280,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     public static @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            SelectGameMenu owner, WorldParameters world_params, @NonNull InGameInfo ingame_info,
+            MultiplayerLobby owner, WorldParameters world_params, @NonNull InGameInfo ingame_info,
             WorldInitAction init_action, Game game, int meters_per_world, @NonNull Terrain terrain,
             float hills, float vegetation_amount, float supplies_amount, int seed, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();

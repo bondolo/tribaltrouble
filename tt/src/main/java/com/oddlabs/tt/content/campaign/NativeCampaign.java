@@ -2,7 +2,6 @@ package com.oddlabs.tt.content.campaign;
 
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.client.form.CampaignDialogForm;
 import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.client.gui.Form;
 import com.oddlabs.tt.client.gui.GUIRoot;

@@ -4,7 +4,7 @@ package com.oddlabs.tt.engine.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
-import com.oddlabs.tt.client.form.ProgressForm;
+import com.oddlabs.tt.core.util.ProgressListener;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.RacesResources;
@@ -219,14 +219,14 @@ public final class Landscape {
             case NATIVE -> {
                 var natives = generateStructuresNative(voronoi4, voronoi8, voronoi8_hit, voronoi16, voronoi16_hit,
                         voronoi32, voronoi32_hit, noise8, noise256);
-                ProgressForm.progress();
+                ProgressListener.progress();
                 generateTerrainNative();
                 yield natives;
             }
             case VIKING -> {
                 var vikings = generateStructuresViking(voronoi4, voronoi8, voronoi8_hit, voronoi16, voronoi16_hit,
                         voronoi32, voronoi32_hit, noise8, noise256);
-                ProgressForm.progress();
+                ProgressListener.progress();
                 generateTerrainViking();
                 yield vikings;
             }
@@ -240,9 +240,9 @@ public final class Landscape {
                 .toArray(GLIntImage[]::new);
 
         if (DEBUG) height.toLayer().saveAsPNG("height");
-        ProgressForm.progress();
+        ProgressListener.progress();
         Channel grass_alpha = generateAlphas();
-        ProgressForm.progress();
+        ProgressListener.progress();
         generateUnitLocations(initial_unit_count, random_start_pos);
         generateSupplies(grass_alpha);
 
@@ -277,7 +277,7 @@ public final class Landscape {
             @NonNull Channel voronoi8, Channel voronoi8_hit, @NonNull Channel voronoi16, Channel voronoi16_hit,
             @NonNull Channel voronoi32, Channel voronoi32_hit, @NonNull Channel noise8, @NonNull Channel noise256) {
         var structures = new StructureLayers[7];
-        ProgressForm.progress(1 / 8f);
+        ProgressListener.progress(1 / 8f);
 
         structures[0] = Landscape.genSand(structure_size, noise8.copy(), noise256.copy());
 
@@ -312,7 +312,7 @@ public final class Landscape {
             @NonNull Channel voronoi8, Channel voronoi8_hit, @NonNull Channel voronoi16, Channel voronoi16_hit,
             @NonNull Channel voronoi32, Channel voronoi32_hit, @NonNull Channel noise8, @NonNull Channel noise256) {
         var structures = new StructureLayers[7];
-        ProgressForm.progress(1 / 8f);
+        ProgressListener.progress(1 / 8f);
 
         structures[0] = Landscape.genGravel(structure_size, noise8.copy(), noise256.copy());
 
@@ -800,7 +800,7 @@ public final class Landscape {
         }
         highlight.dynamicRange(0f, 0.08f);
         shadow.invert().dynamicRange(0f, 0.25f);
-        ProgressForm.progress(1 / 14f);
+        ProgressListener.progress(1 / 14f);
 
         // generate shadowcasting
         Channel shadowcast = new Channel(unit_grids_per_world, unit_grids_per_world);
@@ -821,7 +821,7 @@ public final class Landscape {
         }
         shadow.channelBrightest(shadowcast.smooth(1).brightness(0.67f));
         if (DEBUG) shadow.toLayer().saveAsPNG("alpha_shadow");
-        ProgressForm.progress(1 / 14f);
+        ProgressListener.progress(1 / 14f);
 
         // generate Ambient Occlusion alpha map
         Channel ao = new Channel(unit_grids_per_world, unit_grids_per_world);
@@ -923,7 +923,7 @@ public final class Landscape {
                 .toChannel();
         Channel tree_channel = grass_alpha.copy();
         Channel palmtree_channel = height.copy();
-        ProgressForm.progress(1 / 14f);
+        ProgressListener.progress(1 / 14f);
 
         switch (terrain) {
             case NATIVE -> {
@@ -953,7 +953,7 @@ public final class Landscape {
 
         if (DEBUG) tree_channel.toLayer().saveAsPNG("supplies_trees");
         if (DEBUG) palmtree_channel.toLayer().saveAsPNG("supplies_palmtrees");
-        ProgressForm.progress(1 / 14f);
+        ProgressListener.progress(1 / 14f);
 
         // generate rock and iron supplies map
         Channel rock_channel = relheight.copy();
@@ -1025,7 +1025,7 @@ public final class Landscape {
         // shadow and highlight are changed by supply placement
         alpha_maps[4] = new GLByteImage(highlight, GL11.GL_RED);
         alpha_maps[5] = new GLByteImage(shadow, GL11.GL_RED);
-        ProgressForm.progress(1 / 14f);
+        ProgressListener.progress(1 / 14f);
 
         // generate plant maps
         plants = new float[NUM_PLANT_TYPES][max_plants << 1];
