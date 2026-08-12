@@ -46,7 +46,7 @@ import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.NativeResource;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.core.util.StatCounter;
@@ -66,6 +66,7 @@ import org.lwjgl.opengl.GL30;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -108,26 +109,31 @@ public final class Renderer implements AutoCloseable {
     static {
         com.oddlabs.tt.simulation.model.Model.setClientStateFactory(model -> {
             VisualModel visualModel = new VisualModel(model);
-            if (model instanceof com.oddlabs.tt.simulation.model.Unit unit) {
-                if (unit.getAbilities().hasAbilities(com.oddlabs.tt.simulation.model.Abilities.BUILD)) {
-                    visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
+            switch (model) {
+                case com.oddlabs.tt.simulation.model.Unit unit -> {
+                    if (unit.getAbilities().hasAbilities(com.oddlabs.tt.simulation.model.Abilities.BUILD)) {
+                        visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
+                    }
                 }
-            } else if (model instanceof com.oddlabs.tt.simulation.model.Building building) {
-                float hitOffsetZ = building.getHitOffsetZ();
-                visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ));
-                visualModel.getAccessories().add(new BuildingProductionAccessory(building));
-            } else if (model instanceof com.oddlabs.tt.simulation.model.IronSupply ironSupply) {
-                visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply));
-            } else if (model instanceof com.oddlabs.tt.simulation.model.RockSupply rockSupply) {
-                visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply));
-            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.LightningCloud cloud) {
-                visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud));
-            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.PoisonFog fog) {
-                visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog));
-            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.Stun stun) {
-                visualModel.getAccessories().add(new StunVisualAccessory(stun));
-            } else if (model instanceof com.oddlabs.tt.simulation.model.weapon.SonicBlast blast) {
-                visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast));
+                case com.oddlabs.tt.simulation.model.Building building -> {
+                    float hitOffsetZ = building.getHitOffsetZ();
+                    visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ));
+                    visualModel.getAccessories().add(new BuildingProductionAccessory(building));
+                }
+                case com.oddlabs.tt.simulation.model.IronSupply ironSupply ->
+                    visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply));
+                case com.oddlabs.tt.simulation.model.RockSupply rockSupply ->
+                    visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply));
+                case com.oddlabs.tt.simulation.model.weapon.LightningCloud cloud ->
+                    visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud));
+                case com.oddlabs.tt.simulation.model.weapon.PoisonFog fog ->
+                    visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog));
+                case com.oddlabs.tt.simulation.model.weapon.Stun stun ->
+                    visualModel.getAccessories().add(new StunVisualAccessory(stun));
+                case com.oddlabs.tt.simulation.model.weapon.SonicBlast blast ->
+                    visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast));
+                default -> {
+                }
             }
             return visualModel;
         });
@@ -140,7 +146,8 @@ public final class Renderer implements AutoCloseable {
 
     private static volatile boolean finished = false;
 
-    private final Settings settings = new Settings();
+    private final GamePaths gamePaths;
+    private final @NonNull Settings settings;
     private final Locale locale = default_locale;
 
     private final GLRenderContext renderContext = new GLRenderContext();
@@ -171,6 +178,17 @@ public final class Renderer implements AutoCloseable {
     private long totalLoopTime;
 
     private @Nullable Cheat cheat = new Cheat();
+
+    private Renderer() {
+        logger.info("CWD: " + System.getProperty("user.dir"));
+        // This will be configured by setupLogging, but we need to log before that.
+        try {
+            gamePaths = setupPaths();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        settings = new Settings(gamePaths.dataDir());
+    }
 
     public static float getFPS() {
         return fps.getAveragePerUpdate();
@@ -650,14 +668,10 @@ public final class Renderer implements AutoCloseable {
 
     public void run(@NonNull String @NonNull... args) throws IOException {
         Instant start_time = Instant.now();
-        logger.info("CWD: " + System.getProperty("user.dir"));
         boolean first_frame = true;
-        // This will be configured by setupLogging, but we need to log before that.
-        GamePaths paths = setupPaths();
-        Path game_dir = paths.dataDir();
         logger.info("********** Running tt **********");
-        logger.info("game dir: " + game_dir);
-        logger.info("logs dir: " + paths.logDir());
+        logger.info("game dir: " + gamePaths.dataDir());
+        logger.info("logs dir: " + gamePaths.logDir());
         boolean eventload = false;
         boolean zipped = false;
         boolean silent = false;
@@ -682,7 +696,7 @@ public final class Renderer implements AutoCloseable {
             }
 
         Settings settings = getSettings();
-        settings.load(game_dir);
+        settings.load();
 
         if (eventload || grab_frames) {
             Path last_event_log_path = settings.last_event_log_dir.resolve(zipped ? "event.log.gz" : "event.log");
@@ -692,14 +706,14 @@ public final class Renderer implements AutoCloseable {
             getEventQueue().loadEvents(last_event_log_path, zipped);
         }
 
-        Path event_logs_dir = paths.logDir();
+        Path event_logs_dir = gamePaths.logDir();
         Path event_log_dir = event_logs_dir.resolve(Long.toString(System.currentTimeMillis()));
         if (settings.save_event_log) {
             setupLogging(event_log_dir, silent);
             getEventQueue().setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
         }
         Deterministic deterministic = getEventQueue().getDeterministic();
-        game_dir = deterministic.log(game_dir);
+        var game_dir = deterministic.log(gamePaths.dataDir);
         event_log_dir = deterministic.log(event_log_dir);
         deterministic.log(settings);
         Locale language = "default".equals(settings.language)
@@ -948,7 +962,8 @@ public final class Renderer implements AutoCloseable {
             final boolean first_progress) {
         final WorldGenerator generator = new IslandGenerator(
                 Terrain.NATIVE, 256, Globals.LANDSCAPE_HILLS,
-                Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
+                Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED,
+                getRenderer().getSettings().getTexelsPerGridUnit());
         return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root,
                 first_progress, generator), first_progress);
     }

@@ -6,8 +6,8 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Landscape;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -30,6 +30,7 @@ public final class IslandGenerator implements WorldGenerator {
     private final int meters_per_world;
     private final @NonNull Terrain terrain;
     private final int grid_units;
+    private final int texels_per_grid_unit;
 
     private final float hills;
     private final float vegetation_amount;
@@ -38,7 +39,7 @@ public final class IslandGenerator implements WorldGenerator {
 
     public IslandGenerator(
             @NonNull Terrain terrain, int meters_per_world, float hills,
-            float vegetation_amount, float supplies_amount, int seed) {
+            float vegetation_amount, float supplies_amount, int seed, int texels_per_grid_unit) {
         this.hills = hills;
         this.vegetation_amount = vegetation_amount;
         this.supplies_amount = supplies_amount;
@@ -46,6 +47,7 @@ public final class IslandGenerator implements WorldGenerator {
         this.grid_units = meters_per_world / HeightMap.METERS_PER_UNIT_GRID;
         this.meters_per_world = meters_per_world;
         this.terrain = terrain;
+        this.texels_per_grid_unit = texels_per_grid_unit;
     }
 
     private static @NonNull Texture createDetail(@NonNull GLImage detail_image, int base_level) {
@@ -61,12 +63,6 @@ public final class IslandGenerator implements WorldGenerator {
                 GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
-    private static int getTexelsPerGridUnit() {
-        int texels_per_grid_unit = Globals.TEXELS_PER_GRID_UNIT / (int) Math.pow(2, Globals.TEXTURE_MIP_SHIFT[Renderer
-                .getRenderer().getSettings().graphic_detail]);
-        return texels_per_grid_unit;
-    }
-
     @Override
     public int getMetersPerWorld() {
         return meters_per_world;
@@ -74,7 +70,7 @@ public final class IslandGenerator implements WorldGenerator {
 
     @Override
     public @NonNull WorldInfo<Texture> generate(int num_players, int initial_unit_count, float random_start_pos) {
-        int colormap_size = grid_units * getTexelsPerGridUnit();
+        int colormap_size = grid_units * texels_per_grid_unit;
         int chunks_per_colormap = colormap_size / TEXELS_PER_CHUNK;
 
         // Build landscape

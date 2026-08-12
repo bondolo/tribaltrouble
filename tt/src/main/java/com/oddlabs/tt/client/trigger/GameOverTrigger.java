@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.trigger;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.core.net.PeerHub;
+import com.oddlabs.tt.simulation.network.PeerHub;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.core.util.Utils;

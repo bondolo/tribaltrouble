@@ -16,7 +16,7 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;

@@ -1,10 +1,12 @@
 package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Game;
+import java.io.Serializable;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.tt.client.form.GameInfoForm;
 import com.oddlabs.tt.client.form.MessageForm;
+import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.client.gui.Box;
 import com.oddlabs.tt.client.gui.Diode;
@@ -27,17 +29,18 @@ import com.oddlabs.tt.client.gui.TextBox;
 import com.oddlabs.tt.client.guievent.EnterListener;
 import com.oddlabs.tt.client.guievent.MouseClickListener;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import com.oddlabs.tt.simulation.model.RacesResources;
-import com.oddlabs.tt.core.net.ChatCommand;
+import com.oddlabs.tt.client.gui.ChatCommand;
 import com.oddlabs.tt.core.net.ChatListener;
 import com.oddlabs.tt.core.net.ChatMessage;
 import com.oddlabs.tt.core.net.Client;
 import com.oddlabs.tt.core.net.ConfigurationListener;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -209,16 +212,17 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     private void adjustPlayerSlot(int player_slot) {
         if (updating)
             return;
-        PlayerSlot player = game_network.getClient().getPlayers()[player_slot];
+        PlayerSlot player = (PlayerSlot) game_network.getClient().getPlayers()[player_slot];
         SlotOption option = slot_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
                 SlotOption.OPEN);
         Race race = race_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
                 Race.NATIVES);
         int team = team_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-        boolean race_changed = player.getInfo() == null || race.getValue() != player.getInfo().getRace().getValue();
-        boolean team_changed = player.getInfo() == null || team != player.getInfo().getTeam();
+        PlayerInfo info = (PlayerInfo) player.getInfo();
+        boolean race_changed = info == null || race.getValue() != info.getRace().getValue();
+        boolean team_changed = info == null || team != info.getTeam();
         boolean ready_changed = ready != player.isReady();
-        boolean difficulty_changed = player.getInfo() == null || player.getAIDifficulty() != option.getAIDifficulty();
+        boolean difficulty_changed = info == null || player.getAIDifficulty() != option.getAIDifficulty();
         PulldownButton<?> slot_button = slot_buttons[player_slot];
         switch (option) {
             case OPEN -> {
@@ -260,7 +264,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void connected(Client client, Game game, WorldGenerator generator, int player_slot) {
+    public void connected(@NonNull Client client, @NonNull Game game, @NonNull WorldGenerator generator,
+            int player_slot) {
         assert false;
     }
 
@@ -299,8 +304,9 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             PulldownButton<?> team_button = team_buttons[i];
             Diode ready_mark = ready_marks[i];
             ready_mark.setLit(player.isReady());
-            race_button.getMenu().chooseItem(player.getInfo() != null ? player.getInfo().getRace().getValue() : 0);
-            team_button.getMenu().chooseItem(player.getInfo() != null ? player.getInfo().getTeam() : 0);
+            PlayerInfo info = (PlayerInfo) player.getInfo();
+            race_button.getMenu().chooseItem(info != null ? info.getRace().getValue() : 0);
+            team_button.getMenu().chooseItem(info != null ? info.getTeam() : 0);
             if (player.getType() != PlayerSlot.CLOSED) {
                 slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
                         "open")));
@@ -311,7 +317,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             race_button.setDisabled(true);
             team_button.setDisabled(true);
             if (player.getInfo() != null) {
-                PlayerInfo player_info = player.getInfo();
+                PlayerInfo player_info = (PlayerInfo) player.getInfo();
                 switch (player.getType()) {
                     case PlayerSlot.AI -> {
                         assert !rated;
@@ -493,9 +499,10 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void gameStarted() {
-//		owner.removeGameMenu();
+    public void gameStarted(com.oddlabs.tt.core.util.@NonNull LoadCallback loadCallback) {
         setDisabled(true);
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
+                (com.oddlabs.tt.client.form.LoadCallback) loadCallback);
     }
 
     private void finishChatAppend() {
@@ -577,8 +584,9 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     private static int getNumTeams(PlayerSlot @NonNull [] players) {
         Set<Integer> teams = new HashSet<>();
         for (PlayerSlot current : players) {
-            if (current.getInfo() != null)
-                teams.add(current.getInfo().getTeam());
+            PlayerInfo info = (PlayerInfo) current.getInfo();
+            if (info != null)
+                teams.add(info.getTeam());
         }
         return teams.size();
     }
@@ -587,7 +595,12 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         @Override
         public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
             final int MIN_TEAMS = 2;
-            int num_teams = getNumTeams(game_network.getClient().getPlayers());
+            Serializable[] raw_players = game_network.getClient().getPlayers();
+            PlayerSlot[] players = new PlayerSlot[raw_players.length];
+            for (int i = 0; i < raw_players.length; i++) {
+                players[i] = (PlayerSlot) raw_players[i];
+            }
+            int num_teams = getNumTeams(players);
             if (num_teams < MIN_TEAMS) {
                 String err_msg = i18n("min_teams", Integer.toString(MIN_TEAMS));
                 gui_root.addModalForm(new MessageForm(err_msg));
@@ -604,7 +617,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             String chat = text.toString();
             if (!chat.isEmpty()) {
                 chat_line.clear();
-                if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), chat))
+                if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), Renderer.getRenderer().getNetwork()
+                        .getMatchmakingClient(), chat))
                     game_network.getClient().getServerInterface().chat(chat);
             }
         }

@@ -1,8 +1,9 @@
-package com.oddlabs.tt.core.net;
+package com.oddlabs.tt.simulation.network;
 
 import com.oddlabs.net.ARMIEvent;
 import com.oddlabs.net.ARMIInterfaceMethods;
 import com.oddlabs.net.IllegalARMIEventException;
+import com.oddlabs.tt.core.net.GameArgumentReader;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
@@ -11,6 +12,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/** Peer endpoint managing tick event queues for a player. */
 public final class Peer implements PeerHubInterface {
     private final GameArgumentReader argument_reader;
     private final int peer_index;

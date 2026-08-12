@@ -1,9 +1,11 @@
-package com.oddlabs.tt.core.net;
+package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.client.gui.InfoPrinter;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.core.net.ChatMethod;
+import com.oddlabs.tt.core.net.MatchmakingClient;
+import com.oddlabs.tt.core.util.InfoPrinter;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -11,6 +13,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+/** Processor for user slash-commands in chat windows. */
 public final class ChatCommand {
     private static final Map<String, ChatMethod> commands = Map.of(
             "message", ChatCommand::sendMessage,
@@ -31,12 +34,13 @@ public final class ChatCommand {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public static boolean filterCommand(@NonNull InfoPrinter info_printer, @NonNull String text) {
-        return filterCommand(info_printer, Collections.emptyMap(), text);
+    public static boolean filterCommand(@NonNull InfoPrinter info_printer, @NonNull MatchmakingClient client,
+            @NonNull String text) {
+        return filterCommand(info_printer, client, Collections.emptyMap(), text);
     }
 
-    public static boolean filterCommand(@NonNull InfoPrinter info_printer, @NonNull Map<String,
-            ChatMethod> custom_commands, @NonNull String text) {
+    public static boolean filterCommand(@NonNull InfoPrinter info_printer, @NonNull MatchmakingClient client,
+            @NonNull Map<@NonNull String, @NonNull ChatMethod> custom_commands, @NonNull String text) {
         if (!text.startsWith("/"))
             return false;
         int fist_space = firstSpace(text);
@@ -44,7 +48,7 @@ public final class ChatCommand {
         String args = text.substring(fist_space).trim();
         ChatMethod method = custom_commands.getOrDefault(cmd, commands.get(cmd));
         if (method != null) {
-            method.execute(info_printer, args);
+            method.execute(info_printer, client, args);
         } else {
             String unknown_cmd_message = i18n("unknown_command", cmd);
             info_printer.print(unknown_cmd_message);
@@ -57,27 +61,33 @@ public final class ChatCommand {
         return first_space == -1 ? text.length() : first_space;
     }
 
-    private static void sendMessage(@NonNull InfoPrinter info_printer, @NonNull String text) {
+    private static void sendMessage(@NonNull InfoPrinter info_printer, @NonNull MatchmakingClient client,
+            @NonNull String text) {
         int first_space = firstSpace(text);
         String nick = text.substring(0, first_space);
         String message = text.substring(first_space).trim();
-        if (!Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
+        if (!client.isConnected())
             info_printer.print(i18n("not_connected"));
         else
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().sendPrivateMessage(info_printer.getGUIRoot(),
-                    nick, message);
+            client.sendPrivateMessage(nick, message);
     }
 
-    private static void getInfo(@NonNull InfoPrinter info_printer, @NonNull String text) {
+    private static void getInfo(@NonNull InfoPrinter info_printer, @NonNull MatchmakingClient client,
+            @NonNull String text) {
         int first_space = firstSpace(text);
         String nick = text.substring(0, first_space);
-        if (!Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected())
+        if (!client.isConnected())
             info_printer.print(i18n("not_connected"));
         else
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().requestInfo(info_printer.getGUIRoot(), nick);
+            client.requestInfo(nick);
     }
 
     public static void ignore(@NonNull InfoPrinter info_printer, @NonNull String text) {
+        ignore(info_printer, null, text);
+    }
+
+    public static void ignore(@NonNull InfoPrinter info_printer, @Nullable MatchmakingClient client,
+            @NonNull String text) {
         int first_space = firstSpace(text);
         String nick = text.substring(0, first_space);
         boolean result = ignored_nicks.add(nick.toLowerCase());
@@ -88,6 +98,11 @@ public final class ChatCommand {
     }
 
     public static void unignore(@NonNull InfoPrinter info_printer, @NonNull String text) {
+        unignore(info_printer, null, text);
+    }
+
+    public static void unignore(@NonNull InfoPrinter info_printer, @Nullable MatchmakingClient client,
+            @NonNull String text) {
         int first_space = firstSpace(text);
         String nick = text.substring(0, first_space);
         boolean result = ignored_nicks.remove(nick.toLowerCase());
@@ -101,7 +116,7 @@ public final class ChatCommand {
         return ignored_nicks.contains(nick.toLowerCase());
     }
 
-    private static void ignoreList(@NonNull InfoPrinter info_printer, String text) {
+    private static void ignoreList(@NonNull InfoPrinter info_printer, @Nullable MatchmakingClient client, String text) {
         String[] nicks = new String[ignored_nicks.size()];
         ignored_nicks.toArray(nicks);
         String result;

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.core.net;
+package com.oddlabs.tt.content.skirmish;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;

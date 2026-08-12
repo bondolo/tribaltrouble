@@ -21,10 +21,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.oddlabs.tt.core.global.PropertiesSerializer;
+
 /**
  * Manages game action keybindings, state, and serialization.
  */
-public final class InputManager {
+public final class InputManager implements PropertiesSerializer {
     private static final Logger logger = Logger.getLogger(InputManager.class.getName());
     private static final Map<GameAction, NavigableSet<InputBinding>> DEFAULT_BINDINGS = new EnumMap<>(GameAction.class);
 
@@ -255,7 +257,8 @@ public final class InputManager {
         DEFAULT_BINDINGS.values().forEach(bindings::addAll);
     }
 
-    public void loadBindings(@NonNull Properties props) {
+    @Override
+    public void loadFromProperties(@NonNull Properties props) {
         bindings.clear();
         for (GameAction action : GameAction.values()) {
             String key = "key_binding." + action.name();
@@ -279,7 +282,8 @@ public final class InputManager {
         }
     }
 
-    public void saveBindings(@NonNull Properties props) {
+    @Override
+    public void saveToProperties(@NonNull Properties props) {
         // Group current bindings by action
         Map<GameAction, NavigableSet<InputBinding>> currentMap = new EnumMap<>(GameAction.class);
         for (InputBinding b : bindings) {

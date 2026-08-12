@@ -161,6 +161,7 @@ public final class LocalInput implements AutoCloseable {
         logger.config("revision = " + revision);
         this.game_dir = game_dir;
         this.revision = revision;
+        settings.setBindingHandler(inputManager);
         settings.last_event_log_dir = event_log_dir.toAbsolutePath();
         settings.last_revision = revision;
         settings.crashed = true;

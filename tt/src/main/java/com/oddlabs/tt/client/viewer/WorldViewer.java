@@ -26,8 +26,8 @@ import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.core.net.DistributableTable;
-import com.oddlabs.tt.core.net.PeerHub;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.network.PeerHub;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.AdvancedAI;
 import com.oddlabs.tt.simulation.player.NativeChieftainAI;
@@ -35,6 +35,7 @@ import com.oddlabs.tt.simulation.player.PassiveAI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
+import org.jspecify.annotations.NonNull;
 import com.oddlabs.tt.client.render.DefaultRenderer;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeResources;
@@ -44,12 +45,12 @@ import com.oddlabs.tt.client.render.RacesVisualsLoader;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.core.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.core.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -87,7 +88,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public WorldViewer(@NonNull NetworkSelector network, final @NonNull GUIRoot gui_root,
             @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info, @NonNull WorldGenerator generator,
-            PlayerSlot @NonNull [] player_slots, UnitInfo[] unit_infos, short player_slot, SessionID session_id) {
+            PlayerSlot @NonNull [] player_slots, UnitInfo @NonNull [] unit_infos, short player_slot,
+            SessionID session_id) {
         this.world_params = world_params;
         this.ingame_info = ingame_info;
         this.network = network;
@@ -149,7 +151,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                     getSelection().removeFromArmies(selectable);
             }
         };
-        var player_infos = Arrays.stream(player_slots).map(PlayerSlot::getInfo).toList();
+        var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
         @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(
                 player_infos.size(), world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
@@ -166,8 +168,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker,
                 selection, modelViewStack, projectionStack);
         this.gui_root = gui_root;
+        var useNetwork = Renderer.getRenderer().getNetwork();
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
-                local_player, player_slots, network, notification_manager, distributable_table, session_id,
+                local_player, player_slots, network, notification_manager,
+                useNetwork.getMatchmakingClient(), useNetwork.getChatHub(),
+                distributable_table, session_id,
                 new ViewerStallHandler(this));
         this.camera = new GameCamera(this, camera_state);
         this.panel = new ActionButtonPanel(this, camera);
@@ -280,7 +285,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     }
 
     private void initPlayers(float[][] starting_locations, PlayerSlot @NonNull [] slots, List<@NonNull Player> players,
-            UnitInfo[] unit_infos, int initial_gamespeed) {
+            UnitInfo @NonNull [] unit_infos, int initial_gamespeed) {
         ResourceBundle bundle = ResourceBundle.getBundle(Player.class.getName());
         for (int i = 0; i < slots.length; i++) {
             initPlayer(bundle, starting_locations[i], slots[i], players.get(i), unit_infos[i], initial_gamespeed);

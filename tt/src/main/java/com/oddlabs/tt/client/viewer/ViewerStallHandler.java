@@ -1,11 +1,12 @@
 package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.client.form.WaitingForPlayersForm;
-import com.oddlabs.tt.core.net.StallHandler;
+import com.oddlabs.tt.simulation.network.StallHandler;
 import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/** Handler for client-side rendering during network stalls. */
 final class ViewerStallHandler implements StallHandler {
 
     private static final float SHOW_WAITING_DELAY_SECONDS = 3f;

@@ -1,5 +1,6 @@
-package com.oddlabs.tt.engine.resource;
+package com.oddlabs.tt.core.world;
 
+import com.oddlabs.tt.engine.resource.WorldInfo;
 import org.jspecify.annotations.NonNull;
 
 import java.io.Serializable;

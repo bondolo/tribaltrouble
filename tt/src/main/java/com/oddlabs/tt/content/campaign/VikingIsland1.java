@@ -9,7 +9,7 @@ import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -24,6 +24,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/** Campaign level setup for Viking Island 1. */
 public final class VikingIsland1 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland1.class.getName());
 

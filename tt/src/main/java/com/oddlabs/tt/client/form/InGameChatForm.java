@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.gui.RadioButtonGroup;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.gui.TextBox;
 import com.oddlabs.tt.client.guievent.EnterListener;
-import com.oddlabs.tt.core.net.ChatCommand;
+import com.oddlabs.tt.client.gui.ChatCommand;
 import com.oddlabs.tt.core.net.ChatListener;
 import com.oddlabs.tt.core.net.ChatMessage;
 import com.oddlabs.tt.core.net.ChatMethod;
@@ -20,7 +20,6 @@ import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
-import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -29,6 +28,7 @@ import static com.oddlabs.tt.client.gui.Placement.BOTTOM_RIGHT;
 import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
 import static com.oddlabs.tt.client.gui.Placement.TOP_LEFT;
 
+/** In-game chat overlay UI form. */
 public final class InGameChatForm extends Form implements ChatListener {
     private static final int CHAT_WIDTH = 400;
     private static final int BUTTON_WIDTH = 50;
@@ -112,19 +112,14 @@ public final class InGameChatForm extends Form implements ChatListener {
     }
 
     private void refreshMessages() {
-        List<String> messages = Renderer.getRenderer().getNetwork().getMatchmakingClient().getInGameChatHistory();
-        chat_box.clear();
-        for (int i = 0; i < messages.size(); i++) {
-            if (i != 0)
-                chat_box.append("\n");
-            chat_box.append(messages.get(i));
-        }
+        var messages = Renderer.getRenderer().getNetwork().getMatchmakingClient().getInGameChatHistory();
+        chat_box.setText(String.join("\n", messages));
         chat_box.setOffsetY(Integer.MAX_VALUE);
     }
 
     @Override
     public void mouseMoved(int x, int y) {
-        ((ControllableCameraDelegate) getParent()).mouseMoved(x, y);
+        ((ControllableCameraDelegate<?>) getParent()).mouseMoved(x, y);
     }
 
     private final class ChatListener implements EnterListener {
@@ -133,8 +128,9 @@ public final class InGameChatForm extends Form implements ChatListener {
             String chat = text.toString();
             if (!chat.isEmpty()) {
                 chat_line.clear();
-                Map<String, ChatMethod> commands = Map.of("iamacheater", (_, _) -> viewer.getCheat().enable());
-                if (!ChatCommand.filterCommand(info_printer, commands, chat)) {
+                Map<String, ChatMethod> commands = Map.of("iamacheater", (_, _, _) -> viewer.getCheat().enable());
+                if (!ChatCommand.filterCommand(info_printer, Renderer.getRenderer().getNetwork().getMatchmakingClient(),
+                        commands, chat)) {
                     viewer.getPeerHub().sendChat(chat, radio_button_group.getMarked() == radio_team);
                 }
             } else {

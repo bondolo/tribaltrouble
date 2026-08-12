@@ -1,7 +1,7 @@
 package com.oddlabs.tt.content.skirmish;
 
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Terrain;
 import org.jspecify.annotations.NonNull;

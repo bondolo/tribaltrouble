@@ -7,7 +7,6 @@ import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.HostSequenceID;
-import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -18,16 +17,19 @@ import java.util.Deque;
 
 public final class TunnelledConnectionListener extends AbstractConnectionListener {
     private final Deque<TunnelledConnection> incoming_connections = new ArrayDeque<>();
+    private final MatchmakingClient matchmaking_client;
     private boolean open = true;
 
-    public TunnelledConnectionListener(ConnectionListenerInterface listener_interface) {
+    public TunnelledConnectionListener(MatchmakingClient matchmaking_client,
+            ConnectionListenerInterface listener_interface) {
         super(listener_interface);
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().registerTunnelledListener(this);
+        this.matchmaking_client = matchmaking_client;
+        matchmaking_client.registerTunnelledListener(this);
     }
 
     public void requestTunnelledConnection(@NonNull HostSequenceID address, InetAddress inet_address,
             InetAddress local_address, Profile profile) {
-        TunnelledConnection conn = new TunnelledConnection(address, null);
+        TunnelledConnection conn = new TunnelledConnection(matchmaking_client, address, null);
         incoming_connections.add(conn);
         notifyIncomingConnection(new TunnelIdentifier(profile, new TunnelAddress(address.getHostID(), inet_address,
                 local_address)));
@@ -58,7 +60,7 @@ public final class TunnelledConnectionListener extends AbstractConnectionListene
     @Override
     public void close() {
         if (open) {
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().unregisterTunnelledListener(this);
+            matchmaking_client.unregisterTunnelledListener(this);
             open = false;
         }
     }

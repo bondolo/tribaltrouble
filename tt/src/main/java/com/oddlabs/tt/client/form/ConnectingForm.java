@@ -11,8 +11,8 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.core.net.Client;
 import com.oddlabs.tt.core.net.ConfigurationListener;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
@@ -58,7 +58,8 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     }
 
     @Override
-    public void connected(@NonNull Client client, @NonNull Game game, WorldGenerator generator, int player_slot) {
+    public void connected(@NonNull Client client, @NonNull Game game, @NonNull WorldGenerator generator,
+            int player_slot) {
         if (multiplayer) {
             Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
             int team = player_slot;
@@ -91,9 +92,10 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     }
 
     @Override
-    public void gameStarted() {
+    public void gameStarted(com.oddlabs.tt.core.util.@NonNull LoadCallback loadCallback) {
         remove();
-//		main_menu.remove();
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
+                (LoadCallback) loadCallback);
         assert !multiplayer;
     }
 

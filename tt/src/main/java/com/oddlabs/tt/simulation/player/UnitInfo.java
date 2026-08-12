@@ -1,5 +1,8 @@
 package com.oddlabs.tt.simulation.player;
 
+import java.io.Serializable;
+
+/** Serializable unit info descriptor. */
 public record UnitInfo(boolean hasQuarters,
                        boolean hasArmory,
                        int numTowers,
@@ -7,8 +10,5 @@ public record UnitInfo(boolean hasQuarters,
                        int numPeons,
                        int numRockWarriors,
                        int numIronWarriors,
-                       int numRubberWarriors) {
-    public UnitInfo() {
-        this(false, false, 0, false, 0, 0, 0, 0);
-    }
+                       int numRubberWarriors) implements Serializable {
 }

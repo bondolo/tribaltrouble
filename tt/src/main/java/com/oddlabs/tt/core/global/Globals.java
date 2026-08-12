@@ -20,6 +20,7 @@ public final class Globals {
     public static final boolean[] INSERT_PLANTS = new boolean[]{false, true, true};
 
     public static final String GAME_NAME = "TribalTrouble";
+    public static final int REVISION = 1;
     public static final Path SETTINGS_FILE_NAME = Path.of("settings");
 
     public static boolean run_ai = true;

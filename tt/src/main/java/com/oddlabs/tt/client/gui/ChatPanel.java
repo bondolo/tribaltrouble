@@ -6,9 +6,9 @@ import com.oddlabs.tt.client.guievent.EnterListener;
 import com.oddlabs.tt.client.guievent.ItemChosenListener;
 import com.oddlabs.tt.client.guievent.MouseClickListener;
 import com.oddlabs.tt.client.guievent.RowListener;
-import com.oddlabs.tt.core.net.ChatCommand;
 import com.oddlabs.tt.core.net.ChatListener;
 import com.oddlabs.tt.core.net.ChatMessage;
+import com.oddlabs.tt.core.net.ChatRoomInfo;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
@@ -21,6 +21,7 @@ import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
 import static com.oddlabs.tt.client.gui.Placement.RIGHT_TOP;
 
+/** UI component displaying live chat room messages and user lists. */
 public class ChatPanel extends Panel implements ChatListener {
     private static final int PULLDOWN_INDEX_MESSAGE = 0;
     private static final int PULLDOWN_INDEX_INFO = 1;
@@ -156,18 +157,9 @@ public class ChatPanel extends Panel implements ChatListener {
     }
 
     private void refreshMessages() {
-        List<@NonNull String> messages = Renderer.getRenderer().getNetwork().getMatchmakingClient()
-                .getChatRoomHistory();
-        chat_box.clear();
-        boolean first = true;
-        for (var message : messages) {
-            if (!first) {
-                chat_box.append("\n");
-            } else {
-                first = false;
-            }
-            chat_box.append(message);
-        }
+        var messages = Renderer.getRenderer().getNetwork().getMatchmakingClient().getChatRoomHistory();
+        chat_box.setText(String.join("\n", messages));
+
         chat_box.setOffsetY(Integer.MAX_VALUE);
     }
 
@@ -195,7 +187,7 @@ public class ChatPanel extends Panel implements ChatListener {
             switch (item_index) {
                 case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, nick));
                 case PULLDOWN_INDEX_INFO -> Renderer.getRenderer().getNetwork().getMatchmakingClient().requestInfo(
-                        gui_root, nick);
+                        nick);
                 case PULLDOWN_INDEX_IGNORE -> {
                     if (ChatCommand.isIgnoring(nick))
                         ChatCommand.unignore(gui_root.getInfoPrinter(), nick);

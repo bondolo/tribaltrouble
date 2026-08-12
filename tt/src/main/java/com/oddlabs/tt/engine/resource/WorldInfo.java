@@ -3,6 +3,7 @@ package com.oddlabs.tt.engine.resource;
 import com.oddlabs.tt.simulation.model.Terrain;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 
 /**
@@ -16,8 +17,7 @@ public record WorldInfo<T>(
                            @NonNull T detailNormal,
                            float @NonNull [] heightmap, @NonNull List<int @NonNull []> trees,
                            @NonNull List<int @NonNull []> palm_trees, @NonNull List<int @NonNull []> rocks,
-                           @NonNull List<
-                                   int @NonNull []> iron,
+                           @NonNull List<int @NonNull []> iron,
                            float @NonNull [] @NonNull [] plants, boolean @NonNull [] @NonNull [] access_grid,
                            byte @NonNull [] @NonNull [] build_grid, float @NonNull [] @NonNull [] starting_locations,
                            @NonNull FogInfo fog_info,
