@@ -8,13 +8,15 @@ import com.oddlabs.net.IllegalARMIEventException;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
+import java.io.Serializable;
 
+/** Server-side context representing a connected client session. */
 public final class ClientInfo implements GameServerInterface, ConnectionInterface {
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameServerInterface.class);
     private final Server server;
-    private final PlayerSlot player_slot;
+    private final Serializable player_slot;
 
-    public ClientInfo(Server server, PlayerSlot player_slot) {
+    public ClientInfo(Server server, Serializable player_slot) {
         this.player_slot = player_slot;
         this.server = server;
     }
@@ -41,7 +43,7 @@ public final class ClientInfo implements GameServerInterface, ConnectionInterfac
     public void connected(AbstractConnection conn) {
     }
 
-    public PlayerSlot getPlayerSlot() {
+    public Serializable getPlayerSlot() {
         return player_slot;
     }
 

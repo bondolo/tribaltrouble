@@ -17,11 +17,6 @@ import com.oddlabs.net.HostSequenceID;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
-import com.oddlabs.tt.client.form.ChatErrorForm;
-import com.oddlabs.tt.client.form.InfoForm;
-import com.oddlabs.tt.client.gui.ChatRoomInfo;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -32,11 +27,12 @@ import java.security.SignedObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.SequencedCollection;
 import java.util.Set;
 
+/** Client endpoint for interacting with the matchmaking and chat server. */
 public final class MatchmakingClient implements MatchmakingClientInterface, ConnectionInterface {
     private static final String MATCHMAKING_HOST = "127.0.0.1";
 
@@ -44,11 +40,28 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private static final int STATE_AWAITING_OK = 2;
     private static final int STATE_LOGGED_IN = 4;
 
+    private final @NonNull Network network;
     private final Map<HostSequenceID, TunnelledConnection> tunnels = new HashMap<>();
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(MatchmakingClientInterface.class);
-    private final ChatRoomHistory chat_room_history = new ChatRoomHistory();
-    private final InGameChatHistory in_game_chat_history = new InGameChatHistory();
-    private @Nullable GUIRoot chat_gui_root;
+    private final ChatHistory chat_room_history = new ChatHistory() {
+        @Override
+        public void chat(@NonNull ChatMessage message) {
+            if (message.type() == ChatMessage.Type.PRIVATE || message.type() == ChatMessage.Type.CHATROOM) {
+                addMessage(message.formatLong());
+            }
+        }
+    };
+    private final ChatHistory in_game_chat_history = new ChatHistory() {
+        @Override
+        public void chat(@NonNull ChatMessage message) {
+            if (message.type() == ChatMessage.Type.PRIVATE || message.type() == ChatMessage.Type.NORMAL || message
+                    .type() == ChatMessage.Type.TEAM) {
+                addMessage(message.formatLong());
+            }
+        }
+    };
+    private @Nullable MatchmakingUiListener ui_listener;
+    private @Nullable Runnable game_won_ack_listener;
     private int current_seq_id = 1;
     private @Nullable SecureConnection conn;
     private @Nullable MatchmakingServerInterface matchmaking_interface;
@@ -68,16 +81,17 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private Login login;
     private LoginDetails login_details;
 
-    MatchmakingClient(@NonNull Network network) {
+    public MatchmakingClient(@NonNull Network network) {
+        this.network = network;
         network.getChatHub().addListener(chat_room_history);
         network.getChatHub().addListener(in_game_chat_history);
     }
 
-    public @NonNull List<@NonNull String> getChatRoomHistory() {
+    public @NonNull SequencedCollection<@NonNull String> getChatRoomHistory() {
         return chat_room_history.getMessages();
     }
 
-    public @NonNull List<@NonNull String> getInGameChatHistory() {
+    public @NonNull SequencedCollection<@NonNull String> getInGameChatHistory() {
         return in_game_chat_history.getMessages();
     }
 
@@ -99,8 +113,10 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
             this.matchmaking_interface = (MatchmakingServerInterface) ARMIEvent.createProxy(conn
                     .getWrappedConnectionAndShutdown(), MatchmakingServerInterface.class);
             state = STATE_LOGGED_IN;
-            MatchmakingListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
-            listener.loggedIn();
+            MatchmakingListener listener = network.getMatchmakingListener();
+            if (listener != null) {
+                listener.loggedIn();
+            }
         }
     }
 
@@ -169,14 +185,20 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         matchmaking_interface.logPriority(nick, priority);
     }
 
+    public void setGameWonAckListener(@Nullable Runnable listener) {
+        this.game_won_ack_listener = listener;
+    }
+
     @Override
     public void gameWonAck() {
-        PeerHub.receivedAck();
+        if (game_won_ack_listener != null) {
+            game_won_ack_listener.run();
+        }
     }
 
     @Override
     public void updateStart(int type) {
-        MatchmakingListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
+        MatchmakingListener listener = network.getMatchmakingListener();
         if (listener != null) {
             listener.clearList(type);
         }
@@ -184,7 +206,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void updateList(int type, /*GameHost[]*/Object[] names) {
-        MatchmakingListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
+        MatchmakingListener listener = network.getMatchmakingListener();
         if (listener != null)
             listener.receivedList(type, names);
     }
@@ -203,7 +225,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void updateProfileList(Profile[] profiles, String last_profile_nick) {
-        MatchmakingListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
+        MatchmakingListener listener = network.getMatchmakingListener();
         if (listener != null)
             listener.receivedProfiles(profiles, last_profile_nick);
     }
@@ -214,7 +236,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         chat_room_info = new ChatRoomInfo(room_name, null);
 
         chat_room_history.clear();
-        MatchmakingListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
+        MatchmakingListener listener = network.getMatchmakingListener();
         if (listener != null)
             listener.joinedChat(chat_room_info);
     }
@@ -224,8 +246,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         if (chat_room_info != null) {
             chat_room_info = new ChatRoomInfo(chat_room_info.name(), users);
 
-            MatchmakingListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
-            chat_room_history.update(chat_room_info.users());
+            MatchmakingListener listener = network.getMatchmakingListener();
             if (listener != null)
                 listener.updateChatRoom(chat_room_info);
         }
@@ -233,34 +254,34 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void receiveChatRoomMessage(@NonNull String owner, @NonNull String msg) {
-        Renderer.getRenderer().getNetwork().getChatHub().chat(new ChatMessage(owner, msg, ChatMessage.Type.CHATROOM));
+        network.getChatHub().chat(new ChatMessage(owner, msg, ChatMessage.Type.CHATROOM));
+    }
+
+    public void setUiListener(@Nullable MatchmakingUiListener ui_listener) {
+        this.ui_listener = ui_listener;
     }
 
     @Override
     public void receivePrivateMessage(@NonNull String nick, @NonNull String msg) {
-        Renderer.getRenderer().getNetwork().getChatHub().chat(new ChatMessage(nick, msg, ChatMessage.Type.PRIVATE));
+        network.getChatHub().chat(new ChatMessage(nick, msg, ChatMessage.Type.PRIVATE));
     }
 
-    public void sendPrivateMessage(GUIRoot gui_root, String nick, String message) {
-        this.chat_gui_root = gui_root;
+    public void sendPrivateMessage(String nick, String message) {
         getInterface().sendPrivateMessage(nick, message);
     }
 
-    public void joinRoom(GUIRoot gui_root, String name) {
-        this.chat_gui_root = gui_root;
+    public void joinRoom(String name) {
         getInterface().joinRoom(name);
     }
 
-    public void requestInfo(GUIRoot gui_root, String nick) {
-        this.chat_gui_root = gui_root;
+    public void requestInfo(String nick) {
         getInterface().requestInfo(nick);
     }
 
     @Override
     public void receiveInfo(@NonNull Profile profile) {
-        if (chat_gui_root != null) {
-            chat_gui_root.addModalForm(new InfoForm(profile));
-            chat_gui_root = null;
+        if (ui_listener != null) {
+            ui_listener.onProfileReceived(profile.toString());
         }
     }
 
@@ -276,9 +297,8 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void error(int error_code) {
-        if (chat_gui_root != null) {
-            chat_gui_root.addModalForm(new ChatErrorForm(error_code));
-            chat_gui_root = null;
+        if (ui_listener != null) {
+            ui_listener.onErrorReceived(error_code);
         }
     }
 
@@ -305,8 +325,9 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     @Override
     public void loginError(int error_code) {
         close();
-        MatchmakingListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
-        listener.loginError(error_code);
+        MatchmakingListener listener = network.getMatchmakingListener();
+        if (listener != null)
+            listener.loginError(error_code);
     }
 
     public @Nullable MatchmakingServerLoginInterface getLoginInterface() {
@@ -414,7 +435,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     }
 
     private void handleError(Exception e) {
-        ErrorListener listener = Renderer.getRenderer().getNetwork().getMatchmakingListener();
+        ErrorListener listener = network.getMatchmakingListener();
         close();
         if (listener != null)
             listener.connectionLost();
@@ -427,13 +448,12 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         Connection wrapped_connection = (Connection) conn.getWrappedConnection();
         matchmaking_login_interface.setLocalRemoteAddress(wrapped_connection.getLocalAddress());
         IO.println("wrapped_connection.getLocalAddress()	 = " + wrapped_connection.getLocalAddress());
-        int revision = Renderer.getLocalInput().getRevision();
-        if (!Renderer.isRegistered())
-            matchmaking_login_interface.loginAsGuest(revision);
-        else if (login_details != null)
+        int revision = com.oddlabs.tt.core.global.Globals.REVISION;
+        if (login_details != null)
             matchmaking_login_interface.createUser(login, login_details, signed_key, revision);
         else
             matchmaking_login_interface.login(login, signed_key, revision);
+        matchmaking_login_interface.login(login, signed_key, revision);
     }
 
     @Override

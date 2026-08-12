@@ -2,7 +2,10 @@ package com.oddlabs.tt.simulation.landscape;
 
 import org.jspecify.annotations.NonNull;
 
-public class WorldParameters {
+import java.io.Serializable;
+
+/** Configuration parameters defining terrain size, speed, and unit limits. */
+public class WorldParameters implements Serializable {
     private final @NonNull String map_code;
     private final int initial_unit_count;
     private final int max_unit_count;

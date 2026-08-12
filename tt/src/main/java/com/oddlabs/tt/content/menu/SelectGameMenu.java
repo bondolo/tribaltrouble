@@ -15,7 +15,8 @@ import com.oddlabs.tt.client.form.MessageForm;
 import com.oddlabs.tt.client.form.MultiplayerLobby;
 import com.oddlabs.tt.content.skirmish.MultiplayerInGameInfo;
 import com.oddlabs.tt.client.gui.ChatPanel;
-import com.oddlabs.tt.client.gui.ChatRoomInfo;
+import com.oddlabs.tt.core.world.WorldGenerator;
+import com.oddlabs.tt.core.net.ChatRoomInfo;
 import com.oddlabs.tt.client.gui.ColumnInfo;
 import com.oddlabs.tt.client.gui.FocusDirection;
 import com.oddlabs.tt.client.gui.GUIRoot;
@@ -38,14 +39,14 @@ import com.oddlabs.tt.client.guievent.MouseClickListener;
 import com.oddlabs.tt.client.guievent.RowListener;
 import com.oddlabs.tt.content.skirmish.TerrainMenu;
 import com.oddlabs.tt.content.skirmish.TerrainMenuListener;
-import com.oddlabs.tt.core.net.ChatCommand;
+import com.oddlabs.tt.client.gui.ChatCommand;
 import com.oddlabs.tt.core.net.GameNetwork;
 import com.oddlabs.tt.core.net.MatchmakingListener;
 import com.oddlabs.tt.core.net.ServerMessageBundler;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -58,6 +59,7 @@ import static com.oddlabs.tt.client.gui.Origin.AT_END;
 import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
 
+/** Lobby menu for selecting multiplayer games and chat rooms. */
 public final class SelectGameMenu extends Form implements MatchmakingListener, TerrainMenuListener, MultiplayerLobby {
     private static final int BUTTON_WIDTH_SHORT = 60;
     private static final int BUTTON_WIDTH = 110;
@@ -264,12 +266,14 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private @NonNull ChatPanel createChatRoomPanel(@NonNull ChatRoomInfo info) {
         ChatPanel panel = new ChatPanel(gui_root, info, chat_room_list_panel.getWidth(), chat_room_list_panel
                 .getHeight(), BUTTON_WIDTH_SHORT, new SendChatListener(), (_, _, _, _) -> leaveChatRoom());
-        Renderer.getRenderer().getNetwork().getChatHub().addListener(panel);
+        var chatHub = Renderer.getRenderer().getNetwork().getChatHub();
+        chatHub.setIgnoreFilter(ChatCommand::isIgnoring);
+        chatHub.addListener(panel);
         return panel;
     }
 
     @Override
-    public void createGameMenu(@NonNull GameNetwork game_network, @NonNull Game game, WorldGenerator generator,
+    public void createGameMenu(@NonNull GameNetwork game_network, @NonNull Game game, @NonNull WorldGenerator generator,
             int player_slot) {
         game_panel = new GameMenu(game_network, gui_root, this, game, generator, player_slot, game_list_panel
                 .getWidth(), game_list_panel.getHeight(), BUTTON_WIDTH);
@@ -465,7 +469,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private void joinRoom(@Nullable ChatRoomEntry chat_room_info) {
         if (Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile() != null) {
             if (chat_room_info != null)
-                Renderer.getRenderer().getNetwork().getMatchmakingClient().joinRoom(gui_root, chat_room_info.getName());
+                Renderer.getRenderer().getNetwork().getMatchmakingClient().joinRoom(chat_room_info.getName());
         }
     }
 
@@ -548,8 +552,9 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         public void enterPressed(@NonNull CharSequence text) {
             String chat = text.toString();
             if (!chat.isEmpty()) {
-                if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), chat)) {
-                    Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().sendMessageToRoom(chat);
+                var matchmaker = Renderer.getRenderer().getNetwork().getMatchmakingClient();
+                if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), matchmaker, chat)) {
+                    matchmaker.getInterface().sendMessageToRoom(chat);
                 }
             }
         }

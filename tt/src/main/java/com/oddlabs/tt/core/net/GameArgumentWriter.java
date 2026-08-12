@@ -6,10 +6,11 @@ import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 
-final class GameArgumentWriter extends DefaultARMIArgumentWriter {
+/** Serializer for custom ARMI game command parameters. */
+public final class GameArgumentWriter extends DefaultARMIArgumentWriter {
     private final DistributableTable distributable_table;
 
-    GameArgumentWriter(DistributableTable table) {
+    public GameArgumentWriter(DistributableTable table) {
         this.distributable_table = table;
     }
 

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.core.net;
 
 import com.oddlabs.matchmaking.Profile;
-import com.oddlabs.tt.client.gui.ChatRoomInfo;
 
 public interface MatchmakingListener extends ErrorListener {
     void clearList(int type);

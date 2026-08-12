@@ -90,7 +90,7 @@ public final class CreateChatRoomForm extends Form {
         String name = editline_room_name.getContents().trim();
         if (name.length() >= MatchmakingServerInterface.MIN_ROOM_NAME_LENGTH) {
             remove();
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().joinRoom(gui_root, name);
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().joinRoom(name);
         }
     }
 

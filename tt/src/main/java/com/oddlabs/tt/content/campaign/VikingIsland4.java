@@ -11,7 +11,7 @@ import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -27,6 +27,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/** Campaign level setup for Viking Island 4. */
 public final class VikingIsland4 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland4.class.getName());
 

@@ -1,8 +1,9 @@
 package com.oddlabs.tt.core.global;
 
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.core.event.LocalEventQueue;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,9 +24,11 @@ import java.util.stream.Collectors;
 /**
  * Global game settings and configuration persistence.
  */
-public final class Settings implements Serializable {
+public final class Settings implements Serializable, PropertiesSerializer {
     @Serial
     private static final long serialVersionUID = 1L;
+
+    private transient final @Nullable Path game_dir;
 
     // event logging
     private static final Logger logger = Logger.getLogger(Settings.class.getName());
@@ -115,6 +118,11 @@ public final class Settings implements Serializable {
             .toArray(Color.Linear[]::new);
 
     public Settings() {
+        this(null);
+    }
+
+    public Settings(@Nullable Path game_dir) {
+        this.game_dir = game_dir;
     }
 
     public void updateLinearColors() {
@@ -123,15 +131,54 @@ public final class Settings implements Serializable {
                 .toArray(Color.Linear[]::new);
     }
 
+    private @Nullable PropertiesSerializer binding_handler;
+
+    public void setBindingHandler(@Nullable PropertiesSerializer handler) {
+        binding_handler = handler;
+    }
+
     public boolean inDeveloperMode() {
         return developer_mode;
     }
 
+    public int getTexelsPerGridUnit() {
+        return Globals.TEXELS_PER_GRID_UNIT / (int) Math.pow(2, Globals.TEXTURE_MIP_SHIFT[graphic_detail]);
+    }
+
     public void save() {
-        if (Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback())
+        if (LocalEventQueue.getQueue().getDeterministic().isPlayback())
             return;
-        Settings defaults = new Settings();
+
+        Path settings_file = game_dir != null
+                ? game_dir.resolve(Globals.SETTINGS_FILE_NAME) : Globals.SETTINGS_FILE_NAME;
+        try (OutputStream out = Files.newOutputStream(settings_file)) {
+            Properties props = new Properties();
+
+            saveToProperties(props);
+            props.store(out, Instant.now().toString());
+        } catch (IOException e) {
+            logger.warning("Failed to write settings to " + settings_file + " exception: " + e);
+        }
+    }
+
+    public void load() {
         Properties props = new Properties();
+        Path settings_file = game_dir != null
+                ? game_dir.resolve(Globals.SETTINGS_FILE_NAME) : Globals.SETTINGS_FILE_NAME;
+        if (!Files.exists(settings_file)) {
+            return;
+        }
+        try (InputStream in = Files.newInputStream(settings_file)) {
+            props.load(in);
+            loadFromProperties(props);
+        } catch (IOException _) {
+            logger.warning("WARNING: Could not read settings from " + settings_file + ". Using defaults.");
+        }
+    }
+
+    @Override
+    public void saveToProperties(@NonNull Properties props) {
+        Settings defaults = new Settings();
 
         setProperty(props, "last_event_log_dir", last_event_log_dir, defaults.last_event_log_dir);
         setProperty(props, "last_revision", last_revision, defaults.last_revision);
@@ -174,29 +221,12 @@ public final class Settings implements Serializable {
         setProperty(props, "sound_emojis", sound_emojis, defaults.sound_emojis);
         setProperty(props, "team_colours", team_colours, defaults.team_colours);
 
-        Renderer.getLocalInput().getInputManager().saveBindings(props);
-
-        Path settings_file = Renderer.getLocalInput().getGameDir().resolve(Globals.SETTINGS_FILE_NAME);
-        try (OutputStream out = Files.newOutputStream(settings_file)) {
-            props.store(out, Instant.now().toString());
-        } catch (IOException e) {
-            logger.warning("Failed to write settings to " + settings_file + " exception: " + e);
-        }
+        if (binding_handler != null)
+            binding_handler.saveToProperties(props);
     }
 
-    public void load(@NonNull Path game_dir) {
-        Properties props = new Properties();
-        Path settings_file = game_dir.resolve(Globals.SETTINGS_FILE_NAME);
-        if (!Files.exists(settings_file)) {
-            return;
-        }
-        try (InputStream in = Files.newInputStream(settings_file)) {
-            props.load(in);
-        } catch (IOException _) {
-            logger.warning("WARNING: Could not read settings from " + settings_file + ". Using defaults.");
-            return;
-        }
-
+    @Override
+    public void loadFromProperties(@NonNull Properties props) {
         last_event_log_dir = getPath(props, "last_event_log_dir", last_event_log_dir);
         last_revision = getInt(props, "last_revision", last_revision);
         crashed = getBoolean(props, "crashed", crashed);
@@ -232,14 +262,15 @@ public final class Settings implements Serializable {
         high_contrast = getBoolean(props, "high_contrast", high_contrast);
         contrast_intensity = getFloat(props, "contrast_intensity", contrast_intensity);
         invert_colours = getBoolean(props, "invert_colours", invert_colours);
-        contrast_brightness = getFloat(props, "contrast_brightness", contrast_brightness);
+        contrast_brightness = getFloat(props, "contrast_brigashtness", contrast_brightness);
         contrast_clarity = getFloat(props, "contrast_clarity", contrast_clarity);
         team_stencil = getBoolean(props, "team_stencil", team_stencil);
         sound_emojis = getBoolean(props, "sound_emojis", sound_emojis);
         team_colours = getColours(props, "team_colours", team_colours);
         updateLinearColors();
 
-        Renderer.getLocalInput().getInputManager().loadBindings(props);
+        if (binding_handler != null)
+            binding_handler.loadFromProperties(props);
     }
 
     // --- Save Helpers ---

@@ -78,7 +78,7 @@ public final class PrivateMessageForm extends Form {
 
     private void send() {
         String message = editline_name.getContents();
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().sendPrivateMessage(gui_root, nick, message);
+        Renderer.getRenderer().getNetwork().getMatchmakingClient().sendPrivateMessage(nick, message);
         remove();
     }
 }

@@ -18,19 +18,23 @@ import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.core.net.Client;
 import com.oddlabs.tt.core.net.GameNetwork;
 import com.oddlabs.tt.core.net.Server;
-import com.oddlabs.tt.core.net.WorldInitAction;
+import com.oddlabs.tt.client.viewer.WorldInitAction;
+import com.oddlabs.tt.simulation.player.DefaultPlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.client.viewer.WorldStarter;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -267,11 +271,14 @@ public abstract class Menu extends CameraDelegate<Camera> {
             int gamespeed, @NonNull String map_code, MultiplayerLobby owner, @NonNull InGameInfo ingame_info,
             int max_unit_count) {
         GUIRoot gui_root = getGUIRoot();
-        Client client = new Client(null, network, gui, host_id, new WorldParameters(gamespeed, map_code,
-                Player.INITIAL_UNIT_COUNT,
-                max_unit_count),
-                ingame_info,
-                new DefaultWorldInitAction());
+        WorldParameters world_params = new WorldParameters(gamespeed, map_code, Player.INITIAL_UNIT_COUNT,
+                max_unit_count);
+        Client client = new Client(null, network, Renderer.getRenderer().getNetwork().getMatchmakingClient(), Renderer
+                .getRenderer().getNetwork().getChatHub(), host_id, world_params,
+                (session_id, generator, player_slots, unit_infos, player_slot) -> new WorldStarter(network, session_id,
+                        generator, world_params, player_slots, unit_infos, player_slot, ingame_info,
+                        new DefaultWorldInitAction()),
+                new DefaultPlayerSlotHandler());
         GameNetwork game_network = new GameNetwork(null, client);
         ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, true);
         client.setConfigurationListener(connecting_form);
@@ -285,11 +292,17 @@ public abstract class Menu extends CameraDelegate<Camera> {
             float hills, float vegetation_amount, float supplies_amount, int seed, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
         WorldGenerator generator = new IslandGenerator(terrain, meters_per_world, hills, vegetation_amount,
-                supplies_amount, seed);
+                supplies_amount, seed, Renderer.getRenderer().getSettings().getTexelsPerGridUnit());
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
-        final Server server = new Server(network, game, address, generator, multiplayer, ai_names);
-        Client client = new Client(server::close, network, gui_root.getGUI(), -1, world_params, ingame_info,
-                init_action);
+        final Server server = new Server(network, Renderer.getRenderer().getNetwork().getMatchmakingClient(), game,
+                address, generator, multiplayer, ai_names,
+                (team, race_val, name) -> new PlayerInfo(team, Race.fromValue(race_val), name),
+                new DefaultPlayerSlotHandler());
+        Client client = new Client(server::close, network, Renderer.getRenderer().getNetwork().getMatchmakingClient(),
+                Renderer.getRenderer().getNetwork().getChatHub(), -1, world_params,
+                (session_id, gen, player_slots, unit_infos, player_slot) -> new WorldStarter(network, session_id, gen,
+                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action),
+                new DefaultPlayerSlotHandler());
         GameNetwork game_network = new GameNetwork(server, client);
         ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, multiplayer);
         client.setConfigurationListener(connecting_form);

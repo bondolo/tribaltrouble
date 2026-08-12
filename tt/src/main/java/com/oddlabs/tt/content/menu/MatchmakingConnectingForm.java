@@ -8,7 +8,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;
 import com.oddlabs.tt.client.form.MessageForm;
 import com.oddlabs.tt.client.gui.CancelButton;
-import com.oddlabs.tt.client.gui.ChatRoomInfo;
+import com.oddlabs.tt.core.net.ChatRoomInfo;
 import com.oddlabs.tt.client.gui.Form;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.HorizButton;

@@ -5,6 +5,8 @@ import com.oddlabs.tt.client.render.UIRenderer;
 import org.jspecify.annotations.NonNull;
 
 @FunctionalInterface
-public interface LoadCallback {
-    UIRenderer load(@NonNull GUIRoot gui_root);
+public interface LoadCallback extends com.oddlabs.tt.core.util.LoadCallback<@NonNull GUIRoot, @NonNull UIRenderer> {
+    @Override
+    @NonNull
+    UIRenderer load(@NonNull GUIRoot root);
 }

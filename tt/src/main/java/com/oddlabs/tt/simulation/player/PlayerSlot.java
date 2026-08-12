@@ -1,11 +1,12 @@
-package com.oddlabs.tt.core.net;
+package com.oddlabs.tt.simulation.player;
 
 import com.oddlabs.matchmaking.TunnelAddress;
-import com.oddlabs.tt.simulation.player.PlayerInfo;
+import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
 import java.io.Serializable;
 
+/** Slot configuration holding player type, team, race, and readiness. */
 public final class PlayerSlot implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
@@ -30,47 +31,47 @@ public final class PlayerSlot implements Serializable {
     private int type = OPEN;
     private int rating;
     private boolean ready;
-    private PlayerInfo player_info;
+    private @Nullable PlayerInfo player_info;
     private TunnelAddress address;
     private int ai_difficulty = AI_NONE;
 
-    PlayerSlot(int slot) {
+    public PlayerSlot(int slot) {
         this.slot = slot;
     }
 
-    static boolean isValidType(int type) {
+    public static boolean isValidType(int type) {
         return type == HUMAN || type == AI/* || type == OPEN || type == CLOSED*/;
     }
 
-    void setRating(int rating) {
+    public void setRating(int rating) {
         this.rating = rating;
     }
 
-    void setType(int type) {
+    public void setType(int type) {
         this.type = type;
     }
 
-    void setAIDifficulty(int ai_difficulty) {
+    public void setAIDifficulty(int ai_difficulty) {
         this.ai_difficulty = ai_difficulty;
     }
 
-    void setAddress(TunnelAddress address) {
+    public void setAddress(TunnelAddress address) {
         this.address = address;
     }
 
-    void setReady(boolean ready) {
+    public void setReady(boolean ready) {
         this.ready = ready;
     }
 
-    int getSlot() {
+    public int getSlot() {
         return slot;
     }
 
-    void setInfo(PlayerInfo player_info) {
+    public void setInfo(@Nullable PlayerInfo player_info) {
         this.player_info = player_info;
     }
 
-    public PlayerInfo getInfo() {
+    public Serializable getInfo() {
         return player_info;
     }
 
@@ -92,5 +93,10 @@ public final class PlayerSlot implements Serializable {
 
     public int getRating() {
         return rating;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(player_info);
     }
 }

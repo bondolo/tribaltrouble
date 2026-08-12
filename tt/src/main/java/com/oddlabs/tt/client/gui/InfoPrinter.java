@@ -11,7 +11,8 @@ import org.jspecify.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class InfoPrinter extends GUIObject implements Animated, ChatListener {
+public final class InfoPrinter extends GUIObject implements Animated, ChatListener,
+        com.oddlabs.tt.core.util.InfoPrinter {
     private static final float SECONDS_PER_TIMEOUT = 8f;
     private static final Color.Linear PRIVATE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
     private static final Color.Linear TEAM_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
@@ -70,6 +71,7 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
         }
     }
 
+    @Override
     public void print(@NonNull String text) {
         print(text, Color.Linear.TRANSPARENT);
     }

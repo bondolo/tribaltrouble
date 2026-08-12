@@ -4,24 +4,29 @@ import com.oddlabs.net.ARMIEvent;
 import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.HostSequenceID;
-import com.oddlabs.tt.engine.render.Renderer;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 
 public final class TunnelledConnection extends AbstractConnection {
+    private final @NonNull MatchmakingClient matchmaking_client;
     private final HostSequenceID address;
     private boolean open = true;
 
-    public TunnelledConnection(HostSequenceID address, ConnectionInterface conn_interface) {
+    public TunnelledConnection(@NonNull MatchmakingClient matchmaking_client, HostSequenceID address,
+            ConnectionInterface conn_interface) {
+        this.matchmaking_client = matchmaking_client;
         setConnectionInterface(conn_interface);
         this.address = address;
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().registerTunnel(this.address, this);
+        matchmaking_client.registerTunnel(this.address, this);
         notifyConnected();
     }
 
-    public TunnelledConnection(int address, ConnectionInterface conn_interface) {
+    public TunnelledConnection(@NonNull MatchmakingClient matchmaking_client, int address,
+            ConnectionInterface conn_interface) {
+        this.matchmaking_client = matchmaking_client;
         setConnectionInterface(conn_interface);
-        this.address = Renderer.getRenderer().getNetwork().getMatchmakingClient().registerTunnel(address, this);
+        this.address = matchmaking_client.registerTunnel(address, this);
     }
 
     public void tunnelClosed() {
@@ -34,12 +39,12 @@ public final class TunnelledConnection extends AbstractConnection {
     }
 
     public void accept() {
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().acceptTunnel(address);
+        matchmaking_client.getInterface().acceptTunnel(address);
     }
 
     @Override
     public void handle(ARMIEvent event) {
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().routeEvent(address, event);
+        matchmaking_client.getInterface().routeEvent(address, event);
         writeBufferDrained();
     }
 
@@ -50,7 +55,7 @@ public final class TunnelledConnection extends AbstractConnection {
     @Override
     protected void doClose() {
         if (open) {
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().unregisterTunnel(address, this);
+            matchmaking_client.unregisterTunnel(address, this);
             open = false;
         }
     }

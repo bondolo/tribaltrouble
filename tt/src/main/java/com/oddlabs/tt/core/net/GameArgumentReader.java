@@ -8,10 +8,11 @@ import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Array;
 
-final class GameArgumentReader extends DefaultARMIArgumentReader {
+/** Deserializer for custom ARMI game command parameters. */
+public final class GameArgumentReader extends DefaultARMIArgumentReader {
     private final DistributableTable distributable_table;
 
-    GameArgumentReader(DistributableTable table) {
+    public GameArgumentReader(DistributableTable table) {
         this.distributable_table = table;
     }
 

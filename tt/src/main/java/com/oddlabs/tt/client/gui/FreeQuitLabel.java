@@ -3,12 +3,13 @@ package com.oddlabs.tt.client.gui;
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.core.net.PeerHub;
+import com.oddlabs.tt.simulation.network.PeerHub;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
+/** UI label indicating remaining time for a free match quit. */
 public final class FreeQuitLabel extends Label implements Animated {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(FreeQuitLabel.class.getName());
 

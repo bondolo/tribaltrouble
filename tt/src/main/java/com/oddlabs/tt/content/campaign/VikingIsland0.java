@@ -15,7 +15,7 @@ import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -30,6 +30,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/** Campaign level setup for Viking Island 0. */
 public final class VikingIsland0 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland0.class.getName());
 

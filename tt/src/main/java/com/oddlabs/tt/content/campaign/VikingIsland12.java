@@ -11,7 +11,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
@@ -23,6 +23,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
+/** Campaign level setup for Viking Island 12. */
 public final class VikingIsland12 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland12.class.getName());
 

@@ -2,13 +2,16 @@ package com.oddlabs.tt.core.net;
 
 import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.SequencedCollection;
 
+/**
+ * Base class for managing a rolling history of chat messages.
+ */
 public abstract class ChatHistory implements ChatListener {
     private static final int MAX_HISTORY = 50;
 
-    private final List<String> messages = new ArrayList<>(MAX_HISTORY);
+    private final SequencedCollection<@NonNull String> messages = new ArrayDeque<>(MAX_HISTORY);
 
     public final void clear() {
         messages.clear();
@@ -24,7 +27,7 @@ public abstract class ChatHistory implements ChatListener {
         messages.add(msg);
     }
 
-    final @NonNull List<String> getMessages() {
+    public final @NonNull SequencedCollection<@NonNull String> getMessages() {
         return messages;
     }
 }

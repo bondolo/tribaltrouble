@@ -1,26 +1,31 @@
 package com.oddlabs.tt.core.net;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Predicate;
 
+/** Event dispatcher broadcasting chat messages to registered listeners. */
 public final class ChatHub implements ChatListener {
-    private final List<ChatListener> listeners = new ArrayList<>();
+    private final CopyOnWriteArraySet<@NonNull ChatListener> listeners = new CopyOnWriteArraySet<>();
+    private @Nullable Predicate<String> ignore_filter;
 
-    public void addListener(ChatListener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
+    public void setIgnoreFilter(@Nullable Predicate<String> ignore_filter) {
+        this.ignore_filter = ignore_filter;
     }
 
-    public void removeListener(ChatListener listener) {
-        listeners.remove(listener);
+    public boolean addListener(@NonNull ChatListener listener) {
+        return listeners.add(listener);
+    }
+
+    public boolean removeListener(@NonNull ChatListener listener) {
+        return listeners.remove(listener);
     }
 
     @Override
     public void chat(@NonNull ChatMessage message) {
-        if (!ChatCommand.isIgnoring(message.nick())) {
+        if (ignore_filter == null || !ignore_filter.test(message.nick())) {
             listeners.forEach(listener -> listener.chat(message));
         }
     }

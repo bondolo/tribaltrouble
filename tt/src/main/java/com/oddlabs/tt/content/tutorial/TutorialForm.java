@@ -21,8 +21,8 @@ import com.oddlabs.tt.content.tutorial.trigger.SelectTowerTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialOverTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.net.PlayerSlot;
-import com.oddlabs.tt.core.net.WorldInitAction;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
@@ -39,6 +39,7 @@ import java.util.ResourceBundle;
 import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
 
+/** UI form displaying tutorial step instructions. */
 public final class TutorialForm extends Form {
     public static final int TUTORIAL_CAMERA = 1;
     public static final int TUTORIAL_QUARTERS = 2;

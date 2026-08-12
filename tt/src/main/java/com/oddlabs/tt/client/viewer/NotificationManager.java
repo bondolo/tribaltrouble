@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Manages the creation and lifecycle of all in-game notifications, such as attack warnings and beacon alerts.
  */
-public final class NotificationManager {
+public final class NotificationManager implements BeaconListener {
     private final List<@NonNull AttackNotification> attack_notifies = new ArrayList<>();
     private final List<@NonNull Notification> notifies = new ArrayList<>();
     private final GUIRoot gui_root;
@@ -44,6 +44,7 @@ public final class NotificationManager {
         newNotification(manager, local_player, s.getPositionX(), s.getPositionY(), Color.Standard.GREEN, false);
     }
 
+    @Override
     public void newBeacon(@NonNull AnimationManager manager, @NonNull Player local_player, float x, float y) {
         newNotification(manager, local_player, x, y, Color.Standard.BLUE, true);
     }

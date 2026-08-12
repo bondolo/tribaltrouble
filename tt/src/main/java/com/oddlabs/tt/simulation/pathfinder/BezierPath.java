@@ -1,4 +1,4 @@
-package com.oddlabs.tt.core.util;
+package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.simulation.landscape.HeightQuery;

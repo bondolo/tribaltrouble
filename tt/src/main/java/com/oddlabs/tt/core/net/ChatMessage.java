@@ -1,7 +1,9 @@
 package com.oddlabs.tt.core.net;
 
+import com.oddlabs.tt.core.util.SpamFilter;
 import org.jspecify.annotations.NonNull;
 
+/** Record representing a structured chat message payload. */
 public record ChatMessage(@NonNull String nick, @NonNull String message, @NonNull Type type) {
     public enum Type {
         NORMAL,

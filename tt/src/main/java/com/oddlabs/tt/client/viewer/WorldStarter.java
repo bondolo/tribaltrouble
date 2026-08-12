@@ -1,20 +1,19 @@
-package com.oddlabs.tt.core.net;
+package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.Participant;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.client.form.LoadCallback;
 import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.render.UIRenderer;
+import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.core.world.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.client.render.UIRenderer;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
-import com.oddlabs.tt.client.viewer.InGameInfo;
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -25,7 +24,7 @@ import java.util.List;
  * Triggers world loading, initializes players and matchmaking session information,
  * and sets up the active gameplay session once loading is complete.
  */
-final class WorldStarter implements LoadCallback {
+public final class WorldStarter implements LoadCallback {
     private final UnitInfo[] unit_infos;
     private final PlayerSlot[] player_slots;
     private final short player_slot;
@@ -36,7 +35,8 @@ final class WorldStarter implements LoadCallback {
     private final @Nullable WorldInitAction initial_action;
     private final int session_id;
 
-    WorldStarter(NetworkSelector network, int session_id, WorldGenerator generator, WorldParameters world_params,
+    public WorldStarter(NetworkSelector network, int session_id, @NonNull WorldGenerator generator,
+            WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
             @Nullable WorldInitAction initial_action) {
         this.initial_action = initial_action;
@@ -76,7 +76,7 @@ final class WorldStarter implements LoadCallback {
             GameSession game_session = new GameSession(session_id, participants, ingame_info.isRated());
             Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
         }
-        IO.println("PeerHub created (session_id = " + session_id + ") Player list:");
+        System.out.println("PeerHub created (session_id = " + session_id + ") Player list:");
         return viewer.getRenderer();
     }
 
