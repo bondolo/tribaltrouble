@@ -3,7 +3,6 @@ package com.oddlabs.tt.content.tutorial;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.form.TutorialForm;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;
 import com.oddlabs.tt.engine.render.Renderer;

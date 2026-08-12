@@ -5,8 +5,6 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Difficulty;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.client.form.CampaignDialogForm;
-import com.oddlabs.tt.client.form.InGameCampaignDialogForm;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.simulation.model.Terrain;

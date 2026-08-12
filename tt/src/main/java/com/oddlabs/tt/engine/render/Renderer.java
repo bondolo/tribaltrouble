@@ -15,7 +15,7 @@ import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.audio.openal.OpenALManager;
 import com.oddlabs.tt.client.camera.MenuCamera;
-import com.oddlabs.tt.client.delegate.MainMenu;
+import com.oddlabs.tt.content.menu.MainMenu;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.InGameDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;

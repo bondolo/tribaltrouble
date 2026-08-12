@@ -1,0 +1,108 @@
+package com.oddlabs.tt.content.menu;
+
+import com.oddlabs.matchmaking.MatchmakingServerInterface;
+import com.oddlabs.tt.client.delegate.Menu;
+import com.oddlabs.tt.client.gui.ButtonObject;
+import com.oddlabs.tt.client.gui.CancelButton;
+import com.oddlabs.tt.client.gui.EditLine;
+import com.oddlabs.tt.client.gui.FocusDirection;
+import com.oddlabs.tt.client.gui.Form;
+import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.client.gui.Label;
+import com.oddlabs.tt.client.gui.MouseButton;
+import com.oddlabs.tt.client.gui.OKButton;
+import com.oddlabs.tt.client.gui.Origin;
+import com.oddlabs.tt.client.gui.Skin;
+import com.oddlabs.tt.client.guievent.EnterListener;
+import com.oddlabs.tt.client.guievent.MouseClickListener;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.core.util.Utils;
+import org.jspecify.annotations.NonNull;
+
+import java.util.ResourceBundle;
+
+import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
+
+public final class CreateChatRoomForm extends Form {
+    private static final int BUTTON_WIDTH = 100;
+    private static final int EDITLINE_WIDTH = 240;
+
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(CreateChatRoomForm.class.getName());
+
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+        return Utils.getBundleString(bundle, key, args);
+    }
+
+    private final SelectGameMenu menu;
+    private final GUIRoot gui_root;
+    private final Menu main_menu;
+
+    private final @NonNull EditLine editline_room_name;
+
+    public CreateChatRoomForm(GUIRoot gui_root, Menu main_menu, SelectGameMenu menu) {
+        this.menu = menu;
+        this.gui_root = gui_root;
+        this.main_menu = main_menu;
+
+        // headline
+        Label label_headline = new Label(i18n("caption"), Skin.getSkin().getHeadlineFont());
+        addChild(label_headline);
+
+        // name
+        CreateListener create_listener = new CreateListener();
+        Label name_label = new Label(i18n("room_name"), Skin.getSkin().getEditFont());
+        editline_room_name = new EditLine(EDITLINE_WIDTH, 200);
+        editline_room_name.addEnterListener(create_listener);
+        addChild(name_label);
+        addChild(editline_room_name);
+
+        // buttons
+        ButtonObject button_ok = new OKButton(BUTTON_WIDTH);
+        button_ok.addMouseClickListener(create_listener);
+        addChild(button_ok);
+        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
+        addChild(button_cancel);
+
+        // place
+        label_headline.place();
+        editline_room_name.place(label_headline, BOTTOM_LEFT);
+        name_label.place(editline_room_name, LEFT_MID);
+
+        button_cancel.place(Origin.AT_END);
+        button_ok.place(button_cancel, LEFT_MID);
+
+        compileCanvas();
+        centerPos();
+    }
+
+    @Override
+    public void setFocus(@NonNull FocusDirection direction) {
+        if (direction == FocusDirection.BACKWARD) {
+            super.setFocus(direction);
+        } else {
+            editline_room_name.setFocus(direction);
+        }
+    }
+
+    private void create() {
+        String name = editline_room_name.getContents().trim();
+        if (name.length() >= MatchmakingServerInterface.MIN_ROOM_NAME_LENGTH) {
+            remove();
+            Renderer.getRenderer().getNetwork().getMatchmakingClient().joinRoom(gui_root, name);
+        }
+    }
+
+    private final class CreateListener implements MouseClickListener, EnterListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            create();
+        }
+
+        @Override
+        public void enterPressed(@NonNull CharSequence text) {
+            create();
+        }
+    }
+}

@@ -2,7 +2,7 @@ package com.oddlabs.tt.content.tutorial.trigger;
 
 import com.oddlabs.tt.content.tutorial.Tutorial;
 
-import com.oddlabs.tt.client.form.TutorialForm;
+import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.model.Building;
 import org.jspecify.annotations.NonNull;
 

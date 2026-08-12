@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.client.form.ProgressForm;
+import com.oddlabs.tt.core.util.ProgressListener;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
@@ -28,7 +28,7 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
 
     public LandscapeResources(@NonNull RenderQueues queues) {
         int num_progress = 13;
-        ProgressForm.progress(10f / num_progress);
+        ProgressListener.progress(10f / num_progress);
 
         var fragments = IntStream.rangeClosed(1, SUPPLY_FRAGMENT_COUNT)
                 .mapToObj(i -> String.format("/geometry/misc/rock_%d.binsprite", i))
@@ -42,7 +42,7 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
         iron_fragment_sprites = Arrays.stream(fragments)
                 .map(spriteFile -> queues.register(spriteFile, 1))
                 .toArray(SpriteKey[]::new);
-        ProgressForm.progress(1f / num_progress);
+        ProgressListener.progress(1f / num_progress);
 
         plant_sprites.put(
                 Terrain.NATIVE, IntStream.rangeClosed(1, 4)
@@ -56,14 +56,14 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
                         .map(rsrc -> new SpriteFile(rsrc, Globals.NO_MIPMAP_CUTOFF, true, false, true, true, true))
                         .map(queues::register)
                         .toArray(SpriteKey[]::new));
-        ProgressForm.progress(1f / num_progress);
+        ProgressListener.progress(1f / num_progress);
 
         SpriteFile sprite_list_chicken = new SpriteFile("/geometry/misc/chicken.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         chicken = queues.register(sprite_list_chicken);
 
-        ProgressForm.progress(1f / num_progress);
+        ProgressListener.progress(1f / num_progress);
     }
 
     public @NonNull SpriteKey getChicken() {

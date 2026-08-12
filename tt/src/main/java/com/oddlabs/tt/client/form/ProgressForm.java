@@ -14,6 +14,7 @@ import com.oddlabs.tt.client.gui.ProgressBarInfo;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.render.UIRenderer;
+import com.oddlabs.tt.core.util.ProgressListener;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -63,6 +64,13 @@ public final class ProgressForm {
 
     public static @Nullable Runnable setProgressForm(@NonNull NetworkSelector network, final @NonNull GUI gui,
             final @NonNull LoadCallback callback, final boolean first_progress) {
+        ProgressListener.setListener(step -> {
+            if (step > 0f) {
+                progress(step);
+            } else {
+                progress();
+            }
+        });
         String texture;
         int texture_width;
         int texture_height;

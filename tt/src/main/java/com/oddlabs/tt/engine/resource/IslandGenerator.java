@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.resource;
 
-import com.oddlabs.tt.client.form.ProgressForm;
+import com.oddlabs.tt.core.util.ProgressListener;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
@@ -109,7 +109,7 @@ public final class IslandGenerator implements WorldGenerator {
         time_after = Instant.now();
         IO.println("Landscape baked in " + Duration.between(time_before, time_after));
 
-        ProgressForm.progress();
+        ProgressListener.progress();
         return new WorldInfo<>(terrain, meters_per_world, landscape.getSeaLevelMeters(),
                 colormap_size, chunks_per_colormap, null, maps, detail, detailNormal,
                 landscape.getHeight(),
