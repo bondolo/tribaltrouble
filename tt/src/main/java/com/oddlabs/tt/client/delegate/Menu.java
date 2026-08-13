@@ -274,7 +274,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         WorldParameters world_params = new WorldParameters(gamespeed, map_code, Player.INITIAL_UNIT_COUNT,
                 max_unit_count);
         Client client = new Client(null, network, Renderer.getRenderer().getNetwork().getMatchmakingClient(), Renderer
-                .getRenderer().getNetwork().getChatHub(), host_id, world_params,
+                .getRenderer().getNetwork().getChatHub(), host_id,
                 (session_id, generator, player_slots, unit_infos, player_slot) -> new WorldStarter(network, session_id,
                         generator, world_params, player_slots, unit_infos, player_slot, ingame_info,
                         new DefaultWorldInitAction()),
@@ -299,7 +299,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 (team, race_val, name) -> new PlayerInfo(team, Race.fromValue(race_val), name),
                 new DefaultPlayerSlotHandler());
         Client client = new Client(server::close, network, Renderer.getRenderer().getNetwork().getMatchmakingClient(),
-                Renderer.getRenderer().getNetwork().getChatHub(), -1, world_params,
+                Renderer.getRenderer().getNetwork().getChatHub(), -1,
                 (session_id, gen, player_slots, unit_infos, player_slot) -> new WorldStarter(network, session_id, gen,
                         world_params, player_slots, unit_infos, player_slot, ingame_info, init_action),
                 new DefaultPlayerSlotHandler());

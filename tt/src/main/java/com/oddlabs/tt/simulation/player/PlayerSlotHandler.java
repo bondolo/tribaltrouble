@@ -1,11 +1,13 @@
-package com.oddlabs.tt.net;
+package com.oddlabs.tt.simulation.player;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serializable;
 
-/** Interface for manipulating player slot configuration state. */
+/**
+ * Interface for manipulating player slot configuration state.
+ */
 public interface PlayerSlotHandler {
     Serializable createSlot(int slot);
 

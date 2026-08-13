@@ -1,5 +1,6 @@
 package com.oddlabs.tt.net;
 
+import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.util.HashTable;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -7,6 +8,9 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Maps distributable simulation objects to integer identifiers for ARMI serialization.
+ */
 public final class DistributableTable {
     private final HashTable<@NonNull Distributable> distributables = new HashTable<>();
     private final Map<@NonNull Distributable, @NonNull Integer> names = new HashMap<>();

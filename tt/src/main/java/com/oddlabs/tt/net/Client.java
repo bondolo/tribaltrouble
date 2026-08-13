@@ -16,11 +16,11 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.core.util.LoadCallback;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
@@ -34,7 +34,6 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     private final @NonNull AbstractConnection connection;
 
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameClientInterface.class);
-    private final Serializable world_params;
     private final @NonNull GameServerInterface gameserver_interface;
     private final UnitInfo @NonNull [] unit_infos;
     private final @Nullable LoadCallbackFactory starter_factory;
@@ -43,24 +42,20 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     private final @NonNull NetworkSelector network;
     private final Runnable cleanup_action;
     private int state = CONNECTING;
-    private int session_id;
 
     private @Nullable WorldGenerator generator = null;
 
     private PlayerSlot[] player_slots;
     private short player_slot = -1;
-    private boolean error_while_fading;
     private ConfigurationListener configuration_listener;
 
     public Client(Runnable cleanup_action, @NonNull NetworkSelector network,
             @Nullable MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
-            Serializable world_params, @Nullable LoadCallbackFactory starter_factory,
-            @NonNull PlayerSlotHandler slot_handler) {
+            @Nullable LoadCallbackFactory starter_factory, @NonNull PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.cleanup_action = cleanup_action;
         this.network = network;
         this.chat_hub = chat_hub;
-        this.world_params = world_params;
         this.starter_factory = starter_factory;
         if (host_id != -1)
             this.connection = new TunnelledConnection(matchmaking_client, host_id, this);
@@ -134,7 +129,6 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
         if (state != NEGOTIATING)
             return;
         close();
-        this.session_id = session_id;
         LoadCallback<?, ?> starter = starter_factory != null
                 ? starter_factory.createCallback(session_id, generator, player_slots, unit_infos, player_slot)
                 : null;

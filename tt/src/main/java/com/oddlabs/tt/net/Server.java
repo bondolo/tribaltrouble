@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.ResourceBundle;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.player.PlayerSlotHandler;
 import java.util.stream.IntStream;
 
 /** Network server host managing client connections and slot allocation. */
