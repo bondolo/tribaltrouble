@@ -30,6 +30,17 @@ public interface ModelClient extends ClientState, AutoCloseable {
     void addLightningStrike(float targetX, float targetY, float targetZ);
 
     /**
+     * Spawns a visual sonic blast expanding shockwave ring from this model.
+     *
+     * @param targetX The origin X coordinate.
+     * @param targetY The origin Y coordinate.
+     * @param targetZ The origin Z coordinate.
+     * @param radius The maximum shockwave radius.
+     * @param duration The duration of the shockwave expansion in seconds.
+     */
+    void addSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration);
+
+    /**
      * Cleans up any resources (like active audio loops) associated with the client-side model.
      */
     @Override

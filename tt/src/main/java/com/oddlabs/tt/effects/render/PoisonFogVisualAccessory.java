@@ -8,7 +8,7 @@ import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.PointEmitterModel;
+import com.oddlabs.tt.effects.particle.PointEmitterModel;
 import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.engine.resource.AudioAssets;

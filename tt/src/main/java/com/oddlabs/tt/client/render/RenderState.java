@@ -15,7 +15,7 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
-import com.oddlabs.tt.simulation.model.PointEmitterModel;
+import com.oddlabs.tt.effects.particle.PointEmitterModel;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SceneryModel;
@@ -159,7 +159,6 @@ public final class RenderState {
 
     private void visitSonicBlast(final @NonNull SonicBlast blast) {
         if (picking) return;
-        sonic_blast_queue.add(blast.getSonicBlastEffect());
         float z_offset = getVisuallyCorrectHeight(blast.getPositionX(), blast.getPositionY());
         ElementRenderState<SonicBlast> state = (ElementRenderState<SonicBlast>) getCachedState(
                 WhiteModelVisitor.getInstance(), blast, z_offset);

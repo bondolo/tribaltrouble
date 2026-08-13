@@ -234,6 +234,10 @@ public abstract class Emitter<P extends Particle> implements Animated {
         this.position = position;
     }
 
+    public final void setPosition(float x, float y, float z) {
+        this.position.set(x, y, z);
+    }
+
     public final @NonNull Vector3f getPosition() {
         return position;
     }

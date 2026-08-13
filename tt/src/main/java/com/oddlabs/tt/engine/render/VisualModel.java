@@ -70,4 +70,13 @@ public final class VisualModel implements ModelClient {
             }
         }
     }
+
+    @Override
+    public void addSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration) {
+        for (Accessory acc : accessories) {
+            if (acc instanceof SonicBlastVisualAccessory blastAcc) {
+                blastAcc.triggerBlast(targetX, targetY, targetZ, radius, duration);
+            }
+        }
+    }
 }

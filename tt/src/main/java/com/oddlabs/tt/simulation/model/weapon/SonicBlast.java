@@ -4,15 +4,12 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.model.BoundingBox;
-import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
 
 /**
  * Logic controller for the Sonic Blast magic effect.
@@ -32,7 +29,6 @@ public final class SonicBlast extends Model implements Magic {
 
     private float time = 0f;
     private final @NonNull Iterable<? extends Selectable<?>> blast_targets;
-    private final @NonNull SonicBlastEffect sonicBlastEffect;
 
     public SonicBlast(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance_closest,
             float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, @NonNull Unit src) {
@@ -59,17 +55,24 @@ public final class SonicBlast extends Model implements Magic {
                 .getPositionY()));
         blast_targets = filter.getResult();
 
-        sonicBlastEffect = new SonicBlastEffect(owner.getWorld(), new Vector3f(start_x, start_y, start_z), hit_radius,
-                seconds);
-
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
+        getClientState(ModelClient.class).ifPresent(client -> client.addSonicBlast(start_x, start_y, start_z,
+                hit_radius, seconds));
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+        getClientState(ModelClient.class).ifPresent(ModelClient::close);
     }
 
     @Override
     public void animate(float t) {
         time = Math.min(time + t, seconds);
         if (time >= seconds) {
-            owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+            remove();
+            return;
         }
         animateClientState(t);
 
@@ -108,13 +111,12 @@ public final class SonicBlast extends Model implements Magic {
 
     @Override
     public void interrupt() {
-        sonicBlastEffect.abort();
-        getClientState(ModelClient.class).ifPresent(ModelClient::close);
+        remove();
     }
 
     @Override
     public boolean isFinished() {
-        return time >= seconds && sonicBlastEffect.isFinished();
+        return time >= seconds;
     }
 
     @Override
@@ -122,7 +124,11 @@ public final class SonicBlast extends Model implements Magic {
         return null;
     }
 
-    public @NonNull SonicBlastEffect getSonicBlastEffect() {
-        return sonicBlastEffect;
+    public float getHitRadius() {
+        return hit_radius;
+    }
+
+    public float getSeconds() {
+        return seconds;
     }
 }
