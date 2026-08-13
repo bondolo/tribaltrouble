@@ -14,7 +14,7 @@ import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.core.net.GameNetwork;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;

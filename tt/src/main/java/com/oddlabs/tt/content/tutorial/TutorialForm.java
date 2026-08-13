@@ -20,7 +20,7 @@ import com.oddlabs.tt.content.tutorial.trigger.SelectArmoryTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.SelectTowerTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialOverTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
-import com.oddlabs.tt.core.net.GameNetwork;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.core.util.Utils;

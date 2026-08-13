@@ -10,7 +10,7 @@ import com.oddlabs.tt.client.render.UIRenderer;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.core.world.WorldGenerator;
+import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;

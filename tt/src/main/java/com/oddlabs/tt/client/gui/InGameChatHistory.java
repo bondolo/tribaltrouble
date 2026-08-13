@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.core.net.ChatHistory;
-import com.oddlabs.tt.core.net.ChatMessage;
+import com.oddlabs.tt.net.ChatHistory;
+import com.oddlabs.tt.net.ChatMessage;
 import org.jspecify.annotations.NonNull;
 
 /** History log for in-game chat messages. */

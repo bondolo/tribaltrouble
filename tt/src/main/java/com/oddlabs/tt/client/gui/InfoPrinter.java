@@ -2,8 +2,8 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.engine.font.Font;
-import com.oddlabs.tt.core.net.ChatListener;
-import com.oddlabs.tt.core.net.ChatMessage;
+import com.oddlabs.tt.net.ChatListener;
+import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

@@ -17,6 +17,7 @@ import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.ActionButtonPanel;
+import com.oddlabs.tt.client.gui.ChatCommand;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
@@ -25,8 +26,8 @@ import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.core.net.DistributableTable;
-import com.oddlabs.tt.simulation.network.PeerHub;
+import com.oddlabs.tt.net.DistributableTable;
+import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.AdvancedAI;
@@ -45,9 +46,9 @@ import com.oddlabs.tt.client.render.RacesVisualsLoader;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.core.world.WorldGenerator;
+import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.core.net.ServerMessageBundler;
+import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.core.util.Utils;
@@ -174,6 +175,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 useNetwork.getMatchmakingClient(), useNetwork.getChatHub(),
                 distributable_table, session_id,
                 new ViewerStallHandler(this));
+        this.peerhub.setIgnoreFilter(ChatCommand::isIgnoring);
         this.camera = new GameCamera(this, camera_state);
         this.panel = new ActionButtonPanel(this, camera);
         this.delegate = new SelectionDelegate(this, camera);

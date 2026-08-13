@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.gui;
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.network.PeerHub;
+import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 

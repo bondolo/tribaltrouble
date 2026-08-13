@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Landscape;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.core.world.WorldGenerator;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;

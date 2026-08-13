@@ -8,11 +8,11 @@ import com.oddlabs.tt.client.gui.HorizButton;
 import com.oddlabs.tt.client.gui.Label;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.core.net.Client;
-import com.oddlabs.tt.core.net.ConfigurationListener;
-import com.oddlabs.tt.core.net.GameNetwork;
+import com.oddlabs.tt.net.Client;
+import com.oddlabs.tt.net.ConfigurationListener;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.core.world.WorldGenerator;
+import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
 
