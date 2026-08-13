@@ -1,14 +1,20 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.client.form.ProgressForm;
-import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.client.gui.GUIIcons;
+import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.effects.render.*;
+import com.oddlabs.tt.engine.audio.AudioParameters;
+import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
+import com.oddlabs.tt.engine.procedural.GeneratorHalos;
+import com.oddlabs.tt.engine.procedural.GeneratorLightning;
+import com.oddlabs.tt.engine.procedural.GeneratorPoison;
+import com.oddlabs.tt.engine.procedural.GeneratorSmoke;
+import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.SpriteFile;
+import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.BuildingTemplate;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -43,15 +49,6 @@ import com.oddlabs.tt.simulation.model.weapon.ThrowingFactory;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
 import com.oddlabs.tt.simulation.player.NativeChieftainAI;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
-import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
-import com.oddlabs.tt.engine.procedural.GeneratorHalos;
-import com.oddlabs.tt.engine.procedural.GeneratorLightning;
-import com.oddlabs.tt.engine.procedural.GeneratorPoison;
-import com.oddlabs.tt.engine.procedural.GeneratorSmoke;
-import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.engine.resource.SpriteFile;
-import com.oddlabs.tt.engine.resource.TextureFile;
-import com.oddlabs.tt.core.util.Utils;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -63,10 +60,10 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
- * Loader class that centralizes client-side graphics asset registration and template loading.
+ * Loader class that centralizes client-side graphics and audio asset registration and template loading.
  */
-public final class RacesVisualsLoader {
-    private static final Logger logger = Logger.getLogger(RacesVisualsLoader.class.getSimpleName());
+public final class RacesAssetsLoader {
+    private static final Logger logger = Logger.getLogger(RacesAssetsLoader.class.getSimpleName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
 
     private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
@@ -129,8 +126,8 @@ public final class RacesVisualsLoader {
         SpriteKey halfbuiltSprite = queues.register(building_halfbuilt);
         SpriteKey startSprite = queues.register(building_start);
 
-        VisualRegistry.getInstance().registerBuilding(race, building_type,
-                new VisualRegistry.BuildingVisuals(startSprite, halfbuiltSprite, builtSprite, shadow_renderer));
+        AssetRegistry.getInstance().registerBuilding(race, building_type,
+                new AssetRegistry.BuildingVisuals(startSprite, halfbuiltSprite, builtSprite, shadow_renderer));
 
         return new BuildingTemplate(building_type,
                 placing_size,
@@ -178,7 +175,7 @@ public final class RacesVisualsLoader {
         nativeMap.put(SupplyType.IRON, queues.register(native_rock_sprite, 1));
         nativeMap.put(SupplyType.RUBBER, queues.register(native_rubber_sprite));
         for (var entry : nativeMap.entrySet()) {
-            VisualRegistry.getInstance().registerCarriedSupply(Race.NATIVES, entry.getKey(), entry.getValue());
+            AssetRegistry.getInstance().registerCarriedSupply(Race.NATIVES, entry.getKey(), entry.getValue());
         }
 
         SpriteFile viking_wood_sprite = new SpriteFile("/geometry/vikings/wood_resource.binsprite",
@@ -198,23 +195,23 @@ public final class RacesVisualsLoader {
         vikingMap.put(SupplyType.IRON, queues.register(viking_rock_sprite, 1));
         vikingMap.put(SupplyType.RUBBER, queues.register(viking_rubber_sprite));
         for (var entry : vikingMap.entrySet()) {
-            VisualRegistry.getInstance().registerCarriedSupply(Race.VIKINGS, entry.getKey(), entry.getValue());
+            AssetRegistry.getInstance().registerCarriedSupply(Race.VIKINGS, entry.getKey(), entry.getValue());
         }
 
         TextureKey[] smoke_textures = new TextureKey[1];
         smoke_textures[0] = queues.registerEffectTexture(new GeneratorSmoke(42, 0.6f, 1.0f), 0, 0);
-        VisualRegistry.getInstance().registerSmokeTextures(smoke_textures);
+        AssetRegistry.getInstance().registerSmokeTextures(smoke_textures);
 
         TextureKey[] damage_smoke_textures = new TextureKey[1];
         damage_smoke_textures[0] = queues.registerEffectTexture(new GeneratorSmoke(43, 1.0f, 0.5f), 0, 1);
-        VisualRegistry.getInstance().registerDamageSmokeTextures(damage_smoke_textures);
+        AssetRegistry.getInstance().registerDamageSmokeTextures(damage_smoke_textures);
 
         TextureKey[] poison_textures = new TextureKey[1];
         poison_textures[0] = queues.registerEffectTexture(new GeneratorPoison(), 0, 2);
-        VisualRegistry.getInstance().registerPoisonTextures(poison_textures);
+        AssetRegistry.getInstance().registerPoisonTextures(poison_textures);
 
         TextureKey lightning_texture = queues.registerEffectTexture(new GeneratorLightning(), 0, 3);
-        VisualRegistry.getInstance().registerLightningTexture(lightning_texture);
+        AssetRegistry.getInstance().registerLightningTexture(lightning_texture);
 
         TextureKey[] note_textures = new TextureKey[8];
         for (int i = 0; i < note_textures.length; i++) {
@@ -222,13 +219,13 @@ public final class RacesVisualsLoader {
                     Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                     GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 4 + i);
         }
-        VisualRegistry.getInstance().registerNoteTextures(note_textures);
+        AssetRegistry.getInstance().registerNoteTextures(note_textures);
 
         TextureKey[] star_textures = new TextureKey[1];
         star_textures[0] = queues.registerEffectTexture(new TextureFile("/textures/effects/star",
                 Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 12);
-        VisualRegistry.getInstance().registerStarTextures(star_textures);
+        AssetRegistry.getInstance().registerStarTextures(star_textures);
 
         queues.ensureTextureArray();
 
@@ -384,41 +381,41 @@ public final class RacesVisualsLoader {
 
         WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f,
                 RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
-        VisualRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.ROCK,
+        AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.ROCK,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_ROCK.getValue()));
 
         WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f,
                 RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
-        VisualRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.IRON,
+        AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.IRON,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_IRON.getValue()));
 
         WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new,
                 0.95f, RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
-        VisualRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.RUBBER,
+        AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.RUBBER,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_RUBBER.getValue()));
 
         WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new,
                 0.5f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
                 AudioAssets.SFX_IMPACT_MEATS);
-        VisualRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.ROCK,
+        AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.ROCK,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_ROCK.getValue()));
 
         WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new,
                 0.75f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
                 AudioAssets.SFX_IMPACT_MEATS);
-        VisualRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.IRON,
+        AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.IRON,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_IRON.getValue()));
 
         WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class,
                 RubberSpearWeapon::new,
                 0.95f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
                 AudioAssets.SFX_IMPACT_MEATS);
-        VisualRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.RUBBER,
+        AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.RUBBER,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue()));
 
         ProgressForm.progress(1f / num_progress);
-        ShadowListKey default_shadow_list = queues.registerSelectableShadowList(VisualRegistry.DEFAULT_SHADOW_DESC);
-        VisualRegistry.getInstance().registerDefaultUnitShadow(default_shadow_list);
+        ShadowListKey default_shadow_list = queues.registerSelectableShadowList(AssetRegistry.DEFAULT_SHADOW_DESC);
+        AssetRegistry.getInstance().registerDefaultUnitShadow(default_shadow_list);
         SpriteKey vRockSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_ROCK.getValue());
         UnitTemplate viking_warrior_rock_template = new UnitTemplate(.4f,
                 1.2f,
@@ -439,7 +436,7 @@ public final class RacesVisualsLoader {
                 1,
                 0f, 0f, 2f,
                 3);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_ROCK, vRockSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_ROCK, vRockSprite);
 
         SpriteKey vIronSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_IRON.getValue());
         UnitTemplate viking_warrior_iron_template = new UnitTemplate(.4f,
@@ -461,7 +458,7 @@ public final class RacesVisualsLoader {
                 1,
                 0f, 0f, 2f,
                 5);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_IRON, vIronSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_IRON, vIronSprite);
 
         SpriteKey vRubberSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_RUBBER.getValue());
         UnitTemplate viking_warrior_rubber_template = new UnitTemplate(.4f,
@@ -483,7 +480,7 @@ public final class RacesVisualsLoader {
                 1,
                 0f, 0f, 2f,
                 10);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_RUBBER, vRubberSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_RUBBER, vRubberSprite);
 
         SpriteKey nRockSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_ROCK.getValue());
         UnitTemplate native_warrior_rock_template = new UnitTemplate(.4f,
@@ -505,7 +502,7 @@ public final class RacesVisualsLoader {
                 1,
                 0f, 0f, 2f,
                 3);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_ROCK, nRockSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_ROCK, nRockSprite);
 
         SpriteKey nIronSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_IRON.getValue());
         UnitTemplate native_warrior_iron_template = new UnitTemplate(.4f,
@@ -527,7 +524,7 @@ public final class RacesVisualsLoader {
                 1,
                 0f, 0f, 2f,
                 5);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_IRON, nIronSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_IRON, nIronSprite);
 
         SpriteKey nRubberSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_RUBBER.getValue());
         UnitTemplate native_warrior_rubber_template = new UnitTemplate(.4f,
@@ -549,7 +546,7 @@ public final class RacesVisualsLoader {
                 1,
                 0f, 0f, 2f,
                 10);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_RUBBER, nRubberSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_RUBBER, nRubberSprite);
 
         SpriteKey vPeonSprite = queues.register(sprite_list_peon);
         UnitTemplate viking_peon_template = new UnitTemplate(.4f,
@@ -571,7 +568,7 @@ public final class RacesVisualsLoader {
                 1,
                 .1f, 0f, 1.75f,
                 1);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.PEON, vPeonSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.PEON, vPeonSprite);
 
         SpriteKey nPeonSprite = queues.register(sprite_list_native_peon);
         UnitTemplate native_peon_template = new UnitTemplate(.4f,
@@ -593,7 +590,7 @@ public final class RacesVisualsLoader {
                 1,
                 0f, 0f, 1.75f,
                 1);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.PEON, nPeonSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.PEON, nPeonSprite);
 
         SpriteKey vChieftainSprite = queues.register(sprite_list_chieftain);
         UnitTemplate viking_chieftain_template = new UnitTemplate(.4f,
@@ -615,7 +612,7 @@ public final class RacesVisualsLoader {
                 RacesResources.VIKING_CHIEFTAIN_HIT_POINTS,
                 -.07f, .312f, 2.7f,
                 40);
-        VisualRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.CHIEFTAIN, vChieftainSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.CHIEFTAIN, vChieftainSprite);
 
         SpriteKey nChieftainSprite = queues.register(sprite_list_native_chieftain);
         UnitTemplate native_chieftain_template = new UnitTemplate(.4f,
@@ -637,7 +634,7 @@ public final class RacesVisualsLoader {
                 RacesResources.NATIVE_CHIEFTAIN_HIT_POINTS,
                 .878f, .151f, 2.8f,
                 40);
-        VisualRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.CHIEFTAIN, nChieftainSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.CHIEFTAIN, nChieftainSprite);
 
         EnumMap<MagicType, MagicFactory> native_magic = new EnumMap<>(MagicType.class);
         native_magic.put(MagicType.POISON_FOG, new PoisonFogFactory(0.9f, 0f, 0.55f, 26f, .5f, 2f, 20f, 10, 5f, 80f
@@ -658,7 +655,7 @@ public final class RacesVisualsLoader {
         SpriteKey nativeRallyPoint = queues.register(new SpriteFile("/geometry/natives/rally_point.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
-        VisualRegistry.getInstance().registerRallyPoint(Race.NATIVES, nativeRallyPoint);
+        AssetRegistry.getInstance().registerRallyPoint(Race.NATIVES, nativeRallyPoint);
 
         RaceInfo natives_raceInfo = new RaceInfo(
                 Race.NATIVES,
@@ -670,15 +667,24 @@ public final class RacesVisualsLoader {
                 native_warrior_rubber_template,
                 native_peon_template,
                 native_chieftain_template,
-                AudioAssets.SFX_ATTACKNOTIFY_NATIVE,
-                AudioAssets.SFX_BUILDINGNOTIFY_NATIVE,
                 native_magic,
-                new NativeChieftainAI(),
+                new NativeChieftainAI());
+
+        AssetRegistry.getInstance().registerRaceAudio(
+                Race.NATIVES,
+                new AudioParameters(AudioAssets.SFX_ATTACKNOTIFY_NATIVE, AudioAssets.AUDIO_RANK_NOTIFICATION,
+                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
+                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                        1f, false, true),
+                new AudioParameters(AudioAssets.SFX_BUILDINGNOTIFY_NATIVE, AudioAssets.AUDIO_RANK_NOTIFICATION,
+                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
+                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                        1f, false, true),
                 AudioAssets.MUSIC_NATIVE);
 
         SpriteKey vikingRallyPoint = queues.register(new SpriteFile("/geometry/vikings/rally_point.binsprite",
                 Globals.NO_MIPMAP_CUTOFF, true, true, true, false));
-        VisualRegistry.getInstance().registerRallyPoint(Race.VIKINGS, vikingRallyPoint);
+        AssetRegistry.getInstance().registerRallyPoint(Race.VIKINGS, vikingRallyPoint);
 
         RaceInfo vikings_raceInfo = new RaceInfo(
                 Race.VIKINGS,
@@ -690,10 +696,19 @@ public final class RacesVisualsLoader {
                 viking_warrior_rubber_template,
                 viking_peon_template,
                 viking_chieftain_template,
-                AudioAssets.SFX_ATTACKNOTIFY_VIKING,
-                AudioAssets.SFX_BUILDINGNOTIFY_VIKING,
                 viking_magic,
-                new VikingChieftainAI(),
+                new VikingChieftainAI());
+
+        AssetRegistry.getInstance().registerRaceAudio(
+                Race.VIKINGS,
+                new AudioParameters(AudioAssets.SFX_ATTACKNOTIFY_VIKING, AudioAssets.AUDIO_RANK_NOTIFICATION,
+                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
+                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                        1f, false, true),
+                new AudioParameters(AudioAssets.SFX_BUILDINGNOTIFY_VIKING, AudioAssets.AUDIO_RANK_NOTIFICATION,
+                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
+                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                        1f, false, true),
                 AudioAssets.MUSIC_VIKING);
 
         EnumMap<Race, @NonNull RaceInfo> raceInfos = new EnumMap<>(Race.class);
@@ -713,7 +728,7 @@ public final class RacesVisualsLoader {
         wood_fragment_sprites[3] = queues.register(new SpriteFile("/geometry/misc/wood_5.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
-        VisualRegistry.getInstance().registerWoodFragments(wood_fragment_sprites);
+        AssetRegistry.getInstance().registerWoodFragments(wood_fragment_sprites);
 
         SpriteKey[] treasure_sprites = new SpriteKey[6];
         treasure_sprites[0] = queues.register(new SpriteFile("/geometry/misc/icon.binsprite",
@@ -734,7 +749,7 @@ public final class RacesVisualsLoader {
         treasure_sprites[5] = queues.register(new SpriteFile("/geometry/misc/treasure_5.binsprite",
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
-        VisualRegistry.getInstance().registerTreasures(treasure_sprites);
+        AssetRegistry.getInstance().registerTreasures(treasure_sprites);
 
         logger.info("RacesResources: beginning emoji sprite registration");
         SpriteKey gravestone_emoji_sprite = queues.registerDynamicSprite(
@@ -761,15 +776,15 @@ public final class RacesVisualsLoader {
         SpriteKey rubber_status_sprite = queues.registerIconSprite(icons.getRubberStatusIcon());
 
         // Register visual emojis and status sprites in registry
-        VisualRegistry vr = VisualRegistry.getInstance();
-        vr.registerEmoji(EmojiType.GRAVESTONE, gravestone_emoji_sprite);
-        vr.registerEmoji(EmojiType.REPAIR_SAW, saw_emoji_sprite);
-        vr.registerEmoji(EmojiType.REPAIR_HAMMER, hammer_emoji_sprite);
-        vr.registerChickenCluckSprites(chicken_emoji_sprites);
-        vr.registerEmoji(EmojiType.HARVEST_WOOD, tree_status_sprite);
-        vr.registerEmoji(EmojiType.HARVEST_ROCK, rock_status_sprite);
-        vr.registerEmoji(EmojiType.HARVEST_IRON, iron_status_sprite);
-        vr.registerEmoji(EmojiType.HARVEST_RUBBER, rubber_status_sprite);
+        AssetRegistry ar = AssetRegistry.getInstance();
+        ar.registerEmoji(EmojiType.GRAVESTONE, gravestone_emoji_sprite);
+        ar.registerEmoji(EmojiType.REPAIR_SAW, saw_emoji_sprite);
+        ar.registerEmoji(EmojiType.REPAIR_HAMMER, hammer_emoji_sprite);
+        ar.registerChickenCluckSprites(chicken_emoji_sprites);
+        ar.registerEmoji(EmojiType.HARVEST_WOOD, tree_status_sprite);
+        ar.registerEmoji(EmojiType.HARVEST_ROCK, rock_status_sprite);
+        ar.registerEmoji(EmojiType.HARVEST_IRON, iron_status_sprite);
+        ar.registerEmoji(EmojiType.HARVEST_RUBBER, rubber_status_sprite);
 
         ProgressForm.progress(1f / num_progress);
         ProgressForm.progress(1f / num_progress);

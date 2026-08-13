@@ -62,7 +62,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
                 new Vector3f(PARTICLE_RADIUS_XY, PARTICLE_RADIUS_XY, PARTICLE_RADIUS_Z), new Vector3f(0f, 0f, 0f),
                 energy,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                VisualRegistry.getInstance().getSmokeTextures());
+                AssetRegistry.getInstance().getSmokeTextures());
 
         this.emitter.setBaseColor(new Color.Standard(.3f, 1f).linear());
         this.emitter.setColorSpectrum((spectrum, baseColor) -> baseColor);
@@ -97,7 +97,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
         Vector3f cloudPos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
         Lightning lightning = new Lightning(cloud.getWorld(), cloudPos, new Vector3f(tx, ty, tz), .5f,
                 15, Color.Linear.WHITE, DELTA_COLOR,
-                VisualRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME,
+                AssetRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME,
                 cloud.getWorld().getAnimationManagerGameTime());
         lightning.register();
     }

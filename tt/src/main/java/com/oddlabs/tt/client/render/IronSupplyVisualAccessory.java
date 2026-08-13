@@ -114,7 +114,7 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
                             new Vector3f(0.0f, 0.0f, 0.0f),
                             0.1f, 0.0f,
                             GL11.GL_SRC_ALPHA, GL11.GL_ONE,
-                            VisualRegistry.getInstance().getSmokeTextures()
+                            AssetRegistry.getInstance().getSmokeTextures()
                     );
                     oneShotEmitters.add(flash);
 
@@ -130,7 +130,7 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
                             new Vector3f(15.0f, 15.0f, 0.0f), // Flat (growth.z)
                             0.6f, 0.1f, // Shorter energy
                             GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                            VisualRegistry.getInstance().getSmokeTextures()
+                            AssetRegistry.getInstance().getSmokeTextures()
                     );
 
                     puff.setSpectrumRange(0.0f, 0.9f);
@@ -153,7 +153,7 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
                             new Vector3f(4.0f, 0.25f, 0.0f), // Halved growth rate
                             1.0f, 0.45f, // Halved lifetime/energy (adjusts fadeout)
                             GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                            VisualRegistry.getInstance().getSmokeTextures()
+                            AssetRegistry.getInstance().getSmokeTextures()
                     );
                     debris.setBaseColor(Landscape.getDustColor(world.getTerrainType()));
                     debris.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum
@@ -219,8 +219,8 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
                     new Vector3f(1.6f, 2.0f, 1.6f), new Vector3f(2.4f, 3.0f, 2.4f),
                     1.2f, 0.1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    VisualRegistry.getInstance().getSmokeTextures(),
-                    null, VisualRegistry.getInstance().getSmokeTextures().length,
+                    AssetRegistry.getInstance().getSmokeTextures(),
+                    null, AssetRegistry.getInstance().getSmokeTextures().length,
                     true, true
             );
             trailEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
@@ -244,7 +244,7 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
                     new Vector3f(0.8f, 0.8f, 0.8f), new Vector3f(2.5f, 2.5f, 2.5f),
                     1.2f, 0.1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    VisualRegistry.getInstance().getSmokeTextures()
+                    AssetRegistry.getInstance().getSmokeTextures()
             );
             coolingEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
             coolingEmitter.setSpectrumRange(0.2f, 0.8f);

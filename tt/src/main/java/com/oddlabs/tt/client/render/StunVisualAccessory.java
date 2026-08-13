@@ -46,7 +46,7 @@ public final class StunVisualAccessory implements EmitterAccessory {
                 new Color.Linear(1f, 1f, 1f, alpha), new Color.LinearDelta(0f, 0f, 0f, -alpha / energy),
                 new Vector3f(.3f, .3f, .3f), new Vector3f(.025f, .025f, .025f), energy, 1f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                VisualRegistry.getInstance().getNoteTextures());
+                AssetRegistry.getInstance().getNoteTextures());
 
         this.sound = world.getAudio().newAudio(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ(),
                 AudioAssets.STUN_LUR[ThreadLocalRandom.current().nextInt(AudioAssets.STUN_LUR.length)]);

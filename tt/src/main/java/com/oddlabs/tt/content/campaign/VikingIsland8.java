@@ -21,7 +21,7 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.simulation.trigger.DeathTrigger;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;
@@ -137,7 +137,7 @@ public final class VikingIsland8 extends Island {
         });
 
         // Insert rally point
-        new SceneryModel(getViewer().getWorld(), 354 * 2, 478 * 2, 0, -1, VisualRegistry.getInstance().getRallyPoint(
+        new SceneryModel(getViewer().getWorld(), 354 * 2, 478 * 2, 0, -1, AssetRegistry.getInstance().getRallyPoint(
                 local_player.getRaceInfo().getRaceType()));
 
         // Insert native towers

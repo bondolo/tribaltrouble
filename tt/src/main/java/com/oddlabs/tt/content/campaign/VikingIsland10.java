@@ -26,7 +26,7 @@ import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;
 import com.oddlabs.tt.simulation.trigger.NearPointTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -233,7 +233,7 @@ public final class VikingIsland10 extends Island {
         float shadow_diameter = 2.6f;
         float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
         new SceneryModel(getViewer().getWorld(), 173 * 2 + offset, 153 * 2 + offset, 0, 1,
-                VisualRegistry.getInstance().getTreasures()[2], shadow_diameter, true, i18n("statue"));
+                AssetRegistry.getInstance().getTreasures()[2], shadow_diameter, true, i18n("statue"));
 
         // Insert native towers
         insertGuardTower(enemy, UnitType.WARRIOR_IRON, 177, 159);//*

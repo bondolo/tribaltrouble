@@ -22,7 +22,7 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;
 import com.oddlabs.tt.simulation.trigger.NearPointTrigger;
@@ -226,7 +226,7 @@ public final class NativeIsland3 extends Island {
 
         float dir = (float) Math.sin(Math.PI / 4);
         new SceneryModel(getViewer().getWorld(), thor_x, thor_y, dir, dir,
-                VisualRegistry.getInstance().getUnitSprite(
+                AssetRegistry.getInstance().getUnitSprite(
                         enemy.getRaceInfo().getRaceType(),
                         enemy.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN).getVisualType()
                 ),

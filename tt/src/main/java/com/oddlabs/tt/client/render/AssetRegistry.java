@@ -1,11 +1,10 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.effects.render.*;
-
+import com.oddlabs.tt.engine.audio.AudioParameters;
+import com.oddlabs.tt.engine.procedural.GeneratorCrack;
+import com.oddlabs.tt.engine.procedural.GeneratorHalos;
+import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
@@ -15,24 +14,23 @@ import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import com.oddlabs.tt.engine.procedural.GeneratorCrack;
-import com.oddlabs.tt.engine.procedural.GeneratorHalos;
 import java.util.EnumMap;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Client-side registry mapping simulation visual types to graphics-bound SpriteKeys and ShadowListKeys.
+ * Client-side registry mapping simulation visual and audio asset types to graphics-bound SpriteKeys, ShadowListKeys,
+ * textures, and race audio configurations.
  */
-public final class VisualRegistry {
+public final class AssetRegistry {
     public static final GeneratorHalos DEFAULT_SHADOW_DESC = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION,
             new float[][]{{0f, 0.75f}, {0.5f, 0f}}, new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
 
     public static final GeneratorCrack CRACK_DECAL_DESC = new GeneratorCrack();
 
-    private static final VisualRegistry INSTANCE = new VisualRegistry();
+    private static final AssetRegistry INSTANCE = new AssetRegistry();
 
-    public static @NonNull VisualRegistry getInstance() {
+    public static @NonNull AssetRegistry getInstance() {
         return INSTANCE;
     }
 
@@ -44,12 +42,23 @@ public final class VisualRegistry {
     ) {
     }
 
+    /**
+     * Presentation audio configurations for a playable race.
+     */
+    public record RaceAudio(
+                            @NonNull AudioParameters attackNotification,
+                            @NonNull AudioParameters buildingNotification,
+                            @NonNull AudioParameters music
+    ) {
+    }
+
     private final EnumMap<Race, EnumMap<UnitVisualType, SpriteKey>> units = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<BuildingType, BuildingVisuals>> buildings = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<WeaponVisualType, SpriteKey>> weapons = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<SupplyType, SpriteKey>> carriedSupplies = new EnumMap<>(Race.class);
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
     private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
+    private final EnumMap<Race, RaceAudio> raceAudio = new EnumMap<>(Race.class);
     private @NonNull SpriteKey @Nullable [] chickenCluckSprites;
     private @Nullable ShadowListKey defaultUnitShadow;
     private @NonNull TextureKey @Nullable [] smokeTextures;
@@ -61,7 +70,7 @@ public final class VisualRegistry {
     private @NonNull SpriteKey @Nullable [] woodFragments;
     private @NonNull SpriteKey @Nullable [] treasures;
 
-    private VisualRegistry() {
+    private AssetRegistry() {
         for (Race race : Race.values()) {
             units.put(race, new EnumMap<>(UnitVisualType.class));
             buildings.put(race, new EnumMap<>(BuildingType.class));
@@ -246,5 +255,30 @@ public final class VisualRegistry {
             throw new IllegalStateException("Treasures not registered");
         }
         return treasures;
+    }
+
+    public void registerRaceAudio(@NonNull Race race, @NonNull AudioParameters attackNotification,
+            @NonNull AudioParameters buildingNotification, @NonNull AudioParameters music) {
+        raceAudio.put(race, new RaceAudio(attackNotification, buildingNotification, music));
+    }
+
+    public @NonNull RaceAudio getRaceAudio(@NonNull Race race) {
+        RaceAudio audio = raceAudio.get(race);
+        if (audio == null) {
+            throw new IllegalStateException("Race audio not registered for race " + race);
+        }
+        return audio;
+    }
+
+    public @NonNull AudioParameters getAttackNotificationAudio(@NonNull Race race) {
+        return getRaceAudio(race).attackNotification();
+    }
+
+    public @NonNull AudioParameters getBuildingNotificationAudio(@NonNull Race race) {
+        return getRaceAudio(race).buildingNotification();
+    }
+
+    public @NonNull AudioParameters getMusic(@NonNull Race race) {
+        return getRaceAudio(race).music();
     }
 }

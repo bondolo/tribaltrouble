@@ -23,7 +23,7 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -130,7 +130,7 @@ public final class NativeIsland7 extends Island {
         insertGuardTower(enemy, UnitType.WARRIOR_IRON, 126, 117);
 
         // Insert treasures
-        var treasures = VisualRegistry.getInstance().getTreasures();
+        var treasures = AssetRegistry.getInstance().getTreasures();
         float shadow_diameter = 2.6f;
 
         float dir = (float) Math.sin(Math.PI / 4);

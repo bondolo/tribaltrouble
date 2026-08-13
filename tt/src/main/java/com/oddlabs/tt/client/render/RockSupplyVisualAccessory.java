@@ -88,7 +88,7 @@ public final class RockSupplyVisualAccessory implements AnimatedAccessory {
                     new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f(1.0f, 1.0f, 1.0f),
                     1.0f, 0.2f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    VisualRegistry.getInstance().getSmokeTextures()
+                    AssetRegistry.getInstance().getSmokeTextures()
             );
             smokeEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
             smokeEmitter.setSpectrumRange(0.2f, 1.0f);

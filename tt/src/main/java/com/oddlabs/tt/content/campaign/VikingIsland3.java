@@ -18,7 +18,7 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -113,7 +113,7 @@ public final class VikingIsland3 extends Island {
         enemy.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: exchange with insertGuardTower()
 
         // Insert treasures
-        var treasures = VisualRegistry.getInstance().getTreasures();
+        var treasures = AssetRegistry.getInstance().getTreasures();
         float shadow_diameter = 2.6f;
 
         float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;

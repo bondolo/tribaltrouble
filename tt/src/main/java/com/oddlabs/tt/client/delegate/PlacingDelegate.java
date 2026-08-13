@@ -23,7 +23,7 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.Color;
@@ -139,7 +139,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
 
         com.oddlabs.tt.engine.util.GLUtils.checkGLError("Placing: After renderSites");
 
-        SpriteKey built_key = VisualRegistry.getInstance().getBuildingVisuals(
+        SpriteKey built_key = AssetRegistry.getInstance().getBuildingVisuals(
                 getViewer().getLocalPlayer().getRaceInfo().getRaceType(),
                 getTemplate().getBuildingType()
         ).built();

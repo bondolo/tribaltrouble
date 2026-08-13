@@ -106,7 +106,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private void renderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state) {
         if (selected_building != null && !selected_building.isDead() && selected_building.hasRallyPoint())
             doRenderRallyPoint(context, camera_state,
-                    selected_building.getRallyPoint(), VisualRegistry.getInstance().getRallyPoint(selected_building
+                    selected_building.getRallyPoint(), AssetRegistry.getInstance().getRallyPoint(selected_building
                             .getOwner().getRaceInfo().getRaceType()),
                     SelectableVisitor.getTeamColor(selected_building));
     }

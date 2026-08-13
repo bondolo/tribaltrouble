@@ -26,6 +26,7 @@ import com.oddlabs.tt.net.Server;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.simulation.player.DefaultPlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
@@ -256,7 +257,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     public static void completeGameSetupHack(@NonNull WorldViewer world_viewer) {
         world_viewer.getGUIRoot().pushDelegate(world_viewer.getDelegate());
-        Renderer.getRenderer().setMusic(world_viewer.getLocalPlayer().getRaceInfo().getMusic(), 10f);
+        Renderer.getRenderer().setMusic(AssetRegistry.getInstance().getMusic(world_viewer.getLocalPlayer()
+                .getPlayerInfo().getRace()), 10f);
     }
 
     public static final class DefaultWorldInitAction implements WorldInitAction {
