@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.viewer;
 
+import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.client.gui.GUIRoot;
@@ -21,7 +22,9 @@ final class AttackNotification extends Notification {
     public AttackNotification(@NonNull Player local_player, @NonNull GUIRoot gui_root, @NonNull Selectable<?> center,
             @NonNull NotificationManager manager, @NonNull AnimationManager animation_manager) {
         super(local_player.getWorld(), gui_root, center.getPositionX(), center.getPositionY(), manager,
-                Color.Standard.RED, local_player.getRaceInfo().getAttackNotificationAudio(), false, animation_manager);
+                Color.Standard.RED,
+                AssetRegistry.getInstance().getAttackNotificationAudio(local_player.getPlayerInfo().getRace()), false,
+                animation_manager);
     }
 
     public boolean contains(@NonNull Target target) {

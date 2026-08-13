@@ -42,7 +42,7 @@ import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeResources;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.client.render.Picker;
-import com.oddlabs.tt.client.render.RacesVisualsLoader;
+import com.oddlabs.tt.client.render.RacesAssetsLoader;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
@@ -105,7 +105,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
         ProgressForm.progress();
-        RacesResources races_resources = RacesVisualsLoader.load(render_queues);
+        RacesResources races_resources = RacesAssetsLoader.load(render_queues);
         this.distributable_table = new DistributableTable();
         NotificationListener listener = new NotificationListener() {
             @Override

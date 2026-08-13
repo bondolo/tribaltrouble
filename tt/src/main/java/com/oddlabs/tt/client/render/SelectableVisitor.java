@@ -30,11 +30,11 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
         Selectable<?> selectable = render_state.getModel();
         Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
         if (selectable instanceof Unit unit) {
-            return Optional.of(VisualRegistry.getInstance().getUnitSprite(race, unit.getTemplate()
+            return Optional.of(AssetRegistry.getInstance().getUnitSprite(race, unit.getTemplate()
                     .getVisualType()));
         } else if (selectable instanceof Building building) {
             BuildingType bvt = building.getTemplate().getBuildingType();
-            var visuals = VisualRegistry.getInstance().getBuildingVisuals(race, bvt);
+            var visuals = AssetRegistry.getInstance().getBuildingVisuals(race, bvt);
             return Optional.ofNullable(switch (building.getBuildStage()) {
                 case UNPLACED -> null;
                 case START -> visuals.start();

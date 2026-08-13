@@ -1,10 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.simulation.model.weapon.MagicFactory;
 import com.oddlabs.tt.simulation.player.ChieftainAI;
-import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumMap;
@@ -19,22 +16,17 @@ public final class RaceInfo {
     private final @NonNull Race race;
     private final @NonNull EnumMap<BuildingType, BuildingTemplate> buildings = new EnumMap<>(BuildingType.class);
     private final @NonNull EnumMap<UnitType, UnitTemplate> units = new EnumMap<>(UnitType.class);
-    private final @NonNull AudioParameters attack_notification;
-    private final @NonNull AudioParameters building_notification;
     private final @NonNull List<@NonNull MagicType> magics;
     private final @NonNull Map<@NonNull MagicType, @NonNull MagicFactory> magicFactories;
     private final @NonNull ChieftainAI chieftain_ai;
-    private final @NonNull AudioParameters music;
 
     public RaceInfo(@NonNull Race race, @NonNull BuildingTemplate quarters, @NonNull BuildingTemplate armory,
             @NonNull BuildingTemplate tower,
             @NonNull UnitTemplate warrior_rock, @NonNull UnitTemplate warrior_iron,
             @NonNull UnitTemplate warrior_rubber,
             @NonNull UnitTemplate peon, @NonNull UnitTemplate chieftain,
-            @NonNull AudioFile attack_notification, @NonNull AudioFile building_notification,
             @NonNull Map<MagicType, MagicFactory> magicFactories,
-            @NonNull ChieftainAI chieftain_ai,
-            @NonNull AudioParameters music) {
+            @NonNull ChieftainAI chieftain_ai) {
         this.race = race;
         buildings.put(BuildingType.QUARTERS, quarters);
         buildings.put(BuildingType.ARMORY, armory);
@@ -44,21 +36,12 @@ public final class RaceInfo {
         units.put(UnitType.WARRIOR_RUBBER, warrior_rubber);
         units.put(UnitType.PEON, peon);
         units.put(UnitType.CHIEFTAIN, chieftain);
-        this.attack_notification = new AudioParameters(attack_notification, AudioAssets.AUDIO_RANK_NOTIFICATION,
-                AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
-                AudioAssets.AUDIO_RADIUS_NOTIFICATION,
-                1f, false, true);
-        this.building_notification = new AudioParameters(building_notification, AudioAssets.AUDIO_RANK_NOTIFICATION,
-                AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
-                AudioAssets.AUDIO_RADIUS_NOTIFICATION,
-                1f, false, true);
         this.magics = switch (race) {
             case Race.NATIVES -> List.of(MagicType.POISON_FOG, MagicType.LIGHTNING_CLOUD);
             case Race.VIKINGS -> List.of(MagicType.STUN, MagicType.SONIC_BLAST);
         };
         this.magicFactories = new EnumMap<>(magicFactories);
         this.chieftain_ai = chieftain_ai;
-        this.music = music;
     }
 
     public @NonNull Race getRaceType() {
@@ -81,14 +64,6 @@ public final class RaceInfo {
         return template;
     }
 
-    public @NonNull AudioParameters getAttackNotificationAudio() {
-        return attack_notification;
-    }
-
-    public @NonNull AudioParameters getBuildingNotificationAudio() {
-        return building_notification;
-    }
-
     public @NonNull List<@NonNull MagicType> getMagics() {
         return magics;
     }
@@ -107,9 +82,5 @@ public final class RaceInfo {
 
     public @NonNull ChieftainAI getChieftainAI() {
         return chieftain_ai;
-    }
-
-    public @NonNull AudioParameters getMusic() {
-        return music;
     }
 }

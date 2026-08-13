@@ -66,7 +66,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
                 Color.LinearDelta.ZERO.alpha(-EMITTER_ALPHA / EMITTER_ENERGY),
                 new Vector3f(0.3f, 0.3f, 0.3f), new Vector3f(0.5f, 0.5f, 0.6f), EMITTER_ENERGY, 0.7f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                VisualRegistry.getInstance().getSmokeTextures());
+                AssetRegistry.getInstance().getSmokeTextures());
         this.emitter.stop();
         this.emitter.setBaseColor(new Color.Linear(0.0992f, 0.0992f, 0.0992f, EMITTER_ALPHA));
         this.emitter.setSpectrumRange(0.0f, 1.0f);

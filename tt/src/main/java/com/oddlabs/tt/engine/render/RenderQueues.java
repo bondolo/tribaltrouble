@@ -180,7 +180,7 @@ public final class RenderQueues implements AutoCloseable {
     }
 
     public @NonNull ShadowRenderer getDefaultShadowRenderer() {
-        return getShadowRenderer(registerSelectableShadowList(VisualRegistry.DEFAULT_SHADOW_DESC));
+        return getShadowRenderer(registerSelectableShadowList(AssetRegistry.DEFAULT_SHADOW_DESC));
     }
 
     public @NonNull ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {

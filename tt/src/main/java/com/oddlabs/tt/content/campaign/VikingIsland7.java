@@ -20,7 +20,7 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -125,7 +125,7 @@ public final class VikingIsland7 extends Island {
 
         float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
         float dir = (float) Math.sin(Math.PI / 4);
-        var treasures = VisualRegistry.getInstance().getTreasures();
+        var treasures = AssetRegistry.getInstance().getTreasures();
         new SceneryModel(getViewer().getWorld(), 67 * 2 + offset, 64 * 2 + offset, -1, 0, treasures[3], shadow_diameter,
                 true, i18n("statue"));
         new SceneryModel(getViewer().getWorld(), 70 * 2 + offset, 52 * 2 + offset, -1, 0, treasures[4], shadow_diameter,

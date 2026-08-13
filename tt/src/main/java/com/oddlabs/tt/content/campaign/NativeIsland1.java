@@ -22,7 +22,7 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.client.render.VisualRegistry;
+import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.simulation.trigger.DeathTrigger;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.TimeTrigger;
@@ -131,7 +131,7 @@ public final class NativeIsland1 extends Island {
         final int captive_start_x = 48 * 2;
         final int captive_start_y = 96 * 2;
         float shadow_diameter = local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getShadowDiameter();
-        SpriteKey sprite_renderer = VisualRegistry.getInstance().getUnitSprite(
+        SpriteKey sprite_renderer = AssetRegistry.getInstance().getUnitSprite(
                 local_player.getRaceInfo().getRaceType(),
                 local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getVisualType()
         );

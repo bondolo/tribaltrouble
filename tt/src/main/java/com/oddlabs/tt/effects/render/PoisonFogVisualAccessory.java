@@ -80,7 +80,7 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
                     new Color.Linear(1f, 1f, 1f, alpha), new Color.LinearDelta(0f, 0f, 0f, -alpha / energy),
                     new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                    VisualRegistry.getInstance().getPoisonTextures());
+                    AssetRegistry.getInstance().getPoisonTextures());
             new PointEmitterModel(world, emitter);
 
             if (bursts % nextSound == 0) {

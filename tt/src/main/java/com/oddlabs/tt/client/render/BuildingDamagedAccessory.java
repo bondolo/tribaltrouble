@@ -60,7 +60,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
                 Color.Linear.WHITE, Color.LinearDelta.ZERO,
                 new Vector3f(1.5f, 1.5f, 1.5f), new Vector3f(0.6f, 0.6f, 0.6f), 1.5f, .75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                VisualRegistry.getInstance().getDamageSmokeTextures());
+                AssetRegistry.getInstance().getDamageSmokeTextures());
         this.emitter.stop();
         this.emitter.setBaseColor(new Color.Standard(0.3f, INITIAL_PARTICLE_ALPHA).linear());
         this.emitter.setSpectrumRange(0.0f, 1.0f);
@@ -156,7 +156,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
                 Color.Linear.WHITE, Color.LinearDelta.ZERO.alpha(-1f),
                 new Vector3f(1f, 1f, 1f), new Vector3f(7.5f, 7.5f, 7.5f), 1.2f, 0.75f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                VisualRegistry.getInstance().getSmokeTextures());
+                AssetRegistry.getInstance().getSmokeTextures());
         collapse_emitter.setColorSpectrum(spectrumCallback);
 
         new PointEmitterModel(building.getOwner().getWorld(), collapse_emitter, building.getOwner().getWorld()
@@ -184,7 +184,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
                     new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
                     Color.Linear.WHITE.alpha(energy * fade_speed), Color.LinearDelta.ZERO.alpha(-fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                    VisualRegistry.getInstance().getWoodFragments(),
+                    AssetRegistry.getInstance().getWoodFragments(),
                     true, true);
             new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter, building.getOwner().getWorld()
                     .getAnimationManagerRealTime());
@@ -204,7 +204,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
                     new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f,
                             -fade_speed),
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                    VisualRegistry.getInstance().getWoodFragments(),
+                    AssetRegistry.getInstance().getWoodFragments(),
                     true, true);
             new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter);
         }
