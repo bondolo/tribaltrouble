@@ -14,7 +14,7 @@ import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.core.net.GameNetwork;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.Player;

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.client.form;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.core.net.GameNetwork;
-import com.oddlabs.tt.core.world.WorldGenerator;
+import com.oddlabs.tt.net.GameNetwork;
+import com.oddlabs.tt.engine.resource.WorldGenerator;
 import org.jspecify.annotations.NonNull;
 
 /**

@@ -18,7 +18,7 @@ import com.oddlabs.tt.simulation.model.DeployType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
 import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
-import com.oddlabs.tt.core.net.GameNetwork;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.AI;

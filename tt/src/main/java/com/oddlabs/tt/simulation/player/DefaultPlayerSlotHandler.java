@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
-import com.oddlabs.tt.core.net.PlayerSlotHandler;
+import com.oddlabs.tt.net.PlayerSlotHandler;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serializable;
