@@ -1,26 +1,40 @@
-package com.oddlabs.tt.simulation.model;
+package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.core.animation.Animated;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.effects.particle.Emitter;
+import com.oddlabs.tt.simulation.model.BoundingBox;
+import com.oddlabs.tt.simulation.model.Model;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A {@link Model} that hosts an {@link Emitter} at a specific world coordinate.
- * Used for standalone particle effects like explosions or impact bursts.
- * Can itself be augmented with accessories.
+ * A visual scene-graph {@link Model} that hosts an {@link Emitter} at a specific world coordinate.
+ * Used for standalone particle effects like explosions, rubble, or poison gas bursts.
  */
 public class PointEmitterModel extends Model implements Animated {
     protected final @NonNull Emitter<?> emitter;
     private final @NonNull AnimationManager manager;
 
+    /**
+     * Constructs a new PointEmitterModel using the world's game-time animation manager.
+     *
+     * @param world the world
+     * @param emitter the particle emitter to host
+     */
     public PointEmitterModel(@NonNull World world, @NonNull Emitter<?> emitter) {
         this(world, emitter, world.getAnimationManagerGameTime());
     }
 
-    public PointEmitterModel(@NonNull World world, @NonNull Emitter<?> emitter, @NonNull AnimationManager manager) {
+    /**
+     * Constructs a new PointEmitterModel using the specified animation manager.
+     *
+     * @param world the world
+     * @param emitter the particle emitter to host
+     * @param manager the animation manager to register with
+     */
+    public PointEmitterModel(@NonNull World world, @NonNull Emitter<?> emitter,
+            @NonNull AnimationManager manager) {
         super(world);
         this.emitter = emitter;
         this.manager = manager;
@@ -64,6 +78,11 @@ public class PointEmitterModel extends Model implements Animated {
         return null;
     }
 
+    /**
+     * Returns the underlying particle emitter hosted by this model.
+     *
+     * @return the hosted emitter
+     */
     public final @NonNull Emitter<?> getEmitter() {
         return emitter;
     }
