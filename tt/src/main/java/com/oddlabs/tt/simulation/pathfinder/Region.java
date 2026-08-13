@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.engine.util.DebugRender;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -76,7 +75,7 @@ public final class Region extends Node {
         return null != list && list.remove(object);
     }
 
-    private void addNeighbour(Region n) {
+    private void addNeighbour(@NonNull Region n) {
         neighbours.add(n);
     }
 
@@ -90,28 +89,15 @@ public final class Region extends Node {
         return false;
     }
 
-    public void debugRenderConnectionsReset() {
-        if (!isVisited())
-            return;
-        setVisited(false);
-        for (Region neighbour : neighbours) {
-            neighbour.debugRenderConnectionsReset();
-        }
+    public void markVisited() {
+        setVisited(true);
     }
 
-    public void debugRenderConnections(@NonNull HeightMap heightmap) {
-        if (isVisited())
-            return;
-        setVisited(true);
-        for (Region neighbour : neighbours) {
-            float x1 = UnitGrid.coordinateFromGrid(getGridX());
-            float y1 = UnitGrid.coordinateFromGrid(getGridY());
-            float z1 = heightmap.getNearestHeight(x1, y1) + 2f;
-            float x2 = UnitGrid.coordinateFromGrid(neighbour.getGridX());
-            float y2 = UnitGrid.coordinateFromGrid(neighbour.getGridY());
-            float z2 = heightmap.getNearestHeight(x2, y2) + 2f;
-            DebugRender.drawLine(x1, y1, z1, x2, y2, z2, 1f, 1f, 0f);
-            neighbour.debugRenderConnections(heightmap);
-        }
+    public void clearVisited() {
+        setVisited(false);
+    }
+
+    public @NonNull List<@NonNull Region> getNeighbours() {
+        return neighbours;
     }
 }

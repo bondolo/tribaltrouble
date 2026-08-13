@@ -178,12 +178,14 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         tree_renderer.debugRender(tree_renderer.getRenderLists(), tree_renderer.getRespondRenderLists());
 
         if (Globals.isBoundsEnabled(BoundingMode.REGIONS))
-            world.getUnitGrid().debugRenderRegions(frustum_state.getCurrentX(), frustum_state.getCurrentY());
+            PathfinderDebugRenderer.renderRegions(world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state
+                    .getCurrentY());
         if (Globals.isBoundsEnabled(BoundingMode.OCCUPATION)) picker.debugRender();
         if (Globals.isBoundsEnabled(BoundingMode.UNIT_GRID)) {
-            world.getUnitGrid().debugRender(frustum_state.getCurrentX(), frustum_state.getCurrentY());
+            PathfinderDebugRenderer.renderUnitGrid(world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state
+                    .getCurrentY());
             for (Object obj : selection.getCurrentSelection().getSet()) {
-                if (obj instanceof Unit unit) unit.debugRender();
+                if (obj instanceof Unit unit) PathfinderDebugRenderer.renderPathTracker(unit.getPathTracker());
             }
         }
         DebugRender.flush();

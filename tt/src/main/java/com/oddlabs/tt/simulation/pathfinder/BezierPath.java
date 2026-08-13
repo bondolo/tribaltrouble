@@ -1,13 +1,10 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.engine.util.DebugRender;
-import com.oddlabs.tt.simulation.landscape.HeightQuery;
 import org.jspecify.annotations.NonNull;
 
 /**
  * Cubic Bezier curve path for smooth unit movement.
  * Uses four control points to generate smooth curves between waypoints.
- * Debug visualization shows the curve as a white line (enable with UNIT_GRID mode).
  */
 public final class BezierPath {
     private static final int PREVIOUS = 0;
@@ -15,8 +12,6 @@ public final class BezierPath {
     private static final int END = 2;
     private static final int NEXT = 3;
 
-    private static final float[] debug_point = new float[2];
-    private static final float[] debug_dir = new float[2];
 
     private final float[][] points = new float[4][2];
     private final float[] current_point = new float[2];
@@ -140,21 +135,12 @@ public final class BezierPath {
         nextPoint(dt, next_x, next_y);
     }
 
-    public void debugRender(@NonNull HeightQuery heightQuery) {
-        float prev_x = 0, prev_y = 0, prev_z = 0;
-        boolean first = true;
-        for (float t = 0f; t < 1f; t += .01f) {
-            computeCurvePointFromTime(t, debug_point, debug_dir);
-            float x = debug_point[0];
-            float y = debug_point[1];
-            float z = heightQuery.getHeight(x, y) + 0.5f;
-            if (!first) {
-                DebugRender.drawLine(prev_x, prev_y, prev_z, x, y, z, 1f, 1f, 1f);
-            }
-            prev_x = x;
-            prev_y = y;
-            prev_z = z;
-            first = false;
-        }
+    /**
+     * Samples the Bézier curve at the given parameter {@code t} in [0, 1],
+     * writing the resulting position into {@code point} and direction into {@code dir}.
+     * Used by the debug renderer.
+     */
+    public void sampleCurve(float t, float @NonNull [] point, float @NonNull [] dir) {
+        computeCurvePointFromTime(t, point, dir);
     }
 }

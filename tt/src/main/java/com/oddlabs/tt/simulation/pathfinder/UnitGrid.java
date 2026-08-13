@@ -1,9 +1,7 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -97,72 +95,7 @@ public final class UnitGrid {
         occupants[grid_y][grid_x] = null;
     }
 
-    public void debugRenderRegions(float landscape_x, float landscape_y) {
-        int RADIUS = 30;
-        int center_x = toGridCoordinate(landscape_x);
-        int center_y = toGridCoordinate(landscape_y);
-        int start_x = Math.max(0, center_x - RADIUS);
-        int end_x = Math.min(occupants.length - 0, center_x + RADIUS);
-        int start_y = Math.max(0, center_y - RADIUS);
-        int end_y = Math.min(occupants.length - 0, center_y + RADIUS);
-        Region last_region = null;
-        for (int y = start_y; y < end_y; y++) {
-            for (int x = start_x; x < end_x; x++) {
-                float xf = coordinateFromGrid(x);
-                float yf = coordinateFromGrid(y);
-                float zf = heightmap.getNearestHeight(xf, yf) + 2f;
-                Region region = getRegion(x, y);
-                if (region == null) {
-                    DebugRender.drawPoint(xf, yf, zf, 3f, Color.Linear.RED.r(), Color.Linear.RED.g(), Color.Linear.RED
-                            .b());
-                } else {
-                    last_region = region;
-                    Color color = new Color.Linear(DebugRender.debug_colors[region.hashCode()
-                            % DebugRender.debug_colors.length]);
-                    DebugRender.drawPoint(xf, yf, zf, 3f, color.r(), color.g(), color.b());
-                }
-            }
-        }
-        if (last_region != null) {
-            last_region.debugRenderConnections(heightmap);
-            last_region.debugRenderConnectionsReset();
-        }
-    }
-
-    /**
-     * renders the specified unit grid as a quad
-     *
-     * @param color assumed to be a linear color
-     */
-    private void debugRenderQuad(int x, int y, @NonNull Color color) {
-        final float OFFSET = 2f;
-        final float RADIUS = .5f;
-        int s = HeightMap.METERS_PER_UNIT_GRID;
-        float xf = (x + .5f) * s;
-        float yf = (y + .5f) * s;
-        float z = heightmap.getNearestHeight(xf, yf) + OFFSET;
-        DebugRender.drawLine(xf - RADIUS, yf - RADIUS, z, xf + RADIUS, yf + RADIUS, z, color.r(), color.g(), color.b());
-        DebugRender.drawLine(xf + RADIUS, yf - RADIUS, z, xf - RADIUS, yf + RADIUS, z, color.r(), color.g(), color.b());
-    }
-
     public @NonNull HeightMap getHeightMap() {
         return heightmap;
-    }
-
-    public void debugRender(float landscape_x, float landscape_y) {
-        final int RADIUS = 30;
-        int center_x = toGridCoordinate(landscape_x);
-        int center_y = toGridCoordinate(landscape_y);
-        int start_x = Math.max(0, center_x - RADIUS);
-        int end_x = Math.min(occupants.length, center_x + RADIUS);
-        int start_y = Math.max(0, center_y - RADIUS);
-        int end_y = Math.min(occupants.length, center_y + RADIUS);
-        for (int y = start_y; y < end_y; y++) {
-            for (int x = start_x; x < end_x; x++) {
-                if (isGridOccupied(x, y)) {
-                    debugRenderQuad(x, y, Color.Linear.YELLOW);
-                }
-            }
-        }
     }
 }

@@ -590,8 +590,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         }
     }
 
-    @Override
-    public void debugRender() {
-        path_tracker.debugRender();
+    public @NonNull PathTracker getPathTracker() {
+        return path_tracker;
     }
 }
