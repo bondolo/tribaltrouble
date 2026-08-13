@@ -1,7 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.net.Distributable;
-
 public interface Target extends Distributable {
     int getGridX();
 
