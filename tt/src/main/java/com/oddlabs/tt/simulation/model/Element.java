@@ -94,12 +94,6 @@ public abstract class Element<T extends Element<T>> extends BoundingBox implemen
         return false;
     }
 
-    /**
-     * Renders debug information for this element.
-     */
-    public void debugRender() {
-    }
-
     @Override
     public final void setListOwner(@Nullable LinkedList<T> parent) {
         this.parent = parent;

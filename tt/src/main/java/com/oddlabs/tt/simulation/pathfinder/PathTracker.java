@@ -1,8 +1,7 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.util.TextAppender;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.engine.util.DebugRender;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -112,8 +111,9 @@ public final class PathTracker {
     private @Nullable PathTracker getNextDeadlocked() {
         Occupant occupant = getNextOccupantUnchecked();
         if (occupant != unit && occupant instanceof Movable next) {
-            if (next.isMoving() && (next.getTracker().state == State.SOFTBLOCKED || next.getTracker().state
-                    == State.BLOCKED)) {
+            if (next.isMoving() &&
+                    (next.getTracker().state == State.SOFTBLOCKED ||
+                            next.getTracker().state == State.BLOCKED)) {
                 return next.getTracker();
             }
         }
@@ -301,40 +301,27 @@ public final class PathTracker {
         return State.OK;
     }
 
-    public void debugRender() {
-        HeightMap heightmap = unit_grid.getHeightMap();
-        bezier_path.debugRender(heightmap);
-        final float OFFSET = 2f;
-        float next_node_x = UnitGrid.coordinateFromGrid(next_unit_grid_x);
-        float next_node_y = UnitGrid.coordinateFromGrid(next_unit_grid_y);
-        float prev_x = next_node_x;
-        float prev_y = next_node_y;
-        float prev_z = heightmap.getNearestHeight(prev_x, prev_y) + OFFSET;
-        GridPathNode node = grid_path;
-        while (node != null) {
-            float next_x = prev_x + HeightMap.METERS_PER_UNIT_GRID * node.getDirection().getDirectionX();
-            float next_y = prev_y + HeightMap.METERS_PER_UNIT_GRID * node.getDirection().getDirectionY();
-            float z = heightmap.getNearestHeight(next_x, next_y) + OFFSET;
-            DebugRender.drawLine(prev_x, prev_y, prev_z, next_x, next_y, z, 1f, 0f, 0f);
-            prev_x = next_x;
-            prev_y = next_y;
-            prev_z = z;
-            node = (GridPathNode) node.getParent();
-        }
-        RegionNode region_node = region_path;
-        boolean first = true;
-        while (region_node != null) {
-            float x = UnitGrid.coordinateFromGrid(region_node.getRegion().getGridX());
-            float y = UnitGrid.coordinateFromGrid(region_node.getRegion().getGridY());
-            float z = heightmap.getNearestHeight(x, y) + OFFSET;
-            if (!first) {
-                DebugRender.drawLine(prev_x, prev_y, prev_z, x, y, z, 0f, 0f, 1f);
-            }
-            prev_x = x;
-            prev_y = y;
-            prev_z = z;
-            first = false;
-            region_node = (RegionNode) region_node.getParent();
-        }
+    public @NonNull UnitGrid getUnitGrid() {
+        return unit_grid;
+    }
+
+    public @NonNull BezierPath getBezierPath() {
+        return bezier_path;
+    }
+
+    public @Nullable GridPathNode getGridPath() {
+        return grid_path;
+    }
+
+    public @Nullable RegionNode getRegionPath() {
+        return region_path;
+    }
+
+    public int getNextGridX() {
+        return next_unit_grid_x;
+    }
+
+    public int getNextGridY() {
+        return next_unit_grid_y;
     }
 }
