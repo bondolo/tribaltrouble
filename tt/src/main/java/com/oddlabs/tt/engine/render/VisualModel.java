@@ -2,8 +2,8 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 
-import com.oddlabs.tt.engine.audio.AudioImplementation;
-import com.oddlabs.tt.engine.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.AudioFile;
 import com.oddlabs.tt.simulation.model.EmojiType;

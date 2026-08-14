@@ -3,9 +3,9 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 
-import com.oddlabs.tt.engine.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-import com.oddlabs.tt.engine.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;

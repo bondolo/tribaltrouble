@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.form;
 
 import com.oddlabs.tt.client.gui.LocalInput;
 
-import com.oddlabs.tt.engine.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.gui.CheckBox;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;

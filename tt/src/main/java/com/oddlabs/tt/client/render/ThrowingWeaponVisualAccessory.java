@@ -1,8 +1,8 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.audio.AudioImplementation;
-import com.oddlabs.tt.engine.audio.AudioParameters;
-import com.oddlabs.tt.engine.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;

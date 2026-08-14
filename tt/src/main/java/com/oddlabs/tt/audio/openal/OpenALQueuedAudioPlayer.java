@@ -1,10 +1,10 @@
-package com.oddlabs.tt.engine.audio.openal;
+package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.engine.audio.Audio;
-import com.oddlabs.tt.engine.audio.AudioParameters;
-import com.oddlabs.tt.engine.audio.AudioSource;
-import com.oddlabs.tt.engine.audio.OGGStream;
-import com.oddlabs.tt.engine.audio.QueuedAudioPlayer;
+import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioSource;
+import com.oddlabs.tt.audio.OGGStream;
+import com.oddlabs.tt.audio.QueuedAudioPlayer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;

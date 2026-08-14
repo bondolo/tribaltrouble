@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.audio;
+package com.oddlabs.tt.audio;
 
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

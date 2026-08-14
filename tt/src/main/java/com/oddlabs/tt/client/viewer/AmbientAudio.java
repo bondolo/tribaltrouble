@@ -1,9 +1,9 @@
 package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
-import com.oddlabs.tt.engine.audio.AudioManager;
-import com.oddlabs.tt.engine.audio.AudioPlayer;
-import com.oddlabs.tt.engine.audio.ReverbType;
+import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.ReverbType;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
