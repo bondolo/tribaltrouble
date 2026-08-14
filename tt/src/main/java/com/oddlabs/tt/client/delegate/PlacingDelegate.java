@@ -2,10 +2,10 @@ package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.input.GameAction;
-import com.oddlabs.tt.client.input.InputEvent;
-import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Abilities;

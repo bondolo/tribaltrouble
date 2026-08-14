@@ -3,11 +3,11 @@ package com.oddlabs.tt.content.skirmish;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.gui.GUIObject;
-import com.oddlabs.tt.client.gui.Group;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.Skin;
+import com.oddlabs.tt.gui.GUIObject;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.base.util.Utils;
@@ -19,9 +19,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
-import static com.oddlabs.tt.client.gui.Placement.RIGHT_TOP;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
 /**
  * Displays in-game information overlay including player names, colors, races,

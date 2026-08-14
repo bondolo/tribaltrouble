@@ -5,7 +5,7 @@ import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.engine.procedural.GeneratorClouds;
+import com.oddlabs.tt.procedural.GeneratorClouds;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;

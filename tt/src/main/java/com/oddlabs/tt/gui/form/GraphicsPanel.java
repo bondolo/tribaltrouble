@@ -1,0 +1,201 @@
+package com.oddlabs.tt.gui.form;
+
+import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.gui.CheckBox;
+import com.oddlabs.tt.gui.ColumnInfo;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MultiColumnComboBox;
+import com.oddlabs.tt.gui.Panel;
+import com.oddlabs.tt.gui.PulldownButton;
+import com.oddlabs.tt.gui.PulldownItem;
+import com.oddlabs.tt.gui.PulldownMenu;
+import com.oddlabs.tt.gui.Row;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.Slider;
+import com.oddlabs.tt.gui.SortedLabel;
+import com.oddlabs.tt.gui.event.RowListener;
+import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.SerializableDisplayMode;
+import com.oddlabs.tt.window.Window;
+import org.jspecify.annotations.NonNull;
+
+import java.util.List;
+
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
+
+public class GraphicsPanel extends Panel {
+    private final @NonNull Label label_pct;
+
+    public GraphicsPanel(@NonNull GUIRoot gui_root, @NonNull Form options) {
+        super(AbstractOptionsMenu.i18n("graphics_caption"));
+        var labelFont = Skin.getSkin().getEditFont();
+
+        // Display mode
+        Group mode_group = new Group();
+        addChild(mode_group);
+
+        Label mode_label = new Label(AbstractOptionsMenu.i18n("display_mode"), labelFont);
+        mode_group.addChild(mode_label);
+
+        ColumnInfo[] mode_infos = new ColumnInfo[]{new ColumnInfo("", 150)};
+        MultiColumnComboBox<SerializableDisplayMode> mode_list_box = new MultiColumnComboBox<>(gui_root, mode_infos,
+                200, false);
+
+        // Fullscreen
+        Group group_fullscreen = new Group();
+        addChild(group_fullscreen);
+        CheckBox cb_fullscreen = new CheckBox(Renderer.getRenderer().getSettings().fullscreen, AbstractOptionsMenu.i18n(
+                "fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
+        cb_fullscreen.addCheckBoxListener(marked -> {
+            DisplayChangeForm display_change_form = new DisplayChangeForm(
+                    switch_now -> {
+                        if (switch_now) {
+                            Renderer.getRenderer().toggleFullscreen();
+                        } else {
+                            Renderer.getRenderer().getSettings().fullscreen = marked;
+                        }
+
+                        // Force refresh of available modes for the list box
+                        refreshResolutionList(marked, mode_list_box);
+                    });
+            gui_root.addModalForm(display_change_form);
+        });
+        group_fullscreen.addChild(cb_fullscreen);
+        cb_fullscreen.place();
+        group_fullscreen.compileCanvas();
+
+        // UI Scale
+        Group group_ui_scale = new Group();
+        addChild(group_ui_scale);
+        Label label_ui_scale = new Label(AbstractOptionsMenu.i18n("ui_scale"), labelFont);
+        group_ui_scale.addChild(label_ui_scale);
+
+        // Initial percentage label
+        label_pct = new Label("9.9.9%", labelFont);
+        updateScaleLabel();
+        group_ui_scale.addChild(label_pct);
+
+        int initialValue = Math.clamp((long) (Renderer.getRenderer().getSettings().ui_scale * 1000), 0, 1000);
+
+        Slider slider_ui_scale = new Slider(150, 0, 1000, initialValue);
+        group_ui_scale.addChild(slider_ui_scale);
+
+        slider_ui_scale.addValueListener(value -> {
+            Renderer.getRenderer().getSettings().ui_scale = value / 1000f;
+            updateScaleLabel();
+        });
+
+        slider_ui_scale.addReleaseListener(() -> {
+            var window = Renderer.getRenderer().getWindow();
+            gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
+        }
+        );
+
+        label_ui_scale.place();
+        label_pct.place(label_ui_scale, RIGHT_MID);
+        slider_ui_scale.place(label_ui_scale, BOTTOM_LEFT);
+        group_ui_scale.compileCanvas();
+
+        // Detail
+        Group group_detail = new Group();
+        addChild(group_detail);
+
+        Label label_detail = new Label(AbstractOptionsMenu.i18n("graphical_detail"), labelFont);
+        group_detail.addChild(label_detail);
+
+        int initial_detail_value = Renderer.getRenderer().getSettings().graphic_detail;
+        PulldownMenu<Integer> pm_detail = new PulldownMenu<>();
+        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("low"), 0));
+        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("medium"), 1));
+        pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("high"), 2));
+        PulldownButton<Integer> pb_detail = new PulldownButton<>(gui_root, pm_detail, initial_detail_value, 150);
+
+        group_detail.addChild(pb_detail);
+        options.addCloseListener(() -> {
+            int slider_value = pm_detail.getChosenItem().map(PulldownItem::getAttachment).orElse(initial_detail_value);
+            if (initial_detail_value != slider_value) {
+                Renderer.getRenderer().getSettings().graphic_detail = slider_value;
+                World.updatePlantsDetail(Globals.INSERT_PLANTS[slider_value]);
+                gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("change_next_run")));
+            }
+        });
+        label_detail.place();
+        pb_detail.place(label_detail, BOTTOM_LEFT);
+        group_detail.compileCanvas();
+
+        refreshResolutionList(Renderer.getRenderer().getSettings().fullscreen, mode_list_box);
+
+        mode_list_box.addRowListener(new RowListener<>() {
+            @Override
+            public void rowDoubleClicked(@NonNull SerializableDisplayMode mode) {
+                Window window = Renderer.getRenderer().getWindow();
+                boolean currentIsExclusive = window.isExclusiveFullscreen();
+                boolean targetFullscreen = Renderer.getRenderer().getSettings().fullscreen;
+                boolean targetIsExclusive = targetFullscreen && window.isExclusiveFullscreenMode(mode);
+
+                if (currentIsExclusive || targetIsExclusive) {
+                    gui_root.addModalForm(new DisplayChangeForm(switch_now -> {
+                        Renderer.getRenderer().switchMode(mode, switch_now);
+                        if (switch_now) {
+                            gui_root.displayChanged(mode.getWidth(), mode.getHeight());
+                        }
+                    }));
+                } else {
+                    Renderer.getRenderer().switchMode(mode, true);
+                    gui_root.displayChanged(mode.getWidth(), mode.getHeight());
+                }
+            }
+        });
+
+        mode_group.addChild(mode_list_box);
+        mode_label.place();
+        mode_list_box.place(mode_label, BOTTOM_LEFT);
+        mode_group.compileCanvas();
+
+        // Placement
+        mode_group.place();
+        group_detail.place(mode_group, RIGHT_TOP);
+        group_ui_scale.place(group_detail, BOTTOM_LEFT);
+        group_fullscreen.place(group_ui_scale, BOTTOM_LEFT);
+        compileCanvas();
+    }
+
+    private void refreshResolutionList(boolean fullscreen, @NonNull MultiColumnComboBox<
+            SerializableDisplayMode> list_box) {
+        var window = Renderer.getRenderer().getWindow();
+        var currentMode = Renderer.getRenderer().getCurrentDisplayMode();
+        List<SerializableDisplayMode> modes = fullscreen ? window.getFullscreenDisplayModes() : window
+                .getWindowedDisplayModes();
+
+        list_box.clear();
+        Row<SerializableDisplayMode, Label> currentRowToSelect = null;
+        for (int i = 0; i < modes.size(); i++) {
+            var m = modes.get(i);
+            String mode_string = AbstractOptionsMenu.i18n("mode", m.getWidth(), m.getHeight(), m.getFrequency());
+            Label label = new SortedLabel(mode_string, i, Skin.getSkin().getMultiColumnComboBoxData().font());
+            var row = new Row<>(List.of(label), m);
+            list_box.addRow(row);
+            if (m.isEquivalent(currentMode)) {
+                currentRowToSelect = row;
+            }
+        }
+
+        if (currentRowToSelect != null) {
+            list_box.selectRow(currentRowToSelect);
+        } else if (list_box.getSize() > 0) {
+            list_box.selectFirst();
+        }
+    }
+
+    public void updateScaleLabel() {
+        var window = Renderer.getRenderer().getWindow();
+        float scale = GUIRoot.calculateEffectiveScale(window.getLogicalWidth(), window.getLogicalHeight());
+        label_pct.setText(String.format("%d%%", (int) (scale * 100)));
+    }
+}

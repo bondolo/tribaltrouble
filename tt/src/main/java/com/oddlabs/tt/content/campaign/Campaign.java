@@ -1,10 +1,10 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.gui.CampaignIcons;
-import com.oddlabs.tt.client.gui.GUI;
-import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.gui.CampaignIcons;
+import com.oddlabs.tt.gui.GUI;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.client.trigger.GameOverDelayTrigger;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;

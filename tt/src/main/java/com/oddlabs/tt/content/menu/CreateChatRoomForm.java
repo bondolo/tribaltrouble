@@ -2,27 +2,27 @@ package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.gui.ButtonObject;
-import com.oddlabs.tt.client.gui.CancelButton;
-import com.oddlabs.tt.client.gui.EditLine;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.gui.OKButton;
-import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.guievent.EnterListener;
-import com.oddlabs.tt.client.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.ButtonObject;
+import com.oddlabs.tt.gui.CancelButton;
+import com.oddlabs.tt.gui.EditLine;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.OKButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.EnterListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
 public final class CreateChatRoomForm extends Form {
     private static final int BUTTON_WIDTH = 100;

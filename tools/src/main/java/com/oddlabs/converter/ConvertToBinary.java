@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.IntStream;
 
+/**
+ * CLI tool for parsing XML geometry definitions and converting them to binary sprite format.
+ */
 public final class ConvertToBinary {
     void main(@NonNull String @NonNull... args) {
         if (args.length != 3)
@@ -29,14 +32,15 @@ public final class ConvertToBinary {
         Path src_dir = Path.of(args[1]);
         Path build_dir = Path.of(args[2]);
 
-        try (var input_stream = Files.newInputStream(src_dir.resolve(xml_file))) {
+        Path full_xml_path = src_dir.resolve(xml_file);
+        try (var input_stream = Files.newInputStream(full_xml_path)) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setErrorHandler(new GeometryErrorHandler());
             Document document = builder.parse(input_stream);
             org.w3c.dom.Element root = document.getDocumentElement();
-            parseGeometry(root, src_dir, build_dir);
+            parseGeometry(root, src_dir, build_dir, full_xml_path);
         } catch (Exception e) {
             System.err.println("Error processing " + xml_file);
             e.printStackTrace(System.err);
@@ -44,17 +48,19 @@ public final class ConvertToBinary {
         }
     }
 
-    private static void parseGeometry(@NonNull Node n, @NonNull Path src_dir, @NonNull Path build_dir) {
+    private static void parseGeometry(@NonNull Node n, @NonNull Path src_dir, @NonNull Path build_dir,
+            @NonNull Path xml_file) {
         if (n.hasChildNodes()) {
             NodeList nl = n.getChildNodes();
             for (int i = 0; i < nl.getLength(); i++) {
                 if (nl.item(i).getNodeType() == Node.ELEMENT_NODE)
-                    parseGroup(nl.item(i), src_dir, build_dir);
+                    parseGroup(nl.item(i), src_dir, build_dir, xml_file);
             }
         }
     }
 
-    private static void parseGroup(@NonNull Node n, @NonNull Path src_dir, @NonNull Path build_dir) {
+    private static void parseGroup(@NonNull Node n, @NonNull Path src_dir, @NonNull Path build_dir,
+            @NonNull Path xml_file) {
         if (n.hasChildNodes()) {
             Path new_build_dir = build_dir.resolve(getName(n));
             NodeList nl = n.getChildNodes();
@@ -63,7 +69,7 @@ public final class ConvertToBinary {
                 if (child.getNodeType() == Node.ELEMENT_NODE) {
                     String name = child.getNodeName();
                     if (name.equals("sprite"))
-                        parseSprite(child, src_dir, new_build_dir);
+                        parseSprite(child, src_dir, new_build_dir, xml_file);
                 }
             }
         }
@@ -133,23 +139,30 @@ public final class ConvertToBinary {
         return object_infos.toArray(infos);
     }
 
-    private static void parseSprite(@NonNull Node n, @NonNull Path src_dir, @NonNull Path build_dir) {
+    private static void parseSprite(@NonNull Node n, @NonNull Path src_dir, @NonNull Path build_dir,
+            @NonNull Path xml_file) {
         String name = getName(n);
         AnimObjectInfo[] anim_object_infos = getAnimObjectInfos(n, src_dir);
         ModelObjectInfo[] model_object_infos = getModelObjectInfos(n, src_dir);
         Path build_file = build_dir.resolve(name + ".binsprite");
 
-        boolean modified = false;
-        for (AnimObjectInfo anim_object_info : anim_object_infos) {
-            if (isModified(anim_object_info.getFile(), build_file)) {
-                modified = true;
-                break;
+        ObjectInfo skeleton_info = getSkeletonObjectInfo(n, src_dir);
+        boolean modified = isModified(xml_file, build_file)
+                || (skeleton_info != null && isModified(skeleton_info.getFile(), build_file));
+        if (!modified) {
+            for (AnimObjectInfo anim_object_info : anim_object_infos) {
+                if (isModified(anim_object_info.getFile(), build_file)) {
+                    modified = true;
+                    break;
+                }
             }
         }
-        for (ModelObjectInfo model_object_info : model_object_infos) {
-            if (isModified(model_object_info.getFile(), build_file)) {
-                modified = true;
-                break;
+        if (!modified) {
+            for (ModelObjectInfo model_object_info : model_object_infos) {
+                if (isModified(model_object_info.getFile(), build_file)) {
+                    modified = true;
+                    break;
+                }
             }
         }
         if (modified) {
@@ -159,11 +172,10 @@ public final class ConvertToBinary {
                 scale = Float.parseFloat(scale_node.getNodeValue());
             else
                 scale = 1f;
-            ObjectInfo skeleton_info = getSkeletonObjectInfo(n, src_dir);
             AnimationInfo[] animations;
             Map<String, Bone> name_to_bone_map;
             if (skeleton_info != null) {
-                Skeleton skeleton = SkeletonLoader.loadSkeleton(getSkeletonObjectInfo(n, src_dir).getFile());
+                Skeleton skeleton = SkeletonLoader.loadSkeleton(skeleton_info.getFile());
                 name_to_bone_map = skeleton.getNameToBoneMap();
                 animations = new AnimationInfo[anim_object_infos.length];
                 for (int i = 0; i < anim_object_infos.length; i++) {

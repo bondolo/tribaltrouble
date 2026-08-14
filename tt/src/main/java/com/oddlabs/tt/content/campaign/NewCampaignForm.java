@@ -2,24 +2,24 @@ package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.gui.CancelButton;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.gui.ButtonObject;
-import com.oddlabs.tt.client.gui.EditLine;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.Group;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.gui.OKButton;
-import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.client.gui.PulldownButton;
-import com.oddlabs.tt.client.gui.PulldownItem;
-import com.oddlabs.tt.client.gui.PulldownMenu;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.guievent.EnterListener;
-import com.oddlabs.tt.client.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.CancelButton;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.gui.ButtonObject;
+import com.oddlabs.tt.gui.EditLine;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.OKButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.PulldownButton;
+import com.oddlabs.tt.gui.PulldownItem;
+import com.oddlabs.tt.gui.PulldownMenu;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.EnterListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Difficulty;
@@ -34,8 +34,8 @@ import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
 /**
  * UI form for creating a new single-player campaign.

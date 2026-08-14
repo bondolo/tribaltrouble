@@ -4,7 +4,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
 import com.oddlabs.tt.base.global.Globals;
-import com.oddlabs.tt.engine.procedural.GeneratorRespond;
+import com.oddlabs.tt.procedural.GeneratorRespond;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.simulation.model.BoundingBox;
@@ -229,10 +229,6 @@ public final class Sprite {
             int mipmap_cutoff, boolean max_alpha) {
         if (texture_name.startsWith(GENERATOR_STRING)) {
             String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
-            if (generator_class_name.startsWith("com.oddlabs.tt.procedural.")) {
-                generator_class_name = generator_class_name.replace("com.oddlabs.tt.procedural.",
-                        "com.oddlabs.tt.engine.procedural.");
-            }
             try {
                 Class<?> generator_class = Class.forName(generator_class_name);
                 @SuppressWarnings("unchecked") Supplier<Texture[]> descriptor = (Supplier<Texture[]>) generator_class

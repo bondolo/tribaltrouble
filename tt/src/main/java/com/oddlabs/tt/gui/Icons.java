@@ -1,0 +1,136 @@
+package com.oddlabs.tt.gui;
+
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.resource.TextureFile;
+import com.oddlabs.util.Color;
+import com.oddlabs.util.Utils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.net.URL;
+
+/**
+ * Utilities for loading icon atlases
+ */
+final class Icons {
+    private Icons() {
+        // no instances
+    }
+
+    static Node loadFile(@NonNull String xml_file, @Nullable ErrorHandler error_handler) {
+        URL url = Utils.makeURL(xml_file);
+
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(error_handler);
+            Document document = builder.parse(url.openStream());
+            return document.getDocumentElement();
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new IllegalStateException("Failed to load icon atlas: " + xml_file, e);
+        }
+    }
+
+    static @NonNull Texture loadTexture(@NonNull Node n) {
+        return loadTexture(n.getAttributes().getNamedItem("texture").getNodeValue());
+    }
+
+    public static @NonNull Texture loadTexture(@NonNull String tex_file) {
+        TextureFile file = new TextureFile(tex_file,
+                GL11.GL_RGBA,
+                GL11.GL_LINEAR,
+                GL11.GL_LINEAR,
+                GL12.GL_CLAMP_TO_EDGE,
+                GL12.GL_CLAMP_TO_EDGE);
+        return Resources.findResource(file);
+    }
+
+    static @NonNull Node getNodeByName(@NonNull String name, @NonNull Node n) {
+        NodeList nl = n.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            if (nl.item(i).getNodeName().equals(name))
+                return nl.item(i);
+        }
+        assert false : "Missing node: " + name;
+        return null;
+    }
+
+    static int getInt(@NonNull Node n, @NonNull String key) {
+        String string = n.getAttributes().getNamedItem(key).getNodeValue();
+        return Integer.parseInt(string);
+    }
+
+    static float getFloat(@NonNull Node n, @NonNull String key) {
+        String string = n.getAttributes().getNamedItem(key).getNodeValue();
+        return Float.parseFloat(string);
+    }
+
+    static @NonNull ModeIconQuads getNamedIconQuads(@NonNull Node n, @NonNull String name, @NonNull Texture texture) {
+        return getIconQuads(getNodeByName(name, n), texture);
+    }
+
+    static @NonNull IconQuad getNamedIconQuad(@NonNull Node n, @NonNull String name, @NonNull Texture texture) {
+        return getIconQuad(getNodeByName(name, n), texture);
+    }
+
+    static @NonNull ModeIconQuads getIconQuads(@NonNull Node n, @NonNull Texture texture) {
+        return new ModeIconQuads(
+                getIconQuad(getNodeByName("normal", n), texture),
+                getIconQuad(getNodeByName("active", n), texture),
+                getIconQuad(getNodeByName("disabled", n), texture)
+        );
+    }
+
+    static @NonNull IconQuad getIconQuad(@NonNull Node n, @NonNull Texture texture) {
+        Node q = getNodeByName("quad", n);
+        return parseIconQuad(q, texture);
+    }
+
+    static @NonNull IconQuad parseIconQuad(@NonNull Node q, @NonNull Texture texture) {
+        int left = getInt(q, "left");
+        int top = getInt(q, "top");
+        int right = getInt(q, "right");
+        int bottom = getInt(q, "bottom");
+
+        float texW = texture.getWidth();
+        float texH = texture.getHeight();
+
+        // Apply a half-texel inset to UVs to prevent atlas bleeding with GL_LINEAR filtering.
+        // We only apply this if the quad has sufficient size to avoid flipping UVs.
+        float insetU = (right - left) >= 1 ? 0.5f : 0.0f;
+        float insetV = (bottom - top) >= 1 ? 0.5f : 0.0f;
+
+        float u1 = (left + insetU) / texW;
+        float v1 = 1f - (bottom - insetV) / texH;
+        float u2 = (right - insetU) / texW;
+        float v2 = 1f - (top + insetV) / texH;
+
+        return new IconQuad(u1, v1, u2, v2, right - left, bottom - top, texture);
+    }
+
+    static Color.@NonNull Linear getNamedColor(@NonNull Node n, @NonNull String name) {
+        return getColor(getNodeByName(name, n));
+    }
+
+    static Color.@NonNull Linear getColor(@NonNull Node n) {
+        Node q = getNodeByName("color", n);
+        float r = getFloat(q, "r");
+        float g = getFloat(q, "g");
+        float b = getFloat(q, "b");
+        float a = getFloat(q, "a");
+        return new Color.Standard(r, g, b, a).linear();
+    }
+}

@@ -2,13 +2,13 @@ package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.MatchmakingClientInterface;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.gui.CancelButton;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.Skin;
+import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.gui.CancelButton;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.ProfileListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
@@ -16,7 +16,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_MID;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 
 public final class CreatingProfileForm extends Form implements ProfileListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CreatingProfileForm.class.getName());

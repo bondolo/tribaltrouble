@@ -1,8 +1,8 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.engine.procedural.GeneratorCrack;
-import com.oddlabs.tt.engine.procedural.GeneratorHalos;
+import com.oddlabs.tt.procedural.GeneratorCrack;
+import com.oddlabs.tt.procedural.GeneratorHalos;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.EmojiType;

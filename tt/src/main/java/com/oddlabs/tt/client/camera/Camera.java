@@ -7,7 +7,7 @@ import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
-import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.engine.render.Renderer;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

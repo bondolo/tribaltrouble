@@ -6,7 +6,7 @@ import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.engine.procedural.Landscape;
+import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.effects.particle.ColorSpectrum;

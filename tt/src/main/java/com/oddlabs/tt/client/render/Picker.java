@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.gui.LocalInput;
+import com.oddlabs.tt.gui.LocalInput;
 
 import com.oddlabs.tt.engine.render.*;
 
@@ -11,7 +11,7 @@ import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
-import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
@@ -28,7 +28,7 @@ import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.client.gui.ToolTip;
+import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.client.viewer.Selection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

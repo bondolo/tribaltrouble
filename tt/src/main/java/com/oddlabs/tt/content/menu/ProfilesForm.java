@@ -2,31 +2,31 @@ package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Profile;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.form.QuestionForm;
-import com.oddlabs.tt.client.gui.ColumnInfo;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.IntegerLabel;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.gui.MultiColumnComboBox;
-import com.oddlabs.tt.client.gui.Row;
+import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.gui.form.QuestionForm;
+import com.oddlabs.tt.gui.ColumnInfo;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.IntegerLabel;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.MultiColumnComboBox;
+import com.oddlabs.tt.gui.Row;
 import java.util.List;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.guievent.MouseClickListener;
-import com.oddlabs.tt.client.guievent.RowListener;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.client.gui.Origin.AT_END;
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Origin.AT_END;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
 public final class ProfilesForm extends Form {
     private static final int NICK_SIZE = 200;

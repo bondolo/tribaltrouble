@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.client.gui.Form;
+import com.oddlabs.tt.gui.Form;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.Supplier;

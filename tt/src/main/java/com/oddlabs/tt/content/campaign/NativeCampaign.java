@@ -2,11 +2,11 @@ package com.oddlabs.tt.content.campaign;
 
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.client.gui.CampaignIcons;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.NativeCampaignIcons;
-import com.oddlabs.tt.client.gui.Origin;
+import com.oddlabs.tt.gui.CampaignIcons;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.NativeCampaignIcons;
+import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;

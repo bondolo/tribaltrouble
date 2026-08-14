@@ -1,15 +1,15 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.form.ProgressForm;
-import com.oddlabs.tt.client.gui.GUIIcons;
+import com.oddlabs.tt.gui.form.ProgressForm;
+import com.oddlabs.tt.gui.GUIIcons;
 import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
-import com.oddlabs.tt.engine.procedural.GeneratorHalos;
-import com.oddlabs.tt.engine.procedural.GeneratorLightning;
-import com.oddlabs.tt.engine.procedural.GeneratorPoison;
-import com.oddlabs.tt.engine.procedural.GeneratorSmoke;
+import com.oddlabs.tt.procedural.GeneratorHalos;
+import com.oddlabs.tt.procedural.GeneratorLightning;
+import com.oddlabs.tt.procedural.GeneratorPoison;
+import com.oddlabs.tt.procedural.GeneratorSmoke;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
@@ -782,7 +782,7 @@ public final class RacesAssetsLoader {
     }
 
     private static @NonNull SpriteKey registerIconSprite(@NonNull RenderQueues queues,
-            com.oddlabs.tt.client.gui.@NonNull IconQuad icon) {
+            com.oddlabs.tt.gui.@NonNull IconQuad icon) {
         return queues.registerQuadSprite(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2(), icon.getTexture());
     }
 }

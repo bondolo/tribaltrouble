@@ -7,7 +7,7 @@ import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.procedural.Landscape;
+import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;

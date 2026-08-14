@@ -2,9 +2,9 @@ package com.oddlabs.tt.client.delegate;
 
 
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.GUIObject;
-import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.GUIObject;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;

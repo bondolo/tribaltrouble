@@ -1,13 +1,13 @@
 package com.oddlabs.tt;
 
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.gui.GUI;
-import com.oddlabs.tt.client.gui.LocalInput;
+import com.oddlabs.tt.gui.GUI;
+import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.client.render.ClientStateInitializer;
 import com.oddlabs.tt.engine.render.ClientStartup;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.window.LWJGL3Window;
+import com.oddlabs.tt.window.LWJGL3Window;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDLMessageBox;
 

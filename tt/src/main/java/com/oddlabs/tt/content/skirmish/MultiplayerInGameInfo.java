@@ -2,8 +2,8 @@ package com.oddlabs.tt.content.skirmish;
 
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;
-import com.oddlabs.tt.client.gui.FreeQuitLabel;
-import com.oddlabs.tt.client.gui.Group;
+import com.oddlabs.tt.gui.FreeQuitLabel;
+import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
