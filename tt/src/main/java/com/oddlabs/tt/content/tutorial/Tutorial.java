@@ -1,12 +1,12 @@
 package com.oddlabs.tt.content.tutorial;
 
-import com.oddlabs.tt.client.render.AssetRegistry;
-import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.client.gui.GUIObject;
 import com.oddlabs.tt.client.gui.LabelBox;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;

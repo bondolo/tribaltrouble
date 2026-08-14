@@ -14,7 +14,7 @@ import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.RowListener;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
 import org.jspecify.annotations.NonNull;

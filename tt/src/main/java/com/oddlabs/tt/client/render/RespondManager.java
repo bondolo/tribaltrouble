@@ -6,8 +6,8 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.animation.AnimationManager;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

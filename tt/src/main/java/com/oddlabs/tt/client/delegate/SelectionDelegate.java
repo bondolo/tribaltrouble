@@ -23,7 +23,7 @@ import com.oddlabs.tt.simulation.model.UnitTemplate;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.Notification;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.Color;

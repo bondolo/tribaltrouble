@@ -1,7 +1,7 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.core.util.PocketList;
-import com.oddlabs.tt.core.util.ProgressListener;
+import com.oddlabs.tt.base.util.PocketList;
+import com.oddlabs.tt.base.util.ProgressListener;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

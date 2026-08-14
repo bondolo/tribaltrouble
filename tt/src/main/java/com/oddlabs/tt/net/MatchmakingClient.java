@@ -17,7 +17,7 @@ import com.oddlabs.net.HostSequenceID;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -448,7 +448,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         Connection wrapped_connection = (Connection) conn.getWrappedConnection();
         matchmaking_login_interface.setLocalRemoteAddress(wrapped_connection.getLocalAddress());
         IO.println("wrapped_connection.getLocalAddress()	 = " + wrapped_connection.getLocalAddress());
-        int revision = com.oddlabs.tt.core.global.Globals.REVISION;
+        int revision = com.oddlabs.tt.base.global.Globals.REVISION;
         if (login_details != null)
             matchmaking_login_interface.createUser(login, login_details, signed_key, revision);
         else

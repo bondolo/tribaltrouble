@@ -42,10 +42,10 @@ import com.oddlabs.tt.client.gui.ChatCommand;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.MatchmakingListener;
 import com.oddlabs.tt.net.ServerMessageBundler;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

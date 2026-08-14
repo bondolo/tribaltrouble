@@ -1,8 +1,8 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.core.animation.SimulationClock;
-import com.oddlabs.tt.core.util.ProgressListener;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.SimulationClock;
+import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.RacesResources;

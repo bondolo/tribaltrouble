@@ -1,6 +1,6 @@
 package com.oddlabs.tt.net;
 
-import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.NonNull;
 

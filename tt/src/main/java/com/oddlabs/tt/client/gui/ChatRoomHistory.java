@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.gui;
 import com.oddlabs.matchmaking.ChatRoomUser;
 import com.oddlabs.tt.net.ChatHistory;
 import com.oddlabs.tt.net.ChatMessage;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

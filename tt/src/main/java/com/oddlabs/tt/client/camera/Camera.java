@@ -3,9 +3,9 @@ package com.oddlabs.tt.client.camera;
 import com.oddlabs.tt.engine.render.CameraState;
 
 
-import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.core.event.StateChecksum;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.event.StateChecksum;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.engine.render.Renderer;

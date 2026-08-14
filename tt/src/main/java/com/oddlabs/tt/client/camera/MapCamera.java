@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.FogInfo;
 import com.oddlabs.tt.engine.resource.RadialFogInfo;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.util.Color;
 import org.joml.Vector2fc;
 import org.jspecify.annotations.NonNull;

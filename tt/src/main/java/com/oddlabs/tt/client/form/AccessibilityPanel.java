@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.form;
 
 import com.oddlabs.tt.simulation.model.CVDMode;
-import com.oddlabs.tt.core.global.Settings;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.client.gui.CheckBox;
 import com.oddlabs.tt.client.gui.GUIObject;
 import com.oddlabs.tt.client.gui.GUIRoot;

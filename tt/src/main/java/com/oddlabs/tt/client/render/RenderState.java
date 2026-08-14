@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+
 import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
@@ -8,8 +10,8 @@ import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;

@@ -4,8 +4,8 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.simulation.model.UnitType;
 
-import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;

@@ -1,10 +1,10 @@
 package com.oddlabs.tt.net;
 
-import com.oddlabs.tt.core.util.LoadCallback;
+import com.oddlabs.tt.base.util.LoadCallback;
 
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import org.jspecify.annotations.NonNull;
 
 /** Factory interface for creating game loading callbacks. */

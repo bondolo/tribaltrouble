@@ -2,7 +2,7 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.registration.RegistrationKeyFormatException;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

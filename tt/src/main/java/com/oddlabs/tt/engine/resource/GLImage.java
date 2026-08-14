@@ -2,7 +2,7 @@ package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;

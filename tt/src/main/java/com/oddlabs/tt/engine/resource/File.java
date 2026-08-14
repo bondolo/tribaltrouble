@@ -65,7 +65,7 @@ public abstract class File<R> implements Supplier<R> {
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
-        Path file = com.oddlabs.tt.core.util.Utils.getInstallDir().resolve(location);
+        Path file = com.oddlabs.tt.base.util.Utils.getInstallDir().resolve(location);
         return Files.isRegularFile(file) && Files.isReadable(file) ? Optional.of(file.toUri()) : Optional.empty();
     }
 }

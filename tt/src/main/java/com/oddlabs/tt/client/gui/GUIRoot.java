@@ -1,13 +1,13 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.ModalDelegate;
 import com.oddlabs.tt.client.delegate.NullDelegate;
 import com.oddlabs.tt.client.form.QuitForm;
 import com.oddlabs.tt.client.form.Status;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
@@ -16,7 +16,7 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.util.GLUtils;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

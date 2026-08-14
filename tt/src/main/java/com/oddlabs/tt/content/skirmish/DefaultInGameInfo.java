@@ -10,7 +10,7 @@ import com.oddlabs.tt.client.gui.Label;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.player.Player;

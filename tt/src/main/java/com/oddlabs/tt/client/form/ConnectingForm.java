@@ -12,8 +12,8 @@ import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
@@ -92,7 +92,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.core.util.@NonNull LoadCallback loadCallback) {
+    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback loadCallback) {
         remove();
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
                 (LoadCallback) loadCallback);

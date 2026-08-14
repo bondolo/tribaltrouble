@@ -2,7 +2,7 @@ package com.oddlabs.tt.engine.procedural;
 
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.GLImage;
 import com.oddlabs.tt.engine.resource.GLIntImage;

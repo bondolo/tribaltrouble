@@ -2,8 +2,8 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.core.util.LoadCallback;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import org.jspecify.annotations.NonNull;
 
 /** Listener interface receiving game lobby configuration events. */

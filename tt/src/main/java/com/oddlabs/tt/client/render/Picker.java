@@ -4,9 +4,9 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.core.animation.TimerAnimation;
-import com.oddlabs.tt.core.animation.Updatable;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.client.gui.GUIRoot;
