@@ -8,7 +8,6 @@ import com.oddlabs.tt.client.gui.HorizButton;
 import com.oddlabs.tt.client.gui.LabelBox;
 import com.oddlabs.tt.client.gui.OKButton;
 import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -64,7 +63,7 @@ final class CampaignInGameInfo implements InGameInfo {
     @Override
     public void close(@NonNull WorldViewer viewer) {
         if (campaign.getState().getIslandState(0) != CampaignState.ISLAND_COMPLETED) {
-            Renderer.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
+            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
         } else {
             campaign.pushDelegate(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
         }

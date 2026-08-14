@@ -1,13 +1,9 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.render.ElementSceneContext;
+import com.oddlabs.tt.engine.render.ModelVisitor;
+import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Model;
@@ -28,7 +24,7 @@ import java.util.Optional;
 class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
 
     @Override
-    public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<S> render_state) {
+    public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<S> render_state) {
         Selectable<?> selectable = render_state.getModel();
         Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
         if (selectable instanceof Unit unit) {
@@ -48,7 +44,7 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
     }
 
     @Override
-    public void getTransform(@NonNull ElementRenderState<S> render_state, @NonNull Matrix4f dest) {
+    public void getTransform(@NonNull ElementSceneContext<S> render_state, @NonNull Matrix4f dest) {
         Model model = render_state.model;
         float angle = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
         dest.translation(model.getPositionX(), model.getPositionY(), render_state.f)
@@ -60,26 +56,28 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
     }
 
     @Override
-    public final Color.@NonNull Linear getTeamColor(@NonNull ElementRenderState<S> render_state) {
+    public final Color.@NonNull Linear getTeamColor(@NonNull ElementSceneContext<S> render_state) {
         return getTeamColor(render_state.getModel());
     }
 
     @Override
-    public final @NonNull Color getSelectionColor(@NonNull ElementRenderState<S> render_state) {
-        Player local_player = render_state.render_state.getLocalPlayer();
+    public final @NonNull Color getSelectionColor(@NonNull ElementSceneContext<S> render_state) {
+        RenderState renderState = (RenderState) render_state.sceneContext;
+        Player local_player = renderState.getLocalPlayer();
         S model = render_state.getModel();
-        return model.getSelectionColor(local_player, render_state.render_state.isSelected(model),
-                render_state.render_state.isHovered(model));
+        return model.getSelectionColor(local_player, renderState.isSelected(model),
+                renderState.isHovered(model));
     }
 
     @Override
-    public final Selectable.@NonNull VisualPattern getPattern(@NonNull ElementRenderState<S> render_state) {
-        Player local_player = render_state.render_state.getLocalPlayer();
+    public final Selectable.@NonNull VisualPattern getPattern(@NonNull ElementSceneContext<S> render_state) {
+        RenderState renderState = (RenderState) render_state.sceneContext;
+        Player local_player = renderState.getLocalPlayer();
         return render_state.getModel().getVisualPattern(local_player);
     }
 
     @Override
-    public final void markDetailPoint(@NonNull ElementRenderState<S> render_state) {
+    public final void markDetailPoint(@NonNull ElementSceneContext<S> render_state) {
         S selectable = render_state.model;
         if (!selectable.isDead())
             super.markDetailPoint(render_state);

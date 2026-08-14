@@ -2,7 +2,6 @@ package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 
-import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.audio.AudioParameters;
@@ -27,7 +26,7 @@ import org.lwjgl.opengl.GL11;
  * Client-side visual accessory for the lightning cloud magical effect.
  * Manages the persistent cloud puffiness and handles lightning strike visual/sound effects.
  */
-public final class LightningCloudVisualAccessory implements EmitterAccessory {
+public final class LightningCloudVisualAccessory implements EmitterAccessory, LightningAccessory {
     private static final float BRIGHTNESS = Color.toLinear(.2f);
     private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, 0);
     private static final float LIGHTNING_TIME = .1f;
@@ -81,6 +80,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
                 AudioAssets.BUBBLING);
     }
 
+    @Override
     public void triggerStrike(float tx, float ty, float tz) {
         if (lightningTimer <= 0f) {
             emitter.adjustColor(BRIGHTNESS_DELTA);

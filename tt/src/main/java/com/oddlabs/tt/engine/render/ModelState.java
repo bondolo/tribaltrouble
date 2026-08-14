@@ -1,8 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;

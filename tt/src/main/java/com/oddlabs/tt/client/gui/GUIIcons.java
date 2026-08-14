@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.simulation.model.Cost;
 import com.oddlabs.tt.simulation.model.SupplyType;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.GLImage;
@@ -78,13 +77,13 @@ public class GUIIcons {
         rubber_status_icon = Icons.getNamedIconQuad(root, "rubber_status_icon", texture);
         cheat_icon = Icons.getNamedIconQuad(root, "cheat_icon", texture);
 
-        Supplier<String> tt_caption = () -> i18n("terrifying_toot", Renderer.getLocalInput().getInputManager()
+        Supplier<String> tt_caption = () -> i18n("terrifying_toot", LocalInput.getLocalInput().getInputManager()
                 .getBindingString(GameAction.MAGIC_1));
-        Supplier<String> rr_caption = () -> i18n("ravaging_roar", Renderer.getLocalInput().getInputManager()
+        Supplier<String> rr_caption = () -> i18n("ravaging_roar", LocalInput.getLocalInput().getInputManager()
                 .getBindingString(GameAction.MAGIC_2));
-        Supplier<String> ss_caption = () -> i18n("stinking_stew", Renderer.getLocalInput().getInputManager()
+        Supplier<String> ss_caption = () -> i18n("stinking_stew", LocalInput.getLocalInput().getInputManager()
                 .getBindingString(GameAction.MAGIC_1));
-        Supplier<String> cc_caption = () -> i18n("crackling_cloud", Renderer.getLocalInput().getInputManager()
+        Supplier<String> cc_caption = () -> i18n("crackling_cloud", LocalInput.getLocalInput().getInputManager()
                 .getBindingString(GameAction.MAGIC_2));
 
         viking_icons = GUIIcons.parseRaceIcons(root, "vikings", tt_caption, rr_caption, texture);

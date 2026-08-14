@@ -2,10 +2,6 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
@@ -28,27 +24,27 @@ class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     }
 
     @Override
-    public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<M> render_state) {
+    public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<M> render_state) {
         return Optional.empty();
     }
 
     @Override
-    public @NonNull Color getSelectionColor(@NonNull ElementRenderState<M> render_state) {
+    public @NonNull Color getSelectionColor(@NonNull ElementSceneContext<M> render_state) {
         return Color.Linear.WHITE;
     }
 
     @Override
-    public @NonNull Color getTeamColor(@NonNull ElementRenderState<M> render_state) {
+    public @NonNull Color getTeamColor(@NonNull ElementSceneContext<M> render_state) {
         return Color.Linear.WHITE;
     }
 
     @Override
-    public Selectable.@NonNull VisualPattern getPattern(@NonNull ElementRenderState<M> render_state) {
+    public Selectable.@NonNull VisualPattern getPattern(@NonNull ElementSceneContext<M> render_state) {
         return Selectable.VisualPattern.NONE;
     }
 
     @Override
-    public void getTransform(@NonNull ElementRenderState<M> render_state, @NonNull Matrix4f dest) {
+    public void getTransform(@NonNull ElementSceneContext<M> render_state, @NonNull Matrix4f dest) {
         Model model = render_state.getModel();
         float angle = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
         dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())

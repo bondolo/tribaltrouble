@@ -1,18 +1,17 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.effects.render;
 
-
-import com.oddlabs.tt.effects.render.*;
-
+import com.oddlabs.tt.effects.particle.Emitter;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.effects.particle.Emitter;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
- * An {@link AnimatedAccessory} that wraps a particle {@link Emitter}.
+ * An {@link EmitterAccessory} that wraps a particle {@link Emitter}.
  * Allows particle effects to be attached to units or buildings without quadtree overhead.
  */
 public final class EmitterAttachedAccessory implements EmitterAccessory {
@@ -39,9 +38,6 @@ public final class EmitterAttachedAccessory implements EmitterAccessory {
 
     @Override
     public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
-        // Apply rotation based on parent direction
-        float angle = (float) Math.atan2(parent.getDirectionY(), parent.getDirectionX());
-        dest.rotate(angle, 0f, 0f, 1f);
         dest.translate(relativeOffset);
     }
 

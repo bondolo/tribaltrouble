@@ -1,4 +1,4 @@
-package com.oddlabs.tt.client.gui;
+package com.oddlabs.tt.content;
 
 import org.jspecify.annotations.NonNull;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Supported languages and flag icon mappings.
+ * Supported languages and locale configuration for game content.
  */
 public final class Languages {
     private static final SequencedSet<@NonNull Locale> LANGUAGES;

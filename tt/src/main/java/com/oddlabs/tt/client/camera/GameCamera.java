@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
+import com.oddlabs.tt.client.gui.LocalInput;
+
 import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
@@ -203,7 +205,7 @@ public final class GameCamera extends Camera {
     private void doScroll(float time_delta) {
         if (!viewer.getGUIRoot().getDelegate().canScroll())
             return;
-        var inputManager = Renderer.getLocalInput().getInputManager();
+        var inputManager = LocalInput.getLocalInput().getInputManager();
         float scroll_speed = scroll_start_speed * (.4f + (scroll_acceleration_seconds / SCROLL_ACCELERATION_SECONDS_MAX)
                 * SCROLL_ACCELERATION_FACTOR);
         float scroll_factor = time_delta * scroll_speed;
@@ -365,7 +367,7 @@ public final class GameCamera extends Camera {
     }
 
     private boolean scrollSpeedLocked(@Nullable GameAction action) {
-        var inputManager = Renderer.getLocalInput().getInputManager();
+        var inputManager = LocalInput.getLocalInput().getInputManager();
         return scroll_x != 0
                 || scroll_y != 0
                 || (inputManager.isActive(GameAction.CAMERA_PAN_UP) && action != GameAction.CAMERA_PAN_UP)
@@ -457,7 +459,7 @@ public final class GameCamera extends Camera {
             return;
         }
 
-        var inputManager = Renderer.getLocalInput().getInputManager();
+        var inputManager = LocalInput.getLocalInput().getInputManager();
         pitch_up = inputManager.isActive(GameAction.CAMERA_PITCH_UP);
         pitch_down = inputManager.isActive(GameAction.CAMERA_PITCH_DOWN);
         rotate_right = inputManager.isActive(GameAction.CAMERA_ROTATE_RIGHT);
@@ -467,7 +469,7 @@ public final class GameCamera extends Camera {
     @Override
     public void enable() {
         super.enable();
-        var localInput = Renderer.getLocalInput();
+        var localInput = LocalInput.getLocalInput();
         float scale = viewer.getGUIRoot().getGlobalScale();
         mouseMoved(Math.round(localInput.getMouseX() / scale), Math.round(localInput.getMouseY() / scale));
     }

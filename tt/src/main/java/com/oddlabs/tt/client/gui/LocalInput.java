@@ -10,8 +10,8 @@ import com.oddlabs.tt.client.input.LWJGL3InputProvider;
 import com.oddlabs.tt.client.input.Modifier;
 import com.oddlabs.tt.client.input.PointerInput;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.client.window.LWJGL3Window;
-import com.oddlabs.tt.client.window.Window;
+import com.oddlabs.tt.engine.window.LWJGL3Window;
+import com.oddlabs.tt.engine.window.Window;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -28,6 +28,16 @@ public final class LocalInput implements AutoCloseable {
 
     public static final int CURSOR_ONE_BIT_TRANSPARENCY = 1;
     public static final int CURSOR_8_BIT_ALPHA = 2;
+
+    private static @Nullable LocalInput instance;
+
+    public static @NonNull LocalInput getLocalInput() {
+        LocalInput inst = instance;
+        if (inst == null) {
+            throw new IllegalStateException("LocalInput is not initialized");
+        }
+        return inst;
+    }
 
     private int mouse_x;
     private int mouse_y;
@@ -47,11 +57,14 @@ public final class LocalInput implements AutoCloseable {
     public LocalInput(@NonNull Window lwjglWindow) {
         this.window = lwjglWindow;
         if (lwjglWindow instanceof LWJGL3Window win) {
-            inputProvider = new LWJGL3InputProvider(win);
+            LWJGL3InputProvider p = new LWJGL3InputProvider(win);
+            this.inputProvider = p;
+            this.pointerInput = new PointerInput(p, this);
+            p.setPointerInput(this.pointerInput);
         } else {
             throw new IllegalStateException("Window is not LWJGL3Window");
         }
-        pointerInput = new PointerInput(inputProvider, this);
+        instance = this;
     }
 
     public void poll(@NonNull GUIRoot root) {

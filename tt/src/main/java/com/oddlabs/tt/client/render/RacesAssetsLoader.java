@@ -112,7 +112,8 @@ public final class RacesAssetsLoader {
                 new float[][]{{0.15f, 0.5f}, {0.5f, 0f}},
                 new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {
                         ring_mid + ring_thickness / 2, 1f}, {ring_mid + ring_thickness / 2 + fadeout, 0f}});
-        ShadowListKey shadow_renderer = queues.registerSelectableShadowList(building_shadow_desc);
+        ShadowListKey shadow_renderer = queues.registerShadowRenderer(building_shadow_desc,
+                new SelectableShadowRenderer(building_shadow_desc));
         SpriteFile building = new SpriteFile(built_name,
                 Globals.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
@@ -411,7 +412,8 @@ public final class RacesAssetsLoader {
                 queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue()));
 
         ProgressForm.progress(1f / num_progress);
-        ShadowListKey default_shadow_list = queues.registerSelectableShadowList(AssetRegistry.DEFAULT_SHADOW_DESC);
+        ShadowListKey default_shadow_list = queues.registerShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC,
+                new SelectableShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC));
         AssetRegistry.getInstance().registerDefaultUnitShadow(default_shadow_list);
         SpriteKey vRockSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_ROCK.getValue());
         UnitTemplate viking_warrior_rock_template = new UnitTemplate(.4f,
@@ -757,10 +759,10 @@ public final class RacesAssetsLoader {
                 queues.registerTexture(new ColorGraphemeGenerator("🔨"), 0)
         );
 
-        SpriteKey tree_status_sprite = queues.registerIconSprite(icons.getTreeStatusIcon());
-        SpriteKey rock_status_sprite = queues.registerIconSprite(icons.getRockStatusIcon());
-        SpriteKey iron_status_sprite = queues.registerIconSprite(icons.getIronStatusIcon());
-        SpriteKey rubber_status_sprite = queues.registerIconSprite(icons.getRubberStatusIcon());
+        SpriteKey tree_status_sprite = registerIconSprite(queues, icons.getTreeStatusIcon());
+        SpriteKey rock_status_sprite = registerIconSprite(queues, icons.getRockStatusIcon());
+        SpriteKey iron_status_sprite = registerIconSprite(queues, icons.getIronStatusIcon());
+        SpriteKey rubber_status_sprite = registerIconSprite(queues, icons.getRubberStatusIcon());
 
         // Register visual emojis and status sprites in registry
         AssetRegistry ar = AssetRegistry.getInstance();
@@ -777,5 +779,10 @@ public final class RacesAssetsLoader {
         ProgressForm.progress(1f / num_progress);
 
         return new RacesResources(raceInfos);
+    }
+
+    private static @NonNull SpriteKey registerIconSprite(@NonNull RenderQueues queues,
+            com.oddlabs.tt.client.gui.@NonNull IconQuad icon) {
+        return queues.registerQuadSprite(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2(), icon.getTexture());
     }
 }

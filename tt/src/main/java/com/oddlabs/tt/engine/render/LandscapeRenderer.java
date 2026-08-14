@@ -1,7 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.client.render.*;
-import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
@@ -18,8 +16,8 @@ import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.effects.scenery.Sky;
-import com.oddlabs.tt.effects.scenery.Water;
+import com.oddlabs.tt.engine.render.scenery.Sky;
+import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

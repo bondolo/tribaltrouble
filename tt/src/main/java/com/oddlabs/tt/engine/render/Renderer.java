@@ -1,63 +1,30 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.client.render.*;
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.Main;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
+import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.base.global.GlobalsInit;
+import com.oddlabs.tt.base.global.Settings;
+import com.oddlabs.tt.base.util.StatCounter;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.audio.AudioManager;
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.audio.openal.OpenALManager;
-import com.oddlabs.tt.client.camera.MenuCamera;
-import com.oddlabs.tt.content.menu.MainMenu;
-import com.oddlabs.tt.client.camera.StaticCamera;
-import com.oddlabs.tt.client.delegate.InGameDelegate;
-import com.oddlabs.tt.client.delegate.InGameMainMenu;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.IslandConfig;
-import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.base.event.LocalEventQueue;
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.form.ProgressForm;
-import com.oddlabs.tt.client.form.WarningForm;
-import com.oddlabs.tt.base.global.Globals;
-import com.oddlabs.tt.base.global.GlobalsInit;
-import com.oddlabs.tt.base.global.Settings;
-import com.oddlabs.tt.client.gui.GUI;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.Languages;
-import com.oddlabs.tt.client.gui.LocalInput;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.net.Network;
-import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.engine.render.state.GLRenderContext;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.NativeResource;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.util.GLUtils;
-import com.oddlabs.tt.base.util.StatCounter;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.vbo.VBO;
-import com.oddlabs.tt.client.viewer.AmbientAudio;
-import com.oddlabs.tt.client.viewer.Cheat;
-import com.oddlabs.tt.client.viewer.Selection;
-import com.oddlabs.tt.client.window.LWJGL3Window;
-import com.oddlabs.tt.client.window.Window;
+import com.oddlabs.tt.engine.window.LWJGL3Window;
+import com.oddlabs.tt.engine.window.Window;
+import com.oddlabs.tt.net.Network;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -72,7 +39,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -81,8 +47,6 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
-import static com.oddlabs.util.Utils.tryGetLoopbackAddress;
 
 /**
  * The main rendering engine and application controller.
@@ -107,43 +71,6 @@ public final class Renderer implements AutoCloseable {
 
     private static final Renderer renderer_instance = new Renderer();
 
-    static {
-        com.oddlabs.tt.simulation.model.Model.setClientStateFactory(model -> {
-            var audio = getRenderer().getAudioManager();
-            VisualModel visualModel = new VisualModel(model, audio);
-            switch (model) {
-                case com.oddlabs.tt.simulation.model.Unit unit -> {
-                    if (unit.getAbilities().hasAbilities(com.oddlabs.tt.simulation.model.Abilities.BUILD)) {
-                        visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
-                    }
-                }
-                case com.oddlabs.tt.simulation.model.Building building -> {
-                    float hitOffsetZ = building.getHitOffsetZ();
-                    visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ, audio));
-                    visualModel.getAccessories().add(new BuildingProductionAccessory(building, audio));
-                }
-                case com.oddlabs.tt.simulation.model.IronSupply ironSupply ->
-                    visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply, audio));
-                case com.oddlabs.tt.simulation.model.RockSupply rockSupply ->
-                    visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply, audio));
-                case com.oddlabs.tt.simulation.model.weapon.LightningCloud cloud ->
-                    visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud, audio));
-                case com.oddlabs.tt.simulation.model.weapon.PoisonFog fog ->
-                    visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog, audio));
-                case com.oddlabs.tt.simulation.model.weapon.Stun stun ->
-                    visualModel.getAccessories().add(new StunVisualAccessory(stun, audio));
-                case com.oddlabs.tt.simulation.model.weapon.SonicBlast blast ->
-                    visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast, audio));
-                case com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon throwingWeapon ->
-                    visualModel.getAccessories().add(new ThrowingWeaponVisualAccessory(throwingWeapon, audio));
-                default -> {
-                }
-            }
-            return visualModel;
-        });
-        HeightMap.setClientStateFactory(HeightMapVisual::new);
-    }
-
     private static final StatCounter fps = new StatCounter(10);
     private static int num_triangles_rendered;
     private static boolean grab_frames = false;
@@ -157,7 +84,6 @@ public final class Renderer implements AutoCloseable {
     private final GLRenderContext renderContext = new GLRenderContext();
     private final Window window = new LWJGL3Window();
     private final Network network = new Network();
-    private final LocalInput localInput = new LocalInput(window);
 
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
@@ -170,7 +96,6 @@ public final class Renderer implements AutoCloseable {
     private @Nullable TimerAnimation music_timer;
 
     private boolean movie_recording_started = false;
-    private AmbientAudio ambient;
 
     private int instrumentationFrameCounter;
     private long totalPollEventsTime;
@@ -180,8 +105,6 @@ public final class Renderer implements AutoCloseable {
     private long totalDisplayTime;
     private long totalGLFinishTime;
     private long totalLoopTime;
-
-    private @Nullable Cheat cheat = new Cheat();
 
     private Renderer() {
         logger.info("CWD: " + System.getProperty("user.dir"));
@@ -212,8 +135,6 @@ public final class Renderer implements AutoCloseable {
 
     @Override
     public void close() {
-        logger.info("Closing LocalInput...");
-        getLocalInput().close();
         logger.info("Closing AudioManager...");
         if (audioManager != null) {
             audioManager.close();
@@ -265,12 +186,7 @@ public final class Renderer implements AutoCloseable {
         return renderContext;
     }
 
-    public static @NonNull LocalInput getLocalInput() {
-        return getRenderer().localInput;
-    }
-
-    private void runGameLoop(@NonNull NetworkSelector network, @NonNull GUI gui) {
-        getLocalInput().checkMagicKeys();
+    private void runGameLoop(@NonNull NetworkSelector network, @NonNull FrameDriver driver) {
         if (AnimationManager.isTimeFrozen() && !AnimationManager.isTimeStopped())
             AnimationManager.unfreezeTime();
         long current_time;
@@ -304,14 +220,10 @@ public final class Renderer implements AutoCloseable {
                     && !isFinished()) {
                 network.tick();
 
-                getLocalInput().poll(gui.getGUIRoot());
+                driver.tick(network);
                 if (deterministic.log(getWindow().isOpen() && getWindow().isCloseRequested())) {
                     getWindow().setCloseRequested(false);
-                    if (gui.getGUIRoot().isShowingQuitForm()) {
-                        shutdown();
-                    } else {
-                        gui.getGUIRoot().addModalForm(new com.oddlabs.tt.client.form.QuitForm(gui.getGUIRoot()));
-                    }
+                    driver.onCloseRequested();
                 }
                 AnimationManager.pathfindsPerTick.updateAbsolute(
                         com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame);
@@ -334,7 +246,7 @@ public final class Renderer implements AutoCloseable {
                     }
                 }
                 if (!com.oddlabs.tt.base.global.Globals.frustum_freeze) {
-                    gui.pickHover();
+                    driver.pickHover();
                 }
             }
         }
@@ -349,7 +261,7 @@ public final class Renderer implements AutoCloseable {
         return num_triangles_rendered;
     }
 
-    private void display(@NonNull GUI gui) {
+    private void display(@NonNull FrameDriver driver) {
         num_triangles_rendered = 0;
         fps.updateDelta(System.currentTimeMillis());
         NativeResource.processGLCleanupTasks();
@@ -366,16 +278,16 @@ public final class Renderer implements AutoCloseable {
         // Ensure viewport is correct for the main pass
         renderContext.setViewport(0, 0, w, h);
 
-        gui.render(ambient);
+        driver.render();
 
         if (Globals.debugRenderingEnabled()) {
             renderContext.validate();
         }
     }
 
-    public void updateProgress(@NonNull GUI gui) {
+    public void updateProgress(@NonNull FrameDriver driver) {
         renderContext.reset(); // Fix texture bleeding
-        display(gui);
+        display(driver);
         window.update();
         window.pollEvents();
     }
@@ -670,7 +582,12 @@ public final class Renderer implements AutoCloseable {
         return new GamePaths(dataDir, logDir);
     }
 
-    public void run(@NonNull String @NonNull... args) throws IOException {
+    public @NonNull GamePaths getGamePaths() {
+        return gamePaths;
+    }
+
+    public void run(@NonNull ClientStartup startup, @NonNull String @NonNull... args)
+            throws IOException {
         Instant start_time = Instant.now();
         boolean first_frame = true;
         logger.info("********** Running tt **********");
@@ -722,17 +639,15 @@ public final class Renderer implements AutoCloseable {
         deterministic.log(settings);
         Locale language = "default".equals(settings.language)
                 ? deterministic.log(Renderer.default_locale) : Locale.forLanguageTag(settings.language);
-        IO.println("Trying language " + language);
-        if (null == language || !Languages.hasLanguage(language))
+        if (language == null) {
             language = Locale.of("en");
+        }
         IO.println("Using language " + language);
         Locale.setDefault(language);
 
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
         NetworkSelector network = new NetworkSelector(getEventQueue().getDeterministic(), getEventQueue()::getMillis);
-        initNetwork(network);
-        Renderer.getLocalInput().settings(game_dir, event_log_dir, settings);
         try {
             initNative(crashed);
         } catch (Exception e) {
@@ -743,18 +658,15 @@ public final class Renderer implements AutoCloseable {
         if (!settings.inDeveloperMode() && !deterministic.isPlayback())
             deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());
         GlobalsInit.init();
-        localInput.init();
-        GUI gui = new GUI();
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");
-        ambient = new AmbientAudio(getAudioManager());
 
-        Runnable load_task = setupMainMenu(network, gui, true);
+        ClientStartup.Session session = startup.init(network, true);
+        FrameDriver driver = session.driver();
+        Runnable load_task = session.loadTask();
 
-        boolean reset_keyboard = false;
         boolean wasActive = window.isActive();
-        boolean autoPaused = false;
         try {
             while (!finished) {
                 long frameStart = System.nanoTime();
@@ -779,52 +691,27 @@ public final class Renderer implements AutoCloseable {
                         window.show();
                     }
                     window.focus();
-                    Renderer.getLocalInput().getPointerInput().reapplyCursor();
-                    if (autoPaused) {
-                        var guiRoot = gui.getGUIRoot();
-                        if (guiRoot.getDelegate() instanceof InGameMainMenu igmm) {
-                            igmm.pop();
-                        }
-                        autoPaused = false;
-                    }
                 } else if (!isActive && wasActive) {
                     logger.info("[Renderer] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
                     if (getSettings().fullscreen) {
                         window.minimize();
                     }
-                    reset_keyboard = true;
-                    var guiRoot = gui.getGUIRoot();
-                    if (guiRoot.getDelegate() instanceof InGameDelegate igd) {
-                        WorldViewer viewer = igd.getViewer();
-                        if (!viewer.isPaused()) {
-                            guiRoot.pushDelegate(new InGameMainMenu(viewer, new StaticCamera(igd.getCamera()
-                                    .getState())));
-                            autoPaused = true;
-                            display(gui);
-                            window.update();
-                        }
-                    }
                 }
                 wasActive = isActive;
 
-                boolean playing = gui.getGUIRoot().getDelegate() instanceof InGameDelegate;
-                window.updateSystemUI(playing);
-
                 long t2 = System.nanoTime();
-                runGameLoop(network, gui);
+                runGameLoop(network, driver);
                 long t3 = System.nanoTime();
                 totalRunGameLoopTime += (t3 - t2);
 
                 long t4 = System.nanoTime();
-                audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+                if (audioManager != null) {
+                    audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+                }
                 long t5 = System.nanoTime();
                 totalAudioUpdateTime += (t5 - t4);
 
                 getAudioManager().setMasterGain(isActive ? 1f : 0f);
-                if (reset_keyboard) {
-                    reset_keyboard = false;
-                    Renderer.getLocalInput().resetKeyboard();
-                }
                 long t6 = System.nanoTime();
                 if (!first_frame && window.isVisible()) {
                     window.update();
@@ -832,29 +719,16 @@ public final class Renderer implements AutoCloseable {
                 long t7 = System.nanoTime();
                 totalWindowUpdateTime += (t7 - t6);
 
-                if (window.wasResized()) {
-                    int width = window.getLogicalWidth();
-                    int height = window.getLogicalHeight();
-                    logger.info("[Renderer] window.wasResized() is true! width=" + width + ", height=" + height);
-                    if (!window.isFullscreen() && !window.isMaximized()) {
-                        getSettings().view_width = width;
-                        getSettings().view_height = height;
-                    }
-                    initGL();
-                    gui.getGUIRoot().displayChanged(width, height);
-                }
-                if (first_frame || window.isVisible()) {
-                    long t8 = System.nanoTime();
-                    display(gui);
-                    long t9 = System.nanoTime();
-                    totalDisplayTime += (t9 - t8);
+                long t8 = System.nanoTime();
+                display(driver);
+                long t9 = System.nanoTime();
+                totalDisplayTime += (t9 - t8);
 
-                    if (PROFILE) {
-                        long tf0 = System.nanoTime();
-                        GL11.glFinish();
-                        long tf1 = System.nanoTime();
-                        totalGLFinishTime += (tf1 - tf0);
-                    }
+                if (PROFILE) {
+                    long tf0 = System.nanoTime();
+                    GL11.glFinish();
+                    long tf1 = System.nanoTime();
+                    totalGLFinishTime += (tf1 - tf0);
                 }
 
                 if (first_frame) {
@@ -958,85 +832,6 @@ public final class Renderer implements AutoCloseable {
         }
     }
 
-    public static void startMenu(@NonNull NetworkSelector network, @NonNull GUI gui) {
-        setupMainMenu(network, gui, false);
-    }
-
-    private static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui,
-            final boolean first_progress) {
-        IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE, 256, Globals.LANDSCAPE_HILLS,
-                Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
-        final WorldGenerator generator = new IslandGenerator(
-                islandConfig, getRenderer().getSettings().getTexelsPerGridUnit());
-        return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root,
-                first_progress, generator), first_progress);
-    }
-
-    private static @NonNull UIRenderer finishMainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            boolean first_progress, @NonNull WorldGenerator generator) {
-        AnimationManager.freezeTime();
-        MatrixStack modelViewStack = new MatrixStack();
-        MatrixStack projectionStack = new MatrixStack();
-        WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
-        var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
-        @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(players
-                .size(), world_params.initialUnitCount(), 0f);
-        RenderQueues render_queues = new RenderQueues();
-        LandscapeResources landscape_resources = new LandscapeResources(render_queues);
-        ProgressForm.progress();
-        World world = World.newWorld(landscape_resources, null,
-                new NotificationListener() {
-                }, world_params, world_info.landscapeData(), players,
-                getRenderer().getSettings().linear_team_colours,
-                Globals.INSERT_PLANTS[getRenderer().getSettings().graphic_detail],
-                ProgressForm::progress);
-        AnimationManager manager = new AnimationManager();
-        LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
-        Player local_player = world.getPlayers().getFirst();
-        Selection selection = new Selection(local_player);
-        UIRenderer renderer = new DefaultRenderer(getRenderer().cheat, local_player, render_queues, world_info,
-                landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer,
-                        selection), selection, modelViewStack, projectionStack);
-        Renderer.getRenderer().setMusic(AudioAssets.MUSIC_MENU, 0f);
-        MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
-        gui_root.pushDelegate(main_menu);
-        if (first_progress && getRenderer().getSettings().warning_no_sound && !Renderer.getLocalInput()
-                .audioIsCreated()) {
-            ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
-            gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
-                    "sound_not_available_message")));
-        }
-        if (!initNetwork(network)) {
-//			if (true) {
-            ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
-            gui_root.addModalForm(new MessageForm(i18n("network_not_available_caption"),
-                    i18n("network_not_available_message"),
-                    i18n("quit"), (_, _, _, _) -> shutdown()));
-        }
-        // We'll leave out the reporting, since checksum errors can happen when a peer is disconnected halfway through it's EOT
-        // broadcast
-        /*		if (Globals.checksum_error_in_last_game) {
-        		Globals.checksum_error_in_last_game = false;
-        		ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
-        		GUIRoot.getGUIRoot().addModalForm(new QuestionForm(i18n("checksum_error_message"), new BugReportListener()));
-        		}*/
-        return renderer;
-    }
-
-    private static boolean initNetwork(@NonNull NetworkSelector network) {
-        boolean is_network_created;
-        try {
-            network.initSelector();
-            tryGetLoopbackAddress();
-            is_network_created = true;
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to initialize network", e);
-            is_network_created = false;
-        }
-        return getRenderer().getEventQueue().getDeterministic().log(is_network_created);
-    }
-
     public void startMovieRecording() {
         logger.info("ACTION! Movie recording started.");
         movie_recording_started = true;
@@ -1044,11 +839,6 @@ public final class Renderer implements AutoCloseable {
 
     public void cleanup() {
         logger.info("Cleaning up...");
-        logger.info("closing ambient audio");
-        if (null != ambient) {
-            ambient.close();
-            ambient = null;
-        }
         logger.info("Disposing LocalEventQueue...");
         getEventQueue().close();
         destroyNative();
@@ -1061,17 +851,12 @@ public final class Renderer implements AutoCloseable {
                 .log(window.getDisplayMode());
     }
 
-    public static void resetInput() {
-        Renderer.getLocalInput().resetKeys();
-    }
-
     public void toggleFullscreen() {
         try {
             boolean fs = !window.isFullscreen() && !getEventQueue().getDeterministic().isPlayback();
             logger.info("Toggling fullscreen to: " + fs + ". Current mode: " + window.getDisplayMode());
             window.setFullscreen(fs);
             getSettings().fullscreen = fs;
-            resetInput();
         } catch (Exception e) {
             logger.log(java.util.logging.Level.SEVERE, "Mode switching failed with exception", e);
             throw new IllegalStateException("Mode switching failed", e);
@@ -1235,7 +1020,6 @@ public final class Renderer implements AutoCloseable {
                     + " is less than the required 8.");
         }
 
-        resetInput();
         logger.info("vsync = " + getSettings().vsync);
         if (getSettings().vsync)
             window.setVSyncEnabled(true);
@@ -1314,13 +1098,5 @@ public final class Renderer implements AutoCloseable {
         GL11.glClearColor(Color.Linear.BLACK.r(), Color.Linear.BLACK.g(), Color.Linear.BLACK.b(), Color.Linear.BLACK
                 .a());
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-    }
-
-    public boolean isCheater() {
-        return cheat != null && cheat.isEnabled();
-    }
-
-    public void setCheat(@Nullable Cheat cheat) {
-        this.cheat = cheat;
     }
 }

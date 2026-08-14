@@ -5,7 +5,6 @@ import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.client.delegate.Menu;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -57,6 +56,6 @@ public final class TutorialInGameInfo implements InGameInfo {
         if (next_tutorial != -1)
             TutorialForm.startTutorial(viewer.getNetwork(), viewer.getGUIRoot(), next_tutorial);
         else
-            Renderer.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
+            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
     }
 }

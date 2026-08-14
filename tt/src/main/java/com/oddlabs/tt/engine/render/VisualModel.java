@@ -2,8 +2,6 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 
-import com.oddlabs.tt.client.render.*;
-import com.oddlabs.tt.effects.render.*;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.resource.AudioAssets;
@@ -155,7 +153,7 @@ public final class VisualModel implements ModelClient {
     @Override
     public void addLightningStrike(float targetX, float targetY, float targetZ) {
         for (Accessory acc : accessories) {
-            if (acc instanceof LightningCloudVisualAccessory cloudAcc) {
+            if (acc instanceof LightningAccessory cloudAcc) {
                 cloudAcc.triggerStrike(targetX, targetY, targetZ);
             }
         }
@@ -164,7 +162,7 @@ public final class VisualModel implements ModelClient {
     @Override
     public void addSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration) {
         for (Accessory acc : accessories) {
-            if (acc instanceof SonicBlastVisualAccessory blastAcc) {
+            if (acc instanceof SonicBlastAccessory blastAcc) {
                 blastAcc.triggerBlast(targetX, targetY, targetZ, radius, duration);
             }
         }

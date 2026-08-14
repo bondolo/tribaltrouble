@@ -1,9 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.client.render.RenderState;
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
@@ -15,16 +12,16 @@ import org.jspecify.annotations.Nullable;
  * Tracks the specific rendering properties (position, color, pattern)
  * for an individual world element.
  */
-public final class ElementRenderState<M extends Model> implements ModelState<M> {
+public final class ElementSceneContext<M extends Model> implements ModelState<M> {
 
-    public final @NonNull RenderState render_state;
+    public final @NonNull SceneContext sceneContext;
     public ModelVisitor<M> visitor;
     public M model;
     public float f;
     private Color.@NonNull Linear color = Color.Linear.WHITE;
 
-    public ElementRenderState(@NonNull RenderState render_state) {
-        this.render_state = render_state;
+    public ElementSceneContext(@NonNull SceneContext sceneContext) {
+        this.sceneContext = sceneContext;
     }
 
     @Override
@@ -110,6 +107,6 @@ public final class ElementRenderState<M extends Model> implements ModelState<M> 
     }
 
     public @NonNull SpriteRenderer getRenderer(@NonNull SpriteKey key) {
-        return render_state.getRenderQueues().getRenderer(key);
+        return sceneContext.getRenderQueues().getRenderer(key);
     }
 }

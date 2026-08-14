@@ -98,7 +98,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.network = network;
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
         var renderer = Renderer.getRenderer();
-        renderer.setCheat(cheat);
         this.animation_manager_local = new AnimationManager();
         final CameraState camera_state = new CameraState();
         AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
@@ -206,7 +205,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
         Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
         peerhub.close();
         ingame_info.close(this);
-        Renderer.getRenderer().setCheat(null);
         renderer.close();
     }
 

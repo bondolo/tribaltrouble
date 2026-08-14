@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.form;
 
+import com.oddlabs.tt.client.gui.LocalInput;
+
 import com.oddlabs.tt.client.gui.CancelButton;
 import com.oddlabs.tt.client.gui.Form;
 import com.oddlabs.tt.client.gui.GUIRoot;
@@ -13,7 +15,6 @@ import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.client.input.Key;
 import com.oddlabs.tt.client.input.Modifier;
-import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
@@ -56,7 +57,7 @@ public class KeyBindingDialog extends Form {
 
         HorizButton reset_button = new HorizButton(AbstractOptionsMenu.i18n("btn_reset"), 80);
         reset_button.addMouseClickListener((_, _, _, _) -> {
-            onBindingChosen.accept(Renderer.getLocalInput().getInputManager().getDefaultBindings(action));
+            onBindingChosen.accept(LocalInput.getLocalInput().getInputManager().getDefaultBindings(action));
             remove();
         });
         button_group.addChild(reset_button);

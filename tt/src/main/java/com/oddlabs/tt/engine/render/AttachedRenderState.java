@@ -1,8 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
@@ -14,13 +11,13 @@ import org.jspecify.annotations.Nullable;
  * Specialized render state for handling attached accessories.
  */
 public final class AttachedRenderState implements ModelState<Model> {
-    private @Nullable ElementRenderState<?> parentState;
+    private @Nullable ElementSceneContext<?> parentState;
     private @Nullable Accessory accessory;
 
     public AttachedRenderState() {
     }
 
-    public void setup(@NonNull ElementRenderState<?> parentState, @NonNull Accessory accessory) {
+    public void setup(@NonNull ElementSceneContext<?> parentState, @NonNull Accessory accessory) {
         this.parentState = parentState;
         this.accessory = accessory;
     }
@@ -34,7 +31,7 @@ public final class AttachedRenderState implements ModelState<Model> {
         accessory.getRelativeTransform(dest, parentState.model);
 
         if (accessory instanceof VisualSoundAccessory) {
-            CameraState camera = parentState.render_state.getCamera();
+            CameraState camera = parentState.sceneContext.getCamera();
             if (camera != null) {
                 float tx = dest.m30();
                 float ty = dest.m31();
@@ -116,8 +113,8 @@ public final class AttachedRenderState implements ModelState<Model> {
         // Standard sprite rendering
         SpriteKey key = accessory.getSpriteRenderer();
         if (key != null) {
-            parentState.render_state.getRenderQueues().getRenderer(key).addToRenderList(detail, this,
-                    parentState.render_state.isResponding(parentState.model));
+            parentState.sceneContext.getRenderQueues().getRenderer(key).addToRenderList(detail, this,
+                    parentState.sceneContext.isResponding(parentState.model));
         }
     }
 
@@ -128,7 +125,7 @@ public final class AttachedRenderState implements ModelState<Model> {
 
         SpriteKey key = accessory.getSpriteRenderer();
         if (key != null) {
-            return parentState.render_state.getRenderQueues().getRenderer(key).getTriangleCount(detail);
+            return parentState.sceneContext.getRenderQueues().getRenderer(key).getTriangleCount(detail);
         }
         return 0;
     }

@@ -2,6 +2,7 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 
+import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.audio.AudioParameters;
@@ -25,7 +26,7 @@ import java.util.Collection;
  * Client-side visual accessory for rock supply eruptions.
  * Manages the rising eruption smoke entirely on the client.
  */
-public final class RockSupplyVisualAccessory implements AnimatedAccessory {
+public final class RockSupplyVisualAccessory implements EmitterAccessory {
     private final @NonNull RockSupply rockSupply;
     private final @NonNull AudioImplementation audio;
     private @Nullable RandomVelocityEmitter smokeEmitter = null;
