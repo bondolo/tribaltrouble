@@ -4,6 +4,10 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Listener interface for observing simulation events such as combat notifications,
+ * target registrations, terrain patch edits, and environmental occurrences.
+ */
 public interface NotificationListener {
     default void newAttackNotification(@NonNull Selectable<?> target) {
     }
@@ -24,5 +28,8 @@ public interface NotificationListener {
     }
 
     default void playerGamespeedChanged() {
+    }
+
+    default void treeFelled(AbstractTreeGroup.@NonNull TreeType treeType, float x, float y, float z) {
     }
 }

@@ -8,10 +8,7 @@ import com.oddlabs.tt.simulation.pathfinder.PathTracker;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.TargetTrackerAlgorithm;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Represents a rubber resource, visually represented as a chicken.
@@ -161,11 +158,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             if (random < .75) {
                 setNewAnimation(Animation.IDLING);
                 if (random < .05) {
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
-                                    AudioAssets.CHICKEN_IDLES.length)]);
-                    getClientState(ModelClient.class).ifPresent(client -> client.addVisualSound(EmojiType.CHICKEN_CLUCK,
-                            ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN));
+                    getClientState(ModelClient.class).ifPresent(ModelClient::onChickenCluck);
                 }
             } else if (random < .85) {
                 // move
@@ -180,18 +173,16 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
                     float move_random = getWorld().getRandom().nextFloat();
                     if (move_random < .25f) {
                         setNewAnimation(Animation.FLYING);
-                        getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                                AudioAssets.CHICKEN_PECK);
+                        getClientState(ModelClient.class).ifPresent(ModelClient::onChickenPeck);
                     } else {
                         setNewAnimation(Animation.RUNNING);
                     }
                 }
             } else {
                 setNewAnimation(Animation.PECKING);
-                if (random > .98f)
-                    getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                            AudioAssets.CHICKEN_PECK);
-
+                if (random > .98f) {
+                    getClientState(ModelClient.class).ifPresent(ModelClient::onChickenPeck);
+                }
             }
         }
     }
@@ -228,7 +219,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         if (!is_hit) {
             is_hit = true;
             setNewAnimation(Animation.DYING);
-            getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), AudioAssets.CHICKEN_DEATH);
+            getClientState(ModelClient.class).ifPresent(ModelClient::onChickenDeath);
             group.remove(this);
         }
         return super.hit();

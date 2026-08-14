@@ -5,7 +5,6 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -20,10 +19,8 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
 
     private boolean bouncing = false;
 
-    public RubberAxeWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target,
-            @NonNull AudioFile throw_sound,
-            @NonNull AudioFile @NonNull [] hit_sounds) {
-        super(hit, src, target, throw_sound, hit_sounds);
+    public RubberAxeWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
+        super(hit, src, target);
     }
 
     @Override

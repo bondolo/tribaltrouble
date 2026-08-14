@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.landscape;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.animation.SimulationClock;
 import com.oddlabs.tt.core.util.ProgressListener;
-import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.RacesResources;
@@ -45,7 +44,6 @@ public final class World implements SimulationClock {
     private final @NonNull Random random;
     private final @NonNull AnimationManager animation_manager_game_time;
     private final @NonNull AnimationManager animation_manager_real_time;
-    private final @NonNull AudioImplementation audio_impl;
 
     private final int max_unit_count;
     private final @NonNull NotificationListener notification_listener;
@@ -66,23 +64,23 @@ public final class World implements SimulationClock {
     private int global_checksum;
     private int gamespeed;
 
-    public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation,
+    public static @NonNull World newWorld(
             @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
             @NonNull WorldInfo<?> world_info, List<@NonNull PlayerInfo> player_infos,
             Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants) {
-        return newWorld(audio_implementation, landscape_resources, races_resources, notification_listener, world_params,
+        return newWorld(landscape_resources, races_resources, notification_listener, world_params,
                 world_info, player_infos, teamColors, insertPlants, ProgressListener.NONE);
     }
 
-    public static @NonNull World newWorld(@NonNull AudioImplementation audio_implementation,
+    public static @NonNull World newWorld(
             @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
             @NonNull WorldInfo<?> world_info, List<@NonNull PlayerInfo> player_infos,
             Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants,
             @NonNull ProgressListener progress_listener) {
         progress_listener.onProgress();
-        World world = new World(audio_implementation, landscape_resources, races_resources, notification_listener,
+        World world = new World(landscape_resources, races_resources, notification_listener,
                 world_params, world_info, player_infos, teamColors, insertPlants, progress_listener);
         progress_listener.onProgress();
         progress_listener.onProgress(1 / 5f);
@@ -105,11 +103,6 @@ public final class World implements SimulationClock {
 
     public @Nullable RacesResources getRacesResources() {
         return races_resources;
-    }
-
-
-    public @NonNull AudioImplementation getAudio() {
-        return audio_impl;
     }
 
     public int getChecksum() {
@@ -164,8 +157,7 @@ public final class World implements SimulationClock {
         return getAnimationManagerRealTime().getTick();
     }
 
-    private World(@NonNull AudioImplementation audio_implementation,
-            @NonNull LandscapeBoundsProvider landscape_resources,
+    private World(@NonNull LandscapeBoundsProvider landscape_resources,
             @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
             @NonNull WorldParameters world_params, @NonNull WorldInfo<?> world_info,
             @NonNull List<@NonNull PlayerInfo> player_infos, Color.@NonNull Linear @NonNull [] teamColors,
@@ -176,7 +168,6 @@ public final class World implements SimulationClock {
         this.plantCoordinates = world_info.plants();
         this.landscape_resources = landscape_resources;
         this.races_resources = races_resources;
-        this.audio_impl = audio_implementation;
         this.max_unit_count = world_params.getMaxUnitCount();
         this.notification_listener = notification_listener;
         this.gamespeed = world_params.getInitialGameSpeed();

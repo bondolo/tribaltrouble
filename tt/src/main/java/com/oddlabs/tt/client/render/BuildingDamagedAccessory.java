@@ -1,10 +1,7 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Landscape;
 import com.oddlabs.tt.simulation.model.Building;
@@ -49,11 +46,13 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     private final @NonNull Building building;
     private final @NonNull LinearEmitter emitter;
     private final float hitOffsetZ;
+    private final @NonNull AudioImplementation audio;
     private boolean hasCollapsed = false;
 
-    public BuildingDamagedAccessory(@NonNull Building building, float hitOffsetZ) {
+    public BuildingDamagedAccessory(@NonNull Building building, float hitOffsetZ, @NonNull AudioImplementation audio) {
         this.building = building;
         this.hitOffsetZ = hitOffsetZ;
+        this.audio = audio;
         this.emitter = new RandomVelocityEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f), 0f, 0f,
                 0.01f, 0.1f, 0.5f, 0.7f, -1, 25.0f,
                 new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, 0f),
@@ -122,7 +121,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     }
 
     private void triggerCollapseEffects() {
-        building.getOwner().getWorld().getAudio().newAudio(building.getPositionX(), building.getPositionY(),
+        audio.newAudio(building.getPositionX(), building.getPositionY(),
                 building.getPositionZ(), AudioAssets.BUILDING_COLLAPSE);
         final Terrain terrain = building.getOwner().getWorld().getTerrainType();
         final Color.Linear dustColor = Landscape.getDustColor(terrain).desaturate(0.5f);

@@ -1,9 +1,7 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.procedural.Landscape;
@@ -37,6 +35,7 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
     private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f);
 
     private final @NonNull IronSupply ironSupply;
+    private final @NonNull AudioImplementation audio;
 
     private boolean landed = false;
     private boolean cooling = false;
@@ -45,8 +44,9 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
     private @Nullable RandomVelocityEmitter coolingEmitter = null;
     private final @NonNull List<@NonNull Emitter<?>> oneShotEmitters = new ArrayList<>();
 
-    public IronSupplyVisualAccessory(@NonNull IronSupply ironSupply) {
+    public IronSupplyVisualAccessory(@NonNull IronSupply ironSupply, @NonNull AudioImplementation audio) {
         this.ironSupply = ironSupply;
+        this.audio = audio;
     }
 
     @Override
@@ -77,7 +77,7 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
 
                 if (!airBurstPlayed) {
                     airBurstPlayed = true;
-                    ironSupply.getWorld().getAudio().newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
+                    audio.newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
                             ironSupply.getPositionZ(),
                             new AudioParameters(AudioAssets.SFX_LURBLAST, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
                                     AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
@@ -167,7 +167,7 @@ public final class IronSupplyVisualAccessory implements AnimatedAccessory {
 
                 if (!cooling) {
                     cooling = true;
-                    ironSupply.getWorld().getAudio().newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
+                    audio.newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
                             ironSupply.getPositionZ(),
                             new AudioParameters(AudioAssets.SFX_GAS, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
                                     AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,

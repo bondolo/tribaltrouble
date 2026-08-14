@@ -1,21 +1,16 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.engine.audio.AudioParameters;
-import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.engine.resource.AudioFile;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.core.event.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Base {@link Model} class for all projectile weapons that are thrown through the world.
@@ -33,8 +28,6 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private static final float OFFSET_Y = -.347f;
     private static final float OFFSET_Z = 1.382f;
 
-    private final @NonNull AudioPlayer audio_player;
-    private final @NonNull AudioFile @NonNull [] hit_sounds;
     private final boolean hit;
     private final @NonNull Unit src;
     /** rendering offset */
@@ -55,12 +48,10 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     /** absolute height in the world */
     private float current_z;
 
-    public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target,
-            @NonNull AudioFile throw_sound, @NonNull AudioFile @NonNull [] hit_sounds) {
+    public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
         super(src.getOwner().getWorld());
         this.src = src;
         this.hit = hit;
-        this.hit_sounds = hit_sounds;
 
         float x = src.getPositionX() + OFFSET_X * src.getDirectionX() - OFFSET_Y * src.getDirectionY();
         float y = src.getPositionY() + OFFSET_X * src.getDirectionY() - OFFSET_Y * src.getDirectionX();
@@ -73,11 +64,6 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
         register();
 
-        var params = new AudioParameters(throw_sound, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
-                AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
-                AudioAssets.AUDIO_RADIUS_WEAPON_ATTACK,
-                ThreadLocalRandom.current().nextFloat(.9f, 1.1f));
-        audio_player = getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
         getWorld().getAnimationManagerGameTime().registerAnimation(this);
 
         // stats
@@ -178,13 +164,10 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         z_speed += GRAVITY * t;
 
         setPosition(x, y, current_z - deterministic_z);
-
-        audio_player.setPosition(getPositionX(), getPositionY(), getPositionZ());
     }
 
     protected void hitTarget(boolean hit, @NonNull Player owner, @NonNull Selectable<?> target) {
         getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        audio_player.stop();
         remove();
         if (hit)
             damageTarget(target);
@@ -193,14 +176,9 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     protected final void damageTarget(@NonNull Selectable<?> target) {
         if (target instanceof Unit unit) {
             float pitchRange = unit.getTemplate().getDeathPitch();
-            var params = new AudioParameters(hit_sounds[ThreadLocalRandom.current().nextInt(
-                    hit_sounds.length)],
-                    AudioAssets.AUDIO_RANK_WEAPON_HIT,
-                    AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
-                    AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange)
-                            : 0f));
-            getWorld().getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
+            getClientState(ModelClient.class).ifPresent(client -> {
+                client.onMeleeHit(target.getPositionX(), target.getPositionY(), target.getPositionZ(), pitchRange);
+            });
         }
         target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());
     }

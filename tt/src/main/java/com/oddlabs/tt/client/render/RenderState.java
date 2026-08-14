@@ -290,7 +290,7 @@ public final class RenderState {
 
     private @NonNull VisualModel getOrCreateVisualModel(@NonNull Model model) {
         return model.getClientState(VisualModel.class).orElseGet(() -> {
-            VisualModel visualModel = new VisualModel(model);
+            VisualModel visualModel = new VisualModel(model, Renderer.getRenderer().getAudioManager());
             model.setClientState(visualModel);
             return visualModel;
         });

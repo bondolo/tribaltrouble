@@ -8,6 +8,7 @@ import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
@@ -72,7 +73,7 @@ public final class Tutorial {
         info = new LabelBox(text, Skin.getSkin().getEditFont(), 400);
         info.setPos(BORDER_OFFSET, viewer.getGUIRoot().getHeight() - BORDER_OFFSET - info.getHeight());
         viewer.getGUIRoot().addChild(info);
-        viewer.getWorld().getAudio().newAudio(0f, 0f, 0f,
+        Renderer.getRenderer().getAudioManager().newAudio(0f, 0f, 0f,
                 AssetRegistry.getInstance().getBuildingNotificationAudio(viewer.getLocalPlayer().getPlayerInfo()
                         .getRace()));
         timer = new TimerAnimation(viewer.getAnimationManagerLocal(), _ -> trigger.run(Tutorial.this), trigger

@@ -1,10 +1,8 @@
 package com.oddlabs.tt.simulation.behaviour;
 
-import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -35,14 +33,7 @@ public final class HarvestBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            var params = AudioAssets.getHarvestSound(supply.getSupplyType());
-            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
-                    .getPositionZ(), params);
-
-            unit.getClientState(ModelClient.class).ifPresent(client -> {
-                client.addVisualSound(EmojiType.fromSupply(supply.getSupplyType()),
-                        ModelClient.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_HARVEST);
-            });
+            unit.getClientState(ModelClient.class).ifPresent(client -> client.onHarvest(supply.getSupplyType()));
 
             if (supply.hit()) {
                 unit.getSupplyContainer().increaseSupply(1, supply.getSupplyType());

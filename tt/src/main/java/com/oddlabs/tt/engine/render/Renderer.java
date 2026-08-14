@@ -108,7 +108,8 @@ public final class Renderer implements AutoCloseable {
 
     static {
         com.oddlabs.tt.simulation.model.Model.setClientStateFactory(model -> {
-            VisualModel visualModel = new VisualModel(model);
+            var audio = getRenderer().getAudioManager();
+            VisualModel visualModel = new VisualModel(model, audio);
             switch (model) {
                 case com.oddlabs.tt.simulation.model.Unit unit -> {
                     if (unit.getAbilities().hasAbilities(com.oddlabs.tt.simulation.model.Abilities.BUILD)) {
@@ -117,21 +118,23 @@ public final class Renderer implements AutoCloseable {
                 }
                 case com.oddlabs.tt.simulation.model.Building building -> {
                     float hitOffsetZ = building.getHitOffsetZ();
-                    visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ));
-                    visualModel.getAccessories().add(new BuildingProductionAccessory(building));
+                    visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ, audio));
+                    visualModel.getAccessories().add(new BuildingProductionAccessory(building, audio));
                 }
                 case com.oddlabs.tt.simulation.model.IronSupply ironSupply ->
-                    visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply));
+                    visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply, audio));
                 case com.oddlabs.tt.simulation.model.RockSupply rockSupply ->
-                    visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply));
+                    visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply, audio));
                 case com.oddlabs.tt.simulation.model.weapon.LightningCloud cloud ->
-                    visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud));
+                    visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud, audio));
                 case com.oddlabs.tt.simulation.model.weapon.PoisonFog fog ->
-                    visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog));
+                    visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog, audio));
                 case com.oddlabs.tt.simulation.model.weapon.Stun stun ->
-                    visualModel.getAccessories().add(new StunVisualAccessory(stun));
+                    visualModel.getAccessories().add(new StunVisualAccessory(stun, audio));
                 case com.oddlabs.tt.simulation.model.weapon.SonicBlast blast ->
-                    visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast));
+                    visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast, audio));
+                case com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon throwingWeapon ->
+                    visualModel.getAccessories().add(new ThrowingWeaponVisualAccessory(throwingWeapon, audio));
                 default -> {
                 }
             }
@@ -980,7 +983,7 @@ public final class Renderer implements AutoCloseable {
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
         ProgressForm.progress();
-        World world = World.newWorld(getRenderer().getAudioManager()::newAudio, landscape_resources, null,
+        World world = World.newWorld(landscape_resources, null,
                 new NotificationListener() {
                 }, world_params, world_info, players,
                 getRenderer().getSettings().linear_team_colours,

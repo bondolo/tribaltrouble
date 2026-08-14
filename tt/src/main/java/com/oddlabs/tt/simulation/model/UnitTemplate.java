@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
-import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -16,7 +15,6 @@ public final class UnitTemplate extends Template {
     private final @NonNull BoundingBox @NonNull [] bounds;
     private final AnimationInfo.@NonNull AnimationType @NonNull [] anim_types;
     private final @Nullable UnitSupplyContainerFactory supply_container_factory;
-    private final @NonNull AudioFile death_sound;
     private final float death_pitch;
     private final float selection_radius;
     private final float selection_height;
@@ -36,7 +34,6 @@ public final class UnitTemplate extends Template {
             AnimationInfo.@NonNull AnimationType @NonNull [] anim_types,
             float shadow_diameter,
             @Nullable UnitSupplyContainerFactory supply_container_factory,
-            @NonNull AudioFile death_sound,
             float death_pitch,
             float @NonNull [] hit_offset_z,
             float no_detail_size,
@@ -57,7 +54,6 @@ public final class UnitTemplate extends Template {
         this.anim_types = anim_types;
         this.supply_container_factory = supply_container_factory;
 
-        this.death_sound = death_sound;
         this.death_pitch = death_pitch;
         this.max_hit_points = max_hit_points;
         this.stun_x = stun_x;
@@ -97,10 +93,6 @@ public final class UnitTemplate extends Template {
 
     public UnitSupplyContainerFactory getUnitSupplyContainerFactory() {
         return supply_container_factory;
-    }
-
-    public @NonNull AudioFile getDeathSound() {
-        return death_sound;
     }
 
     public float getDeathPitch() {

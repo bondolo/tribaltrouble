@@ -1,11 +1,8 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.audio.AudioPlayer;
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
@@ -49,6 +46,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     private final @NonNull Building building;
     private final @NonNull LinearEmitter emitter;
     private final @NonNull Vector3fc chimneyOffset;
+    private final @NonNull AudioImplementation audio;
 
     private @NonNull State state = State.IDLE;
     private float productionTimer = 0f;
@@ -56,8 +54,9 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     private float goingIdleTimer = 0f;
     private @Nullable AudioPlayer productionPlayer = null;
 
-    public BuildingProductionAccessory(@NonNull Building building) {
+    public BuildingProductionAccessory(@NonNull Building building, @NonNull AudioImplementation audio) {
         this.building = building;
+        this.audio = audio;
         this.chimneyOffset = building.getTemplate().getChimney();
         this.emitter = new RandomAccelerationEmitter(building.getOwner().getWorld(), new Vector3f(0f, 0f, 0f),
                 0f, 0.15f, 0.05f, 1.5f, 0.1f, -1, 15.0f,
@@ -105,7 +104,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
 
         if (isProducing) {
             if (productionPlayer == null) {
-                productionPlayer = building.getOwner().getWorld().getAudio().newAudio(
+                productionPlayer = audio.newAudio(
                         building.getPositionX(), building.getPositionY(), building.getPositionZ(),
                         AudioAssets.WEAPONS_PRODUCTION);
             }

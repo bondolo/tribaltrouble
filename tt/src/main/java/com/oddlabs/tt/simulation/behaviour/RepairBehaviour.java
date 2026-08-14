@@ -1,14 +1,10 @@
 package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Logic for unit repairing behavior.
@@ -43,15 +39,7 @@ public final class RepairBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getOwner().getWorld().getAudio().newAudio(unit.getPositionX(), unit.getPositionY(), unit
-                    .getPositionZ(), AudioAssets.getHarvestSound(SupplyType.WOOD));
-
-            var selectedEmoji = ThreadLocalRandom.current().nextBoolean()
-                    ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-            unit.getClientState(ModelClient.class).ifPresent(client -> {
-                client.addVisualSound(selectedEmoji,
-                        ModelClient.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_HARVEST);
-            });
+            unit.getClientState(ModelClient.class).ifPresent(ModelClient::onRepair);
         }
 
         if (anim_time > SECONDS_PER_ANIMATION_CYCLE) {
