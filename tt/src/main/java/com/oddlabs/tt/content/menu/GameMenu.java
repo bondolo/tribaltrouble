@@ -33,14 +33,14 @@ import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.client.gui.ChatCommand;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -498,7 +498,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.core.util.@NonNull LoadCallback loadCallback) {
+    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback loadCallback) {
         setDisabled(true);
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
                 (com.oddlabs.tt.client.form.LoadCallback) loadCallback);

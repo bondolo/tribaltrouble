@@ -18,9 +18,9 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.client.render.AssetRegistry;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;

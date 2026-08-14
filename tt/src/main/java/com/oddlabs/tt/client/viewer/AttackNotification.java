@@ -1,8 +1,8 @@
 package com.oddlabs.tt.client.viewer;
 
-import com.oddlabs.tt.client.render.AssetRegistry;
-import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.simulation.model.Selectable;

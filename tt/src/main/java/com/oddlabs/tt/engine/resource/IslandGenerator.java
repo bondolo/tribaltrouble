@@ -1,10 +1,11 @@
 package com.oddlabs.tt.engine.resource;
 
-import com.oddlabs.tt.core.util.ProgressListener;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.util.ProgressListener;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.engine.procedural.Landscape;
 import com.oddlabs.tt.engine.render.Texture;
@@ -19,7 +20,7 @@ import java.time.Instant;
 /**
  * Generates landscape heights, terrain textures, and structures for game islands.
  */
-public final class IslandGenerator implements WorldGenerator {
+public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>> {
     @Serial
     private static final long serialVersionUID = 1;
 

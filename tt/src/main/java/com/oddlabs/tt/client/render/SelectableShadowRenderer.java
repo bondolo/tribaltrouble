@@ -4,7 +4,7 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;

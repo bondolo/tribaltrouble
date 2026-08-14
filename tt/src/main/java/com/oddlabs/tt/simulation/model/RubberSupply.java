@@ -1,7 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
 
-import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Movable;
 import com.oddlabs.tt.simulation.pathfinder.PathTracker;

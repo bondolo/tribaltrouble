@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.simulation.model.BuildingType;
 
-import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.PlacingDelegate;
@@ -28,7 +28,7 @@ import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

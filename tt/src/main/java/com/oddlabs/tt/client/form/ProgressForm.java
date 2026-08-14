@@ -14,8 +14,8 @@ import com.oddlabs.tt.client.gui.ProgressBarInfo;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.render.UIRenderer;
-import com.oddlabs.tt.core.util.ProgressListener;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.ProgressListener;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

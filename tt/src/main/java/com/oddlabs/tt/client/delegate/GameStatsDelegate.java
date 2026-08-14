@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.core.animation.TimerAnimation;
-import com.oddlabs.tt.core.animation.Updatable;
+import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.gui.ColumnInfo;
@@ -18,7 +18,7 @@ import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.client.render.GUIRenderer;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 

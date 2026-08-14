@@ -8,7 +8,7 @@ import com.oddlabs.tt.client.gui.Label;
 import com.oddlabs.tt.client.gui.Origin;
 import com.oddlabs.tt.client.gui.PanelGroup;
 import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
@@ -73,6 +73,6 @@ public abstract class AbstractOptionsMenu extends Form {
     }
 
     protected void changeGamespeed(int index) {
-        com.oddlabs.tt.core.global.Globals.gamespeed = index;
+        com.oddlabs.tt.base.global.Globals.gamespeed = index;
     }
 }

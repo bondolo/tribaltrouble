@@ -23,7 +23,7 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
-import com.oddlabs.tt.client.render.AssetRegistry;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.Color;

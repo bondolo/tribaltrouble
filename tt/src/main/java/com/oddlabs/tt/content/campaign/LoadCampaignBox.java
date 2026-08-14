@@ -12,7 +12,7 @@ import com.oddlabs.tt.client.gui.MultiColumnComboBox;
 import com.oddlabs.tt.client.gui.Row;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.RowListener;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;

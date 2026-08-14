@@ -1,7 +1,7 @@
 package com.oddlabs.tt.simulation.trigger;
 
-import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.core.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.simulation.landscape.World;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

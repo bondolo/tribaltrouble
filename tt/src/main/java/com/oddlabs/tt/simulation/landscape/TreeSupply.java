@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.SupplyType;

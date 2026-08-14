@@ -5,8 +5,8 @@ import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.core.animation.Animated;
-import com.oddlabs.tt.core.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.render.CameraState;
@@ -15,7 +15,7 @@ import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.form.ProgressForm;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.client.gui.ActionButtonPanel;
 import com.oddlabs.tt.client.gui.ChatCommand;
 import com.oddlabs.tt.client.gui.GUIRoot;
@@ -47,13 +47,13 @@ import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 
 import java.util.List;
 

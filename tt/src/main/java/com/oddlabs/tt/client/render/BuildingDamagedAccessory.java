@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.simulation.model.Terrain;

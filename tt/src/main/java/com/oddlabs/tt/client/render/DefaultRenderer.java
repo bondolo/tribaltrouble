@@ -1,13 +1,13 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.effects.render.LightningRenderer;
+import com.oddlabs.tt.effects.render.SonicBlastRenderer;
 import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
 
 
-import com.oddlabs.tt.core.global.BoundingMode;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.global.BoundingMode;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Building;

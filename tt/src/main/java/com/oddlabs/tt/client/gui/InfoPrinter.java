@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class InfoPrinter extends GUIObject implements Animated, ChatListener,
-        com.oddlabs.tt.core.util.InfoPrinter {
+        com.oddlabs.tt.base.util.InfoPrinter {
     private static final float SECONDS_PER_TIMEOUT = 8f;
     private static final Color.Linear PRIVATE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
     private static final Color.Linear TEAM_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();

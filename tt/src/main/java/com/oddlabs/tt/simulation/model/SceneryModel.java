@@ -1,10 +1,10 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.core.event.StateChecksum;
+import com.oddlabs.tt.base.event.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

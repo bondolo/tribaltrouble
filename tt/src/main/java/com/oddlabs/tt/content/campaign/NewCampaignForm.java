@@ -20,7 +20,7 @@ import com.oddlabs.tt.client.gui.PulldownMenu;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.EnterListener;
 import com.oddlabs.tt.client.guievent.MouseClickListener;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;

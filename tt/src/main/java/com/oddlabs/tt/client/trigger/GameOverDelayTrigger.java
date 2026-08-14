@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.trigger;
 
-import com.oddlabs.tt.core.animation.TimerAnimation;
-import com.oddlabs.tt.core.animation.Updatable;
+import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.viewer.WorldViewer;

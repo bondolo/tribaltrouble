@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.oddlabs.tt.core.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.PropertiesSerializer;
 
 /**
  * Manages game action keybindings, state, and serialization.

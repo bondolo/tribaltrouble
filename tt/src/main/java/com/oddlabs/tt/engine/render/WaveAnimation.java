@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.core.event.StateChecksum;
+import com.oddlabs.tt.base.event.StateChecksum;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.core.animation.Animated;
+import com.oddlabs.tt.base.animation.Animated;
 
 /**
  * An {@link Accessory} that requires continuous animation updates.

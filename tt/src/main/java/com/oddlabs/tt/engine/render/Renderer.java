@@ -7,9 +7,9 @@ import com.oddlabs.event.Deterministic;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.Main;
-import com.oddlabs.tt.core.animation.AnimationManager;
-import com.oddlabs.tt.core.animation.TimerAnimation;
-import com.oddlabs.tt.core.animation.Updatable;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.engine.audio.AudioManager;
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
@@ -22,13 +22,13 @@ import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.core.event.LocalEventQueue;
+import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.client.form.MessageForm;
 import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.client.form.WarningForm;
-import com.oddlabs.tt.core.global.Globals;
-import com.oddlabs.tt.core.global.GlobalsInit;
-import com.oddlabs.tt.core.global.Settings;
+import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.base.global.GlobalsInit;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.client.gui.GUI;
 import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Languages;
@@ -47,11 +47,11 @@ import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.NativeResource;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.util.GLUtils;
-import com.oddlabs.tt.core.util.StatCounter;
-import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.base.util.StatCounter;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.client.viewer.AmbientAudio;
 import com.oddlabs.tt.client.viewer.Cheat;
@@ -333,7 +333,7 @@ public final class Renderer implements AutoCloseable {
                         AnimationManager.setChecksumComplain(false);
                     }
                 }
-                if (!com.oddlabs.tt.core.global.Globals.frustum_freeze) {
+                if (!com.oddlabs.tt.base.global.Globals.frustum_freeze) {
                     gui.pickHover();
                 }
             }

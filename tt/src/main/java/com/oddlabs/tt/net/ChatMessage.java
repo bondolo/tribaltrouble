@@ -1,6 +1,6 @@
 package com.oddlabs.tt.net;
 
-import com.oddlabs.tt.core.util.SpamFilter;
+import com.oddlabs.tt.base.util.SpamFilter;
 import org.jspecify.annotations.NonNull;
 
 /** Record representing a structured chat message payload. */

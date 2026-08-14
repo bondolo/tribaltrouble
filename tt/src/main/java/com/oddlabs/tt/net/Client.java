@@ -10,7 +10,7 @@ import com.oddlabs.net.Connection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.core.global.Globals;
+import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -22,8 +22,8 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.PlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.core.util.LoadCallback;
-import com.oddlabs.tt.engine.resource.WorldGenerator;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 
 /** Network client endpoint managing connection negotiation and game startup. */
 public final class Client implements ARMIEventBroker, GameClientInterface, ConnectionInterface {
