@@ -7,6 +7,7 @@ import com.oddlabs.procedural.Tools;
 import com.oddlabs.tt.core.util.ProgressListener;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.resource.BlendInfo;
@@ -135,18 +136,16 @@ public final class Landscape {
     private int @NonNull [] @NonNull [] supply_locations;
     private float @NonNull [] @NonNull [] plants;
 
-    public Landscape(int num_players, int meters_per_world, @NonNull Terrain terrain, float detail_alpha_value,
-            float hills, float vegetation_amount, float supplies_amount, int seed, int initial_unit_count,
-            float random_start_pos) {
-        this.terrain = terrain;
-        hills = (float) Math.sqrt(hills);
+    public Landscape(int num_players, @NonNull IslandConfig config, float detail_alpha_value,
+            int initial_unit_count, float random_start_pos) {
+        this.terrain = config.terrain();
+        this.hills = (float) Math.sqrt(config.hills());
         this.num_players = num_players;
         this.features = 4;
-        this.hills = hills;
-        this.vegetation_amount = 0.25f + 0.75f * vegetation_amount;
-        this.supplies_amount = 0.25f + 0.75f * supplies_amount;
-        this.seed = seed;
-        this.meters_per_world = meters_per_world;
+        this.vegetation_amount = 0.25f + 0.75f * config.vegetation();
+        this.supplies_amount = 0.25f + 0.75f * config.supplies();
+        this.seed = (int) config.seed();
+        this.meters_per_world = config.metersPerWorld();
         this.unit_grids_per_world = meters_per_world / HeightMap.METERS_PER_UNIT_GRID;
         this.meters_per_height_unit = meters_per_world / unit_grids_per_world;
         int height_scale = 0;

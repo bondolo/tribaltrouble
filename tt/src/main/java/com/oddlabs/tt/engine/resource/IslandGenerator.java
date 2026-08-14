@@ -3,8 +3,9 @@ package com.oddlabs.tt.engine.resource;
 import com.oddlabs.tt.core.util.ProgressListener;
 import com.oddlabs.tt.core.global.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.Landscape;
 import com.oddlabs.tt.engine.render.Texture;
 import org.jspecify.annotations.NonNull;
@@ -22,31 +23,21 @@ public final class IslandGenerator implements WorldGenerator {
     @Serial
     private static final long serialVersionUID = 1;
 
-    private static final int TEXELS_PER_CHUNK = 512;
     private static final int IDEAL_TEXELS_PER_DETAIL = 256;
     private static final float IDEAL_DETAIL_ALPHA = .15f;
 
-    private final int meters_per_world;
-    private final @NonNull Terrain terrain;
+    private final @NonNull IslandConfig config;
     private final int grid_units;
     private final int texels_per_grid_unit;
 
-    private final float hills;
-    private final float vegetation_amount;
-    private final float supplies_amount;
-    private final int seed;
-
-    public IslandGenerator(
-            @NonNull Terrain terrain, int meters_per_world, float hills,
-            float vegetation_amount, float supplies_amount, int seed, int texels_per_grid_unit) {
-        this.hills = hills;
-        this.vegetation_amount = vegetation_amount;
-        this.supplies_amount = supplies_amount;
-        this.seed = seed;
-        this.grid_units = meters_per_world / HeightMap.METERS_PER_UNIT_GRID;
-        this.meters_per_world = meters_per_world;
-        this.terrain = terrain;
+    public IslandGenerator(@NonNull IslandConfig config, int texels_per_grid_unit) {
+        this.config = config;
+        this.grid_units = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
         this.texels_per_grid_unit = texels_per_grid_unit;
+    }
+
+    public @NonNull IslandConfig getConfig() {
+        return config;
     }
 
     private static @NonNull Texture createDetail(@NonNull GLImage detail_image, int base_level) {
@@ -64,13 +55,12 @@ public final class IslandGenerator implements WorldGenerator {
 
     @Override
     public int getMetersPerWorld() {
-        return meters_per_world;
+        return config.metersPerWorld();
     }
 
     @Override
     public @NonNull WorldInfo<Texture> generate(int num_players, int initial_unit_count, float random_start_pos) {
         int colormap_size = grid_units * texels_per_grid_unit;
-        int chunks_per_colormap = colormap_size / TEXELS_PER_CHUNK;
 
         // Build landscape
         Instant time_before = Instant.now();
@@ -81,8 +71,8 @@ public final class IslandGenerator implements WorldGenerator {
                 detail_prefade_level);
         base_level -= detail_mip_level;
         base_level = Math.min(base_level, 1);
-        Landscape landscape = new Landscape(num_players, meters_per_world, terrain, detail_prefade, hills,
-                vegetation_amount, supplies_amount, seed, initial_unit_count, random_start_pos);
+        Landscape landscape = new Landscape(num_players, config, detail_prefade, initial_unit_count,
+                random_start_pos);
         Instant time_after = Instant.now();
         IO.println("Landscape created in " + Duration.between(time_before, time_after));
         time_before = Instant.now();
@@ -90,28 +80,24 @@ public final class IslandGenerator implements WorldGenerator {
         Texture detail = createDetail(landscape.getDetail(), base_level);
         Texture detailNormal = createDetailNormal(landscape.getDetailNormal());
 
-        float textureScale = meters_per_world * Globals.LANDSCAPE_TEXTURE_SCALE;
+        float textureScale = config.metersPerWorld() * Globals.LANDSCAPE_TEXTURE_SCALE;
         LandscapeBaker baker = new LandscapeBaker(colormap_size, textureScale);
 
         // Create temporary heightmap texture for baking
-        int grid_width = meters_per_world / HeightMap.METERS_PER_UNIT_GRID;
+        int grid_width = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
         WorldInfo.Maps<Texture> maps;
         try (Texture heightMapTexture = new Texture(landscape.getHeight(), grid_width, grid_width,
                 GL30.GL_R32F, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT)) {
-            baker.setHeightMap(heightMapTexture, meters_per_world);
+            baker.setHeightMap(heightMapTexture, config.metersPerWorld());
             maps = baker.bake(blend_infos);
         }
         time_after = Instant.now();
         IO.println("Landscape baked in " + Duration.between(time_before, time_after));
 
         ProgressListener.progress();
-        return new WorldInfo<>(terrain, meters_per_world, landscape.getSeaLevelMeters(),
-                colormap_size, chunks_per_colormap, null, maps, detail, detailNormal,
-                landscape.getHeight(),
-                landscape.getTrees(), landscape.getPalmtrees(), landscape.getRock(), landscape.getIron(), landscape
-                        .getPlants(),
-                landscape.getAccessGrid(), landscape.getBuildGrid(), landscape.getStartingLocations(),
-                Landscape.getFogInfo(terrain, meters_per_world),
+        LandscapeData landscapeData = new GeneratedLandscapeData(config, landscape);
+        return new WorldInfo<>(landscapeData, maps, detail, detailNormal,
+                Landscape.getFogInfo(config.terrain(), config.metersPerWorld()),
                 blend_infos);
     }
 }

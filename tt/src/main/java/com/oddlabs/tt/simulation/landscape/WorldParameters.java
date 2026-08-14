@@ -4,34 +4,14 @@ import org.jspecify.annotations.NonNull;
 
 import java.io.Serializable;
 
-/** Configuration parameters defining terrain size, speed, and unit limits. */
-public class WorldParameters implements Serializable {
-    private final @NonNull String map_code;
-    private final int initial_unit_count;
-    private final int max_unit_count;
-    private final int initial_game_speed;
-
-    public WorldParameters(int initial_game_speed, @NonNull String map_code, int initial_unit_count,
-            int max_unit_count) {
-        this.map_code = map_code;
-        this.initial_unit_count = initial_unit_count;
-        this.max_unit_count = max_unit_count;
-        this.initial_game_speed = initial_game_speed;
-    }
-
-    public @NonNull String getMapcode() {
-        return map_code;
-    }
-
-    public int getInitialUnitCount() {
-        return initial_unit_count;
-    }
-
-    public int getMaxUnitCount() {
-        return max_unit_count;
-    }
-
-    public int getInitialGameSpeed() {
-        return initial_game_speed;
-    }
+/**
+ * Configuration parameters defining terrain speed, map code, and unit limits.
+ *
+ * @param initialGameSpeed the initial simulation game speed
+ * @param mapCode the string code identifying the map/seed settings
+ * @param initialUnitCount the initial unit count per player
+ * @param maxUnitCount the maximum unit count per player
+ */
+public record WorldParameters(int initialGameSpeed, @NonNull String mapCode,
+                              int initialUnitCount, int maxUnitCount) implements Serializable {
 }

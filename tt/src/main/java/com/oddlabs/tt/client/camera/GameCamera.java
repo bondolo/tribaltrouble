@@ -302,7 +302,6 @@ public final class GameCamera extends Camera {
         doPitch(t);
         doRotate(t);
         updateDirection();
-        getState().setFog(viewer.getWorld().getFog());
     }
 
     @Override

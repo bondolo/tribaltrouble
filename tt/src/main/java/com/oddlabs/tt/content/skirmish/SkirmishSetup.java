@@ -1,60 +1,34 @@
 package com.oddlabs.tt.content.skirmish;
 
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.Terrain;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 /**
- * Defines a skirmish match setup extending WorldParameters with terrain and bot slot configurations.
+ * Defines a skirmish match setup composing WorldParameters, IslandConfig, and bot slot configurations.
  */
-public class SkirmishSetup extends WorldParameters {
-    private final @NonNull Terrain terrain;
-    private final int map_size;
-    private final float hills;
-    private final float vegetation;
-    private final float supplies;
-    private final long seed;
+public final class SkirmishSetup {
+    private final @NonNull WorldParameters worldParameters;
+    private final @NonNull IslandConfig islandConfig;
     private final @NonNull List<SkirmishPlayerSlot> player_slots;
 
-    public SkirmishSetup(int initial_game_speed, @NonNull String map_code, int initial_unit_count,
-            int max_unit_count, @NonNull Terrain terrain, int map_size, float hills, float vegetation,
-            float supplies, long seed, @NonNull List<SkirmishPlayerSlot> player_slots) {
-        super(initial_game_speed, map_code, initial_unit_count, max_unit_count);
-        this.terrain = terrain;
-        this.map_size = map_size;
-        this.hills = hills;
-        this.vegetation = vegetation;
-        this.supplies = supplies;
-        this.seed = seed;
+    public SkirmishSetup(@NonNull WorldParameters worldParameters, @NonNull IslandConfig islandConfig,
+            @NonNull List<SkirmishPlayerSlot> player_slots) {
+        this.worldParameters = worldParameters;
+        this.islandConfig = islandConfig;
         this.player_slots = List.copyOf(player_slots);
     }
 
-    public @NonNull Terrain getTerrain() {
-        return terrain;
+    public @NonNull WorldParameters getWorldParameters() {
+        return worldParameters;
     }
 
-    public int getMapSize() {
-        return map_size;
-    }
-
-    public float getHills() {
-        return hills;
-    }
-
-    public float getVegetation() {
-        return vegetation;
-    }
-
-    public float getSupplies() {
-        return supplies;
-    }
-
-    public long getSeed() {
-        return seed;
+    public @NonNull IslandConfig getIslandConfig() {
+        return islandConfig;
     }
 
     public @NonNull List<SkirmishPlayerSlot> getPlayerSlots() {

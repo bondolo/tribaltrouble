@@ -17,9 +17,9 @@ import com.oddlabs.tt.client.gui.MenuButton;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.Server;
@@ -289,12 +289,11 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     public static @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            MultiplayerLobby owner, WorldParameters world_params, @NonNull InGameInfo ingame_info,
-            WorldInitAction init_action, Game game, int meters_per_world, @NonNull Terrain terrain,
-            float hills, float vegetation_amount, float supplies_amount, int seed, String[] ai_names) {
+            MultiplayerLobby owner, @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info,
+            WorldInitAction init_action, Game game, @NonNull IslandConfig islandConfig, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
-        WorldGenerator generator = new IslandGenerator(terrain, meters_per_world, hills, vegetation_amount,
-                supplies_amount, seed, Renderer.getRenderer().getSettings().getTexelsPerGridUnit());
+        WorldGenerator generator = new IslandGenerator(islandConfig,
+                Renderer.getRenderer().getSettings().getTexelsPerGridUnit());
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
         final Server server = new Server(network, Renderer.getRenderer().getNetwork().getMatchmakingClient(), game,
                 address, generator, multiplayer, ai_names,

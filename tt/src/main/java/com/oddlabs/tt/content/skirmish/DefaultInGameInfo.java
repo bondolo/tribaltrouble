@@ -55,7 +55,7 @@ public class DefaultInGameInfo implements InGameInfo {
 
     protected final void addGameOverGUI(final @NonNull WorldViewer viewer, final @NonNull GameStatsDelegate delegate,
             int header_y, @NonNull Group group, boolean replay) {
-        String map_code_str = GameStatsDelegate.i18n("map_code", viewer.getParameters().getMapcode());
+        String map_code_str = GameStatsDelegate.i18n("map_code", viewer.getParameters().mapCode());
         Label map_code = new Label(map_code_str, Skin.getSkin().getEditFont());
         delegate.addChild(map_code);
         map_code.setPos((delegate.getWidth() - map_code.getWidth()) / 2, header_y - map_code.getHeight());
@@ -148,7 +148,7 @@ public class DefaultInGameInfo implements InGameInfo {
     public final void close(@NonNull WorldViewer viewer) {
         if (replay_island_flag) {
             TerrainMenu menu = new TerrainMenu(viewer.getNetwork(), viewer.getGUIRoot(), null, false, null);
-            menu.parseMapcode(viewer.getParameters().getMapcode());
+            menu.parseMapcode(viewer.getParameters().mapCode());
             menu.startGame();
         } else
             Renderer.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());

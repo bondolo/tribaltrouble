@@ -163,10 +163,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
         };
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
         @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(
-                player_infos.size(), world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
+                player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
-        this.world = World.newWorld(landscape_resources, races_resources, listener, world_params, world_info,
-                player_infos, renderer.getSettings().linear_team_colours,
+        this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
+                world_info.landscapeData(), player_infos, renderer.getSettings().linear_team_colours,
                 Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressForm::progress);
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
@@ -187,8 +187,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.panel = new ActionButtonPanel(this, camera);
         this.delegate = new SelectionDelegate(this, camera);
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
-        initPlayers(world_info.starting_locations(), player_slots, world.getPlayers(), unit_infos,
-                world_params.getInitialGameSpeed());
+        initPlayers(world_info.landscapeData().startingLocations(), player_slots, world.getPlayers(), unit_infos,
+                world_params.initialGameSpeed());
         renderer.getEventQueue().getManager().registerAnimation(this);
     }
 

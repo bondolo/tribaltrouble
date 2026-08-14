@@ -35,6 +35,7 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.core.util.Utils;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Gamespeed;
 import com.oddlabs.tt.simulation.model.Race;
@@ -661,10 +662,12 @@ public final class TerrainMenu extends Group {
             }
         }
         int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
-        return new SkirmishSetup(Globals.gamespeed, label_mapcode.getContents(),
-                Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT, terrain, SIZES[size],
+        IslandConfig islandConfig = new IslandConfig(terrain, SIZES[size],
                 hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
-                supplies_amount / (float) SLIDER_MAX_VALUE, (long) seed * (long) seed, slots);
+                supplies_amount / (float) SLIDER_MAX_VALUE, seed * seed);
+        WorldParameters worldParameters = new WorldParameters(Globals.gamespeed, label_mapcode.getContents(),
+                Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
+        return new SkirmishSetup(worldParameters, islandConfig, slots);
     }
 
     private @Nullable MultiplayerSetup buildMultiplayerSetup(@NonNull Terrain terrain, int hills, int vegetation_amount,
@@ -684,10 +687,12 @@ public final class TerrainMenu extends Group {
                 label_mapcode.getContents(), random_start_pos, Player.DEFAULT_MAX_UNIT_COUNT);
         Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
         int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-        return new MultiplayerSetup(game.getGamespeed(), label_mapcode.getContents(), Player.INITIAL_UNIT_COUNT,
-                game.getMaxUnitCount(), game, terrain, SIZES[size], hills / (float) SLIDER_MAX_VALUE,
-                vegetation_amount / (float) SLIDER_MAX_VALUE, supplies_amount / (float) SLIDER_MAX_VALUE,
-                (long) seed * (long) seed, p0_race, p0_team);
+        IslandConfig islandConfig = new IslandConfig(terrain, SIZES[size],
+                hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
+                supplies_amount / (float) SLIDER_MAX_VALUE, seed * seed);
+        WorldParameters worldParameters = new WorldParameters(game.getGamespeed(), label_mapcode.getContents(),
+                Player.INITIAL_UNIT_COUNT, game.getMaxUnitCount());
+        return new MultiplayerSetup(worldParameters, game, islandConfig, p0_race, p0_team);
     }
 
     public boolean startGame() {
@@ -730,20 +735,17 @@ public final class TerrainMenu extends Group {
         String ai_string = i18n("ai");
         InGameInfo ingame_info = multiplayer ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
                 : new DefaultInGameInfo();
-        WorldParameters parameters = multiplayer ? multiplayer_setup : skirmish_setup;
-        int map_size = multiplayer ? multiplayer_setup.getMapSize() : skirmish_setup.getMapSize();
+        WorldParameters parameters = multiplayer ? multiplayer_setup.getWorldParameters() : skirmish_setup
+                .getWorldParameters();
+        IslandConfig islandConfig = multiplayer ? multiplayer_setup.getIslandConfig() : skirmish_setup
+                .getIslandConfig();
         GameNetwork game_network = Menu.startNewGame(network, gui_root,
                 menu,
                 parameters,
                 ingame_info,
                 new Menu.DefaultWorldInitAction(),
                 game,
-                map_size,
-                terrain,
-                hills / (float) SLIDER_MAX_VALUE,
-                vegetation_amount / (float) SLIDER_MAX_VALUE,
-                supplies_amount / (float) SLIDER_MAX_VALUE,
-                seed * seed,
+                islandConfig,
                 new String[]{ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4",
                         ai_string + "5"});
         if (!multiplayer) {

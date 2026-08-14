@@ -14,15 +14,16 @@ import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.engine.resource.FogInfo;
-import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.IntStream;
 
 /**
@@ -56,7 +57,6 @@ public final class World implements SimulationClock {
     private final @NonNull AbstractElementNode<?> element_root;
     private final @Nullable RacesResources races_resources;
     private final @NonNull LandscapeBoundsProvider landscape_resources;
-    private final @NonNull FogInfo fog;
     private final @NonNull Terrain terrain;
     private final float @NonNull [] @NonNull [] plantCoordinates;
     private final List<@NonNull Plants> activePlants = new ArrayList<>();
@@ -67,30 +67,26 @@ public final class World implements SimulationClock {
     public static @NonNull World newWorld(
             @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
-            @NonNull WorldInfo<?> world_info, List<@NonNull PlayerInfo> player_infos,
+            @NonNull LandscapeData landscapeData, List<@NonNull PlayerInfo> player_infos,
             Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants) {
         return newWorld(landscape_resources, races_resources, notification_listener, world_params,
-                world_info, player_infos, teamColors, insertPlants, ProgressListener.NONE);
+                landscapeData, player_infos, teamColors, insertPlants, ProgressListener.NONE);
     }
 
     public static @NonNull World newWorld(
             @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
             @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
-            @NonNull WorldInfo<?> world_info, List<@NonNull PlayerInfo> player_infos,
+            @NonNull LandscapeData landscapeData, List<@NonNull PlayerInfo> player_infos,
             Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants,
             @NonNull ProgressListener progress_listener) {
         progress_listener.onProgress();
         World world = new World(landscape_resources, races_resources, notification_listener,
-                world_params, world_info, player_infos, teamColors, insertPlants, progress_listener);
+                world_params, landscapeData, player_infos, teamColors, insertPlants, progress_listener);
         progress_listener.onProgress();
         progress_listener.onProgress(1 / 5f);
         progress_listener.onProgress();
 
         return world;
-    }
-
-    public com.oddlabs.tt.engine.resource.@NonNull FogInfo getFog() {
-        return fog;
     }
 
     public @NonNull Terrain getTerrainType() {
@@ -159,30 +155,27 @@ public final class World implements SimulationClock {
 
     private World(@NonNull LandscapeBoundsProvider landscape_resources,
             @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
-            @NonNull WorldParameters world_params, @NonNull WorldInfo<?> world_info,
+            @NonNull WorldParameters world_params, @NonNull LandscapeData landscapeData,
             @NonNull List<@NonNull PlayerInfo> player_infos, Color.@NonNull Linear @NonNull [] teamColors,
             boolean insertPlants, @NonNull ProgressListener progress_listener) {
         IO.println("****************** Generating landscape ********************");
-        this.fog = world_info.fog_info();
-        this.terrain = world_info.terrain();
-        this.plantCoordinates = world_info.plants();
+        this.terrain = landscapeData.terrain();
+        this.plantCoordinates = landscapeData.plants();
         this.landscape_resources = landscape_resources;
         this.races_resources = races_resources;
-        this.max_unit_count = world_params.getMaxUnitCount();
+        this.max_unit_count = world_params.maxUnitCount();
         this.notification_listener = notification_listener;
-        this.gamespeed = world_params.getInitialGameSpeed();
+        this.gamespeed = world_params.initialGameSpeed();
         long time_start = System.currentTimeMillis();
 
-        world = new HeightMap(this, world_info.meters_per_world(), world_info.sea_level_meters(), world_info
-                .texels_per_colormap(), world_info.chunks_per_colormap(), world_info.heightmap(), world_info.trees(),
-                world_info.access_grid(), world_info.build_grid());
+        world = new HeightMap(this, landscapeData);
         animation_manager_game_time = new AnimationManager();
         animation_manager_real_time = new AnimationManager();
         random = new Random(42);
 
         players = List.of(IntStream.range(0, player_infos.size())
                 .mapToObj(i -> new Player(this, player_infos.get(i), teamColors[i % teamColors.length])
-                        .init(world_info.starting_locations()[i])
+                        .init(landscapeData.startingLocations()[i])
                 ).toArray(Player[]::new));
 
         long time_stop = System.currentTimeMillis();
@@ -190,14 +183,15 @@ public final class World implements SimulationClock {
                 + " sec ********************");
         this.supply_managers = new SupplyManagers(this);
         this.unit_grid = new UnitGrid(world);
-        RegionBuilder.buildRegions(unit_grid, world_info.starting_locations()[0][0], world_info
-                .starting_locations()[0][1], progress_listener);
+        RegionBuilder.buildRegions(unit_grid, landscapeData.startingLocations()[0][0],
+                landscapeData.startingLocations()[0][1], progress_listener);
         this.patch_root = new PatchGroup(this);
-        this.tree_root = AbstractTreeGroup.newRoot(this, world_info.trees(), world_info.palm_trees(), terrain);
+        this.tree_root = AbstractTreeGroup.newRoot(this, landscapeData.trees(), landscapeData.palmTrees(), terrain);
         this.element_root = AbstractElementNode.newRoot(world);
-        AbstractElementNode.buildSupplies(this, world_info.iron(), world_info.rocks(), world_info.plants(), terrain,
+        AbstractElementNode.buildSupplies(this, landscapeData.iron(), landscapeData.rocks(), landscapeData.plants(),
+                terrain,
                 insertPlants);
-        activeWorlds.add(new java.lang.ref.WeakReference<>(this));
+        activeWorlds.add(new WeakReference<>(this));
     }
 
     public @NonNull AbstractElementNode getElementRoot() {
@@ -277,8 +271,7 @@ public final class World implements SimulationClock {
         }
     }
 
-    private static final java.util.List<java.lang.ref.WeakReference<World>> activeWorlds
-            = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final Set<WeakReference<World>> activeWorlds = new CopyOnWriteArraySet<>();
 
     public static void updatePlantsDetail(boolean insertPlants) {
         for (var ref : activeWorlds) {

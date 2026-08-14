@@ -46,7 +46,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         if (actions.contains(GameAction.CHEAT_1)) {
             // F1 creates a peon at the center of the view unless the player already has maximum units.
             if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().getMaxUnitCount()) {
+                    .getParameters().maxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.PEON));
@@ -56,7 +56,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         if (actions.contains(GameAction.CHEAT_2)) {
             // F2 creates a rock warrior at the center of the view unless the player already has maximum units.
             if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().getMaxUnitCount()) {
+                    .getParameters().maxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_ROCK));
@@ -66,7 +66,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         if (actions.contains(GameAction.CHEAT_3)) {
             // F3 creates an iron warrior at the center of the view unless the player already has maximum units.
             if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().getMaxUnitCount()) {
+                    .getParameters().maxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
@@ -76,7 +76,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         if (actions.contains(GameAction.CHEAT_4)) {
             // F4 creates a chicken warrior at the center of the view unless the player already has maximum units.
             if (pickLocation.isPresent() && viewer.getLocalPlayer().getUnitCountContainer().getNumSupplies() != viewer
-                    .getParameters().getMaxUnitCount()) {
+                    .getParameters().maxUnitCount()) {
                 var location = pickLocation.get();
                 new Unit(viewer.getLocalPlayer(), location.x(), location.y(), null,
                         viewer.getLocalPlayer().getRaceInfo().getUnitTemplate(UnitType.WARRIOR_RUBBER));

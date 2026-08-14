@@ -20,6 +20,7 @@ import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.InGameDelegate;
 import com.oddlabs.tt.client.delegate.InGameMainMenu;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.core.event.LocalEventQueue;
 import com.oddlabs.tt.client.form.MessageForm;
@@ -963,10 +964,11 @@ public final class Renderer implements AutoCloseable {
 
     private static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui,
             final boolean first_progress) {
-        final WorldGenerator generator = new IslandGenerator(
+        IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE, 256, Globals.LANDSCAPE_HILLS,
-                Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED,
-                getRenderer().getSettings().getTexelsPerGridUnit());
+                Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
+        final WorldGenerator generator = new IslandGenerator(
+                islandConfig, getRenderer().getSettings().getTexelsPerGridUnit());
         return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root,
                 first_progress, generator), first_progress);
     }
@@ -979,13 +981,13 @@ public final class Renderer implements AutoCloseable {
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
         @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(players
-                .size(), world_params.getInitialUnitCount(), 0f);
+                .size(), world_params.initialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
         LandscapeResources landscape_resources = new LandscapeResources(render_queues);
         ProgressForm.progress();
         World world = World.newWorld(landscape_resources, null,
                 new NotificationListener() {
-                }, world_params, world_info, players,
+                }, world_params, world_info.landscapeData(), players,
                 getRenderer().getSettings().linear_team_colours,
                 Globals.INSERT_PLANTS[getRenderer().getSettings().graphic_detail],
                 ProgressForm::progress);

@@ -24,6 +24,7 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.core.util.Utils;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Terrain;
@@ -166,9 +167,11 @@ public final class TutorialForm extends Form {
                 initial_action.run(world_viewer);
             MainMenu.completeGameSetupHack(world_viewer);
         };
-        return MainMenu.startNewGame(network, gui_root, null, new WorldParameters(Game.GAMESPEED_NORMAL, "Tutorial"
-                + tutorial_num, initial_unit_count, Player.DEFAULT_MAX_UNIT_COUNT), ingame_info, compound_action, null,
-                size, Terrain.NATIVE, hills, trees, 0f, seed, new String[]{ai_string + "0", ai_string
+        var islandConfig = new IslandConfig(Terrain.NATIVE, size, hills, trees, 0f, seed);
+        var worldParameters = new WorldParameters(Game.GAMESPEED_NORMAL, "Tutorial"
+                + tutorial_num, initial_unit_count, Player.DEFAULT_MAX_UNIT_COUNT);
+        return MainMenu.startNewGame(network, gui_root, null, worldParameters, ingame_info, compound_action, null,
+                islandConfig, new String[]{ai_string + "0", ai_string
                         + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"});
     }
 
