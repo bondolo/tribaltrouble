@@ -3,6 +3,7 @@ package com.oddlabs.tt.client.viewer;
 import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.net.BeaconListener;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;
@@ -20,10 +21,12 @@ public final class NotificationManager implements BeaconListener {
     private final List<@NonNull AttackNotification> attack_notifies = new ArrayList<>();
     private final List<@NonNull Notification> notifies = new ArrayList<>();
     private final GUIRoot gui_root;
+    private final AudioImplementation audio;
     private @Nullable Notification latest_notification = null;
 
-    public NotificationManager(GUIRoot gui_root) {
+    public NotificationManager(GUIRoot gui_root, AudioImplementation audio) {
         this.gui_root = gui_root;
+        this.audio = audio;
     }
 
     public @Nullable Notification getLatestNotification() {
@@ -38,7 +41,7 @@ public final class NotificationManager implements BeaconListener {
                 return;
             }
         }
-        addNotification(new AttackNotification(local_player, gui_root, target, this, manager), attack_notifies);
+        addNotification(new AttackNotification(local_player, audio, gui_root, target, this, manager), attack_notifies);
     }
 
     public void newSelectableNotification(@NonNull Selectable<?> s, @NonNull AnimationManager manager,
@@ -53,9 +56,9 @@ public final class NotificationManager implements BeaconListener {
 
     private void newNotification(@NonNull AnimationManager manager, @NonNull Player local_player, float x, float y,
             @NonNull Color color, boolean show_always) {
-        var audio = AssetRegistry.getInstance().getBuildingNotificationAudio(local_player.getPlayerInfo().getRace());
-        var notification = new Notification(local_player.getWorld(), gui_root, x, y, this, color, audio, show_always,
-                manager);
+        var params = AssetRegistry.getInstance().getBuildingNotificationAudio(local_player.getPlayerInfo().getRace());
+        var notification = new Notification(local_player.getWorld().getHeightMap(), audio, gui_root, x, y, this,
+                color, params, show_always, manager);
         addNotification(notification, notifies);
     }
 

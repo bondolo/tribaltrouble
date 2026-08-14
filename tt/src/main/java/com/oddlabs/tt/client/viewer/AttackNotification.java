@@ -4,6 +4,7 @@ import com.oddlabs.tt.client.render.AssetRegistry;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.model.Target;
@@ -19,9 +20,11 @@ final class AttackNotification extends Notification {
 
     private boolean active = true;
 
-    public AttackNotification(@NonNull Player local_player, @NonNull GUIRoot gui_root, @NonNull Selectable<?> center,
+    public AttackNotification(@NonNull Player local_player, @NonNull AudioImplementation audio,
+            @NonNull GUIRoot gui_root, @NonNull Selectable<?> center,
             @NonNull NotificationManager manager, @NonNull AnimationManager animation_manager) {
-        super(local_player.getWorld(), gui_root, center.getPositionX(), center.getPositionY(), manager,
+        super(local_player.getWorld().getHeightMap(), audio, gui_root, center.getPositionX(), center.getPositionY(),
+                manager,
                 Color.Standard.RED,
                 AssetRegistry.getInstance().getAttackNotificationAudio(local_player.getPlayerInfo().getRace()), false,
                 animation_manager);

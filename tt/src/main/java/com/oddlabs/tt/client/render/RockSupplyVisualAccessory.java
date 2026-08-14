@@ -1,9 +1,7 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -27,11 +25,13 @@ import java.util.Collection;
  */
 public final class RockSupplyVisualAccessory implements AnimatedAccessory {
     private final @NonNull RockSupply rockSupply;
+    private final @NonNull AudioImplementation audio;
     private @Nullable RandomVelocityEmitter smokeEmitter = null;
     private boolean soundPlayed = false;
 
-    public RockSupplyVisualAccessory(@NonNull RockSupply rockSupply) {
+    public RockSupplyVisualAccessory(@NonNull RockSupply rockSupply, @NonNull AudioImplementation audio) {
         this.rockSupply = rockSupply;
+        this.audio = audio;
     }
 
     @Override
@@ -42,7 +42,7 @@ public final class RockSupplyVisualAccessory implements AnimatedAccessory {
                 ensureSmokeEmitter().setTransition(0.0f, 1.8f, 0.2f, 0.3f);
                 if (!soundPlayed) {
                     soundPlayed = true;
-                    rockSupply.getWorld().getAudio().newAudio(rockSupply.getPositionX(), rockSupply.getPositionY(),
+                    audio.newAudio(rockSupply.getPositionX(), rockSupply.getPositionY(),
                             rockSupply.getPositionZ(),
                             new AudioParameters(AudioAssets.SFX_RUMBLE, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
                                     AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,

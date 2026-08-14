@@ -1,9 +1,7 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -32,7 +30,7 @@ public final class StunVisualAccessory implements EmitterAccessory {
 
     private float age = 0f;
 
-    public StunVisualAccessory(@NonNull Stun stun) {
+    public StunVisualAccessory(@NonNull Stun stun, @NonNull AudioImplementation audio) {
         this.stun = stun;
         World world = stun.getWorld();
         Vector3f pos = new Vector3f(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ());
@@ -48,7 +46,7 @@ public final class StunVisualAccessory implements EmitterAccessory {
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 AssetRegistry.getInstance().getNoteTextures());
 
-        this.sound = world.getAudio().newAudio(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ(),
+        this.sound = audio.newAudio(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ(),
                 AudioAssets.STUN_LUR[ThreadLocalRandom.current().nextInt(AudioAssets.STUN_LUR.length)]);
     }
 

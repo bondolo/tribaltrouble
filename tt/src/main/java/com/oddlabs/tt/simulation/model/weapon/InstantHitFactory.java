@@ -1,30 +1,23 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
-import com.oddlabs.tt.engine.audio.AudioParameters;
-import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
-import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A weapon factory for units that deal damage instantly to their targets
  * (e.g., melee units or non-projectile weapons).
  */
 public final class InstantHitFactory extends WeaponFactory {
-    private final @NonNull AudioFile @NonNull [] sounds;
 
-    public InstantHitFactory(float hit_chance, float range, float release_ratio,
-            @NonNull AudioFile @NonNull [] sounds) {
+    public InstantHitFactory(float hit_chance, float range, float release_ratio) {
         super(hit_chance, range, release_ratio);
-        this.sounds = sounds;
     }
 
     @Override
@@ -39,16 +32,10 @@ public final class InstantHitFactory extends WeaponFactory {
         float dy = target.getPositionY() - src.getPositionY();
         float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
         if (target instanceof Unit) {
-            World world = src.getOwner().getWorld();
             float pitchRange = ((UnitTemplate) target.getTemplate()).getDeathPitch();
-            var params = new AudioParameters(
-                    sounds[ThreadLocalRandom.current().nextInt(sounds.length)],
-                    AudioAssets.AUDIO_RANK_WEAPON_HIT,
-                    AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
-                    AudioAssets.AUDIO_RADIUS_WEAPON_HIT,
-                    1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f * pitchRange)
-                            : 0f));
-            world.getAudio().newAudio(target.getPositionX(), target.getPositionY(), target.getPositionZ(), params);
+            src.getClientState(ModelClient.class).ifPresent(client -> {
+                client.onMeleeHit(target.getPositionX(), target.getPositionY(), target.getPositionZ(), pitchRange);
+            });
         }
         target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());
     }

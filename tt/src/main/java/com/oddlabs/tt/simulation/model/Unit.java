@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.geometry.AnimationInfo;
-import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.behaviour.DefendController;
 import com.oddlabs.tt.simulation.behaviour.DieBehaviour;
@@ -22,7 +21,6 @@ import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.PathTracker;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -30,7 +28,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Represents a mobile unit in the game world.
@@ -394,18 +391,13 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 getOwner().unitLost();
 
                 getClientState(ModelClient.class).ifPresent(client -> {
-                    client.addVisualSound(EmojiType.GRAVESTONE,
-                            ModelClient.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
+                    client.onUnitDeath(getOwner().getRaceInfo().getRaceType(), getTemplate().getVisualType(),
+                            getTemplate()
+                                    .getDeathPitch());
                 });
 
                 pushController(new DieController(this));
                 forceDecide();
-                float pitchRange = getTemplate().getDeathPitch();
-                var params = new AudioParameters(getTemplate().getDeathSound(), AudioAssets.AUDIO_RANK_DEATH,
-                        AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH,
-                        1f + (pitchRange > 0f ? ThreadLocalRandom.current().nextFloat(-0.5f * pitchRange, 0.5f
-                                * pitchRange) : 0f));
-                getOwner().getWorld().getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(), params);
                 setDirection(-direction_x, -direction_y);
                 removeDying();
             }

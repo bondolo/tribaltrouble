@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.behaviour.AttackController;
 import com.oddlabs.tt.simulation.behaviour.GatherController;
 import com.oddlabs.tt.simulation.behaviour.NullController;
@@ -17,7 +16,6 @@ import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -26,7 +24,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Represents a static building structure in the game world.
@@ -669,10 +666,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         super.hit(damage, dir_x, dir_y, owner);
         if (!isDead()) {
             adjustHitPoints(-damage);
-            World world = getOwner().getWorld();
-            world.getAudio().newAudio(getPositionX(), getPositionY(), getPositionZ(),
-                    AudioAssets.BUILDING_HITS[ThreadLocalRandom.current()
-                            .nextInt(AudioAssets.BUILDING_HITS.length)]);
+            getClientState(ModelClient.class).ifPresent(ModelClient::onBuildingHit);
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();

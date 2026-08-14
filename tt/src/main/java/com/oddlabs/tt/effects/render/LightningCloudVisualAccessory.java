@@ -1,9 +1,8 @@
 package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.client.render.*;
-
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.CameraState;
@@ -40,6 +39,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
 
     private final @NonNull LightningCloud cloud;
     private final @NonNull ParametricEmitter emitter;
+    private final @NonNull AudioImplementation audio;
     private final @NonNull AudioPlayer bubblingSound;
     private @Nullable AudioPlayer cloudSound;
 
@@ -48,8 +48,9 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
     private boolean firstRun = true;
     private float strikeAudioCooldown = 0f;
 
-    public LightningCloudVisualAccessory(@NonNull LightningCloud cloud) {
+    public LightningCloudVisualAccessory(@NonNull LightningCloud cloud, @NonNull AudioImplementation audio) {
         this.cloud = cloud;
+        this.audio = audio;
         World world = cloud.getWorld();
         Vector3f pos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
 
@@ -73,7 +74,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
         float maxLocalZ = CLOUD_RADIUS_Z * CloudFunction.TOP_PUFFINESS_PEAK;
         this.emitter.setHeightLighting(LIGHTING_INTENSITY, maxLocalZ);
 
-        this.bubblingSound = world.getAudio().newAudio(cloud.getPositionX(), cloud.getPositionY(),
+        this.bubblingSound = audio.newAudio(cloud.getPositionX(), cloud.getPositionY(),
                 world.getHeightMap().getNearestHeight(cloud.getPositionX(), cloud.getPositionY()),
                 AudioAssets.BUBBLING);
     }
@@ -89,7 +90,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
                         AudioAssets.SFX_FLASH, AudioAssets.AUDIO_RANK_MAGIC,
                         AudioAssets.AUDIO_DISTANCE_MAGIC, AudioAssets.AUDIO_GAIN_LIGHTNING,
                         AudioAssets.AUDIO_RADIUS_LIGHTNING);
-                cloud.getWorld().getAudio().newAudio(tx, ty, tz, params);
+                audio.newAudio(tx, ty, tz, params);
                 strikeAudioCooldown = 0.8f;
             }
         }
@@ -105,7 +106,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory {
     @Override
     public void animate(float t) {
         if (firstRun) {
-            cloudSound = cloud.getWorld().getAudio().newAudio(cloud.getPositionX(), cloud.getPositionY(), cloud
+            cloudSound = audio.newAudio(cloud.getPositionX(), cloud.getPositionY(), cloud
                     .getPositionZ(),
                     AudioAssets.LIGHTNING_CLOUD);
             firstRun = false;

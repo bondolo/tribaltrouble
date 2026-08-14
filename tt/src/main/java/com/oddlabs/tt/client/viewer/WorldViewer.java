@@ -46,9 +46,11 @@ import com.oddlabs.tt.client.render.RacesAssetsLoader;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.WorldGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.net.ServerMessageBundler;
+import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.core.util.Utils;
@@ -94,12 +96,14 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.world_params = world_params;
         this.ingame_info = ingame_info;
         this.network = network;
-        this.notification_manager = new NotificationManager(gui_root);
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
         var renderer = Renderer.getRenderer();
         renderer.setCheat(cheat);
         this.animation_manager_local = new AnimationManager();
         final CameraState camera_state = new CameraState();
+        AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
+                .getAudioManager().newAudio(camera_state, x, y, z, params);
+        this.notification_manager = new NotificationManager(gui_root, audio);
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         RenderQueues render_queues = new RenderQueues();
@@ -141,6 +145,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
+            public void treeFelled(AbstractTreeGroup.@NonNull TreeType treeType, float x, float y, float z) {
+                audio.newAudio(x, y, z, AudioAssets.TREE_FALL[treeType.ordinal() % 2]);
+            }
+
+            @Override
             public void registerTarget(@NonNull Target target) {
                 distributable_table.register(target);
             }
@@ -156,9 +165,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(
                 player_infos.size(), world_params.getInitialUnitCount(), ingame_info.getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
-        AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
-                .getAudioManager().newAudio(camera_state, x, y, z, params);
-        this.world = World.newWorld(audio, landscape_resources, races_resources, listener, world_params, world_info,
+        this.world = World.newWorld(landscape_resources, races_resources, listener, world_params, world_info,
                 player_infos, renderer.getSettings().linear_team_colours,
                 Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressForm::progress);
         this.local_player = world.getPlayers().get(player_slot);

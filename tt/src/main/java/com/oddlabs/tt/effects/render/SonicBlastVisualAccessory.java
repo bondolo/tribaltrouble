@@ -1,9 +1,8 @@
 package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.client.render.*;
-
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -22,16 +21,18 @@ import org.jspecify.annotations.Nullable;
  */
 public final class SonicBlastVisualAccessory implements AnimatedAccessory {
     private final @NonNull SonicBlast blast;
+    private final @NonNull AudioImplementation audio;
     private @Nullable SonicBlastEffect effect;
     private final @NonNull AudioPlayer lur;
     private final @NonNull AudioPlayer rumble;
 
-    public SonicBlastVisualAccessory(@NonNull SonicBlast blast) {
+    public SonicBlastVisualAccessory(@NonNull SonicBlast blast, @NonNull AudioImplementation audio) {
         this.blast = blast;
+        this.audio = audio;
         World world = blast.getWorld();
-        this.lur = world.getAudio().newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
+        this.lur = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
                 AudioAssets.SONIC_BLAST_LUR[world.getRandom().nextInt(AudioAssets.SONIC_BLAST_LUR.length)]);
-        this.rumble = world.getAudio().newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
+        this.rumble = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
                 AudioAssets.SONIC_BLAST_RUMBLE);
     }
 
@@ -50,7 +51,7 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory {
         }
         World world = blast.getWorld();
         this.effect = new SonicBlastEffect(world, new Vector3f(x, y, z), radius, duration);
-        world.getAudio().newAudio(x, y, z, AudioAssets.SONIC_BLAST);
+        audio.newAudio(x, y, z, AudioAssets.SONIC_BLAST);
         if (lur != null) {
             lur.stop(10.0f);
         }

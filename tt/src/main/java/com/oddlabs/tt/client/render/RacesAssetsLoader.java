@@ -380,36 +380,33 @@ public final class RacesAssetsLoader {
         ProgressForm.progress(1f / num_progress);
 
         WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f,
-                RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+                RacesResources.THROW_RANGE, 29f / 58f);
         AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.ROCK,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_ROCK.getValue()));
 
         WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f,
-                RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+                RacesResources.THROW_RANGE, 29f / 58f);
         AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.IRON,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_IRON.getValue()));
 
         WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new,
-                0.95f, RacesResources.THROW_RANGE, 29f / 58f, AudioAssets.SFX_WEAPON_AXE, AudioAssets.SFX_IMPACT_MEATS);
+                0.95f, RacesResources.THROW_RANGE, 29f / 58f);
         AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.RUBBER,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_RUBBER.getValue()));
 
         WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new,
-                0.5f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.5f, RacesResources.THROW_RANGE, 46f / 100f);
         AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.ROCK,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_ROCK.getValue()));
 
         WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new,
-                0.75f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.75f, RacesResources.THROW_RANGE, 46f / 100f);
         AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.IRON,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_IRON.getValue()));
 
         WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class,
                 RubberSpearWeapon::new,
-                0.95f, RacesResources.THROW_RANGE, 46f / 100f, AudioAssets.SFX_WEAPON_SPEAR,
-                AudioAssets.SFX_IMPACT_MEATS);
+                0.95f, RacesResources.THROW_RANGE, 46f / 100f);
         AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.RUBBER,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue()));
 
@@ -427,7 +424,6 @@ public final class RacesAssetsLoader {
                 vRockSprite.animTypes(),
                 shadow_diameter_warrior,
                 null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[0],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -449,7 +445,6 @@ public final class RacesAssetsLoader {
                 vIronSprite.animTypes(),
                 shadow_diameter_warrior,
                 null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -471,7 +466,6 @@ public final class RacesAssetsLoader {
                 vRubberSprite.animTypes(),
                 shadow_diameter_warrior,
                 null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -493,7 +487,6 @@ public final class RacesAssetsLoader {
                 nRockSprite.animTypes(),
                 shadow_diameter_warrior,
                 null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[0],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -515,7 +508,6 @@ public final class RacesAssetsLoader {
                 nIronSprite.animTypes(),
                 shadow_diameter_warrior,
                 null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -537,7 +529,6 @@ public final class RacesAssetsLoader {
                 nRubberSprite.animTypes(),
                 shadow_diameter_warrior,
                 null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .25f,
                 new float[]{1.2f},
                 1f,
@@ -553,13 +544,12 @@ public final class RacesAssetsLoader {
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
-                new InstantHitFactory(1 / 5f, 0f, 11f / 38f, AudioAssets.SFX_IMPACT_MEATS),
+                new InstantHitFactory(1 / 5f, 0f, 11f / 38f),
                 UnitVisualType.PEON,
                 vPeonSprite.bounds(),
                 vPeonSprite.animTypes(),
                 shadow_diameter_peon,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
-                AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
                 1f,
@@ -575,13 +565,12 @@ public final class RacesAssetsLoader {
                 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f,
-                new InstantHitFactory(1 / 5f, 0f, 51f / 83f, AudioAssets.SFX_IMPACT_MEATS),
+                new InstantHitFactory(1 / 5f, 0f, 51f / 83f),
                 UnitVisualType.PEON,
                 nPeonSprite.bounds(),
                 nPeonSprite.animTypes(),
                 shadow_diameter_peon,
                 new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
-                AudioAssets.SFX_DEATH_PEON,
                 .25f,
                 new float[]{.7f},
                 1f,
@@ -597,13 +586,12 @@ public final class RacesAssetsLoader {
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 119f, AudioAssets.SFX_VIKING_CHIEFTAIN_HITS),
+                new InstantHitFactory(3 / 4f, 0f, 75f / 119f),
                 UnitVisualType.CHIEFTAIN,
                 vChieftainSprite.bounds(),
                 vChieftainSprite.animTypes(),
                 shadow_diameter_chieftain,
                 null,
-                AudioAssets.SFX_DEATH_VIKING_WARRIORS[1],
                 .15f,
                 new float[]{1.7f},
                 1f,
@@ -619,13 +607,12 @@ public final class RacesAssetsLoader {
                 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f,
-                new InstantHitFactory(3 / 4f, 0f, 75f / 129f, AudioAssets.SFX_NATIVE_CHIEFTAIN_HITS),
+                new InstantHitFactory(3 / 4f, 0f, 75f / 129f),
                 UnitVisualType.CHIEFTAIN,
                 nChieftainSprite.bounds(),
                 nChieftainSprite.animTypes(),
                 shadow_diameter_chieftain,
                 null,
-                AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1],
                 .15f,
                 new float[]{1.7f},
                 1f,

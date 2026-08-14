@@ -21,6 +21,65 @@ public interface ModelClient extends ClientState, AutoCloseable {
     void addVisualSound(@NonNull EmojiType emoji, float duration, float audioDistance);
 
     /**
+     * Handles presentation audio and visual effects when a unit harvests a supply.
+     *
+     * @param supplyType The supply type harvested.
+     */
+    default void onHarvest(@NonNull SupplyType supplyType) {
+    }
+
+    /**
+     * Handles presentation audio and visual effects when a unit repairs a building.
+     */
+    default void onRepair() {
+    }
+
+    /**
+     * Handles presentation audio and visual effects when a building receives damage.
+     */
+    default void onBuildingHit() {
+    }
+
+    /**
+     * Handles presentation audio and visual effects when a unit dies.
+     *
+     * @param race The race of the unit.
+     * @param unitType The visual type of the unit.
+     * @param pitchRange The pitch variation range for the death sound.
+     */
+    default void onUnitDeath(@NonNull Race race, @NonNull UnitVisualType unitType, float pitchRange) {
+    }
+
+    /**
+     * Handles presentation audio for a melee hit.
+     *
+     * @param targetX Destination X.
+     * @param targetY Destination Y.
+     * @param targetZ Destination Z.
+     * @param pitchRange Pitch variation range.
+     */
+    default void onMeleeHit(float targetX, float targetY, float targetZ, float pitchRange) {
+    }
+
+    /**
+     * Handles presentation audio and visual effects for chicken idle cluck.
+     */
+    default void onChickenCluck() {
+    }
+
+    /**
+     * Handles presentation audio for chicken pecking or flying.
+     */
+    default void onChickenPeck() {
+    }
+
+    /**
+     * Handles presentation audio for chicken death.
+     */
+    default void onChickenDeath() {
+    }
+
+    /**
      * Spawns a visual lightning strike from this model to the specified destination coordinate.
      *
      * @param targetX The destination X coordinate.

@@ -13,7 +13,7 @@ import java.net.URL;
  * Responsible for initializing the audio backend, allocating sources, and controlling global audio properties like
  * listener orientation and master gain.
  */
-public interface AudioManager {
+public interface AudioManager extends AudioImplementation {
 
     @NonNull
     Vector3fc getListenerPosition();
@@ -60,6 +60,7 @@ public interface AudioManager {
     AudioPlayer newAudio(@NonNull CameraState camera_state, float x, float y, float z,
             @NonNull AudioParameters params);
 
+    @Override
     @NonNull
     AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params);
 

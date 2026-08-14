@@ -1,9 +1,8 @@
 package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.client.render.*;
-
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -34,6 +33,7 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
     private static final int MIN_BURSTS_PER_SOUND = 2;
 
     private final @NonNull PoisonFog poisonFog;
+    private final @NonNull AudioImplementation audio;
     private final @NonNull AudioPlayer bubblingSound;
 
     private float time = 0f;
@@ -41,10 +41,11 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
     private boolean firstRun = true;
     private int nextSound = 1;
 
-    public PoisonFogVisualAccessory(@NonNull PoisonFog poisonFog) {
+    public PoisonFogVisualAccessory(@NonNull PoisonFog poisonFog, @NonNull AudioImplementation audio) {
         this.poisonFog = poisonFog;
+        this.audio = audio;
         World world = poisonFog.getWorld();
-        this.bubblingSound = world.getAudio().newAudio(poisonFog.getPositionX(), poisonFog.getPositionY(),
+        this.bubblingSound = audio.newAudio(poisonFog.getPositionX(), poisonFog.getPositionY(),
                 world.getHeightMap().getNearestHeight(poisonFog.getPositionX(), poisonFog.getPositionY()),
                 AudioAssets.BUBBLING);
     }
@@ -85,7 +86,7 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
 
             if (bursts % nextSound == 0) {
                 nextSound = MIN_BURSTS_PER_SOUND + ThreadLocalRandom.current().nextInt(5);
-                world.getAudio().newAudio(x, y, z, AudioAssets.POISON_GAS);
+                audio.newAudio(x, y, z, AudioAssets.POISON_GAS);
             }
             bursts++;
         }

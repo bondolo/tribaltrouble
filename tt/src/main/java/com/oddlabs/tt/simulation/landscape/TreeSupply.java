@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.simulation.model.Target;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -214,7 +213,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         if (isEmpty()) {
             unoccupyTree();
             world.getSupplyManager(getSupplyType()).emptySupply(this);
-            world.getAudio().newAudio(getCX(), getCY(), getCZ(), AudioAssets.TREE_FALL[tree_type.ordinal() % 2]);
+            world.getNotificationListener().treeFelled(tree_type, getCX(), getCY(), getCZ());
             world.getAnimationManagerRealTime().registerAnimation(this);
             animation_time = 0f;
         }

@@ -3,10 +3,11 @@ package com.oddlabs.tt.client.viewer;
 import com.oddlabs.tt.core.animation.AnimationManager;
 import com.oddlabs.tt.core.animation.TimerAnimation;
 import com.oddlabs.tt.core.animation.Updatable;
+import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.audio.AudioParameters;
 import com.oddlabs.tt.client.gui.Arrow;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
@@ -24,18 +25,18 @@ public class Notification implements Updatable<TimerAnimation> {
     private final @NonNull TimerAnimation timer;
     private final @NonNull Arrow arrow;
 
-    public Notification(@NonNull World world, @NonNull GUIRoot gui_root, float x, float y,
-            @NonNull NotificationManager manager, @NonNull Color color, @NonNull AudioParameters params,
-            boolean show_always,
+    public Notification(@NonNull HeightMap heightMap, @NonNull AudioImplementation audio, @NonNull GUIRoot gui_root,
+            float x, float y, @NonNull NotificationManager manager, @NonNull Color color,
+            @NonNull AudioParameters params, boolean show_always,
             @NonNull AnimationManager animation_manager) {
         this.center_x = x;
         this.center_y = y;
         this.manager = manager;
         this.timer = new TimerAnimation(animation_manager, this, ACTIVE_SECONDS);
         timer.start();
-        this.arrow = new Arrow(world.getHeightMap(), gui_root, center_x, center_y, color, show_always);
+        this.arrow = new Arrow(heightMap, gui_root, center_x, center_y, color, show_always);
         gui_root.addChild(arrow);
-        world.getAudio().newAudio(0f, 0f, 0f, params);
+        audio.newAudio(0f, 0f, 0f, params);
     }
 
     public void remove() {
