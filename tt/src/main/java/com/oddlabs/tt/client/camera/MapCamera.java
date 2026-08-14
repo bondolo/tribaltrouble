@@ -3,11 +3,11 @@ package com.oddlabs.tt.client.camera;
 import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.input.GameAction;
-import com.oddlabs.tt.client.input.InputEvent;
-import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.FogInfo;
 import com.oddlabs.tt.engine.resource.RadialFogInfo;

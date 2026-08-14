@@ -2,9 +2,9 @@ package com.oddlabs.tt.content.skirmish;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.GUIRoot;
 import org.jspecify.annotations.NonNull;
 
 public final class TerrainMenuForm extends Form implements TerrainMenuListener {

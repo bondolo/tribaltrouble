@@ -4,8 +4,8 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.client.gui.GUIIcons;
-import com.oddlabs.tt.client.gui.ToolTipBox;
+import com.oddlabs.tt.gui.GUIIcons;
+import com.oddlabs.tt.gui.ToolTipBox;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.ModelToolTip;
@@ -16,7 +16,7 @@ import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.behaviour.Controller;
 import com.oddlabs.tt.simulation.behaviour.GatherController;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.client.gui.ToolTip;
+import com.oddlabs.tt.gui.ToolTip;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

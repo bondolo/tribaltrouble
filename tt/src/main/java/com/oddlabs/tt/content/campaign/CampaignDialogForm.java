@@ -1,27 +1,27 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.gui.CancelButton;
-import com.oddlabs.tt.client.gui.GUIIcon;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.IconQuad;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.LabelBox;
-import com.oddlabs.tt.client.gui.OKButton;
-import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.input.GameAction;
-import com.oddlabs.tt.client.input.InputEvent;
-import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.CancelButton;
+import com.oddlabs.tt.gui.GUIIcon;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.IconQuad;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.LabelBox;
+import com.oddlabs.tt.gui.OKButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputPhase;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
-import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
-import static com.oddlabs.tt.client.gui.Placement.TOP_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+import static com.oddlabs.tt.gui.Placement.TOP_LEFT;
 
 public class CampaignDialogForm extends Form {
     private static final Logger logger = Logger.getLogger(CampaignDialogForm.class.getSimpleName());

@@ -3,12 +3,12 @@ package com.oddlabs.tt.content.tutorial;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
-import com.oddlabs.tt.client.gui.Group;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.base.animation.TimerAnimation;
@@ -18,7 +18,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
 public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> implements Updatable<TimerAnimation> {
     private static final float DELAY = 1f;

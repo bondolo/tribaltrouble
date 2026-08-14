@@ -7,7 +7,7 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
-import com.oddlabs.tt.engine.procedural.Landscape;
+import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.engine.render.Texture;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

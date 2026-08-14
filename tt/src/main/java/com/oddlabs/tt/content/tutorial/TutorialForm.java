@@ -3,15 +3,15 @@ package com.oddlabs.tt.content.tutorial;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.content.menu.MainMenu;
-import com.oddlabs.tt.client.gui.CancelButton;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.CancelButton;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.content.tutorial.trigger.BuildingChieftainTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.PlacingDelegateTrigger;
@@ -37,8 +37,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
 
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
 /** UI form displaying tutorial step instructions. */
 public final class TutorialForm extends Form {

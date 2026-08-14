@@ -4,30 +4,30 @@ import com.oddlabs.matchmaking.Game;
 import java.io.Serializable;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
-import com.oddlabs.tt.client.form.GameInfoForm;
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.form.ProgressForm;
+import com.oddlabs.tt.gui.form.GameInfoForm;
+import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.gui.form.ProgressForm;
 import com.oddlabs.tt.engine.font.Font;
-import com.oddlabs.tt.client.gui.Box;
-import com.oddlabs.tt.client.gui.Diode;
-import com.oddlabs.tt.client.gui.EditLine;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.FormData;
-import com.oddlabs.tt.client.gui.GUIObject;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.Group;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.client.gui.Panel;
-import com.oddlabs.tt.client.gui.PulldownButton;
-import com.oddlabs.tt.client.gui.PulldownItem;
-import com.oddlabs.tt.client.gui.PulldownMenu;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.gui.TextBox;
-import com.oddlabs.tt.client.guievent.EnterListener;
-import com.oddlabs.tt.client.guievent.MouseClickListener;
+import com.oddlabs.tt.gui.Box;
+import com.oddlabs.tt.gui.Diode;
+import com.oddlabs.tt.gui.EditLine;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.FormData;
+import com.oddlabs.tt.gui.GUIObject;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.Panel;
+import com.oddlabs.tt.gui.PulldownButton;
+import com.oddlabs.tt.gui.PulldownItem;
+import com.oddlabs.tt.gui.PulldownMenu;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.TextBox;
+import com.oddlabs.tt.gui.event.EnterListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.net.ChatMessage;
@@ -36,7 +36,7 @@ import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.client.gui.ChatCommand;
+import com.oddlabs.tt.gui.ChatCommand;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -52,12 +52,12 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_MID;
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_RIGHT;
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
-import static com.oddlabs.tt.client.gui.Placement.RIGHT_MID;
-import static com.oddlabs.tt.client.gui.Placement.TOP_RIGHT;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+import static com.oddlabs.tt.gui.Placement.TOP_RIGHT;
 
 /**
  * UI panel representing the multiplayer lobby game setup and slots configuration menu.
@@ -501,7 +501,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback loadCallback) {
         setDisabled(true);
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
-                (com.oddlabs.tt.client.form.LoadCallback) loadCallback);
+                (com.oddlabs.tt.gui.form.LoadCallback) loadCallback);
     }
 
     private void finishChatAppend() {

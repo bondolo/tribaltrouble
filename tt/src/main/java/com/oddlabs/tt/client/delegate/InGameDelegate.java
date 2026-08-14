@@ -4,9 +4,9 @@ import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.StaticCamera;
-import com.oddlabs.tt.client.input.GameAction;
-import com.oddlabs.tt.client.input.InputEvent;
-import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;

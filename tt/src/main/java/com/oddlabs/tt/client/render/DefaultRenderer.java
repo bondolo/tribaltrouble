@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.client.gui.LocalInput;
+import com.oddlabs.tt.gui.LocalInput;
 
 import com.oddlabs.tt.effects.render.EmitterRenderer;
 import com.oddlabs.tt.effects.render.LightningRenderer;
@@ -11,7 +11,7 @@ import com.oddlabs.tt.engine.resource.AssetRegistry;
 
 import com.oddlabs.tt.base.global.BoundingMode;
 import com.oddlabs.tt.base.global.Globals;
-import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -26,7 +26,7 @@ import com.oddlabs.tt.engine.render.scenery.Sky;
 import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.client.gui.ToolTip;
+import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.client.viewer.AmbientAudio;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.Selection;

@@ -1,11 +1,11 @@
 package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.client.camera.GameCamera;
-import com.oddlabs.tt.client.gui.CursorType;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.input.GameAction;
-import com.oddlabs.tt.client.input.InputEvent;
-import com.oddlabs.tt.client.input.InputPhase;
+import com.oddlabs.tt.gui.CursorType;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;

@@ -2,18 +2,18 @@ package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.client.gui.Form;
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.form.QuestionForm;
-import com.oddlabs.tt.client.gui.CancelButton;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.HorizButton;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.gui.Origin;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.guievent.RowListener;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.gui.form.QuestionForm;
+import com.oddlabs.tt.gui.CancelButton;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
@@ -26,8 +26,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.oddlabs.tt.client.gui.Placement.BOTTOM_LEFT;
-import static com.oddlabs.tt.client.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
 public final class CampaignForm extends Form implements DeterministicSerializerLoopbackInterface<
         @NonNull CampaignState[]> {

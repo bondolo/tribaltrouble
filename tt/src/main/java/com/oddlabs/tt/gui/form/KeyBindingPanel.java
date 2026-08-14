@@ -1,0 +1,286 @@
+package com.oddlabs.tt.gui.form;
+
+import com.oddlabs.tt.gui.LocalInput;
+
+import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.gui.ColumnInfo;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MultiColumnComboBox;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.Panel;
+import com.oddlabs.tt.gui.Row;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.SortedLabel;
+import com.oddlabs.tt.gui.event.RowListener;
+import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputBinding;
+import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.window.LWJGL3Window;
+import com.oddlabs.util.Color;
+import org.jspecify.annotations.NonNull;
+import org.lwjgl.sdl.SDLDialog;
+import org.lwjgl.sdl.SDL_DialogFileFilter;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+
+/**
+ * UI Panel for remapping game actions to keyboard and controller inputs.
+ */
+public class KeyBindingPanel extends Panel {
+    private static final int COL_ACTION_WIDTH = 200;
+    private static final int COL_BINDINGS_WIDTH = 300;
+
+    private final @NonNull MultiColumnComboBox<GameAction> list_box;
+    private final @NonNull GUIRoot gui_root;
+
+    public KeyBindingPanel(@NonNull GUIRoot gui_root) {
+        super(AbstractOptionsMenu.i18n("key_bindings_title"));
+        this.gui_root = gui_root;
+
+        ColumnInfo[] infos = new ColumnInfo[]{
+                new ColumnInfo(AbstractOptionsMenu.i18n("column_action"), COL_ACTION_WIDTH),
+                new ColumnInfo(AbstractOptionsMenu.i18n("column_bindings"), COL_BINDINGS_WIDTH)
+        };
+
+        list_box = new MultiColumnComboBox<>(gui_root, infos, 300, false);
+        addChild(list_box);
+
+        updateList();
+
+        list_box.addRowListener(new RowListener<>() {
+            @Override
+            public void rowDoubleClicked(@NonNull GameAction action) {
+                gui_root.addModalForm(new KeyBindingDialog(gui_root, action, bindings -> {
+                    LocalInput.getLocalInput().getInputManager().setBindings(action, bindings);
+                    updateList();
+                }));
+            }
+        });
+
+        // Buttons
+        Group button_group = new Group();
+        addChild(button_group);
+
+        HorizButton btn_reset = new HorizButton(AbstractOptionsMenu.i18n("btn_reset_all"), 100);
+        btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(AbstractOptionsMenu.i18n(
+                "confirm_reset_all"), (_, _, _, _) -> {
+                    LocalInput.getLocalInput().getInputManager().resetToDefaults();
+                    updateList();
+                })));
+        button_group.addChild(btn_reset);
+
+        HorizButton btn_save = new HorizButton(AbstractOptionsMenu.i18n("btn_save_bindings"), 100);
+        btn_save.addMouseClickListener((_, _, _, _) -> saveMappings());
+        button_group.addChild(btn_save);
+
+        HorizButton btn_load = new HorizButton(AbstractOptionsMenu.i18n("btn_load_bindings"), 100);
+        btn_load.addMouseClickListener((_, _, _, _) -> loadMappings());
+        button_group.addChild(btn_load);
+
+        btn_reset.place();
+        btn_save.place(btn_reset, RIGHT_MID);
+        btn_load.place(btn_save, RIGHT_MID);
+        button_group.compileCanvas();
+
+        list_box.place();
+        button_group.place(list_box, BOTTOM_LEFT);
+
+        compileCanvas();
+    }
+
+    private void updateList() {
+        GameAction selectedAction = list_box.getSelected();
+        list_box.clear();
+        Row<GameAction, ?> rowToSelect = null;
+
+        for (GameAction action : GameAction.values()) {
+            if (action.name().startsWith("DEBUG_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
+                continue;
+            }
+            if (action.name().startsWith("CHEAT_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
+                continue;
+            }
+            String name;
+            try {
+                name = AbstractOptionsMenu.i18n("action." + action.name());
+            } catch (Exception e) {
+                name = action.name();
+            }
+
+            var bindings = LocalInput.getLocalInput().getInputManager().getBindings(action);
+            Label bindingLabel;
+
+            if (bindings.isEmpty()) {
+                bindingLabel = new InvertedLabel(AbstractOptionsMenu.i18n("unassigned"), Skin.getSkin()
+                        .getMultiColumnComboBoxData().font(), COL_BINDINGS_WIDTH);
+            } else {
+                var desc = bindings.stream()
+                        .map(InputBinding::toString)
+                        .collect(Collectors.joining(", "));
+                bindingLabel = new Label(desc, Skin.getSkin().getMultiColumnComboBoxData().font());
+            }
+
+            Label actionLabel = new SortedLabel(name, action.ordinal(), Skin.getSkin().getMultiColumnComboBoxData()
+                    .font());
+            Row<GameAction, ?> row = new Row<>(List.of(actionLabel, bindingLabel), action);
+            list_box.addRow(row);
+
+            if (action == selectedAction) {
+                rowToSelect = row;
+            }
+        }
+
+        if (rowToSelect != null) {
+            list_box.selectRow(rowToSelect);
+        }
+    }
+
+    private void saveMappings() {
+        boolean wasFullscreen = Renderer.getRenderer().getSettings().fullscreen;
+        if (wasFullscreen) {
+            Renderer.getRenderer().toggleFullscreen();
+        }
+
+        long window = ((LWJGL3Window) Renderer.getRenderer().getWindow()).getHandle();
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+            filters.get(0).name(stack.UTF8(AbstractOptionsMenu.i18n("json_files"))).pattern(stack.UTF8("json"));
+
+            AtomicBoolean dialogClosed = new AtomicBoolean(false);
+
+            SDLDialog.SDL_ShowSaveFileDialog(
+                    (userdata, filelist, filter) -> {
+                        try {
+                            if (filelist != MemoryUtil.NULL) {
+                                long ptr = MemoryUtil.memGetAddress(filelist);
+                                if (ptr != MemoryUtil.NULL) {
+                                    String path = MemoryUtil.memUTF8(ptr);
+                                    if (path != null) {
+                                        String json = LocalInput.getLocalInput().getInputManager().exportBindings();
+                                        try {
+                                            Files.writeString(Path.of(path), json);
+                                        } catch (IOException e) {
+                                            gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n(
+                                                    "error_save_failed", e.getMessage())));
+                                        }
+                                    }
+                                }
+                            }
+                        } finally {
+                            dialogClosed.set(true);
+                        }
+                    },
+                    MemoryUtil.NULL,
+                    window,
+                    filters,
+                    "keybindings.json"
+            );
+
+            // Wait for the async dialog to finish before toggling fullscreen back
+            while (!dialogClosed.get()) {
+                Renderer.getRenderer().getWindow().pollEvents();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            updateList();
+            Renderer.getRenderer().getWindow().focus();
+        }
+
+        if (wasFullscreen) {
+            Renderer.getRenderer().toggleFullscreen();
+        }
+    }
+
+    private void loadMappings() {
+        boolean wasFullscreen = Renderer.getRenderer().getSettings().fullscreen;
+        if (wasFullscreen) {
+            Renderer.getRenderer().toggleFullscreen();
+        }
+
+        long window = ((LWJGL3Window) Renderer.getRenderer().getWindow()).getHandle();
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+            filters.get(0).name(stack.UTF8(AbstractOptionsMenu.i18n("json_files"))).pattern(stack.UTF8("json"));
+
+            AtomicBoolean dialogClosed = new AtomicBoolean(false);
+
+            SDLDialog.SDL_ShowOpenFileDialog((userdata, filelist, filter) -> {
+                try {
+                    if (filelist != MemoryUtil.NULL) {
+                        long ptr = MemoryUtil.memGetAddress(filelist);
+                        if (ptr != MemoryUtil.NULL) {
+                            String path = MemoryUtil.memUTF8(ptr);
+                            if (path != null) {
+                                try {
+                                    String json = Files.readString(Path.of(path));
+                                    LocalInput.getLocalInput().getInputManager().importBindings(json);
+                                } catch (IOException e) {
+                                    gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("error_load_failed",
+                                            e.getMessage())));
+                                }
+                            }
+                        }
+                    }
+                } finally {
+                    dialogClosed.set(true);
+                }
+            },
+                    MemoryUtil.NULL,
+                    window,
+                    filters,
+                    (CharSequence) null,
+                    false
+            );
+
+            // Wait for the async dialog to finish
+            while (!dialogClosed.get()) {
+                Renderer.getRenderer().getWindow().pollEvents();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            updateList();
+            Renderer.getRenderer().getWindow().focus();
+        }
+
+        if (wasFullscreen) {
+            Renderer.getRenderer().toggleFullscreen();
+        }
+    }
+
+    private static final class InvertedLabel extends Label {
+        InvertedLabel(@NonNull String text, @NonNull Font font, int width) {
+            super(text, font, width, Origin.AT_MIDDLE);
+            setColor(Color.Standard.BLACK);
+        }
+
+        @Override
+        protected void renderGeometry(@NonNull GUIRenderer renderer) {
+            renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), Label.DEFAULT_COLOR);
+            super.renderGeometry(renderer);
+        }
+    }
+}

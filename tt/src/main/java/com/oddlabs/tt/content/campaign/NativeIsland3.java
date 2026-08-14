@@ -12,8 +12,8 @@ import com.oddlabs.tt.simulation.model.MagicType;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.Origin;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.SceneryModel;

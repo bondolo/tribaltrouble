@@ -4,8 +4,8 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.client.gui.IconQuad;
-import com.oddlabs.tt.client.gui.ModeIconQuads;
+import com.oddlabs.tt.gui.IconQuad;
+import com.oddlabs.tt.gui.ModeIconQuads;
 import com.oddlabs.tt.engine.render.shader.GUIShader;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;

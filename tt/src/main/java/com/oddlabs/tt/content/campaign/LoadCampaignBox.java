@@ -1,19 +1,19 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.client.gui.LocalInput;
+import com.oddlabs.tt.gui.LocalInput;
 
-import com.oddlabs.tt.client.form.MessageForm;
-import com.oddlabs.tt.client.gui.Box;
-import com.oddlabs.tt.client.gui.ColumnInfo;
-import com.oddlabs.tt.client.gui.DateLabel;
-import com.oddlabs.tt.client.gui.FocusDirection;
-import com.oddlabs.tt.client.gui.GUIObject;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.MultiColumnComboBox;
-import com.oddlabs.tt.client.gui.Row;
-import com.oddlabs.tt.client.gui.Skin;
-import com.oddlabs.tt.client.guievent.RowListener;
+import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.gui.Box;
+import com.oddlabs.tt.gui.ColumnInfo;
+import com.oddlabs.tt.gui.DateLabel;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.GUIObject;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MultiColumnComboBox;
+import com.oddlabs.tt.gui.Row;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Difficulty;

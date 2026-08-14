@@ -36,7 +36,7 @@ import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
 import com.oddlabs.tt.simulation.player.Player;
 import org.lwjgl.opengl.GL11;
-import com.oddlabs.tt.engine.procedural.GeneratorRing;
+import com.oddlabs.tt.procedural.GeneratorRing;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.util.Color;

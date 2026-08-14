@@ -1,9 +1,9 @@
 package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.client.camera.NullCamera;
-import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.MouseButton;
-import com.oddlabs.tt.client.input.InputEvent;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.input.InputEvent;
 import org.jspecify.annotations.NonNull;
 
 public class NullDelegate extends CameraDelegate<NullCamera> {
