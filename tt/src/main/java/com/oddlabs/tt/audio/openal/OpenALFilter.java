@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.audio.openal;
+package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.engine.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
@@ -7,7 +7,7 @@ import org.lwjgl.openal.ALC10;
 
 import java.util.function.Consumer;
 
-import static com.oddlabs.tt.engine.audio.openal.OpenALManager.checkALError;
+import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
 import static org.lwjgl.openal.EXTEfx.AL_FILTER_LOWPASS;
 import static org.lwjgl.openal.EXTEfx.AL_FILTER_TYPE;
 import static org.lwjgl.openal.EXTEfx.AL_LOWPASS_GAIN;

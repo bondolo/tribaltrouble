@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.viewer;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.client.gui.GUIRoot;
-import com.oddlabs.tt.engine.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.net.BeaconListener;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;

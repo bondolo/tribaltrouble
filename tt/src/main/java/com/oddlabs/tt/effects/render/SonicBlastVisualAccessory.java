@@ -1,8 +1,8 @@
 package com.oddlabs.tt.effects.render;
 
-import com.oddlabs.tt.engine.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.*;
-import com.oddlabs.tt.engine.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;

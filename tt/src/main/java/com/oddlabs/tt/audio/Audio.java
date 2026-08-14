@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.audio;
+package com.oddlabs.tt.audio;
 
 /**
  * A handle to buffered audio data.

@@ -1,8 +1,8 @@
-package com.oddlabs.tt.engine.audio.openal;
+package com.oddlabs.tt.audio.openal;
 
-import com.oddlabs.tt.engine.audio.AbstractAudioPlayer;
-import com.oddlabs.tt.engine.audio.AudioParameters;
-import com.oddlabs.tt.engine.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AbstractAudioPlayer;
+import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioPlayer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

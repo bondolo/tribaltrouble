@@ -7,8 +7,8 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.engine.audio.AudioImplementation;
-import com.oddlabs.tt.engine.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
@@ -101,7 +101,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.animation_manager_local = new AnimationManager();
         final CameraState camera_state = new CameraState();
         AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
-                .getAudioManager().newAudio(camera_state, x, y, z, params);
+                .getAudioManager().newAudio(x, y, z, params);
         this.notification_manager = new NotificationManager(gui_root, audio);
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();

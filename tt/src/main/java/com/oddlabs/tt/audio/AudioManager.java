@@ -1,6 +1,5 @@
-package com.oddlabs.tt.engine.audio;
+package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.engine.render.CameraState;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 
@@ -55,10 +54,6 @@ public interface AudioManager extends AudioImplementation {
 
     @NonNull
     Audio createAudio(@NonNull URL file) throws IOException;
-
-    @NonNull
-    AudioPlayer newAudio(@NonNull CameraState camera_state, float x, float y, float z,
-            @NonNull AudioParameters params);
 
     @Override
     @NonNull

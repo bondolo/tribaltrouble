@@ -1,6 +1,5 @@
-package com.oddlabs.tt.engine.audio;
+package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.engine.render.CameraState;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
@@ -303,13 +302,6 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public final @NonNull AudioPlayer newAudio(@NonNull CameraState camera_state, float x, float y, float z,
-            @NonNull AudioParameters params) {
-        AS source = getSource(camera_state, x, y, z, params);
-        return newAudio(source, x, y, z, params);
-    }
-
-    @Override
     public final @NonNull AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params) {
         AudioSource source = getSource(x, y, z, params);
         return newAudio(source, x, y, z, params);
@@ -459,48 +451,11 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return best_source;
     }
 
-    private synchronized @Nullable AS getSource(@NonNull CameraState camera_state, float x, float y, float z,
-            @NonNull AudioParameters params) {
-        if (closed) return null;
-        float this_dist_squared = params.relative()
-                ? x * x + y * y + z * z
-                : getCamDistSquared(camera_state, x, y, z);
-
-        if (this_dist_squared > params.distance() * params.distance()) {
-            return null;
-        }
-
-        AS best_source = findSource(x, y, z, params);
-
-        if (best_source == null) {
-            float max_dist_squared = this_dist_squared;
-            for (AS source : getSources()) {
-                if (source.getRank() == params.rank()) {
-                    Vector3fc position = source.getPosition();
-                    float dist_squared = getCamDistSquared(camera_state, position.x(), position.y(), position.z());
-                    if (dist_squared > max_dist_squared) {
-                        max_dist_squared = dist_squared;
-                        best_source = source;
-                    }
-                }
-            }
-        }
-        stopSource(best_source);
-        return best_source;
-    }
-
     private static void stopSource(@Nullable AudioSource source) {
         AudioPlayer player;
         if (source != null && (player = source.getAudioPlayer()) != null) {
             player.stop();
         }
-    }
-
-    private static float getCamDistSquared(@NonNull CameraState camera_state, float x, float y, float z) {
-        float dx = x - camera_state.getCurrentX();
-        float dy = y - camera_state.getCurrentY();
-        float dz = z - camera_state.getCurrentZ();
-        return dx * dx + dy * dy + dz * dz;
     }
 
     /**

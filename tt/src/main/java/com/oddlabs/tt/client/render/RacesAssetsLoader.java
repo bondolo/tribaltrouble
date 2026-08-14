@@ -4,7 +4,7 @@ import com.oddlabs.tt.client.form.ProgressForm;
 import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
 import com.oddlabs.tt.engine.procedural.GeneratorLightning;

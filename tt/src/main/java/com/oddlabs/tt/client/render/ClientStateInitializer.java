@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.effects.render.LightningCloudVisualAccessory;
 import com.oddlabs.tt.effects.render.PoisonFogVisualAccessory;
 import com.oddlabs.tt.effects.render.SonicBlastVisualAccessory;
-import com.oddlabs.tt.engine.audio.AudioImplementation;
+import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.VisualModel;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
