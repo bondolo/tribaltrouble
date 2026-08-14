@@ -12,6 +12,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;
 import com.oddlabs.tt.client.gui.Form;
 import com.oddlabs.tt.client.gui.GUIRoot;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.DeployType;
@@ -100,12 +101,14 @@ public abstract class Island {
             start();
             new DefeatTrigger(world_viewer, campaign, viewer.getLocalPlayer().getChieftain().orElse(null));
         };
+        IslandConfig islandConfig = new IslandConfig(terrain, meters_per_world, hills, vegetation_amount,
+                supplies_amount, seed);
         return Menu.startNewGame(network, gui_root, null, new WorldParameters(Game.GAMESPEED_NORMAL,
                 "Campaign" + campaign_num, initial_units,
                 Player.DEFAULT_MAX_UNIT_COUNT),
                 ingame_info,
                 init_action,
-                null, meters_per_world, terrain, hills, vegetation_amount, supplies_amount, seed, ai_names);
+                null, islandConfig, ai_names);
     }
 
     protected final @Nullable WorldViewer getViewer() {

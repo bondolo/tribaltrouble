@@ -1,12 +1,14 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.core.global.Globals;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Manages spatial terrain elevation, surface interpolation, accessibility, and building grid queries.
+ */
 public final class HeightMap implements LandscapeEnvironment {
     public static final int METERS_PER_UNIT_GRID = 2;
     public static final int GRID_UNITS_PER_PATCH_EXP = 4;
@@ -15,53 +17,29 @@ public final class HeightMap implements LandscapeEnvironment {
     static final int MIN_INTERSECTING_LEVEL = 5;
     private static final Vector3f plane = new Vector3f();
 
-    private final float @NonNull [] world;
-    private final LandscapeLeaf @NonNull [] @NonNull [] landscape_leaves;
-    private final List<int @NonNull []> trees;
-    private final boolean[][] access_grid;
-    private final byte[][] build_grid;
-    private final int meters_per_world;
+    private final @NonNull World world_instance;
+    private final @NonNull LandscapeData landscapeData;
     private final int patches_per_world;
     private final int meters_per_patch;
     private final int grid_units_per_world;
     private final float inv_meters_per_patch;
     private final float inv_meters_per_grid_unit;
-    private final float sea_level_meters;
-    private final int meters_per_chunk;
-    private final int quadtree_min_level;
-    private final int patches_per_chunk;
-    private final float meters_per_chunk_border;
-    private final float chunk_tex_scale;
-    private final World world_instance;
+
+    private final LandscapeLeaf @NonNull [] @NonNull [] landscape_leaves;
+
     private @Nullable ClientState clientState;
     private static @Nullable ClientStateFactory clientStateFactory;
 
-    public HeightMap(World world_instance, int meters_per_world, float sea_level_meters, int texels_per_colormap,
-            int chunks_per_colormap, float @NonNull [] world, List<int[]> trees, boolean[][] access_grid,
-            byte[][] build_grid) {
-        this.world = world;
+    public HeightMap(@NonNull World world_instance, @NonNull LandscapeData landscapeData) {
         this.world_instance = world_instance;
-        this.trees = trees;
-        this.access_grid = access_grid;
-        this.build_grid = build_grid;
-        this.meters_per_world = meters_per_world;
-        this.sea_level_meters = sea_level_meters;
-        this.grid_units_per_world = (int) Math.sqrt(world.length);
+        this.landscapeData = landscapeData;
+        this.grid_units_per_world = (int) Math.sqrt(landscapeData.heightmap().length);
         patches_per_world = grid_units_per_world / GRID_UNITS_PER_PATCH;
         meters_per_patch = GRID_UNITS_PER_PATCH * METERS_PER_UNIT_GRID;
-        inv_meters_per_patch = 1f / getMetersPerPatch();
+        inv_meters_per_patch = 1f / meters_per_patch;
         inv_meters_per_grid_unit = 1f / METERS_PER_UNIT_GRID;
-        meters_per_chunk = getMetersPerWorld() / chunks_per_colormap;
-        quadtree_min_level = (int) (Math.log(chunks_per_colormap) / Math.log(2));
-        patches_per_chunk = meters_per_chunk / getMetersPerPatch();
 
-        int texels_per_colormap_noborder = texels_per_colormap - 2 * Globals.TEXELS_PER_CHUNK_BORDER
-                * chunks_per_colormap;
-        float meters_per_texel = (float) getMetersPerWorld() / texels_per_colormap_noborder;
-        meters_per_chunk_border = meters_per_texel * Globals.TEXELS_PER_CHUNK_BORDER;
-        chunk_tex_scale = 1f / (meters_per_chunk + 2f * meters_per_chunk_border);
-
-        landscape_leaves = new LandscapeLeaf[getPatchesPerWorld()][getPatchesPerWorld()];
+        landscape_leaves = new LandscapeLeaf[patches_per_world][patches_per_world];
     }
 
     /**
@@ -93,7 +71,11 @@ public final class HeightMap implements LandscapeEnvironment {
     }
 
     public float @NonNull [] getHeightData() {
-        return world;
+        return landscapeData.heightmap();
+    }
+
+    public @NonNull LandscapeData getLandscapeData() {
+        return landscapeData;
     }
 
     @Override
@@ -113,7 +95,7 @@ public final class HeightMap implements LandscapeEnvironment {
 
     @Override
     public int getMetersPerWorld() {
-        return meters_per_world;
+        return landscapeData.metersPerWorld();
     }
 
     public int getGridUnitsPerPatch() {
@@ -141,39 +123,19 @@ public final class HeightMap implements LandscapeEnvironment {
 
     @Override
     public float getSeaLevelMeters() {
-        return sea_level_meters;
-    }
-
-    public int getMetersPerChunk() {
-        return meters_per_chunk;
-    }
-
-    public int getQuadtreeMinLevel() {
-        return quadtree_min_level;
-    }
-
-    public int getPatchesPerChunk() {
-        return patches_per_chunk;
-    }
-
-    public float getMetersPerChunkBorder() {
-        return meters_per_chunk_border;
-    }
-
-    public float getChunkTexScale() {
-        return chunk_tex_scale;
+        return landscapeData.seaLevelMeters();
     }
 
     void registerLeaf(int x, int y, LandscapeLeaf leaf) {
         landscape_leaves[y][x] = leaf;
     }
 
-    public List<int[]> getTrees() {
-        return trees;
+    public @NonNull List<int @NonNull []> getTrees() {
+        return landscapeData.trees();
     }
 
-    public boolean[][] getAccessGrid() {
-        return access_grid;
+    public boolean @NonNull [] @NonNull [] getAccessGrid() {
+        return landscapeData.accessGrid();
     }
 
     void makePlaneVector(int x0, int y0, int x1, int y1, int x2, int y2, @NonNull Vector3f plane) {
@@ -250,10 +212,11 @@ public final class HeightMap implements LandscapeEnvironment {
         float dx = x_f - x0;
         float dy = y_f - y0;
 
-        float h00 = world[y0 * size + x0];
-        float h10 = world[y0 * size + x1];
-        float h01 = world[y1 * size + x0];
-        float h11 = world[y1 * size + x1];
+        float[] heightmap = landscapeData.heightmap();
+        float h00 = heightmap[y0 * size + x0];
+        float h10 = heightmap[y0 * size + x1];
+        float h01 = heightmap[y1 * size + x0];
+        float h11 = heightmap[y1 * size + x1];
 
         float h0 = h00 * (1 - dx) + h10 * dx;
         float h1 = h01 * (1 - dx) + h11 * dx;
@@ -280,13 +243,13 @@ public final class HeightMap implements LandscapeEnvironment {
     }
 
     public byte getBuildValue(int grid_x, int grid_y) {
-        return build_grid[grid_y][grid_x];
+        return landscapeData.buildGrid()[grid_y][grid_x];
     }
 
     public boolean canBuild(int grid_x, int grid_y, int val) {
         grid_x = wrapGridCoord(grid_x);
         grid_y = wrapGridCoord(grid_y);
-        return build_grid[grid_y][grid_x] >= val;
+        return landscapeData.buildGrid()[grid_y][grid_x] >= val;
     }
 
     public float getWrappedHeight(int grid_x, int grid_y) {
@@ -301,13 +264,13 @@ public final class HeightMap implements LandscapeEnvironment {
     }
 
     public float getHeight(int grid_x, int grid_y) {
-        return world[grid_y * grid_units_per_world + grid_x];
+        return landscapeData.heightmap()[grid_y * grid_units_per_world + grid_x];
     }
 
     public void editHeight(int grid_x, int grid_y, float height) {
         final int wrappedX = wrapGridCoord(grid_x);
         final int wrappedY = wrapGridCoord(grid_y);
-        world[wrappedY * grid_units_per_world + wrappedX] = height;
+        landscapeData.heightmap()[wrappedY * grid_units_per_world + wrappedX] = height;
 
         getClientState(ClientState.class).ifPresent(cs -> cs.editHeight(wrappedX, wrappedY, height));
 
