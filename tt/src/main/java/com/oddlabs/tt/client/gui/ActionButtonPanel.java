@@ -27,7 +27,6 @@ import com.oddlabs.tt.simulation.model.weapon.RockAxeWeapon;
 import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
@@ -488,7 +487,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     }
 
     private static @NonNull String getBinding(@NonNull GameAction action) {
-        return Renderer.getLocalInput().getInputManager().getBindingString(action);
+        return LocalInput.getLocalInput().getInputManager().getBindingString(action);
     }
 
     @Override

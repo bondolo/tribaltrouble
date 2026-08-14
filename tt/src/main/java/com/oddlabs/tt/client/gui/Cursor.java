@@ -1,6 +1,5 @@
 package com.oddlabs.tt.client.gui;
 
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.resource.GLImage;
 import com.oddlabs.tt.engine.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
@@ -84,7 +83,7 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
 
     @Override
     public void close() {
-        Renderer.getLocalInput().getPointerInput().deletingCursor(this);
+        LocalInput.getLocalInput().getPointerInput().deletingCursor(this);
         super.close();
     }
 

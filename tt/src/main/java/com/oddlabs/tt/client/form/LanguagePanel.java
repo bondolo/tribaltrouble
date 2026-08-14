@@ -5,12 +5,12 @@ import com.oddlabs.tt.client.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.Group;
 import com.oddlabs.tt.client.gui.IconLabel;
 import com.oddlabs.tt.client.gui.Label;
-import com.oddlabs.tt.client.gui.Languages;
 import com.oddlabs.tt.client.gui.MultiColumnComboBox;
 import com.oddlabs.tt.client.gui.Panel;
 import com.oddlabs.tt.client.gui.Row;
 import com.oddlabs.tt.client.gui.Skin;
 import com.oddlabs.tt.client.guievent.RowListener;
+import com.oddlabs.tt.content.Languages;
 import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 

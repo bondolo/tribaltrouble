@@ -1,12 +1,13 @@
 package com.oddlabs.tt.client.delegate;
 
+import com.oddlabs.tt.client.gui.LocalInput;
+
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.gui.CursorType;
 import com.oddlabs.tt.client.gui.MouseButton;
 import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputEvent;
 import com.oddlabs.tt.client.input.InputPhase;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
@@ -25,7 +26,7 @@ public class ZoomDelegate extends InGameDelegate<GameCamera> {
     public ZoomDelegate(@NonNull WorldViewer viewer, GameCamera camera) {
         super(viewer, camera);
         game_camera = camera;
-        var localInput = Renderer.getLocalInput();
+        var localInput = LocalInput.getLocalInput();
         physical_start_x = localInput.getMouseX();
         physical_start_y = localInput.getMouseY();
         float scale = viewer.getGUIRoot().getGlobalScale();
@@ -64,7 +65,7 @@ public class ZoomDelegate extends InGameDelegate<GameCamera> {
 
             float zoom_factor = dy * ZOOM_FACTOR_CORRECTION;
             game_camera.zoom(zoom_factor);
-            Renderer.getLocalInput().getPointerInput().setCursorPosition(physical_start_x, physical_start_y);
+            LocalInput.getLocalInput().getPointerInput().setCursorPosition(physical_start_x, physical_start_y);
         }
     }
 

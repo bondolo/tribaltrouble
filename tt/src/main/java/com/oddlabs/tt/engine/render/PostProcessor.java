@@ -1,7 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.client.render.*;
-import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.render.shader.PostProcessShader;

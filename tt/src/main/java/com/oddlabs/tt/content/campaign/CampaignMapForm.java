@@ -3,6 +3,7 @@ package com.oddlabs.tt.content.campaign;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
+import com.oddlabs.tt.client.delegate.Menu;
 import com.oddlabs.tt.client.gui.FocusDirection;
 import com.oddlabs.tt.client.gui.GUI;
 import com.oddlabs.tt.client.gui.GUIIcon;
@@ -272,7 +273,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     }
 
     public static void closeCampaign(@NonNull NetworkSelector network, @NonNull GUI gui) {
-        Renderer.startMenu(network, gui);
+        Menu.startMenu(network, gui);
     }
 
     @Override

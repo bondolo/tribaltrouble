@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.camera;
 
+import com.oddlabs.tt.client.gui.LocalInput;
+
 import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.client.input.GameAction;
@@ -19,7 +21,7 @@ public final class FirstPersonCamera extends Camera {
     public FirstPersonCamera(@NonNull WorldViewer viewer, LandscapeEnvironment heightmap, @NonNull CameraState camera) {
         super(heightmap, camera);
         this.viewer = viewer;
-        var localInput = Renderer.getLocalInput();
+        var localInput = LocalInput.getLocalInput();
         this.last_x = localInput.getMouseX();
         this.last_y = localInput.getMouseY();
     }
@@ -33,7 +35,7 @@ public final class FirstPersonCamera extends Camera {
 
         float scrolling_x = 0;
         float scrolling_y = 0;
-        var inputManager = Renderer.getLocalInput().getInputManager();
+        var inputManager = LocalInput.getLocalInput().getInputManager();
         if (inputManager.isActive(GameAction.CAMERA_PAN_LEFT) && !inputManager.isActive(GameAction.CAMERA_PAN_RIGHT))
             scrolling_x = -1f;
         else if (inputManager.isActive(GameAction.CAMERA_PAN_RIGHT) && !inputManager.isActive(
@@ -60,7 +62,7 @@ public final class FirstPersonCamera extends Camera {
     public void mouseMoved(int x, int y) {
         // Ignore logical x/y; use physical coordinates from LocalInput to maintain constant
         // rotation sensitivity and match PointerInput locking requirements.
-        var localInput = Renderer.getLocalInput();
+        var localInput = LocalInput.getLocalInput();
         int dx = localInput.getMouseX() - last_x;
         int dy = localInput.getMouseY() - last_y;
         getState().setTargetHorizAngle(getState().getTargetHorizAngle() - dx * SCALE_HORIZ);
@@ -69,6 +71,6 @@ public final class FirstPersonCamera extends Camera {
         else
             getState().setTargetVertAngle(getState().getTargetVertAngle() + dy * SCALE_VERT);
 
-        Renderer.getLocalInput().getPointerInput().setCursorPosition(last_x, last_y);
+        LocalInput.getLocalInput().getPointerInput().setCursorPosition(last_x, last_y);
     }
 }

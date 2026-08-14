@@ -1,6 +1,5 @@
 package com.oddlabs.tt.effects.render;
 
-import com.oddlabs.tt.client.render.*;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.audio.AudioPlayer;
@@ -19,7 +18,7 @@ import org.jspecify.annotations.Nullable;
  * Client-side visual accessory for the sonic blast spell.
  * Manages the expanding ring visual effect and cast audio entirely on the client.
  */
-public final class SonicBlastVisualAccessory implements AnimatedAccessory {
+public final class SonicBlastVisualAccessory implements AnimatedAccessory, SonicBlastAccessory {
     private final @NonNull SonicBlast blast;
     private final @NonNull AudioImplementation audio;
     private @Nullable SonicBlastEffect effect;
@@ -45,6 +44,7 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory {
      * @param radius Shockwave maximum radius
      * @param duration Duration in seconds
      */
+    @Override
     public void triggerBlast(float x, float y, float z, float radius, float duration) {
         if (effect != null) {
             effect.abort();

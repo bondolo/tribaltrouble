@@ -1,4 +1,4 @@
-package com.oddlabs.tt.client.window;
+package com.oddlabs.tt.engine.window;
 
 import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import org.joml.Vector2f;
@@ -61,6 +61,7 @@ public interface Window extends AutoCloseable {
 
     /**
      * Returns the logical window height in screen coordinates.
+     * Screen coordinates are used for window positioning and cursor input.
      *
      * @return int height in screen coordinates
      */

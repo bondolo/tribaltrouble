@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.delegate;
 
+import com.oddlabs.tt.client.gui.LocalInput;
+
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
@@ -90,7 +92,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         addChild(getViewer().getPanel());
         chat_form = new InGameChatForm(getViewer().getGUIRoot().getInfoPrinter(), getViewer());
         chat_form.addCloseListener(() -> {
-            if (Renderer.getLocalInput().getInputManager().isActive(GameAction.GLOBAL_CHAT)) {
+            if (LocalInput.getLocalInput().getInputManager().isActive(GameAction.GLOBAL_CHAT)) {
                 close_chat_override = true;
             }
             chat_visible = false;
@@ -472,7 +474,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
                         }
                     }
                 }
-                if (Renderer.getLocalInput().isShiftDownCurrently() && getViewer().getSelection().getCurrentSelection()
+                if (LocalInput.getLocalInput().isShiftDownCurrently() && getViewer().getSelection()
+                        .getCurrentSelection()
                         .size() > 0)
                     updateSelection(friendly_units, friendly_building, enemy);
                 else
@@ -524,7 +527,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     public void mousePressed(@NonNull MouseButton button, int x, int y) {
         if (!map_mode) {
             if (!observer) {
-                var inputManager = Renderer.getLocalInput().getInputManager();
+                var inputManager = LocalInput.getLocalInput().getInputManager();
                 switch (button) {
                     case LEFT -> {
                         if (!inputManager.isActive(GameAction.CAMERA_MAP_MODE)) {

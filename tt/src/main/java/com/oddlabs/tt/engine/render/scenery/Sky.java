@@ -1,4 +1,4 @@
-package com.oddlabs.tt.effects.scenery;
+package com.oddlabs.tt.engine.render.scenery;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.base.global.Globals;

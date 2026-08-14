@@ -10,7 +10,6 @@ import com.oddlabs.tt.client.input.InputPhase;
 import com.oddlabs.tt.client.input.Key;
 import com.oddlabs.tt.client.input.KeyboardEvent;
 import com.oddlabs.tt.client.input.Modifier;
-import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -87,7 +86,7 @@ public final class InputState {
 
     public void mousePressed(@NonNull MouseButton button) {
         GUIObject gui_hit = pick();
-        var localInput = Renderer.getLocalInput();
+        var localInput = LocalInput.getLocalInput();
         float scale = gui_root.getGlobalScale();
         int scaledX = Math.round(localInput.getMouseX() / scale);
         int scaledY = Math.round(localInput.getMouseY() / scale);
@@ -123,7 +122,7 @@ public final class InputState {
 
     public void mouseReleased(@NonNull MouseButton button) {
         GUIObject gui_hit = pick();
-        var localInput = Renderer.getLocalInput();
+        var localInput = LocalInput.getLocalInput();
         float scale = gui_root.getGlobalScale();
         int scaledX = Math.round(localInput.getMouseX() / scale);
         int scaledY = Math.round(localInput.getMouseY() / scale);
@@ -169,7 +168,7 @@ public final class InputState {
     }
 
     private boolean clickedSameArea() {
-        var localInput = Renderer.getLocalInput();
+        var localInput = LocalInput.getLocalInput();
         return Math.abs(localInput.getMouseX() - clicked_x) < DOUBLE_CLICK_THRESHOLD && Math.abs(localInput.getMouseY()
                 - clicked_y) < DOUBLE_CLICK_THRESHOLD;
     }
@@ -193,7 +192,7 @@ public final class InputState {
         if (Key.KEY_UNKNOWN != key || key_codepoint != 0) {
             GUIObject focused = gui_root.getGlobalFocus();
             KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, EnumSet.noneOf(Modifier.class), 1);
-            Set<GameAction> actions = Renderer.getLocalInput().getInputManager().getActions(keyEvent);
+            Set<GameAction> actions = LocalInput.getLocalInput().getInputManager().getActions(keyEvent);
             InputEvent event = new InputEvent(keyEvent, actions, InputPhase.REPEAT);
             focused.handleInputAll(event);
         }
@@ -218,8 +217,8 @@ public final class InputState {
         KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, key_counter);
         key_event = keyEvent;
 
-        Set<GameAction> actions = Renderer.getLocalInput().getInputManager().getActions(keyEvent);
-        Renderer.getLocalInput().getInputManager().updateState(keyEvent, true); // Update polling state
+        Set<GameAction> actions = LocalInput.getLocalInput().getInputManager().getActions(keyEvent);
+        LocalInput.getLocalInput().getInputManager().updateState(keyEvent, true); // Update polling state
 
         if (!repeat) {
             InputEvent event = new InputEvent(keyEvent, actions, InputPhase.PRESSED);
@@ -236,8 +235,8 @@ public final class InputState {
         resetKeyTimer();
         KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, 0);
 
-        Set<GameAction> actions = Renderer.getLocalInput().getInputManager().getActions(keyEvent);
-        Renderer.getLocalInput().getInputManager().updateState(keyEvent, false); // Update polling state
+        Set<GameAction> actions = LocalInput.getLocalInput().getInputManager().getActions(keyEvent);
+        LocalInput.getLocalInput().getInputManager().updateState(keyEvent, false); // Update polling state
 
         InputEvent event = new InputEvent(keyEvent, actions, InputPhase.RELEASED);
         focused.handleInputAll(event);

@@ -1,7 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.client.render.*;
-import com.oddlabs.tt.effects.render.*;
 
 import org.jspecify.annotations.NonNull;
 
@@ -22,6 +20,19 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
 
     public static final int MIN_FREQ = 24; // may also be zero for "unknown"
     public static final int MIN_BPP = 8;
+
+    public static final SerializableDisplayMode[] WINDOWED_PRESETS = new SerializableDisplayMode[]{
+            new SerializableDisplayMode(3840, 2160, 32, 60),
+            new SerializableDisplayMode(2560, 1440, 32, 60),
+            new SerializableDisplayMode(1920, 1080, 32, 60),
+            new SerializableDisplayMode(1680, 1050, 32, 60),
+            new SerializableDisplayMode(1600, 900, 32, 60),
+            new SerializableDisplayMode(1440, 900, 32, 60),
+            new SerializableDisplayMode(1366, 768, 32, 60),
+            new SerializableDisplayMode(1280, 800, 32, 60),
+            new SerializableDisplayMode(1280, 720, 32, 60),
+            new SerializableDisplayMode(1024, 768, 32, 60),
+    };
 
     private static final SerializableDisplayMode DEFAULT_MODE = new SerializableDisplayMode(0, 0, 0, 0);
 

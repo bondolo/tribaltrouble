@@ -2,6 +2,7 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 
+import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.audio.AudioParameters;
@@ -29,7 +30,7 @@ import java.util.List;
  * Client-side visual accessory for iron supply meteors.
  * Manages the falling trail, impact effects, and cooling smoke entirely on the client.
  */
-public final class IronSupplyVisualAccessory implements AnimatedAccessory {
+public final class IronSupplyVisualAccessory implements EmitterAccessory {
     private static final float FALL_DURATION_RATIO = 0.12f;
     private static final float TRAIL_OFFSET_Z = 10.0f;
     private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f;

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.client.input;
 
-import com.oddlabs.tt.client.window.LWJGL3Window;
+import com.oddlabs.tt.engine.window.LWJGL3Window;
+import com.oddlabs.tt.engine.window.WindowEventListener;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.sdl.SDL_Event;
@@ -36,12 +37,13 @@ import static org.lwjgl.sdl.SDLMouse.SDL_WarpMouseInWindow;
 /**
  * SDL3 based implementation of the InputProvider interface.
  */
-public final class LWJGL3InputProvider implements InputProvider<Long> {
+public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEventListener {
 
     private static final Logger logger = Logger.getLogger(LWJGL3InputProvider.class.getName());
 
     private final @NonNull LWJGL3Window window;
     private long windowHandle;
+    private @Nullable PointerInput pointerInput;
 
     // Keyboard State
     // @GuardedBy("this")
@@ -84,12 +86,28 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
         this.window = win;
     }
 
+    public void setPointerInput(@Nullable PointerInput pointerInput) {
+        this.pointerInput = pointerInput;
+    }
+
+    @Override
+    public void onFocusGained() {
+        if (pointerInput != null) {
+            pointerInput.reapplyCursor();
+        }
+    }
+
+    @Override
+    public void handleSDLEvent(@NonNull SDL_Event event) {
+        processEvent(event);
+    }
+
     public void initCallbacks() {
         this.windowHandle = window.getHandle();
         if (windowHandle == MemoryUtil.NULL) {
             throw new IllegalStateException("Window handle is NULL. Window might not be created yet.");
         }
-        window.setInputProvider(this);
+        window.setEventListener(this);
         SDL_StartTextInput(windowHandle);
     }
 
@@ -179,7 +197,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long> {
             SDL_StopTextInput(windowHandle);
             windowHandle = MemoryUtil.NULL;
         }
-        window.setInputProvider(null);
+        window.setEventListener(null);
     }
 
     @Override

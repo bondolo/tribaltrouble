@@ -1,11 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.effects.particle.Emitter;
-import java.util.Collection;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -68,14 +63,6 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
      * @param parent The model this accessory is attached to.
      */
     void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent);
-
-    /**
-     * Appends any particle emitters managed by this accessory to the destination collection.
-     *
-     * @param dest The collection to append emitters to.
-     */
-    default void addEmitters(@NonNull Collection<@NonNull Emitter<?>> dest) {
-    }
 
     /**
      * Cleans up any resources (like active audio players/loops) when this accessory is removed.

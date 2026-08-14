@@ -1,10 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
-import com.oddlabs.tt.client.render.*;
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.engine.render.state.RenderContext;
@@ -45,7 +40,6 @@ public final class RenderQueues implements AutoCloseable {
 
     private final InstancedSpriteRenderer spriteRenderer = new InstancedSpriteRenderer();
     private final DecalRenderer decalRenderer = new DecalRenderer();
-    private final EmitterRenderer emitterRenderer = new EmitterRenderer();
 
     public RenderQueues() {
     }
@@ -129,10 +123,6 @@ public final class RenderQueues implements AutoCloseable {
         return effect_texture_array;
     }
 
-    public @NonNull EmitterRenderer getEmitterRenderer() {
-        return emitterRenderer;
-    }
-
     public @NonNull DecalRenderer getDecalRenderer() {
         return decalRenderer;
     }
@@ -154,11 +144,11 @@ public final class RenderQueues implements AutoCloseable {
         return texture_lookup.get(key.key());
     }
 
-    public @NonNull ShadowListKey registerRespondRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
+    public @NonNull ShadowListKey registerShadowRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc,
+            @NonNull ShadowListRenderer renderer) {
         ShadowListKey key = desc_to_shadow_key.get(desc);
         if (key != null)
             return key;
-        ShadowListRenderer renderer = new TargetRespondRenderer(desc);
         return register(desc, renderer);
     }
 
@@ -169,20 +159,6 @@ public final class RenderQueues implements AutoCloseable {
         ShadowListKey key = new ShadowListKey(index);
         desc_to_shadow_key.put(desc, key);
         return key;
-    }
-
-    public @NonNull ShadowListKey registerSelectableShadowList(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
-        ShadowListKey key = desc_to_shadow_key.get(desc);
-        return key != null ? key : register(desc, new SelectableShadowRenderer(desc));
-    }
-
-    public @NonNull ShadowListKey registerCrackDecalList(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
-        ShadowListKey key = desc_to_shadow_key.get(desc);
-        return key != null ? key : register(desc, new CrackDecalRenderer(desc));
-    }
-
-    public @NonNull ShadowRenderer getDefaultShadowRenderer() {
-        return getShadowRenderer(registerSelectableShadowList(AssetRegistry.DEFAULT_SHADOW_DESC));
     }
 
     public @NonNull ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {
@@ -222,9 +198,9 @@ public final class RenderQueues implements AutoCloseable {
         return registerDynamicSprite(sprite_list, getTexture(texture_key));
     }
 
-    public @NonNull SpriteKey registerIconSprite(com.oddlabs.tt.client.gui.@NonNull IconQuad icon) {
-        SpriteList sprite_list = SpriteList.createQuadInstance(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2());
-        return registerDynamicSprite(sprite_list, icon.getTexture());
+    public @NonNull SpriteKey registerQuadSprite(float u1, float v1, float u2, float v2, @NonNull Texture texture) {
+        SpriteList sprite_list = SpriteList.createQuadInstance(u1, v1, u2, v2);
+        return registerDynamicSprite(sprite_list, texture);
     }
 
     public @NonNull InstancedSpriteRenderer getInstancedRenderer() {
@@ -284,17 +260,10 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    public void renderParticles(@NonNull RenderContext context, @NonNull CameraState state,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
-        assert pending_array_uploads.isEmpty() : "Attempting to render particles before effect array is built";
-        emitterRenderer.render(context, this, state, modelViewStack, projectionStack, depthTexture);
-    }
-
     @Override
     public void close() {
         spriteRenderer.close();
         decalRenderer.close();
-        emitterRenderer.close();
         for (SpriteList spriteList : sprite_list_lookup.stream().map(SpriteRenderer::getSpriteList).distinct()
                 .toList()) {
             spriteList.close();

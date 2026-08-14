@@ -4,10 +4,6 @@ import com.oddlabs.tt.engine.resource.AssetRegistry;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.base.animation.Animated;
@@ -57,12 +53,12 @@ import java.util.Queue;
 /**
  * Manages the rendering state and visit logic for world entities and their accessories.
  */
-public final class RenderState {
+public final class RenderState implements SceneContext {
     private final Queue<@NonNull Emitter<?>> emitter_queue = new ArrayDeque<>();
     private final Queue<@NonNull Lightning> lightning_queue = new ArrayDeque<>();
     private final Queue<@NonNull SonicBlastEffect> sonic_blast_queue = new ArrayDeque<>();
     private final @NonNull SpriteSorter sprite_sorter;
-    private final @NonNull RenderStateCache<@NonNull ElementRenderState<Model>> render_state_cache;
+    private final @NonNull RenderStateCache<@NonNull ElementSceneContext<Model>> render_state_cache;
     private final @NonNull RenderStateCache<@NonNull AttachedRenderState> attached_state_cache;
     private final @NonNull RenderQueues render_queues;
     private final @NonNull TargetRespondRenderer target_respond_renderer;
@@ -84,14 +80,17 @@ public final class RenderState {
         this.picker = picker;
         this.sprite_sorter = sprite_sorter;
         this.render_queues = render_queues;
-        ShadowListKey key = render_queues.registerRespondRenderer(new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION,
-                new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}}));
-        this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(key);
-        this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(
-                render_queues.registerSelectableShadowList(AssetRegistry.DEFAULT_SHADOW_DESC));
-        this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(
-                render_queues.registerCrackDecalList(AssetRegistry.CRACK_DECAL_DESC));
-        this.render_state_cache = new RenderStateCache<>(() -> new ElementRenderState<>(RenderState.this));
+        var respondDesc = new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION,
+                new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
+        this.target_respond_renderer = new TargetRespondRenderer(respondDesc);
+        render_queues.registerShadowRenderer(respondDesc, target_respond_renderer);
+
+        this.default_shadow_renderer = new SelectableShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC);
+        render_queues.registerShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC, default_shadow_renderer);
+
+        this.crack_shadow_renderer = new CrackDecalRenderer(AssetRegistry.CRACK_DECAL_DESC);
+        render_queues.registerShadowRenderer(AssetRegistry.CRACK_DECAL_DESC, crack_shadow_renderer);
+        this.render_state_cache = new RenderStateCache<>(() -> new ElementSceneContext<>(RenderState.this));
         this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
     }
 
@@ -129,7 +128,7 @@ public final class RenderState {
     private void visitLightningCloud(final @NonNull LightningCloud cloud) {
         if (picking) return;
         float z_offset = getVisuallyCorrectHeight(cloud.getPositionX(), cloud.getPositionY());
-        ElementRenderState<LightningCloud> state = (ElementRenderState<LightningCloud>) getCachedState(
+        ElementSceneContext<LightningCloud> state = (ElementSceneContext<LightningCloud>) getCachedState(
                 WhiteModelVisitor.getInstance(), cloud, z_offset);
         visitAccessories(cloud, state);
     }
@@ -137,7 +136,7 @@ public final class RenderState {
     private void visitPoisonFog(final @NonNull PoisonFog fog) {
         if (picking) return;
         float z_offset = getVisuallyCorrectHeight(fog.getPositionX(), fog.getPositionY());
-        ElementRenderState<PoisonFog> state = (ElementRenderState<PoisonFog>) getCachedState(
+        ElementSceneContext<PoisonFog> state = (ElementSceneContext<PoisonFog>) getCachedState(
                 WhiteModelVisitor.getInstance(), fog, z_offset);
         visitAccessories(fog, state);
     }
@@ -145,7 +144,7 @@ public final class RenderState {
     private void visitStun(final @NonNull Stun stun) {
         if (picking) return;
         float z_offset = getVisuallyCorrectHeight(stun.getPositionX(), stun.getPositionY());
-        ElementRenderState<Stun> state = (ElementRenderState<Stun>) getCachedState(
+        ElementSceneContext<Stun> state = (ElementSceneContext<Stun>) getCachedState(
                 WhiteModelVisitor.getInstance(), stun, z_offset);
         visitAccessories(stun, state);
     }
@@ -154,7 +153,7 @@ public final class RenderState {
         if (picking) return;
         emitter_queue.add(emitterModel.getEmitter());
         float z_offset = getVisuallyCorrectHeight(emitterModel.getPositionX(), emitterModel.getPositionY());
-        ElementRenderState<PointEmitterModel> state = (ElementRenderState<PointEmitterModel>) getCachedState(
+        ElementSceneContext<PointEmitterModel> state = (ElementSceneContext<PointEmitterModel>) getCachedState(
                 WhiteModelVisitor.getInstance(), emitterModel, z_offset);
         visitAccessories(emitterModel, state);
     }
@@ -162,7 +161,7 @@ public final class RenderState {
     private void visitSonicBlast(final @NonNull SonicBlast blast) {
         if (picking) return;
         float z_offset = getVisuallyCorrectHeight(blast.getPositionX(), blast.getPositionY());
-        ElementRenderState<SonicBlast> state = (ElementRenderState<SonicBlast>) getCachedState(
+        ElementSceneContext<SonicBlast> state = (ElementSceneContext<SonicBlast>) getCachedState(
                 WhiteModelVisitor.getInstance(), blast, z_offset);
         visitAccessories(blast, state);
     }
@@ -172,10 +171,16 @@ public final class RenderState {
         return local_player;
     }
 
-    public boolean isResponding(Object target) {
+    public @NonNull SelectableShadowRenderer getDefaultShadowRenderer() {
+        return default_shadow_renderer;
+    }
+
+    @Override
+    public boolean isResponding(@NonNull Model target) {
         return picker.getRespondManager().isResponding(target);
     }
 
+    @Override
     public @NonNull RenderQueues getRenderQueues() {
         return render_queues;
     }
@@ -201,8 +206,8 @@ public final class RenderState {
         sonic_blast_queue.clear();
     }
 
-    @Nullable
-    public CameraState getCamera() {
+    @Override
+    public @Nullable CameraState getCamera() {
         return camera;
     }
 
@@ -222,20 +227,20 @@ public final class RenderState {
                 .getSelectionHeight());
     }
 
-    private <M extends Model> @NonNull ElementRenderState<M> doGetCachedState() {
-        return (ElementRenderState<M>) render_state_cache.get();
+    private <M extends Model> @NonNull ElementSceneContext<M> doGetCachedState() {
+        return (ElementSceneContext<M>) render_state_cache.get();
     }
 
     private @NonNull <M extends Model> ModelState<M> getCachedState(@NonNull ModelVisitor<M> visitor,
             @NonNull M model) {
-        ElementRenderState<M> state = doGetCachedState();
+        ElementSceneContext<M> state = doGetCachedState();
         state.setup(visitor, model);
         return state;
     }
 
     private @NonNull <M extends Model> ModelState<M> getCachedState(@NonNull ModelVisitor<M> visitor, @NonNull M model,
             float dist_squared) {
-        ElementRenderState<M> state = doGetCachedState();
+        ElementSceneContext<M> state = doGetCachedState();
         state.setup(visitor, model, dist_squared);
         return state;
     }
@@ -265,7 +270,7 @@ public final class RenderState {
             Player owner = selectable.getOwnerNoCheck();
             boolean point_on_map = !local_player.isEnemy(owner) || (!owner.teamHasBuilding() && PeerHub
                     .getFreeQuitTimeLeft(local_player.getWorld()) < 0f);
-            ElementRenderState<S> state = (ElementRenderState<S>) getCachedState(visitor, selectable, z_offset);
+            ElementSceneContext<S> state = (ElementSceneContext<S>) getCachedState(visitor, selectable, z_offset);
             SpriteSorter.DetailMode sort_status = addToRenderList(state, point_on_map);
             if (!picking && selectable.isEnabled() && sort_status == SpriteSorter.DetailMode.POLYGON) {
                 ShadowListKey shadowKey = null;
@@ -298,7 +303,7 @@ public final class RenderState {
         });
     }
 
-    private <M extends Model> void visitAccessories(@NonNull M model, @NonNull ElementRenderState<M> parentState) {
+    private <M extends Model> void visitAccessories(@NonNull M model, @NonNull ElementSceneContext<M> parentState) {
         VisualModel visualModel = getOrCreateVisualModel(model);
 
         // Dynamically add/remove stun star accessory for units
@@ -345,13 +350,16 @@ public final class RenderState {
     }
 
     private <M extends Model> void visitAccessory(@NonNull Accessory accessory,
-            @NonNull ElementRenderState<M> parentState) {
+            @NonNull ElementSceneContext<M> parentState) {
         if (picking) return;
 
         switch (accessory) {
             case EmitterAccessory ea -> {
-                updateEmitterWorldPosition(ea.getEmitter(), ea, parentState);
-                emitter_queue.add(ea.getEmitter());
+                Emitter<?> emitter = ea.getEmitter();
+                if (emitter != null) {
+                    updateEmitterWorldPosition(emitter, ea, parentState);
+                }
+                ea.addEmitters(emitter_queue);
             }
             case StaticAccessory s -> {
                 AttachedRenderState state = attached_state_cache.get();
@@ -359,7 +367,6 @@ public final class RenderState {
                 addToRenderList(state);
             }
             default -> {
-                accessory.addEmitters(emitter_queue);
                 AttachedRenderState state = attached_state_cache.get();
                 state.setup(parentState, accessory);
                 addToRenderList(state);
@@ -368,22 +375,11 @@ public final class RenderState {
     }
 
     private <M extends Model> void updateEmitterWorldPosition(@NonNull Emitter<?> emitter,
-            @NonNull Accessory accessory, @NonNull ElementRenderState<M> parentState) {
-        Matrix4f temp_matrix = new Matrix4f();
-        Matrix4f rel_matrix = new Matrix4f();
-        Vector3f pos_vector = new Vector3f();
-
-        // Get parent world transform (pos and rot)
-        parentState.getTransform(temp_matrix);
-
-        // Get the relative offset in parent local space
-        rel_matrix.identity();
-        accessory.getRelativeTransform(rel_matrix, parentState.model);
-
-        // Transform the LOCAL offset to WORLD space
-        temp_matrix.transformPosition(rel_matrix.m30(), rel_matrix.m31(), rel_matrix.m32(), pos_vector);
-
-        emitter.getPosition().set(pos_vector);
+            @NonNull Accessory accessory, @NonNull ElementSceneContext<M> parentState) {
+        Matrix4f transform = new Matrix4f();
+        parentState.getTransform(transform);
+        accessory.getRelativeTransform(transform, parentState.model);
+        emitter.getPosition().set(transform.m30(), transform.m31(), transform.m32());
     }
 
     private float getVisuallyCorrectHeight(float x_f, float y_f) {
@@ -448,13 +444,13 @@ public final class RenderState {
 
     private static final ModelVisitor<SupplyModel> supply_model_visitor = new SupplyModelVisitor<>() {
         @Override
-        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<SupplyModel> render_state) {
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<SupplyModel> render_state) {
             return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
                     ? spriteKey : null);
         }
 
         @Override
-        public void getTransform(@NonNull ElementRenderState<SupplyModel> render_state, @NonNull Matrix4f dest) {
+        public void getTransform(@NonNull ElementSceneContext<SupplyModel> render_state, @NonNull Matrix4f dest) {
             SupplyModel model = render_state.getModel();
             dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
                     .rotate(model.getRotation(), 0f, 0f, 1f);
@@ -467,7 +463,7 @@ public final class RenderState {
     };
 
     private void visitSupplyModel(final @NonNull SupplyModel model) {
-        ElementRenderState<SupplyModel> state = (ElementRenderState<SupplyModel>) getCachedState(
+        ElementSceneContext<SupplyModel> state = (ElementSceneContext<SupplyModel>) getCachedState(
                 supply_model_visitor, model);
         addToRenderList(state);
         if (!picking) {
@@ -518,13 +514,13 @@ public final class RenderState {
 
     private static final ModelVisitor<RubberSupply> rubber_model_visitor = new SupplyModelVisitor<>() {
         @Override
-        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<RubberSupply> render_state) {
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<RubberSupply> render_state) {
             return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
                     ? spriteKey : null);
         }
 
         @Override
-        public void getTransform(@NonNull ElementRenderState<RubberSupply> render_state, @NonNull Matrix4f dest) {
+        public void getTransform(@NonNull ElementSceneContext<RubberSupply> render_state, @NonNull Matrix4f dest) {
             Model model = render_state.model;
             float angle = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
             dest.translation(model.getPositionX(), model.getPositionY(), render_state.f)
@@ -534,7 +530,8 @@ public final class RenderState {
 
     private void visitRubberSupply(final @NonNull RubberSupply model) {
         float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY()) + model.getOffsetZ();
-        ElementRenderState<RubberSupply> state = (ElementRenderState<RubberSupply>) getCachedState(rubber_model_visitor,
+        ElementSceneContext<RubberSupply> state = (ElementSceneContext<RubberSupply>) getCachedState(
+                rubber_model_visitor,
                 model, z_offset);
         addToRenderList(state);
         if (!picking && !model.isHit())
@@ -544,7 +541,7 @@ public final class RenderState {
 
     private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {
         @Override
-        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<SceneryModel> render_state) {
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<SceneryModel> render_state) {
             return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
                     ? spriteKey : null);
         }
@@ -564,13 +561,13 @@ public final class RenderState {
         private static final float START_FADE_DIST = 100;
 
         @Override
-        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<Plants> render_state) {
+        public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<Plants> render_state) {
             return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
                     ? spriteKey : null);
         }
 
         @Override
-        public void getTransform(@NonNull ElementRenderState<Plants> render_state, @NonNull Matrix4f dest) {
+        public void getTransform(@NonNull ElementSceneContext<Plants> render_state, @NonNull Matrix4f dest) {
             Plants plants = render_state.getModel();
             float angle = (float) Math.atan2(plants.getDirectionY(), plants.getDirectionX());
             dest.translation(plants.getPositionX(), plants.getPositionY(), plants.getPositionZ())
@@ -597,7 +594,7 @@ public final class RenderState {
     private static final ModelVisitor<DirectedThrowingWeapon> directed_weapon_model_visitor
             = new WhiteModelVisitor<>() {
                 @Override
-                public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<
+                public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<
                         DirectedThrowingWeapon> render_state) {
                     DirectedThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
@@ -606,7 +603,7 @@ public final class RenderState {
                 }
 
                 @Override
-                public void getTransform(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state,
+                public void getTransform(@NonNull ElementSceneContext<DirectedThrowingWeapon> render_state,
                         @NonNull Matrix4f dest) {
                     DirectedThrowingWeapon model = render_state.getModel();
                     float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
@@ -617,7 +614,7 @@ public final class RenderState {
                 }
 
                 @Override
-                public @NonNull Color getTeamColor(@NonNull ElementRenderState<DirectedThrowingWeapon> render_state) {
+                public @NonNull Color getTeamColor(@NonNull ElementSceneContext<DirectedThrowingWeapon> render_state) {
                     return render_state.getModel().getSrc().getOwner().getColor();
                 }
             };
@@ -625,7 +622,7 @@ public final class RenderState {
     private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor
             = new WhiteModelVisitor<>() {
                 @Override
-                public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementRenderState<
+                public @NonNull Optional<SpriteKey> getSpriteKey(@NonNull ElementSceneContext<
                         RotatingThrowingWeapon> render_state) {
                     RotatingThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
@@ -634,7 +631,7 @@ public final class RenderState {
                 }
 
                 @Override
-                public void getTransform(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state,
+                public void getTransform(@NonNull ElementSceneContext<RotatingThrowingWeapon> render_state,
                         @NonNull Matrix4f dest) {
                     RotatingThrowingWeapon model = render_state.getModel();
                     float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
@@ -645,7 +642,7 @@ public final class RenderState {
                 }
 
                 @Override
-                public @NonNull Color getTeamColor(@NonNull ElementRenderState<RotatingThrowingWeapon> render_state) {
+                public @NonNull Color getTeamColor(@NonNull ElementSceneContext<RotatingThrowingWeapon> render_state) {
                     return render_state.getModel().getSrc().getOwner().getColor();
                 }
             };

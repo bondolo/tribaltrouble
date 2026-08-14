@@ -1,7 +1,10 @@
 package com.oddlabs.tt.client.gui;
 
+import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.client.form.QuitForm;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.base.global.Globals;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -17,14 +20,30 @@ import org.jspecify.annotations.Nullable;
 /**
  * Container for the 2D user interface
  */
-public final class GUI implements Animated {
+public final class GUI implements Animated, FrameDriver {
     private final GUIRenderer guiRenderer = new GUIRenderer();
     private @NonNull GUIRoot current_root = createRoot();
     private @Nullable Fade fade;
     private @Nullable UIRenderer renderer;
     private final CameraState frustum_state = new CameraState();
+    private final AmbientAudio ambient;
 
     public GUI() {
+        this.ambient = new AmbientAudio(Renderer.getRenderer().getAudioManager());
+    }
+
+    @Override
+    public void tick(@NonNull NetworkSelector network) {
+        LocalInput.getLocalInput().poll(getGUIRoot());
+    }
+
+    @Override
+    public void onCloseRequested() {
+        if (getGUIRoot().isShowingQuitForm()) {
+            Renderer.shutdown();
+        } else {
+            getGUIRoot().addModalForm(new QuitForm(getGUIRoot()));
+        }
     }
 
     public @NonNull GUIRoot newFade() {
@@ -83,6 +102,11 @@ public final class GUI implements Animated {
         return renderer;
     }
 
+    @Override
+    public void render() {
+        render(ambient);
+    }
+
     public void render(@NonNull AmbientAudio ambient) {
         Matrix4f proj = new Matrix4f();
         Matrix4f modelView = new Matrix4f();
@@ -115,12 +139,13 @@ public final class GUI implements Animated {
         }
     }
 
+    @Override
     public void pickHover() {
         var guiRoot = getGUIRoot();
         CameraState camera = guiRoot.getDelegate().getCamera().getState();
         GUIObject gui_hit = guiRoot.getCurrentGUIObject();
         if (renderer != null) {
-            var localInput = Renderer.getLocalInput();
+            var localInput = LocalInput.getLocalInput();
             renderer.pickHover(gui_hit.canHoverBehind(), camera, localInput.getMouseX(), localInput.getMouseY());
         }
     }

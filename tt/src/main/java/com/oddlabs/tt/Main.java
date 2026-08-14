@@ -1,8 +1,13 @@
 package com.oddlabs.tt;
 
+import com.oddlabs.tt.client.delegate.Menu;
+import com.oddlabs.tt.client.gui.GUI;
+import com.oddlabs.tt.client.gui.LocalInput;
+import com.oddlabs.tt.client.render.ClientStateInitializer;
+import com.oddlabs.tt.engine.render.ClientStartup;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.window.LWJGL3Window;
+import com.oddlabs.tt.engine.window.LWJGL3Window;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDLMessageBox;
 
@@ -74,7 +79,17 @@ public final class Main {
         int status = 1;
         try {
             logger.info("Starting game....");
-            Renderer.getRenderer().run(args);
+            Renderer.getRenderer().run((network, firstProgress) -> {
+                ClientStateInitializer.init(Renderer.getRenderer()::getAudioManager);
+                LocalInput localInput = new LocalInput(Renderer.getRenderer().getWindow());
+                Menu.initNetwork(network);
+                localInput.init();
+                var gamePaths = Renderer.getRenderer().getGamePaths();
+                localInput.settings(gamePaths.dataDir(), gamePaths.logDir(), Renderer.getRenderer().getSettings());
+                GUI gui = new GUI();
+                Runnable loadTask = Menu.setupMainMenu(network, gui, firstProgress);
+                return new ClientStartup.Session(gui, loadTask);
+            }, args);
             status = 0;
         } catch (Throwable t) {
             fail(t);

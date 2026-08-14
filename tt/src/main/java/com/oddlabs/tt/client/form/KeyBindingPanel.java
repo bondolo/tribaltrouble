@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.form;
 
+import com.oddlabs.tt.client.gui.LocalInput;
+
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.client.gui.ColumnInfo;
 import com.oddlabs.tt.client.gui.GUIRoot;
@@ -17,7 +19,7 @@ import com.oddlabs.tt.client.input.GameAction;
 import com.oddlabs.tt.client.input.InputBinding;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.client.window.LWJGL3Window;
+import com.oddlabs.tt.engine.window.LWJGL3Window;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDLDialog;
@@ -63,7 +65,7 @@ public class KeyBindingPanel extends Panel {
             @Override
             public void rowDoubleClicked(@NonNull GameAction action) {
                 gui_root.addModalForm(new KeyBindingDialog(gui_root, action, bindings -> {
-                    Renderer.getLocalInput().getInputManager().setBindings(action, bindings);
+                    LocalInput.getLocalInput().getInputManager().setBindings(action, bindings);
                     updateList();
                 }));
             }
@@ -76,7 +78,7 @@ public class KeyBindingPanel extends Panel {
         HorizButton btn_reset = new HorizButton(AbstractOptionsMenu.i18n("btn_reset_all"), 100);
         btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(AbstractOptionsMenu.i18n(
                 "confirm_reset_all"), (_, _, _, _) -> {
-                    Renderer.getLocalInput().getInputManager().resetToDefaults();
+                    LocalInput.getLocalInput().getInputManager().resetToDefaults();
                     updateList();
                 })));
         button_group.addChild(btn_reset);
@@ -109,7 +111,7 @@ public class KeyBindingPanel extends Panel {
             if (action.name().startsWith("DEBUG_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
                 continue;
             }
-            if (action.name().startsWith("CHEAT_") && !Renderer.getRenderer().isCheater()) {
+            if (action.name().startsWith("CHEAT_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
                 continue;
             }
             String name;
@@ -119,7 +121,7 @@ public class KeyBindingPanel extends Panel {
                 name = action.name();
             }
 
-            var bindings = Renderer.getLocalInput().getInputManager().getBindings(action);
+            var bindings = LocalInput.getLocalInput().getInputManager().getBindings(action);
             Label bindingLabel;
 
             if (bindings.isEmpty()) {
@@ -169,7 +171,7 @@ public class KeyBindingPanel extends Panel {
                                 if (ptr != MemoryUtil.NULL) {
                                     String path = MemoryUtil.memUTF8(ptr);
                                     if (path != null) {
-                                        String json = Renderer.getLocalInput().getInputManager().exportBindings();
+                                        String json = LocalInput.getLocalInput().getInputManager().exportBindings();
                                         try {
                                             Files.writeString(Path.of(path), json);
                                         } catch (IOException e) {
@@ -231,7 +233,7 @@ public class KeyBindingPanel extends Panel {
                             if (path != null) {
                                 try {
                                     String json = Files.readString(Path.of(path));
-                                    Renderer.getLocalInput().getInputManager().importBindings(json);
+                                    LocalInput.getLocalInput().getInputManager().importBindings(json);
                                 } catch (IOException e) {
                                     gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("error_load_failed",
                                             e.getMessage())));

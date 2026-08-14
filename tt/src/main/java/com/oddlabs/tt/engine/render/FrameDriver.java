@@ -1,0 +1,31 @@
+package com.oddlabs.tt.engine.render;
+
+import com.oddlabs.net.NetworkSelector;
+import org.jspecify.annotations.NonNull;
+
+/**
+ * Interface for driving input, game ticks, and rendering for a display frame.
+ */
+public interface FrameDriver {
+    /**
+     * Polls input and advances the local game tick.
+     *
+     * @param network the active network selector
+     */
+    void tick(@NonNull NetworkSelector network);
+
+    /**
+     * Renders the 3D scene and 2D overlay for the current frame.
+     */
+    void render();
+
+    /**
+     * Performs mouse hover picking if not frozen.
+     */
+    void pickHover();
+
+    /**
+     * Handles the window close request event.
+     */
+    void onCloseRequested();
+}
