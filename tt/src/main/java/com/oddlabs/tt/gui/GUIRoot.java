@@ -8,6 +8,7 @@ import com.oddlabs.tt.client.delegate.NullDelegate;
 import com.oddlabs.tt.gui.form.QuitForm;
 import com.oddlabs.tt.gui.form.Status;
 import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.simulation.SimulationConfig;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -380,8 +381,8 @@ public final class GUIRoot extends GUIObject {
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_AI)) {
-                        Globals.run_ai = !Globals.run_ai;
-                        logger.info("Globals.run_ai = " + Globals.run_ai);
+                        SimulationConfig.run_ai = !SimulationConfig.run_ai;
+                        logger.info("SimulationConfig.run_ai = " + SimulationConfig.run_ai);
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
