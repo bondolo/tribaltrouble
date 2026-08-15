@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
+    api(project(":common"))
     api(libs.jspecify)
-    api(libs.joml)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)

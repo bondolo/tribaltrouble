@@ -29,7 +29,7 @@ import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.gui.event.ValueListener;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.net.ServerMessageBundler;

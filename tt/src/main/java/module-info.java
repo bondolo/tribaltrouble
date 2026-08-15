@@ -1,5 +1,6 @@
 module com.oddlabs.tt {
     requires com.oddlabs.common;
+    requires com.oddlabs.tt.base;
     requires org.joml;
     requires static org.jspecify;
     requires java.desktop;

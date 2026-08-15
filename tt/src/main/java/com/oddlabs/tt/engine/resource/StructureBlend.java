@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.resource;
 
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.engine.render.Texture;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;

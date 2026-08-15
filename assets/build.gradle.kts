@@ -5,11 +5,11 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 plugins {
-    id("com.smushytaco.lwjgl3")
+    alias(libs.plugins.lwjgl3)
 }
 
 lwjgl {
-    version = "3.4.2"
+    version = libs.versions.lwjgl.get()
     implementation(
         Module.CORE,
         Module.OPENGL,

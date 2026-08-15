@@ -5,7 +5,7 @@ import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

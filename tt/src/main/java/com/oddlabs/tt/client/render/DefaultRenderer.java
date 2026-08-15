@@ -9,8 +9,8 @@ import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 
 
-import com.oddlabs.tt.base.global.BoundingMode;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.engine.render.BoundingMode;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Building;

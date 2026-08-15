@@ -3,10 +3,10 @@ import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     java
-    id("net.ltgt.errorprone") version "5.1.0" apply false
-    id("net.ltgt.nullaway") version "3.1.0" apply false
-    id("com.smushytaco.lwjgl3") version "1.0.2" apply false
-    id("com.diffplug.spotless") version "8.9.0" apply false
+    alias(libs.plugins.errorprone) apply false
+    alias(libs.plugins.nullaway) apply false
+    alias(libs.plugins.lwjgl3) apply false
+    alias(libs.plugins.spotless) apply false
 }
 
 allprojects {
@@ -31,9 +31,9 @@ subprojects {
     }
 
     dependencies {
-        implementation("org.jspecify:jspecify:1.0.0")
-        "errorprone"("com.google.errorprone:error_prone_core:2.50.0")
-        "errorprone"("com.uber.nullaway:nullaway:0.13.8")
+        implementation(rootProject.libs.jspecify)
+        "errorprone"(rootProject.libs.errorprone.core)
+        "errorprone"(rootProject.libs.nullaway)
     }
 
     java {
