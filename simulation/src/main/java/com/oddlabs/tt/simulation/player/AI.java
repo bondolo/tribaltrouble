@@ -5,7 +5,7 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.simulation.SimulationConfig;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;
@@ -267,7 +267,7 @@ public abstract class AI implements Animated {
 
     protected final boolean shouldDoAction(float time) {
         sleep_time -= time;
-        if (!Globals.run_ai || sleep_time >= 0)
+        if (!SimulationConfig.run_ai || sleep_time >= 0)
             return false;
         reset();
         return true;

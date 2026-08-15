@@ -1,6 +1,7 @@
 package com.oddlabs.tt;
 
 import com.oddlabs.tt.engine.render.BoundingMode;
+import com.oddlabs.tt.simulation.SimulationConfig;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -24,14 +25,14 @@ public final class Globals {
     public static final int REVISION = 1;
     public static final Path SETTINGS_FILE_NAME = Path.of("settings");
 
-    public static boolean run_ai = true;
+    public static boolean run_ai = SimulationConfig.DEFAULT_RUN_AI;
 
-    public static int gamespeed = 2;
+    public static int gamespeed = SimulationConfig.DEFAULT_GAME_SPEED;
 
-    public static final boolean process_landscape = true;
-    public static final boolean process_trees = true;
-    public static boolean process_misc = true;
-    public static final boolean process_shadows = true;
+    public static final boolean process_landscape = SimulationConfig.DEFAULT_PROCESS_LANDSCAPE;
+    public static final boolean process_trees = SimulationConfig.DEFAULT_PROCESS_TREES;
+    public static boolean process_misc = SimulationConfig.DEFAULT_PROCESS_MISC;
+    public static final boolean process_shadows = SimulationConfig.DEFAULT_PROCESS_SHADOWS;
 
     public static boolean draw_status = false;
     public static final boolean draw_landscape = true;
@@ -51,7 +52,7 @@ public final class Globals {
     public static boolean clear_frame_buffer = false;
     public static boolean frustum_freeze = false;
 
-    public static boolean slowmotion = false;
+    public static boolean slowmotion = SimulationConfig.DEFAULT_SLOW_MOTION;
 
     public static boolean checksum_error_in_last_game = false;
 
@@ -121,7 +122,7 @@ public final class Globals {
     public static final int SHELL_HISTORY_PAGE_SIZE = 10;
 
 
-    public static final float SEA_LEVEL = .1f;
+    public static final float SEA_LEVEL = SimulationConfig.SEA_LEVEL;
     public static final int TEXELS_PER_CHUNK_BORDER = 4;
 
     public static final int BLOCK_SCROLL_AMOUNT = 20;
