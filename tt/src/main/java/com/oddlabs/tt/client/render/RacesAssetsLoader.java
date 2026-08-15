@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.gui.form.ProgressForm;
 import com.oddlabs.tt.gui.GUIIcons;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;

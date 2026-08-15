@@ -1,0 +1,27 @@
+[versions]
+errorprone = "2.50.0"
+errorpronePlugin = "5.1.0"
+joml = "1.10.8"
+jspecify = "1.0.0"
+junit = "6.0.3"
+lwjgl = "3.4.2"
+lwjglPlugin = "1.0.2"
+nullaway = "0.13.8"
+nullawayPlugin = "3.1.0"
+spotlessPlugin = "8.9.0"
+
+[libraries]
+errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone" }
+joml = { module = "org.joml:joml", version.ref = "joml" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+
+[plugins]
+errorprone = { id = "net.ltgt.errorprone", version.ref = "errorpronePlugin" }
+lwjgl3 = { id = "com.smushytaco.lwjgl3", version.ref = "lwjglPlugin" }
+nullaway = { id = "net.ltgt.nullaway", version.ref = "nullawayPlugin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotlessPlugin" }

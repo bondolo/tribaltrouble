@@ -11,7 +11,7 @@ import com.oddlabs.router.SessionInfo;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.SimulationClock;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;

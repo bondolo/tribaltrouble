@@ -10,7 +10,7 @@ import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import org.jspecify.annotations.NonNull;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.render.scenery;
 
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.model.Terrain;

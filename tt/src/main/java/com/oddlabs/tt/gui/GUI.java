@@ -5,7 +5,7 @@ import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.gui.form.QuitForm;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.FrameDriver;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.render.UIRenderer;

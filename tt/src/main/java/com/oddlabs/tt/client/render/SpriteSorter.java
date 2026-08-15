@@ -6,7 +6,7 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.effects.render.*;
 
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.base.util.PocketList;
 import org.jspecify.annotations.NonNull;
 

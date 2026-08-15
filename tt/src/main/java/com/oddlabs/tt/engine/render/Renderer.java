@@ -7,8 +7,7 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.base.event.LocalEventQueue;
-import com.oddlabs.tt.base.global.Globals;
-import com.oddlabs.tt.base.global.GlobalsInit;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.base.util.StatCounter;
 import com.oddlabs.tt.base.util.Utils;
@@ -245,7 +244,7 @@ public final class Renderer implements AutoCloseable {
                         AnimationManager.setChecksumComplain(false);
                     }
                 }
-                if (!com.oddlabs.tt.base.global.Globals.frustum_freeze) {
+                if (!Globals.frustum_freeze) {
                     driver.pickHover();
                 }
             }
@@ -657,7 +656,6 @@ public final class Renderer implements AutoCloseable {
 
         if (!settings.inDeveloperMode() && !deterministic.isPlayback())
             deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());
-        GlobalsInit.init();
 
         Duration startup_time_init = Duration.between(start_time, Instant.now());
         logger.info("Init done after " + startup_time_init + "ms");

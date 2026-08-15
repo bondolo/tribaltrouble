@@ -51,7 +51,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
     public @NonNull String pw_digest = "";
     public boolean remember_login = false;
 
-    public int graphic_detail = Globals.DETAIL_NORMAL;
+    public int graphic_detail = AppConfig.DEFAULT_DETAIL_NORMAL;
 
     // sound
     public boolean play_music = true;
@@ -142,7 +142,8 @@ public final class Settings implements Serializable, PropertiesSerializer {
     }
 
     public int getTexelsPerGridUnit() {
-        return Globals.TEXELS_PER_GRID_UNIT / (int) Math.pow(2, Globals.TEXTURE_MIP_SHIFT[graphic_detail]);
+        return AppConfig.DEFAULT_TEXELS_PER_GRID_UNIT / (int) Math.pow(2,
+                AppConfig.DEFAULT_TEXTURE_MIP_SHIFT[graphic_detail]);
     }
 
     public void save() {
@@ -150,7 +151,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
             return;
 
         Path settings_file = game_dir != null
-                ? game_dir.resolve(Globals.SETTINGS_FILE_NAME) : Globals.SETTINGS_FILE_NAME;
+                ? game_dir.resolve(AppConfig.SETTINGS_FILE_NAME) : AppConfig.SETTINGS_FILE_NAME;
         try (OutputStream out = Files.newOutputStream(settings_file)) {
             Properties props = new Properties();
 
@@ -164,7 +165,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
     public void load() {
         Properties props = new Properties();
         Path settings_file = game_dir != null
-                ? game_dir.resolve(Globals.SETTINGS_FILE_NAME) : Globals.SETTINGS_FILE_NAME;
+                ? game_dir.resolve(AppConfig.SETTINGS_FILE_NAME) : AppConfig.SETTINGS_FILE_NAME;
         if (!Files.exists(settings_file)) {
             return;
         }

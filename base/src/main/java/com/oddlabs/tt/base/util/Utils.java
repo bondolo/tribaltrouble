@@ -1,6 +1,5 @@
 package com.oddlabs.tt.base.util;
 
-import com.oddlabs.tt.base.global.Globals;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -10,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,7 +53,7 @@ public final class Utils {
     public static @NonNull ByteBuffer ioResourceToByteBuffer(@NonNull URL url) throws IOException {
         try (InputStream is = url.openStream()) {
             byte[] bytes = is.readAllBytes();
-            ByteBuffer buffer = org.lwjgl.BufferUtils.createByteBuffer(bytes.length);
+            ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length).order(ByteOrder.nativeOrder());
             buffer.put(bytes);
             buffer.flip();
             return buffer;
@@ -222,26 +222,11 @@ public final class Utils {
         IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
     }
 
-    public static int numTextureSplits(int size) {
-        return (size >> Globals.MAX_TEXTURE_POWER) + Globals.TEXTURE_SPLITS[size & (Globals.MAX_TEXTURE_SIZE - 1)];
-    }
-
-    public static int toTextureSize(int size) {
-        return (size & ~(Globals.MAX_TEXTURE_SIZE - 1)) + Globals.TEXTURE_SIZES[size & (Globals.MAX_TEXTURE_SIZE - 1)];
-    }
-
     public static int roundToTextureSize(int size) {
-        assert size <= Globals.MAX_TEXTURE_SIZE;
         int tex_size = 1;
         while (tex_size < size)
             tex_size <<= 1;
         return tex_size;
-    }
-
-    public static int bestTextureSize(int size) {
-        if (size >= Globals.MAX_TEXTURE_SIZE)
-            return Globals.MAX_TEXTURE_SIZE;
-        return Globals.BEST_SIZES[size];
     }
 
     public static float invsqrt(float x) {

@@ -1,8 +1,7 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.base.global.BoundingMode;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

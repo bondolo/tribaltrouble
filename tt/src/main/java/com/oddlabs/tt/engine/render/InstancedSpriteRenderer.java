@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.engine.render.shader.InstancedSpriteShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;

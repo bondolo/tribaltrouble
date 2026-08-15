@@ -4,8 +4,8 @@ package com.oddlabs.tt.effects.render;
 import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.base.global.BoundingMode;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.engine.render.BoundingMode;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.StretchParticle;
 import com.oddlabs.tt.engine.render.shader.LightningShader;

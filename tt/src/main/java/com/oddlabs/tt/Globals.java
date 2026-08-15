@@ -1,5 +1,6 @@
-package com.oddlabs.tt.base.global;
+package com.oddlabs.tt;
 
+import com.oddlabs.tt.engine.render.BoundingMode;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -119,16 +120,6 @@ public final class Globals {
     public static final int SHELL_HISTORY_SIZE = 50;
     public static final int SHELL_HISTORY_PAGE_SIZE = 10;
 
-    // max texture size (for generated textures)
-    public static final int MIN_TEXTURE_POWER = 2;
-    public static final int MIN_TEXTURE_SIZE = 1 << MIN_TEXTURE_POWER;
-    public static int MAX_TEXTURE_POWER;
-    public static int MAX_TEXTURE_SIZE;
-    // How to divide images in 2^n textures - 1 means split most memory preserving 0 means split least
-    public static final float TEXTURE_WEIGHT = 0.5f;
-    public static int[] TEXTURE_SIZES;
-    public static byte[] TEXTURE_SPLITS;
-    public static int[] BEST_SIZES;
 
     public static final float SEA_LEVEL = .1f;
     public static final int TEXELS_PER_CHUNK_BORDER = 4;

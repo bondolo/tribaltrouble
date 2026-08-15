@@ -5,7 +5,7 @@ import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.event.StateChecksum;
-import com.oddlabs.tt.base.global.Globals;
+import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.engine.render.Renderer;
