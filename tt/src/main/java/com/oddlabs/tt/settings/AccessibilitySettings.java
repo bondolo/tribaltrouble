@@ -11,10 +11,10 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static com.oddlabs.tt.settings.SettingsHelper.getBoolean;
-import static com.oddlabs.tt.settings.SettingsHelper.getFloat;
-import static com.oddlabs.tt.settings.SettingsHelper.getInt;
-import static com.oddlabs.tt.settings.SettingsHelper.setProperty;
+import static com.oddlabs.tt.base.global.SettingsHelper.getBoolean;
+import static com.oddlabs.tt.base.global.SettingsHelper.getFloat;
+import static com.oddlabs.tt.base.global.SettingsHelper.getInt;
+import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
 /**
  * Visual accessibility, color vision deficiency corrections, and team color settings.

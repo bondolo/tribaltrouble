@@ -7,9 +7,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Properties;
 
-import static com.oddlabs.tt.settings.SettingsHelper.getBoolean;
-import static com.oddlabs.tt.settings.SettingsHelper.getInt;
-import static com.oddlabs.tt.settings.SettingsHelper.setProperty;
+import static com.oddlabs.tt.base.global.SettingsHelper.getBoolean;
+import static com.oddlabs.tt.base.global.SettingsHelper.getInt;
+import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
 /**
  * Display, resolution, window mode, and presentation settings.

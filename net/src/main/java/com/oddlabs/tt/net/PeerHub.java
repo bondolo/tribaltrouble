@@ -11,7 +11,6 @@ import com.oddlabs.router.SessionInfo;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.SimulationClock;
-import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -205,7 +204,7 @@ public final class PeerHub implements Animated, RouterHandler {
     private void peerChecksumError(@NonNull Peer peer) {
         System.out.println("Disconnecting peer because of checksum mismatch: " + peer.getPlayerInfo().getName());
         peerDisconnected(peer, "Checksum error");
-        Globals.checksum_error_in_last_game = true;
+        NetConfig.checksum_error_in_last_game = true;
     }
 
     private @Nullable Peer getPeerFromClientID(int client_id) {

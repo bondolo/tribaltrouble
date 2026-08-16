@@ -498,7 +498,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback<?,?> loadCallback) {
+    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback<?, ?> loadCallback) {
         setDisabled(true);
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
                 (com.oddlabs.tt.gui.form.LoadCallback) loadCallback);

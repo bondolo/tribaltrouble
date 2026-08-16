@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api(project(":common"))
-    api(libs.jspecify)
+    compileOnlyApi(libs.jspecify)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)

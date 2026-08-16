@@ -3,6 +3,7 @@ package com.oddlabs.tt.settings;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.net.AccountSettings;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -24,10 +25,10 @@ import java.util.ServiceLoader;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-import static com.oddlabs.tt.settings.SettingsHelper.getBoolean;
-import static com.oddlabs.tt.settings.SettingsHelper.getInt;
-import static com.oddlabs.tt.settings.SettingsHelper.getPath;
-import static com.oddlabs.tt.settings.SettingsHelper.setProperty;
+import static com.oddlabs.tt.base.global.SettingsHelper.getBoolean;
+import static com.oddlabs.tt.base.global.SettingsHelper.getInt;
+import static com.oddlabs.tt.base.global.SettingsHelper.getPath;
+import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
 /**
  * Global game settings coordinator and configuration persistence.

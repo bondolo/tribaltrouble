@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api(libs.jspecify)
+    compileOnlyApi(libs.jspecify)
     api(libs.joml)
 
     testImplementation(platform(libs.junit.bom))
