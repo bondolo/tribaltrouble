@@ -574,7 +574,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
             float w = maxX - minX;
             float h = maxY - minY;
 
-            float thickness = Renderer.getRenderer().getSettings().high_contrast ? 3.0f : 1.0f;
+            float thickness = Renderer.getRenderer().getSettings().accessibility.high_contrast ? 3.0f : 1.0f;
 
             // Ensure thickness doesn't exceed half dimensions
             if (thickness > w / 2) thickness = w / 2;

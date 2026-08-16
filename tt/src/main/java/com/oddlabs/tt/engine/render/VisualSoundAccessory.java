@@ -43,7 +43,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
 
     @Override
     public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
-        if (!Renderer.getRenderer().getSettings().sound_emojis) {
+        if (!Renderer.getRenderer().getSettings().accessibility.sound_emojis) {
             return false;
         }
         if (age >= duration) {

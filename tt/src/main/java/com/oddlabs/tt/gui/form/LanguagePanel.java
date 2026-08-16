@@ -36,9 +36,9 @@ public class LanguagePanel extends Panel {
         var language_list_box = new MultiColumnComboBox<@NonNull Locale>(gui_root, language_infos, 200, false);
 
         // Check language logic
-        String currentLanguage = Renderer.getRenderer().getSettings().language;
+        String currentLanguage = Renderer.getRenderer().getSettings().control.language;
         if (!currentLanguage.equals("default") && !Languages.hasLanguage(Locale.forLanguageTag(currentLanguage))) {
-            Renderer.getRenderer().getSettings().language = "default";
+            Renderer.getRenderer().getSettings().control.language = "default";
         }
 
         // Supported Language list
@@ -50,7 +50,7 @@ public class LanguagePanel extends Panel {
             var iconLabel = new IconLabel(flag, label);
             Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), langauge);
             language_list_box.addRow(row);
-            if (langauge.getLanguage().equals(Renderer.getRenderer().getSettings().language)) {
+            if (langauge.getLanguage().equals(Renderer.getRenderer().getSettings().control.language)) {
                 selectedLanguage = row;
             }
         }
@@ -61,7 +61,7 @@ public class LanguagePanel extends Panel {
         var iconLabel = new IconLabel(Skin.getSkin().getFlagDefault(), label);
         Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), Renderer.getRenderer().getDefaultLocale());
         language_list_box.addRow(row);
-        if (null == selectedLanguage || Renderer.getRenderer().getSettings().language.equals("default")) {
+        if (null == selectedLanguage || Renderer.getRenderer().getSettings().control.language.equals("default")) {
             selectedLanguage = row;
         }
 
@@ -69,9 +69,9 @@ public class LanguagePanel extends Panel {
         language_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(@NonNull Locale locale) {
-                Renderer.getRenderer().getSettings().language = locale.getVariant().equals("default")
+                Renderer.getRenderer().getSettings().control.language = locale.getVariant().equals("default")
                         ? "default" : locale.toLanguageTag();
-                IO.println("set language:" + Renderer.getRenderer().getSettings().language);
+                IO.println("set language:" + Renderer.getRenderer().getSettings().control.language);
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("language_change_next_run")));
             }
         });

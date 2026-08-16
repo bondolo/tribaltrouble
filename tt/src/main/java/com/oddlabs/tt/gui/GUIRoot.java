@@ -122,7 +122,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     public void setToolTipTimer() {
-        tool_tip_timer.setTimerInterval(Renderer.getRenderer().getSettings().tooltip_delay
+        tool_tip_timer.setTimerInterval(Renderer.getRenderer().getSettings().control.tooltip_delay
                 * ToolTipBox.MAX_DELAY_SECONDS);
     }
 
@@ -258,7 +258,7 @@ public final class GUIRoot extends GUIObject {
         float minScale = calculateMinScale(width, height);
         float maxAllowedScale = Math.max(minScale, calculateMaxScale(width, height));
 
-        float current = Math.clamp(Renderer.getRenderer().getSettings().ui_scale, 0f, 1f);
+        float current = Math.clamp(Renderer.getRenderer().getSettings().control.ui_scale, 0f, 1f);
 
         // Interpolate
         float rawTarget = minScale + (current * (maxAllowedScale - minScale));
@@ -298,9 +298,9 @@ public final class GUIRoot extends GUIObject {
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
-                    Renderer.getRenderer().getSettings().aggressive_units = !Renderer.getRenderer()
-                            .getSettings().aggressive_units;
-                    info_printer.print(i18n(Renderer.getRenderer().getSettings().aggressive_units
+                    Renderer.getRenderer().getSettings().control.aggressive_units = !Renderer.getRenderer()
+                            .getSettings().control.aggressive_units;
+                    info_printer.print(i18n(Renderer.getRenderer().getSettings().control.aggressive_units
                             ? "aggressive_unites_on" : "aggressive_unites_off"));
                     consumed = true;
                 }

@@ -187,7 +187,7 @@ public final class GLRenderContext implements RenderContext {
 
         // Multisample: Disable if desktop scale factor > 1.0f (which replaces MSAA with supersampling)
         float density = Renderer.getRenderer().getWindow().getPixelDensity();
-        if (Renderer.getRenderer().getSettings().view_samples > 0 && density <= 1.0f) {
+        if (Renderer.getRenderer().getSettings().window.view_samples > 0 && density <= 1.0f) {
             GL13.glEnable(GL13.GL_MULTISAMPLE);
         } else {
             GL13.glDisable(GL13.GL_MULTISAMPLE);

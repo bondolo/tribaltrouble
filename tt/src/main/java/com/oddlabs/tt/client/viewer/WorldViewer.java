@@ -165,7 +165,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
         this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
-                world_info.landscapeData(), player_infos, renderer.getSettings().linear_team_colours,
+                world_info.landscapeData(), player_infos, renderer.getSettings().accessibility.linear_team_colours,
                 Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressForm::progress);
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);

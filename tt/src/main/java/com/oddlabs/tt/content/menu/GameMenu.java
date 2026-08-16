@@ -471,7 +471,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         }
         String player_str = i18n("player", Integer.toString(index + 1));
         Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(Renderer.getRenderer()
-                .getSettings().team_colours[index]);
+                .getSettings().accessibility.team_colours[index]);
         group.addChild(label);
         label.place(pulldown_button, LEFT_MID);
 
@@ -498,7 +498,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback loadCallback) {
+    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback<?,?> loadCallback) {
         setDisabled(true);
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
                 (com.oddlabs.tt.gui.form.LoadCallback) loadCallback);

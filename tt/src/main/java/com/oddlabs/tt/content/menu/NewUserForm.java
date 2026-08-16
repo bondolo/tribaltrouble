@@ -166,8 +166,8 @@ public final class NewUserForm extends Form {
 
     private void doCreateUser(@NonNull String username, LoginDetails login_details, @NonNull String password,
             Login login) {
-        Renderer.getRenderer().getSettings().username = username;
-        Renderer.getRenderer().getSettings().pw_digest = password;
+        Renderer.getRenderer().getSettings().account.username = username;
+        Renderer.getRenderer().getSettings().account.pw_digest = password;
         Form connecting_form = new MatchmakingConnectingForm(network, gui_root, this, main_menu, login, login_details);
         gui_root.addModalForm(connecting_form);
     }

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.window;
 
-import com.oddlabs.tt.base.global.Settings;
+import com.oddlabs.tt.settings.Settings;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import org.joml.Vector2f;
@@ -316,9 +316,9 @@ public final class LWJGL3Window implements Window {
 
         Settings settings = Renderer.getRenderer().getSettings();
         float density = getPixelDensity();
-        if (settings.view_samples > 0 && density <= 1.0f) {
+        if (settings.window.view_samples > 0 && density <= 1.0f) {
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.view_samples);
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.window.view_samples);
         } else {
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
@@ -478,7 +478,7 @@ public final class LWJGL3Window implements Window {
                     }
                     case SDL_EVENT_WINDOW_FOCUS_GAINED -> {
                         active = true;
-                        if (Renderer.getRenderer().getSettings().fullscreen) {
+                        if (Renderer.getRenderer().getSettings().window.fullscreen) {
                             long flags = SDL_GetWindowFlags(windowHandle);
                             boolean isMinimized = (flags & SDL_WINDOW_MINIMIZED) != 0;
                             if (isMinimized) {
@@ -629,7 +629,7 @@ public final class LWJGL3Window implements Window {
             if (!fullscreen) {
                 SDL_SetWindowBordered(windowHandle, true);
                 Settings settings = Renderer.getRenderer().getSettings();
-                Vector2f logical = getLogicalSize(settings.view_width, settings.view_height);
+                Vector2f logical = getLogicalSize(settings.window.view_width, settings.window.view_height);
                 SDL_SetWindowSize(windowHandle, (int) logical.x, (int) logical.y);
                 SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
             }

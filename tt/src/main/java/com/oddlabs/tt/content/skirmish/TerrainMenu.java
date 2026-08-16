@@ -363,7 +363,7 @@ public final class TerrainMenu extends Group {
             if (i == 0) {
                 String player_str = i18n("player", Integer.toString(1));
                 labels_players[0] = new Label(player_str, Skin.getSkin().getEditFont())
-                        .setColor(Renderer.getRenderer().getSettings().team_colours[0]);
+                        .setColor(Renderer.getRenderer().getSettings().accessibility.team_colours[0]);
                 group_race_team.addChild(labels_players[0]);
                 labels_players[0].place();
                 difficulty_pulldown_buttons[0].place(labels_players[0], RIGHT_MID);
@@ -372,7 +372,7 @@ public final class TerrainMenu extends Group {
             } else {
                 String player_str = i18n("player", Integer.toString(i + 1));
                 labels_players[i] = new Label(player_str, Skin.getSkin().getEditFont())
-                        .setColor(Renderer.getRenderer().getSettings().team_colours[i]);
+                        .setColor(Renderer.getRenderer().getSettings().accessibility.team_colours[i]);
                 group_race_team.addChild(labels_players[i]);
                 labels_players[i].place(labels_players[i - 1], BOTTOM_RIGHT);
                 difficulty_pulldown_buttons[i].place(labels_players[i], RIGHT_MID);
