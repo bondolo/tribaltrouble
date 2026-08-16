@@ -3,9 +3,9 @@ plugins {
 }
 
 dependencies {
+    api(project(":simulation"))
     api(project(":base"))
     api(project(":common"))
-    api(libs.joml)
     compileOnlyApi(libs.jspecify)
 
     testImplementation(platform(libs.junit.bom))

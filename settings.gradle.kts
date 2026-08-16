@@ -19,4 +19,4 @@ pluginManagement {
 include("assets", "base", "common")
 // server and servlet excluded - have compilation errors
 // include("server", "servlet")
-include("simulation", "tools", "tt")
+include("net", "simulation", "tools", "tt")

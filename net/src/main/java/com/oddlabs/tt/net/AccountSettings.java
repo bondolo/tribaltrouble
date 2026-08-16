@@ -1,4 +1,4 @@
-package com.oddlabs.tt.settings;
+package com.oddlabs.tt.net;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
 import org.jspecify.annotations.NonNull;
@@ -7,8 +7,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Properties;
 
-import static com.oddlabs.tt.settings.SettingsHelper.getBoolean;
-import static com.oddlabs.tt.settings.SettingsHelper.setProperty;
+import static com.oddlabs.tt.base.global.SettingsHelper.getBoolean;
+import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
 /**
  * User account credentials and authentication persistence settings.

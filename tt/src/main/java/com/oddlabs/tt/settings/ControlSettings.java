@@ -7,9 +7,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Properties;
 
-import static com.oddlabs.tt.settings.SettingsHelper.getBoolean;
-import static com.oddlabs.tt.settings.SettingsHelper.getFloat;
-import static com.oddlabs.tt.settings.SettingsHelper.setProperty;
+import static com.oddlabs.tt.base.global.SettingsHelper.getBoolean;
+import static com.oddlabs.tt.base.global.SettingsHelper.getFloat;
+import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
 /**
  * User interface parameters, camera controls, unit behavior preferences, and locale.

@@ -10,7 +10,6 @@ import com.oddlabs.net.Connection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.Globals;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -61,7 +60,7 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
             this.connection = new TunnelledConnection(matchmaking_client, host_id, this);
         else
             this.connection = new Connection(network, new InetSocketAddress(Utils.getLoopbackAddress(),
-                    Globals.NET_PORT), this);
+                    NetConfig.DEFAULT_NET_PORT), this);
         gameserver_interface = (GameServerInterface) ARMIEvent.createProxy(connection, GameServerInterface.class);
 
         this.unit_infos = new UnitInfo[MatchmakingServerInterface.MAX_PLAYERS];

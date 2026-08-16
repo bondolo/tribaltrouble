@@ -2,6 +2,7 @@ module com.oddlabs.tt {
     requires com.oddlabs.common;
     requires com.oddlabs.tt.base;
     requires com.oddlabs.tt.simulation;
+    requires com.oddlabs.tt.net;
     requires org.joml;
     requires static org.jspecify;
     requires java.desktop;
@@ -19,7 +20,6 @@ module com.oddlabs.tt {
     provides com.oddlabs.tt.base.global.PropertiesSerializer with
             com.oddlabs.tt.settings.WindowSettings,
             com.oddlabs.tt.settings.AudioSettings,
-            com.oddlabs.tt.settings.AccountSettings,
             com.oddlabs.tt.settings.AccessibilitySettings,
             com.oddlabs.tt.settings.ControlSettings;
 }

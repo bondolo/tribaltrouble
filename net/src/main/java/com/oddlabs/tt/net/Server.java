@@ -10,7 +10,6 @@ import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import org.jspecify.annotations.NonNull;
@@ -62,7 +61,7 @@ public final class Server implements ConnectionListenerInterface {
             @NonNull PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.player_info_factory = player_info_factory;
-        this.local_listener = new ConnectionListener(network, ip, Globals.NET_PORT, this);
+        this.local_listener = new ConnectionListener(network, ip, NetConfig.DEFAULT_NET_PORT, this);
         this.matchmaking_client = matchmaking_client;
         this.game = game;
         this.generator = generator;
