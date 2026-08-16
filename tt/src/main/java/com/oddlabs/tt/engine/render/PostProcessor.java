@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.base.global.Settings;
+import com.oddlabs.tt.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.render.shader.PostProcessShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -149,15 +149,15 @@ public final class PostProcessor implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
 
-            Settings settings = Renderer.getRenderer().getSettings();
-            shader.setSubroutines(settings.cvd_mode, settings.high_contrast);
+            AccessibilitySettings accessibility = Renderer.getRenderer().getSettings().accessibility;
+            shader.setSubroutines(accessibility.cvd_mode, accessibility.high_contrast);
 
-            shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, settings.cvd_intensity);
-            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_INTENSITY, settings.contrast_intensity);
-            shader.setUniform(PostProcessShader.Uniforms.INVERT_COLORS, settings.invert_colours);
-            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_BRIGHTNESS, settings.contrast_brightness);
-            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_CLARITY, settings.contrast_clarity);
-            shader.setUniform(PostProcessShader.Uniforms.TEAM_STENCIL, settings.team_stencil);
+            shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, accessibility.cvd_intensity);
+            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_INTENSITY, accessibility.contrast_intensity);
+            shader.setUniform(PostProcessShader.Uniforms.INVERT_COLORS, accessibility.invert_colours);
+            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_BRIGHTNESS, accessibility.contrast_brightness);
+            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_CLARITY, accessibility.contrast_clarity);
+            shader.setUniform(PostProcessShader.Uniforms.TEAM_STENCIL, accessibility.team_stencil);
             shader.setUniform(PostProcessShader.Uniforms.SCENE_TEXTURE, 0);
             shader.setUniform(PostProcessShader.Uniforms.MASK_TEXTURE, 1);
 

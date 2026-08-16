@@ -50,15 +50,16 @@ public class GraphicsPanel extends Panel {
         // Fullscreen
         Group group_fullscreen = new Group();
         addChild(group_fullscreen);
-        CheckBox cb_fullscreen = new CheckBox(Renderer.getRenderer().getSettings().fullscreen, AbstractOptionsMenu.i18n(
-                "fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
+        CheckBox cb_fullscreen = new CheckBox(Renderer.getRenderer().getSettings().window.fullscreen,
+                AbstractOptionsMenu.i18n(
+                        "fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
         cb_fullscreen.addCheckBoxListener(marked -> {
             DisplayChangeForm display_change_form = new DisplayChangeForm(
                     switch_now -> {
                         if (switch_now) {
                             Renderer.getRenderer().toggleFullscreen();
                         } else {
-                            Renderer.getRenderer().getSettings().fullscreen = marked;
+                            Renderer.getRenderer().getSettings().window.fullscreen = marked;
                         }
 
                         // Force refresh of available modes for the list box
@@ -81,13 +82,13 @@ public class GraphicsPanel extends Panel {
         updateScaleLabel();
         group_ui_scale.addChild(label_pct);
 
-        int initialValue = Math.clamp((long) (Renderer.getRenderer().getSettings().ui_scale * 1000), 0, 1000);
+        int initialValue = Math.clamp((long) (Renderer.getRenderer().getSettings().control.ui_scale * 1000), 0, 1000);
 
         Slider slider_ui_scale = new Slider(150, 0, 1000, initialValue);
         group_ui_scale.addChild(slider_ui_scale);
 
         slider_ui_scale.addValueListener(value -> {
-            Renderer.getRenderer().getSettings().ui_scale = value / 1000f;
+            Renderer.getRenderer().getSettings().control.ui_scale = value / 1000f;
             updateScaleLabel();
         });
 
@@ -129,14 +130,14 @@ public class GraphicsPanel extends Panel {
         pb_detail.place(label_detail, BOTTOM_LEFT);
         group_detail.compileCanvas();
 
-        refreshResolutionList(Renderer.getRenderer().getSettings().fullscreen, mode_list_box);
+        refreshResolutionList(Renderer.getRenderer().getSettings().window.fullscreen, mode_list_box);
 
         mode_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(@NonNull SerializableDisplayMode mode) {
                 Window window = Renderer.getRenderer().getWindow();
                 boolean currentIsExclusive = window.isExclusiveFullscreen();
-                boolean targetFullscreen = Renderer.getRenderer().getSettings().fullscreen;
+                boolean targetFullscreen = Renderer.getRenderer().getSettings().window.fullscreen;
                 boolean targetIsExclusive = targetFullscreen && window.isExclusiveFullscreenMode(mode);
 
                 if (currentIsExclusive || targetIsExclusive) {

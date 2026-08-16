@@ -150,7 +150,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void saveMappings() {
-        boolean wasFullscreen = Renderer.getRenderer().getSettings().fullscreen;
+        boolean wasFullscreen = Renderer.getRenderer().getSettings().window.fullscreen;
         if (wasFullscreen) {
             Renderer.getRenderer().toggleFullscreen();
         }
@@ -211,7 +211,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void loadMappings() {
-        boolean wasFullscreen = Renderer.getRenderer().getSettings().fullscreen;
+        boolean wasFullscreen = Renderer.getRenderer().getSettings().window.fullscreen;
         if (wasFullscreen) {
             Renderer.getRenderer().toggleFullscreen();
         }

@@ -372,7 +372,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         World world = World.newWorld(landscape_resources, null,
                 new NotificationListener() {
                 }, world_params, world_info.landscapeData(), players,
-                Renderer.getRenderer().getSettings().linear_team_colours,
+                Renderer.getRenderer().getSettings().accessibility.linear_team_colours,
                 Globals.INSERT_PLANTS[Renderer.getRenderer().getSettings().graphic_detail],
                 ProgressForm::progress);
         AnimationManager manager = new AnimationManager();
@@ -385,7 +385,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         Renderer.getRenderer().setMusic(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);
-        if (first_progress && Renderer.getRenderer().getSettings().warning_no_sound && !LocalInput.getLocalInput()
+        if (first_progress && Renderer.getRenderer().getSettings().audio.warning_no_sound && !LocalInput.getLocalInput()
                 .audioIsCreated()) {
             gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
                     "sound_not_available_message")));

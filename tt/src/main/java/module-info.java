@@ -13,4 +13,13 @@ module com.oddlabs.tt {
     requires org.lwjgl.opengl;
     requires org.lwjgl.stb;
     requires kotlin.stdlib;
+
+    uses com.oddlabs.tt.base.global.PropertiesSerializer;
+
+    provides com.oddlabs.tt.base.global.PropertiesSerializer with
+            com.oddlabs.tt.settings.WindowSettings,
+            com.oddlabs.tt.settings.AudioSettings,
+            com.oddlabs.tt.settings.AccountSettings,
+            com.oddlabs.tt.settings.AccessibilitySettings,
+            com.oddlabs.tt.settings.ControlSettings;
 }

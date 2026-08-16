@@ -8,7 +8,7 @@ import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.Globals;
-import com.oddlabs.tt.base.global.Settings;
+import com.oddlabs.tt.settings.Settings;
 import com.oddlabs.tt.base.util.StatCounter;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.audio.AudioManager;
@@ -636,8 +636,8 @@ public final class Renderer implements AutoCloseable {
         var game_dir = deterministic.log(gamePaths.dataDir);
         event_log_dir = deterministic.log(event_log_dir);
         deterministic.log(settings);
-        Locale language = "default".equals(settings.language)
-                ? deterministic.log(Renderer.default_locale) : Locale.forLanguageTag(settings.language);
+        Locale language = "default".equals(settings.control.language)
+                ? deterministic.log(Renderer.default_locale) : Locale.forLanguageTag(settings.control.language);
         if (language == null) {
             language = Locale.of("en");
         }
@@ -691,7 +691,7 @@ public final class Renderer implements AutoCloseable {
                     window.focus();
                 } else if (!isActive && wasActive) {
                     logger.info("[Renderer] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
-                    if (getSettings().fullscreen) {
+                    if (getSettings().window.fullscreen) {
                         window.minimize();
                     }
                 }
@@ -854,7 +854,7 @@ public final class Renderer implements AutoCloseable {
             boolean fs = !window.isFullscreen() && !getEventQueue().getDeterministic().isPlayback();
             logger.info("Toggling fullscreen to: " + fs + ". Current mode: " + window.getDisplayMode());
             window.setFullscreen(fs);
-            getSettings().fullscreen = fs;
+            getSettings().window.fullscreen = fs;
         } catch (Exception e) {
             logger.log(java.util.logging.Level.SEVERE, "Mode switching failed with exception", e);
             throw new IllegalStateException("Mode switching failed", e);
@@ -875,16 +875,16 @@ public final class Renderer implements AutoCloseable {
 
     public void setModeToNearest(@NonNull SerializableDisplayMode mode) {
         // Use window create to ensure window is created/resized
-        boolean fs = getSettings().fullscreen;
+        boolean fs = getSettings().window.fullscreen;
         window.create(mode, fs);
         modeSwitchedNow(mode);
     }
 
     private void modeSwitchedLater(@NonNull SerializableDisplayMode new_mode) {
-        settings.fullscreen = window.isFullscreen();
-        settings.new_view_width = new_mode.getWidth();
-        settings.new_view_height = new_mode.getHeight();
-        settings.new_view_freq = new_mode.getFrequency();
+        settings.window.fullscreen = window.isFullscreen();
+        settings.window.new_view_width = new_mode.getWidth();
+        settings.window.new_view_height = new_mode.getHeight();
+        settings.window.new_view_freq = new_mode.getFrequency();
     }
 
     private void modeSwitchedNow(@NonNull SerializableDisplayMode new_mode) {
@@ -895,9 +895,9 @@ public final class Renderer implements AutoCloseable {
     private void modeSwitched() {
         SerializableDisplayMode new_mode = getCurrentDisplayMode();
         logger.info("Mode switch detected. New mode: " + new_mode);
-        settings.view_width = new_mode.getWidth();
-        settings.view_height = new_mode.getHeight();
-        settings.view_freq = new_mode.getFrequency();
+        settings.window.view_width = new_mode.getWidth();
+        settings.window.view_height = new_mode.getHeight();
+        settings.window.view_freq = new_mode.getFrequency();
     }
 
     private static void destroyNative() {
@@ -936,10 +936,10 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initNative(boolean crashed) throws Exception {
-        this.audioManager = new OpenALManager(getSettings().headphone_mode)
-                .setSfxGain(getSettings().sound_gain)
-                .setMusicGain(getSettings().music_gain)
-                .setSfxEnabled(getSettings().play_sfx);
+        this.audioManager = new OpenALManager(getSettings().audio.headphone_mode)
+                .setSfxGain(getSettings().audio.sound_gain)
+                .setMusicGain(getSettings().audio.music_gain)
+                .setSfxEnabled(getSettings().audio.play_sfx);
 
         try {
             int bpp = 32;
@@ -953,9 +953,9 @@ public final class Renderer implements AutoCloseable {
             // Fullscreen handled in create
 
             SerializableDisplayMode target_mode;
-            int width = crashed ? getSettings().view_width : getSettings().new_view_width;
-            int height = crashed ? getSettings().view_height : getSettings().new_view_height;
-            int freq = crashed ? getSettings().view_freq : getSettings().new_view_freq;
+            int width = crashed ? getSettings().window.view_width : getSettings().window.new_view_width;
+            int height = crashed ? getSettings().window.view_height : getSettings().window.new_view_height;
+            int freq = crashed ? getSettings().window.view_freq : getSettings().window.new_view_freq;
 
             if (width < SerializableDisplayMode.MIN_WIDTH || height < SerializableDisplayMode.MIN_HEIGHT) {
                 try {
@@ -973,7 +973,8 @@ public final class Renderer implements AutoCloseable {
                 target_mode = new SerializableDisplayMode(width, height, bpp, freq);
             }
 
-            boolean fs = getSettings().fullscreen && (!getEventQueue().getDeterministic().isPlayback() || grab_frames);
+            boolean fs = getSettings().window.fullscreen && (!getEventQueue().getDeterministic().isPlayback()
+                    || grab_frames);
             window.create(target_mode, fs);
             setModeToNearest(target_mode);
 
@@ -1018,8 +1019,8 @@ public final class Renderer implements AutoCloseable {
                     + " is less than the required 8.");
         }
 
-        logger.info("vsync = " + getSettings().vsync);
-        if (getSettings().vsync)
+        logger.info("vsync = " + getSettings().window.vsync);
+        if (getSettings().window.vsync)
             window.setVSyncEnabled(true);
         initGL();
         initVisibleGL();
@@ -1028,13 +1029,13 @@ public final class Renderer implements AutoCloseable {
     }
 
     public void toggleSound() {
-        getSettings().play_sfx = !getSettings().play_sfx;
-        getAudioManager().setSfxEnabled(getSettings().play_sfx);
+        getSettings().audio.play_sfx = !getSettings().audio.play_sfx;
+        getAudioManager().setSfxEnabled(getSettings().audio.play_sfx);
     }
 
     public void toggleMusic() {
-        getSettings().play_music = !getSettings().play_music;
-        if (getSettings().play_music) {
+        getSettings().audio.play_music = !getSettings().audio.play_music;
+        if (getSettings().audio.play_music) {
             initMusicPlayer();
         } else if (music != null) {
             music.stop(1.2f);
@@ -1049,10 +1050,10 @@ public final class Renderer implements AutoCloseable {
     public void setMusic(@NonNull AudioParameters music_audio, float delay) {
         this.music_audio = music_audio;
 
-        if (music != null && getSettings().play_music) {
+        if (music != null && getSettings().audio.play_music) {
             music.stop(1.2f);
         }
-        if (getSettings().play_music) {
+        if (getSettings().audio.play_music) {
             if (music_timer != null)
                 music_timer.stop();
             music_timer = new TimerAnimation(new MusicTimer(), delay);
@@ -1066,7 +1067,7 @@ public final class Renderer implements AutoCloseable {
             if (music_timer != null)
                 music_timer.stop();
             music_timer = null;
-            if (getSettings().play_music) {
+            if (getSettings().audio.play_music) {
                 initMusicPlayer();
             }
         }

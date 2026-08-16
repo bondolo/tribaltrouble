@@ -79,7 +79,7 @@ public final class MapCamera extends Camera {
 
     @Override
     public void doAnimate(float t) {
-        float factor = t * 1000f / Math.max(t * 1000f, Renderer.getRenderer().getSettings().mapmode_delay
+        float factor = t * 1000f / Math.max(t * 1000f, Renderer.getRenderer().getSettings().control.mapmode_delay
                 * MAP_TIME_FACTOR);
         float dx;
         float dy;
