@@ -19,4 +19,19 @@ public interface WindowEventListener {
      */
     default void onFocusGained() {
     }
+
+    /**
+     * Called when the window framebuffer size changes.
+     *
+     * @param width new framebuffer width in pixels
+     * @param height new framebuffer height in pixels
+     */
+    default void onResized(int width, int height) {
+    }
+
+    /**
+     * Called when a window-level toggle fullscreen action is requested (e.g. Alt+Enter).
+     */
+    default void onToggleFullscreen() {
+    }
 }

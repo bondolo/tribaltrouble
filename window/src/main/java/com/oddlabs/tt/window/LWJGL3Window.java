@@ -1,13 +1,11 @@
 package com.oddlabs.tt.window;
 
-import com.oddlabs.tt.settings.Settings;
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.sdl.SDL_DisplayMode;
 import org.lwjgl.sdl.SDL_Event;
 import org.lwjgl.sdl.SDL_KeyboardEvent;
@@ -27,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -177,15 +176,33 @@ public final class LWJGL3Window implements Window {
     private int restoreState = RESTORE_NONE;
     private boolean lastMacAppActive;
 
+    private @NonNull WindowSettings settings;
+
     private int cachedWidth = SerializableDisplayMode.MIN_WIDTH;
     private int cachedHeight = SerializableDisplayMode.MIN_HEIGHT;
     private int cachedLogicalWidth = SerializableDisplayMode.MIN_WIDTH;
     private int cachedLogicalHeight = SerializableDisplayMode.MIN_HEIGHT;
 
     public LWJGL3Window() {
+        this(new WindowSettings());
+    }
+
+    public LWJGL3Window(@NonNull WindowSettings settings) {
+        this.settings = Objects.requireNonNull(settings);
         ensureSDL();
     }
 
+    @Override
+    public @NonNull WindowSettings getSettings() {
+        return settings;
+    }
+
+    @Override
+    public void setSettings(@NonNull WindowSettings settings) {
+        this.settings = Objects.requireNonNull(settings);
+    }
+
+    @Override
     public void setEventListener(@Nullable WindowEventListener listener) {
         this.eventListener = listener;
     }
@@ -314,11 +331,10 @@ public final class LWJGL3Window implements Window {
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 
-        Settings settings = Renderer.getRenderer().getSettings();
         float density = getPixelDensity();
-        if (settings.window.view_samples > 0 && density <= 1.0f) {
+        if (settings.view_samples > 0 && density <= 1.0f) {
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.window.view_samples);
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, settings.view_samples);
         } else {
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
@@ -363,7 +379,10 @@ public final class LWJGL3Window implements Window {
         logger.info("OpenGL Context Created: " + org.lwjgl.opengl.GL11.glGetString(org.lwjgl.opengl.GL11.GL_VERSION));
 
         updateCachedDimensions();
-        Renderer.getRenderer().getRenderContext().setViewport(0, 0, cachedWidth, cachedHeight);
+        GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+        if (eventListener != null) {
+            eventListener.onResized(cachedWidth, cachedHeight);
+        }
     }
 
     private void destroy() {
@@ -415,7 +434,10 @@ public final class LWJGL3Window implements Window {
     public void syncViewport() {
         if (windowHandle == MemoryUtil.NULL) return;
         updateCachedDimensions();
-        Renderer.getRenderer().getRenderContext().setViewport(0, 0, cachedWidth, cachedHeight);
+        GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+        if (eventListener != null) {
+            eventListener.onResized(cachedWidth, cachedHeight);
+        }
     }
 
     @Override
@@ -452,7 +474,10 @@ public final class LWJGL3Window implements Window {
                             resized = true;
                             logger.info("[Window] Resized: Framebuffer " + cachedWidth + "x" + cachedHeight
                                     + " (Logical: " + cachedLogicalWidth + "x" + cachedLogicalHeight + ")");
-                            Renderer.getRenderer().getRenderContext().setViewport(0, 0, cachedWidth, cachedHeight);
+                            GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+                            if (eventListener != null) {
+                                eventListener.onResized(cachedWidth, cachedHeight);
+                            }
                         }
                     }
                     case SDL_EVENT_WINDOW_SHOWN, SDL_EVENT_WINDOW_RESTORED -> {
@@ -478,7 +503,7 @@ public final class LWJGL3Window implements Window {
                     }
                     case SDL_EVENT_WINDOW_FOCUS_GAINED -> {
                         active = true;
-                        if (Renderer.getRenderer().getSettings().window.fullscreen) {
+                        if (settings.fullscreen) {
                             long flags = SDL_GetWindowFlags(windowHandle);
                             boolean isMinimized = (flags & SDL_WINDOW_MINIMIZED) != 0;
                             if (isMinimized) {
@@ -500,7 +525,9 @@ public final class LWJGL3Window implements Window {
                         if (scancode == SDL_SCANCODE_F11 ||
                                 ((scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) && (mod
                                         & SDL_KMOD_ALT) != 0)) {
-                            Renderer.getRenderer().toggleFullscreen();
+                            if (eventListener != null) {
+                                eventListener.onToggleFullscreen();
+                            }
                         }
                     }
                 }
@@ -628,14 +655,16 @@ public final class LWJGL3Window implements Window {
 
             if (!fullscreen) {
                 SDL_SetWindowBordered(windowHandle, true);
-                Settings settings = Renderer.getRenderer().getSettings();
-                Vector2f logical = getLogicalSize(settings.window.view_width, settings.window.view_height);
+                Vector2f logical = getLogicalSize(settings.view_width, settings.view_height);
                 SDL_SetWindowSize(windowHandle, (int) logical.x, (int) logical.y);
                 SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
             }
 
             updateCachedDimensions();
-            Renderer.getRenderer().getRenderContext().setViewport(0, 0, cachedWidth, cachedHeight);
+            GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+            if (eventListener != null) {
+                eventListener.onResized(cachedWidth, cachedHeight);
+            }
         }
     }
 
@@ -748,7 +777,10 @@ public final class LWJGL3Window implements Window {
                 SDL_SyncWindow(windowHandle);
             }
             updateCachedDimensions();
-            Renderer.getRenderer().getRenderContext().setViewport(0, 0, cachedWidth, cachedHeight);
+            GL11.glViewport(0, 0, cachedWidth, cachedHeight);
+            if (eventListener != null) {
+                eventListener.onResized(cachedWidth, cachedHeight);
+            }
         }
     }
 

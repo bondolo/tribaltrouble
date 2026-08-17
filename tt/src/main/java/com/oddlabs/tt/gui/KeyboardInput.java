@@ -1,10 +1,11 @@
-package com.oddlabs.tt.input;
+package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.input.InputProvider;
+import com.oddlabs.tt.input.Key;
+import com.oddlabs.tt.input.Modifier;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;

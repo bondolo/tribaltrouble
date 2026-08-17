@@ -23,7 +23,7 @@ public record InputBinding(@NonNull Key key, int codepoint, @NonNull Set<@NonNul
         Objects.requireNonNull(modifiers, "modifiers");
         Objects.requireNonNull(action, "action");
 
-        modifiers = EnumSet.copyOf(modifiers);
+        modifiers = modifiers.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(modifiers);
     }
 
     public boolean matches(@NonNull KeyboardEvent event) {

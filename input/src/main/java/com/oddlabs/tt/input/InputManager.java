@@ -386,7 +386,7 @@ public final class InputManager implements PropertiesSerializer {
     private @NonNull String serializeBindings(@NonNull Collection<InputBinding> bindings) {
         return bindings.stream()
                 .map(b -> {
-                    if (b.codepoint() != 0) {
+                    if (b.codepoint() != -1) {
                         return "{\"char\":\"" + (char) b.codepoint() + "\"}";
                     }
                     return "{\"key\":\"" + b.key().name() + "\"" +

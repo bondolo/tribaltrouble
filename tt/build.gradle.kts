@@ -41,6 +41,8 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":simulation"))
     implementation(project(":net"))
+    implementation(project(":window"))
+    implementation(project(":input"))
     implementation(project(":assets"))
 }
 

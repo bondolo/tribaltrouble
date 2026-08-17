@@ -43,7 +43,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
 
     private final @NonNull LWJGL3Window window;
     private long windowHandle;
-    private @Nullable PointerInput pointerInput;
+    private @Nullable Runnable focusGainedCallback;
 
     // Keyboard State
     // @GuardedBy("this")
@@ -86,14 +86,14 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
         this.window = win;
     }
 
-    public void setPointerInput(@Nullable PointerInput pointerInput) {
-        this.pointerInput = pointerInput;
+    public void setFocusGainedCallback(@Nullable Runnable callback) {
+        this.focusGainedCallback = callback;
     }
 
     @Override
     public void onFocusGained() {
-        if (pointerInput != null) {
-            pointerInput.reapplyCursor();
+        if (focusGainedCallback != null) {
+            focusGainedCallback.run();
         }
     }
 

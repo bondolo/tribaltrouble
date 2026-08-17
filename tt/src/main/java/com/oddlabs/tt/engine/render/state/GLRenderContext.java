@@ -1,8 +1,8 @@
 package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.window.SerializableDisplayMode;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
