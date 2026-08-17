@@ -2,6 +2,9 @@ package com.oddlabs.tt.gui;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Mouse button identifiers.
+ */
 public enum MouseButton {
     LEFT,
     RIGHT,

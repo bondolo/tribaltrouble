@@ -22,6 +22,7 @@ import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.window.LWJGL3Window;
+import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.net.Network;
 import com.oddlabs.util.Color;
@@ -114,6 +115,7 @@ public final class Renderer implements AutoCloseable {
             throw new UncheckedIOException(e);
         }
         settings = new Settings(gamePaths.dataDir());
+        window.setSettings(settings.window);
     }
 
     public static float getFPS() {

@@ -19,7 +19,7 @@ import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.render.SerializableDisplayMode;
+import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
 import org.jspecify.annotations.NonNull;
 

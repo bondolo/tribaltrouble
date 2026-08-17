@@ -5,10 +5,8 @@ import com.oddlabs.tt.settings.Settings;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
-import com.oddlabs.tt.input.KeyboardInput;
 import com.oddlabs.tt.input.LWJGL3InputProvider;
 import com.oddlabs.tt.input.Modifier;
-import com.oddlabs.tt.input.PointerInput;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.Window;
@@ -60,7 +58,7 @@ public final class LocalInput implements AutoCloseable {
             LWJGL3InputProvider p = new LWJGL3InputProvider(win);
             this.inputProvider = p;
             this.pointerInput = new PointerInput(p, this);
-            p.setPointerInput(this.pointerInput);
+            p.setFocusGainedCallback(this.pointerInput::reapplyCursor);
         } else {
             throw new IllegalStateException("Window is not LWJGL3Window");
         }

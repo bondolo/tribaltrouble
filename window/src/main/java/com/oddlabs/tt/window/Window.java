@@ -1,8 +1,8 @@
 package com.oddlabs.tt.window;
 
-import com.oddlabs.tt.engine.render.SerializableDisplayMode;
 import org.joml.Vector2f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -11,6 +11,13 @@ import java.util.List;
  */
 public interface Window extends AutoCloseable {
     void create(@NonNull SerializableDisplayMode mode, boolean fullscreen);
+
+    @NonNull
+    WindowSettings getSettings();
+
+    void setSettings(@NonNull WindowSettings settings);
+
+    void setEventListener(@Nullable WindowEventListener listener);
 
     @Override
     void close();

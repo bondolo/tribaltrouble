@@ -1,13 +1,8 @@
-package com.oddlabs.tt.input;
+package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.gui.Cursor;
-import com.oddlabs.tt.gui.CursorType;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.LocalInput;
-import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.gui.CursorFile;
+import com.oddlabs.tt.input.InputProvider;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

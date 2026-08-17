@@ -6,13 +6,16 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Represents a keyboard event with key code, character codepoint, and active modifiers.
+ */
 public record KeyboardEvent(@NonNull Key keyCode, int keyCodepoint, @NonNull Set<@NonNull Modifier> modifiers,
                             int clicks) {
     public KeyboardEvent {
         Objects.requireNonNull(keyCode, "keyCode");
         Objects.requireNonNull(modifiers, "modifiers");
 
-        modifiers = EnumSet.copyOf(modifiers);
+        modifiers = modifiers.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(modifiers);
     }
 
     public KeyboardEvent(@NonNull Key keyCode, int keyCodepoint, boolean shiftDown, boolean controlDown,

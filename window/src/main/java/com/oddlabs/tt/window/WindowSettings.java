@@ -1,4 +1,4 @@
-package com.oddlabs.tt.settings;
+package com.oddlabs.tt.window;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
 import org.jspecify.annotations.NonNull;
