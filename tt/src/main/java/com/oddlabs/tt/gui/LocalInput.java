@@ -42,7 +42,7 @@ public final class LocalInput implements AutoCloseable {
 
     private final @NonNull Window window;
     private final @NonNull InputProvider<?> inputProvider;
-    private final InputManager inputManager = new InputManager();
+    private final @NonNull InputManager inputManager;
     private final KeyboardInput keyboardInput = new KeyboardInput();
     private final @NonNull PointerInput pointerInput;
 
@@ -54,6 +54,7 @@ public final class LocalInput implements AutoCloseable {
 
     public LocalInput(@NonNull Window lwjglWindow) {
         this.window = lwjglWindow;
+        this.inputManager = InputManager.current();
         if (lwjglWindow instanceof LWJGL3Window win) {
             LWJGL3InputProvider p = new LWJGL3InputProvider(win);
             this.inputProvider = p;
@@ -172,7 +173,6 @@ public final class LocalInput implements AutoCloseable {
         logger.config("revision = " + revision);
         this.game_dir = game_dir;
         this.revision = revision;
-        settings.setBindingHandler(inputManager);
         settings.last_event_log_dir = event_log_dir.toAbsolutePath();
         settings.last_revision = revision;
         settings.crashed = true;

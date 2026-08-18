@@ -5,6 +5,7 @@ import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
@@ -35,7 +36,7 @@ public final class FirstPersonCamera extends Camera {
 
         float scrolling_x = 0;
         float scrolling_y = 0;
-        var inputManager = LocalInput.getLocalInput().getInputManager();
+        var inputManager = InputManager.current();
         if (inputManager.isActive(GameAction.CAMERA_PAN_LEFT) && !inputManager.isActive(GameAction.CAMERA_PAN_RIGHT))
             scrolling_x = -1f;
         else if (inputManager.isActive(GameAction.CAMERA_PAN_RIGHT) && !inputManager.isActive(

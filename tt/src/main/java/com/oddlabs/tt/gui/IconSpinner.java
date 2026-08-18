@@ -2,6 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.base.util.Utils;
@@ -42,14 +43,14 @@ public abstract class IconSpinner extends GUIObject {
                 .getHeight());
 
         button_plus = new IconSpinnerButton(Skin.getSkin().getPlusButton(), action,
-                () -> i18n("increase", LocalInput.getLocalInput().getInputManager().getBindingString(action)),
+                () -> i18n("increase", InputManager.current().getBindingString(action)),
                 this);
         button_plus.setPos(0, 0);
         button_plus.addMouseButtonListener(new IncreaseListener());
         addChild(button_plus);
 
         button_minus = new IconSpinnerButton(Skin.getSkin().getMinusButton(), dec_action,
-                () -> i18n("decrease", LocalInput.getLocalInput().getInputManager().getBindingString(dec_action)),
+                () -> i18n("decrease", InputManager.current().getBindingString(dec_action)),
                 this);
         button_minus.setPos(button_plus.getWidth(), 0);
         button_minus.addMouseButtonListener(new DecreaseListener());

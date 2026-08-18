@@ -8,6 +8,7 @@ import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -205,7 +206,7 @@ public final class GameCamera extends Camera {
     private void doScroll(float time_delta) {
         if (!viewer.getGUIRoot().getDelegate().canScroll())
             return;
-        var inputManager = LocalInput.getLocalInput().getInputManager();
+        var inputManager = InputManager.current();
         float scroll_speed = scroll_start_speed * (.4f + (scroll_acceleration_seconds / SCROLL_ACCELERATION_SECONDS_MAX)
                 * SCROLL_ACCELERATION_FACTOR);
         float scroll_factor = time_delta * scroll_speed;
@@ -367,7 +368,7 @@ public final class GameCamera extends Camera {
     }
 
     private boolean scrollSpeedLocked(@Nullable GameAction action) {
-        var inputManager = LocalInput.getLocalInput().getInputManager();
+        var inputManager = InputManager.current();
         return scroll_x != 0
                 || scroll_y != 0
                 || (inputManager.isActive(GameAction.CAMERA_PAN_UP) && action != GameAction.CAMERA_PAN_UP)
@@ -459,7 +460,7 @@ public final class GameCamera extends Camera {
             return;
         }
 
-        var inputManager = LocalInput.getLocalInput().getInputManager();
+        var inputManager = InputManager.current();
         pitch_up = inputManager.isActive(GameAction.CAMERA_PITCH_UP);
         pitch_down = inputManager.isActive(GameAction.CAMERA_PITCH_DOWN);
         rotate_right = inputManager.isActive(GameAction.CAMERA_ROTATE_RIGHT);

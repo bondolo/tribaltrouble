@@ -1,6 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.client.render.GUIRenderer;
@@ -16,7 +17,7 @@ public class ChieftainButton extends NonFocusIconButton {
     public ChieftainButton(@NonNull WorldViewer viewer, @NonNull PlayerInterface player_interface,
             @NonNull ModeIconQuads icon) {
         super(icon, GameAction.TRAIN_CHIEFTAIN, () -> ActionButtonPanel.i18n(
-                "train_chieftain_tip", LocalInput.getLocalInput().getInputManager().getBindingString(
+                "train_chieftain_tip", InputManager.current().getBindingString(
                         GameAction.TRAIN_CHIEFTAIN)));
         this.player_interface = player_interface;
         setCanFocus(true);
