@@ -1,5 +1,7 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import org.jspecify.annotations.NonNull;
 
 public record MapIslandData(@NonNull ModeIconQuads button,

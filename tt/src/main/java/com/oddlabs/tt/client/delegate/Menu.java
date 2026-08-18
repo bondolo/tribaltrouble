@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.delegate;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.MenuCamera;
 import com.oddlabs.tt.gui.form.ConnectingForm;

@@ -1,5 +1,7 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.FontFile;

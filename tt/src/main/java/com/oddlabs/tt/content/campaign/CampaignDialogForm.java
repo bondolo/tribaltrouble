@@ -4,7 +4,7 @@ import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.gui.HorizButton;
-import com.oddlabs.tt.gui.IconQuad;
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.OKButton;

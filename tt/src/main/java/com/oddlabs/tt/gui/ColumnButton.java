@@ -1,7 +1,9 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.font.Font;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import org.jspecify.annotations.NonNull;
 
 public final class ColumnButton<T> extends RadioButtonGroupElement {

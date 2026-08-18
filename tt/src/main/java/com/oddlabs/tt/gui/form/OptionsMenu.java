@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui.form;
 
-import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.gui.GUIRoot;
 import org.jspecify.annotations.NonNull;
 

@@ -73,6 +73,6 @@ public abstract class AbstractOptionsMenu extends Form {
     }
 
     protected void changeGamespeed(int index) {
-        com.oddlabs.tt.Globals.gamespeed = index;
+        com.oddlabs.tt.engine.Globals.gamespeed = index;
     }
 }

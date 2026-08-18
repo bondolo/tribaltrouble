@@ -1,8 +1,9 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.ReproduceUnitContainer;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
