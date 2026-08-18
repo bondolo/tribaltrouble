@@ -13,6 +13,7 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
@@ -92,7 +93,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         addChild(getViewer().getPanel());
         chat_form = new InGameChatForm(getViewer().getGUIRoot().getInfoPrinter(), getViewer());
         chat_form.addCloseListener(() -> {
-            if (LocalInput.getLocalInput().getInputManager().isActive(GameAction.GLOBAL_CHAT)) {
+            if (InputManager.current().isActive(GameAction.GLOBAL_CHAT)) {
                 close_chat_override = true;
             }
             chat_visible = false;
@@ -527,7 +528,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     public void mousePressed(@NonNull MouseButton button, int x, int y) {
         if (!map_mode) {
             if (!observer) {
-                var inputManager = LocalInput.getLocalInput().getInputManager();
+                var inputManager = InputManager.current();
                 switch (button) {
                     case LEFT -> {
                         if (!inputManager.isActive(GameAction.CAMERA_MAP_MODE)) {

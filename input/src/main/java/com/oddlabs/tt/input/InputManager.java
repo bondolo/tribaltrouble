@@ -28,6 +28,25 @@ import com.oddlabs.tt.base.global.PropertiesSerializer;
  */
 public final class InputManager implements PropertiesSerializer {
     private static final Logger logger = Logger.getLogger(InputManager.class.getName());
+
+    /**
+     * Scoped value representing the active {@link InputManager} in the execution context.
+     */
+    public static final ScopedValue<InputManager> CURRENT = ScopedValue.newInstance();
+
+    /**
+     * Retrieves the active {@link InputManager} from the current scope.
+     *
+     * @return The active {@link InputManager}.
+     * @throws IllegalStateException If no {@link InputManager} is bound in the current scope.
+     */
+    public static @NonNull InputManager current() {
+        if (!CURRENT.isBound()) {
+            throw new IllegalStateException("InputManager is not bound in the current scope");
+        }
+        return CURRENT.get();
+    }
+
     private static final Map<GameAction, NavigableSet<InputBinding>> DEFAULT_BINDINGS = new EnumMap<>(GameAction.class);
 
     static {

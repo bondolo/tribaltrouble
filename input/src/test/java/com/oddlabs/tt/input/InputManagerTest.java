@@ -9,9 +9,23 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InputManagerTest {
+
+    @Test
+    void testScopedValueResolution() {
+        assertThrows(IllegalStateException.class, InputManager::current);
+
+        InputManager manager = new InputManager();
+        ScopedValue.where(InputManager.CURRENT, manager).run(() -> {
+            assertSame(manager, InputManager.current());
+        });
+
+        assertThrows(IllegalStateException.class, InputManager::current);
+    }
 
     @Test
     void testDefaultBindingsNotNull() {

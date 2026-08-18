@@ -10,6 +10,7 @@ import com.oddlabs.tt.client.delegate.RallyPointDelegate;
 import com.oddlabs.tt.client.delegate.TargetDelegate;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.model.Abilities;
@@ -487,7 +488,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     }
 
     private static @NonNull String getBinding(@NonNull GameAction action) {
-        return LocalInput.getLocalInput().getInputManager().getBindingString(action);
+        return InputManager.current().getBindingString(action);
     }
 
     @Override

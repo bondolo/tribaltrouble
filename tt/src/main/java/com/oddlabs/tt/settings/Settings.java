@@ -70,8 +70,6 @@ public final class Settings implements Serializable, PropertiesSerializer {
     public final boolean hide_multiplayer = true;
     public final int frame_grab_milliseconds_per_frame = 40;
 
-    private @Nullable PropertiesSerializer binding_handler;
-
     public Settings() {
         this(null);
     }
@@ -105,8 +103,11 @@ public final class Settings implements Serializable, PropertiesSerializer {
         return serializer;
     }
 
+    /**
+     * Retrieves a registered {@link PropertiesSerializer} by its class, or creates and registers a new instance.
+     */
     @SuppressWarnings("unchecked")
-    private <T extends PropertiesSerializer> @NonNull T getOrCreate(@NonNull Class<T> type,
+    public <T extends PropertiesSerializer> @NonNull T getOrCreate(@NonNull Class<T> type,
             @NonNull Supplier<T> fallback) {
         T serializer = (T) serializers.get(type);
         if (serializer == null) {
@@ -121,10 +122,6 @@ public final class Settings implements Serializable, PropertiesSerializer {
      */
     public void registerSerializer(@NonNull PropertiesSerializer serializer) {
         serializers.put(serializer.getClass(), serializer);
-    }
-
-    public void setBindingHandler(@Nullable PropertiesSerializer handler) {
-        binding_handler = handler;
     }
 
     public boolean inDeveloperMode() {
@@ -180,9 +177,6 @@ public final class Settings implements Serializable, PropertiesSerializer {
         for (PropertiesSerializer serializer : serializers.values()) {
             serializer.saveToProperties(props);
         }
-
-        if (binding_handler != null)
-            binding_handler.saveToProperties(props);
     }
 
     @Override
@@ -196,9 +190,6 @@ public final class Settings implements Serializable, PropertiesSerializer {
         for (PropertiesSerializer serializer : serializers.values()) {
             serializer.loadFromProperties(props);
         }
-
-        if (binding_handler != null)
-            binding_handler.loadFromProperties(props);
     }
 
     @Serial

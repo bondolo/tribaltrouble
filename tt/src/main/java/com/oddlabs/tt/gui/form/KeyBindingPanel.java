@@ -1,7 +1,5 @@
 package com.oddlabs.tt.gui.form;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -17,6 +15,7 @@ import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.window.LWJGL3Window;
@@ -65,7 +64,7 @@ public class KeyBindingPanel extends Panel {
             @Override
             public void rowDoubleClicked(@NonNull GameAction action) {
                 gui_root.addModalForm(new KeyBindingDialog(gui_root, action, bindings -> {
-                    LocalInput.getLocalInput().getInputManager().setBindings(action, bindings);
+                    InputManager.current().setBindings(action, bindings);
                     updateList();
                 }));
             }
@@ -78,7 +77,7 @@ public class KeyBindingPanel extends Panel {
         HorizButton btn_reset = new HorizButton(AbstractOptionsMenu.i18n("btn_reset_all"), 100);
         btn_reset.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new QuestionForm(AbstractOptionsMenu.i18n(
                 "confirm_reset_all"), (_, _, _, _) -> {
-                    LocalInput.getLocalInput().getInputManager().resetToDefaults();
+                    InputManager.current().resetToDefaults();
                     updateList();
                 })));
         button_group.addChild(btn_reset);
@@ -121,7 +120,7 @@ public class KeyBindingPanel extends Panel {
                 name = action.name();
             }
 
-            var bindings = LocalInput.getLocalInput().getInputManager().getBindings(action);
+            var bindings = InputManager.current().getBindings(action);
             Label bindingLabel;
 
             if (bindings.isEmpty()) {
@@ -171,7 +170,7 @@ public class KeyBindingPanel extends Panel {
                                 if (ptr != MemoryUtil.NULL) {
                                     String path = MemoryUtil.memUTF8(ptr);
                                     if (path != null) {
-                                        String json = LocalInput.getLocalInput().getInputManager().exportBindings();
+                                        String json = InputManager.current().exportBindings();
                                         try {
                                             Files.writeString(Path.of(path), json);
                                         } catch (IOException e) {
@@ -233,7 +232,7 @@ public class KeyBindingPanel extends Panel {
                             if (path != null) {
                                 try {
                                     String json = Files.readString(Path.of(path));
-                                    LocalInput.getLocalInput().getInputManager().importBindings(json);
+                                    InputManager.current().importBindings(json);
                                 } catch (IOException e) {
                                     gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("error_load_failed",
                                             e.getMessage())));
