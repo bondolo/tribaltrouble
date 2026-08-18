@@ -1,7 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
@@ -563,8 +561,8 @@ public final class Picker implements Updatable<TimerAnimation> {
 
     public Optional<LandscapeLocation> pickLocation(@NonNull CameraState camera) {
         int[] viewport = new int[4];
-        int x = LocalInput.getLocalInput().getMouseX();
-        int y = LocalInput.getLocalInput().getMouseY();
+        int x = gui_root.getMouseX();
+        int y = gui_root.getMouseY();
         setupPicking(camera, x, y, PICK_SIZE, PICK_SIZE, viewport);
 
         return !nearestLandscape(x, y, viewport) ? Optional.empty() : Optional.of(new LandscapeLocation(patch_hit_x,

@@ -85,8 +85,12 @@ public final class Main {
                 Menu.initNetwork(network);
                 localInput.init();
                 var gamePaths = Renderer.getRenderer().getGamePaths();
-                localInput.settings(gamePaths.dataDir(), gamePaths.logDir(), Renderer.getRenderer().getSettings());
-                GUI gui = new GUI();
+                var settings = Renderer.getRenderer().getSettings();
+                settings.last_event_log_dir = gamePaths.logDir().toAbsolutePath();
+                settings.crashed = true;
+                settings.save();
+                settings.crashed = false;
+                GUI gui = new GUI(localInput);
                 Runnable loadTask = Menu.setupMainMenu(network, gui, firstProgress);
                 return new ClientStartup.Session(gui, loadTask);
             }, args);

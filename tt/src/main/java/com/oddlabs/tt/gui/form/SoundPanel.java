@@ -1,7 +1,5 @@
 package com.oddlabs.tt.gui.form;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -28,6 +26,9 @@ public class SoundPanel extends Panel {
 
     public SoundPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("sound_caption"));
+
+        boolean audioCreated = Renderer.getRenderer().getEventQueue().getDeterministic().log(
+                Renderer.getRenderer().getAudioManager() != null);
 
         // Sound
         Group group_music = new Group();
@@ -66,7 +67,7 @@ public class SoundPanel extends Panel {
         slider_music.place(label_music_low, RIGHT_MID);
         label_music_high.place(slider_music, RIGHT_MID);
         group_music.compileCanvas();
-        group_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !LocalInput.getLocalInput().audioIsCreated());
+        group_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !audioCreated);
 
         Group group_sound = new Group();
         addChild(group_sound);
@@ -103,7 +104,6 @@ public class SoundPanel extends Panel {
         slider_sound.place(label_sound_low, RIGHT_MID);
         label_sound_high.place(slider_sound, RIGHT_MID);
         group_sound.compileCanvas();
-        boolean audioCreated = LocalInput.getLocalInput().audioIsCreated();
         group_sound.setDisabled(!audioCreated);
 
         // Audio Output

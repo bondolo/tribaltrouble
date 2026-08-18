@@ -1,19 +1,16 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.settings.Settings;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.LWJGL3InputProvider;
 import com.oddlabs.tt.input.Modifier;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.Window;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
-import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -27,16 +24,6 @@ public final class LocalInput implements AutoCloseable {
     public static final int CURSOR_ONE_BIT_TRANSPARENCY = 1;
     public static final int CURSOR_8_BIT_ALPHA = 2;
 
-    private static @Nullable LocalInput instance;
-
-    public static @NonNull LocalInput getLocalInput() {
-        LocalInput inst = instance;
-        if (inst == null) {
-            throw new IllegalStateException("LocalInput is not initialized");
-        }
-        return inst;
-    }
-
     private int mouse_x;
     private int mouse_y;
 
@@ -49,9 +36,6 @@ public final class LocalInput implements AutoCloseable {
     private final Set<@NonNull Key> keys = EnumSet.noneOf(Key.class);
     private final Set<@NonNull Modifier> global_modifiers = EnumSet.noneOf(Modifier.class);
 
-    private @Nullable Path game_dir;
-    private int revision;
-
     public LocalInput(@NonNull Window lwjglWindow) {
         this.window = lwjglWindow;
         this.inputManager = InputManager.current();
@@ -63,7 +47,6 @@ public final class LocalInput implements AutoCloseable {
         } else {
             throw new IllegalStateException("Window is not LWJGL3Window");
         }
-        instance = this;
     }
 
     public void poll(@NonNull GUIRoot root) {
@@ -149,35 +132,6 @@ public final class LocalInput implements AutoCloseable {
 
     public int getMouseX() {
         return mouse_x;
-    }
-
-    public boolean audioIsCreated() {
-        return Renderer.getRenderer().getEventQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager()
-                != null);
-    }
-
-    public @Nullable Path getGameDir() {
-        return game_dir;
-    }
-
-    public int getRevision() {
-        return revision;
-    }
-
-    public void settings(@NonNull Path game_dir, @NonNull Path event_log_dir, @NonNull Settings settings) {
-        setSettings(game_dir, event_log_dir, revision, settings);
-    }
-
-    public void setSettings(@NonNull Path game_dir, @NonNull Path event_log_dir, int revision,
-            @NonNull Settings settings) {
-        logger.config("revision = " + revision);
-        this.game_dir = game_dir;
-        this.revision = revision;
-        settings.last_event_log_dir = event_log_dir.toAbsolutePath();
-        settings.last_revision = revision;
-        settings.crashed = true;
-        settings.save();
-        settings.crashed = false;
     }
 
     public void init() {

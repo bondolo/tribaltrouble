@@ -1,7 +1,5 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.AnimationManager;
@@ -385,8 +383,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
         Renderer.getRenderer().setMusic(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
         gui_root.pushDelegate(main_menu);
-        if (first_progress && Renderer.getRenderer().getSettings().audio.warning_no_sound && !LocalInput.getLocalInput()
-                .audioIsCreated()) {
+        if (first_progress && Renderer.getRenderer().getSettings().audio.warning_no_sound && !Renderer.getRenderer()
+                .getEventQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager() != null)) {
             gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
                     "sound_not_available_message")));
         }

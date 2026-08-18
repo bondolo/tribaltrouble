@@ -81,12 +81,6 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
         super(new NativeCursor(image, xHot, yHot));
     }
 
-    @Override
-    public void close() {
-        LocalInput.getLocalInput().getPointerInput().deletingCursor(this);
-        super.close();
-    }
-
     public long getCursor() {
         return state.cursor;
     }

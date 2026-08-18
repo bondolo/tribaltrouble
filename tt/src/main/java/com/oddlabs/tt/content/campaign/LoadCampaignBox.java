@@ -1,7 +1,5 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.gui.form.MessageForm;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.ColumnInfo;
@@ -74,7 +72,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     }
 
     private static @NonNull Path getSaveSavegamesFile() {
-        return LocalInput.getLocalInput().getGameDir().resolve(SAVEGAMES_FILE_NAME);
+        return Renderer.getRenderer().getGamePaths().dataDir().resolve(SAVEGAMES_FILE_NAME);
     }
 
     public static <T> void loadSavegames(@NonNull DeterministicSerializerLoopbackInterface<T> callback) {
