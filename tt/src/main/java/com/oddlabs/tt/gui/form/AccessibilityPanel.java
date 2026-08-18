@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui.form;
 
 import com.oddlabs.tt.simulation.model.CVDMode;
-import com.oddlabs.tt.settings.AccessibilitySettings;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -14,7 +14,7 @@ import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.TitledBorderGroup;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;

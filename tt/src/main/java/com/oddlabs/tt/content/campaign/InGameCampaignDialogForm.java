@@ -1,6 +1,6 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.gui.IconQuad;
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;

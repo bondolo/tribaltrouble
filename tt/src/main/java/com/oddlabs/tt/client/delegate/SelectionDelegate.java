@@ -22,7 +22,7 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.Notification;

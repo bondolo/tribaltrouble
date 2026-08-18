@@ -1,9 +1,11 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.render.TextLineRenderer;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

@@ -3,10 +3,11 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.client.render.Index;
 import com.oddlabs.tt.client.render.TextLineRenderer;
 import com.oddlabs.tt.engine.font.TextLayout;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

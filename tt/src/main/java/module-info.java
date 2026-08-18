@@ -8,6 +8,7 @@ module com.oddlabs.tt {
     requires com.oddlabs.tt.input;
     requires com.oddlabs.tt.audio;
     requires com.oddlabs.tt.audio.openal;
+    requires com.oddlabs.tt.engine;
     requires org.joml;
     requires static org.jspecify;
     requires java.desktop;
@@ -21,7 +22,4 @@ module com.oddlabs.tt {
     requires kotlin.stdlib;
 
     uses com.oddlabs.tt.base.global.PropertiesSerializer;
-
-    provides com.oddlabs.tt.base.global.PropertiesSerializer with
-            com.oddlabs.tt.settings.AccessibilitySettings;
 }

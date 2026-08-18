@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.client.render.UIRenderer;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.util.Color;

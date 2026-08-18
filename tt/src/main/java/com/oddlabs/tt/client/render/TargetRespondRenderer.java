@@ -4,7 +4,7 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;

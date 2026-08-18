@@ -7,7 +7,7 @@ import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.gui.Fadable;
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.IconQuad;
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;

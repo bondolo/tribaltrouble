@@ -7,7 +7,7 @@ import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;

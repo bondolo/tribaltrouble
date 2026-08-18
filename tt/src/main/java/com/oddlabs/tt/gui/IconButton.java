@@ -1,7 +1,8 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

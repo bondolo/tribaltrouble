@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.camera;
 import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
-import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;

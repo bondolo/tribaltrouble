@@ -1,5 +1,7 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.simulation.model.BuildProductionContainer;
 import com.oddlabs.tt.simulation.model.BuildSupplyContainer;
 import com.oddlabs.tt.simulation.model.Building;

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
 import org.jspecify.annotations.NonNull;
 
 public interface CampaignIcons {

@@ -1,9 +1,11 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.IconQuad;
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputManager;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;

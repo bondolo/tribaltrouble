@@ -19,4 +19,4 @@ pluginManagement {
 include("assets", "base", "common")
 // server and servlet excluded - have compilation errors
 // include("server", "servlet")
-include("audio", "audio-openal", "input", "net", "procedural", "simulation", "tools", "tt", "window")
+include("audio", "audio-openal", "engine", "input", "net", "procedural", "simulation", "tools", "tt", "window")

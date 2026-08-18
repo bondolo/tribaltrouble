@@ -3,6 +3,7 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

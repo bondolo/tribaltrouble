@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.LinkedList;
 import com.oddlabs.util.ListElementImpl;
 import org.jspecify.annotations.NonNull;

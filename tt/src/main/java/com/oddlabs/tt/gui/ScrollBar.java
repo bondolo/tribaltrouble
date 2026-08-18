@@ -1,11 +1,12 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.gui.event.MouseMotionListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import org.jspecify.annotations.NonNull;
 
 public final class ScrollBar extends GUIObject {

@@ -5,7 +5,7 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.BoundingMode;
-import com.oddlabs.tt.Globals;
+import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.tt.engine.render.shader.ParticleShader;

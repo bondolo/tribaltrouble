@@ -16,7 +16,7 @@ import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.input.InputManager;
-import com.oddlabs.tt.client.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.util.Color;
