@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.resource.GLImage;
-import com.oddlabs.tt.engine.resource.NativeResource;
+import com.oddlabs.tt.base.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDL_Surface;
 import org.lwjgl.system.MemoryUtil;

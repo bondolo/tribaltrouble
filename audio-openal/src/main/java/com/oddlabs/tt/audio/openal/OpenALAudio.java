@@ -1,7 +1,7 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.engine.resource.NativeResource;
+import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;

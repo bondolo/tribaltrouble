@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.resource;
+package com.oddlabs.tt.base.resource;
 
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.NonNull;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.render.shader;
 
 import com.oddlabs.tt.engine.render.state.ScopedState;
-import com.oddlabs.tt.engine.resource.NativeResource;
+import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;

@@ -4,7 +4,7 @@ import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioSource;
-import com.oddlabs.tt.engine.resource.NativeResource;
+import com.oddlabs.tt.base.resource.NativeResource;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -1,13 +1,13 @@
-package com.oddlabs.tt.engine.resource;
+package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.audio.Audio;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.base.resource.File;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.ref.SoftReference;
+import java.net.URI;
 
 /**
  * A resource handle for an audio file.
@@ -16,6 +16,15 @@ public final class AudioFile extends File<Audio> {
     private final boolean streaming;
 
     private @Nullable SoftReference<Audio> audio;
+
+    public AudioFile(@NonNull URI uri) {
+        this(uri, uri.toString().contains("/music/"));
+    }
+
+    public AudioFile(@NonNull URI uri, boolean streaming) {
+        super(uri);
+        this.streaming = streaming;
+    }
 
     public AudioFile(@NonNull String location) {
         this(location, location.contains("/music/"));
@@ -31,7 +40,7 @@ public final class AudioFile extends File<Audio> {
         Audio audio = null == this.audio ? null : this.audio.get();
         if (null == audio) {
             try {
-                audio = Renderer.getRenderer().getAudioManager().createAudio(getURL());
+                audio = AudioManager.current().createAudio(getURL());
                 this.audio = new SoftReference<>(audio);
             } catch (IOException ex) {
                 throw new UncheckedIOException("Could not load " + this.getURL(), ex);

@@ -4,7 +4,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.engine.resource.GLImage;
-import com.oddlabs.tt.engine.resource.NativeResource;
+import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.util.OpenGLException;

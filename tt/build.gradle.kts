@@ -43,6 +43,8 @@ dependencies {
     implementation(project(":net"))
     implementation(project(":window"))
     implementation(project(":input"))
+    implementation(project(":audio"))
+    implementation(project(":audio-openal"))
     implementation(project(":assets"))
 }
 

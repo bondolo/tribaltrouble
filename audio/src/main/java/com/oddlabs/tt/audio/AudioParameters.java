@@ -1,6 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import com.oddlabs.tt.engine.resource.AudioFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -49,7 +48,8 @@ public record AudioParameters(
         this(audio, rank, distance, gain, radius, 1f);
     }
 
-    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius, float pitch) {
+    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius,
+            float pitch) {
         this(audio, rank, distance, gain, radius, pitch, false, false, false);
     }
 
