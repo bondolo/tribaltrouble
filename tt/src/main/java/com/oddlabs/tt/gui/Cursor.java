@@ -1,6 +1,6 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.engine.resource.GLImage;
+import com.oddlabs.tt.procedural.GLImage;
 import com.oddlabs.tt.base.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDL_Surface;

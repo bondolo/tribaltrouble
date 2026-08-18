@@ -1,5 +1,6 @@
 package com.oddlabs.tt.engine.resource;
 
+import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import org.jspecify.annotations.NonNull;
 
@@ -12,7 +13,6 @@ import org.jspecify.annotations.NonNull;
  * @param detail the detail texture
  * @param detailNormal the detail normal map
  * @param fog_info the fog rendering configuration
- * @param blend_infos the terrain layer blending definitions
  * @param <T> the texture type
  */
 public record WorldInfo<T>(
@@ -20,8 +20,7 @@ public record WorldInfo<T>(
                            Maps<T> maps,
                            @NonNull T detail,
                            @NonNull T detailNormal,
-                           @NonNull FogInfo fog_info,
-                           @NonNull BlendInfo @NonNull [] blend_infos) {
+                           @NonNull FogInfo fog_info) {
 
     public record Maps<T>(T diffuse, T normal) {
     }

@@ -7,8 +7,12 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
+import com.oddlabs.tt.procedural.BlendInfo;
+import com.oddlabs.tt.procedural.GLImage;
+import com.oddlabs.tt.procedural.GeneratedLandscapeData;
+import com.oddlabs.tt.procedural.Landscape;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -98,7 +102,6 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
         ProgressListener.progress();
         LandscapeData landscapeData = new GeneratedLandscapeData(config, landscape);
         return new WorldInfo<>(landscapeData, maps, detail, detailNormal,
-                Landscape.getFogInfo(config.terrain(), config.metersPerWorld()),
-                blend_infos);
+                DistanceFogInfo.forTerrain(config.terrain(), config.metersPerWorld()));
     }
 }

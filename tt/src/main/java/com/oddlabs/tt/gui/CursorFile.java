@@ -2,7 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.base.resource.File;
-import com.oddlabs.tt.engine.resource.GLIntImage;
+import com.oddlabs.tt.procedural.GLIntImage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

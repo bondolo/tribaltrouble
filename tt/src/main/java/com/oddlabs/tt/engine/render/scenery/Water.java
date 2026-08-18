@@ -5,7 +5,7 @@ import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.procedural.GeneratorOcean;
+import com.oddlabs.tt.engine.procedural.GeneratorOcean;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PatchMesh;

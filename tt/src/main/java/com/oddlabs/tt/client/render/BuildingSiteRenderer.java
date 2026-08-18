@@ -5,7 +5,7 @@ import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.resource.GLIntImage;
+import com.oddlabs.tt.procedural.GLIntImage;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
