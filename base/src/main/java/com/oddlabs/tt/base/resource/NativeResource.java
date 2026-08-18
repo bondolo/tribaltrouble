@@ -1,7 +1,7 @@
-package com.oddlabs.tt.engine.resource;
+package com.oddlabs.tt.base.resource;
 
-import com.oddlabs.tt.engine.util.GLUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.Cleaner;
 import java.util.Objects;
@@ -22,8 +22,21 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
     private static final Logger logger = Logger.getLogger(NativeResource.class.getSimpleName());
     private static final Cleaner cleaner = Cleaner.create();
 
-    // Queue for OpenGL cleanup tasks to be executed on the GL thread
-    private static final Queue<@NonNull Runnable> glCleanupTasks = new ConcurrentLinkedQueue<>();
+    /**
+     * Queue for cleanup tasks to be executed on the app thread via {@link #processCleanupTasks()}. This is usually
+     * the thread with a specific context such as the OpenGL context.
+     */
+    private static final Queue<Runnable> cleanupTasks = new ConcurrentLinkedQueue<>();
+    private static volatile @Nullable Consumer<@NonNull String> errorChecker = null;
+
+    /**
+     * Sets an error checker callback to check for errors after running a cleanup task.
+     *
+     * @param checker The error checker callback.
+     */
+    public static void setErrorChecker(@Nullable Consumer<@NonNull String> checker) {
+        errorChecker = checker;
+    }
 
     /**
      * Adds an OpenGL cleanup task to a queue to be processed on the GL thread.
@@ -31,23 +44,25 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
      *
      * @param task The Runnable task to execute on the GL thread for cleanup.
      */
-    public static void addGLCleanupTask(@NonNull Runnable task) {
-        glCleanupTasks.add(task);
+    public static void addCleanupTask(@NonNull Runnable task) {
+        cleanupTasks.add(task);
     }
 
     /**
-     * Processes all pending OpenGL cleanup tasks. This method must be called from the thread
-     * that has the OpenGL context current (e.g., the main rendering thread).
+     * Processes all pending cleanup tasks. This method must be called from the thread that has the appropriate context
+     * current (e.g., the main rendering thread).
      */
-    public static void processGLCleanupTasks() {
+    public static void processCleanupTasks() {
         Runnable task;
-        while ((task = glCleanupTasks.poll()) != null) {
+        while ((task = cleanupTasks.poll()) != null) {
             try {
                 task.run();
-                // Check for errors after each task to isolate issues
-                GLUtils.checkGLError("After closing resource " + task.getClass().getSimpleName());
+                Consumer<String> checker = errorChecker;
+                if (checker != null) {
+                    checker.accept("After closing resource " + task.getClass().getSimpleName());
+                }
             } catch (Throwable t) {
-                logger.log(Level.SEVERE, "Error during OpenGL cleanup task execution", t);
+                logger.log(Level.SEVERE, "Error during cleanup task execution", t);
             }
         }
     }
@@ -86,7 +101,7 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
     protected final @NonNull R state;
 
     public NativeResource(@NonNull R state) {
-        this(state, NativeResource::addGLCleanupTask);
+        this(state, NativeResource::addCleanupTask);
     }
 
     protected NativeResource(@NonNull R state, @NonNull Consumer<@NonNull Runnable> cleanupStrategy) {

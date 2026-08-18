@@ -1,5 +1,6 @@
 package com.oddlabs.tt.settings;
 
+import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.PropertiesSerializer;

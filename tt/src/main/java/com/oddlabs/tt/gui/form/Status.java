@@ -4,7 +4,7 @@ import com.oddlabs.tt.client.render.TextLineRenderer;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.client.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.resource.NativeResource;
+import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 

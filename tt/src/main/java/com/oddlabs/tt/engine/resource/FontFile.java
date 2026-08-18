@@ -1,5 +1,6 @@
 package com.oddlabs.tt.engine.resource;
 
+import com.oddlabs.tt.base.resource.File;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.util.FontInfo;
 import org.jspecify.annotations.NonNull;

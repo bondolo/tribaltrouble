@@ -2,7 +2,7 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.resource.NativeResource;
+import com.oddlabs.tt.base.resource.NativeResource;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
