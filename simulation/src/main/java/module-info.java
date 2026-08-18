@@ -13,4 +13,8 @@ module com.oddlabs.tt.simulation {
     exports com.oddlabs.tt.simulation.player;
     exports com.oddlabs.tt.simulation.trigger;
     exports com.oddlabs.tt.simulation.util;
+
+    opens com.oddlabs.tt.simulation.landscape;
+    opens com.oddlabs.tt.simulation.model;
+    opens com.oddlabs.tt.simulation.player;
 }

@@ -79,8 +79,8 @@
 			<skeleton>vikings/peon/peon_skeleton.xml</skeleton>
 			<model r="90" g="60" b="30">
 				misc/rock_fragment_viking.xml
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorRock"/>
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorIron"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorRock"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorIron"/>
 			</model>
 			<animation name="idle" wpc="1" type="loop">vikings/peon/peon_idle.xml</animation>
 			<animation name="run" wpc="3.85" type="loop">vikings/peon/peon_run.xml</animation>
@@ -269,8 +269,8 @@
 			<skeleton>natives/peon/peon_skeleton.xml</skeleton>
 			<model r="90" g="60" b="30">
 				misc/rock_fragment_native.xml
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorRock"/>
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorIron"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorRock"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorIron"/>
 			</model>
 			<animation name="idle" wpc="1" type="loop">natives/peon/peon_idle.xml</animation>
 			<animation name="run" wpc="3.625" type="loop">natives/peon/peon_run.xml</animation>
@@ -520,36 +520,36 @@
 		<sprite name="rock_1" scale="5">
 			<model r="90" g="60" b="30">
 				misc/rock_fragment_1.xml
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorRock"/>
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorIron"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorRock"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorIron"/>
 			</model>
 		</sprite>
 		<sprite name="rock_2" scale="5">
 			<model r="90" g="60" b="30">
 				misc/rock_fragment_02.xml
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorRock"/>
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorIron"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorRock"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorIron"/>
 			</model>
 		</sprite>
 		<sprite name="rock_3" scale="5">
 			<model r="90" g="60" b="30">
 				misc/rock_fragment_03.xml
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorRock"/>
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorIron"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorRock"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorIron"/>
 			</model>
 		</sprite>
 		<sprite name="rock_4" scale="5">
 			<model r="90" g="60" b="30">
 				misc/rock_fragment_04.xml
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorRock"/>
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorIron"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorRock"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorIron"/>
 			</model>
 		</sprite>
 		<sprite name="rock_5" scale="5">
 			<model r="90" g="60" b="30">
 				misc/rock_fragment_05.xml
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorRock"/>
-				<texture name="Generator:com.oddlabs.tt.procedural.GeneratorIron"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorRock"/>
+				<texture name="Generator:com.oddlabs.tt.engine.procedural.GeneratorIron"/>
 			</model>
 		</sprite>
 		

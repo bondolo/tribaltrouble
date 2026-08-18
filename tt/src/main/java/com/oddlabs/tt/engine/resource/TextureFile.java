@@ -3,6 +3,8 @@ package com.oddlabs.tt.engine.resource;
 import com.oddlabs.tt.Globals;
 import com.oddlabs.tt.base.resource.File;
 import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.procedural.GLImage;
+import com.oddlabs.tt.procedural.GLIntImage;
 import com.oddlabs.util.DXTImage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

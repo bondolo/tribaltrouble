@@ -13,7 +13,8 @@ import java.util.stream.IntStream;
  * Completely decoupled from graphics/rendering systems.
  */
 public final class RacesResources {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName(),
+            ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES));
 
     private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
         return Utils.getBundleString(bundle, key, args);

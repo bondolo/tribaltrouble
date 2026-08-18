@@ -1,6 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.engine.resource.FogInfo;
+import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;

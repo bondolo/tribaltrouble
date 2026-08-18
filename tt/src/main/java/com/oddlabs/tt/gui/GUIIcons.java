@@ -5,8 +5,8 @@ import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.resource.GLImage;
-import com.oddlabs.tt.engine.resource.GLIntImage;
+import com.oddlabs.tt.procedural.GLImage;
+import com.oddlabs.tt.procedural.GLIntImage;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
@@ -32,7 +32,6 @@ public class GUIIcons {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private static final Color.Standard WATCH_MIDPOINT_COLOR = new Color.Standard(0xFFDCE202);
     private static final int WATCH_RIM_COLOR_INT = new Color.Standard(0.75f, 1.0f).toInt();
     private static final int WATCH_NUM_ICONS = 25;
     private static final int WATCH_ICON_SIZE = 64;
@@ -162,20 +161,12 @@ public class GUIIcons {
         for (int i = 0; i < WATCH_NUM_ICONS; i++) {
             float progress = i / (float) (WATCH_NUM_ICONS - 1);
 
-            int r;
-            int g;
-            int b;
-            if (progress < 0.5f) {
-                float t = progress * 2.0f;
-                r = Math.clamp(Math.round(255.0f * (1.0f - t) + WATCH_MIDPOINT_COLOR.r() * 255.0f * t), 0, 255);
-                g = Math.clamp(Math.round(WATCH_MIDPOINT_COLOR.g() * 255.0f * t), 0, 255);
-                b = Math.clamp(Math.round(WATCH_MIDPOINT_COLOR.b() * 255.0f * t), 0, 255);
-            } else {
-                float t = (progress - 0.5f) * 2.0f;
-                r = Math.clamp(Math.round(WATCH_MIDPOINT_COLOR.r() * 255.0f * (1.0f - t)), 0, 255);
-                g = Math.clamp(Math.round(WATCH_MIDPOINT_COLOR.g() * 255.0f * (1.0f - t) + 255.0f * t), 0, 255);
-                b = Math.clamp(Math.round(WATCH_MIDPOINT_COLOR.b() * 255.0f * (1.0f - t)), 0, 255);
-            }
+            float fill = progress;
+            float rFloat = 1.0f - fill * fill * fill;
+            float gFloat = 1.0f - (1.0f - fill) * (1.0f - fill) * (1.0f - fill);
+            int r = Math.clamp(Math.round(255.0f * rFloat), 0, 255);
+            int g = Math.clamp(Math.round(255.0f * gFloat), 0, 255);
+            int b = 0;
             // GLIntImage expects 0xAABBGGRR for GL_RGBA
             int fillColor = (255 << 24) | (b << 16) | (g << 8) | r;
 

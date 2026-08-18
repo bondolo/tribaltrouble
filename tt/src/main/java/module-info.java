@@ -2,6 +2,7 @@ module com.oddlabs.tt {
     requires com.oddlabs.common;
     requires com.oddlabs.tt.base;
     requires com.oddlabs.tt.simulation;
+    requires com.oddlabs.tt.procedural;
     requires com.oddlabs.tt.net;
     requires com.oddlabs.tt.window;
     requires com.oddlabs.tt.input;

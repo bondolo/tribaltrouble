@@ -4,7 +4,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
 import com.oddlabs.tt.Globals;
-import com.oddlabs.tt.procedural.GeneratorRespond;
+import com.oddlabs.tt.engine.procedural.GeneratorRespond;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.simulation.model.BoundingBox;
@@ -230,7 +230,18 @@ public final class Sprite {
         if (texture_name.startsWith(GENERATOR_STRING)) {
             String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
             try {
-                Class<?> generator_class = Class.forName(generator_class_name);
+                Class<?> generator_class;
+                try {
+                    generator_class = Class.forName(generator_class_name);
+                } catch (ClassNotFoundException e) {
+                    if (generator_class_name.startsWith("com.oddlabs.tt.procedural.")) {
+                        String fallback_class_name = "com.oddlabs.tt.engine.procedural."
+                                + generator_class_name.substring("com.oddlabs.tt.procedural.".length());
+                        generator_class = Class.forName(fallback_class_name);
+                    } else {
+                        throw e;
+                    }
+                }
                 @SuppressWarnings("unchecked") Supplier<Texture[]> descriptor = (Supplier<Texture[]>) generator_class
                         .getDeclaredConstructor().newInstance();
                 return Resources.findResource(descriptor);

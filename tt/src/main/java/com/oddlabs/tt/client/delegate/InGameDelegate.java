@@ -15,7 +15,7 @@ import com.oddlabs.tt.simulation.model.SupplySpawnAnimation;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.resource.FogInfo;
+import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;

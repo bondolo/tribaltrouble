@@ -2,12 +2,15 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
-import com.oddlabs.tt.engine.resource.BlendInfo;
-import com.oddlabs.tt.engine.resource.BlendLighting;
-import com.oddlabs.tt.engine.resource.BlendOcclusion;
-import com.oddlabs.tt.engine.resource.StructureBlend;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.vbo.QuadVBO;
+import com.oddlabs.tt.procedural.BlendInfo;
+import com.oddlabs.tt.procedural.BlendLighting;
+import com.oddlabs.tt.procedural.BlendOcclusion;
+import com.oddlabs.tt.procedural.GLByteImage;
+import com.oddlabs.tt.procedural.GLImage;
+import com.oddlabs.tt.procedural.GLIntImage;
+import com.oddlabs.tt.procedural.StructureBlend;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -16,6 +19,8 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.oddlabs.tt.engine.util.GLUtils.checkGLError;
 
@@ -146,10 +151,27 @@ public final class LandscapeBaker {
         this.worldSize = worldSize;
     }
 
+    private static @NonNull Texture createAlphaMap(@NonNull GLByteImage alpha_image) {
+        GLImage[] mipmaps = alpha_image.buildMipMaps(0, 1.0f, true, false);
+        return new Texture(mipmaps, GL30.GL_R8, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT,
+                GL11.GL_REPEAT);
+    }
+
+    private static @NonNull Texture createStructureMap(@NonNull GLIntImage structure_image) {
+        return new Texture(new GLIntImage[]{structure_image}, GL21.GL_SRGB8, GL11.GL_LINEAR, GL11.GL_LINEAR,
+                GL11.GL_REPEAT, GL11.GL_REPEAT);
+    }
+
+    private static @NonNull Texture createNormalMap(@NonNull GLIntImage normal_image) {
+        return new Texture(new GLIntImage[]{normal_image}, GL11.GL_RGB, GL11.GL_LINEAR, GL11.GL_LINEAR,
+                GL11.GL_REPEAT, GL11.GL_REPEAT);
+    }
+
     public WorldInfo.@NonNull Maps<Texture> bake(@NonNull BlendInfo @NonNull [] blendInfos) {
         checkGLError("Before bake");
         Texture[] diffuse = new Texture[2];
         Texture[] normal = new Texture[2];
+        List<Texture> tempTextures = new ArrayList<>();
 
         for (int i = 0; i < 2; i++) {
             diffuse[i] = new Texture(colormapSize, colormapSize, GL21.GL_SRGB8_ALPHA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
@@ -215,22 +237,29 @@ public final class LandscapeBaker {
                             needsClear = false;
                         }
 
+                        Texture alphaMap = createAlphaMap(info.getSourceImage());
+                        tempTextures.add(alphaMap);
+
                         GL13.glActiveTexture(GL13.GL_TEXTURE0);
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, diffuse[src].getHandle());
                         GL13.glActiveTexture(GL13.GL_TEXTURE2);
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, normal[src].getHandle());
                         GL13.glActiveTexture(GL13.GL_TEXTURE4);
-                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, info.getAlphaMap().getHandle());
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, alphaMap.getHandle());
                         GL13.glActiveTexture(GL13.GL_TEXTURE5);
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, heightMap.getHandle());
 
                         switch (info) {
                             case StructureBlend sb -> {
                                 shader.setUniform("u_Mode", 0);
+                                Texture structMap = createStructureMap(sb.getStructureImage());
+                                Texture normMap = createNormalMap(sb.getNormalImage());
+                                tempTextures.add(structMap);
+                                tempTextures.add(normMap);
                                 GL13.glActiveTexture(GL13.GL_TEXTURE1);
-                                GL11.glBindTexture(GL11.GL_TEXTURE_2D, sb.getStructureMap().getHandle());
+                                GL11.glBindTexture(GL11.GL_TEXTURE_2D, structMap.getHandle());
                                 GL13.glActiveTexture(GL13.GL_TEXTURE3);
-                                GL11.glBindTexture(GL11.GL_TEXTURE_2D, sb.getNormalMap().getHandle());
+                                GL11.glBindTexture(GL11.GL_TEXTURE_2D, normMap.getHandle());
                             }
                             case BlendLighting bl -> {
                                 shader.setUniform("u_Mode", 1);
@@ -270,6 +299,10 @@ public final class LandscapeBaker {
 
                 return new WorldInfo.Maps<>(diffuse[current], normal[current]);
             } finally {
+                // Clean up temporary blend textures
+                for (Texture t : tempTextures) {
+                    t.close();
+                }
                 // Restore state
                 GL11.glViewport(viewport.get(0), viewport.get(1), viewport.get(2), viewport.get(3));
                 GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, savedFBO);
