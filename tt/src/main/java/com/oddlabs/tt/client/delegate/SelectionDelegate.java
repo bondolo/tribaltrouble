@@ -1,7 +1,5 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
@@ -475,7 +473,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
                         }
                     }
                 }
-                if (LocalInput.getLocalInput().isShiftDownCurrently() && getViewer().getSelection()
+                if (getGUIRoot().isShiftDown() && getViewer().getSelection()
                         .getCurrentSelection()
                         .size() > 0)
                     updateSelection(friendly_units, friendly_building, enemy);

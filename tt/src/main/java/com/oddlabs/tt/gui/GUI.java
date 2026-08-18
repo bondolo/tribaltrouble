@@ -21,20 +21,31 @@ import org.jspecify.annotations.Nullable;
  * Container for the 2D user interface
  */
 public final class GUI implements Animated, FrameDriver {
+    private final @NonNull LocalInput localInput;
     private final GUIRenderer guiRenderer = new GUIRenderer();
-    private @NonNull GUIRoot current_root = createRoot();
+    private @NonNull GUIRoot current_root;
     private @Nullable Fade fade;
     private @Nullable UIRenderer renderer;
     private final CameraState frustum_state = new CameraState();
     private final AmbientAudio ambient;
 
-    public GUI() {
+    public GUI(@NonNull LocalInput localInput) {
+        this.localInput = localInput;
         this.ambient = new AmbientAudio(Renderer.getRenderer().getAudioManager());
+        this.current_root = createRoot();
+    }
+
+    public GUI() {
+        this(new LocalInput(Renderer.getRenderer().getWindow()));
+    }
+
+    public @NonNull LocalInput getLocalInput() {
+        return localInput;
     }
 
     @Override
     public void tick(@NonNull NetworkSelector network) {
-        LocalInput.getLocalInput().poll(getGUIRoot());
+        localInput.poll(getGUIRoot());
     }
 
     @Override
@@ -145,7 +156,6 @@ public final class GUI implements Animated, FrameDriver {
         CameraState camera = guiRoot.getDelegate().getCamera().getState();
         GUIObject gui_hit = guiRoot.getCurrentGUIObject();
         if (renderer != null) {
-            var localInput = LocalInput.getLocalInput();
             renderer.pickHover(gui_hit.canHoverBehind(), camera, localInput.getMouseX(), localInput.getMouseY());
         }
     }

@@ -1,7 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.effects.render.EmitterRenderer;
 import com.oddlabs.tt.effects.render.LightningRenderer;
 import com.oddlabs.tt.effects.render.SonicBlastRenderer;
@@ -160,8 +158,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     @Override
     public void pickHover(boolean can_hover_behind, @NonNull CameraState camera, int x, int y) {
         if (can_hover_behind) {
-            var localInput = LocalInput.getLocalInput();
-            picker.pickHoverPhysical(camera, localInput.getMouseX(), localInput.getMouseY());
+            picker.pickHoverPhysical(camera, x, y);
         } else {
             picker.resetCurrentHovered();
         }

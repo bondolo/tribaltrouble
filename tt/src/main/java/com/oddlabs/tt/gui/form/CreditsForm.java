@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui.form;
 
-import com.oddlabs.tt.gui.LocalInput;
-
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
@@ -47,7 +46,7 @@ public final class CreditsForm extends Form {
         Panel about = new Panel(i18n("about"));
         TextBox about_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
         about.addChild(about_box);
-        String about_text = i18n("about_text", Integer.toString(LocalInput.getLocalInput().getRevision()));
+        String about_text = i18n("about_text", Integer.toString(Renderer.getRenderer().getSettings().last_revision));
         about_box.append(about_text);
 
         about_box.place();

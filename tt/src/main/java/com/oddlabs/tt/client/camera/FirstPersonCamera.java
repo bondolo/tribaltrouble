@@ -1,9 +1,6 @@
 package com.oddlabs.tt.client.camera;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.engine.render.CameraState;
-
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
@@ -22,9 +19,9 @@ public final class FirstPersonCamera extends Camera {
     public FirstPersonCamera(@NonNull WorldViewer viewer, LandscapeEnvironment heightmap, @NonNull CameraState camera) {
         super(heightmap, camera);
         this.viewer = viewer;
-        var localInput = LocalInput.getLocalInput();
-        this.last_x = localInput.getMouseX();
-        this.last_y = localInput.getMouseY();
+        var guiRoot = viewer.getGUIRoot();
+        this.last_x = guiRoot.getMouseX();
+        this.last_y = guiRoot.getMouseY();
     }
 
     @Override
@@ -61,17 +58,17 @@ public final class FirstPersonCamera extends Camera {
 
     @Override
     public void mouseMoved(int x, int y) {
-        // Ignore logical x/y; use physical coordinates from LocalInput to maintain constant
+        // Ignore logical x/y; use physical coordinates from GUIRoot to maintain constant
         // rotation sensitivity and match PointerInput locking requirements.
-        var localInput = LocalInput.getLocalInput();
-        int dx = localInput.getMouseX() - last_x;
-        int dy = localInput.getMouseY() - last_y;
+        var guiRoot = viewer.getGUIRoot();
+        int dx = guiRoot.getMouseX() - last_x;
+        int dy = guiRoot.getMouseY() - last_y;
         getState().setTargetHorizAngle(getState().getTargetHorizAngle() - dx * SCALE_HORIZ);
         if (Renderer.getRenderer().getSettings().control.invert_camera_pitch)
             getState().setTargetVertAngle(getState().getTargetVertAngle() - dy * SCALE_VERT);
         else
             getState().setTargetVertAngle(getState().getTargetVertAngle() + dy * SCALE_VERT);
 
-        LocalInput.getLocalInput().getPointerInput().setCursorPosition(last_x, last_y);
+        guiRoot.setCursorPosition(last_x, last_y);
     }
 }

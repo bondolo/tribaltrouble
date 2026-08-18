@@ -1,7 +1,5 @@
 package com.oddlabs.tt.client.camera;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
@@ -470,8 +468,8 @@ public final class GameCamera extends Camera {
     @Override
     public void enable() {
         super.enable();
-        var localInput = LocalInput.getLocalInput();
-        float scale = viewer.getGUIRoot().getGlobalScale();
-        mouseMoved(Math.round(localInput.getMouseX() / scale), Math.round(localInput.getMouseY() / scale));
+        var guiRoot = viewer.getGUIRoot();
+        float scale = guiRoot.getGlobalScale();
+        mouseMoved(Math.round(guiRoot.getMouseX() / scale), Math.round(guiRoot.getMouseY() / scale));
     }
 }

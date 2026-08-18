@@ -75,7 +75,47 @@ public final class GUIRoot extends GUIObject {
         addChild(info_printer);
         info_printer.setPos(0, 0);
         pushDelegate(new NullDelegate(this, false));
-        LocalInput.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
+        gui.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
+    }
+
+    public @NonNull LocalInput getLocalInput() {
+        return gui.getLocalInput();
+    }
+
+    public int getMouseX() {
+        return gui.getLocalInput().getMouseX();
+    }
+
+    public int getMouseY() {
+        return gui.getLocalInput().getMouseY();
+    }
+
+    public boolean isShiftDown() {
+        return gui.getLocalInput().isShiftDownCurrently();
+    }
+
+    public boolean isControlDown() {
+        return gui.getLocalInput().isControlDownCurrently();
+    }
+
+    public boolean isAltDown() {
+        return gui.getLocalInput().isAltDownCurrently();
+    }
+
+    public boolean isSuperDown() {
+        return gui.getLocalInput().isSuperDownCurrently();
+    }
+
+    public void setCursorPosition(int x, int y) {
+        gui.getLocalInput().getPointerInput().setCursorPosition(x, y);
+    }
+
+    public void setActiveCursor(@NonNull CursorType type) {
+        gui.getLocalInput().getPointerInput().setActiveCursor(type);
+    }
+
+    public void resetInput() {
+        gui.getLocalInput().resetKeyboard();
     }
 
     @Override
@@ -277,7 +317,7 @@ public final class GUIRoot extends GUIObject {
         float density = Renderer.getRenderer().getWindow().getPixelDensity();
         physical_scale = effective_scale * density;
 
-        var pointerInput = LocalInput.getLocalInput().getPointerInput();
+        var pointerInput = gui.getLocalInput().getPointerInput();
         pointerInput.loadCursors(effective_scale, density);
 
         int virtualWidth = (int) (width / effective_scale);
@@ -343,7 +383,7 @@ public final class GUIRoot extends GUIObject {
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_RESET_CURSOR)) {
-                        LocalInput.getLocalInput().getInputProvider().setCursorPosition(10, 10);
+                        gui.getLocalInput().getInputProvider().setCursorPosition(10, 10);
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_DETAIL)) {
@@ -403,8 +443,8 @@ public final class GUIRoot extends GUIObject {
     }
 
     void mousePick() {
-        mousePick(Math.round(LocalInput.getLocalInput().getMouseX() / effective_scale),
-                Math.round(LocalInput.getLocalInput().getMouseY() / effective_scale));
+        mousePick(Math.round(gui.getLocalInput().getMouseX() / effective_scale),
+                Math.round(gui.getLocalInput().getMouseY() / effective_scale));
     }
 
     private void mousePick(int x, int y) {
@@ -427,7 +467,7 @@ public final class GUIRoot extends GUIObject {
             current_gui_object = target;
             current_gui_object.mouseEnteredAll();
             if (!current_gui_object.isDisabled())
-                LocalInput.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
+                gui.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
         }
     }
 
@@ -506,8 +546,8 @@ public final class GUIRoot extends GUIObject {
         tool_tip.clear();
         hovered.appendToolTip(tool_tip);
         tool_tip.render(renderer,
-                Math.round(LocalInput.getLocalInput().getMouseX() / effective_scale),
-                Math.round(LocalInput.getLocalInput().getMouseY() / effective_scale) - CURSOR_OFFSET_Y,
+                Math.round(gui.getLocalInput().getMouseX() / effective_scale),
+                Math.round(gui.getLocalInput().getMouseY() / effective_scale) - CURSOR_OFFSET_Y,
                 getWidth(), getHeight());
     }
 }

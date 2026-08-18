@@ -87,7 +87,7 @@ public final class InputState {
 
     public void mousePressed(@NonNull MouseButton button) {
         GUIObject gui_hit = pick();
-        var localInput = LocalInput.getLocalInput();
+        var localInput = gui_root.getLocalInput();
         float scale = gui_root.getGlobalScale();
         int scaledX = Math.round(localInput.getMouseX() / scale);
         int scaledY = Math.round(localInput.getMouseY() / scale);
@@ -123,7 +123,7 @@ public final class InputState {
 
     public void mouseReleased(@NonNull MouseButton button) {
         GUIObject gui_hit = pick();
-        var localInput = LocalInput.getLocalInput();
+        var localInput = gui_root.getLocalInput();
         float scale = gui_root.getGlobalScale();
         int scaledX = Math.round(localInput.getMouseX() / scale);
         int scaledY = Math.round(localInput.getMouseY() / scale);
@@ -169,7 +169,7 @@ public final class InputState {
     }
 
     private boolean clickedSameArea() {
-        var localInput = LocalInput.getLocalInput();
+        var localInput = gui_root.getLocalInput();
         return Math.abs(localInput.getMouseX() - clicked_x) < DOUBLE_CLICK_THRESHOLD && Math.abs(localInput.getMouseY()
                 - clicked_y) < DOUBLE_CLICK_THRESHOLD;
     }

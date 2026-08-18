@@ -1,7 +1,5 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.gui.LocalInput;
-
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.gui.event.EventListener;
 import com.oddlabs.tt.gui.MouseButton;
@@ -68,10 +66,10 @@ public abstract class ControllableCameraDelegate<C extends Camera> extends InGam
 
     @Override
     public final boolean canScroll() {
-        var localInput = LocalInput.getLocalInput();
-        float scale = getGUIRoot().getGlobalScale();
-        mouseMoved(Math.round(localInput.getMouseX() / scale), Math.round(localInput.getMouseY() / scale));
-        return getGUIRoot().getModalDelegate() == null;
+        var guiRoot = getGUIRoot();
+        float scale = guiRoot.getGlobalScale();
+        mouseMoved(Math.round(guiRoot.getMouseX() / scale), Math.round(guiRoot.getMouseY() / scale));
+        return guiRoot.getModalDelegate() == null;
     }
 
     @Override

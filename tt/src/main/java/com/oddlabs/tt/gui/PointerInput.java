@@ -147,12 +147,6 @@ public final class PointerInput {
         provider.setNativeCursor(useCursor.getCursor());
     }
 
-    public void deletingCursor(@NonNull Cursor cursor) {
-        if (active_cursor == cursor) {
-            doSetActiveCursor(Cursor.NULL_CURSOR);
-        }
-    }
-
     private void updateMouse(@NonNull GUIRoot gui_root, int x, int y, int dz, int dx) {
         if (x != last_x || y != last_y) {
             last_x = (short) x;
