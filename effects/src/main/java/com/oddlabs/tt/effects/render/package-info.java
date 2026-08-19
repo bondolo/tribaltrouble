@@ -1,7 +1,7 @@
 /**
  * Rendering extensions for visual particle effects, lightning, sonic blasts, and spell decals.
  */
+@NullMarked
 package com.oddlabs.tt.effects.render;
 
-
-import com.oddlabs.tt.engine.render.*;
+import org.jspecify.annotations.NullMarked;

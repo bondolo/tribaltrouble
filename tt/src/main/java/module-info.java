@@ -9,6 +9,7 @@ module com.oddlabs.tt {
     requires com.oddlabs.tt.audio;
     requires com.oddlabs.tt.audio.openal;
     requires com.oddlabs.tt.engine;
+    requires com.oddlabs.tt.effects;
     requires org.joml;
     requires static org.jspecify;
     requires java.desktop;

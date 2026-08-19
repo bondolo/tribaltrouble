@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":audio"))
     implementation(project(":audio-openal"))
     implementation(project(":engine"))
+    implementation(project(":effects"))
     implementation(project(":assets"))
 
     testImplementation(platform(libs.junit.bom))
