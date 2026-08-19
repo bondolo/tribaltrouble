@@ -48,7 +48,8 @@ dependencies {
     implementation(project(":audio-openal"))
     implementation(project(":engine"))
     implementation(project(":effects"))
-    implementation(project(":gui"))
+    implementation(project(":client"))
+    implementation(project(":content"))
     implementation(project(":assets"))
 
     testImplementation(platform(libs.junit.bom))

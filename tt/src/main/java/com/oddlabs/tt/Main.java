@@ -1,6 +1,6 @@
 package com.oddlabs.tt;
 
-import com.oddlabs.tt.client.delegate.Menu;
+import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.client.render.ClientStateInitializer;

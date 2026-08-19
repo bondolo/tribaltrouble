@@ -11,6 +11,8 @@ module com.oddlabs.tt {
     requires com.oddlabs.tt.engine;
     requires com.oddlabs.tt.effects;
     requires com.oddlabs.tt.gui;
+    requires com.oddlabs.tt.client;
+    requires com.oddlabs.tt.content;
     requires org.joml;
     requires static org.jspecify;
     requires java.desktop;
