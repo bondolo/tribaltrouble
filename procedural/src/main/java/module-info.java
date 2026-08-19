@@ -1,6 +1,6 @@
 module com.oddlabs.tt.procedural {
-    requires transitive com.oddlabs.common;
-    requires transitive com.oddlabs.tt.base;
+    requires com.oddlabs.common;
+    requires com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
     requires org.joml;
     requires org.jspecify;

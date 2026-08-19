@@ -1,8 +1,8 @@
 module com.oddlabs.tt.audio.openal {
     requires transitive com.oddlabs.tt.audio;
-    requires transitive com.oddlabs.tt.base;
-    requires transitive com.oddlabs.common;
-    requires transitive org.joml;
+    requires com.oddlabs.tt.base;
+    requires com.oddlabs.common;
+    requires org.joml;
     requires static org.jspecify;
     requires java.desktop;
     requires java.logging;

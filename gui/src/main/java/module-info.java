@@ -2,9 +2,9 @@ module com.oddlabs.tt.gui {
     requires transitive com.oddlabs.tt.engine;
     requires transitive com.oddlabs.tt.input;
     requires transitive com.oddlabs.tt.window;
-    requires transitive com.oddlabs.tt.audio;
-    requires transitive com.oddlabs.tt.base;
-    requires transitive com.oddlabs.common;
+    requires com.oddlabs.tt.audio;
+    requires com.oddlabs.tt.base;
+    requires com.oddlabs.common;
     requires com.oddlabs.tt.procedural;
     requires org.joml;
     requires static org.jspecify;

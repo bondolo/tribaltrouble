@@ -16,13 +16,13 @@ lwjgl {
 }
 
 dependencies {
-    api(project(":base"))
-    api(project(":common"))
+    implementation(project(":base"))
+    implementation(project(":common"))
     api(project(":window"))
     api(project(":input"))
-    api(project(":audio"))
+    implementation(project(":audio"))
     api(project(":engine"))
-    api(project(":procedural"))
+    implementation(project(":procedural"))
     api(libs.joml)
     compileOnlyApi(libs.jspecify)
 
