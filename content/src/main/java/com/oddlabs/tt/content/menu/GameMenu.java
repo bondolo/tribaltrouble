@@ -1,0 +1,634 @@
+package com.oddlabs.tt.content.menu;
+
+import com.oddlabs.matchmaking.Game;
+import java.io.Serializable;
+import com.oddlabs.matchmaking.GameSession;
+import com.oddlabs.matchmaking.MatchmakingServerInterface;
+import com.oddlabs.tt.content.form.GameInfoForm;
+import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.content.form.ProgressForm;
+import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.gui.Box;
+import com.oddlabs.tt.gui.Diode;
+import com.oddlabs.tt.gui.EditLine;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.FormData;
+import com.oddlabs.tt.gui.GUIObject;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.Panel;
+import com.oddlabs.tt.gui.PulldownButton;
+import com.oddlabs.tt.gui.PulldownItem;
+import com.oddlabs.tt.gui.PulldownMenu;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.TextBox;
+import com.oddlabs.tt.gui.event.EnterListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.RacesResources;
+import com.oddlabs.tt.net.ChatMessage;
+import com.oddlabs.tt.net.Client;
+import com.oddlabs.tt.net.ConfigurationListener;
+import com.oddlabs.tt.net.ChatListener;
+import com.oddlabs.tt.net.GameNetwork;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
+import com.oddlabs.tt.client.viewer.ChatCommand;
+import com.oddlabs.tt.client.viewer.LoadCallback;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.base.util.Utils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+import static com.oddlabs.tt.gui.Placement.TOP_RIGHT;
+
+/**
+ * UI panel representing the multiplayer lobby game setup and slots configuration menu.
+ */
+public final class GameMenu extends Panel implements ConfigurationListener, ChatListener {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(GameMenu.class.getName());
+
+    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+        return Utils.getBundleString(bundle, key, args);
+    }
+
+    private enum SlotOption {
+        OPEN(PlayerSlot.AI_NONE),
+        CLOSED(PlayerSlot.AI_NONE),
+        COMPUTER_EASY(PlayerSlot.AI_EASY),
+        COMPUTER_NORMAL(PlayerSlot.AI_NORMAL),
+        COMPUTER_HARD(PlayerSlot.AI_HARD);
+
+        private final int aiDifficulty;
+
+        SlotOption(int aiDifficulty) {
+            this.aiDifficulty = aiDifficulty;
+        }
+
+        int getAIDifficulty() {
+            return aiDifficulty;
+        }
+
+        static @NonNull SlotOption fromAIDifficulty(int difficulty) {
+            return switch (difficulty) {
+                case PlayerSlot.AI_EASY -> COMPUTER_EASY;
+                case PlayerSlot.AI_NORMAL -> COMPUTER_NORMAL;
+                case PlayerSlot.AI_HARD -> COMPUTER_HARD;
+                default -> OPEN;
+            };
+        }
+    }
+
+    private static final int SEND_BUTTON_WIDTH = 60;
+
+    private static final int RATING_WIDTH = 80;
+
+    private final PulldownButton<SlotOption> @NonNull [] slot_buttons;
+    private final PulldownButton<Race> @NonNull [] race_buttons;
+    private final PulldownButton<Integer> @NonNull [] team_buttons;
+    private final Label @NonNull [] ratings;
+    private final @NonNull Label chat_info;
+    private final @NonNull TextBox chat_box;
+    private final @NonNull EditLine chat_line;
+    private final Diode @NonNull [] ready_marks;
+    private final @NonNull HorizButton ready_button;
+    private final @NonNull HorizButton start_button;
+    private final SelectGameMenu owner;
+    private final GUIRoot gui_root;
+    private final int local_player_slot;
+    private final boolean rated;
+    private final @NonNull Game game;
+    private final @NonNull GameNetwork game_network;
+    private @NonNull SortedSet<String> human_names = new TreeSet<>();
+
+    private boolean updating;
+    private boolean ready;
+
+    @SuppressWarnings("unchecked")
+    public GameMenu(@NonNull GameNetwork game_network, GUIRoot gui_root, SelectGameMenu owner, @NonNull Game game,
+            WorldGenerator generator, int player_slot, int compare_width, int compare_height, int button_width) {
+        super(i18n("game_caption"));
+        this.game_network = game_network;
+        this.owner = owner;
+        this.gui_root = gui_root;
+        this.local_player_slot = player_slot;
+        this.rated = game.isRated();
+        this.game = game;
+
+        String tag = rated ? i18n("rated") + " " : "";
+        Label game_name_label = new Label(i18n("game") + " " + tag + game.getName(), Skin.getSkin().getHeadlineFont());
+
+        slot_buttons = (PulldownButton<SlotOption>[]) new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
+        race_buttons = (PulldownButton<Race>[]) new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
+        team_buttons = (PulldownButton<Integer>[]) new PulldownButton[MatchmakingServerInterface.MAX_PLAYERS];
+        ready_marks = new Diode[MatchmakingServerInterface.MAX_PLAYERS];
+        ratings = new Label[MatchmakingServerInterface.MAX_PLAYERS];
+        Group player_group = new Group();
+        GUIObject previous = null;
+        for (int i = 0; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
+            previous = createPlayerPulldown(gui_root, player_group, previous, slot_buttons, race_buttons, team_buttons,
+                    ready_marks, ratings, i, MatchmakingServerInterface.MAX_PLAYERS);
+        }
+        player_group.compileCanvas();
+        addChild(player_group);
+
+        Box pdata = Skin.getSkin().getPanelData().box();
+        FormData fdata = Skin.getSkin().getFormData();
+
+        int width = compare_width - pdata.getLeftOffset() - pdata.getRightOffset();
+        chat_info = new Label(i18n("chat"), Skin.getSkin().getEditFont(), width);
+        Group chat_line_group = new Group();
+        chat_line = new EditLine(width - SEND_BUTTON_WIDTH - fdata.objectSpacing(), 100);
+        var send_button = new HorizButton(i18n("send"), SEND_BUTTON_WIDTH);
+        send_button.addMouseClickListener(new SendListener());
+        chat_line_group.addChild(chat_line);
+        chat_line.place();
+        chat_line_group.addChild(send_button);
+        send_button.place(chat_line, RIGHT_MID);
+        chat_line_group.compileCanvas();
+        addChild(chat_line_group);
+
+        chat_line.addEnterListener(new ChatListener());
+        addChild(game_name_label);
+        addChild(chat_info);
+
+        start_button = new HorizButton(i18n("start"), button_width);
+        if (local_player_slot == 0) {
+            addChild(start_button);
+            start_button.addMouseClickListener(new StartListener());
+        }
+        int height = compare_height - pdata.getTopOffset() - pdata.getBottomOffset() - chat_info.getHeight()
+                - chat_line.getHeight() - game_name_label.getHeight() - player_group.getHeight() - start_button
+                        .getHeight() - 5 * fdata.objectSpacing();
+        chat_box = new TextBox(width, height, Skin.getSkin().getEditFont(), Integer.MAX_VALUE);
+        addChild(chat_box);
+        ready_button = new HorizButton(i18n("ready"), button_width);
+        addChild(ready_button);
+        ready_button.addMouseClickListener(new ReadyListener());
+        HorizButton cancel_button = new HorizButton(i18n("cancel"), button_width);
+        addChild(cancel_button);
+        cancel_button.addMouseClickListener(new CancelButtonListener());
+        HorizButton info_button = new HorizButton(i18n("info"), button_width);
+        addChild(info_button);
+        info_button.addMouseClickListener(new InfoButtonListener());
+
+        game_name_label.place();
+        player_group.place(game_name_label, BOTTOM_LEFT);
+        chat_info.place(player_group, BOTTOM_LEFT);
+        chat_box.place(chat_info, BOTTOM_LEFT);
+        chat_line_group.place(chat_box, BOTTOM_LEFT);
+        cancel_button.place(chat_line_group, BOTTOM_RIGHT);
+        info_button.place(chat_line_group, BOTTOM_LEFT);
+        ready_button.place(cancel_button, LEFT_MID);
+        if (local_player_slot == 0)
+            start_button.place(ready_button, LEFT_MID);
+        Font font = Skin.getSkin().getEditFont();
+        if (rated) {
+            Label rating = new Label(i18n("rating"), font, RATING_WIDTH, Origin.AT_END);
+            addChild(rating);
+            rating.place(player_group, TOP_RIGHT);
+        }
+        compileCanvas();
+    }
+
+    private void adjustPlayerSlot(int player_slot) {
+        if (updating)
+            return;
+        PlayerSlot player = (PlayerSlot) game_network.getClient().getPlayers()[player_slot];
+        SlotOption option = slot_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
+                SlotOption.OPEN);
+        Race race = race_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(
+                Race.NATIVES);
+        int team = team_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+        PlayerInfo info = (PlayerInfo) player.getInfo();
+        boolean race_changed = info == null || race.getValue() != info.getRace().getValue();
+        boolean team_changed = info == null || team != info.getTeam();
+        boolean ready_changed = ready != player.isReady();
+        boolean difficulty_changed = info == null || player.getAIDifficulty() != option.getAIDifficulty();
+        PulldownButton<?> slot_button = slot_buttons[player_slot];
+        switch (option) {
+            case OPEN -> {
+                if ((player.getType() != PlayerSlot.OPEN && player.getType() != PlayerSlot.HUMAN) || race_changed
+                        || team_changed || ready_changed) {
+                    if (player_slot == local_player_slot) {
+                        int new_type = PlayerSlot.HUMAN;
+                        game_network.getClient().getServerInterface().setPlayerSlot(player_slot, new_type, race
+                                .getValue(),
+                                team, ready, PlayerSlot.AI_NONE);
+                    } else {
+                        game_network.getClient().getServerInterface().resetSlotState(player_slot, true);
+                    }
+                }
+            }
+            case CLOSED -> {
+                if (player.getType() != PlayerSlot.CLOSED || race_changed || team_changed) {
+                    slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
+                            "open")));
+                    game_network.getClient().getServerInterface().resetSlotState(player_slot, false);
+                }
+            }
+            case COMPUTER_EASY, COMPUTER_NORMAL, COMPUTER_HARD -> {
+                assert !rated;
+                boolean new_ai = player.getType() != PlayerSlot.AI;
+                if (new_ai || race_changed || team_changed || difficulty_changed) {
+                    slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
+                            "open")));
+                    if (new_ai) {
+                        team = player_slot;
+                        race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
+                    }
+                    game_network.getClient().getServerInterface().setPlayerSlot(player_slot, PlayerSlot.AI, race
+                            .getValue(),
+                            team, true, option.getAIDifficulty());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void connected(@NonNull Client client, @NonNull Game game, @NonNull WorldGenerator generator,
+            int player_slot) {
+        assert false;
+    }
+
+    @Override
+    public void setFocus(@NonNull FocusDirection direction) {
+        if (direction == FocusDirection.BACKWARD) {
+            super.setFocus(direction);
+        } else {
+            chat_line.setFocus(direction);
+        }
+    }
+
+    private int countHumans(PlayerSlot @NonNull [] players) {
+        int result = 0;
+        for (PlayerSlot player : players) {
+            if (player.getType() == PlayerSlot.HUMAN) {
+                result++;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void setPlayers(PlayerSlot @NonNull [] players) {
+        int num_humans = countHumans(players);
+        int[] player_slots = new int[num_humans];
+        int[] player_ratings = new int[num_humans];
+        int[] player_teams = new int[num_humans];
+        int human_index = 0;
+        updating = true;
+        SortedSet<String> new_human_names = new TreeSet<>();
+        for (int i = 0; i < players.length; i++) {
+            PlayerSlot player = players[i];
+            PulldownButton<?> slot_button = slot_buttons[i];
+            PulldownButton<?> race_button = race_buttons[i];
+            PulldownButton<?> team_button = team_buttons[i];
+            Diode ready_mark = ready_marks[i];
+            ready_mark.setLit(player.isReady());
+            PlayerInfo info = (PlayerInfo) player.getInfo();
+            race_button.getMenu().chooseItem(info != null ? info.getRace().getValue() : 0);
+            team_button.getMenu().chooseItem(info != null ? info.getTeam() : 0);
+            if (player.getType() != PlayerSlot.CLOSED) {
+                slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
+                        "open")));
+                slot_button.getMenu().chooseItem(SlotOption.OPEN.ordinal());
+            } else {
+                slot_button.getMenu().chooseItem(SlotOption.CLOSED.ordinal());
+            }
+            race_button.setDisabled(true);
+            team_button.setDisabled(true);
+            if (player.getInfo() != null) {
+                PlayerInfo player_info = (PlayerInfo) player.getInfo();
+                switch (player.getType()) {
+                    case PlayerSlot.AI -> {
+                        assert !rated;
+                        slot_button.getMenu().chooseItem(SlotOption.fromAIDifficulty(player.getAIDifficulty())
+                                .ordinal());
+                        race_button.setDisabled(!canControlSlot(i));
+                        team_button.setDisabled(!canControlSlot(i));
+                    }
+                    case PlayerSlot.HUMAN -> {
+                        String player_name = player_info.getName();
+                        new_human_names.add(player_name);
+                        slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(
+                                player_name));
+                        slot_button.getMenu().chooseItem(SlotOption.OPEN.ordinal());
+                        race_button.setDisabled(i != local_player_slot);
+                        team_button.setDisabled(i != local_player_slot);
+                        player_slots[human_index] = i;
+                        player_ratings[human_index] = player.getRating();
+                        player_teams[human_index] = player_info.getTeam();
+                        human_index++;
+                    }
+                    default -> throw new IllegalArgumentException("Unknown Player type: " + player.getType());
+                }
+            }
+        }
+        if (rated)
+            updateRatedLabels(player_slots, player_ratings, GameSession.calculateMatchPoints(player_ratings,
+                    player_teams));
+        Iterator<String> it = new_human_names.iterator();
+        while (it.hasNext()) {
+            String name = it.next();
+            if (human_names.contains(name))
+                human_names.remove(name);
+            else
+                playerJoined(name);
+        }
+        it = human_names.iterator();
+        while (it.hasNext()) {
+            String name = it.next();
+            playerLeft(name);
+        }
+        human_names = new_human_names;
+        setReady(players[local_player_slot].isReady());
+        setStartEnable(players);
+        updating = false;
+    }
+
+    private void updateRatedLabels(int @NonNull [] player_slots, int[] player_ratings, int[][] points) {
+        for (Label rating : ratings) {
+            rating.clear();
+        }
+        for (int i = 0; i < player_slots.length; i++) {
+            int slot = player_slots[i];
+            if (slot == local_player_slot) {
+                int win = points[i][GameSession.WIN];
+                int lose = points[i][GameSession.LOSE];
+                String rating_change_message = i18n("rating_change_message", Integer.toString(win), Integer.toString(
+                        -lose));
+                chat_info.set(rating_change_message);
+
+            }
+            ratings[slot].set("" + player_ratings[i]);
+        }
+    }
+
+    private boolean canControlSlot(int slot) {
+        return local_player_slot == 0 || slot == local_player_slot;
+    }
+
+    private @NonNull GUIObject createPlayerPulldown(GUIRoot gui_root, @NonNull Group group,
+            @Nullable GUIObject previous,
+            @NonNull PulldownButton<?>[] slot_buttons,
+            @NonNull PulldownButton<?>[] race_buttons,
+            @NonNull PulldownButton<?>[] team_buttons,
+            @NonNull Diode[] ready_marks,
+            @NonNull Label[] ratings,
+            int index,
+            int num_players) {
+        PulldownMenu<SlotOption> pulldown_menu = new PulldownMenu<>();
+        PulldownItem<SlotOption> open_item = new PulldownItem<>(i18n("open"), SlotOption.OPEN);
+        PulldownItem<SlotOption> closed_item = new PulldownItem<>(i18n("closed"), SlotOption.CLOSED);
+        PulldownItem<SlotOption> computer_easy_item = new PulldownItem<>(i18n("easy_ai"), SlotOption.COMPUTER_EASY);
+        PulldownItem<SlotOption> computer_normal_item = new PulldownItem<>(i18n("normal_ai"),
+                SlotOption.COMPUTER_NORMAL);
+        PulldownItem<SlotOption> computer_hard_item = new PulldownItem<>(i18n("hard_ai"), SlotOption.COMPUTER_HARD);
+        pulldown_menu.addItem(open_item);
+        pulldown_menu.addItem(closed_item);
+        if (!rated) {
+            pulldown_menu.addItem(computer_easy_item);
+            pulldown_menu.addItem(computer_normal_item);
+            pulldown_menu.addItem(computer_hard_item);
+        }
+        PulldownButton<SlotOption> pulldown_button = new PulldownButton<>(gui_root, pulldown_menu, SlotOption.CLOSED
+                .ordinal(),
+                150);
+        slot_buttons[index] = pulldown_button;
+        group.addChild(pulldown_button);
+        if (previous != null)
+            pulldown_button.place(previous, BOTTOM_MID);
+        else
+            pulldown_button.place();
+        pulldown_menu.addItemChosenListener((_, _) -> {
+            setReady(false);
+            adjustPlayerSlot(index);
+        });
+        pulldown_button.setDisabled(local_player_slot != 0 || index == local_player_slot);
+
+        PulldownMenu<Race> race_pulldown_menu = new PulldownMenu<>();
+        for (Race race : Race.values()) {
+            PulldownItem<Race> race_item = new PulldownItem<>(RacesResources.getRaceName(race), race);
+            race_pulldown_menu.addItem(race_item);
+        }
+        PulldownMenu<Integer> team_pulldown_menu = new PulldownMenu<>();
+        int num_teams = num_players;
+        if (rated)
+            num_teams = 2;
+        for (int i = 0; i < num_teams; i++) {
+            String team_str = i18n("team", Integer.toString(i + 1));
+            PulldownItem<Integer> team_item = new PulldownItem<>(team_str, i);
+            team_pulldown_menu.addItem(team_item);
+        }
+        PulldownButton<Race> race_pulldown_button = new PulldownButton<>(gui_root, race_pulldown_menu, 0, 115);
+        PulldownButton<Integer> team_pulldown_button = new PulldownButton<>(gui_root, team_pulldown_menu, index
+                % num_teams,
+                115);
+        race_buttons[index] = race_pulldown_button;
+        team_buttons[index] = team_pulldown_button;
+        group.addChild(race_pulldown_button);
+        group.addChild(team_pulldown_button);
+        race_pulldown_button.place(pulldown_button, RIGHT_MID);
+        team_pulldown_button.place(race_pulldown_button, RIGHT_MID);
+        race_pulldown_menu.addItemChosenListener((_, _) -> {
+            setReady(false);
+            adjustPlayerSlot(index);
+        });
+        team_pulldown_menu.addItemChosenListener((_, _) -> {
+            setReady(false);
+            adjustPlayerSlot(index);
+        });
+        race_pulldown_button.setDisabled(!canControlSlot(index));
+        team_pulldown_button.setDisabled(!canControlSlot(index));
+
+        Diode ready_mark = new Diode();
+        ready_marks[index] = ready_mark;
+        group.addChild(ready_mark);
+        ready_mark.place(team_pulldown_button, RIGHT_MID);
+        Font font = Skin.getSkin().getEditFont();
+        ratings[index] = new Label("", font, RATING_WIDTH, Origin.AT_END);
+        if (rated) {
+            group.addChild(ratings[index]);
+            ratings[index].place(ready_mark, RIGHT_MID);
+        }
+        String player_str = i18n("player", Integer.toString(index + 1));
+        Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(Renderer.getRenderer()
+                .getSettings().accessibility.team_colours[index]);
+        group.addChild(label);
+        label.place(pulldown_button, LEFT_MID);
+
+        return pulldown_button;
+    }
+
+    @Override
+    protected void doAdd() {
+        super.doAdd();
+        Renderer.getRenderer().getNetwork().getChatHub().addListener(this);
+    }
+
+    @Override
+    protected void doRemove() {
+        super.doRemove();
+        Renderer.getRenderer().getNetwork().getChatHub().removeListener(this);
+    }
+
+    @Override
+    public void connectionLost() {
+        remove();
+        owner.removeGameMenu();
+        gui_root.addModalForm(new MessageForm(i18n("connection_lost")));
+    }
+
+    @Override
+    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback<?, ?> loadCallback) {
+        setDisabled(true);
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
+                (LoadCallback) loadCallback);
+    }
+
+    private void finishChatAppend() {
+        chat_box.setOffsetY(Integer.MAX_VALUE);
+        getTab().updateNotify();
+    }
+
+    @Override
+    public void chat(@NonNull ChatMessage message) {
+        if (message.type() != ChatMessage.Type.GAME_MENU)
+            return;
+        if (!chat_box.isEmpty())
+            chat_box.append("\n");
+
+        chat_box.append(message.formatLong());
+        finishChatAppend();
+    }
+
+    private void playerLeft(String name) {
+        if (!chat_box.isEmpty())
+            chat_box.append("\n");
+        chat_box.append(i18n("left_game", name));
+        finishChatAppend();
+    }
+
+    private void playerJoined(String name) {
+        if (!chat_box.isEmpty())
+            chat_box.append("\n");
+        chat_box.append(i18n("joined_game", name));
+        finishChatAppend();
+    }
+
+    private void setReady(boolean r) {
+        if (r != ready) {
+            ready = r;
+            ready_button.setDisabled(ready);
+            adjustPlayerSlot(local_player_slot);
+        }
+    }
+
+    private void setStartEnable(PlayerSlot @NonNull [] players) {
+        start_button.setDisabled(true);
+        if (local_player_slot != 0)
+            return;
+        for (PlayerSlot player : players) {
+            if (!player.isReady()) {
+                return;
+            }
+        }
+        start_button.setDisabled(false);
+    }
+
+    public void cancel() {
+        game_network.close();
+        owner.removeGameMenu();
+    }
+
+    private final class InfoButtonListener implements MouseClickListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            gui_root.addModalForm(new GameInfoForm(game));
+        }
+    }
+
+    private final class CancelButtonListener implements MouseClickListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            cancel();
+        }
+    }
+
+    private final class ReadyListener implements MouseClickListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            setReady(true);
+        }
+    }
+
+    private static int getNumTeams(PlayerSlot @NonNull [] players) {
+        Set<Integer> teams = new HashSet<>();
+        for (PlayerSlot current : players) {
+            PlayerInfo info = (PlayerInfo) current.getInfo();
+            if (info != null)
+                teams.add(info.getTeam());
+        }
+        return teams.size();
+    }
+
+    private final class StartListener implements MouseClickListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            final int MIN_TEAMS = 2;
+            Serializable[] raw_players = game_network.getClient().getPlayers();
+            PlayerSlot[] players = new PlayerSlot[raw_players.length];
+            for (int i = 0; i < raw_players.length; i++) {
+                players[i] = (PlayerSlot) raw_players[i];
+            }
+            int num_teams = getNumTeams(players);
+            if (num_teams < MIN_TEAMS) {
+                String err_msg = i18n("min_teams", Integer.toString(MIN_TEAMS));
+                gui_root.addModalForm(new MessageForm(err_msg));
+            } else {
+                game_network.getClient().getServerInterface().startServer();
+            }
+        }
+    }
+
+
+    private final class ChatListener implements EnterListener {
+        @Override
+        public void enterPressed(@NonNull CharSequence text) {
+            String chat = text.toString();
+            if (!chat.isEmpty()) {
+                chat_line.clear();
+                if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), Renderer.getRenderer().getNetwork()
+                        .getMatchmakingClient(), chat))
+                    game_network.getClient().getServerInterface().chat(chat);
+            }
+        }
+    }
+
+    private final class SendListener implements MouseClickListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            chat_line.enterPressedAll();
+        }
+    }
+
+}

@@ -1,0 +1,183 @@
+package com.oddlabs.tt.content.menu;
+
+import com.oddlabs.matchmaking.Login;
+import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.gui.ButtonObject;
+import com.oddlabs.tt.gui.CancelButton;
+import com.oddlabs.tt.gui.CheckBox;
+import com.oddlabs.tt.gui.EditLine;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.HorizButton;
+import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.gui.PasswordLine;
+import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.event.EnterListener;
+import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.base.util.Utils;
+import org.jspecify.annotations.NonNull;
+
+import java.util.ResourceBundle;
+
+import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
+import static com.oddlabs.tt.gui.Placement.BOTTOM_RIGHT;
+import static com.oddlabs.tt.gui.Placement.LEFT_MID;
+import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
+
+public final class LoginForm extends Form {
+    private static final int BUTTON_WIDTH = 100;
+    private static final int BUTTON_WIDTH_LONG = 150;
+    private static final int EDITLINE_WIDTH = 240;
+
+    private final @NonNull Menu main_menu;
+    private final GUIRoot gui_root;
+    private final @NonNull NetworkSelector network;
+    private final @NonNull EditLine editline_username;
+    private final @NonNull PasswordLine editline_password;
+    private final @NonNull CheckBox remember_checkbox;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(LoginForm.class.getName());
+
+    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+        return Utils.getBundleString(bundle, key, args);
+    }
+
+    public LoginForm(@NonNull NetworkSelector network, GUIRoot gui_root, @NonNull Menu main_menu) {
+        this.main_menu = main_menu;
+        this.gui_root = gui_root;
+        this.network = network;
+        boolean remember = Renderer.getRenderer().getSettings().account.remember_login;
+        if (!remember) {
+            Renderer.getRenderer().getSettings().account.username = "";
+            Renderer.getRenderer().getSettings().account.pw_digest = "";
+        }
+
+        // headline
+        Label label_headline = new Label(i18n("login_caption"), Skin.getSkin().getHeadlineFont());
+        addChild(label_headline);
+
+        // login
+        LoginListener login_listener = new LoginListener();
+        Group login_group = new Group();
+        Label label_username = new Label(i18n("username"), Skin.getSkin().getEditFont());
+        editline_username = new EditLine(EDITLINE_WIDTH, 255);
+        editline_username.addEnterListener(login_listener);
+        editline_username.append(Renderer.getRenderer().getSettings().account.username);
+        Label label_password = new Label(i18n("password"), Skin.getSkin().getEditFont());
+        editline_password = new PasswordLine(EDITLINE_WIDTH, 255);
+        editline_password.addEnterListener(login_listener);
+        if (remember) {
+            editline_password.append("*************");
+            editline_password.setPasswordDigest(Renderer.getRenderer().getSettings().account.pw_digest);
+        }
+        remember_checkbox = new CheckBox(remember, i18n("remember_login"));
+
+        login_group.addChild(label_username);
+        login_group.addChild(editline_username);
+        login_group.addChild(label_password);
+        login_group.addChild(editline_password);
+        login_group.addChild(remember_checkbox);
+
+        label_username.place();
+        editline_username.place(label_username, RIGHT_MID);
+        editline_password.place(editline_username, BOTTOM_RIGHT);
+        label_password.place(editline_password, LEFT_MID);
+        remember_checkbox.place(editline_password, BOTTOM_LEFT);
+        login_group.compileCanvas();
+
+        addChild(login_group);
+        // buttons
+        Group group_buttons = new Group();
+
+
+        ButtonObject button_newuser = new HorizButton(i18n("new_account"), BUTTON_WIDTH);
+        button_newuser.addMouseClickListener(new NewUserListener());
+        ButtonObject button_ok = new HorizButton(i18n("login"), BUTTON_WIDTH);
+        button_ok.addMouseClickListener(login_listener);
+        ButtonObject button_cancel = new CancelButton(BUTTON_WIDTH);
+        button_cancel.addMouseClickListener((_, _, _, _) -> this.cancel());
+
+        group_buttons.addChild(button_newuser);
+        group_buttons.addChild(button_ok);
+        group_buttons.addChild(button_cancel);
+
+        button_cancel.place();
+        button_ok.place(button_cancel, LEFT_MID);
+        button_newuser.place(button_ok, LEFT_MID);
+
+        group_buttons.compileCanvas();
+        addChild(group_buttons);
+
+        // Place objects
+
+        // headline
+        label_headline.place();
+        login_group.place(label_headline, BOTTOM_LEFT);
+
+        group_buttons.place(Origin.AT_END);
+
+        compileCanvas();
+
+        if (Renderer.isRegistered()) {
+            main_menu.setMenu(this);
+        } else {
+            Form form = new MatchmakingConnectingForm(network, gui_root, null, main_menu, null, null);
+            main_menu.setMenu(form);
+            form.centerPos();
+        }
+    }
+
+    @Override
+    public void setFocus(@NonNull FocusDirection direction) {
+        if (direction == FocusDirection.BACKWARD) {
+            super.setFocus(direction);
+        } else {
+            editline_username.setFocus(direction);
+        }
+    }
+
+    private void login() {
+        String username = editline_username.getContents();
+        String password = editline_password.getPasswordDigest();
+        Login login = new Login(username, password);
+        if (!login.isValid())
+            gui_root.addModalForm(new MessageForm(i18n("invalid_login")));
+        else
+            doLogin(username, password, login, remember_checkbox.isMarked());
+    }
+
+    private void doLogin(@NonNull String username, @NonNull String password, Login login, boolean remember_login) {
+        if (remember_login) {
+            Renderer.getRenderer().getSettings().account.username = username;
+            Renderer.getRenderer().getSettings().account.pw_digest = password;
+        }
+        Renderer.getRenderer().getSettings().account.remember_login = remember_login;
+        Form connecting_form = new MatchmakingConnectingForm(network, gui_root, this, main_menu, login, null);
+        gui_root.addModalForm(connecting_form);
+    }
+
+    private final class NewUserListener implements MouseClickListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            remove();
+            main_menu.setMenu(new NewUserForm(network, gui_root, main_menu));
+        }
+    }
+
+    private final class LoginListener implements MouseClickListener, EnterListener {
+        @Override
+        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+            login();
+        }
+
+        @Override
+        public void enterPressed(@NonNull CharSequence text) {
+            login();
+        }
+    }
+}
