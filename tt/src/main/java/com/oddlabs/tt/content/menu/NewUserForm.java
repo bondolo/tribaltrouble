@@ -4,7 +4,7 @@ import com.oddlabs.matchmaking.Login;
 import com.oddlabs.matchmaking.LoginDetails;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.content.form.MessageForm;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.gui.form.ProgressForm;
-import com.oddlabs.tt.gui.GUIIcons;
+import com.oddlabs.tt.content.form.ProgressForm;
+import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.audio.AudioParameters;

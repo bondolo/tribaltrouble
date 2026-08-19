@@ -44,8 +44,8 @@ public final class Tutorial {
     public void done(int next_tutorial) {
         timer.stop();
         removeInfo();
-        viewer.getGUIRoot().pushDelegate(new TutorialOverDelegate(viewer, tutorial_info, viewer.getGUIRoot()
-                .getDelegate().getCamera(), next_tutorial));
+        viewer.getGUIRoot().pushDelegate(new TutorialOverDelegate(viewer, tutorial_info,
+                viewer.getDelegate().getCamera(), next_tutorial));
     }
 
     public void next(final @NonNull TutorialTrigger trigger) {

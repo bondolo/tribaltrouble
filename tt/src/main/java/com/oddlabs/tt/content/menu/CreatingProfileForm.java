@@ -2,7 +2,7 @@ package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.MatchmakingClientInterface;
 import com.oddlabs.tt.client.delegate.Menu;
-import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.content.form.MessageForm;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;

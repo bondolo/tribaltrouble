@@ -72,7 +72,7 @@ final class CampaignInGameInfo implements InGameInfo {
 
     @Override
     public void abort(@NonNull WorldViewer viewer) {
-        viewer.getGUIRoot().pushDelegate(new GameStatsDelegate(viewer, viewer.getGUIRoot().getDelegate().getCamera(),
+        viewer.getGUIRoot().pushDelegate(new GameStatsDelegate(viewer, viewer.getDelegate().getCamera(),
                 Menu.i18n("game_aborted")));
         campaign.doDefeated();
     }

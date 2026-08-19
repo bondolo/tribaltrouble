@@ -1,8 +1,11 @@
 package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.client.camera.Camera;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.engine.Globals;
+import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -31,6 +34,24 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
     }
 
     @Override
+    public final @Nullable CameraState getCameraState() {
+        return camera != null ? camera.getState() : null;
+    }
+
+    @Override
+    public @NonNull Matrix4f multProjection(@NonNull Matrix4f matrix, int width, int height) {
+        if (camera != null && height > 0) {
+            float aspect = (float) width / height;
+            float fovy = Camera.calculateDynamicFOV(camera.getState().getCurrentZ(), aspect, Camera.FOVMode.DIAGONAL);
+            float zNear = Globals.VIEW_MIN;
+            float zFar = Globals.VIEW_MAX;
+            Matrix4f perspectiveMatrix = new Matrix4f().perspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
+            return matrix.mul(perspectiveMatrix);
+        }
+        return matrix;
+    }
+
+    @Override
     public void handleInput(@NonNull InputEvent event) {
         if (camera != null) {
             camera.handleInput(event);
@@ -52,14 +73,17 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
         getCamera().disable();
     }
 
+    @Override
     public boolean renderCursor() {
         return true;
     }
 
+    @Override
     public boolean canScroll() {
         return false;
     }
 
+    @Override
     public boolean forceRender() {
         return false;
     }

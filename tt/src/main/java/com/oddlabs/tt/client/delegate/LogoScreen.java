@@ -12,7 +12,7 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.client.render.UIRenderer;
+import com.oddlabs.tt.gui.render.UIRenderer;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

@@ -9,6 +9,7 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.gui.delegate.InputDelegate;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
@@ -17,7 +18,7 @@ import org.jspecify.annotations.NonNull;
  * specific interaction modes (e.g., menus, in-game selection, targeting) and participate
  * in both 2D and 3D rendering passes.
  */
-public abstract class Delegate extends GUIObject {
+public abstract class Delegate extends GUIObject implements InputDelegate {
     private static final Color.Linear BACKGROUND_ALPHA = Color.Linear.BLACK.alpha(0.3f);
 
     @Override
@@ -47,7 +48,7 @@ public abstract class Delegate extends GUIObject {
         GUIRoot root = getParentGUIRoot();
         if (root != null) {
             displayChanged(root.getWidth(), root.getHeight());
-            if (root.getModalDelegate() == null || root.getModalDelegate() == this) {
+            if (root.getModalDelegate() == null) {
                 restoreFocus();
             }
         } else {
@@ -59,9 +60,11 @@ public abstract class Delegate extends GUIObject {
             @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
     }
 
+    @Override
     public void render2D(@NonNull GUIRenderer renderer) {
     }
 
+    @Override
     public boolean keyboardBlocked() {
         return false;
     }

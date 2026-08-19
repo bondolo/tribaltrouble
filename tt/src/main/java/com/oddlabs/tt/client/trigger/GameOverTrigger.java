@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.trigger;
 
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -93,8 +92,7 @@ public final class GameOverTrigger implements Animated {
     }
 
     private void createDelayTrigger(@NonNull String text) {
-        GUIRoot gui_root = viewer.getGUIRoot();
-        new GameOverDelayTrigger(viewer, gui_root.getDelegate().getCamera(), text);
+        new GameOverDelayTrigger(viewer, viewer.getDelegate().getCamera(), text);
     }
 
     private void doGameOver(int team_count) {

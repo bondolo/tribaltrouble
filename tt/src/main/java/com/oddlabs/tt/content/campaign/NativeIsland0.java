@@ -346,7 +346,7 @@ public final class NativeIsland0 extends Island {
         new NearArmyTrigger(reinforcement_peons, 10f, local_player, () -> {
             int x = 230 * 2;
             int y = 108 * 2;
-            Camera camera = getViewer().getGUIRoot().getDelegate().getCamera();
+            Camera camera = getViewer().getDelegate().getCamera();
             if (camera instanceof GameCamera gameCamera) {
                 getViewer().getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), gameCamera, x, y, 200f, 3f,
                         dialog2));
@@ -354,7 +354,7 @@ public final class NativeIsland0 extends Island {
                 mapCamera.mapGoto(x, y, true);
                 dialog2.run();
             } else if (camera instanceof JumpCamera || camera instanceof FirstPersonCamera) {
-                getViewer().getGUIRoot().getDelegate().pop();
+                getViewer().getGUIRoot().removeDelegate(getViewer().getGUIRoot().getDelegate());
                 getViewer().getGUIRoot().pushDelegate(new JumpDelegate(getViewer(), getViewer().getCamera(), x, y, 200f,
                         3f, dialog2));
             } else {

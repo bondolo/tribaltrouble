@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import com.oddlabs.tt.simulation.util.TextAppender;
+import com.oddlabs.tt.base.util.TextAppender;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

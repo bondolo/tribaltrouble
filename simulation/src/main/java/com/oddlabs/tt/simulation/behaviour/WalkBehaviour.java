@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.behaviour;
 
-import com.oddlabs.tt.simulation.util.TextAppender;
+import com.oddlabs.tt.base.util.TextAppender;
 import com.oddlabs.tt.simulation.model.AttackScanFilter;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;

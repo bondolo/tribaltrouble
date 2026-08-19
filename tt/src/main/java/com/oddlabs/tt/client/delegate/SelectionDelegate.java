@@ -3,8 +3,8 @@ package com.oddlabs.tt.client.delegate;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
-import com.oddlabs.tt.gui.form.InGameChatForm;
-import com.oddlabs.tt.gui.ActionButtonPanel;
+import com.oddlabs.tt.content.form.InGameChatForm;
+import com.oddlabs.tt.client.gui.ActionButtonPanel;
 import com.oddlabs.tt.gui.CursorType;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
@@ -453,8 +453,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         if (button == MouseButton.LEFT && !map_mode && !observer) {
             if (selection) {
                 selection = false;
-                Selectable<?>[] picked = getViewer().getPicker().pickBoxed(getViewer().getGUIRoot().getDelegate()
-                        .getCamera().getState(), selection_x1, selection_y1, selection_x2, selection_y2, clicks);
+                Selectable<?>[] picked = getViewer().getPicker().pickBoxed(getCamera().getState(), selection_x1,
+                        selection_y1, selection_x2, selection_y2, clicks);
                 List<Selectable<UnitTemplate>> friendly_units = new ArrayList<>();
                 Selectable<BuildingTemplate> friendly_building = null;
                 Selectable<?> enemy = null;
@@ -540,8 +540,8 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
                     case RIGHT -> {
                         Army selection = getViewer().getSelection().getCurrentSelection();
                         if (selection.size() > 0 && selection.containsAbility(Abilities.TARGET)) {
-                            getViewer().getPicker().pickTarget(selection, getViewer().getGUIRoot().getDelegate()
-                                    .getCamera().getState(), getViewer().getPeerHub().getPlayerInterface(), x, y,
+                            getViewer().getPicker().pickTarget(selection, getCamera().getState(),
+                                    getViewer().getPeerHub().getPlayerInterface(), x, y,
                                     Action.DEFAULT);
                         }
                     }

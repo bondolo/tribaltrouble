@@ -4,9 +4,9 @@ import com.oddlabs.matchmaking.Game;
 import java.io.Serializable;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
-import com.oddlabs.tt.gui.form.GameInfoForm;
-import com.oddlabs.tt.gui.form.MessageForm;
-import com.oddlabs.tt.gui.form.ProgressForm;
+import com.oddlabs.tt.content.form.GameInfoForm;
+import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.Diode;
@@ -36,7 +36,7 @@ import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.gui.ChatCommand;
+import com.oddlabs.tt.content.form.ChatCommand;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -501,7 +501,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback<?, ?> loadCallback) {
         setDisabled(true);
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
-                (com.oddlabs.tt.gui.form.LoadCallback) loadCallback);
+                (com.oddlabs.tt.content.form.LoadCallback) loadCallback);
     }
 
     private void finishChatAppend() {

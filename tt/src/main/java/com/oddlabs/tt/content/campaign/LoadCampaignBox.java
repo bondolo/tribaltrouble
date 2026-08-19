@@ -1,6 +1,6 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.tt.gui.form.MessageForm;
+import com.oddlabs.tt.content.form.MessageForm;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.DateLabel;
