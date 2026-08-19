@@ -5,7 +5,7 @@ import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.gui.Arrow;
+import com.oddlabs.tt.client.gui.Arrow;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.util.Color;

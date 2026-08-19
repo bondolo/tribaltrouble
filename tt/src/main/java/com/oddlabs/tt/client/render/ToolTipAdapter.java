@@ -4,7 +4,7 @@ import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.engine.render.*;
 
-import com.oddlabs.tt.gui.GUIIcons;
+import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.gui.ToolTipBox;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;

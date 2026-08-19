@@ -91,6 +91,13 @@ public final class Main {
                 settings.save();
                 settings.crashed = false;
                 GUI gui = new GUI(localInput);
+                gui.setCloseHandler(() -> {
+                    if (gui.getGUIRoot().isShowingModalForm(com.oddlabs.tt.content.form.QuitForm.class)) {
+                        Renderer.shutdown();
+                    } else {
+                        gui.getGUIRoot().addModalForm(new com.oddlabs.tt.content.form.QuitForm(gui.getGUIRoot()));
+                    }
+                });
                 Runnable loadTask = Menu.setupMainMenu(network, gui, firstProgress);
                 return new ClientStartup.Session(gui, loadTask);
             }, args);

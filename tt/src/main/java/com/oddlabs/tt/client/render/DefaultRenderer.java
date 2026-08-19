@@ -24,10 +24,13 @@ import com.oddlabs.tt.engine.render.scenery.Sky;
 import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.gui.ToolTip;
+import com.oddlabs.tt.client.delegate.Delegate;
 import com.oddlabs.tt.client.viewer.AmbientAudio;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.Selection;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.ToolTip;
+import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -60,6 +63,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final InstancedSpriteRenderer treeSpriteRenderer = new InstancedSpriteRenderer();
     private final @NonNull PostProcessor postProcessor;
     private final @Nullable Cheat cheat;
+    private final @NonNull AmbientAudio ambient;
 
     private final GlobalUniforms globalUniforms = new GlobalUniforms();
 
@@ -71,6 +75,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
+        this.ambient = new AmbientAudio(Renderer.getRenderer().getAudioManager());
         this.render_queues = render_queues;
         this.picker = picker;
         this.selection = selection;
@@ -206,7 +211,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     }
 
     @Override
-    public void render(@NonNull RenderContext context, @NonNull AmbientAudio ambient,
+    public void render(@NonNull RenderContext context,
             @NonNull CameraState frustum_state, @NonNull GUIRoot gui_root) {
         treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
@@ -295,8 +300,10 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             render_queues.renderNoDetail();
         }
 
-        gui_root.getDelegate().render3D(landscape_renderer, render_queues, frustum_state, modelViewStack,
-                projectionStack);
+        if (gui_root.getDelegate() instanceof Delegate delegate) {
+            delegate.render3D(landscape_renderer, render_queues, frustum_state, modelViewStack,
+                    projectionStack);
+        }
 
         if (Globals.debugRenderingEnabled()) {
             renderDebugElements(frustum_state);

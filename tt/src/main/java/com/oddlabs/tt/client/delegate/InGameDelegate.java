@@ -111,7 +111,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         }
         if (actions.contains(GameAction.CHEAT_9)) {
             // F9 toggles fog
-            FogInfo fog_info = viewer.getGUIRoot().getDelegate().getCamera().getState().getFog();
+            FogInfo fog_info = getCamera().getState().getFog();
             fog_info.setEnabled(!fog_info.isEnabled());
             return true;
         }

@@ -1,8 +1,8 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.gui.form.MessageForm;
-import com.oddlabs.tt.gui.CampaignIcons;
+import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.client.trigger.GameOverDelayTrigger;
@@ -37,8 +37,7 @@ public abstract class Campaign {
     }
 
     public void defeated(@NonNull WorldViewer viewer, @NonNull String game_over_message) {
-        GUIRoot gui_root = viewer.getGUIRoot();
-        new GameOverDelayTrigger(viewer, gui_root.getDelegate().getCamera(), game_over_message);
+        new GameOverDelayTrigger(viewer, viewer.getDelegate().getCamera(), game_over_message);
         doDefeated();
     }
 
@@ -47,8 +46,7 @@ public abstract class Campaign {
     }
 
     public final void victory(final @NonNull WorldViewer viewer) {
-        GUIRoot gui_root = viewer.getGUIRoot();
-        new GameOverDelayTrigger(viewer, gui_root.getDelegate().getCamera(), i18n("island_complete"));
+        new GameOverDelayTrigger(viewer, viewer.getDelegate().getCamera(), i18n("island_complete"));
         LoadCampaignBox.loadSavegames(
                 new DeterministicSerializerLoopbackInterface<CampaignState[]>() {
                     @Override
