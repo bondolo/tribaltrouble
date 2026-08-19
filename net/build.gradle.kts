@@ -4,8 +4,8 @@ plugins {
 
 dependencies {
     api(project(":simulation"))
-    api(project(":base"))
-    api(project(":common"))
+    implementation(project(":base"))
+    implementation(project(":common"))
     compileOnlyApi(libs.jspecify)
 
     testImplementation(platform(libs.junit.bom))

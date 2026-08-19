@@ -24,7 +24,7 @@ dependencies {
     api(project(":window"))
     api(project(":input"))
     api(project(":audio"))
-    api(project(":audio-openal"))
+    implementation(project(":audio-openal"))
     api(libs.joml)
     compileOnlyApi(libs.jspecify)
 
