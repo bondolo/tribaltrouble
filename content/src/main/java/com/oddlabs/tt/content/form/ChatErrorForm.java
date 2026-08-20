@@ -1,11 +1,8 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
 import com.oddlabs.matchmaking.MatchmakingClientInterface;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.gui.MessageForm;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;

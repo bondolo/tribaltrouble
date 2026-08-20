@@ -1,25 +1,18 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
-import com.oddlabs.tt.gui.CheckBox;
-import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.Group;
-import com.oddlabs.tt.gui.HorizButton;
-import com.oddlabs.tt.gui.LabelBox;
-import com.oddlabs.tt.gui.OKButton;
-import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 
+/**
+ * Modal warning dialog with an optional "Do not show this again" checkbox.
+ */
 public final class WarningForm extends Form {
     private static final int MAX_WIDTH = 500;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(WarningForm.class.getName());
@@ -31,6 +24,10 @@ public final class WarningForm extends Form {
     private final @NonNull CheckBox show_next_time;
 
     public WarningForm(@NonNull String head, @NonNull String message) {
+        this(head, message, null);
+    }
+
+    public WarningForm(@NonNull String head, @NonNull String message, @Nullable Consumer<Boolean> onDismiss) {
         int head_width = Math.min(MAX_WIDTH, Skin.getSkin().getHeadlineFont().getWidth(head));
         int message_width = Math.min(MAX_WIDTH, Skin.getSkin().getEditFont().getWidth(message));
         int width = Math.max(head_width, message_width);
@@ -52,7 +49,9 @@ public final class WarningForm extends Form {
         HorizButton ok_button = new OKButton(70);
         addChild(ok_button);
         ok_button.addMouseClickListener((_, _, _, _) -> {
-            Renderer.getRenderer().getSettings().audio.warning_no_sound = !show_next_time.isMarked();
+            if (onDismiss != null) {
+                onDismiss.accept(show_next_time.isMarked());
+            }
             remove();
         });
         // Place objects

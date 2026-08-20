@@ -9,14 +9,14 @@ import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.FormFactory;
 import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.content.form.ConnectingForm;
-import com.oddlabs.tt.content.form.MessageForm;
 import com.oddlabs.tt.content.form.MultiplayerLobby;
 import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
-import com.oddlabs.tt.content.form.WarningForm;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.MessageForm;
+import com.oddlabs.tt.gui.WarningForm;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIObject;
@@ -387,7 +387,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
         if (first_progress && Renderer.getRenderer().getSettings().audio.warning_no_sound && !Renderer.getRenderer()
                 .getEventQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager() != null)) {
             gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
-                    "sound_not_available_message")));
+                    "sound_not_available_message"),
+                    doNotShowAgain -> Renderer.getRenderer().getSettings().audio.warning_no_sound = !doNotShowAgain));
         }
         if (!initNetwork(network)) {
             gui_root.addModalForm(new MessageForm(i18n("network_not_available_caption"),

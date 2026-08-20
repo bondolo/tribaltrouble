@@ -1,7 +1,7 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.FocusDirection;

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Profile;
-import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;

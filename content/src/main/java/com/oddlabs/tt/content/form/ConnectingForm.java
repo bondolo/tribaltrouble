@@ -11,6 +11,7 @@ import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.net.Client;

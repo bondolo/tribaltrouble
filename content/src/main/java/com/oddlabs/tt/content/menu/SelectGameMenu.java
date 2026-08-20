@@ -10,7 +10,7 @@ import com.oddlabs.matchmaking.RankingEntry;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.content.form.GameInfoForm;
-import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.content.form.MultiplayerLobby;
 import com.oddlabs.tt.content.skirmish.MultiplayerInGameInfo;
 import com.oddlabs.tt.content.form.ChatPanel;

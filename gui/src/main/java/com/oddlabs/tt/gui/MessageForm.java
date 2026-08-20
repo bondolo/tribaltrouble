@@ -1,15 +1,5 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
-import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.HorizButton;
-import com.oddlabs.tt.gui.LabelBox;
-import com.oddlabs.tt.gui.OKButton;
-import com.oddlabs.tt.gui.OKListener;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +7,9 @@ import org.jspecify.annotations.Nullable;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 
+/**
+ * Modal message dialog displaying information or error text with an OK button.
+ */
 public class MessageForm extends Form {
     private static final int MAX_WIDTH = 500;
 

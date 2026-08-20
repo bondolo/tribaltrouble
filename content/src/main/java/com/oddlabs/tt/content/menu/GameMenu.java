@@ -5,7 +5,7 @@ import java.io.Serializable;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.tt.content.form.GameInfoForm;
-import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.gui.Box;
