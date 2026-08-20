@@ -5,7 +5,7 @@ import com.oddlabs.matchmaking.LoginDetails;
 import com.oddlabs.matchmaking.MatchmakingClientInterface;
 import com.oddlabs.matchmaking.Profile;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.content.form.MessageForm;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.net.ChatRoomInfo;
 import com.oddlabs.tt.gui.Form;

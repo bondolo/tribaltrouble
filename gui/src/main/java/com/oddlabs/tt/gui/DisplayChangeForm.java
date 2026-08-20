@@ -1,15 +1,5 @@
-package com.oddlabs.tt.content.form;
+package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
-import com.oddlabs.tt.gui.DoNowListener;
-import com.oddlabs.tt.gui.FocusDirection;
-import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.HorizButton;
-import com.oddlabs.tt.gui.LabelBox;
-import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.NonNull;
 
@@ -18,6 +8,9 @@ import java.util.ResourceBundle;
 import static com.oddlabs.tt.gui.Origin.AT_END;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
+/**
+ * Modal dialog confirming immediate vs. delayed display/resolution changes.
+ */
 public final class DisplayChangeForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(DisplayChangeForm.class.getName());
 
