@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -9,6 +10,9 @@ public enum Terrain {
     NATIVE(0),
     VIKING(1);
 
+    private static final Color NATIVE_SAND_COLOR = new Color.Standard(0xFF_FF_E6_CC);
+    private static final Color VIKING_SOIL_COLOR = new Color.Standard(0xFF_A6_80_59);
+
     private final int value;
 
     Terrain(int value) {
@@ -17,6 +21,18 @@ public enum Terrain {
 
     public int getValue() {
         return value;
+    }
+
+    /**
+     * Returns the baseline dust color for this terrain type.
+     *
+     * @return the linear color representing the terrain dust/soil
+     */
+    public Color.@NonNull Linear getDustColor() {
+        return switch (this) {
+            case NATIVE -> new Color.Linear(NATIVE_SAND_COLOR);
+            case VIKING -> new Color.Linear(VIKING_SOIL_COLOR);
+        };
     }
 
     public static @NonNull Terrain fromValue(int value) {

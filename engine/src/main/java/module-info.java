@@ -14,11 +14,13 @@ module com.oddlabs.tt.engine {
     requires java.logging;
     requires transitive org.lwjgl;
     requires transitive org.lwjgl.opengl;
-    requires transitive org.lwjgl.sdl;
-    requires transitive org.lwjgl.stb;
+    requires org.lwjgl.sdl;
+    requires org.lwjgl.stb;
 
     exports com.oddlabs.tt.engine;
+    exports com.oddlabs.tt.engine.cursor;
     exports com.oddlabs.tt.engine.font;
+    exports com.oddlabs.tt.engine.image;
     exports com.oddlabs.tt.engine.procedural;
     exports com.oddlabs.tt.engine.render;
     exports com.oddlabs.tt.engine.render.scenery;

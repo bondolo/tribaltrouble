@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.procedural.GLImage;
+import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.model.Target;

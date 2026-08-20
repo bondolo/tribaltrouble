@@ -118,14 +118,14 @@ public final class ErosionVelocity {
             // save height- and flowmap
             v.dynamicRange();
             if (iter < 10) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height00" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow00" + iter);
+                channel.toLayer().saveAsPNG("height00" + iter);
+                v.toLayer().saveAsPNG("flow00" + iter);
             } else if (iter < 100) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height0" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow0" + iter);
+                channel.toLayer().saveAsPNG("height0" + iter);
+                v.toLayer().saveAsPNG("flow0" + iter);
             } else {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow" + iter);
+                channel.toLayer().saveAsPNG("height" + iter);
+                v.toLayer().saveAsPNG("flow" + iter);
             }
 
             // clear flowmap for next iteration
@@ -286,14 +286,14 @@ public final class ErosionVelocity {
             // save height- and flowmap
             v.dynamicRange();
             if (iter < 10) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height00" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow00" + iter);
+                channel.toLayer().saveAsPNG("height00" + iter);
+                v.toLayer().saveAsPNG("flow00" + iter);
             } else if (iter < 100) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height0" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow0" + iter);
+                channel.toLayer().saveAsPNG("height0" + iter);
+                v.toLayer().saveAsPNG("flow0" + iter);
             } else {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow" + iter);
+                channel.toLayer().saveAsPNG("height" + iter);
+                v.toLayer().saveAsPNG("flow" + iter);
             }
 
             // clear v, w and dir for next iteration
@@ -453,14 +453,14 @@ public final class ErosionVelocity {
             // save height- and flowmap
             v.dynamicRange();
             if (iter < 10) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height00" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow00" + iter);
+                channel.toLayer().saveAsPNG("height00" + iter);
+                v.toLayer().saveAsPNG("flow00" + iter);
             } else if (iter < 100) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height0" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow0" + iter);
+                channel.toLayer().saveAsPNG("height0" + iter);
+                v.toLayer().saveAsPNG("flow0" + iter);
             } else {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow" + iter);
+                channel.toLayer().saveAsPNG("height" + iter);
+                v.toLayer().saveAsPNG("flow" + iter);
             }
 
             // clear v, w and dir for next iteration
@@ -622,14 +622,14 @@ public final class ErosionVelocity {
             // save height- and flowmap
             v.dynamicRange();
             if (iter < 10) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height00" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow00" + iter);
+                channel.toLayer().saveAsPNG("height00" + iter);
+                v.toLayer().saveAsPNG("flow00" + iter);
             } else if (iter < 100) {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height0" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow0" + iter);
+                channel.toLayer().saveAsPNG("height0" + iter);
+                v.toLayer().saveAsPNG("flow0" + iter);
             } else {
-                new GLIntImage(channel.toLayer()).saveAsBMP("height" + iter);
-                new GLIntImage(v.toLayer()).saveAsBMP("flow" + iter);
+                channel.toLayer().saveAsPNG("height" + iter);
+                v.toLayer().saveAsPNG("flow" + iter);
             }
 
             // clear v, w and dir for next iteration

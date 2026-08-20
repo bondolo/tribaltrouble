@@ -6,8 +6,6 @@ import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
@@ -137,7 +135,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
                     );
 
                     puff.setSpectrumRange(0.0f, 0.9f);
-                    puff.setBaseColor(Landscape.getDustColor(world.getTerrainType()));
+                    puff.setBaseColor(world.getTerrainType().getDustColor());
                     puff.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum * 0.5f));
                     puff.setTransition(0.1f, 0.1f, 0.0f, 0.5f);
                     puff.setJitterIntensity(0.15f);
@@ -150,7 +148,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
                             0.5f, 0.0f, // Halved emitter radius
                             64, 10f,
                             new Vector3f(0f, 0f, 6.0f), // Halved radial expansion speed
-                            new Vector3f(0f, 0f, 0.0f), // No lift
+                            new Vector3f(0f, 0f, 0f), // No lift
                             Color.Linear.WHITE.alpha(0.15f), Color.LinearDelta.ZERO,
                             new Vector3f(1.0f, 0.2f, 0.0f), // Halved particle radius
                             new Vector3f(4.0f, 0.25f, 0.0f), // Halved growth rate
@@ -158,7 +156,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
                             GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                             AssetRegistry.getInstance().getSmokeTextures()
                     );
-                    debris.setBaseColor(Landscape.getDustColor(world.getTerrainType()));
+                    debris.setBaseColor(world.getTerrainType().getDustColor());
                     debris.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum
                             * 0.4f));
                     debris.setSpectrumRange(0.1f, 0.9f);

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine;
 
 import com.oddlabs.tt.engine.render.BoundingMode;
-import com.oddlabs.tt.net.NetConfig;
 import com.oddlabs.tt.simulation.SimulationConfig;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -55,8 +54,6 @@ public final class Globals {
 
     public static boolean slowmotion = SimulationConfig.DEFAULT_SLOW_MOTION;
 
-    public static boolean checksum_error_in_last_game = NetConfig.checksum_error_in_last_game;
-
     /**
      * Drawing of debug bounding boxes.
      */
@@ -92,8 +89,6 @@ public final class Globals {
     public static final float FOV = 45.0f;
     public static final float VIEW_MIN = 0.1f;
     public static final float VIEW_MAX = 8000.0f;
-
-    public static final int NET_PORT = NetConfig.DEFAULT_NET_PORT;
 
     public static final int NO_MIPMAP_CUTOFF = 1000;
 

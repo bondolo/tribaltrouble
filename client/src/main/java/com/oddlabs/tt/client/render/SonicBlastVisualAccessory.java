@@ -1,5 +1,6 @@
-package com.oddlabs.tt.effects.render;
+package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.*;

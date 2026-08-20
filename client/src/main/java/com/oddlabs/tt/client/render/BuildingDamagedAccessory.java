@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.effects.particle.ColorSpectrum;
@@ -127,7 +126,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
         audio.newAudio(building.getPositionX(), building.getPositionY(),
                 building.getPositionZ(), AudioAssets.BUILDING_COLLAPSE);
         final Terrain terrain = building.getOwner().getWorld().getTerrainType();
-        final Color.Linear dustColor = Landscape.getDustColor(terrain).desaturate(0.5f);
+        final Color.Linear dustColor = terrain.getDustColor().desaturate(0.5f);
 
         ColorSpectrum spectrumCallback = (spectrum, baseColor) -> {
             Random rand = ThreadLocalRandom.current();

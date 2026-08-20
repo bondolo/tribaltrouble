@@ -4,12 +4,12 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.vbo.QuadVBO;
+import com.oddlabs.tt.engine.image.GLByteImage;
+import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.procedural.BlendInfo;
 import com.oddlabs.tt.procedural.BlendLighting;
 import com.oddlabs.tt.procedural.BlendOcclusion;
-import com.oddlabs.tt.procedural.GLByteImage;
-import com.oddlabs.tt.procedural.GLImage;
-import com.oddlabs.tt.procedural.GLIntImage;
 import com.oddlabs.tt.procedural.StructureBlend;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -237,7 +237,7 @@ public final class LandscapeBaker {
                             needsClear = false;
                         }
 
-                        Texture alphaMap = createAlphaMap(info.getSourceImage());
+                        Texture alphaMap = createAlphaMap(new GLByteImage(info.getAlphaChannel()));
                         tempTextures.add(alphaMap);
 
                         GL13.glActiveTexture(GL13.GL_TEXTURE0);
@@ -252,8 +252,8 @@ public final class LandscapeBaker {
                         switch (info) {
                             case StructureBlend sb -> {
                                 shader.setUniform("u_Mode", 0);
-                                Texture structMap = createStructureMap(sb.getStructureImage());
-                                Texture normMap = createNormalMap(sb.getNormalImage());
+                                Texture structMap = createStructureMap(new GLIntImage(sb.getStructureLayer()));
+                                Texture normMap = createNormalMap(new GLIntImage(sb.getNormalLayer()));
                                 tempTextures.add(structMap);
                                 tempTextures.add(normMap);
                                 GL13.glActiveTexture(GL13.GL_TEXTURE1);

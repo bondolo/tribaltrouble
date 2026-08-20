@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.procedural.GLImage;
+import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.engine.util.GLUtils;

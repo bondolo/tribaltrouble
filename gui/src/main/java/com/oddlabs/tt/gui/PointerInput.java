@@ -1,6 +1,8 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
+import com.oddlabs.tt.engine.cursor.Cursor;
+import com.oddlabs.tt.engine.cursor.CursorFile;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.InputProvider;
 import org.jspecify.annotations.NonNull;

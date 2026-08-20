@@ -312,11 +312,11 @@ public final class ErosionThermal {
     private static void save(int i) {
         IO.println("height " + i + " checksum: " + height.sum());
         if (i < 10) {
-            new GLIntImage(height.toLayer()).saveAsBMP("height00" + i);
+            height.toLayer().saveAsPNG("height00" + i);
         } else if (i < 100) {
-            new GLIntImage(height.toLayer()).saveAsBMP("height0" + i);
+            height.toLayer().saveAsPNG("height0" + i);
         } else {
-            new GLIntImage(height.toLayer()).saveAsBMP("height" + i);
+            height.toLayer().saveAsPNG("height" + i);
         }
     }
 

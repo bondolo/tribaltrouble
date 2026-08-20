@@ -6,7 +6,7 @@ import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.procedural.GLIntImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.procedural.Hill;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.Midpoint;

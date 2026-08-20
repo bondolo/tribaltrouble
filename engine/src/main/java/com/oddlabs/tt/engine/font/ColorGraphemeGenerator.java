@@ -2,7 +2,7 @@ package com.oddlabs.tt.engine.font;
 
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.procedural.GLIntImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;

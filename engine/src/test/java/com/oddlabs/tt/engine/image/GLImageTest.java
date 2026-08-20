@@ -1,4 +1,4 @@
-package com.oddlabs.tt.procedural;
+package com.oddlabs.tt.engine.image;
 
 import org.junit.jupiter.api.Test;
 import org.lwjgl.opengl.GL11;
