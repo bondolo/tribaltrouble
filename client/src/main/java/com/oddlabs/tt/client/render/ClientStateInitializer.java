@@ -1,8 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.effects.render.LightningCloudVisualAccessory;
-import com.oddlabs.tt.effects.render.PoisonFogVisualAccessory;
-import com.oddlabs.tt.effects.render.SonicBlastVisualAccessory;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.VisualModel;
@@ -69,5 +66,9 @@ public final class ClientStateInitializer {
             return visualModel;
         });
         HeightMap.setClientStateFactory(HeightMapVisual::new);
+        com.oddlabs.tt.gui.EditLine.setErrorAudioHandler(() -> {
+            var audio = audioSupplier.get();
+            audio.newAudio(0f, 0f, 0f, com.oddlabs.tt.engine.resource.AudioAssets.ERROR_SOUND);
+        });
     }
 }

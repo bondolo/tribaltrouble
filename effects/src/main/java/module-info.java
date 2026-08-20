@@ -1,7 +1,6 @@
 module com.oddlabs.tt.effects {
     requires transitive com.oddlabs.tt.engine;
     requires com.oddlabs.tt.simulation;
-    requires com.oddlabs.tt.audio;
     requires com.oddlabs.tt.base;
     requires com.oddlabs.common;
     requires org.joml;

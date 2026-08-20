@@ -1,4 +1,4 @@
-package com.oddlabs.tt.procedural;
+package com.oddlabs.tt.engine.image;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;

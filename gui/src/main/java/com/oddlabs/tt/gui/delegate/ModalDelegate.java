@@ -15,6 +15,11 @@ public final class ModalDelegate extends GUIObject implements InputDelegate {
     }
 
     @Override
+    protected void displayChangedNotify(int width, int height) {
+        setDim(width, height);
+    }
+
+    @Override
     public void handleInput(@NonNull InputEvent event) {
         // Bubble
     }

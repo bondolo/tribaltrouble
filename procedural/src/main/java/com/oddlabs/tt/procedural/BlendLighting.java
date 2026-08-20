@@ -1,5 +1,6 @@
 package com.oddlabs.tt.procedural;
 
+import com.oddlabs.procedural.Channel;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
@@ -10,8 +11,8 @@ public final class BlendLighting extends BlendInfo {
 
     private final Color.@NonNull Linear color;
 
-    public BlendLighting(@NonNull GLByteImage alpha_image, @NonNull Color color) {
-        super(alpha_image);
+    public BlendLighting(@NonNull Channel alphaChannel, @NonNull Color color) {
+        super(alphaChannel);
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
     }
 

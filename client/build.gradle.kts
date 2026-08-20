@@ -19,7 +19,6 @@ dependencies {
     api(project(":base"))
     implementation(project(":common"))
     api(project(":simulation"))
-    implementation(project(":procedural"))
     implementation(project(":net"))
     implementation(project(":window"))
     implementation(project(":input"))

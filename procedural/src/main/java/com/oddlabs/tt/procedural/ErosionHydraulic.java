@@ -228,17 +228,11 @@ public final class ErosionHydraulic {
             if (sediment != null) IO.println("sediment " + i + " checksum: " + sediment.sum());
             //System.out.println("material " + i + " checksum: " + (height.sum() + sediment.sum()));
             if (i < 10) {
-                new GLIntImage(height.toLayer()).saveAsBMP("height00" + i);
-                //water.copy().dynamicRange().toLayer().toGLIntImage().saveAsBMP("water00" + i);
-                //if (sediment != null) sediment.toLayer().toGLIntImage().saveAsBMP("sediment00" + i);
+                height.toLayer().saveAsPNG("height00" + i);
             } else if (i < 100) {
-                new GLIntImage(height.toLayer()).saveAsBMP("height0" + i);
-                //water.copy().dynamicRange().toLayer().toGLIntImage().saveAsBMP("water0" + i);
-                //if (sediment != null) sediment.copy().dynamicRange().toLayer().toGLIntImage().saveAsBMP("sediment0" + i);
+                height.toLayer().saveAsPNG("height0" + i);
             } else {
-                new GLIntImage(height.toLayer()).saveAsBMP("height" + i);
-                //water.copy().dynamicRange().toLayer().toGLIntImage().saveAsBMP("water0" + i);
-                //if (sediment != null) sediment.copy().dynamicRange().toLayer().toGLIntImage().saveAsBMP("sediment0" + i);
+                height.toLayer().saveAsPNG("height" + i);
             }
         }
     }

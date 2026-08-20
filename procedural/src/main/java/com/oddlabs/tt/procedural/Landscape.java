@@ -76,9 +76,9 @@ public final class Landscape {
     public record StructureLayers(Layer diffuse, Layer normal) {
     }
 
-    private GLIntImage detail;
-    private GLIntImage detail_normal;
-    private @NonNull GLByteImage[] alpha_maps;
+    private Layer detail;
+    private Layer detail_normal;
+    private @NonNull Channel[] alpha_maps;
 
     private Channel height;
     private Channel slope;
@@ -216,13 +216,6 @@ public final class Landscape {
             }
         };
 
-        GLIntImage[] structures = Arrays.stream(layers)
-                .map(layer -> new GLIntImage(layer.diffuse))
-                .toArray(GLIntImage[]::new);
-        GLIntImage[] structure_normals = Arrays.stream(layers)
-                .map(layer -> new GLIntImage(layer.normal))
-                .toArray(GLIntImage[]::new);
-
         if (DEBUG) height.toLayer().saveAsPNG("height");
         ProgressListener.progress();
         Channel grass_alpha = generateAlphas();
@@ -241,14 +234,14 @@ public final class Landscape {
 
         // create blend infos
         blend_infos = new BlendInfo[]{
-                new StructureBlend(structures[0], structure_normals[0], new GLByteImage(new Channel(1, 1).fill(1f))),
-                new StructureBlend(structures[1], structure_normals[1], alpha_maps[0]),
-                new StructureBlend(structures[2], structure_normals[2], alpha_maps[1]),
-                new StructureBlend(structures[3], structure_normals[3], alpha_maps[2]),
-                new StructureBlend(structures[4], structure_normals[4], alpha_maps[3]),
+                new StructureBlend(layers[0].diffuse(), layers[0].normal(), new Channel(1, 1).fill(1f)),
+                new StructureBlend(layers[1].diffuse(), layers[1].normal(), alpha_maps[0]),
+                new StructureBlend(layers[2].diffuse(), layers[2].normal(), alpha_maps[1]),
+                new StructureBlend(layers[3].diffuse(), layers[3].normal(), alpha_maps[2]),
+                new StructureBlend(layers[4].diffuse(), layers[4].normal(), alpha_maps[3]),
                 new BlendLighting(alpha_maps[4], BLEND_LIGHTING_COLOR),
-                new StructureBlend(structures[5], structure_normals[5], alpha_maps[5]),
-                new StructureBlend(structures[6], structure_normals[6], alpha_maps[6]),
+                new StructureBlend(layers[5].diffuse(), layers[5].normal(), alpha_maps[5]),
+                new StructureBlend(layers[6].diffuse(), layers[6].normal(), alpha_maps[6]),
                 new BlendOcclusion(alpha_maps[7], AO_COLOR)
         };
     }
@@ -286,8 +279,8 @@ public final class Landscape {
 
         StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
                 .copy());
-        detail = new GLIntImage(structure_detail.diffuse);
-        detail_normal = new GLIntImage(structure_detail.normal);
+        detail = structure_detail.diffuse();
+        detail_normal = structure_detail.normal();
         return structures;
     }
 
@@ -316,8 +309,8 @@ public final class Landscape {
 
         StructureLayers structure_detail = Landscape.genDetail(detail_size, detail_alpha_value, STRUCTURE_SEED, noise8
                 .copy());
-        detail = new GLIntImage(structure_detail.diffuse);
-        detail_normal = new GLIntImage(structure_detail.normal);
+        detail = structure_detail.diffuse();
+        detail_normal = structure_detail.normal();
 
         return structures;
     }
@@ -528,7 +521,7 @@ public final class Landscape {
     // * TERRAIN *
     // ***********
     private void generateTerrainNative() {
-        alpha_maps = new GLByteImage[8];
+        alpha_maps = new Channel[8];
 
         // generate height map
         height = new Mountain(unit_grids_per_world, Utils.powerOf2Log2(unit_grids_per_world) - 6, 0.5f, seed)
@@ -576,7 +569,7 @@ public final class Landscape {
     }
 
     private void generateTerrainViking() {
-        alpha_maps = new GLByteImage[8];
+        alpha_maps = new Channel[8];
 
         // generate height map
         height = new Mountain(unit_grids_per_world, Utils.powerOf2Log2(unit_grids_per_world) - 6, 0.5f, seed)
@@ -729,10 +722,10 @@ public final class Landscape {
                 if (DEBUG) alpha2.toLayer().saveAsPNG("alpha_rock");
                 alpha3 = generateGrassAlpha(unit_grids_per_world, seed);
                 if (DEBUG) alpha3.toLayer().saveAsPNG("alpha_grass");
-                alpha_maps[0] = new GLByteImage(alpha0);
-                alpha_maps[1] = new GLByteImage(alpha1);
-                alpha_maps[2] = new GLByteImage(alpha2);
-                alpha_maps[3] = new GLByteImage(alpha3);
+                alpha_maps[0] = alpha0;
+                alpha_maps[1] = alpha1;
+                alpha_maps[2] = alpha2;
+                alpha_maps[3] = alpha3;
                 yield alpha3;
             }
             case VIKING -> {
@@ -744,10 +737,10 @@ public final class Landscape {
                 if (DEBUG) alpha2.toLayer().saveAsPNG("alpha_grass");
                 alpha3 = Landscape.generateSnowAlpha(height, alpha1.copy());
                 if (DEBUG) alpha3.toLayer().saveAsPNG("alpha_snow");
-                alpha_maps[0] = new GLByteImage(alpha0);
-                alpha_maps[1] = new GLByteImage(alpha1);
-                alpha_maps[2] = new GLByteImage(alpha2);
-                alpha_maps[3] = new GLByteImage(alpha3);
+                alpha_maps[0] = alpha0;
+                alpha_maps[1] = alpha1;
+                alpha_maps[2] = alpha2;
+                alpha_maps[3] = alpha3;
                 yield alpha2;
             }
         };
@@ -819,9 +812,9 @@ public final class Landscape {
             }
         }
         ao.smooth(2);
-        alpha_maps[7] = new GLByteImage(ao);
+        alpha_maps[7] = ao;
 
-        alpha_maps[6] = new GLByteImage(seabottom_alpha);
+        alpha_maps[6] = seabottom_alpha;
 
         return grass_alpha;
     }
@@ -1008,8 +1001,8 @@ public final class Landscape {
         }
 
         // shadow and highlight are changed by supply placement
-        alpha_maps[4] = new GLByteImage(highlight);
-        alpha_maps[5] = new GLByteImage(shadow);
+        alpha_maps[4] = highlight;
+        alpha_maps[5] = shadow;
         ProgressListener.progress(1 / 14f);
 
         // generate plant maps
@@ -1196,11 +1189,11 @@ public final class Landscape {
         return blend_infos;
     }
 
-    public GLIntImage getDetail() {
+    public Layer getDetail() {
         return detail;
     }
 
-    public GLIntImage getDetailNormal() {
+    public Layer getDetailNormal() {
         return detail_normal;
     }
 

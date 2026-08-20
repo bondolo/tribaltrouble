@@ -9,8 +9,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -26,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class EditLine extends TextField implements Clipped {
     @SuppressWarnings("TimeUnitConversionChecker")
     private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
+    private static @Nullable Runnable errorAudioHandler;
     private final Set<@NonNull EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
     private final @NonNull Origin alignment;
     private final @Nullable String allowed_chars;
@@ -35,6 +34,10 @@ public class EditLine extends TextField implements Clipped {
     private int index;
 
     private long errorFlashStart = 0;
+
+    public static void setErrorAudioHandler(@Nullable Runnable handler) {
+        errorAudioHandler = handler;
+    }
 
     public EditLine(int width, int max_codepoints) {
         this(width, max_codepoints, Origin.AT_START);
@@ -110,10 +113,13 @@ public class EditLine extends TextField implements Clipped {
 
     public void triggerError() {
         errorFlashStart = System.currentTimeMillis();
-        try {
-            Renderer.getRenderer().getAudioManager().newAudio(0f, 0f, 0f, AudioAssets.ERROR_SOUND);
-        } catch (Exception _) {
-            // Ignore audio errors
+        var handler = errorAudioHandler;
+        if (handler != null) {
+            try {
+                handler.run();
+            } catch (Exception _) {
+                // Ignore audio errors
+            }
         }
     }
 

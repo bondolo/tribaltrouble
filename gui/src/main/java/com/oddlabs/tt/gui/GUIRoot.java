@@ -224,6 +224,7 @@ public final class GUIRoot extends GUIObject {
         if (old != null) {
             old.remove();
         }
+        delegate.setDim(getWidth(), getHeight());
         super.addChild(delegate);
         mousePick();
     }
@@ -237,8 +238,10 @@ public final class GUIRoot extends GUIObject {
         delegate.remove();
 
         ModalDelegate modal_delegate = getModalDelegate();
-        if (top_most && modal_delegate != null)
+        if (top_most && modal_delegate != null) {
+            modal_delegate.setDim(getWidth(), getHeight());
             super.addChild(modal_delegate);
+        }
 
         GUIObject object = focus_backup_stack.pop();
         if (top_most) {

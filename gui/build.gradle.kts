@@ -10,7 +10,6 @@ lwjgl {
     implementation(
         Module.CORE,
         Module.OPENGL,
-        Module.SDL,
         Module.STB
     )
 }
@@ -20,9 +19,7 @@ dependencies {
     implementation(project(":common"))
     api(project(":window"))
     api(project(":input"))
-    implementation(project(":audio"))
     api(project(":engine"))
-    implementation(project(":procedural"))
     api(libs.joml)
     compileOnlyApi(libs.jspecify)
 

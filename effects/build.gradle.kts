@@ -20,7 +20,6 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":simulation"))
     api(project(":engine"))
-    implementation(project(":audio"))
     api(libs.joml)
     compileOnlyApi(libs.jspecify)
 

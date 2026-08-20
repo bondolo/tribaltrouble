@@ -12,11 +12,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_ALT;
-import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_CTRL;
-import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_GUI;
-import static org.lwjgl.sdl.SDLKeycode.SDL_KMOD_SHIFT;
-
 /**
  * High-level keyboard input processing, including magic developer keys and modifiers.
  */
@@ -163,11 +158,7 @@ public final class KeyboardInput {
             if (checkMagicKey(event_key_down, event_key, false, repeat_event))
                 continue;
 
-            Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-            if ((event_key_mods & SDL_KMOD_CTRL) != 0) modifiers.add(Modifier.CONTROL);
-            if ((event_key_mods & SDL_KMOD_SHIFT) != 0) modifiers.add(Modifier.SHIFT);
-            if ((event_key_mods & SDL_KMOD_ALT) != 0) modifiers.add(Modifier.ALT);
-            if ((event_key_mods & SDL_KMOD_GUI) != 0) modifiers.add(Modifier.META);
+            Set<Modifier> modifiers = Modifier.fromMask(event_key_mods);
 
             // Use passed localInput, not static Renderer
             if (event_key_code == 0 && modifiers.isEmpty()) {

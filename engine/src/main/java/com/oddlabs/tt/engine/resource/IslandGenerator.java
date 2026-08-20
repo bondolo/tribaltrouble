@@ -9,8 +9,9 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
+import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.procedural.BlendInfo;
-import com.oddlabs.tt.procedural.GLImage;
 import com.oddlabs.tt.procedural.GeneratedLandscapeData;
 import com.oddlabs.tt.procedural.Landscape;
 import org.jspecify.annotations.NonNull;
@@ -82,8 +83,8 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
         IO.println("Landscape created in " + Duration.between(time_before, time_after));
         time_before = Instant.now();
         BlendInfo[] blend_infos = landscape.getBlendInfos();
-        Texture detail = createDetail(landscape.getDetail(), base_level);
-        Texture detailNormal = createDetailNormal(landscape.getDetailNormal());
+        Texture detail = createDetail(new GLIntImage(landscape.getDetail()), base_level);
+        Texture detailNormal = createDetailNormal(new GLIntImage(landscape.getDetailNormal()));
 
         float textureScale = config.metersPerWorld() * Globals.LANDSCAPE_TEXTURE_SCALE;
         LandscapeBaker baker = new LandscapeBaker(colormap_size, textureScale);
