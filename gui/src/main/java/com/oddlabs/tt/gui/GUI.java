@@ -19,6 +19,7 @@ import org.jspecify.annotations.Nullable;
  * Container for the 2D user interface
  */
 public final class GUI implements Animated, FrameDriver {
+    private final @NonNull Skin skin;
     private final @NonNull LocalInput localInput;
     private final GUIRenderer guiRenderer = new GUIRenderer();
     private @NonNull GUIRoot current_root;
@@ -27,13 +28,26 @@ public final class GUI implements Animated, FrameDriver {
     private final CameraState frustum_state = new CameraState();
     private @Nullable Runnable closeHandler;
 
-    public GUI(@NonNull LocalInput localInput) {
+    public GUI(@NonNull LocalInput localInput, @NonNull Skin skin) {
         this.localInput = localInput;
+        this.skin = skin;
         this.current_root = createRoot();
     }
 
-    public GUI() {
-        this(new LocalInput(Renderer.getRenderer().getWindow()));
+    public GUI(@NonNull LocalInput localInput) {
+        this(localInput, new Skin("/gui/gui_skin.xml"));
+    }
+
+    public @NonNull Skin getSkin() {
+        return skin;
+    }
+
+    public void runWithSkin(@NonNull Runnable operation) {
+        Skin.run(skin, operation);
+    }
+
+    public <V, X extends Throwable> V callWithSkin(ScopedValue.@NonNull CallableOp<V, X> operation) throws X {
+        return Skin.call(skin, operation);
     }
 
     public @NonNull LocalInput getLocalInput() {
@@ -45,17 +59,24 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     @Override
+    public void run(@NonNull Runnable session) {
+        runWithSkin(session);
+    }
+
+    @Override
     public void tick(@NonNull NetworkSelector network) {
-        localInput.poll(getGUIRoot());
+        ScopedValue.where(Skin.CURRENT, skin).run(() -> localInput.poll(getGUIRoot()));
     }
 
     @Override
     public void onCloseRequested() {
-        if (closeHandler != null) {
-            closeHandler.run();
-        } else {
-            Renderer.shutdown();
-        }
+        ScopedValue.where(Skin.CURRENT, skin).run(() -> {
+            if (closeHandler != null) {
+                closeHandler.run();
+            } else {
+                Renderer.shutdown();
+            }
+        });
     }
 
     public @NonNull GUIRoot newFade() {
@@ -76,17 +97,19 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     public @NonNull GUIRoot createRoot() {
-        GUIRoot gui_root = new GUIRoot(this);
-        // This happens early before the viewport is fully initialized
-        var window = Renderer.getRenderer().getWindow();
-        gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
-        return gui_root;
+        return ScopedValue.where(Skin.CURRENT, skin).call(() -> {
+            GUIRoot gui_root = new GUIRoot(this);
+            // This happens early before the viewport is fully initialized
+            var window = Renderer.getRenderer().getWindow();
+            gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
+            return gui_root;
+        });
     }
 
     @Override
     public void animate(float t) {
         if (fade != null) {
-            fade.animate(this, t);
+            ScopedValue.where(Skin.CURRENT, skin).run(() -> fade.animate(this, t));
         }
     }
 
@@ -170,10 +193,12 @@ public final class GUI implements Animated, FrameDriver {
         try (var _ = (renderer == null || renderer.isClosed()) ? context.withBlendMode(BlendMode.PREMULTIPLIED)
                 : (ScopedState) () -> {
                 }) {
-            guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
-                guiRoot.render(guiRenderer);
-                guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null
-                        && renderer.isCheater());
+            ScopedValue.where(Skin.CURRENT, skin).run(() -> {
+                guiRenderer.renderFrame(context, guiRoot.getWidth(), guiRoot.getHeight(), () -> {
+                    guiRoot.render(guiRenderer);
+                    guiRoot.renderTopmost(guiRenderer, renderer != null ? renderer.getToolTip() : null, renderer != null
+                            && renderer.isCheater());
+                });
             });
         }
     }

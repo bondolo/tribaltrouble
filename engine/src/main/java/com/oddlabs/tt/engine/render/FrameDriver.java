@@ -28,4 +28,13 @@ public interface FrameDriver {
      * Handles the window close request event.
      */
     void onCloseRequested();
+
+    /**
+     * Executes the session loop within the driver's execution context.
+     *
+     * @param session the session loop to execute
+     */
+    default void run(@NonNull Runnable session) {
+        session.run();
+    }
 }

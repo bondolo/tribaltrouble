@@ -25,7 +25,7 @@ import static com.oddlabs.tt.gui.Icons.getNodeByName;
  * Skin for GUI
  */
 public final class Skin {
-    private static final Skin SKIN = new Skin("/gui/gui_skin.xml");
+    static final ScopedValue<Skin> CURRENT = ScopedValue.newInstance();
 
     private final @NonNull Font edit_font;
     private final @NonNull Font button_font;
@@ -58,10 +58,19 @@ public final class Skin {
     private final SequencedMap<@NonNull String, @NonNull IconQuad> flags;
 
     public static @NonNull Skin getSkin() {
-        return SKIN;
+        return CURRENT.orElseThrow(() -> new IllegalStateException("Skin not in scope"));
     }
 
-    private Skin(@NonNull String xml_file) {
+    public static void run(@NonNull Skin skin, @NonNull Runnable operation) {
+        ScopedValue.where(CURRENT, skin).run(operation);
+    }
+
+    public static <V, X extends Throwable> V call(@NonNull Skin skin,
+            ScopedValue.@NonNull CallableOp<V, X> operation) throws X {
+        return ScopedValue.where(CURRENT, skin).call(operation);
+    }
+
+    public Skin(@NonNull String xml_file) {
         Node root = Icons.loadFile(xml_file, new GUIErrorHandler());
         Texture texture = Icons.loadTexture(root);
         edit_font = parseEditFont(root);
