@@ -69,13 +69,6 @@ public final class ProgressForm {
 
     public static @Nullable Runnable setProgressForm(@NonNull NetworkSelector network, final @NonNull GUI gui,
             final @NonNull LoadCallback callback, final boolean first_progress) {
-        ProgressListener.setListener(step -> {
-            if (step > 0f) {
-                progress(step);
-            } else {
-                progress();
-            }
-        });
         String texture;
         int texture_width;
         int texture_height;
@@ -161,7 +154,14 @@ public final class ProgressForm {
         Fadable start_sources_fadable = () -> Renderer.getRenderer().startSound();
 
         GUIRoot client_root = gui.createRoot();
-        UIRenderer renderer = callback.load(client_root);
+        ProgressListener listener = step -> {
+            if (step > 0f) {
+                progress(step);
+            } else {
+                progress();
+            }
+        };
+        UIRenderer renderer = ProgressListener.supply(listener, () -> callback.load(client_root));
         gui.newFade(start_sources_fadable, client_root, renderer);
     }
 
