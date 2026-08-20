@@ -32,6 +32,15 @@ import java.util.Random;
 public abstract class AI implements Animated {
     private static final float SLEEP_SECONDS = 2f;
     private static final float MIN_SLEEP_SECONDS = 5f;
+    private static boolean run_ai = SimulationConfig.DEFAULT_RUN_AI;
+
+    public static boolean isRunAI() {
+        return run_ai;
+    }
+
+    public static void setRunAI(boolean run) {
+        run_ai = run;
+    }
 
     private final @NonNull Player owner;
     private int INDEX_IDLE_PEONS;
@@ -267,7 +276,7 @@ public abstract class AI implements Animated {
 
     protected final boolean shouldDoAction(float time) {
         sleep_time -= time;
-        if (!SimulationConfig.run_ai || sleep_time >= 0)
+        if (!run_ai || sleep_time >= 0)
             return false;
         reset();
         return true;

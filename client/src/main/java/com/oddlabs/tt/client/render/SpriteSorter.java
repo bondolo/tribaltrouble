@@ -1,13 +1,11 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.base.util.PocketList;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.LODObject;
+import com.oddlabs.tt.engine.render.PolyDetail;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.NonNull;
 
 final class SpriteSorter {
@@ -24,7 +22,7 @@ final class SpriteSorter {
     private int used_polys = 0;
 
     public SpriteSorter() {
-        this(Globals.UNIT_HIGH_POLY_COUNT[Renderer.getRenderer().getSettings().graphic_detail]);
+        this(RenderConfig.UNIT_HIGH_POLY_COUNT[Renderer.getRenderer().getSettings().graphic_detail]);
     }
 
     private SpriteSorter(int polycount_limit) {

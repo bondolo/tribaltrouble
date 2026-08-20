@@ -1,13 +1,12 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
 import com.oddlabs.tt.procedural.Voronoi;
 import org.jspecify.annotations.NonNull;
@@ -19,7 +18,7 @@ public final class GeneratorRock extends TextureGenerator {
 
     @Override
     public Texture @NonNull [] generate() {
-        int seed = Globals.LANDSCAPE_SEED;
+        int seed = LandscapeConfig.LANDSCAPE_SEED;
         Channel voronoi4 = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed).getDistance(0f, -1f, 1f);
         Channel voronoi8 = new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed).getDistance(0f, -1f, 1f);
         Channel voronoi16 = new Voronoi(TEXTURE_SIZE, 16, 16, 1, 1f, seed).getDistance(0f, -1f, 1f);

@@ -3,40 +3,28 @@ package com.oddlabs.tt.content.menu;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.MenuCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.FormFactory;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.content.form.ConnectingForm;
-import com.oddlabs.tt.content.form.MultiplayerLobby;
-import com.oddlabs.tt.content.form.OptionsMenu;
-import com.oddlabs.tt.content.form.ProgressForm;
-import com.oddlabs.tt.content.form.QuitForm;
-import com.oddlabs.tt.gui.FocusDirection;
-import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.gui.WarningForm;
-import com.oddlabs.tt.gui.GUI;
-import com.oddlabs.tt.gui.GUIImage;
-import com.oddlabs.tt.gui.GUIObject;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.MenuButton;
-import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.client.render.DefaultRenderer;
 import com.oddlabs.tt.client.render.Picker;
-import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
 import com.oddlabs.tt.client.viewer.WorldStarter;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.content.form.ConnectingForm;
+import com.oddlabs.tt.content.form.MultiplayerLobby;
+import com.oddlabs.tt.content.form.OptionsMenu;
+import com.oddlabs.tt.content.form.ProgressForm;
+import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeResources;
 import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
@@ -44,9 +32,23 @@ import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
+import com.oddlabs.tt.gui.FocusDirection;
+import com.oddlabs.tt.gui.Form;
+import com.oddlabs.tt.gui.GUI;
+import com.oddlabs.tt.gui.GUIImage;
+import com.oddlabs.tt.gui.GUIObject;
+import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.MenuButton;
+import com.oddlabs.tt.gui.MessageForm;
+import com.oddlabs.tt.gui.WarningForm;
+import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.input.GameAction;
+import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.Server;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
@@ -57,7 +59,6 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.DefaultPlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -348,8 +349,9 @@ public abstract class Menu extends CameraDelegate<Camera> {
     public static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui,
             final boolean first_progress) {
         IslandConfig islandConfig = new IslandConfig(
-                Terrain.NATIVE, 256, Globals.LANDSCAPE_HILLS,
-                Globals.LANDSCAPE_VEGETATION, Globals.LANDSCAPE_RESOURCES, Globals.LANDSCAPE_SEED);
+                Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
+                LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
+                LandscapeConfig.LANDSCAPE_SEED);
         final WorldGenerator generator = new IslandGenerator(
                 islandConfig, Renderer.getRenderer().getSettings().getTexelsPerGridUnit());
         return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root,
@@ -372,7 +374,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 new NotificationListener() {
                 }, world_params, world_info.landscapeData(), players,
                 Renderer.getRenderer().getSettings().accessibility.linear_team_colours,
-                Globals.INSERT_PLANTS[Renderer.getRenderer().getSettings().graphic_detail],
+                RenderConfig.INSERT_PLANTS[Renderer.getRenderer().getSettings().graphic_detail],
                 ProgressForm::progress);
         AnimationManager manager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);

@@ -3,21 +3,21 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.landscape.AbstractPatchGroup;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
-import com.oddlabs.tt.simulation.landscape.PatchGroup;
-import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.engine.render.scenery.Sky;
+import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.render.shader.LandscapeShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.engine.render.scenery.Sky;
-import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
+import com.oddlabs.tt.procedural.LandscapeConfig;
+import com.oddlabs.tt.simulation.landscape.AbstractPatchGroup;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
+import com.oddlabs.tt.simulation.landscape.PatchGroup;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -122,7 +122,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
 
             // Set VTF Uniforms
             shader.setUniform(LandscapeShader.Uniforms.WORLD_SIZE, (float) world.getHeightMap().getMetersPerWorld());
-            shader.setUniform(LandscapeShader.Uniforms.DETAIL_SCALE, Globals.LANDSCAPE_DETAIL_REPEAT_RATE);
+            shader.setUniform(LandscapeShader.Uniforms.DETAIL_SCALE, LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
 
             Color stdColor = Sky.SEA_BOTTOM_COLOR.get(world.getTerrainType());
             shader.setUniformColor3(LandscapeShader.Uniforms.SEA_BOTTOM_COLOR, stdColor);
@@ -144,7 +144,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             context.setTexture(4, detailNormalMap);
             shader.setUniform(LandscapeShader.Uniforms.DETAIL_NORMAL_MAP, 4);
 
-            if (Globals.draw_landscape && !render_list.isEmpty()) {
+            if (DebugFlags.draw_landscape && !render_list.isEmpty()) {
                 int instanceCount = render_list.size();
                 int requiredFloats = instanceCount * 3;
 
@@ -199,7 +199,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     }
 
     public void debugRender(@NonNull CameraState frustum_state) {
-        if (Globals.isBoundsEnabled(BoundingMode.LANDSCAPE)) {
+        if (DebugFlags.isBoundsEnabled(BoundingMode.LANDSCAPE)) {
             for (LandscapeLeaf patch : render_list) {
                 RenderTools.draw(patch, BoundingMode.LANDSCAPE, 1f, 0f, 0f);
             }

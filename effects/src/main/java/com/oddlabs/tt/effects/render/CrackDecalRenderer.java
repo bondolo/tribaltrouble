@@ -1,13 +1,16 @@
 package com.oddlabs.tt.effects.render;
 
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.Shadowable;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.ShadowListRenderer;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Shadowable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
@@ -28,7 +31,7 @@ public final class CrackDecalRenderer extends ShadowListRenderer {
     }
 
     public void addToCrackList(@NonNull Shadowable shadowable) {
-        if (Globals.process_shadows) {
+        if (DebugFlags.process_shadows) {
             crack_list.add(shadowable);
         }
     }

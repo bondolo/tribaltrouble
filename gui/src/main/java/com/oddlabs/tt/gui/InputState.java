@@ -3,7 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.gui.render.Index;
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
@@ -73,14 +72,14 @@ public final class InputState {
 
     public void mouseScrolled(int dz) {
         GUIObject gui_hit = pick();
-        int scroll_amount = Math.round(dz * Globals.WHEEL_SCALE);
+        int scroll_amount = Math.round(dz * GUIConfig.WHEEL_SCALE);
         gui_hit.setFocus();
         gui_hit.mouseScrolledAll(scroll_amount);
     }
 
     public void mouseScrolledHorizontally(int dx) {
         GUIObject gui_hit = pick();
-        int scroll_amount = Math.round(dx * Globals.WHEEL_SCALE);
+        int scroll_amount = Math.round(dx * GUIConfig.WHEEL_SCALE);
         gui_hit.setFocus();
         gui_hit.mouseScrolledHorizontallyAll(scroll_amount);
     }

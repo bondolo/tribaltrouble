@@ -1,14 +1,13 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.shader.InstancedSpriteShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.image.GLImage;
-import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
@@ -370,7 +369,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             context.setTexture(0, key.texture);
             shader.setUniform(InstancedSpriteShader.Uniforms.TEXTURE_0, 0);
 
-            boolean useLighting = Globals.draw_light && sprite.lighted;
+            boolean useLighting = DebugFlags.draw_light && sprite.lighted;
             shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_LIGHTING, useLighting);
             shader.setUniform(InstancedSpriteShader.Uniforms.REPLACE_MODE, !useLighting && !sprite.modulate_color);
             shader.setUniform(InstancedSpriteShader.Uniforms.DESATURATE, key.respond ? 0.5f : 0.0f);

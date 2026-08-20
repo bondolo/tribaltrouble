@@ -92,4 +92,3 @@ public interface ProgressListener {
         onProgress(0f);
     }
 }
-

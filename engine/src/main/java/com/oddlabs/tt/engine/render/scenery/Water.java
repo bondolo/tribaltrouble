@@ -1,11 +1,8 @@
 package com.oddlabs.tt.engine.render.scenery;
 
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.GeneratorOcean;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PatchMesh;
@@ -19,6 +16,10 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
+import com.oddlabs.tt.procedural.LandscapeConfig;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
+import com.oddlabs.tt.simulation.model.Terrain;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -244,7 +245,7 @@ public final class Water implements AutoCloseable {
             context.setTexture(0, ocean[0]);
             waterShader.setUniform(WaterShader.Uniforms.TEXTURE_0, 0);
 
-            if (Globals.draw_detail) {
+            if (DebugFlags.draw_detail) {
                 context.setTexture(1, ocean[1]);
                 waterShader.setUniform(WaterShader.Uniforms.TEXTURE_1, 1);
                 waterShader.setUniform(WaterShader.Uniforms.ENABLE_DETAIL, true);
@@ -459,8 +460,8 @@ public final class Water implements AutoCloseable {
 
         // u_waveTime, u_waterRepeatRate, u_waterDetailRepeatRate, _pad2 (4 floats)
         buffer.putFloat(waveTime * waveSpeed);
-        buffer.putFloat(Globals.WATER_REPEAT_RATE);
-        buffer.putFloat(Globals.WATER_DETAIL_REPEAT_RATE);
+        buffer.putFloat(LandscapeConfig.WATER_REPEAT_RATE);
+        buffer.putFloat(LandscapeConfig.WATER_DETAIL_REPEAT_RATE);
         buffer.putFloat(0f); // _pad2
     }
 

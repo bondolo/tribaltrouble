@@ -1,12 +1,11 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.Ring;
 import com.oddlabs.tt.procedural.Voronoi;
@@ -77,7 +76,8 @@ public final class GeneratorSmoke extends TextureGenerator {
         if (Landscape.DEBUG) smoke_img.saveAsPNG("generator_smoke_" + seed);
 
         return new Texture[]{
-                new Texture(smoke_img, Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                new Texture(smoke_img, RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                        GL11.GL_LINEAR,
                         GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE)
         };
     }

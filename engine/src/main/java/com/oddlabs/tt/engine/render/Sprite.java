@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.engine.procedural.GeneratorRespond;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
@@ -107,7 +106,7 @@ public final class Sprite {
             }
         }
 
-        int color_format = alpha ? Globals.COMPRESSED_RGBA_FORMAT : Globals.COMPRESSED_RGB_FORMAT;
+        int color_format = alpha ? RenderConfig.COMPRESSED_RGBA_FORMAT : RenderConfig.COMPRESSED_RGB_FORMAT;
 
         String[][] texture_names = sprite_info.getTextures();
         textures = new Texture[texture_names.length][3];
@@ -119,7 +118,8 @@ public final class Sprite {
             }
 
             textures[i][TEXTURE_TEAM] = texture_names[i][TEXTURE_TEAM] != null
-                    ? getTextureForName(texture_names[i][1], Globals.COMPRESSED_RGB_FORMAT, mipmap_cutoff, max_alpha)[0]
+                    ? getTextureForName(texture_names[i][1], RenderConfig.COMPRESSED_RGB_FORMAT, mipmap_cutoff,
+                            max_alpha)[0]
                     : null;
         }
         this.respond_texture = Resources.findResource(new GeneratorRespond())[0];

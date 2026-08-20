@@ -2,9 +2,8 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.procedural.Channel;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.base.resource.NativeResource;
+import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.util.OpenGLException;
@@ -117,12 +116,13 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
 
     public Texture(float @NonNull [] pixels, int width, int height, int internal_format, int min_filter, int mag_filter,
             int wrap) {
-        this(width, height, min_filter, mag_filter, wrap, wrap, Globals.NO_MIPMAP_CUTOFF);
+        this(width, height, min_filter, mag_filter, wrap, wrap, RenderConfig.NO_MIPMAP_CUTOFF);
         uploadPixels(pixels, internal_format);
     }
 
     public Texture(@NonNull Channel channel, int internal_format, int min_filter, int mag_filter, int wrap) {
-        this(channel.getWidth(), channel.getHeight(), min_filter, mag_filter, wrap, wrap, Globals.NO_MIPMAP_CUTOFF);
+        this(channel.getWidth(), channel.getHeight(), min_filter, mag_filter, wrap, wrap,
+                RenderConfig.NO_MIPMAP_CUTOFF);
         uploadPixels(channel.getPixels(), internal_format);
     }
 
@@ -255,12 +255,13 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
 
     public Texture(@NonNull GLImage image, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t)
             throws IllegalArgumentException, NullPointerException {
-        this(image.createMipMaps(), internal_format, min_filter, mag_filter, wrap_s, wrap_t, Globals.NO_MIPMAP_CUTOFF);
+        this(image.createMipMaps(), internal_format, min_filter, mag_filter, wrap_s, wrap_t,
+                RenderConfig.NO_MIPMAP_CUTOFF);
     }
 
     public Texture(@NonNull GLImage @NonNull [] mipmaps, int internal_format, int min_filter, int mag_filter,
             int wrap_s, int wrap_t) throws IllegalArgumentException, NullPointerException {
-        this(mipmaps, internal_format, min_filter, mag_filter, wrap_s, wrap_t, Globals.NO_MIPMAP_CUTOFF);
+        this(mipmaps, internal_format, min_filter, mag_filter, wrap_s, wrap_t, RenderConfig.NO_MIPMAP_CUTOFF);
     }
 
     public Texture(@NonNull GLImage @NonNull [] mipmaps, int internal_format, int min_filter, int mag_filter,
@@ -282,7 +283,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
     }
 
     private static int getDetailShift(int num_mipmaps) {
-        return Math.min(num_mipmaps - 1, Globals.TEXTURE_MIP_SHIFT[Renderer.getRenderer()
+        return Math.min(num_mipmaps - 1, RenderConfig.TEXTURE_MIP_SHIFT[Renderer.getRenderer()
                 .getSettings().graphic_detail]);
     }
 

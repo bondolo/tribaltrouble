@@ -1,14 +1,12 @@
 package com.oddlabs.tt.client.camera;
 
-import com.oddlabs.tt.engine.render.CameraState;
-
-
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.event.StateChecksum;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
-import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -98,8 +96,8 @@ public abstract class Camera implements Animated {
             for (int j = 0; j < 2; j++) {
                 float aspect = (float) width / height;
                 float fovy = calculateDynamicFOV(z, aspect, FOVMode.DIAGONAL);
-                float zNear = Globals.VIEW_MIN;
-                float zFar = Globals.VIEW_MAX;
+                float zNear = RenderConfig.VIEW_MIN;
+                float zFar = RenderConfig.VIEW_MAX;
                 proj.setPerspective((float) Math.toRadians(fovy), aspect, zNear, zFar);
                 tmp_camera.set(state);
                 tmp_camera.setTargetView(proj);
@@ -198,7 +196,7 @@ public abstract class Camera implements Animated {
 
                 yield (float) Math.toDegrees(fovyRad);
             }
-            case FIXED -> Globals.FOV;
+            case FIXED -> RenderConfig.FOV;
         };
     }
 }

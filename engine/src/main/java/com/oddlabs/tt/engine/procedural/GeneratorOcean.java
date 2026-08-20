@@ -1,20 +1,19 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.procedural.Perlin.Interpolation;
-import com.oddlabs.tt.procedural.Perlin.Summation;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
 import com.oddlabs.tt.procedural.Perlin;
+import com.oddlabs.tt.procedural.Perlin.Interpolation;
+import com.oddlabs.tt.procedural.Perlin.Summation;
 import com.oddlabs.tt.procedural.Voronoi;
+import com.oddlabs.tt.simulation.model.Terrain;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
@@ -29,7 +28,7 @@ public final class GeneratorOcean extends TextureGenerator {
 
     @Override
     public Texture @NonNull [] generate() {
-        int seed = Globals.LANDSCAPE_SEED + 1;
+        int seed = LandscapeConfig.LANDSCAPE_SEED + 1;
 
         // water1
         Channel perlin2 = new Perlin(TEXTURE_SIZE, TEXTURE_SIZE, 4, 4, 0.5f, 1, seed, Interpolation.CUBIC,

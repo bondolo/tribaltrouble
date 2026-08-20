@@ -1,13 +1,14 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.ShadowListRenderer;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 
@@ -30,7 +31,7 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
     }
 
     public void addToTargetList(@NonNull LandscapeTargetRespond target) {
-        if (Globals.process_shadows)
+        if (DebugFlags.process_shadows)
             target_list.push(target);
     }
 

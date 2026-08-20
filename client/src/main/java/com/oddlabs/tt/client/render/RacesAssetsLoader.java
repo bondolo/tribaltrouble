@@ -1,16 +1,23 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.base.util.ProgressListener;
-import com.oddlabs.tt.client.gui.GUIIcons;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.base.util.ProgressListener;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
 import com.oddlabs.tt.engine.procedural.GeneratorLightning;
 import com.oddlabs.tt.engine.procedural.GeneratorPoison;
 import com.oddlabs.tt.engine.procedural.GeneratorSmoke;
-import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.engine.render.DecalRenderer;
+import com.oddlabs.tt.engine.render.IconQuad;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.ShadowListKey;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.SpriteList;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.SpriteFile;
@@ -115,13 +122,13 @@ public final class RacesAssetsLoader {
         ShadowListKey shadow_renderer = queues.registerShadowRenderer(building_shadow_desc,
                 new SelectableShadowRenderer(building_shadow_desc));
         SpriteFile building = new SpriteFile(built_name,
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         SpriteFile building_halfbuilt = new SpriteFile(halfbuilt_name,
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         SpriteFile building_start = new SpriteFile(start_name,
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         SpriteKey builtSprite = queues.register(building);
         SpriteKey halfbuiltSprite = queues.register(building_halfbuilt);
@@ -160,14 +167,14 @@ public final class RacesAssetsLoader {
     public static @NonNull RacesResources load(@NonNull RenderQueues queues) {
         int num_progress = 23;
         SpriteFile native_rock_sprite = new SpriteFile("/geometry/natives/rock_resource.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         SpriteFile native_wood_sprite = new SpriteFile("/geometry/natives/wood_resource.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         SpriteFile native_rubber_sprite = new SpriteFile("/geometry/natives/rubber_resource.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         EnumMap<SupplyType, SpriteKey> nativeMap = new EnumMap<>(SupplyType.class);
@@ -180,14 +187,14 @@ public final class RacesAssetsLoader {
         }
 
         SpriteFile viking_wood_sprite = new SpriteFile("/geometry/vikings/wood_resource.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         SpriteFile viking_rubber_sprite = new SpriteFile("/geometry/vikings/rubber_resource.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         SpriteFile viking_rock_sprite = new SpriteFile("/geometry/vikings/rock_resource.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         EnumMap<SupplyType, SpriteKey> vikingMap = new EnumMap<>(SupplyType.class);
@@ -217,14 +224,14 @@ public final class RacesAssetsLoader {
         TextureKey[] note_textures = new TextureKey[8];
         for (int i = 0; i < note_textures.length; i++) {
             note_textures[i] = queues.registerEffectTexture(new TextureFile("/textures/effects/note" + (i + 1),
-                    Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                    RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                     GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 4 + i);
         }
         AssetRegistry.getInstance().registerNoteTextures(note_textures);
 
         TextureKey[] star_textures = new TextureKey[1];
         star_textures[0] = queues.registerEffectTexture(new TextureFile("/textures/effects/star",
-                Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 12);
         AssetRegistry.getInstance().registerStarTextures(star_textures);
 
@@ -348,35 +355,35 @@ public final class RacesAssetsLoader {
         ProgressListener.progress(1f / num_progress);
 
         SpriteFile sprite_list_warrior = new SpriteFile("/geometry/vikings/warrior.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
 
         SpriteFile sprite_list_chieftain = new SpriteFile("/geometry/vikings/chieftain.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         SpriteFile sprite_list_native_chieftain = new SpriteFile("/geometry/natives/chieftain.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         SpriteFile sprite_list_peon = new SpriteFile("/geometry/vikings/peon.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         SpriteFile sprite_list_native_peon = new SpriteFile("/geometry/natives/peon.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         SpriteFile sprite_list_native_warrior = new SpriteFile("/geometry/natives/warrior.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         SpriteFile viking_warrior_axe = new SpriteFile("/geometry/vikings/axe.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
         SpriteFile native_warrior_spear = new SpriteFile("/geometry/natives/spear.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         ProgressListener.progress(1f / num_progress);
 
@@ -642,7 +649,7 @@ public final class RacesAssetsLoader {
         ProgressListener.progress(1f / num_progress);
         GUIIcons icons = GUIIcons.getIcons();
         SpriteKey nativeRallyPoint = queues.register(new SpriteFile("/geometry/natives/rally_point.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         AssetRegistry.getInstance().registerRallyPoint(Race.NATIVES, nativeRallyPoint);
 
@@ -672,7 +679,7 @@ public final class RacesAssetsLoader {
                 AudioAssets.MUSIC_NATIVE);
 
         SpriteKey vikingRallyPoint = queues.register(new SpriteFile("/geometry/vikings/rally_point.binsprite",
-                Globals.NO_MIPMAP_CUTOFF, true, true, true, false));
+                RenderConfig.NO_MIPMAP_CUTOFF, true, true, true, false));
         AssetRegistry.getInstance().registerRallyPoint(Race.VIKINGS, vikingRallyPoint);
 
         RaceInfo vikings_raceInfo = new RaceInfo(
@@ -706,37 +713,37 @@ public final class RacesAssetsLoader {
 
         SpriteKey[] wood_fragment_sprites = new SpriteKey[4];
         wood_fragment_sprites[0] = queues.register(new SpriteFile("/geometry/misc/wood_2.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false), 0);
         wood_fragment_sprites[1] = queues.register(new SpriteFile("/geometry/misc/wood_3.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         wood_fragment_sprites[2] = queues.register(new SpriteFile("/geometry/misc/wood_4.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         wood_fragment_sprites[3] = queues.register(new SpriteFile("/geometry/misc/wood_5.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         AssetRegistry.getInstance().registerWoodFragments(wood_fragment_sprites);
 
         SpriteKey[] treasure_sprites = new SpriteKey[6];
         treasure_sprites[0] = queues.register(new SpriteFile("/geometry/misc/icon.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         treasure_sprites[1] = queues.register(new SpriteFile("/geometry/misc/treasure_1.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         treasure_sprites[2] = queues.register(new SpriteFile("/geometry/misc/treasure_2.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         treasure_sprites[3] = queues.register(new SpriteFile("/geometry/misc/treasure_3.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         treasure_sprites[4] = queues.register(new SpriteFile("/geometry/misc/treasure_4.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         treasure_sprites[5] = queues.register(new SpriteFile("/geometry/misc/treasure_5.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false));
         AssetRegistry.getInstance().registerTreasures(treasure_sprites);
 

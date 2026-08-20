@@ -2,7 +2,7 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -14,7 +14,7 @@ import com.oddlabs.tt.gui.delegate.NullDelegate;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.simulation.SimulationConfig;
+import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -363,7 +363,7 @@ public final class GUIRoot extends GUIObject {
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {
-                    Globals.draw_status = !Globals.draw_status;
+                    DebugFlags.draw_status = !DebugFlags.draw_status;
                     consumed = true;
                 }
                 // GLOBAL_MENU removed because it requires viewer which GUIRoot doesn't have.
@@ -376,28 +376,28 @@ public final class GUIRoot extends GUIObject {
                 // Debug Actions (Only those that don't need Viewer)
                 if (Renderer.getRenderer().getSettings().inDeveloperMode()) {
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
-                        Globals.draw_light = !Globals.draw_light;
+                        DebugFlags.draw_light = !DebugFlags.draw_light;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_PLANTS)) {
-                        Globals.draw_plants = !Globals.draw_plants;
+                        DebugFlags.draw_plants = !DebugFlags.draw_plants;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_PARTICLES)) {
-                        Globals.draw_particles = !Globals.draw_particles;
+                        DebugFlags.draw_particles = !DebugFlags.draw_particles;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_AXES)) {
-                        Globals.draw_axes = !Globals.draw_axes;
+                        DebugFlags.draw_axes = !DebugFlags.draw_axes;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_MISC)) {
-                        Globals.draw_misc = !Globals.draw_misc;
+                        DebugFlags.draw_misc = !DebugFlags.draw_misc;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_PROCESS_MISC)) {
                         logger.info("WARNING: DEBUG_PROCESS_MISC triggered!");
-                        Globals.process_misc = !Globals.process_misc;
+                        DebugFlags.process_misc = !DebugFlags.process_misc;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_RESET_CURSOR)) {
@@ -405,7 +405,7 @@ public final class GUIRoot extends GUIObject {
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_DETAIL)) {
-                        Globals.draw_detail = !Globals.draw_detail;
+                        DebugFlags.draw_detail = !DebugFlags.draw_detail;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_CRASH)) {
@@ -413,16 +413,16 @@ public final class GUIRoot extends GUIObject {
                         throw new IllegalStateException("Debug crash action triggered.");
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRAME_BUFFER)) {
-                        Globals.clear_frame_buffer = !Globals.clear_frame_buffer;
+                        DebugFlags.clear_frame_buffer = !DebugFlags.clear_frame_buffer;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_BOUNDING)) {
-                        Globals.switchBoundingMode();
+                        DebugFlags.switchBoundingMode();
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRUSTUM_FREEZE)) {
-                        Globals.frustum_freeze = !Globals.frustum_freeze;
-                        logger.info("Globals.frustum_freeze = " + Globals.frustum_freeze);
+                        DebugFlags.frustum_freeze = !DebugFlags.frustum_freeze;
+                        logger.info("DebugFlags.frustum_freeze = " + DebugFlags.frustum_freeze);
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_FORCE_GC)) {
@@ -435,12 +435,12 @@ public final class GUIRoot extends GUIObject {
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {
-                        Globals.draw_water = !Globals.draw_water;
+                        DebugFlags.draw_water = !DebugFlags.draw_water;
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_AI)) {
-                        SimulationConfig.run_ai = !SimulationConfig.run_ai;
-                        logger.info("SimulationConfig.run_ai = " + SimulationConfig.run_ai);
+                        AI.setRunAI(!AI.isRunAI());
+                        logger.info("AI.run_ai = " + AI.isRunAI());
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
@@ -526,7 +526,7 @@ public final class GUIRoot extends GUIObject {
             }
         }
 
-        if (Globals.draw_status) {
+        if (DebugFlags.draw_status) {
             status.render(renderer);
         }
 

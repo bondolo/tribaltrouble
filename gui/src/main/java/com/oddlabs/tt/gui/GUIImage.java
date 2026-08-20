@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
@@ -33,7 +33,7 @@ public final class GUIImage extends GUIIcon {
         this(width, height, u1, v1, u2, v2,
                 Resources.findResource(new TextureFile(texture_name, GL11.GL_RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR,
                         GL11.GL_REPEAT, GL11.GL_REPEAT,
-                        Globals.NO_MIPMAP_CUTOFF, 10000, 1.0f, false, false, isSrgb)));
+                        RenderConfig.NO_MIPMAP_CUTOFF, 10000, 1.0f, false, false, isSrgb)));
     }
 
     /**

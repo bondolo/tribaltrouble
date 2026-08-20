@@ -1,12 +1,11 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Gradient;
 import com.oddlabs.tt.procedural.Landscape;
 import org.jspecify.annotations.NonNull;
@@ -27,7 +26,7 @@ public final class GeneratorLightning extends TextureGenerator {
 
         if (Landscape.DEBUG) img.saveAsPNG("generator_lightning");
         return new Texture[]{
-                new Texture(img, Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                new Texture(img, RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                         GL11.GL_REPEAT, GL11.GL_REPEAT),
         };
     }

@@ -1,12 +1,8 @@
 package com.oddlabs.tt.engine.render.scenery;
 
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.engine.procedural.GeneratorClouds;
-import com.oddlabs.tt.engine.resource.TextureGenerator;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -19,11 +15,16 @@ import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.engine.util.Stitcher;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
+import com.oddlabs.tt.procedural.LandscapeConfig;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
@@ -332,12 +333,13 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
             seaBottomShader.setUniform(SeaBottomShader.Uniforms.BASE_COLOR, seaBottomColor);
 
-            if (Globals.draw_detail) {
+            if (DebugFlags.draw_detail) {
                 context.setTexture(1, detail);
                 seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_1, 1);
                 context.setTexture(2, detailNormal);
                 seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_NORMAL, 2);
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, Globals.LANDSCAPE_DETAIL_REPEAT_RATE);
+                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE,
+                        LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
             } else {
                 seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, 0f);
             }

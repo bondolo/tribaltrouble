@@ -1,14 +1,14 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Hill;
 import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -19,7 +19,7 @@ public final class GeneratorPoison extends TextureGenerator {
 
     @Override
     public @NonNull Texture @NonNull [] generate() {
-        int seed = Globals.LANDSCAPE_SEED;
+        int seed = LandscapeConfig.LANDSCAPE_SEED;
 
         /*
         Channel voronoi = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, 42).getDistance(-1f, 0f, 0f);
@@ -39,7 +39,8 @@ public final class GeneratorPoison extends TextureGenerator {
         GLIntImage poison_img = new GLIntImage(poison);
         if (Landscape.DEBUG) poison_img.saveAsPNG("generator_poison");
         return new Texture[]{
-                new Texture(poison_img, Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                new Texture(poison_img, RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                        GL11.GL_LINEAR,
                         GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE)
         };
     }

@@ -5,36 +5,35 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.registration.RegistrationKey;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.viewer.InGameInfo;
+import com.oddlabs.tt.content.form.AbstractOptionsMenu;
 import com.oddlabs.tt.content.menu.Menu;
+import com.oddlabs.tt.content.menu.SelectGameMenu;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.EditLine;
-import com.oddlabs.tt.gui.MessageForm;
-import com.oddlabs.tt.gui.OKButton;
-import com.oddlabs.tt.gui.PulldownButton;
-import com.oddlabs.tt.gui.PulldownMenu;
-import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.PanelGroup;
+import com.oddlabs.tt.gui.PulldownButton;
 import com.oddlabs.tt.gui.PulldownItem;
+import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
+import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.gui.event.ValueListener;
-import com.oddlabs.tt.client.viewer.InGameInfo;
-import com.oddlabs.tt.content.menu.SelectGameMenu;
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.net.ServerMessageBundler;
-import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Gamespeed;
@@ -42,6 +41,7 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -665,7 +665,8 @@ public final class TerrainMenu extends Group {
         IslandConfig islandConfig = new IslandConfig(terrain, SIZES[size],
                 hills / (float) SLIDER_MAX_VALUE, vegetation_amount / (float) SLIDER_MAX_VALUE,
                 supplies_amount / (float) SLIDER_MAX_VALUE, seed * seed);
-        WorldParameters worldParameters = new WorldParameters(Globals.gamespeed, label_mapcode.getContents(),
+        WorldParameters worldParameters = new WorldParameters(AbstractOptionsMenu.getPreferredGamespeed(), label_mapcode
+                .getContents(),
                 Player.INITIAL_UNIT_COUNT, Player.DEFAULT_MAX_UNIT_COUNT);
         return new SkirmishSetup(worldParameters, islandConfig, slots);
     }

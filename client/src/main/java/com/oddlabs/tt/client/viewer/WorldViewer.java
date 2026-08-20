@@ -1,8 +1,5 @@
 package com.oddlabs.tt.client.viewer;
 
-import com.oddlabs.tt.simulation.model.Difficulty;
-import com.oddlabs.tt.simulation.model.UnitType;
-
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.audio.AudioImplementation;
@@ -10,52 +7,53 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.util.ProgressListener;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.gui.ActionButtonPanel;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.client.render.DefaultRenderer;
+import com.oddlabs.tt.client.render.Picker;
+import com.oddlabs.tt.client.render.RacesAssetsLoader;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.engine.render.LandscapeResources;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
-import com.oddlabs.tt.simulation.landscape.NotificationListener;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.simulation.model.RacesResources;
-import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.DistributableTable;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
+import com.oddlabs.tt.net.ServerMessageBundler;
+import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
+import com.oddlabs.tt.simulation.landscape.NotificationListener;
+import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.landscape.WorldGenerator;
+import com.oddlabs.tt.simulation.landscape.WorldParameters;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.model.RacesResources;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.AdvancedAI;
 import com.oddlabs.tt.simulation.player.NativeChieftainAI;
 import com.oddlabs.tt.simulation.player.PassiveAI;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 import org.jspecify.annotations.NonNull;
-import com.oddlabs.tt.client.render.DefaultRenderer;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
-import com.oddlabs.tt.engine.render.LandscapeResources;
-import com.oddlabs.tt.engine.render.MatrixStack;
-import com.oddlabs.tt.client.render.Picker;
-import com.oddlabs.tt.client.render.RacesAssetsLoader;
-import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.net.ServerMessageBundler;
-import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
-import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.simulation.player.PlayerInfo;
-import com.oddlabs.tt.base.util.Utils;
-
-import java.util.List;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -113,7 +111,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
             public void gamespeedChanged(int speed) {
                 gui_root.getInfoPrinter().print(Utils.getBundleString(PeerHub.bundle, "changed_to_"
                         + GAMESPEED_STRINGS[speed]));
-                Globals.gamespeed = speed;
             }
 
             @Override
@@ -164,7 +161,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         camera_state.setFog(world_info.fog_info());
         this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
                 world_info.landscapeData(), player_infos, renderer.getSettings().accessibility.linear_team_colours,
-                Globals.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressListener::progress);
+                RenderConfig.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressListener::progress);
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);

@@ -1,9 +1,6 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.CancelListener;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -12,7 +9,7 @@ import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.PanelGroup;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.simulation.SimulationConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
@@ -72,11 +69,21 @@ public abstract class AbstractOptionsMenu extends Form {
         graphicsPanel.updateScaleLabel();
     }
 
+    private static int preferred_gamespeed = SimulationConfig.DEFAULT_GAME_SPEED;
+
+    public static int getPreferredGamespeed() {
+        return preferred_gamespeed;
+    }
+
+    public static void setPreferredGamespeed(int speed) {
+        preferred_gamespeed = speed;
+    }
+
     protected final void chooseGamespeed(int speed) {
         generalPanel.chooseGamespeed(speed);
     }
 
     protected void changeGamespeed(int index) {
-        com.oddlabs.tt.engine.Globals.gamespeed = index;
+        setPreferredGamespeed(index);
     }
 }

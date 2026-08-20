@@ -1,10 +1,9 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.Sprite;
+import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.shader.PlacingShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -60,7 +59,7 @@ public final class PlacingRenderer implements AutoCloseable {
             context.setTexture(0, sprite.textures[0][Sprite.TEXTURE_NORMAL]);
             shader.setUniform(PlacingShader.Uniforms.TEXTURE_0, 0);
 
-            boolean useLighting = Globals.draw_light && sprite.lighted;
+            boolean useLighting = DebugFlags.draw_light && sprite.lighted;
             shader.setUniform(PlacingShader.Uniforms.ENABLE_LIGHTING, useLighting);
             shader.setUniform(PlacingShader.Uniforms.REPLACE_MODE, !useLighting && !sprite.modulate_color);
 

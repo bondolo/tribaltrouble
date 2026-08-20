@@ -204,7 +204,6 @@ public final class PeerHub implements Animated, RouterHandler {
     private void peerChecksumError(@NonNull Peer peer) {
         System.out.println("Disconnecting peer because of checksum mismatch: " + peer.getPlayerInfo().getName());
         peerDisconnected(peer, "Checksum error");
-        NetConfig.checksum_error_in_last_game = true;
     }
 
     private @Nullable Peer getPeerFromClientID(int client_id) {

@@ -1,19 +1,22 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
+import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.engine.render.BoundingMode;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderTools;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.SceneRenderer;
+import com.oddlabs.tt.engine.render.Sprite;
+import com.oddlabs.tt.engine.render.SpriteList;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.render.Tree;
+import com.oddlabs.tt.engine.render.WaveAnimation;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
@@ -54,7 +57,7 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
             wave_animation.setTime(Renderer.getRenderer().getEventQueue().getTime());
         }
 
-        if (!Globals.draw_trees || (cheat != null && !cheat.draw_trees)) {
+        if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
             // Just clear lists if not drawing
             clearLists();
             return;
@@ -122,7 +125,7 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
 
     public void debugRender(@NonNull List<TreeSupply> @NonNull [] render_lists, @NonNull List<
             TreeSupply> @NonNull [] respond_render_lists) {
-        if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
+        if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (List<TreeSupply> render_list : render_lists) {
                 for (TreeSupply group : render_list) {
                     RenderTools.draw(group);

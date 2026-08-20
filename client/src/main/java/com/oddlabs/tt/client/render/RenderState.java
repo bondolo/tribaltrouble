@@ -1,19 +1,44 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.client.viewer.Selection;
+import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
+import com.oddlabs.tt.effects.particle.Emitter;
+import com.oddlabs.tt.effects.particle.Lightning;
+import com.oddlabs.tt.effects.particle.PointEmitterModel;
+import com.oddlabs.tt.effects.particle.SonicBlastEffect;
+import com.oddlabs.tt.effects.particle.StunFunction;
+import com.oddlabs.tt.effects.render.CrackDecalRenderer;
+import com.oddlabs.tt.effects.render.EmitterAccessory;
+import com.oddlabs.tt.effects.render.EmitterAttachedAccessory;
+import com.oddlabs.tt.engine.procedural.GeneratorRing;
+import com.oddlabs.tt.engine.render.Accessory;
+import com.oddlabs.tt.engine.render.AttachedRenderState;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DecalRenderer;
+import com.oddlabs.tt.engine.render.ElementSceneContext;
+import com.oddlabs.tt.engine.render.LODObject;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.ModelState;
+import com.oddlabs.tt.engine.render.ModelVisitor;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.RenderTools;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.SceneContext;
+import com.oddlabs.tt.engine.render.ShadowListKey;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.StaticAccessory;
+import com.oddlabs.tt.engine.render.VisualModel;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.net.PeerHub;
+import com.oddlabs.tt.simulation.behaviour.StunController;
+import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
-import com.oddlabs.tt.effects.particle.PointEmitterModel;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SceneryModel;
@@ -21,29 +46,19 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.model.weapon.DirectedThrowingWeapon;
-import com.oddlabs.tt.simulation.model.weapon.RotatingThrowingWeapon;
-import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
-import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
-import com.oddlabs.tt.effects.particle.Emitter;
-import com.oddlabs.tt.effects.particle.Lightning;
-import com.oddlabs.tt.effects.particle.SonicBlastEffect;
-import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
 import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
+import com.oddlabs.tt.simulation.model.weapon.RotatingThrowingWeapon;
+import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
 import com.oddlabs.tt.simulation.player.Player;
-import org.lwjgl.opengl.GL11;
-import com.oddlabs.tt.engine.procedural.GeneratorRing;
-import com.oddlabs.tt.simulation.model.BoundingBox;
-import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -583,7 +598,7 @@ public final class RenderState implements SceneContext {
     };
 
     private void visitPlants(final @NonNull Plants plants) {
-        if (!picking && Globals.draw_plants) {
+        if (!picking && DebugFlags.draw_plants) {
             float camera_dist_sqr = RenderTools.getEyeDistanceSquared(plants, camera.getCurrentX(), camera
                     .getCurrentY(), camera.getCurrentZ());
             if (camera_dist_sqr <= PLANTS_CUT_DIST * PLANTS_CUT_DIST)

@@ -1,13 +1,14 @@
 package com.oddlabs.tt.effects.render;
 
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.BoundingMode;
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.StretchParticle;
+import com.oddlabs.tt.engine.render.BoundingMode;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.shader.LightningShader;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -103,7 +104,7 @@ public final class LightningRenderer implements AutoCloseable {
 
             vao.bind();
 
-            if (Globals.draw_particles) {
+            if (DebugFlags.draw_particles) {
                 for (Lightning emitter : activeLightnings) {
                     renderInternal(context, render_queues, emitter);
                 }
@@ -182,7 +183,7 @@ public final class LightningRenderer implements AutoCloseable {
     }
 
     public void debugRender(@NonNull Queue<@NonNull Lightning> emitter_queue) {
-        if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
+        if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (Lightning emitter : emitter_queue) {
                 RenderTools.draw(emitter, 1f, 1f, 1f);
             }

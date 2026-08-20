@@ -1,15 +1,17 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.model.Selectable;
-import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
+import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.ModelState;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.ShadowListRenderer;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -45,13 +47,13 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
     }
 
     public void addToSelectionList(@NonNull ModelState<?> modelState) {
-        if (Globals.process_shadows) {
+        if (DebugFlags.process_shadows) {
             selection_list.add(modelState);
         }
     }
 
     public void addToShadowList(@NonNull ModelState<?> modelState) {
-        if (Globals.process_shadows) {
+        if (DebugFlags.process_shadows) {
             var model = modelState.getModel();
             if (null != model) {
                 shadowed_list.add(model);
@@ -60,7 +62,7 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
     }
 
     public void addToShadowList(@NonNull Collection<? extends @NonNull Shadowable> shadowable) {
-        if (Globals.process_shadows) {
+        if (DebugFlags.process_shadows) {
             shadowed_list.addAll(shadowable);
         }
     }
