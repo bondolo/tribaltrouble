@@ -8,7 +8,6 @@ import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
 import org.jspecify.annotations.NonNull;
 
-import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
 

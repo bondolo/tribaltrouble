@@ -2,10 +2,9 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.base.util.ProgressListener;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.engine.resource.SpriteFile;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
@@ -30,7 +29,7 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
 
         var fragments = IntStream.rangeClosed(1, SUPPLY_FRAGMENT_COUNT)
                 .mapToObj(i -> String.format("/geometry/misc/rock_%d.binsprite", i))
-                .map(rsrc -> new SpriteFile(rsrc, Globals.NO_MIPMAP_CUTOFF, true, true, true, false))
+                .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, true, true, true, false))
                 .toArray(SpriteFile[]::new);
 
         rock_fragment_sprites = Arrays.stream(fragments)
@@ -45,19 +44,19 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
         plant_sprites.put(
                 Terrain.NATIVE, IntStream.rangeClosed(1, 4)
                         .mapToObj(i -> String.format("/geometry/misc/plant_%d.binsprite", i))
-                        .map(rsrc -> new SpriteFile(rsrc, Globals.NO_MIPMAP_CUTOFF, true, false, true, true, true))
+                        .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, true, false, true, true, true))
                         .map(queues::register)
                         .toArray(SpriteKey[]::new));
         plant_sprites.put(
                 Terrain.VIKING, IntStream.rangeClosed(1, 4)
                         .mapToObj(i -> String.format("/geometry/misc/viking_plant_%d.binsprite", i))
-                        .map(rsrc -> new SpriteFile(rsrc, Globals.NO_MIPMAP_CUTOFF, true, false, true, true, true))
+                        .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, true, false, true, true, true))
                         .map(queues::register)
                         .toArray(SpriteKey[]::new));
         ProgressListener.progress(1f / num_progress);
 
         SpriteFile sprite_list_chicken = new SpriteFile("/geometry/misc/chicken.binsprite",
-                Globals.NO_MIPMAP_CUTOFF,
+                RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         chicken = queues.register(sprite_list_chicken);
 

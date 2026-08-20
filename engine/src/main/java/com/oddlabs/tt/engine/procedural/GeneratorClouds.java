@@ -1,15 +1,15 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Channel;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLByteImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
+import com.oddlabs.tt.simulation.model.Terrain;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
@@ -32,7 +32,7 @@ public final class GeneratorClouds extends TextureGenerator {
 
     @Override
     public Texture @NonNull [] generate() {
-        int seed = Globals.LANDSCAPE_SEED;
+        int seed = LandscapeConfig.LANDSCAPE_SEED;
         Channel clouds1 = new Midpoint(TEXTURE_SIZE, 3, 0.55f, seed).toChannel();
         Channel clouds2 = new Midpoint(TEXTURE_SIZE, 2, 0.4f, seed).toChannel();
 
@@ -51,7 +51,7 @@ public final class GeneratorClouds extends TextureGenerator {
                 })
                 .map(Channel::toLinear)
                 .map(cloud -> new GLByteImage(cloud, GL11.GL_RED))
-                .map(image -> new Texture(image, Globals.COMPRESSED_LUMINANCE_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                .map(image -> new Texture(image, RenderConfig.COMPRESSED_LUMINANCE_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR,
                         GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT))
                 .toArray(Texture[]::new);
     }

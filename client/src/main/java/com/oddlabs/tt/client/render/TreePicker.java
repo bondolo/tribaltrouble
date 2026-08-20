@@ -1,18 +1,18 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.LODObject;
+import com.oddlabs.tt.engine.render.PolyDetail;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.RenderTools;
+import com.oddlabs.tt.engine.render.SpriteList;
+import com.oddlabs.tt.engine.render.Tree;
+import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.jspecify.annotations.NonNull;
 
@@ -29,7 +29,7 @@ import static com.oddlabs.tt.simulation.landscape.AbstractTreeGroup.TreeType;
  * Base class that manages the culling, level-of-detail selection, and picking of trees.
  */
 class TreePicker {
-    private static final int CROWN_MIPMAP_CUTOFF = Globals.NO_MIPMAP_CUTOFF;
+    private static final int CROWN_MIPMAP_CUTOFF = RenderConfig.NO_MIPMAP_CUTOFF;
     private static final float SELECTION_RADIUS = 1.5f;
 
     @SuppressWarnings("unchecked")

@@ -1,10 +1,10 @@
 package com.oddlabs.tt.engine.resource;
 
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.base.resource.File;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.util.DXTImage;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -81,7 +81,7 @@ public final class TextureFile extends File<Texture> {
     private final boolean is_dxt;
 
     public TextureFile(String location) {
-        this(location, Globals.COMPRESSED_RGBA_FORMAT);
+        this(location, RenderConfig.COMPRESSED_RGBA_FORMAT);
     }
 
     public TextureFile(String location, int internal_format) {
@@ -89,7 +89,8 @@ public final class TextureFile extends File<Texture> {
     }
 
     public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t) {
-        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, Globals.NO_MIPMAP_CUTOFF, 10000, 1.0f);
+        this(location, internal_format, min_filter, mag_filter, wrap_s, wrap_t, RenderConfig.NO_MIPMAP_CUTOFF, 10000,
+                1.0f);
     }
 
     public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,

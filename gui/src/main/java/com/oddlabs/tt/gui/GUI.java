@@ -2,8 +2,8 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -125,7 +125,7 @@ public final class GUI implements Animated, FrameDriver {
         if (camera != null) {
             camera.setView(guiRoot.multProjection(proj.identity()), context.getViewportWidth(),
                     context.getViewportHeight());
-            if (!Globals.frustum_freeze) {
+            if (!DebugFlags.frustum_freeze) {
                 frustum_state.set(camera);
             }
         } else {

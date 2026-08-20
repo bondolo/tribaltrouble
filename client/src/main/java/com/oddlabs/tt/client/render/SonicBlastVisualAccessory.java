@@ -1,15 +1,16 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.effects.particle.SonicBlastEffect;
+import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.SonicBlastAccessory;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
-import com.oddlabs.tt.effects.particle.SonicBlastEffect;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;

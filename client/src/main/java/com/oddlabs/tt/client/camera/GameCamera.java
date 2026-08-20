@@ -1,17 +1,16 @@
 package com.oddlabs.tt.client.camera;
 
-import com.oddlabs.tt.engine.render.CameraState;
-
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.jspecify.annotations.NonNull;
@@ -31,7 +30,7 @@ public final class GameCamera extends Camera {
     private static final float SCROLL_ACCELERATION_SECONDS_MAX = 1f;
     private static final float SCROLL_ACCELERATION_FACTOR = 2.5f;
     private static final float SCROLL_START_MAX_SPEED = 60f;
-    private static final float ROTATE_PICKING_ANGLE_MAX = (-(Globals.FOV) - 10) * ((float) Math.PI / 180) * .5f;
+    private static final float ROTATE_PICKING_ANGLE_MAX = (-(RenderConfig.FOV) - 10) * ((float) Math.PI / 180) * .5f;
     private static final float ZOOM_SPEED = 50f;
 
     private final @NonNull WorldViewer viewer;
@@ -285,7 +284,7 @@ public final class GameCamera extends Camera {
             return center_y;
         } else {
             float da = getState().getTargetVertAngle() - rotatePickingAngleMax;
-            int dy = (int) (Math.tan(da) * Globals.VIEW_MIN);
+            int dy = (int) (Math.tan(da) * RenderConfig.VIEW_MIN);
             int y = center_y - dy;
             return y;
         }

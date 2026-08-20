@@ -2,29 +2,29 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.base.animation.TimerAnimation;
-import com.oddlabs.tt.base.animation.Updatable;
-import com.oddlabs.tt.base.event.LocalEventQueue;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.settings.Settings;
-import com.oddlabs.tt.base.util.StatCounter;
-import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.openal.OpenALManager;
-import com.oddlabs.tt.input.InputManager;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.Updatable;
+import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.tt.base.global.AppConfig;
+import com.oddlabs.tt.base.resource.NativeResource;
+import com.oddlabs.tt.base.util.StatCounter;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.state.GLRenderContext;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.engine.resource.Resources;
+import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VBO;
+import com.oddlabs.tt.input.InputManager;
+import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
-import com.oddlabs.tt.net.Network;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -246,7 +246,7 @@ public final class Renderer implements AutoCloseable {
                         AnimationManager.setChecksumComplain(false);
                     }
                 }
-                if (!Globals.frustum_freeze) {
+                if (!DebugFlags.frustum_freeze) {
                     driver.pickHover();
                 }
             }
@@ -281,7 +281,7 @@ public final class Renderer implements AutoCloseable {
 
         driver.render();
 
-        if (Globals.debugRenderingEnabled()) {
+        if (DebugFlags.debugRenderingEnabled()) {
             renderContext.validate();
         }
     }
@@ -408,7 +408,7 @@ public final class Renderer implements AutoCloseable {
 
         // 1. Check for Portable Mode (CWD)
         // If a game directory exists in the current working directory, use it.
-        Path localDir = Path.of(Globals.GAME_NAME);
+        Path localDir = Path.of(AppConfig.GAME_NAME);
         if (isUsable(localDir)) {
             dataDir = localDir;
             portable = true;
@@ -423,7 +423,7 @@ public final class Renderer implements AutoCloseable {
                     Path jarPath = Path.of(codeSource.getLocation().toURI());
                     Path appDir = jarPath.getParent();
                     if (appDir != null) {
-                        Path appGameDir = appDir.resolve(Globals.GAME_NAME);
+                        Path appGameDir = appDir.resolve(AppConfig.GAME_NAME);
                         // Avoid checking the same path twice if CWD == AppDir
                         if (!appGameDir.equals(localDir.toAbsolutePath()) && isUsable(appGameDir)) {
                             dataDir = appGameDir;
@@ -462,7 +462,7 @@ public final class Renderer implements AutoCloseable {
 
             if (os_name.contains("mac")) {
                 if (userHome != null) {
-                    Path appSupport = userHome.resolve("Library/Application Support/" + Globals.GAME_NAME);
+                    Path appSupport = userHome.resolve("Library/Application Support/" + AppConfig.GAME_NAME);
                     Path config = userHome.resolve(".config/tribaltrouble");
 
                     if (isUsable(appSupport)) existing = appSupport;
@@ -491,8 +491,8 @@ public final class Renderer implements AutoCloseable {
                 preferred = xdg;
                 fallback = legacyDot;
             } else {
-                Path roaming = appData != null ? Path.of(appData).resolve(Globals.GAME_NAME) : null;
-                Path homeGame = userHome != null ? userHome.resolve(Globals.GAME_NAME) : null;
+                Path roaming = appData != null ? Path.of(appData).resolve(AppConfig.GAME_NAME) : null;
+                Path homeGame = userHome != null ? userHome.resolve(AppConfig.GAME_NAME) : null;
 
                 if (isUsable(roaming)) existing = roaming;
                 else if (isUsable(homeGame)) existing = homeGame;
@@ -522,7 +522,7 @@ public final class Renderer implements AutoCloseable {
             }
 
             if (dataDir == null) {
-                dataDir = Files.createTempDirectory(Globals.GAME_NAME);
+                dataDir = Files.createTempDirectory(AppConfig.GAME_NAME);
             }
         }
 

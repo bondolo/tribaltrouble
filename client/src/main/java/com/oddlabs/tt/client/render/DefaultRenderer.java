@@ -1,40 +1,46 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.client.delegate.Delegate;
+import com.oddlabs.tt.client.viewer.AmbientAudio;
+import com.oddlabs.tt.client.viewer.Cheat;
+import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.effects.render.EmitterRenderer;
 import com.oddlabs.tt.effects.render.LightningRenderer;
 import com.oddlabs.tt.effects.render.SonicBlastRenderer;
-import com.oddlabs.tt.engine.render.*;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
-
 import com.oddlabs.tt.engine.render.BoundingMode;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
+import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.PostProcessor;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.SpriteRenderer;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.render.scenery.Sky;
+import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.render.shader.DebugMeshShader;
 import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.engine.render.scenery.Sky;
-import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.util.DebugRender;
-import com.oddlabs.tt.simulation.model.Target;
-import com.oddlabs.tt.client.delegate.Delegate;
-import com.oddlabs.tt.client.viewer.AmbientAudio;
-import com.oddlabs.tt.client.viewer.Cheat;
-import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.model.Building;
+import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.model.Unit;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
+import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
@@ -179,17 +185,17 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     }
 
     private void renderDebugElements(@NonNull CameraState frustum_state) {
-        if (Globals.draw_axes) drawAxes();
+        if (DebugFlags.draw_axes) drawAxes();
         landscape_renderer.debugRender(frustum_state);
         lightningRenderer.debugRender(element_renderer.getRenderState().getLightningQueue());
         emitterRenderer.debugRender(element_renderer.getRenderState().getEmitterQueue());
         tree_renderer.debugRender(tree_renderer.getRenderLists(), tree_renderer.getRespondRenderLists());
 
-        if (Globals.isBoundsEnabled(BoundingMode.REGIONS))
+        if (DebugFlags.isBoundsEnabled(BoundingMode.REGIONS))
             PathfinderDebugRenderer.renderRegions(world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state
                     .getCurrentY());
-        if (Globals.isBoundsEnabled(BoundingMode.OCCUPATION)) picker.debugRender();
-        if (Globals.isBoundsEnabled(BoundingMode.UNIT_GRID)) {
+        if (DebugFlags.isBoundsEnabled(BoundingMode.OCCUPATION)) picker.debugRender();
+        if (DebugFlags.isBoundsEnabled(BoundingMode.UNIT_GRID)) {
             PathfinderDebugRenderer.renderUnitGrid(world.getUnitGrid(), frustum_state.getCurrentX(), frustum_state
                     .getCurrentY());
             for (Object obj : selection.getCurrentSelection().getSet()) {
@@ -240,36 +246,36 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         modelViewStack.current().set(frustum_state.getModelView());
         projectionStack.current().set(frustum_state.getProjectionMatrix());
 
-        if (Globals.line_mode || (cheat != null && cheat.line_mode)) {
+        if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
             GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
         }
 
         // Sky & Landscape don't write to mask -> Disable Mask Buffer
         context.setDrawBuffers(false);
 
-        if (Globals.draw_sky) {
+        if (DebugFlags.draw_sky) {
             sky.render(context, frustum_state, modelViewStack, projectionStack);
             sky.renderSeaBottom(context, frustum_state, modelViewStack, projectionStack);
         }
 
-        if (Globals.process_landscape) {
+        if (DebugFlags.process_landscape) {
             landscape_renderer.prepareAll(frustum_state, false);
             landscape_renderer.render(context, frustum_state, modelViewStack, projectionStack);
         }
         // Trees & Units write to mask -> Enable Mask Buffer
         context.setDrawBuffers(true);
 
-        if (Globals.process_trees) {
+        if (DebugFlags.process_trees) {
             tree_renderer.setup(frustum_state);
             tree_renderer.visit(world.getTreeRoot());
         }
-        if (Globals.process_misc) {
+        if (DebugFlags.process_misc) {
             element_renderer.setup(frustum_state);
             element_renderer.visit(world.getElementRoot());
         }
 
         // Process transient effects (smoke, lightning, fragments) immediately after visitation.
-        if (Globals.process_misc) {
+        if (DebugFlags.process_misc) {
             var renderState = element_renderer.getRenderState();
             emitterRenderer.prepare(render_queues, renderState.getEmitterQueue(), frustum_state,
                     modelViewStack);
@@ -277,17 +283,17 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
         }
         sprite_sorter.distributeModels();
-        if (Globals.process_shadows) {
+        if (DebugFlags.process_shadows) {
             render_queues.renderShadows(context, landscape_renderer, modelViewStack, projectionStack);
-            if (Globals.process_trees) {
+            if (DebugFlags.process_trees) {
                 tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer());
             }
         }
 
-        if (Globals.process_trees) {
+        if (DebugFlags.process_trees) {
             tree_renderer.render(context, frustum_state, modelViewStack, projectionStack);
         }
-        if (Globals.process_misc) {
+        if (DebugFlags.process_misc) {
             render_queues.renderAll(context, frustum_state, projectionStack);
 
             // Render trees AFTER opaque units/misc.
@@ -305,18 +311,18 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
                     projectionStack);
         }
 
-        if (Globals.debugRenderingEnabled()) {
+        if (DebugFlags.debugRenderingEnabled()) {
             renderDebugElements(frustum_state);
         }
 
         // Enable Mask Buffer for Water interaction (occluding submerged unit outlines)
         context.setDrawBuffers(true);
 
-        if (Globals.draw_water) {
+        if (DebugFlags.draw_water) {
             water.render(context, frustum_state, landscape_renderer.getVisiblePatches());
         }
 
-        if (Globals.process_misc)
+        if (DebugFlags.process_misc)
             render_queues.renderBlends(context, frustum_state, projectionStack);
 
         // Water & Particles don't write to mask -> Disable Mask Buffer
@@ -338,14 +344,14 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
         assert ShaderProgram.activeShader() == null : "Shader still active=" + ShaderProgram.activeShader();
 
-        if (Globals.line_mode || (cheat != null && cheat.line_mode)) {
+        if (DebugFlags.line_mode || (cheat != null && cheat.line_mode)) {
             GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
         }
 
         // Ensure Mask is enabled for GUI clearing
         context.setDrawBuffers(true);
 
-        if (Globals.debugRenderingEnabled()) {
+        if (DebugFlags.debugRenderingEnabled()) {
             context.validate();
         }
     }

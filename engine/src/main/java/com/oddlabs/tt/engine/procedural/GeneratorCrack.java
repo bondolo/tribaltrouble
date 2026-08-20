@@ -1,12 +1,11 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Ring;
 import com.oddlabs.tt.procedural.Voronoi;
 import org.jspecify.annotations.NonNull;
@@ -23,7 +22,7 @@ public final class GeneratorCrack extends TextureGenerator {
 
     @Override
     public @NonNull Texture @NonNull [] generate() {
-        int seed = Globals.LANDSCAPE_SEED;
+        int seed = LandscapeConfig.LANDSCAPE_SEED;
         Channel voronoi = new Voronoi(TEXTURE_SIZE, 5, 5, 1, 1f, seed).getDistance(-1f, 1f, 0f);
         Channel borders = voronoi.dynamicRange().threshold(0.0f, 0.05f);
         Channel falloff = new Ring(TEXTURE_SIZE, TEXTURE_SIZE, new float[][]{{0f, 1f}, {0.35f, 1f}, {0.5f, 0f}},

@@ -1,18 +1,17 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.effects.render.EmitterAccessory;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.effects.particle.PointEmitterModel;
+import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.effects.particle.PointEmitterModel;
 import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
-import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

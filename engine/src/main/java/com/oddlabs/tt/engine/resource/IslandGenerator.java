@@ -1,19 +1,19 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.base.util.ProgressListener;
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.LandscapeBaker;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
+import com.oddlabs.tt.procedural.BlendInfo;
+import com.oddlabs.tt.procedural.GeneratedLandscapeData;
+import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import com.oddlabs.tt.engine.render.LandscapeBaker;
-import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
-import com.oddlabs.tt.engine.image.GLImage;
-import com.oddlabs.tt.engine.image.GLIntImage;
-import com.oddlabs.tt.procedural.BlendInfo;
-import com.oddlabs.tt.procedural.GeneratedLandscapeData;
-import com.oddlabs.tt.procedural.Landscape;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -47,7 +47,8 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
     }
 
     private static @NonNull Texture createDetail(@NonNull GLImage detail_image, int base_level) {
-        GLImage[] detail_mipmaps = detail_image.buildMipMaps(base_level, Globals.LANDSCAPE_DETAIL_FADEOUT_FACTOR, true,
+        GLImage[] detail_mipmaps = detail_image.buildMipMaps(base_level,
+                LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_FACTOR, true,
                 false);
         return new Texture(detail_mipmaps, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                 GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
@@ -70,10 +71,10 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
 
         // Build landscape
         Instant time_before = Instant.now();
-        int base_level = Globals.LANDSCAPE_DETAIL_FADEOUT_BASE_LEVEL;
-        int detail_mip_level = IDEAL_TEXELS_PER_DETAIL / Globals.DETAIL_SIZE - 1;
+        int base_level = LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_BASE_LEVEL;
+        int detail_mip_level = IDEAL_TEXELS_PER_DETAIL / LandscapeConfig.DETAIL_SIZE - 1;
         int detail_prefade_level = Math.max(detail_mip_level - base_level, 0);
-        float detail_prefade = IDEAL_DETAIL_ALPHA * (float) Math.pow(Globals.LANDSCAPE_DETAIL_FADEOUT_FACTOR,
+        float detail_prefade = IDEAL_DETAIL_ALPHA * (float) Math.pow(LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_FACTOR,
                 detail_prefade_level);
         base_level -= detail_mip_level;
         base_level = Math.min(base_level, 1);
@@ -86,7 +87,7 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
         Texture detail = createDetail(new GLIntImage(landscape.getDetail()), base_level);
         Texture detailNormal = createDetailNormal(new GLIntImage(landscape.getDetailNormal()));
 
-        float textureScale = config.metersPerWorld() * Globals.LANDSCAPE_TEXTURE_SCALE;
+        float textureScale = config.metersPerWorld() * LandscapeConfig.LANDSCAPE_TEXTURE_SCALE;
         LandscapeBaker baker = new LandscapeBaker(colormap_size, textureScale);
 
         // Create temporary heightmap texture for baking

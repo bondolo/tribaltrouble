@@ -1,15 +1,14 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -139,7 +138,7 @@ public final class SpriteRenderer {
         boolean modulate = sprite_list.getSprite(index).modulateColor();
 
         for (ModelState<?> modelState : render_list) {
-            if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
+            if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
                 RenderTools.draw(modelState.getModel());
             }
             // Standard sprites: If modulate, use Blend. If opaque/alpha, use A2C (Blend=False).
@@ -154,7 +153,7 @@ public final class SpriteRenderer {
         render_list = respond_render_lists[index];
         if (!render_list.isEmpty()) {
             for (ModelState<?> model : render_list) {
-                if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
+                if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
                     RenderTools.draw(model.getModel());
                 }
                 instancedSpriteRenderer.add(sprite_list, index, model.getAnimation(),
@@ -166,10 +165,10 @@ public final class SpriteRenderer {
     }
 
     void renderNoDetail() {
-        if (Globals.draw_misc && !no_detail_render_list.isEmpty()) {
+        if (DebugFlags.draw_misc && !no_detail_render_list.isEmpty()) {
             SpriteList quadList = SpriteList.getQuadInstance();
             for (var model : no_detail_render_list) {
-                if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
+                if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
                     RenderTools.draw(model.getModel());
                 }
                 float x = model.getModel().getPositionX();

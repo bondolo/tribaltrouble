@@ -1,18 +1,15 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
-import com.oddlabs.tt.engine.Globals;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.DisplayChangeForm;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
-import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.Label;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.MultiColumnComboBox;
 import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.PulldownButton;
@@ -24,7 +21,6 @@ import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
 import org.jspecify.annotations.NonNull;
@@ -128,7 +124,7 @@ public class GraphicsPanel extends Panel {
             int slider_value = pm_detail.getChosenItem().map(PulldownItem::getAttachment).orElse(initial_detail_value);
             if (initial_detail_value != slider_value) {
                 Renderer.getRenderer().getSettings().graphic_detail = slider_value;
-                World.updatePlantsDetail(Globals.INSERT_PLANTS[slider_value]);
+                World.updatePlantsDetail(RenderConfig.INSERT_PLANTS[slider_value]);
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("change_next_run")));
             }
         });

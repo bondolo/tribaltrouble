@@ -1,13 +1,19 @@
 package com.oddlabs.tt.effects.render;
 
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.BoundingMode;
-import com.oddlabs.tt.engine.Globals;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Particle;
+import com.oddlabs.tt.engine.render.BoundingMode;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.PolyDetail;
+import com.oddlabs.tt.engine.render.RenderConfig;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.SpriteRenderer;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.engine.render.shader.ParticleShader;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -92,7 +98,7 @@ public final class EmitterRenderer implements AutoCloseable {
     public void prepare(@NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters,
             @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
         clear();
-        if (Globals.draw_particles)
+        if (DebugFlags.draw_particles)
             for (Emitter<?> emitter : emitters) {
                 collectParticles(render_queues, emitter, state, modelViewStack);
             }
@@ -121,7 +127,7 @@ public final class EmitterRenderer implements AutoCloseable {
             context.setTexture(1, depthTexture.getHandle());
             shader.setUniform(ParticleShader.Uniforms.DEPTH_MAP, 1);
 
-            shader.setUniform(ParticleShader.Uniforms.NEAR_FAR, Globals.VIEW_MIN, Globals.VIEW_MAX);
+            shader.setUniform(ParticleShader.Uniforms.NEAR_FAR, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
             shader.setUniform(ParticleShader.Uniforms.SOFT_RANGE, 2.0f); // Adjust default as needed
 
             flushBatches(context);
@@ -243,7 +249,7 @@ public final class EmitterRenderer implements AutoCloseable {
     }
 
     public void debugRender(@NonNull Queue<@NonNull Emitter<?>> emitter_queue) {
-        if (Globals.isBoundsEnabled(BoundingMode.PLAYERS)) {
+        if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (Emitter<?> emitter : emitter_queue) {
                 emitter.debugRender();
             }

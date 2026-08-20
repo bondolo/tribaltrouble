@@ -1,9 +1,8 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.geometry.AnimationInfo;
-import com.oddlabs.tt.engine.Globals;
-import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.model.Target;
@@ -106,7 +105,8 @@ public final class RenderQueues implements AutoCloseable {
         assert pending_array_uploads.size() == depth : "Gaps found in effect texture layers";
 
         effect_texture_array = new TextureArray(slotWidth, slotHeight, depth,
-                Globals.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE);
+                RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                GL12.GL_CLAMP_TO_EDGE);
 
         // Pre-scale all sources to match array dimensions
         for (var entry : pending_array_uploads.entrySet()) {
@@ -117,7 +117,7 @@ public final class RenderQueues implements AutoCloseable {
             }
         }
 
-        effect_texture_array.build(pending_array_uploads, Globals.COMPRESSED_RGBA_FORMAT);
+        effect_texture_array.build(pending_array_uploads, RenderConfig.COMPRESSED_RGBA_FORMAT);
         pending_array_uploads.clear();
 
         return effect_texture_array;
