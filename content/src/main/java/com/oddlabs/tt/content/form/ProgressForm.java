@@ -101,10 +101,11 @@ public final class ProgressForm {
             show_tip = true;
         }
 
-        Fadable load_fadable = () -> callback(gui, callback, first_progress);
-        current_progress = new ProgressForm(network, gui, load_fadable, first_progress, PROGRESS_BAR_INFO,
+        Fadable load_fadable = () -> gui.runWithSkin(() -> callback(gui, callback, first_progress));
+        current_progress = gui.callWithSkin(() -> new ProgressForm(network, gui, load_fadable, first_progress,
+                PROGRESS_BAR_INFO,
                 texture, texture_width, texture_height, image_width, image_height, progress_x, progress_y,
-                progress_width, show_tip);
+                progress_width, show_tip));
 
         return first_progress ? load_fadable::fadingDone : null;
     }
@@ -161,7 +162,8 @@ public final class ProgressForm {
                 progress();
             }
         };
-        UIRenderer renderer = ProgressListener.supply(listener, () -> callback.load(client_root));
+        UIRenderer renderer = ProgressListener.supply(listener,
+                () -> gui.callWithSkin(() -> callback.load(client_root)));
         gui.newFade(start_sources_fadable, client_root, renderer);
     }
 

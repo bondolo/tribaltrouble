@@ -1,5 +1,6 @@
 package com.oddlabs.tt;
 
+import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.LocalInput;
@@ -92,13 +93,13 @@ public final class Main {
                 settings.crashed = false;
                 GUI gui = new GUI(localInput);
                 gui.setCloseHandler(() -> {
-                    if (gui.getGUIRoot().isShowingModalForm(com.oddlabs.tt.content.form.QuitForm.class)) {
+                    if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
                         Renderer.shutdown();
                     } else {
-                        gui.getGUIRoot().addModalForm(new com.oddlabs.tt.content.form.QuitForm(gui.getGUIRoot()));
+                        gui.getGUIRoot().addModalForm(new QuitForm(gui.getGUIRoot()));
                     }
                 });
-                Runnable loadTask = Menu.setupMainMenu(network, gui, firstProgress);
+                Runnable loadTask = gui.callWithSkin(() -> Menu.setupMainMenu(network, gui, firstProgress));
                 return new ClientStartup.Session(gui, loadTask);
             }, args);
             status = 0;
