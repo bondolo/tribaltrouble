@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
@@ -24,7 +25,6 @@ import com.oddlabs.tt.engine.render.ModelVisitor;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.RenderTools;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SceneContext;
 import com.oddlabs.tt.engine.render.ShadowListKey;
 import com.oddlabs.tt.engine.render.SpriteKey;
@@ -83,18 +83,21 @@ public final class RenderState implements SceneContext {
     private final @Nullable Selection selection;
     private final @NonNull Player local_player;
     private final @NonNull MatrixStack model_view_stack = new MatrixStack();
+    private final @NonNull AudioImplementation audio;
 
     private boolean picking;
     private boolean visible_override;
     private @Nullable CameraState camera;
 
     public RenderState(@NonNull Player local_player, @NonNull SpriteSorter sprite_sorter,
-            @NonNull RenderQueues render_queues, @NonNull Picker picker, @Nullable Selection selection) {
+            @NonNull RenderQueues render_queues, @NonNull Picker picker, @Nullable Selection selection,
+            @NonNull AudioImplementation audio) {
         this.local_player = local_player;
         this.selection = selection;
         this.picker = picker;
         this.sprite_sorter = sprite_sorter;
         this.render_queues = render_queues;
+        this.audio = audio;
         var respondDesc = new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION,
                 new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
         this.target_respond_renderer = new TargetRespondRenderer(respondDesc);
@@ -312,7 +315,7 @@ public final class RenderState implements SceneContext {
 
     private @NonNull VisualModel getOrCreateVisualModel(@NonNull Model model) {
         return model.getClientState(VisualModel.class).orElseGet(() -> {
-            VisualModel visualModel = new VisualModel(model, Renderer.getRenderer().getAudioManager());
+            VisualModel visualModel = new VisualModel(model, audio);
             model.setClientState(visualModel);
             return visualModel;
         });

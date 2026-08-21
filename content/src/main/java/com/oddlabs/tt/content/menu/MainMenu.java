@@ -8,20 +8,23 @@ import com.oddlabs.tt.content.campaign.CampaignForm;
 import com.oddlabs.tt.content.skirmish.TerrainMenuForm;
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.audio.AudioManager;
 import org.jspecify.annotations.NonNull;
 
 /**
  * The game main menu
  */
 public final class MainMenu extends Menu {
-    public MainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Camera camera) {
-        super(network, gui_root, camera);
+    public MainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Camera camera,
+            @NonNull AudioManager audioManager) {
+        super(network, gui_root, camera, audioManager);
         reload();
     }
 
     private void addGameTypeButtons() {
         MenuButton tutorial = new MenuButton(Menu.i18n("tutorial"), COLOR_NORMAL, COLOR_ACTIVE);
-        tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(getNetwork(), getGUIRoot())));
+        tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(getNetwork(), getGUIRoot(),
+                MainMenu.this)));
         addChild(tutorial);
 
         MenuButton campaign_menu = new MenuButton(Menu.i18n("campaign"), COLOR_NORMAL, COLOR_ACTIVE);

@@ -83,7 +83,8 @@ public final class Main {
             logger.info("Starting game....");
             Renderer.getRenderer().run((network, firstProgress) -> {
                 var renderer = Renderer.getRenderer();
-                ClientStateInitializer.init(renderer::getAudioManager);
+                var audioManager = renderer.getAudioManager();
+                ClientStateInitializer.init(audioManager);
                 var gamePaths = renderer.getGamePaths();
                 var settings = renderer.getSettings();
                 var eventQueue = renderer.getEventQueue();
@@ -105,7 +106,8 @@ public final class Main {
                         gui.getGUIRoot().addModalForm(new QuitForm(gui.getGUIRoot()));
                     }
                 });
-                Runnable loadTask = gui.callWithSkin(() -> Menu.setupMainMenu(network, gui, firstProgress));
+                Runnable loadTask = gui.callWithSkin(() -> Menu.setupMainMenu(network, gui, audioManager,
+                        firstProgress));
                 return new ClientStartup.Session(gui, loadTask);
             }, args);
             status = 0;

@@ -5,6 +5,7 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.registration.RegistrationKey;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.form.AbstractOptionsMenu;
@@ -729,17 +730,17 @@ public final class TerrainMenu extends Group {
         SelectGameMenu menu = null;
         if (multiplayer)
             menu = (SelectGameMenu) owner;
-        int gametype;
         IO.println("hills = " + hills / (float) SLIDER_MAX_VALUE + " | vegetation_amount = " + vegetation_amount
                 / (float) SLIDER_MAX_VALUE + " | supplies_amount = " + supplies_amount / (float) SLIDER_MAX_VALUE
                 + " | seed = " + seed * seed);
         String ai_string = i18n("ai");
-        InGameInfo ingame_info = multiplayer ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
-                : new DefaultInGameInfo();
-        WorldParameters parameters = multiplayer ? multiplayer_setup.getWorldParameters() : skirmish_setup
-                .getWorldParameters();
-        IslandConfig islandConfig = multiplayer ? multiplayer_setup.getIslandConfig() : skirmish_setup
-                .getIslandConfig();
+        InGameInfo ingame_info = multiplayer
+                                 ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
+                                 : new DefaultInGameInfo();
+        WorldParameters parameters = multiplayer
+                                     ? multiplayer_setup.getWorldParameters() : skirmish_setup.getWorldParameters();
+        IslandConfig islandConfig = multiplayer
+                                    ? multiplayer_setup.getIslandConfig() : skirmish_setup.getIslandConfig();
         GameNetwork game_network = Menu.startNewGame(network, gui_root,
                 menu,
                 parameters,
@@ -747,8 +748,14 @@ public final class TerrainMenu extends Group {
                 new Menu.DefaultWorldInitAction(),
                 game,
                 islandConfig,
-                new String[]{ai_string + "0", ai_string + "1", ai_string + "2", ai_string + "3", ai_string + "4",
-                        ai_string + "5"});
+                new String[]{ai_string + "0",
+                        ai_string + "1",
+                        ai_string + "2",
+                        ai_string + "3",
+                        ai_string + "4",
+                        ai_string + "5"
+                },
+                main_menu.getAudioManager());
         if (!multiplayer) {
             skirmish_setup.startSkirmishServer(game_network);
             IO.println("Start server");
@@ -777,7 +784,6 @@ public final class TerrainMenu extends Group {
                 button_ok.setDisabled(true);
         }
     }
-
 
     private final class SliderUpdateMapcodeListener implements ValueListener {
         @Override

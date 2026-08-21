@@ -1,15 +1,19 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.audio.AudioImplementation;
+import com.oddlabs.tt.client.viewer.Selection;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.ElementNode;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.client.viewer.Selection;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Traverses element spatial hierarchy and dispatches visible entities to {@link RenderState}.
+ */
 final class ElementRenderer<T extends Element<T>> {
 
     private final @NonNull RenderState render_state;
@@ -19,9 +23,10 @@ final class ElementRenderer<T extends Element<T>> {
     private boolean visible_override;
 
     ElementRenderer(@NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull Picker picker,
-            boolean picking, @NonNull SpriteSorter sprite_sorter, Selection selection) {
+            boolean picking, @NonNull SpriteSorter sprite_sorter, Selection selection,
+            @NonNull AudioImplementation audio) {
         this.picking = picking;
-        this.render_state = new RenderState(local_player, sprite_sorter, render_queues, picker, selection);
+        this.render_state = new RenderState(local_player, sprite_sorter, render_queues, picker, selection, audio);
     }
 
     @NonNull

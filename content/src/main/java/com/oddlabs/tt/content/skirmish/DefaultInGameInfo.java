@@ -159,7 +159,8 @@ public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
             menu.parseMapcode(viewer.getParameters().mapCode());
             menu.startGame();
         } else
-            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
+            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI(),
+                    viewer.getAudioManager());
     }
 
     @Override

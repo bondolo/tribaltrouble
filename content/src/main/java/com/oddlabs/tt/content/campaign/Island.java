@@ -108,7 +108,8 @@ public abstract class Island {
                 Player.DEFAULT_MAX_UNIT_COUNT),
                 ingame_info,
                 init_action,
-                null, islandConfig, ai_names);
+                null, islandConfig, ai_names,
+                campaign.getAudioManager());
     }
 
     protected final @Nullable WorldViewer getViewer() {

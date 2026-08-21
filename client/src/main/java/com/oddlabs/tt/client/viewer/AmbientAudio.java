@@ -40,9 +40,9 @@ public final class AmbientAudio implements AutoCloseable {
 
     public AmbientAudio(@NonNull AudioManager audioManager) {
         this.audioManager = audioManager;
-        ambient_forest = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_FOREST);
-        ambient_beach = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_BEACH);
-        ambient_wind = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_WIND);
+        this.ambient_forest = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_FOREST);
+        this.ambient_beach = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_BEACH);
+        this.ambient_wind = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_WIND);
     }
 
     private static int countTrees(@NonNull AbstractTreeGroup node, float x, float y, float radiusSq, int threshold,

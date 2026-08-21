@@ -3,6 +3,8 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.VisualModel;
+import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
@@ -17,7 +19,6 @@ import com.oddlabs.tt.simulation.model.weapon.Stun;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import org.jspecify.annotations.NonNull;
 
-import java.util.function.Supplier;
 
 /**
  * Initializes client-side visual model and heightmap factories for the simulation layer.
@@ -29,11 +30,10 @@ public final class ClientStateInitializer {
     /**
      * Registers client state factories for simulation models and heightmaps.
      *
-     * @param audioSupplier supplier of the active audio implementation
+     * @param audio the active audio implementation
      */
-    public static void init(@NonNull Supplier<@NonNull AudioImplementation> audioSupplier) {
+    public static void init(@NonNull AudioImplementation audio) {
         Model.setClientStateFactory(model -> {
-            var audio = audioSupplier.get();
             VisualModel visualModel = new VisualModel(model, audio);
             switch (model) {
                 case Unit unit -> {
@@ -66,9 +66,7 @@ public final class ClientStateInitializer {
             return visualModel;
         });
         HeightMap.setClientStateFactory(HeightMapVisual::new);
-        com.oddlabs.tt.gui.EditLine.setErrorAudioHandler(() -> {
-            var audio = audioSupplier.get();
-            audio.newAudio(0f, 0f, 0f, com.oddlabs.tt.engine.resource.AudioAssets.ERROR_SOUND);
-        });
+        EditLine.setErrorAudioHandler(
+                () -> audio.newAudio(0f, 0f, 0f, AudioAssets.ERROR_SOUND));
     }
 }

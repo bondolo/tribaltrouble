@@ -1,5 +1,6 @@
 package com.oddlabs.tt.content.form;
 
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.CancelListener;
 import com.oddlabs.tt.gui.Form;
@@ -17,6 +18,9 @@ import java.util.ResourceBundle;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
+/**
+ * Base options menu containing sub-panels for general, graphics, keybindings, accessibility, sound, and language.
+ */
 public abstract class AbstractOptionsMenu extends Form {
     private static final int BUTTON_WIDTH = 100;
     public static final ResourceBundle bundle = ResourceBundle.getBundle(OptionsMenu.class.getName());
@@ -28,7 +32,7 @@ public abstract class AbstractOptionsMenu extends Form {
     private final @NonNull GeneralPanel generalPanel;
     private final @NonNull GraphicsPanel graphicsPanel;
 
-    AbstractOptionsMenu(@NonNull GUIRoot gui_root) {
+    AbstractOptionsMenu(@NonNull GUIRoot gui_root, @NonNull AudioManager audioManager) {
         Label label_headline = new Label(i18n("options_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
@@ -40,7 +44,7 @@ public abstract class AbstractOptionsMenu extends Form {
                 graphicsPanel,
                 new KeyBindingPanel(gui_root),
                 new AccessibilityPanel(gui_root),
-                new SoundPanel(gui_root),
+                new SoundPanel(gui_root, audioManager),
                 new LanguagePanel(gui_root)
         );
         addChild(panel_group);
