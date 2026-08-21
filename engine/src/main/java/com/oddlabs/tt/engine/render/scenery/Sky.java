@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.shader.SeaBottomShader;
@@ -236,9 +235,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         seaBottomVAO.unbind();
     }
 
-    @Override
     public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelView,
-            @NonNull MatrixStack projection) {
+            @NonNull MatrixStack projection, float currentTime) {
         try (var _ = skyShader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.BACK)) {
 
@@ -254,7 +252,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             context.setTexture(1, clouds[GeneratorClouds.OUTER]);
             skyShader.setUniform(SkyShader.Uniforms.TEXTURE_1, 1);
 
-            updateAnimation();
+            updateAnimation(currentTime);
 
             skyShader.setUniform(SkyShader.Uniforms.INNER_OFFSET, innerOffset[0], innerOffset[1]);
             skyShader.setUniform(SkyShader.Uniforms.OUTER_OFFSET, outerOffset[0], outerOffset[1]);
@@ -274,8 +272,13 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         }
     }
 
-    private void updateAnimation() {
-        float currentTime = Renderer.getRenderer().getEventQueue().getTime();
+    @Override
+    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelView,
+            @NonNull MatrixStack projection) {
+        render(context, state, modelView, projection, lastTime);
+    }
+
+    private void updateAnimation(float currentTime) {
         float dt = currentTime - lastTime;
         if (dt < 0 || dt > 1.0f) dt = 0.016f;
         lastTime = currentTime;

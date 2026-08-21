@@ -1,6 +1,6 @@
 package com.oddlabs.tt.base.util;
 
-import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.event.Deterministic;
 import org.jspecify.annotations.NonNull;
 
 import java.io.File;
@@ -10,9 +10,10 @@ import java.util.regex.Pattern;
 public final class FileLister implements FileListerInterface {
     private final FileListerListener listener;
 
-    public FileLister(@NonNull File dir, String pattern, FileListerListener listener) {
+    public FileLister(@NonNull File dir, String pattern, FileListerListener listener,
+            @NonNull Deterministic deterministic) {
         this.listener = listener;
-        newFiles(LocalEventQueue.getQueue().getDeterministic().log(dir.listFiles(new PatternFilenameFilter(
+        newFiles(deterministic.log(dir.listFiles(new PatternFilenameFilter(
                 pattern))));
     }
 

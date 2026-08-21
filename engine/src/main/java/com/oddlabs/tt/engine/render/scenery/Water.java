@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PatchMesh;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.shader.WaterShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -229,8 +228,8 @@ public final class Water implements AutoCloseable {
 
 
     public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull Collection<
-            @NonNull LandscapeLeaf> visiblePatches) {
-        updateAnimation();
+            @NonNull LandscapeLeaf> visiblePatches, float currentTime) {
+        updateAnimation(currentTime);
 
         try (var _ = waterShader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {
@@ -334,8 +333,12 @@ public final class Water implements AutoCloseable {
         }
     }
 
-    private void updateAnimation() {
-        float currentTime = Renderer.getRenderer().getEventQueue().getTime();
+    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull Collection<
+            @NonNull LandscapeLeaf> visiblePatches) {
+        render(context, state, visiblePatches, lastTime);
+    }
+
+    private void updateAnimation(float currentTime) {
         float dt = currentTime - lastTime;
         if (dt < 0 || dt > 1.0f) dt = 0.016f;
         lastTime = currentTime;

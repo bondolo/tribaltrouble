@@ -1,14 +1,13 @@
 package com.oddlabs.tt.client.delegate;
 
-import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.camera.FirstPersonCamera;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.gui.CursorType;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
@@ -20,7 +19,7 @@ public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     public FirstPersonDelegate(@NonNull WorldViewer viewer, @NonNull CameraState camera_state, boolean key_pressed) {
         super(viewer, new FirstPersonCamera(viewer, viewer.getWorld().getHeightMap(), camera_state));
         this.key_pressed = key_pressed;
-        created_tick = Renderer.getRenderer().getEventQueue().getManager().getTick();
+        created_tick = viewer.getAnimationManager().getTick();
     }
 
     private void release() {
@@ -64,7 +63,7 @@ public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     @Override
     public void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
             int absolute_y) {
-        if (created_tick == Renderer.getRenderer().getEventQueue().getManager().getTick())
+        if (created_tick == getViewer().getAnimationManager().getTick())
             return;
         if ((button == MouseButton.MIDDLE || key_pressed) && !done && getGUIRoot().getModalDelegate() == null) {
             getCamera().mouseMoved(x, y);

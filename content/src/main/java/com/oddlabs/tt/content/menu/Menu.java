@@ -376,15 +376,16 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 Renderer.getRenderer().getSettings().accessibility.linear_team_colours,
                 RenderConfig.INSERT_PLANTS[Renderer.getRenderer().getSettings().graphic_detail],
                 ProgressForm::progress);
-        AnimationManager manager = new AnimationManager();
-        LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, manager);
+        AnimationManager menuAnimationManager = new AnimationManager();
+        LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
         Selection selection = new Selection(local_player);
         UIRenderer renderer = new DefaultRenderer(null, local_player, render_queues, world_info,
-                landscape_renderer, new Picker(manager, local_player, gui_root, render_queues, landscape_renderer,
-                        selection), selection, modelViewStack, projectionStack);
+                landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
+                        landscape_renderer, selection), selection, modelViewStack, projectionStack);
         Renderer.getRenderer().setMusic(AudioAssets.MUSIC_MENU, 0f);
-        MainMenu main_menu = new MainMenu(network, gui_root, new MenuCamera(world, manager));
+        MainMenu main_menu = new MainMenu(network, gui_root,
+                new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager));
         gui_root.pushDelegate(main_menu);
         if (first_progress && Renderer.getRenderer().getSettings().audio.warning_no_sound && !Renderer.getRenderer()
                 .getEventQueue().getDeterministic().log(Renderer.getRenderer().getAudioManager() != null)) {

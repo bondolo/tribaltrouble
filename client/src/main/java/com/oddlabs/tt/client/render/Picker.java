@@ -96,7 +96,8 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final CameraState tmp_camera = new CameraState();
     private final SortedSet<@NonNull LandscapeLeaf> patch_pick_set = new TreeSet<>(new LandscapeLeafComparator());
     private final SpriteSorter sprite_sorter = new SpriteSorter();
-    private final TimerAnimation tool_tip_timer = new TimerAnimation(this, TOOL_TIP_DELAY);
+    private final @NonNull AnimationManager manager;
+    private final @NonNull TimerAnimation tool_tip_timer;
     private final @NonNull LandscapeRenderer landscape_renderer;
     private final @NonNull ElementRenderer<?> element_renderer;
     private final @NonNull TreePicker tree_renderer;
@@ -124,6 +125,8 @@ public final class Picker implements Updatable<TimerAnimation> {
 
     public Picker(@NonNull AnimationManager manager, @NonNull Player local_player, @NonNull GUIRoot gui_root,
             @NonNull RenderQueues render_queues, @NonNull LandscapeRenderer landscape_renderer, Selection selection) {
+        this.manager = manager;
+        this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
         this.local_player = local_player;
         this.gui_root = gui_root;
         this.render_queues = render_queues;
@@ -167,13 +170,12 @@ public final class Picker implements Updatable<TimerAnimation> {
         pickObjects();
         Target nearest_pickable = getNearestPick(element_pick_list, Target.class);
         Selectable<?>[] selection = selected_army.filter(Abilities.TARGET);
+        boolean aggressive = gui_root.getInputManager().getControlSettings().aggressive_units;
         if (nearest_pickable != null) {
             if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
                 respond_manager.addResponder(nearest_pickable);
-            if (isNewSetTarget(selection, nearest_pickable, action, Renderer.getRenderer()
-                    .getSettings().control.aggressive_units))
-                player_interface.setTarget(selection, nearest_pickable, action, Renderer.getRenderer()
-                        .getSettings().control.aggressive_units);
+            if (isNewSetTarget(selection, nearest_pickable, action, aggressive))
+                player_interface.setTarget(selection, nearest_pickable, action, aggressive);
         } else {
             pickResources();
             final TreeSupply supply = getNearestPick(tree_pick_list, Target.class);
@@ -181,18 +183,14 @@ public final class Picker implements Updatable<TimerAnimation> {
                 //	Target target = (Target)supply;
                 respond_manager.addResponder(supply, () -> supply.changeRespondingTrees(-1));
                 supply.changeRespondingTrees(1);
-                if (isNewSetTarget(selection, supply, action, Renderer.getRenderer()
-                        .getSettings().control.aggressive_units))
-                    player_interface.setTarget(selection, supply, action, Renderer.getRenderer()
-                            .getSettings().control.aggressive_units);
+                if (isNewSetTarget(selection, supply, action, aggressive))
+                    player_interface.setTarget(selection, supply, action, aggressive);
             } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
-                new LandscapeTargetRespond(local_player.getWorld(), patch_hit_x, patch_hit_y);
+                new LandscapeTargetRespond(local_player.getWorld(), manager, patch_hit_x, patch_hit_y);
                 int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
                 int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
-                if (isNewLandscapeTarget(selection, grid_x, grid_y, action, Renderer.getRenderer()
-                        .getSettings().control.aggressive_units))
-                    player_interface.setLandscapeTarget(selection, grid_x, grid_y, action, Renderer.getRenderer()
-                            .getSettings().control.aggressive_units);
+                if (isNewLandscapeTarget(selection, grid_x, grid_y, action, aggressive))
+                    player_interface.setLandscapeTarget(selection, grid_x, grid_y, action, aggressive);
             }
         }
     }
@@ -572,7 +570,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     private void setupPicking(@NonNull CameraState camera, float x_center, float y_center, int width, int height,
             int @NonNull [] viewport) {
         proj.identity();
-        var window = Renderer.getRenderer().getWindow();
+        var window = gui_root.getLocalInput().getWindow();
         viewport[0] = 0;
         viewport[1] = 0;
         viewport[2] = window.getLogicalWidth();

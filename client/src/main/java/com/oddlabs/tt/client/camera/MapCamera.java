@@ -65,7 +65,7 @@ public final class MapCamera extends Camera {
         CameraState mapCameraState = new CameraState(radialFog);
         mapCameraState.set(old_camera.getState());
         mapCameraState.setFog(radialFog);
-        super(old_camera.getLandscapeEnvironment(), mapCameraState);
+        super(old_camera.getLandscapeEnvironment(), mapCameraState, old_camera.getAnimationManager());
         this.delegate = delegate;
         Vector2fc target = old_camera.getRotationPoint();
         float target_z = getLandscapeEnvironment().getHeight(target.x(), target.y());

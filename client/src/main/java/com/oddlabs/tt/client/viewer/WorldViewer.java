@@ -6,6 +6,7 @@ import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.GameCamera;
@@ -184,7 +185,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         camera.reset(getLocalPlayer().getStartX(), getLocalPlayer().getStartY());
         initPlayers(world_info.landscapeData().startingLocations(), player_slots, world.getPlayers(), unit_infos,
                 world_params.initialGameSpeed());
-        renderer.getEventQueue().getManager().registerAnimation(this);
+        gui_root.getAnimationManager().registerAnimation(this);
     }
 
     public @NonNull AnimationManager getAnimationManagerLocal() {
@@ -198,7 +199,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     @Override
     public void close() {
-        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
+        gui_root.getAnimationManager().removeAnimation(this);
         peerhub.close();
         ingame_info.close(this);
         renderer.close();
@@ -365,5 +366,21 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public @NonNull InputManager getInputManager() {
         return gui_root.getInputManager();
+    }
+
+    public @NonNull LocalEventQueue getEventQueue() {
+        return gui_root.getEventQueue();
+    }
+
+    public @NonNull AnimationManager getAnimationManager() {
+        return gui_root.getAnimationManager();
+    }
+
+    public @NonNull AnimationManager getAnimationManagerHighPrecision() {
+        return gui_root.getEventQueue().getHighPrecisionManager();
+    }
+
+    public float getTime() {
+        return gui_root.getTime();
     }
 }

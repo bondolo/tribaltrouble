@@ -83,6 +83,7 @@ public final class Renderer implements AutoCloseable {
     private final GLRenderContext renderContext = new GLRenderContext();
     private final Window window = new LWJGL3Window();
     private final Network network = new Network();
+    private final @NonNull LocalEventQueue event_queue = new LocalEventQueue();
 
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
@@ -175,7 +176,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     public @NonNull LocalEventQueue getEventQueue() {
-        return LocalEventQueue.getQueue();
+        return event_queue;
     }
 
     public @NonNull Network getNetwork() {
@@ -209,7 +210,7 @@ public final class Renderer implements AutoCloseable {
 
         AnimationManager.getFrameTimeCounter().updateAbsolute(time_diff);
         AnimationManager.addExecutionTimePrecision(AnimationManager.getFrameTimeCounter().getAveragePerUpdate());
-        java.util.Objects.requireNonNull(deterministic).setEnabled(true);
+        deterministic.setEnabled(true);
         while (AnimationManager.getExecutionTimePrecision()
                 >= AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK && !isFinished()) {
             AnimationManager.addExecutionTimePrecision(
@@ -1055,7 +1056,7 @@ public final class Renderer implements AutoCloseable {
         if (getSettings().audio.play_music) {
             if (music_timer != null)
                 music_timer.stop();
-            music_timer = new TimerAnimation(new MusicTimer(), delay);
+            music_timer = new TimerAnimation(getEventQueue().getManager(), new MusicTimer(), delay);
             music_timer.start();
         }
     }

@@ -44,6 +44,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 
 /**
@@ -233,10 +234,11 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
         context.setViewport(0, 0, frustum_state.getWidth(), frustum_state.getHeight());
 
+        float currentTime = gui_root.getTime();
         // Update Global UBO
         try (var stack = MemoryStack.stackPush()) {
-            java.nio.ByteBuffer buf = stack.malloc(512);
-            globalUniforms.update(frustum_state, Renderer.getRenderer().getEventQueue().getTime(),
+            ByteBuffer buf = stack.malloc(512);
+            globalUniforms.update(frustum_state, currentTime,
                     world.getHeightMap().getSeaLevelMeters(), water, buf);
             buf.flip();
             context.updateGlobalState(buf);
@@ -254,7 +256,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDrawBuffers(false);
 
         if (DebugFlags.draw_sky) {
-            sky.render(context, frustum_state, modelViewStack, projectionStack);
+            sky.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
             sky.renderSeaBottom(context, frustum_state, modelViewStack, projectionStack);
         }
 
@@ -291,7 +293,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
 
         if (DebugFlags.process_trees) {
-            tree_renderer.render(context, frustum_state, modelViewStack, projectionStack);
+            tree_renderer.render(context, frustum_state, modelViewStack, projectionStack, currentTime);
         }
         if (DebugFlags.process_misc) {
             render_queues.renderAll(context, frustum_state, projectionStack);
@@ -319,7 +321,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDrawBuffers(true);
 
         if (DebugFlags.draw_water) {
-            water.render(context, frustum_state, landscape_renderer.getVisiblePatches());
+            water.render(context, frustum_state, landscape_renderer.getVisiblePatches(), currentTime);
         }
 
         if (DebugFlags.process_misc)

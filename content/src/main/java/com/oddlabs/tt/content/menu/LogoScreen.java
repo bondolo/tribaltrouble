@@ -26,7 +26,7 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     private static final int overlay_image_height = 600;
 
     private final @Nullable GUIIcon overlay;
-    private final TimerAnimation delay_timer = new TimerAnimation(this, DELAY);
+    private final @NonNull TimerAnimation delay_timer;
     private final @NonNull GUIRoot client_root;
     private final @Nullable Fadable fadable;
     private final UIRenderer renderer;
@@ -35,6 +35,7 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     public LogoScreen(@NonNull GUIRoot gui_root, @Nullable Texture logo, @Nullable Fadable fadable,
             @NonNull GUIRoot client_root, UIRenderer renderer) {
         super(gui_root, new StaticCamera(new CameraState()));
+        this.delay_timer = new TimerAnimation(gui_root.getAnimationManager(), this, DELAY);
         this.client_root = client_root;
         this.fadable = fadable;
         this.renderer = renderer;

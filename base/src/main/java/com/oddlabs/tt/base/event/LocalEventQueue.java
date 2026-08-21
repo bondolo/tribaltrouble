@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 public final class LocalEventQueue implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(LocalEventQueue.class.getName());
-    private static final LocalEventQueue queue_instance = new LocalEventQueue();
 
     private final StateChecksum checksum = new StateChecksum();
     private final AnimationManager manager = new AnimationManager();
@@ -26,10 +25,6 @@ public final class LocalEventQueue implements AutoCloseable {
 
     public long getMillis() {
         return high_precision_manager.getTick() * AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK;
-    }
-
-    public static @NonNull LocalEventQueue getQueue() {
-        return queue_instance;
     }
 
     public void setEventsLogged(@NonNull Path log_file) {

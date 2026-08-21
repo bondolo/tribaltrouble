@@ -39,13 +39,14 @@ public final class GameStatsDelegate extends CameraDelegate<StaticCamera> implem
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final TimerAnimation delay_timer = new TimerAnimation(this, .6f);
+    private final @NonNull TimerAnimation delay_timer;
     private final @NonNull Group group_buttons;
     private final @NonNull WorldViewer viewer;
 
     public GameStatsDelegate(@NonNull WorldViewer viewer, @NonNull Camera old_camera, @NonNull String label_str) {
         super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
         this.viewer = viewer;
+        this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, .6f);
         setDim(getGUIRoot().getWidth(), getGUIRoot().getHeight());
         Label label = new Label(label_str, Skin.getSkin().getHeadlineFont());
         addChild(label);
