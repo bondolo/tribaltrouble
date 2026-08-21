@@ -3,6 +3,7 @@ package com.oddlabs.tt.audio;
 import com.oddlabs.tt.base.resource.NativeResource;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBVorbis;
+import org.lwjgl.stb.STBVorbisAlloc;
 import org.lwjgl.stb.STBVorbisInfo;
 import org.lwjgl.system.MemoryStack;
 
@@ -19,9 +20,13 @@ import java.nio.ShortBuffer;
 public final class OGGStream extends NativeResource<OGGStream.Decoder> {
 
     protected static class Decoder extends NativeResource.NativeState {
-        // STBVorbis JNI wrapper doesn't appear to correctly hold a reference to the buffer, so we must hold one.
+        private static final int ALLOC_BUFFER_SIZE = 256 * 1024;
+
+        // Retain direct byte buffers so they are not garbage collected while the native decoder is active.
         @SuppressWarnings("FieldCanBeLocal")
         private final ByteBuffer decoderData;
+        @SuppressWarnings("FieldCanBeLocal")
+        private final ByteBuffer allocBuffer;
         private final long decoder;
         private final int channels;
         private final int sampleRate;
@@ -31,9 +36,14 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
             decoderData.put(vorbis);
             decoderData.flip();
 
+            allocBuffer = BufferUtils.createByteBuffer(ALLOC_BUFFER_SIZE);
+
             try (MemoryStack stack = MemoryStack.stackPush()) {
+                STBVorbisAlloc alloc = STBVorbisAlloc.malloc(stack);
+                alloc.alloc_buffer(allocBuffer);
+
                 IntBuffer error = stack.mallocInt(1);
-                decoder = STBVorbis.stb_vorbis_open_memory(decoderData, error, null);
+                decoder = STBVorbis.stb_vorbis_open_memory(decoderData, error, alloc);
                 if (decoder == 0) {
                     throw new IOException("Failed to open OGG Vorbis file. Error: " + error.get(0));
                 }
@@ -44,7 +54,6 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
                 this.sampleRate = info.sample_rate();
             }
         }
-
 
         @Override
         public void close() {
@@ -77,6 +86,10 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
         return state.sampleRate;
     }
 
+    public int getLengthInSamples() {
+        return STBVorbis.stb_vorbis_stream_length_in_samples(state.decoder);
+    }
+
     public void seek(int sample) {
         STBVorbis.stb_vorbis_seek(state.decoder, sample);
     }
@@ -90,7 +103,6 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
     public int read(ShortBuffer buffer) {
         assert buffer.position() == 0 && buffer.hasRemaining()
                 : "Buffer must have remaining space and be at position 0";
-        int samplesPerChannelRequest = buffer.remaining() / state.channels;
         int samplesRead = STBVorbis.stb_vorbis_get_samples_short_interleaved(state.decoder, state.channels, buffer);
         buffer.position(samplesRead * state.channels);
         return samplesRead * state.channels;

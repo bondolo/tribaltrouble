@@ -1,19 +1,15 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.Audio;
+import com.oddlabs.tt.audio.OGGStream;
 import com.oddlabs.tt.base.resource.NativeResource;
-import com.oddlabs.tt.base.util.Utils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALC10;
-import org.lwjgl.stb.STBVorbis;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.libc.LibCStdlib;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
@@ -59,20 +55,21 @@ final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements A
     }
 
     private static void loadOGG(URL file, int bufferId) throws IOException {
-        ByteBuffer vorbisData = Utils.ioResourceToByteBuffer(file);
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer channels = stack.mallocInt(1);
-            IntBuffer sampleRate = stack.mallocInt(1);
-
-            ShortBuffer pcm = STBVorbis.stb_vorbis_decode_memory(vorbisData, channels, sampleRate);
-            if (pcm == null) {
-                throw new IOException("Failed to decode OGG Vorbis: " + file);
+        try (OGGStream stream = new OGGStream(file)) {
+            int channels = stream.getChannels();
+            int sampleRate = stream.getRate();
+            int lengthInSamples = stream.getLengthInSamples();
+            if (lengthInSamples <= 0) {
+                throw new IOException("Failed to determine OGG stream length: " + file);
             }
-
-            int format = Wave.getFormat(channels.get(0), Short.SIZE);
-            AL10.alBufferData(bufferId, format, pcm, sampleRate.get(0));
-
-            LibCStdlib.free(pcm);
+            ShortBuffer pcm = BufferUtils.createShortBuffer(lengthInSamples * channels);
+            int samplesRead = stream.read(pcm);
+            if (samplesRead != lengthInSamples * channels) {
+                throw new IOException("Failed to read all OGG samples: " + file);
+            }
+            pcm.flip();
+            int format = Wave.getFormat(channels, Short.SIZE);
+            AL10.alBufferData(bufferId, format, pcm, sampleRate);
         }
     }
 
