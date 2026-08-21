@@ -1,6 +1,5 @@
 package com.oddlabs.imageutil;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,7 +15,7 @@ import java.util.stream.Stream;
  */
 public final class Convert {
 
-    static void main(@NonNull String @NonNull... args) {
+    static void main(String... args) {
         if (args.length < 2) {
             System.err.println("Usage: Convert <infile/indir> [operations...] <outfile/outdir>");
             System.exit(1);

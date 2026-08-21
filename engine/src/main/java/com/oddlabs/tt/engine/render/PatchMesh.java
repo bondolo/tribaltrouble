@@ -5,7 +5,6 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -20,8 +19,8 @@ public final class PatchMesh {
     private static final int INDEX_COUNT = PATCH_SIZE * PATCH_SIZE * 6;
 
     private final VertexArray vao = new VertexArray();
-    private final @NonNull FloatVBO vbo;
-    private final @NonNull ShortVBO ibo;
+    private final FloatVBO vbo;
+    private final ShortVBO ibo;
 
     public PatchMesh() {
         try (var stack = MemoryStack.stackPush()) {

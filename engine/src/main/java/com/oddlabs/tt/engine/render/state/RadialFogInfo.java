@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Screen-space radial fog configuration for map and tactical views.
@@ -9,11 +8,11 @@ import org.jspecify.annotations.NonNull;
 public final class RadialFogInfo extends FogInfo {
     private final float radiusScale;
 
-    public RadialFogInfo(@NonNull Color color, float density) {
+    public RadialFogInfo(Color color, float density) {
         this(color, density, 1.0f);
     }
 
-    public RadialFogInfo(@NonNull Color color, float density, float radiusScale) {
+    public RadialFogInfo(Color color, float density, float radiusScale) {
         super(Mode.RADIAL, color, density);
         this.radiusScale = radiusScale;
     }

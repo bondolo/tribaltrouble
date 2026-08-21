@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.model.weapon.MagicFactory;
 import com.oddlabs.tt.simulation.player.ChieftainAI;
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -13,20 +12,20 @@ import java.util.Map;
  * Defines the templates for buildings, units, and magical abilities available to the race.
  */
 public final class RaceInfo {
-    private final @NonNull Race race;
-    private final @NonNull EnumMap<BuildingType, BuildingTemplate> buildings = new EnumMap<>(BuildingType.class);
-    private final @NonNull EnumMap<UnitType, UnitTemplate> units = new EnumMap<>(UnitType.class);
-    private final @NonNull List<@NonNull MagicType> magics;
-    private final @NonNull Map<@NonNull MagicType, @NonNull MagicFactory> magicFactories;
-    private final @NonNull ChieftainAI chieftain_ai;
+    private final Race race;
+    private final EnumMap<BuildingType, BuildingTemplate> buildings = new EnumMap<>(BuildingType.class);
+    private final EnumMap<UnitType, UnitTemplate> units = new EnumMap<>(UnitType.class);
+    private final List<MagicType> magics;
+    private final Map<MagicType, MagicFactory> magicFactories;
+    private final ChieftainAI chieftain_ai;
 
-    public RaceInfo(@NonNull Race race, @NonNull BuildingTemplate quarters, @NonNull BuildingTemplate armory,
-            @NonNull BuildingTemplate tower,
-            @NonNull UnitTemplate warrior_rock, @NonNull UnitTemplate warrior_iron,
-            @NonNull UnitTemplate warrior_rubber,
-            @NonNull UnitTemplate peon, @NonNull UnitTemplate chieftain,
-            @NonNull Map<MagicType, MagicFactory> magicFactories,
-            @NonNull ChieftainAI chieftain_ai) {
+    public RaceInfo(Race race, BuildingTemplate quarters, BuildingTemplate armory,
+            BuildingTemplate tower,
+            UnitTemplate warrior_rock, UnitTemplate warrior_iron,
+            UnitTemplate warrior_rubber,
+            UnitTemplate peon, UnitTemplate chieftain,
+            Map<MagicType, MagicFactory> magicFactories,
+            ChieftainAI chieftain_ai) {
         this.race = race;
         buildings.put(BuildingType.QUARTERS, quarters);
         buildings.put(BuildingType.ARMORY, armory);
@@ -44,11 +43,11 @@ public final class RaceInfo {
         this.chieftain_ai = chieftain_ai;
     }
 
-    public @NonNull Race getRaceType() {
+    public Race getRaceType() {
         return race;
     }
 
-    public @NonNull BuildingTemplate getBuildingTemplate(@NonNull BuildingType type) {
+    public BuildingTemplate getBuildingTemplate(BuildingType type) {
         BuildingTemplate template = buildings.get(type);
         if (template == null) {
             throw new IllegalArgumentException("No template registered for building type: " + type);
@@ -56,7 +55,7 @@ public final class RaceInfo {
         return template;
     }
 
-    public @NonNull UnitTemplate getUnitTemplate(@NonNull UnitType type) {
+    public UnitTemplate getUnitTemplate(UnitType type) {
         UnitTemplate template = units.get(type);
         if (template == null) {
             throw new IllegalArgumentException("No template registered for unit type: " + type);
@@ -64,15 +63,15 @@ public final class RaceInfo {
         return template;
     }
 
-    public @NonNull List<@NonNull MagicType> getMagics() {
+    public List<MagicType> getMagics() {
         return magics;
     }
 
-    public @NonNull MagicType getMagicType(int slotIndex) {
+    public MagicType getMagicType(int slotIndex) {
         return magics.get(slotIndex);
     }
 
-    public @NonNull MagicFactory getMagicFactory(@NonNull MagicType type) {
+    public MagicFactory getMagicFactory(MagicType type) {
         MagicFactory factory = magicFactories.get(type);
         if (factory == null) {
             throw new IllegalArgumentException("No magic factory registered for magic type: " + type);
@@ -80,7 +79,7 @@ public final class RaceInfo {
         return factory;
     }
 
-    public @NonNull ChieftainAI getChieftainAI() {
+    public ChieftainAI getChieftainAI() {
         return chieftain_ai;
     }
 }

@@ -19,7 +19,6 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -41,12 +40,12 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private static final int STATE_AWAITING_OK = 2;
     private static final int STATE_LOGGED_IN = 4;
 
-    private final @NonNull Network network;
+    private final Network network;
     private final Map<HostSequenceID, TunnelledConnection> tunnels = new HashMap<>();
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(MatchmakingClientInterface.class);
     private final ChatHistory chat_room_history = new ChatHistory() {
         @Override
-        public void chat(@NonNull ChatMessage message) {
+        public void chat(ChatMessage message) {
             if (message.type() == ChatMessage.Type.PRIVATE || message.type() == ChatMessage.Type.CHATROOM) {
                 addMessage(message.formatLong());
             }
@@ -54,7 +53,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     };
     private final ChatHistory in_game_chat_history = new ChatHistory() {
         @Override
-        public void chat(@NonNull ChatMessage message) {
+        public void chat(ChatMessage message) {
             if (message.type() == ChatMessage.Type.PRIVATE || message.type() == ChatMessage.Type.NORMAL || message
                     .type() == ChatMessage.Type.TEAM) {
                 addMessage(message.formatLong());
@@ -74,7 +73,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private @Nullable Profile active_profile = null;
     private int state = STATE_NOT_CONNECTED;
     private boolean update_allowed;
-    private final Set<@NonNull Integer> update_requested_types = new LinkedHashSet<>();
+    private final Set<Integer> update_requested_types = new LinkedHashSet<>();
     private int update_key = 0;
     private @Nullable ProfileListener create_profile_listener;
     private @Nullable ChatRoomInfo chat_room_info;
@@ -82,17 +81,17 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private Login login;
     private LoginDetails login_details;
 
-    public MatchmakingClient(@NonNull Network network) {
+    public MatchmakingClient(Network network) {
         this.network = network;
         network.getChatHub().addListener(chat_room_history);
         network.getChatHub().addListener(in_game_chat_history);
     }
 
-    public @NonNull SequencedCollection<@NonNull String> getChatRoomHistory() {
+    public SequencedCollection<String> getChatRoomHistory() {
         return chat_room_history.getMessages();
     }
 
-    public @NonNull SequencedCollection<@NonNull String> getInGameChatHistory() {
+    public SequencedCollection<String> getInGameChatHistory() {
         return in_game_chat_history.getMessages();
     }
 
@@ -232,7 +231,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     }
 
     @Override
-    public void joiningChatRoom(@NonNull String room_name) {
+    public void joiningChatRoom(String room_name) {
         assert chat_room_info == null;
         chat_room_info = new ChatRoomInfo(room_name, null);
 
@@ -254,7 +253,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     }
 
     @Override
-    public void receiveChatRoomMessage(@NonNull String owner, @NonNull String msg) {
+    public void receiveChatRoomMessage(String owner, String msg) {
         network.getChatHub().chat(new ChatMessage(owner, msg, ChatMessage.Type.CHATROOM));
     }
 
@@ -263,7 +262,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     }
 
     @Override
-    public void receivePrivateMessage(@NonNull String nick, @NonNull String msg) {
+    public void receivePrivateMessage(String nick, String msg) {
         network.getChatHub().chat(new ChatMessage(nick, msg, ChatMessage.Type.PRIVATE));
     }
 
@@ -280,7 +279,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     }
 
     @Override
-    public void receiveInfo(@NonNull Profile profile) {
+    public void receiveInfo(Profile profile) {
         if (ui_listener != null) {
             ui_listener.onProfileReceived(profile.toString());
         }
@@ -307,7 +306,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         return state == STATE_LOGGED_IN;
     }
 
-    private void open(@NonNull NetworkSelector network) {
+    private void open(NetworkSelector network) {
         close();
 
         this.conn = new SecureConnection(network.getDeterministic(), new Connection(network, MATCHMAKING_HOST,
@@ -316,7 +315,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
                 MatchmakingServerLoginInterface.class);
     }
 
-    public void login(@NonNull NetworkSelector network, Login login, LoginDetails login_details) {
+    public void login(NetworkSelector network, Login login, LoginDetails login_details) {
         this.login = login;
         this.login_details = login_details;
         open(network);
@@ -354,7 +353,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
         assert old == null;
     }
 
-    public @NonNull HostSequenceID registerTunnel(int address, TunnelledConnection conn) {
+    public HostSequenceID registerTunnel(int address, TunnelledConnection conn) {
         int seq_id = current_seq_id++;
         HostSequenceID host_seq = new HostSequenceID(local_address.getHostID(), seq_id);
         matchmaking_interface.openTunnel(address, seq_id);
@@ -409,7 +408,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     }
 
     @Override
-    public void tunnelOpened(@NonNull HostSequenceID from, InetAddress inet_from, InetAddress local_inet_from,
+    public void tunnelOpened(HostSequenceID from, InetAddress inet_from, InetAddress local_inet_from,
             Profile other) {
         if (tunnelled_listener != null) {
             tunnelled_listener.requestTunnelledConnection(from, inet_from, local_inet_from, other);
@@ -427,7 +426,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     }
 
     @Override
-    public void handle(Object sender, @NonNull ARMIEvent event) {
+    public void handle(Object sender, ARMIEvent event) {
         try {
             event.execute(interface_methods, this);
         } catch (IllegalARMIEventException e) {

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.base.resource.NativeResource;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALC10;
 
@@ -42,7 +41,7 @@ final class OpenALFilter extends NativeResource<OpenALFilter.FilterState> {
         }
     }
 
-    OpenALFilter(@NonNull Consumer<@NonNull Runnable> cleanupStrategy) {
+    OpenALFilter(Consumer<Runnable> cleanupStrategy) {
         super(new FilterState(), cleanupStrategy);
     }
 

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
@@ -17,17 +16,17 @@ public final class WarningForm extends Form {
     private static final int MAX_WIDTH = 500;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(WarningForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull CheckBox show_next_time;
+    private final CheckBox show_next_time;
 
-    public WarningForm(@NonNull String head, @NonNull String message) {
+    public WarningForm(String head, String message) {
         this(head, message, null);
     }
 
-    public WarningForm(@NonNull String head, @NonNull String message, @Nullable Consumer<Boolean> onDismiss) {
+    public WarningForm(String head, String message, @Nullable Consumer<Boolean> onDismiss) {
         int head_width = Math.min(MAX_WIDTH, Skin.getSkin().getHeadlineFont().getWidth(head));
         int message_width = Math.min(MAX_WIDTH, Skin.getSkin().getEditFont().getWidth(message));
         int width = Math.max(head_width, message_width);

@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.render.LODObject;
 import com.oddlabs.tt.engine.render.PolyDetail;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Renderer;
-import org.jspecify.annotations.NonNull;
 
 final class SpriteSorter {
     public enum DetailMode {
@@ -29,7 +28,7 @@ final class SpriteSorter {
         this.polycount_limit = polycount_limit;
     }
 
-    public @NonNull DetailMode add(@NonNull LODObject model, @NonNull CameraState camera, boolean point) {
+    public DetailMode add(LODObject model, CameraState camera, boolean point) {
         if (point && camera.inNoDetailMode()) {
             model.markDetailPoint();
             return DetailMode.POINT;
@@ -45,7 +44,7 @@ final class SpriteSorter {
         return DetailMode.POLYGON;
     }
 
-    private void addToPocket(float dist_squared, @NonNull LODObject model) {
+    private void addToPocket(float dist_squared, LODObject model) {
         int dist = (int) Math.sqrt(dist_squared);
         sorted_models.add(dist, model);
     }

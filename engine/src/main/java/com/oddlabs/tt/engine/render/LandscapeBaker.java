@@ -11,7 +11,6 @@ import com.oddlabs.tt.procedural.BlendInfo;
 import com.oddlabs.tt.procedural.BlendLighting;
 import com.oddlabs.tt.procedural.BlendOcclusion;
 import com.oddlabs.tt.procedural.StructureBlend;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL21;
@@ -151,23 +150,23 @@ public final class LandscapeBaker {
         this.worldSize = worldSize;
     }
 
-    private static @NonNull Texture createAlphaMap(@NonNull GLByteImage alpha_image) {
+    private static Texture createAlphaMap(GLByteImage alpha_image) {
         GLImage[] mipmaps = alpha_image.buildMipMaps(0, 1.0f, true, false);
         return new Texture(mipmaps, GL30.GL_R8, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT,
                 GL11.GL_REPEAT);
     }
 
-    private static @NonNull Texture createStructureMap(@NonNull GLIntImage structure_image) {
+    private static Texture createStructureMap(GLIntImage structure_image) {
         return new Texture(new GLIntImage[]{structure_image}, GL21.GL_SRGB8, GL11.GL_LINEAR, GL11.GL_LINEAR,
                 GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
-    private static @NonNull Texture createNormalMap(@NonNull GLIntImage normal_image) {
+    private static Texture createNormalMap(GLIntImage normal_image) {
         return new Texture(new GLIntImage[]{normal_image}, GL11.GL_RGB, GL11.GL_LINEAR, GL11.GL_LINEAR,
                 GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
-    public WorldInfo.@NonNull Maps<Texture> bake(@NonNull BlendInfo @NonNull [] blendInfos) {
+    public WorldInfo.Maps<Texture> bake(BlendInfo[] blendInfos) {
         checkGLError("Before bake");
         Texture[] diffuse = new Texture[2];
         Texture[] normal = new Texture[2];

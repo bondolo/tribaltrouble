@@ -1,7 +1,6 @@
 package com.oddlabs.tt.window;
 
 import org.joml.Vector2f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,7 +101,7 @@ public final class LWJGL3Window implements Window {
         }
     }
 
-    private static @Nullable List<@NonNull SerializableDisplayMode> getMacNativeDisplayModes() {
+    private static @Nullable List<SerializableDisplayMode> getMacNativeDisplayModes() {
         if (!isMac) return null;
         initMacFFI();
         if (!macInitialized) return null;
@@ -160,7 +158,7 @@ public final class LWJGL3Window implements Window {
 
     private long windowHandle = MemoryUtil.NULL;
     private long glContext = MemoryUtil.NULL;
-    private @NonNull String title = "Tribal Trouble";
+    private String title = "Tribal Trouble";
     private boolean resized;
     private boolean closeRequested;
     private boolean active;
@@ -176,7 +174,7 @@ public final class LWJGL3Window implements Window {
     private int restoreState = RESTORE_NONE;
     private boolean lastMacAppActive;
 
-    private @NonNull WindowSettings settings;
+    private WindowSettings settings;
 
     private int cachedWidth = SerializableDisplayMode.MIN_WIDTH;
     private int cachedHeight = SerializableDisplayMode.MIN_HEIGHT;
@@ -187,19 +185,19 @@ public final class LWJGL3Window implements Window {
         this(new WindowSettings());
     }
 
-    public LWJGL3Window(@NonNull WindowSettings settings) {
-        this.settings = Objects.requireNonNull(settings);
+    public LWJGL3Window(WindowSettings settings) {
+        this.settings = settings;
         ensureSDL();
     }
 
     @Override
-    public @NonNull WindowSettings getSettings() {
+    public WindowSettings getSettings() {
         return settings;
     }
 
     @Override
-    public void setSettings(@NonNull WindowSettings settings) {
-        this.settings = Objects.requireNonNull(settings);
+    public void setSettings(WindowSettings settings) {
+        this.settings = settings;
     }
 
     @Override
@@ -216,8 +214,8 @@ public final class LWJGL3Window implements Window {
         }
     }
 
-    private @Nullable SDL_DisplayMode findMatchingDisplayMode(@NonNull MemoryStack stack, int displayID,
-            @NonNull SerializableDisplayMode targetMode) {
+    private @Nullable SDL_DisplayMode findMatchingDisplayMode(MemoryStack stack, int displayID,
+            SerializableDisplayMode targetMode) {
         PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
         if (pb == null) {
             return null;
@@ -268,7 +266,7 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public void create(@NonNull SerializableDisplayMode mode, boolean fullscreen) {
+    public void create(SerializableDisplayMode mode, boolean fullscreen) {
         logger.log(Level.INFO, "Creating window: " + mode + ", fullscreen: " + fullscreen);
         this.lastCreatedMode = mode;
 
@@ -316,7 +314,7 @@ public final class LWJGL3Window implements Window {
         this.iconified = false;
     }
 
-    private void createWindow(@NonNull SerializableDisplayMode mode, boolean fullscreen) {
+    private void createWindow(SerializableDisplayMode mode, boolean fullscreen) {
         long flags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE;
         if (fullscreen) {
             flags |= SDL_WINDOW_FULLSCREEN;
@@ -669,7 +667,7 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public @NonNull List<@NonNull SerializableDisplayMode> getFullscreenDisplayModes() {
+    public List<SerializableDisplayMode> getFullscreenDisplayModes() {
         int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
                 : SDL_GetPrimaryDisplay();
         if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
@@ -717,7 +715,7 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public @NonNull List<@NonNull SerializableDisplayMode> getWindowedDisplayModes() {
+    public List<SerializableDisplayMode> getWindowedDisplayModes() {
         int displayID = windowHandle != MemoryUtil.NULL ? SDL_GetDisplayForWindow(windowHandle)
                 : SDL_GetPrimaryDisplay();
         if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
@@ -743,7 +741,7 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public @NonNull SerializableDisplayMode getDisplayMode() {
+    public SerializableDisplayMode getDisplayMode() {
         if (lastCreatedMode != null) {
             return lastCreatedMode;
         }
@@ -751,7 +749,7 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public void setDisplayMode(@NonNull SerializableDisplayMode mode) throws Exception {
+    public void setDisplayMode(SerializableDisplayMode mode) throws Exception {
         this.lastCreatedMode = mode;
         if (windowHandle == MemoryUtil.NULL) return;
 
@@ -853,18 +851,18 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public @NonNull Vector2f getMonitorPhysicalSize() {
+    public Vector2f getMonitorPhysicalSize() {
         return new Vector2f(500, 300);
     }
 
     @Override
-    public @NonNull Vector2f getMonitorContentScale() {
+    public Vector2f getMonitorContentScale() {
         float density = getPixelDensity();
         return new Vector2f(density, density);
     }
 
     @Override
-    public @NonNull Vector2f getWindowContentScale() {
+    public Vector2f getWindowContentScale() {
         float density = getPixelDensity();
         return new Vector2f(density, density);
     }
@@ -877,7 +875,7 @@ public final class LWJGL3Window implements Window {
     }
 
     @Override
-    public boolean isExclusiveFullscreenMode(@NonNull SerializableDisplayMode mode) {
+    public boolean isExclusiveFullscreenMode(SerializableDisplayMode mode) {
         if (windowHandle == MemoryUtil.NULL) return false;
         try (MemoryStack stack = MemoryStack.stackPush()) {
             int displayID = SDL_GetDisplayForWindow(windowHandle);

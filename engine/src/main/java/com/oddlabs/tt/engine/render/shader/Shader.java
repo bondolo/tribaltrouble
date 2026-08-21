@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render.shader;
 
 import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Base interface for OpenGL shaders.
@@ -71,30 +70,30 @@ public interface Shader {
 
     boolean inUse();
 
-    int getAttributeLocation(@NonNull String name);
+    int getAttributeLocation(String name);
 
-    int getUniformLocation(@NonNull String name);
+    int getUniformLocation(String name);
 
-    void setUniform(@NonNull String name, int @NonNull [] values);
+    void setUniform(String name, int[] values);
 
-    void setUniform(@NonNull String name, int value);
+    void setUniform(String name, int value);
 
-    void setUniform(@NonNull String name, float value);
+    void setUniform(String name, float value);
 
-    void setUniform(@NonNull String name, boolean value);
+    void setUniform(String name, boolean value);
 
-    void setUniform(@NonNull String name, float x, float y);
+    void setUniform(String name, float x, float y);
 
-    void setUniform(@NonNull String name, float x, float y, float z);
+    void setUniform(String name, float x, float y, float z);
 
     /**
      * set the named uniform to the specified color.
      *
      * @param color should be in linear space but is converted if necessary
      */
-    void setUniform(@NonNull String name, @NonNull Color color);
+    void setUniform(String name, Color color);
 
-    void setUniform(@NonNull String name, @NonNull Matrix4fc matrix);
+    void setUniform(String name, Matrix4fc matrix);
 
-    void setUniform(@NonNull String name, boolean transpose, @NonNull Matrix4fc matrix);
+    void setUniform(String name, boolean transpose, Matrix4fc matrix);
 }

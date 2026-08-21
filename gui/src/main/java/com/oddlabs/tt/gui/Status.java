@@ -5,12 +5,11 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 public final class Status {
     private final StringBuilder buf = new StringBuilder();
 
-    public void render(@NonNull GUIRenderer renderer) {
+    public void render(GUIRenderer renderer) {
         long free_mem = Runtime.getRuntime().freeMemory();
         buf.delete(0, buf.length());
         if (Renderer.getRenderer().getSettings().inDeveloperMode()) {

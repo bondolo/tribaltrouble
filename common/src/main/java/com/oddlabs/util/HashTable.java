@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -21,7 +20,7 @@ public final class HashTable<T> implements Serializable {
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     @SuppressWarnings("unchecked")
-    private transient @Nullable LinkedList<@NonNull HashEntry<T>> @NonNull [] entries
+    private transient @Nullable LinkedList<HashEntry<T>>[] entries
             = new LinkedList[DEFAULT_INITIAL_ENTRIES];
     private final float load_factor = DEFAULT_LOAD_FACTOR;
     private final int mul_factor = DEFAULT_MUL_FACTOR;
@@ -39,7 +38,7 @@ public final class HashTable<T> implements Serializable {
         return hash >= 0 ? hash : hash + entries.length;
     }
 
-    public @Nullable T put(int key, @NonNull T val) {
+    public @Nullable T put(int key, T val) {
         int hash = hash(key);
         if (entries[hash] == null) {
             entries[hash] = new LinkedList<>();
@@ -97,7 +96,7 @@ public final class HashTable<T> implements Serializable {
     private void rehash() {
         LinkedList<HashEntry<T>>[] old_entries = entries;
         //noinspection unchecked
-        entries = (@Nullable LinkedList<@NonNull HashEntry<T>> @NonNull []) new LinkedList[entries.length * mul_factor];
+        entries = (@Nullable LinkedList<HashEntry<T>>[]) new LinkedList[entries.length * mul_factor];
         for (LinkedList<HashEntry<T>> old_entry : old_entries) {
             if (old_entry != null) {
                 HashEntry<T> current_entry = old_entry.getFirst();
@@ -114,7 +113,7 @@ public final class HashTable<T> implements Serializable {
     }
 
     @Serial
-    private void writeObject(@NonNull ObjectOutputStream s) throws IOException {
+    private void writeObject(ObjectOutputStream s) throws IOException {
         s.defaultWriteObject();
         s.writeInt(entries.length);
         s.writeInt(num_entries);
@@ -132,7 +131,7 @@ public final class HashTable<T> implements Serializable {
 
     @Serial
     @SuppressWarnings("unchecked")
-    private void readObject(@NonNull ObjectInputStream s) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();
         int length = s.readInt();
         entries = new LinkedList[length];

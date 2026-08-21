@@ -21,7 +21,6 @@ import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -38,13 +37,13 @@ public final class NewUserForm extends Form {
     private static final int EDITLINE_WIDTH = 240;
 
     private final Menu main_menu;
-    private final @NonNull EditLine editline_username;
-    private final @NonNull EditLine editline_email;
-    private final @NonNull PasswordLine editline_password;
-    private final @NonNull PasswordLine editline_verify;
+    private final EditLine editline_username;
+    private final EditLine editline_email;
+    private final PasswordLine editline_password;
+    private final PasswordLine editline_verify;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NewUserForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -133,7 +132,7 @@ public final class NewUserForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -163,7 +162,7 @@ public final class NewUserForm extends Form {
         }
     }
 
-    private void doCreateUser(@NonNull String username, LoginDetails login_details, @NonNull String password,
+    private void doCreateUser(String username, LoginDetails login_details, String password,
             Login login) {
         Renderer.getRenderer().getSettings().account.username = username;
         Renderer.getRenderer().getSettings().account.pw_digest = password;
@@ -173,12 +172,12 @@ public final class NewUserForm extends Form {
 
     private final class CreateUserListener implements MouseClickListener, EnterListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             createUser();
         }
 
         @Override
-        public void enterPressed(@NonNull CharSequence text) {
+        public void enterPressed(CharSequence text) {
             createUser();
         }
     }

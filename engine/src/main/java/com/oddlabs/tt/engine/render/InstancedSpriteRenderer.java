@@ -13,7 +13,6 @@ import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -37,8 +36,8 @@ import java.util.Map;
 public final class InstancedSpriteRenderer implements AutoCloseable {
 
     private final InstancedSpriteShader shader = new InstancedSpriteShader();
-    private final Map<@NonNull BatchKey, @NonNull RenderBatch> batches = new HashMap<>();
-    private final @NonNull Texture whiteTexture;
+    private final Map<BatchKey, RenderBatch> batches = new HashMap<>();
+    private final Texture whiteTexture;
 
     public InstancedSpriteRenderer() {
         GLImage whiteImage = new GLIntImage(1, 1, GL11.GL_RGBA);
@@ -47,15 +46,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
     }
 
-    @NonNull
     Texture getWhiteTexture() {
         return whiteTexture;
     }
 
-    public void add(@NonNull SpriteList spriteList, int spriteIndex, int animation, float animTicks,
-            @NonNull Texture texture, @Nullable Texture teamTexture, @Nullable Texture bumpTexture,
-            boolean respond, boolean blend, boolean depthWrite, boolean depthTest, @NonNull Matrix4f modelMatrix,
-            @NonNull Color color, @NonNull Color decalColor) {
+    public void add(SpriteList spriteList, int spriteIndex, int animation, float animTicks,
+            Texture texture, @Nullable Texture teamTexture, @Nullable Texture bumpTexture,
+            boolean respond, boolean blend, boolean depthWrite, boolean depthTest, Matrix4f modelMatrix,
+            Color color, Color decalColor) {
         Sprite sprite = spriteList.getSprite(spriteIndex);
         Sprite.FrameState frameState = sprite.getAnimationState(animation, animTicks);
 
@@ -67,8 +65,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                         .tween(), modelMatrix, color, decalColor);
     }
 
-    public void renderAll(@NonNull RenderContext context, @NonNull CameraState cameraState,
-            @NonNull MatrixStack projectionStack) {
+    public void renderAll(RenderContext context, CameraState cameraState,
+            MatrixStack projectionStack) {
         if (batches.isEmpty()) return;
 
         try (var _ = shader.use()) {
@@ -111,7 +109,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         whiteTexture.close();
     }
 
-    private record BatchKey(@NonNull SpriteList spriteList, @NonNull Texture texture,
+    private record BatchKey(SpriteList spriteList, Texture texture,
                             @Nullable Texture teamTexture, @Nullable Texture bumpTexture, boolean respond,
                             boolean blend, boolean depthWrite, boolean depthTest) {
     }
@@ -121,22 +119,22 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     }
 
     private static class RenderBatch implements AutoCloseable {
-        private final @NonNull BatchKey key;
-        private final @NonNull Map<@NonNull Integer, @NonNull InstanceGroup> groups = new HashMap<>();
+        private final BatchKey key;
+        private final Map<Integer, InstanceGroup> groups = new HashMap<>();
 
         // mat4 (16) + color (4) + decalColor (4) + pos1(1) + norm1(1) + pos2(1) + norm2(1) + tween (1)
         private static final int FLOATS_PER_INSTANCE = 16 + 4 + 4 + 1 + 1 + 1 + 1 + 1;
 
         private static class InstanceGroup implements AutoCloseable {
             private final int spriteIndex;
-            private final @NonNull SpriteList spriteList;
+            private final SpriteList spriteList;
             private FloatVBO vbo;
-            private final @NonNull VertexArray vao;
-            private @NonNull FloatBuffer buffer;
+            private final VertexArray vao;
+            private FloatBuffer buffer;
             private int count = 0;
             private int capacity = 32;
 
-            InstanceGroup(int spriteIndex, @NonNull BatchKey key, int floatsPerInstance) {
+            InstanceGroup(int spriteIndex, BatchKey key, int floatsPerInstance) {
                 this.spriteIndex = spriteIndex;
                 this.spriteList = key.spriteList;
                 this.buffer = BufferUtils.createFloatBuffer(capacity * floatsPerInstance);
@@ -212,8 +210,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 GL33.glVertexAttribDivisor(tweenLoc, 1);
             }
 
-            void add(int pos1, int norm1, int pos2, int norm2, float tween, @NonNull Matrix4f modelMatrix,
-                    @NonNull Color color, @NonNull Color decalColor) {
+            void add(int pos1, int norm1, int pos2, int norm2, float tween, Matrix4f modelMatrix,
+                    Color color, Color decalColor) {
                 if (count >= capacity) {
                     int newCapacity = capacity * 2;
                     FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity * FLOATS_PER_INSTANCE);
@@ -247,14 +245,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 count++;
             }
 
-            void upload(@NonNull RenderContext context) {
+            void upload(RenderContext context) {
                 vbo.bind(context);
                 vbo.orphan();
                 buffer.limit(count * FLOATS_PER_INSTANCE).position(0);
                 GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
             }
 
-            void draw(@NonNull RenderContext context) {
+            void draw(RenderContext context) {
                 vao.bind(context);
                 Sprite sprite = spriteList.getSprite(spriteIndex);
                 context.setCullMode(sprite.culled ? CullMode.BACK : CullMode.NONE);
@@ -274,26 +272,26 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
         }
 
-        private static final Comparator<@NonNull RenderBatch> COMPARATOR = Comparator
+        private static final Comparator<RenderBatch> COMPARATOR = Comparator
                 .comparing((RenderBatch b) -> b.key.blend)
                 .thenComparingInt(b -> b.key.texture.getHandle())
                 .thenComparingInt(b -> b.key.spriteList.getTBOTextureHandle())
                 .thenComparingInt(b -> b.key.teamTexture != null ? b.key.teamTexture.getHandle() : 0)
                 .thenComparingInt(b -> b.key.bumpTexture != null ? b.key.bumpTexture.getHandle() : 0);
 
-        RenderBatch(@NonNull BatchKey key) {
+        RenderBatch(BatchKey key) {
             this.key = key;
         }
 
         void addInstance(int spriteIndex, int pos1, int norm1, int pos2, int norm2, float tween,
-                @NonNull Matrix4f modelMatrix, @NonNull Color color, @NonNull Color decalColor) {
+                Matrix4f modelMatrix, Color color, Color decalColor) {
             InstanceGroup group = groups.computeIfAbsent(spriteIndex, k -> new InstanceGroup(k, key,
                     FLOATS_PER_INSTANCE));
             group.add(pos1, norm1, pos2, norm2, tween, modelMatrix, color, decalColor);
         }
 
-        void render(@NonNull RenderContext context, @NonNull InstancedSpriteShader shader, Texture whiteTexture,
-                @NonNull RenderState state) {
+        void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,
+                RenderState state) {
             boolean hasInstances = false;
             for (InstanceGroup group : groups.values()) {
                 if (group.count > 0) {
@@ -356,7 +354,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
         }
 
-        private void drawAll(@NonNull RenderContext context) {
+        private void drawAll(RenderContext context) {
             for (InstanceGroup group : groups.values()) {
                 if (group.count > 0) {
                     group.draw(context);
@@ -364,8 +362,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
         }
 
-        private void setupTextures(@NonNull RenderContext context, @NonNull InstancedSpriteShader shader,
-                @NonNull Sprite sprite, Texture whiteTexture, @NonNull RenderState state) {
+        private void setupTextures(RenderContext context, InstancedSpriteShader shader,
+                Sprite sprite, Texture whiteTexture, RenderState state) {
             context.setTexture(0, key.texture);
             shader.setUniform(InstancedSpriteShader.Uniforms.TEXTURE_0, 0);
 

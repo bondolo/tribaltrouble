@@ -3,7 +3,6 @@ package com.oddlabs.tt.base.animation;
 import com.oddlabs.net.MonotoneTimeManager;
 import com.oddlabs.tt.base.util.StatCounter;
 import com.oddlabs.tt.base.event.StateChecksum;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -41,8 +40,8 @@ public final class AnimationManager {
     private static long checksum_millisecond_counter;
     private static boolean checksum_complain = true;
 
-    private final Set<@NonNull Animated> animations = new CopyOnWriteArraySet<>();
-    private final Set<@NonNull Animated> deleted_animations = new CopyOnWriteArraySet<>();
+    private final Set<Animated> animations = new CopyOnWriteArraySet<>();
+    private final Set<Animated> deleted_animations = new CopyOnWriteArraySet<>();
 
     private int tick;
 
@@ -140,12 +139,12 @@ public final class AnimationManager {
         return tick;
     }
 
-    public void registerAnimation(@NonNull Animated anim) {
+    public void registerAnimation(Animated anim) {
         deleted_animations.remove(anim);
         animations.add(anim);
     }
 
-    public void removeAnimation(@NonNull Animated anim) {
+    public void removeAnimation(Animated anim) {
         if (animations.contains(anim)) {
             deleted_animations.add(anim);
         }
@@ -156,7 +155,7 @@ public final class AnimationManager {
         deleted_animations.clear();
     }
 
-    public void updateChecksum(@NonNull StateChecksum checksum) {
+    public void updateChecksum(StateChecksum checksum) {
         flushAnimations();
         animations.forEach(anim -> anim.updateChecksum(checksum));
     }

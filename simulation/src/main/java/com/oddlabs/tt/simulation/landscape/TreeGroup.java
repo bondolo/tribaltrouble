@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class TreeGroup extends AbstractTreeGroup {
@@ -12,7 +11,7 @@ public final class TreeGroup extends AbstractTreeGroup {
      * child[0] | child[1]
      *
      */
-    private final @NonNull AbstractTreeGroup @NonNull [] children;
+    private final AbstractTreeGroup[] children;
 
     public TreeGroup(@Nullable AbstractTreeGroup parent, int level) {
         super(parent);
@@ -24,7 +23,7 @@ public final class TreeGroup extends AbstractTreeGroup {
         };
     }
 
-    private @NonNull AbstractTreeGroup createChild(int level) {
+    private AbstractTreeGroup createChild(int level) {
         if (level < LANDSCAPE_TREES_MAX_LEVEL) {
             return new TreeGroup(this, level + 1);
         } else {
@@ -32,11 +31,11 @@ public final class TreeGroup extends AbstractTreeGroup {
         }
     }
 
-    public @NonNull AbstractTreeGroup @NonNull [] children() {
+    public AbstractTreeGroup[] children() {
         return children;
     }
 
-    public @NonNull AbstractTreeGroup child(int index) {
+    public AbstractTreeGroup child(int index) {
         return children[index];
     }
 
@@ -52,7 +51,7 @@ public final class TreeGroup extends AbstractTreeGroup {
         return node_bounds;
     }
 
-    private boolean checkBounds(@NonNull AbstractTreeGroup child, boolean child_bounds, boolean node_bounds) {
+    private boolean checkBounds(AbstractTreeGroup child, boolean child_bounds, boolean node_bounds) {
         if (!child_bounds)
             return node_bounds;
         if (node_bounds)

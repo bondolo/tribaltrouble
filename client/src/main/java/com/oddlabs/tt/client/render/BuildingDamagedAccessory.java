@@ -16,7 +16,6 @@ import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -45,13 +44,13 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     private static final Color.LinearDelta SOOT_DELTA = Color.LinearDelta.red(0.05f);
     private static final Color.Linear SOOT_TINT = new Color.Linear(1.0f, 0.9f, 0.7f, 1.0f);
 
-    private final @NonNull Building building;
-    private final @NonNull LinearEmitter emitter;
+    private final Building building;
+    private final LinearEmitter emitter;
     private final float hitOffsetZ;
-    private final @NonNull AudioImplementation audio;
+    private final AudioImplementation audio;
     private boolean hasCollapsed = false;
 
-    public BuildingDamagedAccessory(@NonNull Building building, float hitOffsetZ, @NonNull AudioImplementation audio) {
+    public BuildingDamagedAccessory(Building building, float hitOffsetZ, AudioImplementation audio) {
         this.building = building;
         this.hitOffsetZ = hitOffsetZ;
         this.audio = audio;
@@ -212,7 +211,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         if (parent instanceof Building b) {
             Building.BuildStage stage = b.getBuildStage();
             boolean isCompleteOrHalfBuilt = stage == Building.BuildStage.HALFBUILT || stage
@@ -227,7 +226,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
         float z = parent instanceof Building b ? b.getHitOffsetZ() : hitOffsetZ;
         dest.translate(0f, 0f, z);
     }
@@ -238,7 +237,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public @NonNull LinearEmitter getEmitter() {
+    public LinearEmitter getEmitter() {
         return emitter;
     }
 }

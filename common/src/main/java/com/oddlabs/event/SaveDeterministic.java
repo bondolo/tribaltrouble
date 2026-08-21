@@ -1,6 +1,5 @@
 package com.oddlabs.event;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -20,15 +19,15 @@ import static java.nio.file.StandardOpenOption.WRITE;
 public final class SaveDeterministic extends Deterministic {
     private static final short MAX_DEFAULTS = Short.MAX_VALUE;
 
-    private final @NonNull ByteChannel channel;
-    private final @NonNull ByteBuffer buffer;
+    private final ByteChannel channel;
+    private final ByteBuffer buffer;
 
     private final ByteBufferOutputStream byte_buffer_output_stream = new ByteBufferOutputStream();
 
     private int total_bytes_written;
     private short num_defaults = MIN_DEFAULTS;
 
-    public SaveDeterministic(@NonNull Path logging_file) {
+    public SaveDeterministic(Path logging_file) {
         try {
             buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
             channel = Files.newByteChannel(logging_file, EnumSet.of(CREATE, TRUNCATE_EXISTING, WRITE));
@@ -129,7 +128,7 @@ public final class SaveDeterministic extends Deterministic {
     }
 
     @Override
-    protected Path log(@NonNull Path p, Path def) {
+    protected Path log(Path p, Path def) {
         try {
             // For backwards compatibility we convert to Serializable File
             logObject(p.toFile());
@@ -140,7 +139,7 @@ public final class SaveDeterministic extends Deterministic {
     }
 
     @Override
-    protected void logBuffer(@NonNull ByteBuffer b) {
+    protected void logBuffer(ByteBuffer b) {
         if (startLog(0, false)) {
             while (true) {
                 int saved_limit = b.limit();

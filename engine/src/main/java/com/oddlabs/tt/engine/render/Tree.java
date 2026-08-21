@@ -1,10 +1,9 @@
 package com.oddlabs.tt.engine.render;
 
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public record Tree(@NonNull SpriteList trunk, @NonNull SpriteList crown) {
+public record Tree(SpriteList trunk, SpriteList crown) {
 
 
     @Override

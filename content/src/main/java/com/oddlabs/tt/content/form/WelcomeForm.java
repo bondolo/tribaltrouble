@@ -15,7 +15,6 @@ import com.oddlabs.tt.gui.OKListener;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -24,7 +23,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 public final class WelcomeForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(WelcomeForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 

@@ -1,7 +1,6 @@
 package com.oddlabs.procedural;
 
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
@@ -18,7 +17,7 @@ import java.util.zip.Checksum;
  */
 @SuppressWarnings("UnusedReturnValue")
 public final class Channel {
-    private float @NonNull [] pixels;
+    private float[] pixels;
     public int width;
     public int height;
     private final boolean powerof2;
@@ -45,7 +44,7 @@ public final class Channel {
      *
      * @return a new Layer with this channel copied to its R, G, and B channels.
      */
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(this.copy(), this.copy(), this.copy());
     }
 
@@ -212,12 +211,12 @@ public final class Channel {
      * @param value the value to fill with.
      * @return this channel, for chaining.
      */
-    public @NonNull Channel fill(float value) {
+    public Channel fill(float value) {
         java.util.Arrays.fill(pixels, value);
         return this;
     }
 
-    public @NonNull Channel fill(float value, float min, float max) {
+    public Channel fill(float value, float min, float max) {
         for (int i = 0; i < pixels.length; i++) {
             if (pixels[i] >= min && pixels[i] <= max) {
                 pixels[i] = value;
@@ -260,13 +259,13 @@ public final class Channel {
         return sum;
     }
 
-    public @NonNull Channel copy() {
+    public Channel copy() {
         Channel channel = new Channel(width, height);
         System.arraycopy(pixels, 0, channel.getPixels(), 0, pixels.length);
         return channel;
     }
 
-    public @NonNull Channel dynamicRange() {
+    public Channel dynamicRange() {
         float[] minmax = findMinMax();
         float min = minmax[0];
         float max = minmax[1];
@@ -281,7 +280,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel dynamicRange(float new_min, float new_max) {
+    public Channel dynamicRange(float new_min, float new_max) {
         float min = findMin();
         float max = findMax();
         if (max > min) {
@@ -295,7 +294,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel dynamicRange(float min, float max, float new_min, float new_max) {
+    public Channel dynamicRange(float min, float max, float new_min, float new_max) {
         if (max > min) {
             float inv_maxmin = 1f / (max - min);
             for (int i = 0; i < pixels.length; i++) {
@@ -319,7 +318,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel dynamicRangeSymmetric() {
+    public Channel dynamicRangeSymmetric() {
         float[] minmax = findMinMax();
         float min = minmax[0];
         float max = minmax[1];
@@ -340,7 +339,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel clip() {
+    public Channel clip() {
         for (int i = 0; i < pixels.length; i++) {
             if (pixels[i] < 0) pixels[i] = 0;
             else if (pixels[i] > 1) pixels[i] = 1;
@@ -348,7 +347,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel crop(int x_lo, int y_lo, int x_hi, int y_hi) {
+    public Channel crop(int x_lo, int y_lo, int x_hi, int y_hi) {
         int new_width = x_hi - x_lo + 1;
         int new_height = y_hi - y_lo + 1;
         Channel channel = new Channel(new_width, new_height);
@@ -359,7 +358,7 @@ public final class Channel {
         return channel;
     }
 
-    public @NonNull Channel cropWrap(int x_lo, int y_lo, int x_hi, int y_hi) {
+    public Channel cropWrap(int x_lo, int y_lo, int x_hi, int y_hi) {
         int new_width = x_hi - x_lo + 1;
         int new_height = y_hi - y_lo + 1;
         Channel channel = new Channel(new_width, new_height);
@@ -377,7 +376,7 @@ public final class Channel {
         return channel;
     }
 
-    public @NonNull Channel tile(int new_width, int new_height) {
+    public Channel tile(int new_width, int new_height) {
         Channel channel = new Channel(new_width, new_height);
         for (int y = 0; y < new_height; y++) {
             for (int x = 0; x < new_width; x++) {
@@ -394,7 +393,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel tileDouble() {
+    public Channel tileDouble() {
         Channel channel = new Channel(width << 1, height << 1);
         float[] new_pixels = channel.getPixels();
         int new_width = width << 1;
@@ -410,7 +409,7 @@ public final class Channel {
         return this;
     }
 
-    public Channel @NonNull [] quadSplit() {
+    public Channel[] quadSplit() {
         assert Utils.isPowerOf2(width) && Utils.isPowerOf2(height) : "only power of 2 sized channels";
         Channel channel1 = this.copy().crop(0, 0, (width >> 1) - 1, (height >> 1) - 1);
         Channel channel2 = this.copy().crop(width >> 1, 0, width - 1, (height >> 1) - 1);
@@ -419,8 +418,8 @@ public final class Channel {
         return new Channel[]{channel1, channel2, channel3, channel4};
     }
 
-    public @NonNull Channel quadJoin(@NonNull Channel channel1, @NonNull Channel channel2, @NonNull Channel channel3,
-            @NonNull Channel channel4) {
+    public Channel quadJoin(Channel channel1, Channel channel2, Channel channel3,
+            Channel channel4) {
         assert channel1.width == channel2.width && channel2.width == channel3.width && channel3.width == channel4.width
                 && channel1.height == channel2.height && channel2.height == channel3.height && channel3.height
                         == channel4.height : "channels must be same size";
@@ -434,7 +433,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel offset(int x_offset, int y_offset) {
+    public Channel offset(int x_offset, int y_offset) {
         Channel channel = new Channel(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -445,7 +444,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel brightness(float brightness) {
+    public Channel brightness(float brightness) {
         if (brightness > 1f) {
             for (int i = 0; i < pixels.length; i++) {
                 float val = brightness * pixels[i];
@@ -461,7 +460,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel multiply(float factor) {
+    public Channel multiply(float factor) {
         if (factor == 1)
             return this;
         for (int i = 0; i < pixels.length; i++) {
@@ -470,35 +469,35 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel power(float exponent) {
+    public Channel power(float exponent) {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = (float) Math.pow(pixels[i], exponent);
         }
         return this;
     }
 
-    public @NonNull Channel power2() {
+    public Channel power2() {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] *= pixels[i];
         }
         return this;
     }
 
-    public @NonNull Channel log() {
+    public Channel log() {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = (float) Math.log(pixels[i]);
         }
         return this;
     }
 
-    public @NonNull Channel add(float add) {
+    public Channel add(float add) {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] += add;
         }
         return this;
     }
 
-    public @NonNull Channel addClip(float add) {
+    public Channel addClip(float add) {
         for (int i = 0; i < pixels.length; i++) {
             float val = pixels[i] + add;
             if (val < 0) pixels[i] = 0;
@@ -508,7 +507,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel contrast(float contrast) {
+    public Channel contrast(float contrast) {
         for (int i = 0; i < pixels.length; i++) {
             float val = ((pixels[i] - 0.5f) * contrast) + 0.5f;
             if (val < 0) pixels[i] = 0;
@@ -518,7 +517,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel gamma(float gamma) {
+    public Channel gamma(float gamma) {
         float inv_gamma = 1 / gamma;
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = (float) Math.pow(pixels[i], inv_gamma);
@@ -526,7 +525,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel gamma2() {
+    public Channel gamma2() {
         for (int i = 0; i < pixels.length; i++) {
             float val = 1f - pixels[i];
             pixels[i] = 1 - val * val;
@@ -534,7 +533,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel gamma4() {
+    public Channel gamma4() {
         for (int i = 0; i < pixels.length; i++) {
             float val = 1f - pixels[i];
             val = val * val;
@@ -543,7 +542,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel gamma8() {
+    public Channel gamma8() {
         for (int i = 0; i < pixels.length; i++) {
             float val = 1f - pixels[i];
             val = val * val;
@@ -553,7 +552,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel gain(float gain) {
+    public Channel gain(float gain) {
         double log1minusGainOverLogHalf = Math.log(1 - gain) / Math.log(0.5d);
         for (int i = 0; i < pixels.length; i++) {
             if (pixels[i] < 0.5f)
@@ -564,21 +563,21 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel smoothGain() {
+    public Channel smoothGain() {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = Tools.interpolateSmooth(0f, 1f, pixels[i]);
         }
         return this;
     }
 
-    public @NonNull Channel invert() {
+    public Channel invert() {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = 1f - pixels[i];
         }
         return this;
     }
 
-    public @NonNull Channel threshold(float start, float end) {
+    public Channel threshold(float start, float end) {
         for (int i = 0; i < pixels.length; i++) {
             if (pixels[i] >= start && pixels[i] <= end) {
                 pixels[i] = 1f;
@@ -589,11 +588,11 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel scale(int new_width, int new_height) {
+    public Channel scale(int new_width, int new_height) {
         return this.scaleLinear(new_width, new_height);
     }
 
-    public @NonNull Channel scaleHalf() {
+    public Channel scaleHalf() {
         int new_width = width / 2;
         int new_height = height / 2;
         Channel channel = new Channel(new_width, new_height);
@@ -618,7 +617,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel scaleLinear(int new_width, int new_height) {
+    public Channel scaleLinear(int new_width, int new_height) {
         if (width == new_width && height == new_height) {
             return this;
         }
@@ -650,7 +649,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel scaleCubicWrapping(int new_width, int new_height) {
+    public Channel scaleCubicWrapping(int new_width, int new_height) {
         if (width == new_width && height == new_height) {
             return this;
         }
@@ -704,7 +703,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel scaleCubicNonWrapping(int new_width, int new_height) {
+    public Channel scaleCubicNonWrapping(int new_width, int new_height) {
         if (width == new_width && height == new_height) {
             return this;
         }
@@ -760,7 +759,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel scaleFast(int new_width, int new_height) {
+    public Channel scaleFast(int new_width, int new_height) {
         if (width == new_width && height == new_height) {
             return this;
         }
@@ -778,7 +777,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel scaleDouble() {
+    public Channel scaleDouble() {
         assert width == height : "square images only";
 
         // calculate filter
@@ -825,7 +824,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel rotate(int degrees) {
+    public Channel rotate(int degrees) {
         Channel channel = null;
         int tmp_w = width;
         int tmp_h = height;
@@ -866,7 +865,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel shear(float offset) {
+    public Channel shear(float offset) {
         Channel channel = new Channel(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -877,7 +876,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel sine(int frequency) {
+    public Channel sine(int frequency) {
         double factor = Math.PI * 2 * frequency;
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = (float) Math.sin(factor * pixels[i]);
@@ -885,7 +884,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel xsine(int frequency) {
+    public Channel xsine(int frequency) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 pixels[y * width + x] = (float) Math.sin(2 * Math.PI * (((float) x / width) * frequency + pixels[y
@@ -895,7 +894,7 @@ public final class Channel {
         return this.dynamicRange();
     }
 
-    public @NonNull Channel perturb(@NonNull Channel channel1, @NonNull Channel channel2) {
+    public Channel perturb(Channel channel1, Channel channel2) {
         Channel channel = new Channel(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -918,7 +917,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel perturb(@NonNull Channel perturb, float magnitude) {
+    public Channel perturb(Channel perturb, float magnitude) {
         Channel channel = new Channel(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -941,7 +940,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel flipH() {
+    public Channel flipH() {
         Channel channel = new Channel(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -952,7 +951,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel flipV() {
+    public Channel flipV() {
         float[] row_tmp = new float[width];
         for (int y = 0; y < height >> 1; y++) {
             int y1 = y * width;
@@ -964,7 +963,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel smoothFast() {
+    public Channel smoothFast() {
         Channel filter = new Channel(width, height);
         float[] filter_pixels = filter.getPixels();
         for (int i = 0; i < pixels.length; i++) {
@@ -979,7 +978,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel smooth(int radius) {
+    public Channel smooth(int radius) {
         radius = Math.max(1, radius);
         Channel filter = this.copy();
         float factor = 1f / ((2 * radius + 1) * (2 * radius + 1));
@@ -1000,11 +999,11 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel smoothWrap(int radius) {
+    public Channel smoothWrap(int radius) {
         return smooth(radius);
     }
 
-    public @NonNull Channel smooth(int radius, @NonNull Channel mask) {
+    public Channel smooth(int radius, Channel mask) {
         radius = Math.max(1, radius);
         Channel filter = this.copy();
         float factor = 1f / ((2 * radius + 1) * (2 * radius + 1));
@@ -1028,7 +1027,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel sharpen(int radius) {
+    public Channel sharpen(int radius) {
         radius = Math.max(1, radius);
         Channel channel = new Channel(width, height);
         float factor = (2 * radius + 1) * (2 * radius + 1);
@@ -1051,7 +1050,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel convolution(float @NonNull [] @NonNull [] filter, float divisor, float offset) {
+    public Channel convolution(float[][] filter, float divisor, float offset) {
         int radius = (filter[0].length - 1) / 2;
         Channel channel = new Channel(width, height);
         for (int y = 0; y < height; y++) {
@@ -1070,7 +1069,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel floodfill(int init_x, int init_y, float value) {
+    public Channel floodfill(int init_x, int init_y, float value) {
         assert init_x < width && init_x >= 0 : "x coordinate outside image";
         assert init_y < height && init_y >= 0 : "y coordinate outside image";
         float oldval = pixels[init_y * width + init_x];
@@ -1104,7 +1103,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel largestConnected(float value) {
+    public Channel largestConnected(float value) {
         int[] labels = new int[width * height];
         java.util.Arrays.fill(labels, -1);
         int nextLabel = 0;
@@ -1202,7 +1201,7 @@ public final class Channel {
         return area_count == 0 ? -1f : (float) area_total / area_count;
     }
 
-    public @NonNull Channel squareFit(float value, int size) {
+    public Channel squareFit(float value, int size) {
         Channel channel = new Channel(width, height);
         for (int y = 0; y <= height - size; y++) {
             for (int x = 0; x <= width - size; x++) {
@@ -1225,7 +1224,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel boxFit(float value, int box_width, int box_height) {
+    public Channel boxFit(float value, int box_width, int box_height) {
         Channel channel = new Channel(width, height);
         for (int y = 0; y <= height - box_height; y++) {
             for (int x = 0; x <= width - box_width; x++) {
@@ -1257,7 +1256,7 @@ public final class Channel {
         return count;
     }
 
-    public @NonNull Channel grow(float value, int radius) {
+    public Channel grow(float value, int radius) {
         Channel channel = this.copy();
         for (int y = radius; y < height - radius; y++) {
             for (int x = radius; x < width - radius; x++) {
@@ -1274,7 +1273,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel squareGrow(float value, int size) {
+    public Channel squareGrow(float value, int size) {
         Channel channel = this.copy();
         for (int y = 0; y <= height - size; y++) {
             for (int x = 0; x <= width - size; x++) {
@@ -1355,7 +1354,7 @@ public final class Channel {
         return new int[]{-1, -1};
     }
 
-    public void matching(@NonNull Predicate<Float> predicate, @NonNull Consumer<int @NonNull []> consumer) {
+    public void matching(Predicate<Float> predicate, Consumer<int[]> consumer) {
         for (int i = 0; i < pixels.length; i++) {
             if (predicate.test(pixels[i])) {
                 consumer.accept(new int[]{i % width, i / width});
@@ -1363,7 +1362,7 @@ public final class Channel {
         }
     }
 
-    public @NonNull Channel bump(@NonNull Channel bumpmap, float lx, float ly, float shadow, float light,
+    public Channel bump(Channel bumpmap, float lx, float ly, float shadow, float light,
             float ambient) {
         assert bumpmap.getWidth() == width && bumpmap.getHeight() == height : "bumpmap does not match channel size";
         Channel channel = new Channel(width, height);
@@ -1385,7 +1384,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel bumpSpecular(@NonNull Channel bumpmap, float lx, float ly, float lz, float shadow,
+    public Channel bumpSpecular(Channel bumpmap, float lx, float ly, float lz, float shadow,
             float light, int specular) {
         assert bumpmap.getWidth() == width && bumpmap.getHeight() == height : "bumpmap size does not match layer size";
         float lnorm = (float) Math.sqrt(lx * lx + ly * ly + lz * lz);
@@ -1407,7 +1406,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel lineart() {
+    public Channel lineart() {
         Channel channel = new Channel(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -1426,7 +1425,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel relativeIntensity(int radius) {
+    public Channel relativeIntensity(int radius) {
         radius = Math.max(1, radius);
         Channel relint = new Channel(width, height);
         float factor = 1f / ((2 * radius + 1) * (2 * radius + 1));
@@ -1451,11 +1450,11 @@ public final class Channel {
         return relint.add(0.5f);
     }
 
-    public @NonNull Channel relativeIntensityNormalized(int radius) {
+    public Channel relativeIntensityNormalized(int radius) {
         return this.relativeIntensity(radius).dynamicRangeSymmetric();
     }
 
-    public Channel @NonNull [] fft() {
+    public Channel[] fft() {
         assert width == height : "square images only";
         int size = width;
         assert Utils.isPowerOf2(size) : "size must be power of 2";
@@ -1494,7 +1493,7 @@ public final class Channel {
         return new Channel[]{magnitude.offset(size >> 1, size >> 1), phase};
     }
 
-    public @NonNull Channel fftInv(@NonNull Channel magni, @NonNull Channel phase) {
+    public Channel fftInv(Channel magni, Channel phase) {
         assert magni.width == magni.height && phase.width == phase.height && magni.width == phase.width
                 : "both images must be square and same size";
         int size = magni.width;
@@ -1595,13 +1594,13 @@ public final class Channel {
         }
     }
 
-    public @NonNull Layer toNormalMap(float strength, @NonNull Channel specularMap) {
+    public Layer toNormalMap(float strength, Channel specularMap) {
         Layer layer = toNormalMap(strength);
         layer.addAlpha(specularMap);
         return layer;
     }
 
-    public @NonNull Layer toNormalMap(float strength) {
+    public Layer toNormalMap(float strength) {
         Channel r_chan = new Channel(width, height);
         Channel g_chan = new Channel(width, height);
         Channel b_chan = new Channel(width, height);
@@ -1648,7 +1647,7 @@ public final class Channel {
      * @param iterations number of erosion passes to perform.
      * @return this channel, for chaining.
      */
-    public @NonNull Channel erode(float talus, int iterations) {
+    public Channel erode(float talus, int iterations) {
         for (int iter = 0; iter < iterations; iter++) {
             for (int y = 1; y < height - 1; y++) {
                 for (int x = 1; x < width - 1; x++) {
@@ -1707,7 +1706,7 @@ public final class Channel {
      * @param iterations number of erosion passes to perform.
      * @return this channel, for chaining.
      */
-    public @NonNull Channel erodeThermal(float talus, int iterations) {
+    public Channel erodeThermal(float talus, int iterations) {
         for (int iter = 0; iter < iterations; iter++) {
             for (int y = 1; y < height - 1; y++) {
                 for (int x = 1; x < width - 1; x++) {
@@ -1755,7 +1754,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel place(@NonNull Channel sprite, int x_offset, int y_offset) {
+    public Channel place(Channel sprite, int x_offset, int y_offset) {
         for (int y = y_offset; y < y_offset + sprite.getHeight(); y++) {
             for (int x = x_offset; x < x_offset + sprite.getWidth(); x++) {
                 putPixelWrap(x, y, sprite.getPixelWrap(x - x_offset, y - y_offset));
@@ -1764,7 +1763,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel place(@NonNull Channel sprite, @NonNull Channel alpha, int x_offset, int y_offset) {
+    public Channel place(Channel sprite, Channel alpha, int x_offset, int y_offset) {
         for (int y = y_offset; y < y_offset + sprite.getHeight(); y++) {
             for (int x = x_offset; x < x_offset + sprite.getWidth(); x++) {
                 float alpha_val = alpha.getPixel(x - x_offset, y - y_offset);
@@ -1775,7 +1774,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel placeBrightest(@NonNull Channel sprite, int x_offset, int y_offset) {
+    public Channel placeBrightest(Channel sprite, int x_offset, int y_offset) {
         for (int y = y_offset; y < y_offset + sprite.getHeight(); y++) {
             for (int x = x_offset; x < x_offset + sprite.getWidth(); x++) {
                 putPixelWrap(x, y, Math.max(getPixelWrap(x, y), sprite.getPixelWrap(x - x_offset, y - y_offset)));
@@ -1784,7 +1783,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel placeDarkest(@NonNull Channel sprite, int x_offset, int y_offset) {
+    public Channel placeDarkest(Channel sprite, int x_offset, int y_offset) {
         for (int y = y_offset; y < y_offset + sprite.getHeight(); y++) {
             for (int x = x_offset; x < x_offset + sprite.getWidth(); x++) {
                 putPixelWrap(x, y, Math.min(getPixelWrap(x, y), sprite.getPixelWrap(x - x_offset, y - y_offset)));
@@ -1793,7 +1792,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel abs() {
+    public Channel abs() {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = 2f * Math.abs(pixels[i] - 0.5f);
         }
@@ -1801,7 +1800,7 @@ public final class Channel {
     }
 
 
-    public @NonNull Channel channelBlend(@NonNull Channel channel, float alpha) {
+    public Channel channelBlend(Channel channel, float alpha) {
         float alpha_inv = 1 - alpha;
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
@@ -1810,7 +1809,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelBlend(@NonNull Channel channel, @NonNull Channel alpha) {
+    public Channel channelBlend(Channel channel, Channel alpha) {
         float[] other_pixels = channel.getPixels();
         float[] alpha_pixels = alpha.getPixels();
         for (int i = 0; i < pixels.length; i++) {
@@ -1820,7 +1819,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelAdd(@NonNull Channel channel) {
+    public Channel channelAdd(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             float val = pixels[i] + other_pixels[i];
@@ -1831,7 +1830,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelAddNoClip(@NonNull Channel channel) {
+    public Channel channelAddNoClip(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] += other_pixels[i];
@@ -1839,7 +1838,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelSubtract(@NonNull Channel channel) {
+    public Channel channelSubtract(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             float val = pixels[i] - other_pixels[i];
@@ -1850,7 +1849,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelSubtractNoClip(@NonNull Channel channel) {
+    public Channel channelSubtractNoClip(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] -= other_pixels[i];
@@ -1858,7 +1857,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelAverage(@NonNull Channel channel) {
+    public Channel channelAverage(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = (pixels[i] + other_pixels[i]) / 2f;
@@ -1866,7 +1865,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelMultiply(@NonNull Channel channel) {
+    public Channel channelMultiply(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] *= other_pixels[i];
@@ -1874,7 +1873,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelDivide(@NonNull Channel channel) {
+    public Channel channelDivide(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] /= other_pixels[i];
@@ -1882,7 +1881,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelDifference(@NonNull Channel channel) {
+    public Channel channelDifference(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = Math.abs(pixels[i] - other_pixels[i]);
@@ -1890,7 +1889,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelDarkest(@NonNull Channel channel) {
+    public Channel channelDarkest(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = Math.min(pixels[i], other_pixels[i]);
@@ -1898,7 +1897,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel channelBrightest(@NonNull Channel channel) {
+    public Channel channelBrightest(Channel channel) {
         float[] other_pixels = channel.getPixels();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = Math.max(pixels[i], other_pixels[i]);
@@ -1906,7 +1905,7 @@ public final class Channel {
         return this;
     }
 
-    public @NonNull Channel toLinear() {
+    public Channel toLinear() {
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = com.oddlabs.util.Color.toLinear(pixels[i]);
         }

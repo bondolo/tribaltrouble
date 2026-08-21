@@ -7,17 +7,16 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 public abstract class ControllableCameraDelegate<C extends Camera> extends InGameDelegate<C> implements EventListener {
     private FirstPersonDelegate first_person_delegate;
 
-    public ControllableCameraDelegate(@NonNull WorldViewer viewer, @NonNull C camera) {
+    public ControllableCameraDelegate(WorldViewer viewer, C camera) {
         super(viewer, camera);
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         super.handleInput(event);
         if (event.isConsumed()) return;
 
@@ -36,14 +35,14 @@ public abstract class ControllableCameraDelegate<C extends Camera> extends InGam
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
         if (button == MouseButton.MIDDLE) {
             pushFirstPersonDelegate(false);
         }
     }
 
     @Override
-    public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    public void mouseReleased(MouseButton button, int x, int y) {
         if (button == MouseButton.MIDDLE && first_person_delegate != null) {
             first_person_delegate.mouseReleased(button, x, y);
         }
@@ -73,7 +72,7 @@ public abstract class ControllableCameraDelegate<C extends Camera> extends InGam
     }
 
     @Override
-    public void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
+    public void mouseDragged(MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
             int absolute_y) {
         if (button == MouseButton.MIDDLE && first_person_delegate != null) {
             first_person_delegate.mouseDragged(button, x, y, relative_x, relative_y, absolute_x, absolute_y);

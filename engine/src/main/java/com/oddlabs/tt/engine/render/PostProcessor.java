@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
@@ -19,7 +18,6 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -30,11 +28,11 @@ import java.util.logging.Logger;
 public final class PostProcessor implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(PostProcessor.class.getSimpleName());
 
-    private final @NonNull PostProcessShader shader;
-    private final @NonNull VertexArray vao;
-    private final @NonNull FloatVBO quadVBO;
-    private final @NonNull FBO sceneFBO;
-    private final @NonNull FBO depthCopyFBO;
+    private final PostProcessShader shader;
+    private final VertexArray vao;
+    private final FloatVBO quadVBO;
+    private final FBO sceneFBO;
+    private final FBO depthCopyFBO;
     private int currentWidth;
     private int currentHeight;
 
@@ -99,20 +97,20 @@ public final class PostProcessor implements AutoCloseable {
         sceneFBO.blitDepthTo(depthCopyFBO);
     }
 
-    public @NonNull Texture getDepthCopyTexture() {
-        return Objects.requireNonNull(depthCopyFBO.getDepthTexture());
+    public Texture getDepthCopyTexture() {
+        return depthCopyFBO.getDepthTexture();
     }
 
-    public void bindSceneFBO(@NonNull RenderContext context) {
+    public void bindSceneFBO(RenderContext context) {
         sceneFBO.bind(context);
     }
 
-    public void unbindSceneFBO(@NonNull RenderContext context) {
+    public void unbindSceneFBO(RenderContext context) {
         sceneFBO.unbind(context);
     }
 
-    public void renderComposite(@NonNull RenderContext context, @NonNull Consumer<
-            @NonNull RenderContext> guiRenderCallback) {
+    public void renderComposite(RenderContext context, Consumer<
+            RenderContext> guiRenderCallback) {
         // 1. Render GUI into the Scene FBO (on top of the 3D scene)
         bindSceneFBO(context);
 

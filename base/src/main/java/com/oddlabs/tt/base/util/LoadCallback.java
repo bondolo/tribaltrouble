@@ -1,6 +1,5 @@
 package com.oddlabs.tt.base.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.function.Function;
 
@@ -9,7 +8,7 @@ import java.util.function.Function;
  */
 @FunctionalInterface
 public interface LoadCallback<T, X> extends Function<T, X> {
-    X load(@NonNull T context);
+    X load(T context);
 
     @Override
     default X apply(T t) {

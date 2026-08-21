@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -30,7 +29,7 @@ public final class Utils {
 
     public static final Path[] LOG_FILES = {STD_OUT, STD_ERR, EVENT_LOG};
 
-    public static @NonNull InetAddress getLoopbackAddress() {
+    public static InetAddress getLoopbackAddress() {
         try {
             return tryGetLoopbackAddress();
         } catch (IOException e) {
@@ -38,7 +37,7 @@ public final class Utils {
         }
     }
 
-    public static @NonNull InetAddress tryGetLoopbackAddress() throws IOException {
+    public static InetAddress tryGetLoopbackAddress() throws IOException {
         return NetworkInterface.networkInterfaces()
                 .flatMap(NetworkInterface::inetAddresses)
                 .filter(InetAddress::isLoopbackAddress)
@@ -71,7 +70,7 @@ public final class Utils {
         return x;
     }
 
-    public static void flip(byte @NonNull [] bytes, int width, int height) {
+    public static void flip(byte[] bytes, int width, int height) {
         byte[] line = new byte[width];
 
         for (int i = 0; i < height / 2; i++) {
@@ -81,7 +80,7 @@ public final class Utils {
         }
     }
 
-    public static void flip(@NonNull ByteBuffer bytes, int width, int height) {
+    public static void flip(ByteBuffer bytes, int width, int height) {
         byte[] line = new byte[width];
         byte[] line2 = new byte[width];
 
@@ -97,11 +96,11 @@ public final class Utils {
         }
     }
 
-    public static <T> T loadObject(@NonNull Class<T> clazz, @NonNull URL url) {
+    public static <T> T loadObject(Class<T> clazz, URL url) {
         return loadObject(clazz, url, false);
     }
 
-    public static <T> T loadObject(@NonNull Class<T> clazz, @NonNull URL url, boolean zipped) {
+    public static <T> T loadObject(Class<T> clazz, URL url, boolean zipped) {
         try {
             return tryLoadObject(clazz, url, zipped);
         } catch (IOException ioe) {
@@ -111,12 +110,12 @@ public final class Utils {
         }
     }
 
-    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url) throws IOException,
+    public static <T> T tryLoadObject(Class<T> clazz, URL url) throws IOException,
             ClassNotFoundException {
         return tryLoadObject(clazz, url, false);
     }
 
-    public static <T> T tryLoadObject(@NonNull Class<T> clazz, @NonNull URL url, boolean zipped) throws IOException,
+    public static <T> T tryLoadObject(Class<T> clazz, URL url, boolean zipped) throws IOException,
             ClassNotFoundException {
         try (InputStream urlStream = url.openStream()) {
             try (InputStream input_stream = zipped ? new GZIPInputStream(urlStream) : new BufferedInputStream(
@@ -129,7 +128,7 @@ public final class Utils {
         }
     }
 
-    public static @NonNull URI makeURI(@NonNull String location) throws UncheckedIOException {
+    public static URI makeURI(String location) throws UncheckedIOException {
         try {
             return makeURL(location).toURI();
         } catch (URISyntaxException e) {
@@ -137,7 +136,7 @@ public final class Utils {
         }
     }
 
-    public static @NonNull URL makeURL(@NonNull String location) throws UncheckedIOException {
+    public static URL makeURL(String location) throws UncheckedIOException {
         try {
             return tryMakeURL(location);
         } catch (IOException e) {
@@ -145,7 +144,7 @@ public final class Utils {
         }
     }
 
-    public static @NonNull URL tryMakeURL(@NonNull String location) throws IOException {
+    public static URL tryMakeURL(String location) throws IOException {
         URL url = Utils.class.getResource(location);
         if (url == null)
             throw new IOException(location + " not found");

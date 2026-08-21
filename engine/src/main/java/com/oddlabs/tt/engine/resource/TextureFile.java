@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.util.DXTImage;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.EXTTextureCompressionS3TC;
 import org.lwjgl.opengl.EXTTextureSRGB;
@@ -129,7 +128,7 @@ public final class TextureFile extends File<Texture> {
         this.is_srgb = is_srgb;
     }
 
-    private static @NonNull URI locateTexture(String location) {
+    private static URI locateTexture(String location) {
         return Arrays.stream(EXTENSIONS)
                 .map(ext -> locate(location + ext))
                 .filter(Optional::isPresent)
@@ -147,7 +146,7 @@ public final class TextureFile extends File<Texture> {
         return is_dxt;
     }
 
-    public @NonNull DXTImage getDXTImage() {
+    public DXTImage getDXTImage() {
         try {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Loading DXT image from: " + getURL());
@@ -159,7 +158,7 @@ public final class TextureFile extends File<Texture> {
         }
     }
 
-    public @NonNull GLImage getImage() {
+    public GLImage getImage() {
         try {
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Loading image from: " + getURL());
@@ -172,7 +171,7 @@ public final class TextureFile extends File<Texture> {
     }
 
     @Override
-    public @NonNull Texture get() {
+    public Texture get() {
         return new Texture(this);
     }
 

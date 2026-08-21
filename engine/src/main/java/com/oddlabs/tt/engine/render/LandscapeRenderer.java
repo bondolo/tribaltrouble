@@ -19,7 +19,6 @@ import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.landscape.PatchGroup;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -38,28 +37,28 @@ import java.util.Set;
  * Renders the 3D terrain landscape.
  */
 public final class LandscapeRenderer implements SceneRenderer, Animated {
-    private final List<@NonNull LandscapeLeaf> render_list = new ArrayList<>();
-    private final @NonNull World world;
-    private final @NonNull Texture diffuseMap;
-    private final @NonNull Texture normalMap;
-    private final @NonNull Texture detailMap;
-    private final @NonNull Texture detailNormalMap;
+    private final List<LandscapeLeaf> render_list = new ArrayList<>();
+    private final World world;
+    private final Texture diffuseMap;
+    private final Texture normalMap;
+    private final Texture detailMap;
+    private final Texture detailNormalMap;
     private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
     private @Nullable Water water;
-    private @NonNull FloatVBO instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 3);
-    private @NonNull FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 3);
+    private FloatVBO instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 3);
+    private FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 3);
 
-    public @NonNull LandscapeShader getShader() {
+    public LandscapeShader getShader() {
         return shader;
     }
 
-    public void setWater(@NonNull Water water) {
+    public void setWater(Water water) {
         this.water = water;
     }
 
-    public LandscapeRenderer(@NonNull World world, @NonNull WorldInfo<Texture> world_info,
-            @NonNull AnimationManager manager) {
+    public LandscapeRenderer(World world, WorldInfo<Texture> world_info,
+            AnimationManager manager) {
         this.world = world;
         this.diffuseMap = world_info.maps().diffuse();
         this.normalMap = world_info.maps().normal();
@@ -69,30 +68,30 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         manager.registerAnimation(this);
     }
 
-    public @NonNull Collection<@NonNull LandscapeLeaf> getVisiblePatches() {
+    public Collection<LandscapeLeaf> getVisiblePatches() {
         return render_list;
     }
 
-    public @NonNull HeightMap getHeightMap() {
+    public HeightMap getHeightMap() {
         return world.getHeightMap();
     }
 
-    public void pick(@NonNull CameraState camera, boolean visible_override, @NonNull Set<LandscapeLeaf> set) {
+    public void pick(CameraState camera, boolean visible_override, Set<LandscapeLeaf> set) {
         doPrepareAll(camera, visible_override, set);
     }
 
-    public void prepareAll(@NonNull CameraState camera, boolean visible_override) {
+    public void prepareAll(CameraState camera, boolean visible_override) {
         render_list.clear();
         doPrepareAll(camera, visible_override, render_list);
     }
 
-    private void doPrepareAll(@NonNull CameraState camera, final boolean visible_override, @NonNull Collection<
+    private void doPrepareAll(CameraState camera, final boolean visible_override, Collection<
             LandscapeLeaf> result) {
         traverse(world.getPatchRoot(), camera, visible_override, result);
     }
 
-    private void traverse(@NonNull AbstractPatchGroup node, @NonNull CameraState camera, boolean visible_override,
-            @NonNull Collection<LandscapeLeaf> result) {
+    private void traverse(AbstractPatchGroup node, CameraState camera, boolean visible_override,
+            Collection<LandscapeLeaf> result) {
         switch (node) {
             case PatchGroup group -> {
                 RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
@@ -115,8 +114,8 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     }
 
     @Override
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+    public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
+            MatrixStack projectionStack) {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {
 
@@ -198,7 +197,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         }
     }
 
-    public void debugRender(@NonNull CameraState frustum_state) {
+    public void debugRender(CameraState frustum_state) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.LANDSCAPE)) {
             for (LandscapeLeaf patch : render_list) {
                 RenderTools.draw(patch, BoundingMode.LANDSCAPE, 1f, 0f, 0f);

@@ -4,18 +4,17 @@ package com.oddlabs.tt.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
-import org.jspecify.annotations.NonNull;
 
 public final class Ring {
-    public final @NonNull Channel channel;
+    public final Channel channel;
 
     public enum Interpolation {
         LINEAR,
         SMOOTH
     }
 
-    public Ring(int width, int height, float @NonNull [] @NonNull [] gradient_list,
-            @NonNull Interpolation interpolation) {
+    public Ring(int width, int height, float[][] gradient_list,
+            Interpolation interpolation) {
         var quarter = new Channel(width >> 1, height >> 1);
         float x_coord;
         float y_coord;
@@ -61,11 +60,11 @@ public final class Ring {
         channel.quadJoin(quarter, quarter.copy().rotate(270), quarter.copy().rotate(90), quarter.copy().rotate(180));
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel.copy(), channel.copy());
     }
 
-    public @NonNull Channel toChannel() {
+    public Channel toChannel() {
         return channel;
     }
 

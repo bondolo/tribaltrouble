@@ -3,7 +3,6 @@ package com.oddlabs.tt.client.trigger;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -12,10 +11,10 @@ import java.util.List;
  * when all enemy units are eliminated and the enemy has no active chieftain.
  */
 public final class VictoryTrigger extends IntervalTrigger {
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
     private final Runnable runnable;
 
-    public VictoryTrigger(@NonNull WorldViewer viewer, Runnable runnable) {
+    public VictoryTrigger(WorldViewer viewer, Runnable runnable) {
         super(viewer.getWorld(), .5f, 0f);
         this.viewer = viewer;
         this.runnable = runnable;
@@ -23,7 +22,7 @@ public final class VictoryTrigger extends IntervalTrigger {
 
     @Override
     protected void check() {
-        List<@NonNull Player> players = viewer.getWorld().getPlayers();
+        List<Player> players = viewer.getWorld().getPlayers();
         Player local = viewer.getLocalPlayer();
 
         for (Player current : players) {

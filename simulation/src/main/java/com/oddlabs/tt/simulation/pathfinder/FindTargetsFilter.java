@@ -2,13 +2,12 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class FindTargetsFilter implements ScanFilter {
 
     private final int max_radius;
-    private final @Nullable Target @NonNull [] result;
+    private final @Nullable Target[] result;
     private final boolean grid_targets_only;
     private int index;
 
@@ -38,7 +37,7 @@ public final class FindTargetsFilter implements ScanFilter {
         return index == result.length;
     }
 
-    public @Nullable Target @NonNull [] getTargets() {
+    public @Nullable Target[] getTargets() {
         return result;
     }
 }

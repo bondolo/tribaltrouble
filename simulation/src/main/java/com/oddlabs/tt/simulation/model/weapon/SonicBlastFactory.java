@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class SonicBlastFactory implements MagicFactory {
     private final float offset_x;
@@ -55,7 +54,7 @@ public final class SonicBlastFactory implements MagicFactory {
     }
 
     @Override
-    public @NonNull Magic execute(@NonNull Unit src) {
+    public Magic execute(Unit src) {
         return new SonicBlast(offset_x, offset_y, offset_z, hit_radius, hit_chance_closest, hit_chance_farthest,
                 damage_closest, damage_farthest, seconds, src);
     }

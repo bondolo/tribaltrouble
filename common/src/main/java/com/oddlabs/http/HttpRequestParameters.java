@@ -1,6 +1,5 @@
 package com.oddlabs.http;
 
-import org.jspecify.annotations.NonNull;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +15,6 @@ public final class HttpRequestParameters {
         this.parameters = parameters;
     }
 
-    @NonNull
     String createQueryString() {
         if (parameters == null || parameters.isEmpty())
             return "";

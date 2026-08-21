@@ -12,7 +12,6 @@ import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.simulation.model.BoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class ParticleTest {
 
-    private static @NonNull World world;
+    private static World world;
 
     @BeforeAll
     static void setUpWorld() {
@@ -33,22 +32,22 @@ class ParticleTest {
             private final BoundsProvider stub = () -> new BoundingBox[]{new BoundingBox()};
 
             @Override
-            public @NonNull BoundsProvider getRockBounds(int index) {
+            public BoundsProvider getRockBounds(int index) {
                 return stub;
             }
 
             @Override
-            public @NonNull BoundsProvider getIronBounds(int index) {
+            public BoundsProvider getIronBounds(int index) {
                 return stub;
             }
 
             @Override
-            public @NonNull BoundsProvider getPlantBounds(@NonNull Terrain terrain, int index) {
+            public BoundsProvider getPlantBounds(Terrain terrain, int index) {
                 return stub;
             }
 
             @Override
-            public @NonNull BoundsProvider getChickenBounds() {
+            public BoundsProvider getChickenBounds() {
                 return stub;
             }
         };

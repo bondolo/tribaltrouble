@@ -1,15 +1,14 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.nio.ShortBuffer;
 
 public final class IndexListACMR {
-    public static float computeACMR(short @NonNull [] indices, int fifo_size) {
+    public static float computeACMR(short[] indices, int fifo_size) {
         return computeACMR(ShortBuffer.wrap(indices), fifo_size);
     }
 
-    public static float computeACMR(@NonNull ShortBuffer indices, int fifo_size) {
+    public static float computeACMR(ShortBuffer indices, int fifo_size) {
         int misses = 0;
         short[] fifo = new short[fifo_size];
         int current_fifo_size = 0;

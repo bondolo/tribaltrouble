@@ -13,7 +13,6 @@ import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -28,13 +27,13 @@ import java.util.function.Supplier;
  * Specialized renderer that handles drawing halos for selected units and regular shadows for other entities.
  */
 public final class SelectableShadowRenderer extends ShadowListRenderer {
-    private final @NonNull EnumMap<GeneratorHalos.HaloType, Texture> halos = new EnumMap<>(
+    private final EnumMap<GeneratorHalos.HaloType, Texture> halos = new EnumMap<>(
             GeneratorHalos.HaloType.class);
 
-    private final Deque<@NonNull ModelState<?>> selection_list = new ArrayDeque<>();
-    private final Deque<@NonNull Shadowable> shadowed_list = new ArrayDeque<>();
+    private final Deque<ModelState<?>> selection_list = new ArrayDeque<>();
+    private final Deque<Shadowable> shadowed_list = new ArrayDeque<>();
 
-    public SelectableShadowRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> halos_desc) {
+    public SelectableShadowRenderer(Supplier<Texture[]> halos_desc) {
         Texture[] textures = Resources.findResource(halos_desc);
         for (int i = 0; i < textures.length; i++) {
             Texture halo = textures[i];
@@ -46,13 +45,13 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
         setRadial(true);
     }
 
-    public void addToSelectionList(@NonNull ModelState<?> modelState) {
+    public void addToSelectionList(ModelState<?> modelState) {
         if (DebugFlags.process_shadows) {
             selection_list.add(modelState);
         }
     }
 
-    public void addToShadowList(@NonNull ModelState<?> modelState) {
+    public void addToShadowList(ModelState<?> modelState) {
         if (DebugFlags.process_shadows) {
             var model = modelState.getModel();
             if (null != model) {
@@ -61,16 +60,16 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
         }
     }
 
-    public void addToShadowList(@NonNull Collection<? extends @NonNull Shadowable> shadowable) {
+    public void addToShadowList(Collection<? extends Shadowable> shadowable) {
         if (DebugFlags.process_shadows) {
             shadowed_list.addAll(shadowable);
         }
     }
 
     @Override
-    public void renderShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
-            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+    public void renderShadows(RenderContext context, RenderQueues queues,
+            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            MatrixStack projectionStack) {
         try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.WHITE);
             setPattern(Selectable.VisualPattern.NONE);

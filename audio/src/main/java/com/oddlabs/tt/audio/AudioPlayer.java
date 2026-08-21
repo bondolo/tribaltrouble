@@ -1,6 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -8,7 +7,6 @@ import org.jspecify.annotations.Nullable;
  */
 public interface AudioPlayer {
 
-    @NonNull
     AudioParameters getParameters();
 
     @Nullable
@@ -20,7 +18,6 @@ public interface AudioPlayer {
 
     void setPosition(float x, float y, float z);
 
-    @NonNull
     AudioPlayer stop();
 
     /**
@@ -39,6 +36,5 @@ public interface AudioPlayer {
      * @param decayRate the rate of exponential decay (higher values result in a faster fade-out)
      * @return this player instance for chaining
      */
-    @NonNull
     AudioPlayer stop(float decayRate);
 }

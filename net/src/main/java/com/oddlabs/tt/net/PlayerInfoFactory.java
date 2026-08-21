@@ -1,6 +1,5 @@
 package com.oddlabs.tt.net;
 
-import org.jspecify.annotations.NonNull;
 import java.io.Serializable;
 
 /**
@@ -9,6 +8,5 @@ import java.io.Serializable;
  */
 @FunctionalInterface
 public interface PlayerInfoFactory {
-    @NonNull
-    Serializable createInfo(int team, int race, @NonNull String name);
+    Serializable createInfo(int team, int race, String name);
 }

@@ -10,7 +10,6 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.KeyboardEvent;
 import com.oddlabs.tt.input.Modifier;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -26,10 +25,10 @@ public final class InputState {
     private static final float DOUBLE_CLICK_TIMEOUT = .4f;
     private static final int DOUBLE_CLICK_THRESHOLD = 2;
 
-    private final @NonNull TimerAnimation double_click_timer;
-    private final @NonNull TimerAnimation double_key_timer;
-    private final @NonNull GUIRoot gui_root;
-    private final @NonNull InputManager inputManager;
+    private final TimerAnimation double_click_timer;
+    private final TimerAnimation double_key_timer;
+    private final GUIRoot gui_root;
+    private final InputManager inputManager;
     private TimerAnimation mouse_timer;
 
     private int drag_x;
@@ -49,7 +48,7 @@ public final class InputState {
     // Keyboard handling
     private KeyboardEvent held_event;
 
-    public InputState(@NonNull GUIRoot gui_root) {
+    public InputState(GUIRoot gui_root) {
         this.gui_root = gui_root;
         this.inputManager = gui_root.getInputManager();
         double_click_timer = new TimerAnimation(gui_root.getAnimationManager(), new DoubleClickTimer(), 0);
@@ -57,7 +56,7 @@ public final class InputState {
         press_obj = gui_root;
     }
 
-    private @NonNull GUIObject pick() {
+    private GUIObject pick() {
         gui_root.mousePick();
         return gui_root.getCurrentGUIObject();
     }
@@ -86,7 +85,7 @@ public final class InputState {
         gui_hit.mouseScrolledHorizontallyAll(scroll_amount);
     }
 
-    public void mousePressed(@NonNull MouseButton button) {
+    public void mousePressed(MouseButton button) {
         GUIObject gui_hit = pick();
         var localInput = gui_root.getLocalInput();
         float scale = gui_root.getGlobalScale();
@@ -122,7 +121,7 @@ public final class InputState {
         mouse_timer.start();
     }
 
-    public void mouseReleased(@NonNull MouseButton button) {
+    public void mouseReleased(MouseButton button) {
         GUIObject gui_hit = pick();
         var localInput = gui_root.getLocalInput();
         float scale = gui_root.getGlobalScale();
@@ -157,7 +156,7 @@ public final class InputState {
             mouse_timer.stop();
     }
 
-    public void mouseDragged(@NonNull MouseButton button, short x, short y) {
+    public void mouseDragged(MouseButton button, short x, short y) {
         float scale = gui_root.getGlobalScale();
         int scaledX = Math.round(x / scale);
         int scaledY = Math.round(y / scale);
@@ -200,7 +199,7 @@ public final class InputState {
         }
     }
 
-    public void keyPressed(@NonNull Key key, int key_codepoint, @NonNull Set<@NonNull Modifier> modifiers,
+    public void keyPressed(Key key, int key_codepoint, Set<Modifier> modifiers,
             boolean repeat) {
         GUIObject focused = gui_root.getGlobalFocus();
         resetKeyTimer();
@@ -232,7 +231,7 @@ public final class InputState {
         }
     }
 
-    public void keyReleased(@NonNull Key key, int key_codepoint, @NonNull Set<@NonNull Modifier> modifiers) {
+    public void keyReleased(Key key, int key_codepoint, Set<Modifier> modifiers) {
         GUIObject focused = gui_root.getGlobalFocus();
         resetKeyTimer();
         KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, 0);
@@ -246,14 +245,14 @@ public final class InputState {
 
     private final class DoubleClickTimer implements Updatable<TimerAnimation> {
         @Override
-        public void update(@NonNull TimerAnimation anim) {
+        public void update(TimerAnimation anim) {
             stopDoubleClickTimer();
         }
     }
 
     private final class DoubleKeyTimer implements Updatable<TimerAnimation> {
         @Override
-        public void update(@NonNull TimerAnimation anim) {
+        public void update(TimerAnimation anim) {
             stopDoubleKeyTimer();
         }
     }

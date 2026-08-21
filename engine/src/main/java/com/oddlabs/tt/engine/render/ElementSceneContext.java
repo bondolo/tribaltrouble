@@ -5,7 +5,6 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -14,22 +13,22 @@ import org.jspecify.annotations.Nullable;
  */
 public final class ElementSceneContext<M extends Model> implements ModelState<M> {
 
-    public final @NonNull SceneContext sceneContext;
+    public final SceneContext sceneContext;
     public ModelVisitor<M> visitor;
     public M model;
     public float f;
-    private Color.@NonNull Linear color = Color.Linear.WHITE;
+    private Color.Linear color = Color.Linear.WHITE;
 
-    public ElementSceneContext(@NonNull SceneContext sceneContext) {
+    public ElementSceneContext(SceneContext sceneContext) {
         this.sceneContext = sceneContext;
     }
 
     @Override
-    public Color.@NonNull Linear getColor() {
+    public Color.Linear getColor() {
         return color;
     }
 
-    public void setColor(Color.@NonNull Linear color) {
+    public void setColor(Color.Linear color) {
         this.color = color;
     }
 
@@ -43,7 +42,7 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
     }
 
     @Override
-    public @NonNull Matrix4f getTransform(@NonNull Matrix4f dest) {
+    public Matrix4f getTransform(Matrix4f dest) {
         visitor.getTransform(this, dest);
         return dest;
     }
@@ -59,28 +58,28 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
     }
 
     @Override
-    public @NonNull Color getTeamColor() {
+    public Color getTeamColor() {
         return visitor.getTeamColor(this);
     }
 
     @Override
-    public @NonNull Color getSelectionColor() {
+    public Color getSelectionColor() {
         return visitor.getSelectionColor(this);
     }
 
     @Override
-    public Selectable.@NonNull VisualPattern getPattern() {
+    public Selectable.VisualPattern getPattern() {
         return visitor.getPattern(this);
     }
 
-    public void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model, float f) {
+    public void setup(ModelVisitor<M> visitor, M model, float f) {
         this.visitor = visitor;
         this.model = model;
         this.f = f;
         resetColor();
     }
 
-    public void setup(@NonNull ModelVisitor<M> visitor, @NonNull M model) {
+    public void setup(ModelVisitor<M> visitor, M model) {
         this.visitor = visitor;
         this.model = model;
         resetColor();
@@ -92,12 +91,12 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
     }
 
     @Override
-    public void markDetailPolygon(@NonNull PolyDetail detail) {
+    public void markDetailPolygon(PolyDetail detail) {
         visitor.markDetailPolygon(this, detail);
     }
 
     @Override
-    public int getTriangleCount(@NonNull PolyDetail detail) {
+    public int getTriangleCount(PolyDetail detail) {
         return visitor.getTriangleCount(this, detail);
     }
 
@@ -106,7 +105,7 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
         return visitor.getEyeDistanceSquared(this);
     }
 
-    public @NonNull SpriteRenderer getRenderer(@NonNull SpriteKey key) {
+    public SpriteRenderer getRenderer(SpriteKey key) {
         return sceneContext.getRenderQueues().getRenderer(key);
     }
 }

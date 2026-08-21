@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -31,7 +30,7 @@ public final class Icons {
         // no instances
     }
 
-    public static Node loadFile(@NonNull String xml_file, @Nullable ErrorHandler error_handler) {
+    public static Node loadFile(String xml_file, @Nullable ErrorHandler error_handler) {
         URL url = Utils.makeURL(xml_file);
 
         try {
@@ -46,11 +45,11 @@ public final class Icons {
         }
     }
 
-    public static @NonNull Texture loadTexture(@NonNull Node n) {
+    public static Texture loadTexture(Node n) {
         return loadTexture(n.getAttributes().getNamedItem("texture").getNodeValue());
     }
 
-    public static @NonNull Texture loadTexture(@NonNull String tex_file) {
+    public static Texture loadTexture(String tex_file) {
         TextureFile file = new TextureFile(tex_file,
                 GL11.GL_RGBA,
                 GL11.GL_LINEAR,
@@ -60,7 +59,7 @@ public final class Icons {
         return Resources.findResource(file);
     }
 
-    public static @NonNull Node getNodeByName(@NonNull String name, @NonNull Node n) {
+    public static Node getNodeByName(String name, Node n) {
         NodeList nl = n.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             if (nl.item(i).getNodeName().equals(name))
@@ -70,26 +69,26 @@ public final class Icons {
         return null;
     }
 
-    public static int getInt(@NonNull Node n, @NonNull String key) {
+    public static int getInt(Node n, String key) {
         String string = n.getAttributes().getNamedItem(key).getNodeValue();
         return Integer.parseInt(string);
     }
 
-    public static float getFloat(@NonNull Node n, @NonNull String key) {
+    public static float getFloat(Node n, String key) {
         String string = n.getAttributes().getNamedItem(key).getNodeValue();
         return Float.parseFloat(string);
     }
 
-    public static @NonNull ModeIconQuads getNamedIconQuads(@NonNull Node n, @NonNull String name,
-            @NonNull Texture texture) {
+    public static ModeIconQuads getNamedIconQuads(Node n, String name,
+            Texture texture) {
         return getIconQuads(getNodeByName(name, n), texture);
     }
 
-    public static @NonNull IconQuad getNamedIconQuad(@NonNull Node n, @NonNull String name, @NonNull Texture texture) {
+    public static IconQuad getNamedIconQuad(Node n, String name, Texture texture) {
         return getIconQuad(getNodeByName(name, n), texture);
     }
 
-    public static @NonNull ModeIconQuads getIconQuads(@NonNull Node n, @NonNull Texture texture) {
+    public static ModeIconQuads getIconQuads(Node n, Texture texture) {
         return new ModeIconQuads(
                 getIconQuad(getNodeByName("normal", n), texture),
                 getIconQuad(getNodeByName("active", n), texture),
@@ -97,12 +96,12 @@ public final class Icons {
         );
     }
 
-    public static @NonNull IconQuad getIconQuad(@NonNull Node n, @NonNull Texture texture) {
+    public static IconQuad getIconQuad(Node n, Texture texture) {
         Node q = getNodeByName("quad", n);
         return parseIconQuad(q, texture);
     }
 
-    public static @NonNull IconQuad parseIconQuad(@NonNull Node q, @NonNull Texture texture) {
+    public static IconQuad parseIconQuad(Node q, Texture texture) {
         int left = getInt(q, "left");
         int top = getInt(q, "top");
         int right = getInt(q, "right");
@@ -124,11 +123,11 @@ public final class Icons {
         return new IconQuad(u1, v1, u2, v2, right - left, bottom - top, texture);
     }
 
-    public static Color.@NonNull Linear getNamedColor(@NonNull Node n, @NonNull String name) {
+    public static Color.Linear getNamedColor(Node n, String name) {
         return getColor(getNodeByName(name, n));
     }
 
-    public static Color.@NonNull Linear getColor(@NonNull Node n) {
+    public static Color.Linear getColor(Node n) {
         Node q = getNodeByName("color", n);
         float r = getFloat(q, "r");
         float g = getFloat(q, "g");

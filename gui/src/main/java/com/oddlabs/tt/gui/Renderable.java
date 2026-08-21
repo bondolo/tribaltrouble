@@ -3,7 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.LinkedList;
 import com.oddlabs.util.ListElementImpl;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /** A renderable component with position, size, and optionally renderable children. */
@@ -13,11 +12,11 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     private int width = 0;
     private int height = 0;
 
-    private final LinkedList<@NonNull R> children = new LinkedList<>();
+    private final LinkedList<R> children = new LinkedList<>();
 
     protected @Nullable R parent = null;
 
-    public @NonNull Renderable<R> setDim(int w, int h) {
+    public Renderable<R> setDim(int w, int h) {
         width = w;
         height = h;
         return this;
@@ -52,15 +51,15 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
         return parent;
     }
 
-    public final void putLast(@NonNull R child) {
+    public final void putLast(R child) {
         children.putLast(child);
     }
 
-    final void putFirst(@NonNull R child) {
+    final void putFirst(R child) {
         children.putFirst(child);
     }
 
-    public void removeChild(@NonNull R child) {
+    public void removeChild(R child) {
         child.parent = null;
         children.remove(child);
     }
@@ -74,7 +73,7 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     protected void doAdd() {
     }
 
-    public void addChild(@NonNull R child) {
+    public void addChild(R child) {
         child.remove();
         children.addFirst(child);
         child.parent = self();
@@ -107,7 +106,7 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     protected void displayChangedNotify(int width, int height) {
     }
 
-    public final void render(@NonNull GUIRenderer renderer) {
+    public final void render(GUIRenderer renderer) {
         render(renderer, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY,
                 Float.POSITIVE_INFINITY);
     }
@@ -116,7 +115,7 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
      * Render the component and children first applying appropriate clipping, transformation and setting the drawing
      * origin to relative (0,0).
      */
-    protected void render(@NonNull GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
+    protected void render(GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
             float clip_top) {
         if (this instanceof Clipped) {
             renderer.pushClip(getRootX(), getRootY(), getWidth(), getHeight());
@@ -127,7 +126,7 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
         }
     }
 
-    private void renderClipped(@NonNull GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
+    private void renderClipped(GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
             float clip_top) {
         clip_left = Math.max(transformX(clip_left), 0);
         clip_right = Math.min(transformX(clip_right), width);
@@ -165,14 +164,14 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
      *
      * @param renderer The renderer to use for drawing.
      */
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         // nothing to show
     }
 
     /**
      * Geometry rendering done after the children have been rendered. Useful for badging, etc.
      */
-    protected void postRender(@NonNull GUIRenderer renderer) {
+    protected void postRender(GUIRenderer renderer) {
         // nothing to do
     }
 

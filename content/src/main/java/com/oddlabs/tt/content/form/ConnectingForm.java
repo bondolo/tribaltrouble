@@ -20,7 +20,6 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
@@ -33,7 +32,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 public final class ConnectingForm extends Form implements ConfigurationListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ConnectingForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -64,7 +63,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     }
 
     @Override
-    public void connected(@NonNull Client client, @NonNull Game game, @NonNull WorldGenerator generator,
+    public void connected(Client client, Game game, WorldGenerator generator,
             int player_slot) {
         if (multiplayer) {
             Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
@@ -98,7 +97,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback loadCallback) {
+    public void gameStarted(com.oddlabs.tt.base.util.LoadCallback loadCallback) {
         remove();
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
                 (LoadCallback) loadCallback);

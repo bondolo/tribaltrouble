@@ -5,7 +5,6 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.trigger.IntervalTrigger;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
@@ -13,22 +12,22 @@ import java.util.ResourceBundle;
 public final class DefeatTrigger extends IntervalTrigger {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(DefeatTrigger.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull Campaign campaign;
+    private final Campaign campaign;
     private final Unit chieftain;
     private final @Nullable Runnable runnable;
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
 
     private boolean triggered_by_chieftain_death = false;
 
-    public DefeatTrigger(@NonNull WorldViewer viewer, @NonNull Campaign campaign, Unit chieftain) {
+    public DefeatTrigger(WorldViewer viewer, Campaign campaign, Unit chieftain) {
         this(viewer, campaign, chieftain, null);
     }
 
-    public DefeatTrigger(@NonNull WorldViewer viewer, @NonNull Campaign campaign, Unit chieftain,
+    public DefeatTrigger(WorldViewer viewer, Campaign campaign, Unit chieftain,
             @Nullable Runnable runnable) {
         super(viewer.getWorld(), .5f, 0f);
         this.viewer = viewer;

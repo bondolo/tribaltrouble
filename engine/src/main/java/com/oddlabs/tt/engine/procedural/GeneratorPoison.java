@@ -10,7 +10,6 @@ import com.oddlabs.tt.procedural.Hill;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -18,7 +17,7 @@ public final class GeneratorPoison extends TextureGenerator {
     private static final int TEXTURE_SIZE = 128;
 
     @Override
-    public @NonNull Texture @NonNull [] generate() {
+    public Texture[] generate() {
         int seed = LandscapeConfig.LANDSCAPE_SEED;
 
         /*

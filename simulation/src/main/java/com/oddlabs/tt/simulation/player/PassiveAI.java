@@ -4,12 +4,11 @@ import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 
 public final class PassiveAI extends AI {
     private final boolean walk_around;
 
-    public PassiveAI(@NonNull Player owner, UnitInfo unit_info, boolean walk_around) {
+    public PassiveAI(Player owner, UnitInfo unit_info, boolean walk_around) {
         super(owner, unit_info);
         this.walk_around = walk_around;
     }

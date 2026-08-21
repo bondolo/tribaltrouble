@@ -27,7 +27,6 @@ import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -43,15 +42,15 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
 
     private final BuildingSiteRenderer site_renderer = new BuildingSiteRenderer();
     private final PlacingRenderer placingRenderer = new PlacingRenderer();
-    private final @NonNull BuildingType building_type;
+    private final BuildingType building_type;
 
-    public PlacingDelegate(@NonNull WorldViewer viewer, @NonNull CameraState old_camera,
-            @NonNull BuildingType building_type) {
+    public PlacingDelegate(WorldViewer viewer, CameraState old_camera,
+            BuildingType building_type) {
         super(viewer, new GameCamera(viewer, old_camera));
         this.building_type = building_type;
     }
 
-    private @NonNull BuildingTemplate getTemplate() {
+    private BuildingTemplate getTemplate() {
         return getViewer().getLocalPlayer().getRaceInfo().getBuildingTemplate(building_type);
     }
 
@@ -83,7 +82,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.consumeAction(GameAction.UI_ACTIVATE)) {
             if (event.getPhase() == InputPhase.RELEASED) {
                 placeObject();
@@ -104,7 +103,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
         switch (button) {
             case LEFT -> placeObject();
             case RIGHT -> pop();
@@ -113,8 +112,8 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
     }
 
     @Override
-    public void render3D(@NonNull LandscapeRenderer renderer, @NonNull RenderQueues queues, @NonNull CameraState state,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void render3D(LandscapeRenderer renderer, RenderQueues queues, CameraState state,
+            MatrixStack modelViewStack, MatrixStack projectionStack) {
         var hit = getViewer().getPicker().pickLocation(getCamera().getState());
         if (hit.isEmpty()) {
             return;

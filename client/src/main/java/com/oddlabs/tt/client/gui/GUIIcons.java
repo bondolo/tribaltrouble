@@ -12,7 +12,6 @@ import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.w3c.dom.Node;
@@ -30,7 +29,7 @@ import java.util.stream.IntStream;
 public class GUIIcons {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Icons.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -42,29 +41,29 @@ public class GUIIcons {
 
     private static final GUIIcons ICONS = new GUIIcons("/gui/icons.xml");
 
-    private final @NonNull ModeIconQuads harvest_icon;
-    private final @NonNull ModeIconQuads tree_icon;
-    private final @NonNull ModeIconQuads rock_icon;
-    private final @NonNull ModeIconQuads iron_icon;
-    private final @NonNull ModeIconQuads rubber_icon;
-    private final @NonNull IconQuad tree_status_icon;
-    private final @NonNull IconQuad rock_status_icon;
-    private final @NonNull IconQuad iron_status_icon;
-    private final @NonNull IconQuad rubber_status_icon;
-    private final @NonNull IconQuad cheat_icon;
-    private final @NonNull RaceIcons native_icons;
-    private final @NonNull RaceIcons viking_icons;
-    private final @NonNull IconQuad @NonNull [] watch;
-    private final @NonNull IconQuad infinite;
-    private final @NonNull NotifyArrowData notify_arrow_data;
+    private final ModeIconQuads harvest_icon;
+    private final ModeIconQuads tree_icon;
+    private final ModeIconQuads rock_icon;
+    private final ModeIconQuads iron_icon;
+    private final ModeIconQuads rubber_icon;
+    private final IconQuad tree_status_icon;
+    private final IconQuad rock_status_icon;
+    private final IconQuad iron_status_icon;
+    private final IconQuad rubber_status_icon;
+    private final IconQuad cheat_icon;
+    private final RaceIcons native_icons;
+    private final RaceIcons viking_icons;
+    private final IconQuad[] watch;
+    private final IconQuad infinite;
+    private final NotifyArrowData notify_arrow_data;
 
-    private final @NonNull Map<@NonNull SupplyType, @NonNull List<@NonNull IconQuad>> tool_tip_icons;
+    private final Map<SupplyType, List<IconQuad>> tool_tip_icons;
 
     public static GUIIcons getIcons() {
         return ICONS;
     }
 
-    private GUIIcons(@NonNull String xml_file) {
+    private GUIIcons(String xml_file) {
         Node root = Icons.loadFile(xml_file, new GUIErrorHandler());
         Texture texture = Icons.loadTexture(root);
 
@@ -91,14 +90,14 @@ public class GUIIcons {
                 SupplyType.RUBBER, List.of(rubber_status_icon)));
     }
 
-    public static @NonNull List<@NonNull IconQuad> toIconList(@NonNull Cost cost) {
+    public static List<IconQuad> toIconList(Cost cost) {
         var icons = getIcons();
         return cost.costs().entrySet().stream()
                 .flatMap(entry -> Stream.generate(() -> getIconQuad(icons, entry.getKey())).limit(entry.getValue()))
                 .toList();
     }
 
-    private static @NonNull IconQuad getIconQuad(@NonNull GUIIcons icons, @NonNull SupplyType supply_type) {
+    private static IconQuad getIconQuad(GUIIcons icons, SupplyType supply_type) {
         return switch (supply_type) {
             case WOOD -> icons.getTreeStatusIcon();
             case ROCK -> icons.getRockStatusIcon();
@@ -107,8 +106,8 @@ public class GUIIcons {
         };
     }
 
-    private static @NonNull RaceIcons parseRaceIcons(@NonNull Node n, @NonNull String head,
-            @NonNull Texture texture) {
+    private static RaceIcons parseRaceIcons(Node n, String head,
+            Texture texture) {
         return new RaceIcons(Icons.getNamedIconQuad(n, head + "_unit_status_icon", texture),
                 Icons.getNamedIconQuad(n, head + "_weapon_rock_status_icon", texture),
                 Icons.getNamedIconQuad(n, head + "_weapon_iron_status_icon", texture),
@@ -136,7 +135,7 @@ public class GUIIcons {
                 Icons.getNamedIconQuads(n, head + "_magic2_icon", texture));
     }
 
-    private static @NonNull IconQuad @NonNull [] generateWatchIcons() {
+    private static IconQuad[] generateWatchIcons() {
         int textureSize = Utils.roundToTextureSize((int) Math.ceil(Math.sqrt(WATCH_NUM_ICONS)) * WATCH_ICON_SIZE);
         int perRow = textureSize / WATCH_ICON_SIZE;
 
@@ -252,7 +251,7 @@ public class GUIIcons {
         }).toArray(IconQuad[]::new);
     }
 
-    private static @NonNull NotifyArrowData parseNotifyArrowData(@NonNull Node n, @NonNull Texture texture) {
+    private static NotifyArrowData parseNotifyArrowData(Node n, Texture texture) {
         Node node = Icons.getNodeByName("notify_arrow", n);
         return new NotifyArrowData(Icons.getIconQuad(node, texture),
                 Icons.getInt(node, "head_x"),
@@ -261,67 +260,67 @@ public class GUIIcons {
                 Icons.getInt(node, "end_y"));
     }
 
-    public @NonNull List<@NonNull IconQuad> getToolTipIcon(@NonNull SupplyType key) {
+    public List<IconQuad> getToolTipIcon(SupplyType key) {
         return tool_tip_icons.get(key);
     }
 
-    public final @NonNull RaceIcons getVikingIcons() {
+    public final RaceIcons getVikingIcons() {
         return viking_icons;
     }
 
-    public final @NonNull RaceIcons getNativeIcons() {
+    public final RaceIcons getNativeIcons() {
         return native_icons;
     }
 
-    public final @NonNull ModeIconQuads getHarvestIcon() {
+    public final ModeIconQuads getHarvestIcon() {
         return harvest_icon;
     }
 
-    public final @NonNull IconQuad getTreeStatusIcon() {
+    public final IconQuad getTreeStatusIcon() {
         return tree_status_icon;
     }
 
-    public final @NonNull IconQuad getRockStatusIcon() {
+    public final IconQuad getRockStatusIcon() {
         return rock_status_icon;
     }
 
-    public final @NonNull IconQuad getIronStatusIcon() {
+    public final IconQuad getIronStatusIcon() {
         return iron_status_icon;
     }
 
-    public final @NonNull IconQuad getRubberStatusIcon() {
+    public final IconQuad getRubberStatusIcon() {
         return rubber_status_icon;
     }
 
-    public final @NonNull IconQuad getCheatIcon() {
+    public final IconQuad getCheatIcon() {
         return cheat_icon;
     }
 
-    public final @NonNull ModeIconQuads getTreeIcon() {
+    public final ModeIconQuads getTreeIcon() {
         return tree_icon;
     }
 
-    public final @NonNull ModeIconQuads getRockIcon() {
+    public final ModeIconQuads getRockIcon() {
         return rock_icon;
     }
 
-    public final @NonNull ModeIconQuads getIronIcon() {
+    public final ModeIconQuads getIronIcon() {
         return iron_icon;
     }
 
-    public final @NonNull ModeIconQuads getRubberIcon() {
+    public final ModeIconQuads getRubberIcon() {
         return rubber_icon;
     }
 
-    public final @NonNull IconQuad getWatch(float progress) {
+    public final IconQuad getWatch(float progress) {
         return watch[(int) (progress * (watch.length - 1))];
     }
 
-    public final @NonNull IconQuad getInfinite() {
+    public final IconQuad getInfinite() {
         return infinite;
     }
 
-    public final @NonNull NotifyArrowData getNotifyArrowData() {
+    public final NotifyArrowData getNotifyArrowData() {
         return notify_arrow_data;
     }
 }

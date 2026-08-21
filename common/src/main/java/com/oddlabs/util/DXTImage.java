@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -38,9 +37,9 @@ public final class DXTImage {
     private final short width;
     private final short height;
     private final int fourCC;
-    private final byte @NonNull [] @NonNull [] mipmaps;
+    private final byte[][] mipmaps;
 
-    public DXTImage(short width, short height, int fourCC, byte @NonNull [] @NonNull [] mipmaps) {
+    public DXTImage(short width, short height, int fourCC, byte[][] mipmaps) {
         this.width = width;
         this.height = height;
         this.fourCC = fourCC;
@@ -71,11 +70,11 @@ public final class DXTImage {
         return mipmaps.length;
     }
 
-    public @NonNull ByteBuffer getMipMap() {
+    public ByteBuffer getMipMap() {
         return getMipMap(0);
     }
 
-    public @NonNull ByteBuffer getMipMap(int mipmap_level) {
+    public ByteBuffer getMipMap(int mipmap_level) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(mipmaps[mipmap_level].length);
         buffer.put(mipmaps[mipmap_level]);
         buffer.flip();
@@ -86,7 +85,7 @@ public final class DXTImage {
         // Nothing to do for this implementation
     }
 
-    public void write(@NonNull Path file) throws IOException {
+    public void write(Path file) throws IOException {
         try (WritableByteChannel out = Files.newByteChannel(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
                 StandardOpenOption.TRUNCATE_EXISTING)) {
             ByteBuffer header = ByteBuffer.allocateDirect(128);
@@ -127,19 +126,19 @@ public final class DXTImage {
         }
     }
 
-    public static @NonNull DXTImage read(@NonNull URL url) throws IOException {
+    public static DXTImage read(URL url) throws IOException {
         try (InputStream in = new BufferedInputStream(url.openStream())) {
             return read(Channels.newChannel(in));
         }
     }
 
-    public static @NonNull DXTImage read(@NonNull Path file) throws IOException {
+    public static DXTImage read(Path file) throws IOException {
         try (FileChannel in = FileChannel.open(file, StandardOpenOption.READ)) {
             return read(in);
         }
     }
 
-    public static @NonNull DXTImage read(@NonNull ReadableByteChannel in) throws IOException {
+    public static DXTImage read(ReadableByteChannel in) throws IOException {
         ByteBuffer header = ByteBuffer.allocateDirect(128);
         header.order(ByteOrder.LITTLE_ENDIAN);
         while (header.hasRemaining()) {
@@ -198,7 +197,7 @@ public final class DXTImage {
         return new DXTImage((short) width, (short) height, fourCC, mipmaps);
     }
 
-    private static void writeContents(@NonNull WritableByteChannel out, @NonNull ByteBuffer data) throws IOException {
+    private static void writeContents(WritableByteChannel out, ByteBuffer data) throws IOException {
         while (data.hasRemaining())
             out.write(data);
     }

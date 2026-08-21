@@ -1,14 +1,13 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A particle whose movement and position are defined by a {@link ParametricFunction}.
  * Used for complex visual effects like clouds or expanding rings.
  */
 final class ParametricParticle extends Particle {
-    private final @NonNull ParametricFunction function;
+    private final ParametricFunction function;
     private final float offset_x;
     private final float offset_y;
     private final float offset_z;
@@ -22,7 +21,7 @@ final class ParametricParticle extends Particle {
     private float heightLightingIntensity = 0f;
     private float maxLocalZ = 1f;
 
-    public ParametricParticle(@NonNull World world, @NonNull ParametricFunction function, float u, float v,
+    public ParametricParticle(World world, ParametricFunction function, float u, float v,
             float offset_x, float offset_y, float offset_z) {
         super(world);
         this.function = function;

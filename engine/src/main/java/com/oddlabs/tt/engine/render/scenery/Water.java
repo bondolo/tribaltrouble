@@ -19,7 +19,6 @@ import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.model.Terrain;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -82,18 +81,18 @@ public final class Water implements AutoCloseable {
     private static final float[] WAVE_DIRS_X = new float[]{WAVE_DIR_X_1, WAVE_DIR_X_2, WAVE_DIR_X_3};
     private static final float[] WAVE_DIRS_Y = new float[]{WAVE_DIR_Y_1, WAVE_DIR_Y_2, WAVE_DIR_Y_3};
 
-    private final @NonNull Terrain terrain;
-    private final @NonNull Sky sky;
-    private final @NonNull MatrixStack modelViewStack;
-    private final @NonNull HeightMap heightMap;
+    private final Terrain terrain;
+    private final Sky sky;
+    private final MatrixStack modelViewStack;
+    private final HeightMap heightMap;
 
-    private final @NonNull Texture @NonNull [] ocean;
+    private final Texture[] ocean;
 
-    private final @NonNull WaterShader waterShader = new WaterShader();
-    private final @NonNull VertexArray skyWaterVao = new VertexArray();
-    private final @NonNull PatchMesh patchMesh = new PatchMesh();
+    private final WaterShader waterShader = new WaterShader();
+    private final VertexArray skyWaterVao = new VertexArray();
+    private final PatchMesh patchMesh = new PatchMesh();
 
-    private final @NonNull BitSet oceanPatches;
+    private final BitSet oceanPatches;
 
     // Non-final to allow resizing
     private FloatVBO oceanInstanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2 * Float.BYTES);
@@ -112,13 +111,13 @@ public final class Water implements AutoCloseable {
     private float lastTime = 0f;
 
     private float waveTime = 0f;
-    private final float @NonNull [] waveAmplitudes;
-    private final float @NonNull [] waveSteepness;
-    private final float @NonNull [] waveLengths;
+    private final float[] waveAmplitudes;
+    private final float[] waveSteepness;
+    private final float[] waveLengths;
     private final float waveSpeed;
 
-    public Water(@NonNull HeightMap heightmap, @NonNull Terrain terrain, @NonNull Sky sky,
-            @NonNull MatrixStack modelViewStack) {
+    public Water(HeightMap heightmap, Terrain terrain, Sky sky,
+            MatrixStack modelViewStack) {
         this.terrain = terrain;
         waveAmplitudes = switch (terrain) {
             case VIKING -> new float[]{
@@ -215,11 +214,11 @@ public final class Water implements AutoCloseable {
         }
     }
 
-    public @NonNull WaterShader getShader() {
+    public WaterShader getShader() {
         return waterShader;
     }
 
-    private void setupWaterAttributes(@NonNull FloatVBO vbo, @NonNull WaterShader shader) {
+    private void setupWaterAttributes(FloatVBO vbo, WaterShader shader) {
         int posLoc = shader.getAttributeLocation(WaterShader.Attributes.POSITION);
         vbo.bind();
         GL20.glEnableVertexAttribArray(posLoc);
@@ -227,8 +226,8 @@ public final class Water implements AutoCloseable {
     }
 
 
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull Collection<
-            @NonNull LandscapeLeaf> visiblePatches, float currentTime) {
+    public void render(RenderContext context, CameraState state, Collection<
+            LandscapeLeaf> visiblePatches, float currentTime) {
         updateAnimation(currentTime);
 
         try (var _ = waterShader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
@@ -333,8 +332,8 @@ public final class Water implements AutoCloseable {
         }
     }
 
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull Collection<
-            @NonNull LandscapeLeaf> visiblePatches) {
+    public void render(RenderContext context, CameraState state, Collection<
+            LandscapeLeaf> visiblePatches) {
         render(context, state, visiblePatches, lastTime);
     }
 
@@ -383,7 +382,7 @@ public final class Water implements AutoCloseable {
     /**
      * Appends instance offsets to the buffer, resizing the buffer if necessary.
      */
-    private @NonNull FloatBuffer addInstance(@NonNull FloatBuffer buffer, float x, float y, float z) {
+    private FloatBuffer addInstance(FloatBuffer buffer, float x, float y, float z) {
         if (buffer.remaining() < 3) {
             int newCapacity = buffer.capacity() * 2;
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity);
@@ -400,8 +399,8 @@ public final class Water implements AutoCloseable {
     /**
      * Uploads instance offset data and renders the instanced patches.
      */
-    private @NonNull FloatVBO uploadAndDraw(@NonNull RenderContext context, int count, @NonNull FloatBuffer buffer,
-            @NonNull FloatVBO vbo) {
+    private FloatVBO uploadAndDraw(RenderContext context, int count, FloatBuffer buffer,
+            FloatVBO vbo) {
         buffer.flip();
 
         int requiredBytes = count * 3 * Float.BYTES;
@@ -434,11 +433,11 @@ public final class Water implements AutoCloseable {
         return vbo;
     }
 
-    public @NonNull BitSet getOceanPatches() {
+    public BitSet getOceanPatches() {
         return oceanPatches;
     }
 
-    public void putGlobalUniforms(java.nio.@NonNull ByteBuffer buffer, boolean enableWaves) {
+    public void putGlobalUniforms(java.nio.ByteBuffer buffer, boolean enableWaves) {
         // u_waveDirLength[3] (each element is a vec4 aligned to 16 bytes)
         for (int i = 0; i < WAVE_COUNT; i++) {
             buffer.putFloat(WAVE_DIRS_X[i]);

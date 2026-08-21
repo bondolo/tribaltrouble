@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.render.shader;
 
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -130,16 +129,16 @@ public final class GUIShader extends ShaderProgram {
         TEX_INDEX(Attributes.TEX_INDEX, 1, GL11.GL_FLOAT),
         CLIP_RECT(Attributes.CLIP_RECT, 4, GL11.GL_FLOAT);
 
-        private final @NonNull String name;
+        private final String name;
         private final int componentCount;
         private final int glType;
         private final boolean normalized;
 
-        Attribute(@NonNull String name, int componentCount, int glType) {
+        Attribute(String name, int componentCount, int glType) {
             this(name, componentCount, glType, false);
         }
 
-        Attribute(@NonNull String name, int componentCount, int glType, boolean normalized) {
+        Attribute(String name, int componentCount, int glType, boolean normalized) {
             this.name = name;
             this.componentCount = componentCount;
             this.glType = glType;
@@ -147,7 +146,7 @@ public final class GUIShader extends ShaderProgram {
         }
 
         @Override
-        public @NonNull String getName() {
+        public String getName() {
             return name;
         }
 

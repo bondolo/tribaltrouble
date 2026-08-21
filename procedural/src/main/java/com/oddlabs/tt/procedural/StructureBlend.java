@@ -2,27 +2,26 @@ package com.oddlabs.tt.procedural;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Terrain blend layer containing structure diffuse and normal layers.
  */
 public final class StructureBlend extends BlendInfo {
-    private final @NonNull Layer structureLayer;
-    private final @NonNull Layer normalLayer;
+    private final Layer structureLayer;
+    private final Layer normalLayer;
 
-    public StructureBlend(@NonNull Layer structureLayer, @NonNull Layer normalLayer,
-            @NonNull Channel alphaChannel) {
+    public StructureBlend(Layer structureLayer, Layer normalLayer,
+            Channel alphaChannel) {
         super(alphaChannel);
         this.structureLayer = structureLayer;
         this.normalLayer = normalLayer;
     }
 
-    public @NonNull Layer getStructureLayer() {
+    public Layer getStructureLayer() {
         return structureLayer;
     }
 
-    public @NonNull Layer getNormalLayer() {
+    public Layer getNormalLayer() {
         return normalLayer;
     }
 }

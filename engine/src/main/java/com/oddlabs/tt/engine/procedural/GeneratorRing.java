@@ -8,7 +8,6 @@ import com.oddlabs.procedural.Tools;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -24,7 +23,7 @@ public final class GeneratorRing extends TextureGenerator {
         this.ring_parms = ring_parms;
     }
 
-    private @NonNull Channel generateLUT(int size, float @NonNull [] @NonNull [] gradient_list) {
+    private Channel generateLUT(int size, float[][] gradient_list) {
         Channel channel = new Channel(size, 1);
         int index_max = gradient_list.length - 1;
         for (int i = 0; i < size; i++) {
@@ -53,7 +52,7 @@ public final class GeneratorRing extends TextureGenerator {
     }
 
     @Override
-    public Texture @NonNull [] generate() {
+    public Texture[] generate() {
         Channel channel_ring = generateLUT(size, ring_parms);
         Channel channel_black = new Channel(size, 1).fill(0f);
         Channel channel_white = new Channel(size, 1).fill(1f);
@@ -72,7 +71,7 @@ public final class GeneratorRing extends TextureGenerator {
         return size * Arrays.deepHashCode(ring_parms);
     }
 
-    private static boolean equals(float @NonNull [] @NonNull [] a1, float @NonNull [] @NonNull [] a2) {
+    private static boolean equals(float[][] a1, float[][] a2) {
         if (a1.length != a2.length)
             return false;
         for (int i = 0; i < a1.length; i++) {

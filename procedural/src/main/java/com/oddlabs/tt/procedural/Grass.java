@@ -4,16 +4,15 @@ package com.oddlabs.tt.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
 public final class Grass {
-    private final @NonNull Random random;
-    public final @NonNull Channel r;
-    public final @NonNull Channel g;
-    public final @NonNull Channel b;
-    public final @NonNull Channel a;
+    private final Random random;
+    public final Channel r;
+    public final Channel g;
+    public final Channel b;
+    public final Channel a;
 
     public Grass(int width, int height, int leaves, int seed, int clusters, int smooth) {
         r = new Channel(width << 1, height << 1);
@@ -223,7 +222,7 @@ public final class Grass {
         }
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(r, g, b);
     }
 

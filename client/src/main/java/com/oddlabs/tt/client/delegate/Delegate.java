@@ -11,7 +11,6 @@ import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.gui.delegate.InputDelegate;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Base class for all top-level UI states (delegates) in the game. Delegates handle
@@ -32,7 +31,7 @@ public abstract class Delegate extends GUIObject implements InputDelegate {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         super.setFocus(direction);
         switchFocus(direction, false);
     }
@@ -56,12 +55,12 @@ public abstract class Delegate extends GUIObject implements InputDelegate {
         }
     }
 
-    public void render3D(@NonNull LandscapeRenderer renderer, @NonNull RenderQueues render_queues,
-            @NonNull CameraState state, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void render3D(LandscapeRenderer renderer, RenderQueues render_queues,
+            CameraState state, MatrixStack modelViewStack, MatrixStack projectionStack) {
     }
 
     @Override
-    public void render2D(@NonNull GUIRenderer renderer) {
+    public void render2D(GUIRenderer renderer) {
     }
 
     @Override
@@ -69,7 +68,7 @@ public abstract class Delegate extends GUIObject implements InputDelegate {
         return false;
     }
 
-    protected final void renderBackgroundAlpha(@NonNull GUIRenderer renderer) {
+    protected final void renderBackgroundAlpha(GUIRenderer renderer) {
         renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), BACKGROUND_ALPHA);
     }
 }

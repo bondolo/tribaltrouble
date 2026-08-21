@@ -5,7 +5,6 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 
@@ -15,15 +14,15 @@ import java.util.EnumSet;
 public final class MagicTrigger extends TutorialTrigger {
     private final EnumSet<MagicType> magic_used = EnumSet.noneOf(MagicType.class);
 
-    private final @NonNull Unit chieftain;
+    private final Unit chieftain;
 
-    public MagicTrigger(@NonNull Unit chieftain) {
+    public MagicTrigger(Unit chieftain) {
         super(.1f, 20f, "magic");
         this.chieftain = chieftain;
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
+    public void run(Tutorial tutorial) {
         MagicType last = chieftain.getLastMagicType();
         if (last != null)
             magic_used.add(last);

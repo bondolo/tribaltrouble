@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.behaviour;
 import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Logic for unit harvesting behavior.
@@ -11,12 +10,12 @@ import org.jspecify.annotations.NonNull;
  */
 public final class HarvestBehaviour implements Behaviour {
     private static final float SECONDS_PER_ANIMATION_CYCLE = 1f;
-    private final @NonNull Supply supply;
-    private final @NonNull Unit unit;
+    private final Supply supply;
+    private final Unit unit;
     private float anim_time;
     private boolean sound;
 
-    public HarvestBehaviour(@NonNull Unit unit, @NonNull Supply supply) {
+    public HarvestBehaviour(Unit unit, Supply supply) {
         this.unit = unit;
         this.supply = supply;
         unit.aimAtTarget(supply);
@@ -29,7 +28,7 @@ public final class HarvestBehaviour implements Behaviour {
     }
 
     @Override
-    public @NonNull State animate(float t) {
+    public State animate(float t) {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;

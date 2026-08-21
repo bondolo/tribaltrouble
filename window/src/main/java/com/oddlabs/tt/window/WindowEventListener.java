@@ -1,6 +1,5 @@
 package com.oddlabs.tt.window;
 
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDL_Event;
 
 /**
@@ -12,7 +11,7 @@ public interface WindowEventListener {
      *
      * @param event the native SDL event
      */
-    void handleSDLEvent(@NonNull SDL_Event event);
+    void handleSDLEvent(SDL_Event event);
 
     /**
      * Called when the window gains OS focus.

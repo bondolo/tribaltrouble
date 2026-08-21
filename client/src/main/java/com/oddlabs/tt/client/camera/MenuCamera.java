@@ -4,7 +4,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.NonNull;
 
 public final class MenuCamera extends Camera {
     private static final float ANGLE_DELTA = 0.020f;
@@ -13,14 +12,14 @@ public final class MenuCamera extends Camera {
     private static final float LANDSCAPE_OFFSET = 5f;
     private static final float CENTER_Z = 128f; // NOT HEIGHT!
 
-    private final @NonNull World world;
-    private final @NonNull AnimationManager manager;
+    private final World world;
+    private final AnimationManager manager;
     private final float centerX;
     private final float centerY;
     private float center_angle;
 
-    public MenuCamera(@NonNull World world, @NonNull AnimationManager highPrecisionManager,
-            @NonNull AnimationManager menuManager) {
+    public MenuCamera(World world, AnimationManager highPrecisionManager,
+            AnimationManager menuManager) {
         super(world.getLandscapeEnvironment(), new CameraState(), highPrecisionManager);
         this.world = world;
         this.manager = menuManager;

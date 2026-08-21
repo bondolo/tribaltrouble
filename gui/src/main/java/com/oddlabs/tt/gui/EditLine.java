@@ -10,7 +10,6 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
@@ -25,8 +24,8 @@ public class EditLine extends TextField implements Clipped {
     @SuppressWarnings("TimeUnitConversionChecker")
     private static final long ERROR_DURATION = TimeUnit.MILLISECONDS.toMillis(200);
     private static @Nullable Runnable errorAudioHandler;
-    private final Set<@NonNull EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
-    private final @NonNull Origin alignment;
+    private final Set<EnterListener> enter_listeners = new CopyOnWriteArraySet<>();
+    private final Origin alignment;
     private final @Nullable String allowed_chars;
     protected final int max_text_width;
 
@@ -43,11 +42,11 @@ public class EditLine extends TextField implements Clipped {
         this(width, max_codepoints, Origin.AT_START);
     }
 
-    public EditLine(int width, int max_codepoints, @NonNull Origin alignment) {
+    public EditLine(int width, int max_codepoints, Origin alignment) {
         this(width, max_codepoints, null, alignment);
     }
 
-    public EditLine(int width, int max_codepoints, @Nullable String allowed_chars, @NonNull Origin alignment) {
+    public EditLine(int width, int max_codepoints, @Nullable String allowed_chars, Origin alignment) {
         super(Skin.getSkin().getEditFont(), max_codepoints);
         this.allowed_chars = allowed_chars;
         this.alignment = alignment;
@@ -59,16 +58,16 @@ public class EditLine extends TextField implements Clipped {
     }
 
     @Override
-    protected final @NonNull CursorType getCursorType() {
+    protected final CursorType getCursorType() {
         return isDisabled() ? CursorType.NORMAL : CursorType.TEXT;
     }
 
-    protected @NonNull CharSequence getDisplayText() {
+    protected CharSequence getDisplayText() {
         return getText();
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         Box edit_box = Skin.getSkin().getEditBox();
         var mode = isDisabled() ? ModeIconQuads.Mode.DISABLED : (isActive() ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL);
@@ -85,13 +84,13 @@ public class EditLine extends TextField implements Clipped {
         renderText(renderer, edit_box, offset_x, render_index);
     }
 
-    protected int getRenderedWidth(@NonNull CharSequence text) {
+    protected int getRenderedWidth(CharSequence text) {
         int x_border = getFont().getXBorder();
         int half_border = x_border / 2;
         return text.isEmpty() ? half_border : getFont().getWidth(text) - (x_border - half_border);
     }
 
-    protected void renderText(@NonNull GUIRenderer renderer, @NonNull Box box, int offset_x, int render_index) {
+    protected void renderText(GUIRenderer renderer, Box box, int offset_x, int render_index) {
         var displayText = getDisplayText();
         TextLineRenderer.render(renderer, getFont(), displayText, box.getLeftOffset() + offset_x, box.getBottomOffset(),
                 box.getLeftOffset() + 1, getWidth() - box.getRightOffset() - 1, Color.Linear.WHITE);
@@ -124,7 +123,7 @@ public class EditLine extends TextField implements Clipped {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.RELEASED) {
             if (event.consumeAction(GameAction.UI_ACTIVATE)) {
                 if (event.getKeyCode() == Key.RETURN) {
@@ -243,7 +242,7 @@ public class EditLine extends TextField implements Clipped {
     }
 
     @Override
-    protected final void appendNotify(@NonNull CharSequence str) {
+    protected final void appendNotify(CharSequence str) {
         correctOffsetX();
     }
 
@@ -262,7 +261,7 @@ public class EditLine extends TextField implements Clipped {
     }
 
     @Override
-    protected final void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected final void mousePressed(MouseButton button, int x, int y) {
         if (button == MouseButton.LEFT) {
             Box edit_box = Skin.getSkin().getEditBox();
             float relativeX = x - (getRootX() + edit_box.getLeftOffset() + offset_x);
@@ -297,10 +296,10 @@ public class EditLine extends TextField implements Clipped {
         }
     }
 
-    protected void enterPressed(@NonNull CharSequence text) {
+    protected void enterPressed(CharSequence text) {
     }
 
-    public final void addEnterListener(@NonNull EnterListener listener) {
+    public final void addEnterListener(EnterListener listener) {
         enter_listeners.add(listener);
     }
 }

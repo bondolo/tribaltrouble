@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Landscape terrain types.
@@ -28,14 +27,14 @@ public enum Terrain {
      *
      * @return the linear color representing the terrain dust/soil
      */
-    public Color.@NonNull Linear getDustColor() {
+    public Color.Linear getDustColor() {
         return switch (this) {
             case NATIVE -> new Color.Linear(NATIVE_SAND_COLOR);
             case VIKING -> new Color.Linear(VIKING_SOIL_COLOR);
         };
     }
 
-    public static @NonNull Terrain fromValue(int value) {
+    public static Terrain fromValue(int value) {
         for (Terrain type : values()) {
             if (type.value == value) {
                 return type;

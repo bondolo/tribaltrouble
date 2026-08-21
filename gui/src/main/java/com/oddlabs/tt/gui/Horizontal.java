@@ -2,17 +2,16 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public final class Horizontal {
-    private final @NonNull ModeIconQuads left;
-    private final @NonNull ModeIconQuads center;
-    private final @NonNull ModeIconQuads right;
+    private final ModeIconQuads left;
+    private final ModeIconQuads center;
+    private final ModeIconQuads right;
     private final int height;
     private final int left_width;
     private final int right_width;
 
-    public Horizontal(@NonNull ModeIconQuads left, @NonNull ModeIconQuads center, @NonNull ModeIconQuads right) {
+    public Horizontal(ModeIconQuads left, ModeIconQuads center, ModeIconQuads right) {
         this.left = left;
         this.center = center;
         this.right = right;
@@ -21,8 +20,8 @@ public final class Horizontal {
         right_width = right.quad(ModeIconQuads.Mode.NORMAL).getWidth();
     }
 
-    public void render(@NonNull GUIRenderer renderer, float x, float y, int width,
-            ModeIconQuads.@NonNull Mode skinMode) {
+    public void render(GUIRenderer renderer, float x, float y, int width,
+            ModeIconQuads.Mode skinMode) {
         int center_width = width - left_width - right_width;
 
         renderer.drawModeIcon(left, skinMode, x, y);

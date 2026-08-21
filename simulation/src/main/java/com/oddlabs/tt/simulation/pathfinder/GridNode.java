@@ -1,13 +1,12 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 final class GridNode extends Node {
     private static final DirectionNode[][] dir_node_grid = new DirectionNode[3][3];
 
-    private static final GridNode @NonNull [] @NonNull [] pathfinder_grid;
+    private static final GridNode[][] pathfinder_grid;
     private final int local_grid_x;
     private final int local_grid_y;
     private Offset offset;
@@ -76,7 +75,7 @@ final class GridNode extends Node {
         return new Offset(path_offset_x, path_offset_y);
     }
 
-    public static @Nullable GridNode getPathfinderNode(@NonNull Offset offset, int x, int y) {
+    public static @Nullable GridNode getPathfinderNode(Offset offset, int x, int y) {
         GridNode node = getPathfinderNodeOffset(x - offset.offset_x, y - offset.offset_y);
         if (node != null)
             node.offset = offset;
@@ -91,7 +90,7 @@ final class GridNode extends Node {
             return pathfinder_grid[local_y][local_x];
     }
 
-    private boolean addNeighbour(@NonNull PathFinderAlgorithm finder, @NonNull UnitGrid unit_grid, int x, int y,
+    private boolean addNeighbour(PathFinderAlgorithm finder, UnitGrid unit_grid, int x, int y,
             int cost) {
         GridNode node = getPathfinderNode(offset, x, y);
         if (node == null || node.isVisited())
@@ -110,7 +109,7 @@ final class GridNode extends Node {
     }
 
     @Override
-    public boolean addNeighbours(@NonNull PathFinderAlgorithm finder, @NonNull UnitGrid unit_grid) {
+    public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
         int x = getGridX();
         int y = getGridY();
         return addNeighbour(finder, unit_grid, x, y - 1, RegionBuilder.STRAIGHT) ||

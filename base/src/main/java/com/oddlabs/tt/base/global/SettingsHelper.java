@@ -1,6 +1,5 @@
 package com.oddlabs.tt.base.global;
 
-import org.jspecify.annotations.NonNull;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -19,8 +18,8 @@ public final class SettingsHelper {
     /**
      * Stores a string property if different from default value.
      */
-    public static void setProperty(@NonNull Properties props, @NonNull String key, @NonNull String value,
-            @NonNull String defaultValue) {
+    public static void setProperty(Properties props, String key, String value,
+            String defaultValue) {
         if (!value.equals(defaultValue)) {
             props.setProperty(key, value);
         }
@@ -29,7 +28,7 @@ public final class SettingsHelper {
     /**
      * Stores an integer property if different from default value.
      */
-    public static void setProperty(@NonNull Properties props, @NonNull String key, int value, int defaultValue) {
+    public static void setProperty(Properties props, String key, int value, int defaultValue) {
         if (value != defaultValue) {
             props.setProperty(key, String.valueOf(value));
         }
@@ -38,7 +37,7 @@ public final class SettingsHelper {
     /**
      * Stores a float property if different from default value.
      */
-    public static void setProperty(@NonNull Properties props, @NonNull String key, float value, float defaultValue) {
+    public static void setProperty(Properties props, String key, float value, float defaultValue) {
         if (value != defaultValue) {
             props.setProperty(key, String.valueOf(value));
         }
@@ -47,7 +46,7 @@ public final class SettingsHelper {
     /**
      * Stores a boolean property if different from default value.
      */
-    public static void setProperty(@NonNull Properties props, @NonNull String key, boolean value,
+    public static void setProperty(Properties props, String key, boolean value,
             boolean defaultValue) {
         if (value != defaultValue) {
             props.setProperty(key, String.valueOf(value));
@@ -57,8 +56,8 @@ public final class SettingsHelper {
     /**
      * Stores a path property if different from default value.
      */
-    public static void setProperty(@NonNull Properties props, @NonNull String key, @NonNull Path value,
-            @NonNull Path defaultValue) {
+    public static void setProperty(Properties props, String key, Path value,
+            Path defaultValue) {
         if (!value.equals(defaultValue)) {
             props.setProperty(key, value.toString());
         }
@@ -67,7 +66,7 @@ public final class SettingsHelper {
     /**
      * Reads a boolean property with fallback default.
      */
-    public static boolean getBoolean(@NonNull Properties props, @NonNull String key, boolean defaultValue) {
+    public static boolean getBoolean(Properties props, String key, boolean defaultValue) {
         String value = props.getProperty(key);
         if (value == null) {
             return defaultValue;
@@ -78,7 +77,7 @@ public final class SettingsHelper {
     /**
      * Reads an integer property with fallback default.
      */
-    public static int getInt(@NonNull Properties props, @NonNull String key, int defaultValue) {
+    public static int getInt(Properties props, String key, int defaultValue) {
         String value = props.getProperty(key);
         if (value == null) {
             return defaultValue;
@@ -95,7 +94,7 @@ public final class SettingsHelper {
     /**
      * Reads a float property with fallback default.
      */
-    public static float getFloat(@NonNull Properties props, @NonNull String key, float defaultValue) {
+    public static float getFloat(Properties props, String key, float defaultValue) {
         String value = props.getProperty(key);
         if (value == null) {
             return defaultValue;
@@ -112,7 +111,7 @@ public final class SettingsHelper {
     /**
      * Reads a path property with fallback default.
      */
-    public static @NonNull Path getPath(@NonNull Properties props, @NonNull String key, @NonNull Path defaultValue) {
+    public static Path getPath(Properties props, String key, Path defaultValue) {
         String value = props.getProperty(key);
         if (value == null || value.isEmpty()) {
             return defaultValue;

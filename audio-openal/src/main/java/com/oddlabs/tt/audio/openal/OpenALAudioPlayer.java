@@ -3,7 +3,6 @@ package com.oddlabs.tt.audio.openal;
 import com.oddlabs.tt.audio.AbstractAudioPlayer;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -11,8 +10,8 @@ import org.jspecify.annotations.Nullable;
  */
 final class OpenALAudioPlayer extends AbstractAudioPlayer<OpenALManager, OpenALAudioSource> {
 
-    public OpenALAudioPlayer(@NonNull OpenALManager manager, @Nullable OpenALAudioSource source,
-            float x, float y, float z, @NonNull AudioParameters params) {
+    public OpenALAudioPlayer(OpenALManager manager, @Nullable OpenALAudioSource source,
+            float x, float y, float z, AudioParameters params) {
         super(manager, source, x, y, z, params);
         if (this.source == null) {
             return;

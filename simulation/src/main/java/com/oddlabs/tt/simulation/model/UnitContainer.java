@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public abstract class UnitContainer extends SupplyContainer {
@@ -8,9 +7,9 @@ public abstract class UnitContainer extends SupplyContainer {
         super(capacity);
     }
 
-    public abstract void enter(@NonNull Unit unit);
+    public abstract void enter(Unit unit);
 
-    public abstract boolean canEnter(@NonNull Unit unit);
+    public abstract boolean canEnter(Unit unit);
 
     public abstract @Nullable Unit exit();
 

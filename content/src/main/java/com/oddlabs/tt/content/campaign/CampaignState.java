@@ -2,7 +2,6 @@ package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -24,7 +23,7 @@ public final class CampaignState implements Serializable {
     public static final int ISLAND_SEMI_AVAILABLE = 4;
     public static final int ISLAND_HIDDEN = 5;
 
-    private final int @NonNull [] island_states;
+    private final int[] island_states;
 
     private int prev_island;
     private int current_island = -1;
@@ -36,12 +35,12 @@ public final class CampaignState implements Serializable {
     private boolean has_magic0 = false;
     private boolean has_magic1 = false;
 
-    private @NonNull String name;
+    private String name;
     private long date;
     private int race;
     private int difficulty;
 
-    public CampaignState(int @NonNull [] initial_states) {
+    public CampaignState(int[] initial_states) {
         island_states = new int[initial_states.length];
         System.arraycopy(initial_states, 0, island_states, 0, island_states.length);
         name = "";
@@ -134,11 +133,11 @@ public final class CampaignState implements Serializable {
         return has_magic1;
     }
 
-    public @NonNull String getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(@NonNull String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -150,19 +149,19 @@ public final class CampaignState implements Serializable {
         this.date = date;
     }
 
-    public void setRace(@NonNull Race race) {
+    public void setRace(Race race) {
         this.race = (race == Race.VIKINGS) ? RACE_VIKINGS : RACE_NATIVES;
     }
 
-    public @NonNull Race getRace() {
+    public Race getRace() {
         return (this.race == RACE_VIKINGS) ? Race.VIKINGS : Race.NATIVES;
     }
 
-    public void setDifficulty(@NonNull Difficulty difficulty) {
+    public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty.getCampaignValue();
     }
 
-    public @NonNull Difficulty getDifficulty() {
+    public Difficulty getDifficulty() {
         return Difficulty.fromCampaignValue(difficulty);
     }
 }

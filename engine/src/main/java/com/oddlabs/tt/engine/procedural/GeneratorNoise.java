@@ -6,7 +6,6 @@ import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.procedural.Perlin;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -23,7 +22,7 @@ public final class GeneratorNoise extends TextureGenerator {
     }
 
     @Override
-    public @NonNull Texture @NonNull [] generate() {
+    public Texture[] generate() {
         Perlin perlin = new Perlin(size, size, 4, 4, 0.5f, 4, seed, Perlin.Interpolation.SMOOTH,
                 Perlin.Summation.NORMAL);
         Layer layer = perlin.toLayer();

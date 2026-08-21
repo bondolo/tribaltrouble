@@ -3,7 +3,6 @@ package com.oddlabs.tt.audio.openal;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALC10;
@@ -25,7 +24,7 @@ import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
  */
 final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements Audio {
     static final class Buffers extends NativeState {
-        private final @NonNull IntBuffer al_buffers;
+        private final IntBuffer al_buffers;
 
         Buffers(int num_buffers) {
             al_buffers = BufferUtils.createIntBuffer(num_buffers);
@@ -44,11 +43,11 @@ final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements A
         }
     }
 
-    OpenALAudio(@NonNull OpenALManager manager, int num_buffers) {
+    OpenALAudio(OpenALManager manager, int num_buffers) {
         super(new Buffers(num_buffers), manager::enqueueCleanup);
     }
 
-    OpenALAudio(@NonNull OpenALManager manager, @NonNull URL file) throws IOException {
+    OpenALAudio(OpenALManager manager, URL file) throws IOException {
         this(manager, 1);
         try {
             Wave wave = new Wave(file);
@@ -59,7 +58,7 @@ final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements A
         }
     }
 
-    private static void loadOGG(@NonNull URL file, int bufferId) throws IOException {
+    private static void loadOGG(URL file, int bufferId) throws IOException {
         ByteBuffer vorbisData = Utils.ioResourceToByteBuffer(file);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer channels = stack.mallocInt(1);
@@ -81,7 +80,6 @@ final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements A
         return state.al_buffers.remaining();
     }
 
-    @NonNull
     IntBuffer getBuffers() {
         return state.al_buffers.duplicate().position(0);
     }

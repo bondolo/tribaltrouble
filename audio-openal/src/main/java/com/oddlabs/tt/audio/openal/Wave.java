@@ -1,6 +1,5 @@
 package com.oddlabs.tt.audio.openal;
 
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.AL10;
 
 import javax.sound.sampled.AudioFormat;
@@ -16,11 +15,11 @@ import java.nio.ShortBuffer;
 
 /** PCM audio samples */
 public final class Wave {
-    private final @NonNull ByteBuffer data;
+    private final ByteBuffer data;
     private final int format;
     private final int sample_rate;
 
-    public Wave(@NonNull URL file) throws UnsupportedAudioFileException, IOException {
+    public Wave(URL file) throws UnsupportedAudioFileException, IOException {
         try (AudioInputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(file.openStream()))) {
             AudioFormat audio_format = ais.getFormat();
             format = getFormat(audio_format.getChannels(), audio_format.getSampleSizeInBits());
@@ -39,7 +38,7 @@ public final class Wave {
         }
     }
 
-    public Wave(@NonNull ByteBuffer data, int channels, int bitrate, int sample_rate) {
+    public Wave(ByteBuffer data, int channels, int bitrate, int sample_rate) {
         this.data = data;
         this.sample_rate = sample_rate;
         format = getFormat(channels, bitrate);
@@ -60,7 +59,7 @@ public final class Wave {
         }
     }
 
-    private @NonNull ByteBuffer directWaveOrder(byte @NonNull [] buffer, int bits) {
+    private ByteBuffer directWaveOrder(byte[] buffer, int bits) {
         ByteBuffer src = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN);
         ByteBuffer dest = ByteBuffer.allocateDirect(buffer.length).order(ByteOrder.nativeOrder());
 

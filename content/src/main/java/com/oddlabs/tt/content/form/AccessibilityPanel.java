@@ -21,7 +21,6 @@ import com.oddlabs.tt.gui.TitledBorderGroup;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
@@ -34,7 +33,7 @@ public final class AccessibilityPanel extends Panel {
     private static final int MAX_VALUE = 20;
     private static final int GROUP_WIDTH = 450;
 
-    public AccessibilityPanel(@NonNull GUIRoot gui_root) {
+    public AccessibilityPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("accessibility_caption"));
 
         AccessibilitySettings accessibility = Renderer.getRenderer().getSettings().accessibility;
@@ -195,18 +194,18 @@ public final class AccessibilityPanel extends Panel {
 
         // Colour Preview Box
         class ColourBox extends GUIObject {
-            private Color.@NonNull Linear colour = Color.Linear.WHITE;
+            private Color.Linear colour = Color.Linear.WHITE;
 
             ColourBox() {
                 setDim(20, 20);
             }
 
             @Override
-            protected void renderGeometry(@NonNull GUIRenderer renderer) {
+            protected void renderGeometry(GUIRenderer renderer) {
                 renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), colour);
             }
 
-            void setColour(@NonNull Color c) {
+            void setColour(Color c) {
                 this.colour = c instanceof Color.Linear linear ? linear : new Color.Linear(c);
             }
         }

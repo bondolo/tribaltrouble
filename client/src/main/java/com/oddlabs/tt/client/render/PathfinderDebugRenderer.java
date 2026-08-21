@@ -9,7 +9,6 @@ import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.RegionNode;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -31,7 +30,7 @@ public final class PathfinderDebugRenderer {
      * Renders the Bezier curve for a {@link PathTracker}s current path in white,
      * the grid path in red, and the region path in blue.
      */
-    public static void renderPathTracker(@NonNull PathTracker tracker) {
+    public static void renderPathTracker(PathTracker tracker) {
         HeightMap heightmap = tracker.getUnitGrid().getHeightMap();
         renderBezierPath(tracker.getBezierPath(), heightmap);
 
@@ -73,7 +72,7 @@ public final class PathfinderDebugRenderer {
     /**
      * Debug visualization shows the curve as a white line (enable with UNIT_GRID mode).
      */
-    private static void renderBezierPath(@NonNull BezierPath bezierPath, @NonNull HeightMap heightmap) {
+    private static void renderBezierPath(BezierPath bezierPath, HeightMap heightmap) {
         float prev_x = 0;
         float prev_y = 0;
         float prev_z = 0;
@@ -96,7 +95,7 @@ public final class PathfinderDebugRenderer {
     /**
      * Renders occupied grid cells as yellow crosses for the area around (x, y).
      */
-    public static void renderUnitGrid(@NonNull UnitGrid unitGrid, float x, float y) {
+    public static void renderUnitGrid(UnitGrid unitGrid, float x, float y) {
         HeightMap heightmap = unitGrid.getHeightMap();
         final int RADIUS = 30;
         final float OFFSET = 2f;
@@ -126,7 +125,7 @@ public final class PathfinderDebugRenderer {
      * Renders the region map (colour-coded by region identity) and region connectivity
      * graph for the area around (x, y).
      */
-    public static void renderRegions(@NonNull UnitGrid unitGrid, float x, float y) {
+    public static void renderRegions(UnitGrid unitGrid, float x, float y) {
         HeightMap heightmap = unitGrid.getHeightMap();
         final int RADIUS = 30;
         int center_x = UnitGrid.toGridCoordinate(x);
@@ -159,7 +158,7 @@ public final class PathfinderDebugRenderer {
         }
     }
 
-    private static void renderRegionConnections(@NonNull Region region, @NonNull HeightMap heightmap) {
+    private static void renderRegionConnections(Region region, HeightMap heightmap) {
         if (region.isVisited()) return;
         region.markVisited();
         for (Region neighbour : region.getNeighbours()) {
@@ -174,7 +173,7 @@ public final class PathfinderDebugRenderer {
         }
     }
 
-    private static void resetRegionConnectionVisited(@NonNull Region region) {
+    private static void resetRegionConnectionVisited(Region region) {
         if (!region.isVisited()) return;
         region.clearVisited();
         for (Region neighbour : region.getNeighbours()) {

@@ -2,10 +2,9 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public class HorizButton extends ButtonObject {
-    public HorizButton(@NonNull String caption, int width) {
+    public HorizButton(String caption, int width) {
         super(Skin.getSkin().getButtonFont());
         setDim(width, Skin.getSkin().getHorizButtonPressed().getHeight());
         Label label = new Label(caption, getFont());
@@ -15,7 +14,7 @@ public class HorizButton extends ButtonObject {
     }
 
     @Override
-    protected final void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected final void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isPressed() && isHovered()

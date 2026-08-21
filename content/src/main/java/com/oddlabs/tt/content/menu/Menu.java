@@ -61,7 +61,6 @@ import com.oddlabs.tt.simulation.player.DefaultPlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -91,12 +90,12 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.menu.MainMenu");
 
-    public static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    public static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull NetworkSelector network;
-    protected final @NonNull AudioManager audioManager;
+    private final NetworkSelector network;
+    protected final AudioManager audioManager;
 
     private @Nullable Form current_menu;
     private boolean current_menu_centered;
@@ -104,8 +103,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private @Nullable GUIImage overlay;
     private @Nullable GUIImage logo;
 
-    protected Menu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Camera camera,
-            @NonNull AudioManager audioManager) {
+    protected Menu(NetworkSelector network, GUIRoot gui_root, Camera camera,
+            AudioManager audioManager) {
         super(gui_root, camera);
         this.network = network;
         this.audioManager = audioManager;
@@ -113,11 +112,11 @@ public abstract class Menu extends CameraDelegate<Camera> {
         setFocusCycle(true);
     }
 
-    protected final @NonNull NetworkSelector getNetwork() {
+    protected final NetworkSelector getNetwork() {
         return network;
     }
 
-    public final @NonNull AudioManager getAudioManager() {
+    public final AudioManager getAudioManager() {
         return audioManager;
     }
 
@@ -145,7 +144,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         addOptionsButton(() -> new OptionsMenu(getGUIRoot(), audioManager));
     }
 
-    final void addOptionsButton(@NonNull FormFactory<?> factory) {
+    final void addOptionsButton(FormFactory<?> factory) {
         MenuButton options = new MenuButton(i18n("options"), COLOR_NORMAL, COLOR_ACTIVE);
         options.addMouseClickListener((_, _, _, _) -> setMenuCentered(factory.create()));
         addChild(options);
@@ -167,7 +166,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if ((event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) && event.hasActions()) {
             if (event.consumeAction(GameAction.UI_CANCEL)) {
                 event.consume(); // Menu usually swallows escape
@@ -263,13 +262,13 @@ public abstract class Menu extends CameraDelegate<Camera> {
     public void mouseScrolled(int amount) {
     }
 
-    public final void setMenuCentered(@NonNull Form menu) {
+    public final void setMenuCentered(Form menu) {
         setMenu(menu);
         menu.centerPos();
         current_menu_centered = true;
     }
 
-    public final void setMenu(@NonNull Form menu) {
+    public final void setMenu(Form menu) {
         if (current_menu != null)
             current_menu.remove();
         disableButtons(true);
@@ -294,7 +293,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         resume.addMouseClickListener((_, _, _, _) -> pop());
     }
 
-    public static void completeGameSetupHack(@NonNull WorldViewer world_viewer) {
+    public static void completeGameSetupHack(WorldViewer world_viewer) {
         world_viewer.getGUIRoot().pushDelegate(world_viewer.getDelegate());
         world_viewer.getAudioManager().setMusic(AssetRegistry.getInstance().getMusic(world_viewer.getLocalPlayer()
                 .getPlayerInfo().getRace()), 10f);
@@ -302,14 +301,14 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     public static final class DefaultWorldInitAction implements WorldInitAction {
         @Override
-        public void run(@NonNull WorldViewer viewer) {
+        public void run(WorldViewer viewer) {
             new GameOverTrigger(viewer);
             completeGameSetupHack(viewer);
         }
     }
 
-    public final @NonNull GameNetwork joinGame(@NonNull NetworkSelector network, GUI gui, int host_id,
-            int gamespeed, @NonNull String map_code, MultiplayerLobby owner, @NonNull InGameInfo ingame_info,
+    public final GameNetwork joinGame(NetworkSelector network, GUI gui, int host_id,
+            int gamespeed, String map_code, MultiplayerLobby owner, InGameInfo ingame_info,
             int max_unit_count) {
         GUIRoot gui_root = getGUIRoot();
         WorldParameters world_params = new WorldParameters(gamespeed, map_code, Player.INITIAL_UNIT_COUNT,
@@ -327,10 +326,10 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            MultiplayerLobby owner, @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info,
-            WorldInitAction init_action, Game game, @NonNull IslandConfig islandConfig, String[] ai_names,
-            @NonNull AudioManager audioManager) {
+    public static GameNetwork startNewGame(NetworkSelector network, GUIRoot gui_root,
+            MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
+            WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names,
+            AudioManager audioManager) {
         boolean multiplayer = ingame_info.isMultiplayer();
         WorldGenerator generator = new IslandGenerator(islandConfig,
                 Renderer.getRenderer().getSettings().getTexelsPerGridUnit());
@@ -352,13 +351,13 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static void startMenu(@NonNull NetworkSelector network, @NonNull GUI gui,
-            @NonNull AudioManager audioManager) {
+    public static void startMenu(NetworkSelector network, GUI gui,
+            AudioManager audioManager) {
         setupMainMenu(network, gui, audioManager, false);
     }
 
-    public static @Nullable Runnable setupMainMenu(final @NonNull NetworkSelector network, @NonNull GUI gui,
-            @NonNull AudioManager audioManager,
+    public static @Nullable Runnable setupMainMenu(final NetworkSelector network, GUI gui,
+            AudioManager audioManager,
             final boolean first_progress) {
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
@@ -370,9 +369,9 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 first_progress, generator, audioManager), first_progress);
     }
 
-    private static @NonNull UIRenderer finishMainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            boolean first_progress, @NonNull WorldGenerator generator,
-            @NonNull AudioManager audioManager) {
+    private static UIRenderer finishMainMenu(NetworkSelector network, GUIRoot gui_root,
+            boolean first_progress, WorldGenerator generator,
+            AudioManager audioManager) {
         AnimationManager.freezeTime();
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
@@ -416,7 +415,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return renderer;
     }
 
-    public static boolean initNetwork(@NonNull NetworkSelector network) {
+    public static boolean initNetwork(NetworkSelector network) {
         boolean is_network_created;
         try {
             network.initSelector();

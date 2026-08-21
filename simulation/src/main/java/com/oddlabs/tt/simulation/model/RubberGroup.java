@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -16,10 +15,10 @@ public final class RubberGroup {
 
     private static final float SPAWN_TIME = 2f;
 
-    private final @NonNull World world;
+    private final World world;
     private final List<Supply> supplies = new ArrayList<>();
 
-    public RubberGroup(@NonNull World world) {
+    public RubberGroup(World world) {
         this.world = world;
         int[] group_position = getGroupPosition();
         if (group_position != null) {

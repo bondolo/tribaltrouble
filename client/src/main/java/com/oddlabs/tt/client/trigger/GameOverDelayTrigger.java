@@ -5,15 +5,14 @@ import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 public final class GameOverDelayTrigger implements Updatable<TimerAnimation> {
 
-    private final @NonNull WorldViewer viewer;
-    private final @NonNull Camera camera;
-    private final @NonNull String label_str;
+    private final WorldViewer viewer;
+    private final Camera camera;
+    private final String label_str;
 
-    public GameOverDelayTrigger(@NonNull WorldViewer viewer, @NonNull Camera camera, @NonNull String label_str) {
+    public GameOverDelayTrigger(WorldViewer viewer, Camera camera, String label_str) {
         this.viewer = viewer;
         this.camera = camera;
         this.label_str = label_str;
@@ -22,7 +21,7 @@ public final class GameOverDelayTrigger implements Updatable<TimerAnimation> {
     }
 
     @Override
-    public void update(@NonNull TimerAnimation anim) {
+    public void update(TimerAnimation anim) {
         anim.stop();
         viewer.getGUIRoot().pushDelegate(new GameStatsDelegate(viewer, camera, label_str));
     }

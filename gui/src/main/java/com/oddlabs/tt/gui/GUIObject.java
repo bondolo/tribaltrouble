@@ -12,10 +12,8 @@ import com.oddlabs.tt.gui.event.MouseWheelListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -64,7 +62,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
 
     private @Nullable GUIObject next_hover = null;
 
-    protected final Set<@NonNull EventListener> listeners = new CopyOnWriteArraySet<>();
+    protected final Set<EventListener> listeners = new CopyOnWriteArraySet<>();
 
     /**
      * If true then object has been placed in the layout
@@ -73,21 +71,21 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
     /**
      * placement "gravity"" for this control
      */
-    private @NonNull Origin origin = Origin.AT_START;
+    private Origin origin = Origin.AT_START;
 
-    private final @Nullable Supplier<@NonNull String> tool_tip;
+    private final @Nullable Supplier<String> tool_tip;
     private @Nullable String cached_tool_tip = null;
 
     public GUIObject() {
         this(null);
     }
 
-    public GUIObject(@Nullable Supplier<@NonNull String> tool_tip) {
+    public GUIObject(@Nullable Supplier<String> tool_tip) {
         this.tool_tip = tool_tip;
     }
 
     @Override
-    protected @NonNull GUIObject self() {
+    protected GUIObject self() {
         return this;
     }
 
@@ -101,7 +99,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
     }
 
     @Override
-    public void appendToolTip(@NonNull ToolTipBox tool_tip_box) {
+    public void appendToolTip(ToolTipBox tool_tip_box) {
         getToolTipText().ifPresent(tool_tip_box::append);
     }
 
@@ -146,18 +144,18 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         place(origin);
     }
 
-    public final void place(@NonNull Origin origin) {
+    public final void place(Origin origin) {
         assert !placed : "Object already placed";
         this.origin = origin;
         setPos(0, 0);
         placed = true;
     }
 
-    public void place(@NonNull GUIObject neighbor, @NonNull Placement direction) {
+    public void place(GUIObject neighbor, Placement direction) {
         place(neighbor, direction, Skin.getSkin().getFormData().objectSpacing());
     }
 
-    public final void place(@NonNull GUIObject neighbor, @NonNull Placement direction, int spacing) {
+    public final void place(GUIObject neighbor, Placement direction, int spacing) {
         assert !placed : "Object already placed";
         int new_x = getXFromDirection(direction, spacing, neighbor.getX(), neighbor.getWidth());
         int new_y = getYFromDirection(direction, spacing, neighbor.getY(), neighbor.getHeight());
@@ -167,7 +165,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         placed = true;
     }
 
-    private int getXFromDirection(@NonNull Placement direction, int spacing, int neighbour_x, int neighbour_width) {
+    private int getXFromDirection(Placement direction, int spacing, int neighbour_x, int neighbour_width) {
         return switch (direction) {
             case BOTTOM_LEFT, TOP_LEFT -> neighbour_x;
             case BOTTOM_MID, TOP_MID -> neighbour_x + (neighbour_width - getWidth()) / 2;
@@ -177,7 +175,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         };
     }
 
-    private int getYFromDirection(@NonNull Placement direction, int spacing, int neighbour_y, int neighbour_height) {
+    private int getYFromDirection(Placement direction, int spacing, int neighbour_y, int neighbour_height) {
         return switch (direction) {
             case BOTTOM_LEFT, BOTTOM_MID, BOTTOM_RIGHT -> neighbour_y - getHeight() - spacing;
             case TOP_LEFT, TOP_RIGHT, TOP_MID -> neighbour_y + neighbour_height + spacing;
@@ -187,7 +185,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         };
     }
 
-    public final @NonNull Origin getOrigin() {
+    public final Origin getOrigin() {
         assert placed : "Object " + this + " compiled before being placed";
         return origin;
     }
@@ -282,12 +280,12 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
     }
 
     @Override
-    public void addChild(@NonNull GUIObject child) {
+    public void addChild(GUIObject child) {
         super.addChild(child);
     }
 
     @Override
-    public final void removeChild(@NonNull GUIObject child) {
+    public final void removeChild(GUIObject child) {
         GUIObject current;
         if (child == focused_child) {
             focused_child = null;
@@ -302,7 +300,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         super.removeChild(child);
     }
 
-    private void switchFocusToFirstChild(@NonNull FocusDirection dirEnum, boolean bubble) {
+    private void switchFocusToFirstChild(FocusDirection dirEnum, boolean bubble) {
         GUIObject bestCandidate = findNextFocusable(null, dirEnum);
 
         if (bestCandidate != null) {
@@ -314,7 +312,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    private void switchFocusToNextChild(@NonNull FocusDirection dirEnum) {
+    private void switchFocusToNextChild(FocusDirection dirEnum) {
         GUIObject bestCandidate = findNextFocusable(focused_child, dirEnum);
 
         if (bestCandidate != null) {
@@ -341,7 +339,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    private @Nullable GUIObject findNextFocusable(@Nullable GUIObject current, @NonNull FocusDirection dir) {
+    private @Nullable GUIObject findNextFocusable(@Nullable GUIObject current, FocusDirection dir) {
         GUIObject bestCandidate = null;
         GUIObject child = getFirstChild();
         while (child != null) {
@@ -357,8 +355,8 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         return bestCandidate;
     }
 
-    private boolean isBetterCandidate(@Nullable GUIObject current, @NonNull GUIObject candidate,
-            @Nullable GUIObject bestSoFar, @NonNull FocusDirection dir) {
+    private boolean isBetterCandidate(@Nullable GUIObject current, GUIObject candidate,
+            @Nullable GUIObject bestSoFar, FocusDirection dir) {
         if (current == candidate) return false;
 
         return switch (dir) {
@@ -382,8 +380,8 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         };
     }
 
-    private boolean isBetterDirectionalCandidate(@Nullable GUIObject current, @NonNull GUIObject candidate,
-            @Nullable GUIObject bestSoFar, @NonNull FocusDirection dir) {
+    private boolean isBetterDirectionalCandidate(@Nullable GUIObject current, GUIObject candidate,
+            @Nullable GUIObject bestSoFar, FocusDirection dir) {
         if (current == null) {
             //  default to reading order first element.
             return isBetterCandidate(null, candidate, bestSoFar, FocusDirection.FORWARD);
@@ -419,7 +417,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
      *
      * @return negative if a comes before b, positive if a comes after b, 0 if equal.
      */
-    private int compareSpatial(@NonNull GUIObject a, @NonNull GUIObject b) {
+    private int compareSpatial(GUIObject a, GUIObject b) {
         // Primary Sort: Y (Descending) - because Y grows UP in this system (0 is bottom).
         // Higher Y means "above", which comes first in reading order.
         int yDiff = b.getY() - a.getY();
@@ -432,15 +430,15 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         return Integer.compare(a.getX(), b.getX());
     }
 
-    private static void switchFocusToObject(@NonNull GUIObject obj, @NonNull FocusDirection dir) {
+    private static void switchFocusToObject(GUIObject obj, FocusDirection dir) {
         obj.setFocus(dir);
     }
 
-    protected final void switchFocus(@NonNull FocusDirection direction) {
+    protected final void switchFocus(FocusDirection direction) {
         switchFocus(direction, true);
     }
 
-    protected final void switchFocus(@NonNull FocusDirection direction, boolean bubble) {
+    protected final void switchFocus(FocusDirection direction, boolean bubble) {
         // find any GUIObject to focus
         if (focused_child == null) {
             switchFocusToFirstChild(direction, bubble);
@@ -491,7 +489,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         setFocus(FocusDirection.FORWARD);
     }
 
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         GUIRoot gui_root = getParentGUIRoot();
         // Make sure we are linked to the root
         if (gui_root == null)
@@ -519,7 +517,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
     protected void focusNotify(boolean focus) {
     }
 
-    private boolean modalBlocked(@NonNull GUIRoot gui_root) {
+    private boolean modalBlocked(GUIRoot gui_root) {
         ModalDelegate modal_delegate = gui_root.getModalDelegate();
         return modal_delegate != null && !modalRelative(modal_delegate);
     }
@@ -529,7 +527,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
                 (getParent() != null && (getParent() == modal_delegate || getParent().modalRelative(modal_delegate)));
     }
 
-    protected @NonNull CursorType getCursorType() {
+    protected CursorType getCursorType() {
         return CursorType.NORMAL;
     }
 
@@ -571,7 +569,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
             parent.mouseScrolledHorizontallyAll(amount);
     }
 
-    public final void mouseDraggedAll(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y,
+    public final void mouseDraggedAll(MouseButton button, int x, int y, int relative_x, int relative_y,
             int absolute_x, int absolute_y) {
         if (disabled)
             return;
@@ -583,7 +581,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    protected void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y,
+    protected void mouseDragged(MouseButton button, int x, int y, int relative_x, int relative_y,
             int absolute_x, int absolute_y) {
         // do not send this to parents, because it would move the form if unstopped
     }
@@ -638,7 +636,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
             parent.mouseEnteredAll();
     }
 
-    public final void mouseClickedAll(@NonNull MouseButton button, int x, int y, int clicks) {
+    public final void mouseClickedAll(MouseButton button, int x, int y, int clicks) {
         if (disabled)
             return;
         mouseClicked(button, x, y, clicks);
@@ -649,13 +647,13 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         GUIObject parent = getParent();
         if (parent != null)
             parent.mouseClickedAll(button, x, y, clicks);
     }
 
-    public final void mouseReleasedAll(@NonNull MouseButton button, int x, int y) {
+    public final void mouseReleasedAll(MouseButton button, int x, int y) {
         if (disabled)
             return;
         mouseReleased(button, x, y);
@@ -666,13 +664,13 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    protected void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    protected void mouseReleased(MouseButton button, int x, int y) {
         GUIObject parent = getParent();
         if (parent != null)
             parent.mouseReleasedAll(button, x, y);
     }
 
-    public final void mousePressedAll(@NonNull MouseButton button, int x, int y) {
+    public final void mousePressedAll(MouseButton button, int x, int y) {
         if (disabled)
             return;
         mousePressed(button, x, y);
@@ -683,13 +681,13 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    protected void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected void mousePressed(MouseButton button, int x, int y) {
         GUIObject parent = getParent();
         if (parent != null)
             parent.mousePressedAll(button, x, y);
     }
 
-    public final void mouseHeldAll(@NonNull MouseButton button, int x, int y) {
+    public final void mouseHeldAll(MouseButton button, int x, int y) {
         if (disabled)
             return;
         mouseHeld(button, x, y);
@@ -700,13 +698,13 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    protected void mouseHeld(@NonNull MouseButton button, int x, int y) {
+    protected void mouseHeld(MouseButton button, int x, int y) {
         GUIObject parent = getParent();
         if (parent != null)
             parent.mouseHeldAll(button, x, y);
     }
 
-    public final void handleInputAll(@NonNull InputEvent event) {
+    public final void handleInputAll(InputEvent event) {
         if (event.isConsumed()) return;
         handleInput(event);
         if (event.isConsumed()) return;
@@ -728,7 +726,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         return true;
     }
 
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (shouldHandleActivate() && event.consumeAction(GameAction.UI_ACTIVATE)) {
             if (event.getPhase() == InputPhase.PRESSED) {
                 mousePressedAll(MouseButton.LEFT, 0, 0);
@@ -740,8 +738,8 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
         }
     }
 
-    public final void addMouseClickListener(@NonNull MouseClickListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public final void addMouseClickListener(MouseClickListener listener) {
+        listeners.add(listener);
     }
 
     /**
@@ -749,27 +747,27 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
      *
      * @apiNote Your listener will also receive {@link MouseClickListener#mouseClicked} events
      */
-    public final void addMouseButtonListener(@NonNull MouseButtonListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public final void addMouseButtonListener(MouseButtonListener listener) {
+        listeners.add(listener);
     }
 
-    public final void addMouseMotionListener(@NonNull MouseMotionListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public final void addMouseMotionListener(MouseMotionListener listener) {
+        listeners.add(listener);
     }
 
-    public final void addMouseWheelListener(@NonNull MouseWheelListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public final void addMouseWheelListener(MouseWheelListener listener) {
+        listeners.add(listener);
     }
 
-    public final void addMouseHorizontalWheelListener(@NonNull MouseHorizontalWheelListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public final void addMouseHorizontalWheelListener(MouseHorizontalWheelListener listener) {
+        listeners.add(listener);
     }
 
-    public final void addInputListener(@NonNull InputListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public final void addInputListener(InputListener listener) {
+        listeners.add(listener);
     }
 
-    public final void addFocusListener(@NonNull FocusListener listener) {
-        listeners.add(Objects.requireNonNull(listener, "listener"));
+    public final void addFocusListener(FocusListener listener) {
+        listeners.add(listener);
     }
 }

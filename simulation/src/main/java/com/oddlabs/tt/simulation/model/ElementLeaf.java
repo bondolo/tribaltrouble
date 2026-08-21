@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class ElementLeaf<T extends Element<T>> extends AbstractElementNode<T> {
@@ -13,7 +12,7 @@ public final class ElementLeaf<T extends Element<T>> extends AbstractElementNode
     }
 
     @Override
-    protected @NonNull AbstractElementNode<T> doInsertElement(@NonNull T model) {
+    protected AbstractElementNode<T> doInsertElement(T model) {
         incElementCount();
         return addElement(model);
     }

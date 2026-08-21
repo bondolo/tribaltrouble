@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -28,7 +27,7 @@ public final class Sprite {
     public static final int TEXTURE_BUMP = 2;
     private static final String GENERATOR_STRING = "Generator:";
 
-    public final Texture @NonNull [] @NonNull [] textures;
+    public final Texture[][] textures;
     private final int num_triangles;
     private final int num_vertices;
     private final float @Nullable [] clear_color;
@@ -39,7 +38,7 @@ public final class Sprite {
     public final boolean modulate_color;
     private final float @Nullable [] cpw_array;
     private final int @Nullable [] animation_length_array;
-    private final AnimationInfo.@NonNull AnimationType @Nullable [] type_array;
+    private final AnimationInfo.AnimationType @Nullable [] type_array;
     public final @Nullable Texture respond_texture;
     public final int indices_offset;
     public final int texcoords_offset;
@@ -65,12 +64,12 @@ public final class Sprite {
         this.respond_texture = null;
     }
 
-    public Sprite(@NonNull SpriteInfo sprite_info, AnimationInfo @NonNull [] animations, boolean alpha, boolean lighted,
+    public Sprite(SpriteInfo sprite_info, AnimationInfo[] animations, boolean alpha, boolean lighted,
             boolean culled, boolean modulate_color, boolean max_alpha, int mipmap_cutoff, BoundingBox[] bounds,
-            float @Nullable [] cpw_array, AnimationInfo.AnimationType @NonNull [] type_array,
+            float @Nullable [] cpw_array, AnimationInfo.AnimationType[] type_array,
             int @Nullable [] animation_length_array,
-            @NonNull ShortBuffer all_indices, @NonNull FloatBuffer all_texcoords,
-            @NonNull FloatBuffer all_vertices_and_normals) {
+            ShortBuffer all_indices, FloatBuffer all_texcoords,
+            FloatBuffer all_vertices_and_normals) {
         this.culled = culled;
         this.alpha = alpha;
         this.lighted = lighted;
@@ -133,7 +132,7 @@ public final class Sprite {
         return num_triangles;
     }
 
-    private void expandAnimation(AnimationInfo @NonNull [] animations, float[][][] tmp_vertices,
+    private void expandAnimation(AnimationInfo[] animations, float[][][] tmp_vertices,
             float[][][] tmp_normals, float[] initial_pose_vertices, float[] initial_pose_normals, byte[][] skin_names,
             float[][] skin_weights, BoundingBox[] bounding_boxes) {
         int num_bones = animations[0].getFrames()[0].length / 12;
@@ -225,7 +224,7 @@ public final class Sprite {
         }
     }
 
-    private static Texture @NonNull [] getTextureForName(@NonNull String texture_name, int color_format,
+    private static Texture[] getTextureForName(String texture_name, int color_format,
             int mipmap_cutoff, boolean max_alpha) {
         if (texture_name.startsWith(GENERATOR_STRING)) {
             String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
@@ -285,7 +284,7 @@ public final class Sprite {
     public record FrameState(int pos1, int norm1, int pos2, int norm2, float tween) {
     }
 
-    public @NonNull FrameState getAnimationState(int animation, float anim_ticks) {
+    public FrameState getAnimationState(int animation, float anim_ticks) {
         if (cpw_array == null) {
             // Static mesh (quad or non-animated)
             int offset = buffer_indices != null && buffer_indices.length > animation ? buffer_indices[animation] / 3

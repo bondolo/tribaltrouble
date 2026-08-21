@@ -17,7 +17,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.content.Languages;
 import com.oddlabs.tt.engine.render.Renderer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +27,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
  * UI panel for selecting the application display language.
  */
 public class LanguagePanel extends Panel {
-    public LanguagePanel(@NonNull GUIRoot gui_root) {
+    public LanguagePanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("language_caption"));
 
         // language
@@ -38,7 +37,7 @@ public class LanguagePanel extends Panel {
         language_group.addChild(language_label);
 
         ColumnInfo[] language_infos = new ColumnInfo[]{new ColumnInfo("", 300)};
-        var language_list_box = new MultiColumnComboBox<@NonNull Locale>(gui_root, language_infos, 200, false);
+        var language_list_box = new MultiColumnComboBox<Locale>(gui_root, language_infos, 200, false);
 
         // Check language logic
         String currentLanguage = Renderer.getRenderer().getSettings().control.language;
@@ -73,7 +72,7 @@ public class LanguagePanel extends Panel {
         language_list_box.selectRow(selectedLanguage);
         language_list_box.addRowListener(new RowListener<>() {
             @Override
-            public void rowDoubleClicked(@NonNull Locale locale) {
+            public void rowDoubleClicked(Locale locale) {
                 Renderer.getRenderer().getSettings().control.language = locale.getVariant().equals("default")
                         ? "default" : locale.toLanguageTag();
                 IO.println("set language:" + Renderer.getRenderer().getSettings().control.language);

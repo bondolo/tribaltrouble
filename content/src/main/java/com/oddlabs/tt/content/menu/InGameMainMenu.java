@@ -12,17 +12,16 @@ import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Main menu overlay displayable during gameplay.
  */
 public final class InGameMainMenu extends Menu {
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
 
     private Group game_infos;
 
-    public InGameMainMenu(@NonNull WorldViewer viewer, @NonNull Camera camera) {
+    public InGameMainMenu(WorldViewer viewer, Camera camera) {
         super(viewer.getNetwork(), viewer.getGUIRoot(), camera, viewer.getAudioManager());
         this.viewer = viewer;
         reload();
@@ -40,7 +39,7 @@ public final class InGameMainMenu extends Menu {
         viewer.setPaused(false);
     }
 
-    public void addAbortButton(@NonNull String abort_text) {
+    public void addAbortButton(String abort_text) {
         MenuButton abort = new MenuButton(abort_text, COLOR_NORMAL, COLOR_ACTIVE);
         addChild(abort);
         abort.addMouseClickListener(new AbortListener());
@@ -69,7 +68,7 @@ public final class InGameMainMenu extends Menu {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (event.consumeAction(GameAction.UI_CANCEL)) {
                 pop();
@@ -81,21 +80,21 @@ public final class InGameMainMenu extends Menu {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         super.renderGeometry(renderer);
         renderBackgroundAlpha(renderer);
     }
 
     private final class AbortListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             setMenuCentered(new QuestionForm(Menu.i18n("end_game_confirm"), new ActionAbortListener()));
         }
     }
 
     private final class ActionAbortListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             viewer.abort();
         }
     }

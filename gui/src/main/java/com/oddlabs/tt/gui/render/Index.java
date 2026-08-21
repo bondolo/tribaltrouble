@@ -3,7 +3,6 @@ package com.oddlabs.tt.gui.render;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Renders a blinking text insertion cursor (caret) for text input fields.
@@ -21,8 +20,8 @@ public final class Index {
         last_reset_time = System.currentTimeMillis();
     }
 
-    public static void renderIndex(@NonNull GUIRenderer renderer, int render_x, int render_y, @NonNull Font font,
-            Color.@NonNull Linear color) {
+    public static void renderIndex(GUIRenderer renderer, int render_x, int render_y, Font font,
+            Color.Linear color) {
         long elapsed = System.currentTimeMillis() - last_reset_time;
         boolean blink_on = (elapsed / BLINK_INTERVAL_MS) % 2 == 0;
         if (blink_on) {

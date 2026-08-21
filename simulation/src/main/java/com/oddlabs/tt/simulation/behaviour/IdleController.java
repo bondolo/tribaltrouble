@@ -5,19 +5,18 @@ import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.AttackScanFilter;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class IdleController extends Controller {
     private static final float MIN_SCAN_DELAY = 1f;
     private static final float MAX_SCAN_DELAY = 2f;
 
-    private final @NonNull Unit unit;
-    private final @NonNull AttackScanFilter scan_filter;
-    private final @NonNull IdleBehaviour idle_behaviour;
+    private final Unit unit;
+    private final AttackScanFilter scan_filter;
+    private final IdleBehaviour idle_behaviour;
     private final boolean can_move;
     private float redecide_time;
 
-    public IdleController(@NonNull Unit unit, @NonNull AttackScanFilter filter, boolean can_move) {
+    public IdleController(Unit unit, AttackScanFilter filter, boolean can_move) {
         super(0);
         this.unit = unit;
         this.scan_filter = filter;
@@ -50,7 +49,7 @@ public final class IdleController extends Controller {
     }
 
     @Override
-    public @NonNull String getKey() {
+    public String getKey() {
         return super.getKey() + unit.getAbilities().hasAbilities(Abilities.BUILD) + unit.getAbilities().hasAbilities(
                 Abilities.MAGIC);
     }

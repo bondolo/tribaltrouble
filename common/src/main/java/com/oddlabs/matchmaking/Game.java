@@ -1,6 +1,5 @@
 package com.oddlabs.matchmaking;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -25,7 +24,7 @@ public final class Game implements Serializable {
     public static final int MIN_LENGTH = 2;
     public static final int MAX_LENGTH = 30;
 
-    private final @NonNull String game_name;
+    private final String game_name;
     private final byte size;
     private final byte terrain;
     private final byte hills;
@@ -39,7 +38,7 @@ public final class Game implements Serializable {
 
     private int database_id;
 
-    public Game(@NonNull String game_name, byte size, byte terrain, byte hills, byte trees, byte supplies,
+    public Game(String game_name, byte size, byte terrain, byte hills, byte trees, byte supplies,
             boolean rated, byte gamespeed, String mapcode, float random_start_pos, int max_unit_count) {
         this.game_name = game_name;
         this.size = size;
@@ -63,7 +62,7 @@ public final class Game implements Serializable {
         return true;
     }
 
-    public @NonNull String getName() {
+    public String getName() {
         return game_name;
     }
 

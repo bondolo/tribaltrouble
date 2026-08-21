@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 import java.util.logging.Logger;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Interactive developer and debug flags for rendering subsystems.
@@ -35,14 +34,14 @@ public final class DebugFlags {
     /**
      * Drawing of debug bounding boxes.
      */
-    private static @NonNull BoundingMode bounding = BoundingMode.NONE;
+    private static BoundingMode bounding = BoundingMode.NONE;
 
     public static void switchBoundingMode() {
         bounding = bounding.next();
         logger.info("Bounding mode: " + bounding);
     }
 
-    public static boolean isBoundsEnabled(@NonNull BoundingMode mode) {
+    public static boolean isBoundsEnabled(BoundingMode mode) {
         return bounding == mode || bounding == BoundingMode.ALL;
     }
 

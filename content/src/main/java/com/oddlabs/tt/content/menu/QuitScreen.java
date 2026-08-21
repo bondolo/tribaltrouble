@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.Renderer;
-import org.jspecify.annotations.NonNull;
 
 public final class QuitScreen extends CameraDelegate<Camera> implements Updatable<TimerAnimation> {
     private static final float DELAY = 5f;
@@ -21,12 +20,12 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
     private static final int overlay_image_height = 600;
     private static final String overlay_texture_name = "/textures/gui/quitscreen";
 
-    private final @NonNull GUIImage overlay;
-    private final @NonNull TimerAnimation delay_timer;
+    private final GUIImage overlay;
+    private final TimerAnimation delay_timer;
     private boolean key_pressed = false;
     private boolean time_out = false;
 
-    public QuitScreen(@NonNull GUIRoot gui_root, Camera camera) {
+    public QuitScreen(GUIRoot gui_root, Camera camera) {
         super(gui_root, camera);
         this.delay_timer = new TimerAnimation(gui_root.getAnimationManager(), this, DELAY);
         setCanFocus(true);
@@ -51,7 +50,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
     }
 
     @Override
-    public void update(@NonNull TimerAnimation anim) {
+    public void update(TimerAnimation anim) {
         delay_timer.stop();
         time_out = true;
         quit();
@@ -63,7 +62,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             key_pressed = true;
             quit();
@@ -73,7 +72,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
     }
 
     @Override
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         key_pressed = true;
         quit();
     }

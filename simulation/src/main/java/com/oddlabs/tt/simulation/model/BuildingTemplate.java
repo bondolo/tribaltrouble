@@ -1,20 +1,19 @@
 package com.oddlabs.tt.simulation.model;
 
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Template defining the static properties, costs, and visual representations of a building type.
  */
 public final class BuildingTemplate extends Template {
-    private final @NonNull BuildingType building_type;
+    private final BuildingType building_type;
     private final int placing_size;
     private final float smoke_radius;
     private final float smoke_height;
     private final int num_fragments;
-    private final @NonNull BoundingBox @NonNull [] built_bounds;
-    private final @NonNull BoundingBox @NonNull [] halfbuilt_bounds;
-    private final @NonNull BoundingBox @NonNull [] start_bounds;
+    private final BoundingBox[] built_bounds;
+    private final BoundingBox[] halfbuilt_bounds;
+    private final BoundingBox[] start_bounds;
     private final int max_hit_points;
     private final UnitContainerFactory unit_container_factory;
     private final float mount_offset;
@@ -24,30 +23,30 @@ public final class BuildingTemplate extends Template {
     private final float halfbuilt_selection_height;
     private final float start_selection_radius;
     private final float start_selection_height;
-    private final @NonNull Vector3fc rally;
-    private final @NonNull Vector3fc chimney;
+    private final Vector3fc rally;
+    private final Vector3fc chimney;
 
     public BuildingTemplate(
-            @NonNull BuildingType building_type,
+            BuildingType building_type,
             int placing_size,
             float smoke_radius,
             float smoke_height,
             int num_fragments,
             float shadow_diameter,
-            @NonNull BoundingBox @NonNull [] built_bounds, float built_selection_radius, float built_selection_height,
-            @NonNull BoundingBox @NonNull [] halfbuilt_bounds, float halfbuilt_selection_radius,
+            BoundingBox[] built_bounds, float built_selection_radius, float built_selection_height,
+            BoundingBox[] halfbuilt_bounds, float halfbuilt_selection_radius,
             float halfbuilt_selection_height,
-            @NonNull BoundingBox @NonNull [] start_bounds, float start_selection_radius, float start_selection_height,
+            BoundingBox[] start_bounds, float start_selection_radius, float start_selection_height,
             int max_hit_points,
             UnitContainerFactory unit_container_factory,
-            @NonNull Abilities abilities,
-            float @NonNull [] hit_offset_z,
+            Abilities abilities,
+            float[] hit_offset_z,
             float mount_offset,
             float no_detail_size,
             float defense_chance,
-            @NonNull Vector3fc rally,
-            @NonNull Vector3fc chimney,
-            @NonNull String name) {
+            Vector3fc rally,
+            Vector3fc chimney,
+            String name) {
         super(abilities, shadow_diameter, hit_offset_z, no_detail_size, defense_chance, name);
         this.building_type = building_type;
         this.built_selection_radius = built_selection_radius;
@@ -71,7 +70,7 @@ public final class BuildingTemplate extends Template {
         this.chimney = chimney;
     }
 
-    public @NonNull BuildingType getBuildingType() {
+    public BuildingType getBuildingType() {
         return building_type;
     }
 
@@ -115,15 +114,15 @@ public final class BuildingTemplate extends Template {
         return num_fragments;
     }
 
-    public @NonNull BoundingBox @NonNull [] getBuiltBounds() {
+    public BoundingBox[] getBuiltBounds() {
         return built_bounds;
     }
 
-    public @NonNull BoundingBox @NonNull [] getStartBounds() {
+    public BoundingBox[] getStartBounds() {
         return start_bounds;
     }
 
-    public @NonNull BoundingBox @NonNull [] getHalfbuiltBounds() {
+    public BoundingBox[] getHalfbuiltBounds() {
         return halfbuilt_bounds;
     }
 
@@ -140,11 +139,11 @@ public final class BuildingTemplate extends Template {
         return mount_offset;
     }
 
-    public @NonNull Vector3fc getRally() {
+    public Vector3fc getRally() {
         return rally;
     }
 
-    public @NonNull Vector3fc getChimney() {
+    public Vector3fc getChimney() {
         return chimney;
     }
 }

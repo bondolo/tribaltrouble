@@ -7,7 +7,6 @@ import com.oddlabs.tt.client.gui.*;
 import com.oddlabs.tt.gui.event.TabListener;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ public final class ChatLine extends EditLine {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (catch_tab && event.getCodepoint() == Character.toCodePoint('\0', '\t')) {
                 tabComplete(getText());
@@ -40,7 +39,7 @@ public final class ChatLine extends EditLine {
         super.handleInput(event);
     }
 
-    private void tabComplete(@NonNull StringBuilder line) {
+    private void tabComplete(StringBuilder line) {
         int index = getIndex();
 
         int word_start = line.lastIndexOf(" ", index - 1) + 1;
@@ -90,7 +89,7 @@ public final class ChatLine extends EditLine {
             runCommand(command);
         }
     */
-    private void tabPressedAll(String @NonNull [] words) {
+    private void tabPressedAll(String[] words) {
         tabPressed(words);
         for (TabListener listener : tab_listeners) {
             listener.tabPressed(words);

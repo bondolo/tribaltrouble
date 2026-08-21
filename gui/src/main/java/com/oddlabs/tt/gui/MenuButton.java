@@ -5,24 +5,23 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
-import org.jspecify.annotations.NonNull;
 
 public final class MenuButton extends ButtonObject {
     private static final float SECONDS_PER_HOVER_CYCLE = 1.5f;
     private static final float HOVER_SCALE_FACTOR = 0.06f;
 
-    private final @NonNull CharSequence text;
-    private final Color.@NonNull Linear color_normal;
-    private final Color.@NonNull Linear color_active;
+    private final CharSequence text;
+    private final Color.Linear color_normal;
+    private final Color.Linear color_active;
 
     private float start_hover_time;
 
-    public MenuButton(@NonNull String caption, @NonNull Color color_normal, @NonNull Color color_active) {
+    public MenuButton(String caption, Color color_normal, Color color_active) {
         this(caption, Skin.getSkin().getHeadlineFont(), color_normal, color_active);
     }
 
-    private MenuButton(@NonNull CharSequence text, @NonNull Font font, @NonNull Color color_normal,
-            @NonNull Color color_active) {
+    private MenuButton(CharSequence text, Font font, Color color_normal,
+            Color color_active) {
         super(font);
         setDim(font.getWidth(text), font.getHeight());
         this.text = text;
@@ -35,7 +34,7 @@ public final class MenuButton extends ButtonObject {
         return root != null ? root.getTime() : 0f;
     }
 
-    private void scaleHovered(@NonNull GUIRenderer renderer) {
+    private void scaleHovered(GUIRenderer renderer) {
         float time = (getTime() - start_hover_time) % SECONDS_PER_HOVER_CYCLE;
         float cycle_position = time / SECONDS_PER_HOVER_CYCLE;
         float scale = 1f + HOVER_SCALE_FACTOR * (float) Math.sin(cycle_position * 2 * Math.PI);
@@ -43,7 +42,7 @@ public final class MenuButton extends ButtonObject {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         renderer.getMatrixStack().push()
                 .translate(getWidth() / 2f, getHeight() / 2f, 0);
         Color c;

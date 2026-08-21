@@ -51,7 +51,6 @@ import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -67,30 +66,30 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     private static final String[] GAMESPEED_STRINGS = new String[]{"paused", "slow", "normal", "fast", "ludicrous"};
 
-    private final @NonNull GameCamera camera;
-    private final @NonNull ActionButtonPanel panel;
-    private final @NonNull SelectionDelegate delegate;
-    private final @NonNull DistributableTable distributable_table;
-    private final @NonNull PeerHub peerhub;
-    private final @NonNull GUIRoot gui_root;
-    private final @NonNull NotificationManager notification_manager;
-    private final @NonNull InGameInfo ingame_info;
-    private final @NonNull NetworkSelector network;
-    private final @NonNull Selection selection;
-    private final @NonNull World world;
-    private final @NonNull Picker picker;
-    private final @NonNull DefaultRenderer renderer;
-    private final @NonNull LandscapeRenderer landscape_renderer;
-    private final @NonNull Player local_player;
-    private final @NonNull WorldParameters world_params;
-    private final @NonNull AnimationManager animation_manager_local;
-    private final @NonNull Cheat cheat;
-    private final @NonNull AudioManager audioManager;
+    private final GameCamera camera;
+    private final ActionButtonPanel panel;
+    private final SelectionDelegate delegate;
+    private final DistributableTable distributable_table;
+    private final PeerHub peerhub;
+    private final GUIRoot gui_root;
+    private final NotificationManager notification_manager;
+    private final InGameInfo ingame_info;
+    private final NetworkSelector network;
+    private final Selection selection;
+    private final World world;
+    private final Picker picker;
+    private final DefaultRenderer renderer;
+    private final LandscapeRenderer landscape_renderer;
+    private final Player local_player;
+    private final WorldParameters world_params;
+    private final AnimationManager animation_manager_local;
+    private final Cheat cheat;
+    private final AudioManager audioManager;
 
-    public WorldViewer(@NonNull NetworkSelector network, final @NonNull GUIRoot gui_root,
-            @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info, @NonNull WorldGenerator generator,
-            PlayerSlot @NonNull [] player_slots, UnitInfo @NonNull [] unit_infos, short player_slot,
-            SessionID session_id, @NonNull AudioManager audioManager) {
+    public WorldViewer(NetworkSelector network, final GUIRoot gui_root,
+            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator generator,
+            PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
+            SessionID session_id, AudioManager audioManager) {
         this.world_params = world_params;
         this.ingame_info = ingame_info;
         this.network = network;
@@ -126,31 +125,31 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void newAttackNotification(@NonNull Selectable<?> target) {
+            public void newAttackNotification(Selectable<?> target) {
                 Player owner = target.getOwner();
                 if (owner == getLocalPlayer())
                     notification_manager.newAttackNotification(animation_manager_local, target, getLocalPlayer());
             }
 
             @Override
-            public void newSelectableNotification(@NonNull Selectable<?> target) {
+            public void newSelectableNotification(Selectable<?> target) {
                 Player owner = target.getOwner();
                 if (owner == getLocalPlayer())
                     notification_manager.newSelectableNotification(target, animation_manager_local, getLocalPlayer());
             }
 
             @Override
-            public void treeFelled(AbstractTreeGroup.@NonNull TreeType treeType, float x, float y, float z) {
+            public void treeFelled(AbstractTreeGroup.TreeType treeType, float x, float y, float z) {
                 audioManager.newAudio(x, y, z, AudioAssets.TREE_FALL[treeType.ordinal() % 2]);
             }
 
             @Override
-            public void registerTarget(@NonNull Target target) {
+            public void registerTarget(Target target) {
                 distributable_table.register(target);
             }
 
             @Override
-            public void unregisterTarget(@NonNull Target target) {
+            public void unregisterTarget(Target target) {
                 distributable_table.unregister(target);
                 if (target instanceof Selectable<?> selectable)
                     getSelection().removeFromArmies(selectable);
@@ -187,11 +186,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
         gui_root.getAnimationManager().registerAnimation(this);
     }
 
-    public @NonNull AudioManager getAudioManager() {
+    public AudioManager getAudioManager() {
         return audioManager;
     }
 
-    public @NonNull AnimationManager getAnimationManagerLocal() {
+    public AnimationManager getAnimationManagerLocal() {
         return animation_manager_local;
     }
 
@@ -208,11 +207,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
         renderer.close();
     }
 
-    public @NonNull WorldParameters getParameters() {
+    public WorldParameters getParameters() {
         return world_params;
     }
 
-    public @NonNull Cheat getCheat() {
+    public Cheat getCheat() {
         return cheat;
     }
 
@@ -229,12 +228,12 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return peerhub.isPaused();
     }
 
-    public @NonNull Player getLocalPlayer() {
+    public Player getLocalPlayer() {
         return local_player;
     }
 
-    private void initPlayer(@NonNull ResourceBundle bundle, float[] starting_location, @NonNull PlayerSlot slot,
-            @NonNull Player player, @NonNull UnitInfo unit_info, int initial_gamespeed) {
+    private void initPlayer(ResourceBundle bundle, float[] starting_location, PlayerSlot slot,
+            Player player, UnitInfo unit_info, int initial_gamespeed) {
         if (slot.getType() == PlayerSlot.AI) {
             AI ai = switch (slot.getAIDifficulty()) {
                 case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, unit_info, Difficulty.NORMAL);
@@ -291,47 +290,47 @@ public final class WorldViewer implements Animated, AutoCloseable {
         }
     }
 
-    private void initPlayers(float[][] starting_locations, PlayerSlot @NonNull [] slots, List<@NonNull Player> players,
-            UnitInfo @NonNull [] unit_infos, int initial_gamespeed) {
+    private void initPlayers(float[][] starting_locations, PlayerSlot[] slots, List<Player> players,
+            UnitInfo[] unit_infos, int initial_gamespeed) {
         ResourceBundle bundle = ResourceBundle.getBundle(Player.class.getName());
         for (int i = 0; i < slots.length; i++) {
             initPlayer(bundle, starting_locations[i], slots[i], players.get(i), unit_infos[i], initial_gamespeed);
         }
     }
 
-    private @NonNull LandscapeRenderer getLandscapeRenderer() {
+    private LandscapeRenderer getLandscapeRenderer() {
         return landscape_renderer;
     }
 
-    public @NonNull Picker getPicker() {
+    public Picker getPicker() {
         return picker;
     }
 
-    public @NonNull DefaultRenderer getRenderer() {
+    public DefaultRenderer getRenderer() {
         return renderer;
     }
 
-    public @NonNull World getWorld() {
+    public World getWorld() {
         return world;
     }
 
-    public @NonNull NetworkSelector getNetwork() {
+    public NetworkSelector getNetwork() {
         return network;
     }
 
-    public @NonNull Selection getSelection() {
+    public Selection getSelection() {
         return selection;
     }
 
-    public @NonNull NotificationManager getNotificationManager() {
+    public NotificationManager getNotificationManager() {
         return notification_manager;
     }
 
-    public @NonNull DistributableTable getDistributableTable() {
+    public DistributableTable getDistributableTable() {
         return distributable_table;
     }
 
-    public @NonNull GUIRoot getGUIRoot() {
+    public GUIRoot getGUIRoot() {
         return gui_root;
     }
 
@@ -339,7 +338,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return ingame_info.isMultiplayer();
     }
 
-    public @NonNull InGameInfo getInGameInfo() {
+    public InGameInfo getInGameInfo() {
         return ingame_info;
     }
 
@@ -351,35 +350,35 @@ public final class WorldViewer implements Animated, AutoCloseable {
         ingame_info.addGameOverGUI(this, delegate, header_y, buttons);
     }
 
-    public @NonNull GameCamera getCamera() {
+    public GameCamera getCamera() {
         return camera;
     }
 
-    public @NonNull PeerHub getPeerHub() {
+    public PeerHub getPeerHub() {
         return peerhub;
     }
 
-    public @NonNull ActionButtonPanel getPanel() {
+    public ActionButtonPanel getPanel() {
         return panel;
     }
 
-    public @NonNull SelectionDelegate getDelegate() {
+    public SelectionDelegate getDelegate() {
         return delegate;
     }
 
-    public @NonNull InputManager getInputManager() {
+    public InputManager getInputManager() {
         return gui_root.getInputManager();
     }
 
-    public @NonNull LocalEventQueue getEventQueue() {
+    public LocalEventQueue getEventQueue() {
         return gui_root.getEventQueue();
     }
 
-    public @NonNull AnimationManager getAnimationManager() {
+    public AnimationManager getAnimationManager() {
         return gui_root.getAnimationManager();
     }
 
-    public @NonNull AnimationManager getAnimationManagerHighPrecision() {
+    public AnimationManager getAnimationManagerHighPrecision() {
         return gui_root.getEventQueue().getHighPrecisionManager();
     }
 

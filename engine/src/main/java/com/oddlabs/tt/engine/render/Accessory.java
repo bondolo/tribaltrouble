@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.simulation.model.Model;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,7 +25,7 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
      * @param camera The current camera state for distance/visibility checks.
      * @return visibility status.
      */
-    boolean isVisible(@NonNull Model parent, @NonNull CameraState camera);
+    boolean isVisible(Model parent, CameraState camera);
 
     /**
      * Returns true if this accessory has completed its lifecycle and should be removed.
@@ -52,7 +51,7 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
      * @param parent The model this accessory is attached to.
      * @return animation ticks.
      */
-    default float getAnimationTicks(@NonNull Model parent) {
+    default float getAnimationTicks(Model parent) {
         return parent.getAnimationTicks();
     }
 
@@ -62,7 +61,7 @@ public sealed interface Accessory extends AutoCloseable permits StaticAccessory,
      * @param dest The matrix to populate with the relative transform.
      * @param parent The model this accessory is attached to.
      */
-    void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent);
+    void getRelativeTransform(Matrix4f dest, Model parent);
 
     /**
      * Cleans up any resources (like active audio players/loops) when this accessory is removed.

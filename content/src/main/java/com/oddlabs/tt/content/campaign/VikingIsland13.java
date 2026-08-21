@@ -21,7 +21,6 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.TimeTrigger;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -30,7 +29,7 @@ import java.util.stream.IntStream;
 public final class VikingIsland13 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland13.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -39,12 +38,12 @@ public final class VikingIsland13 extends Island {
 
     private boolean alive;
 
-    public VikingIsland13(@NonNull Campaign campaign) {
+    public VikingIsland13(Campaign campaign) {
         super(campaign);
     }
 
     @Override
-    public void init(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
+    public void init(NetworkSelector network, GUIRoot gui_root) {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
@@ -269,17 +268,17 @@ public final class VikingIsland13 extends Island {
     }
 
     @Override
-    public @NonNull CharSequence getHeader() {
+    public CharSequence getHeader() {
         return i18n("header");
     }
 
     @Override
-    public @NonNull CharSequence getDescription() {
+    public CharSequence getDescription() {
         return i18n("description");
     }
 
     @Override
-    public @NonNull CharSequence getCurrentObjective() {
+    public CharSequence getCurrentObjective() {
         return i18n("objective", minutes);
     }
 }

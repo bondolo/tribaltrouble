@@ -21,7 +21,6 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
@@ -38,7 +37,7 @@ public final class ProgressForm {
     private static final String TIP_PREFIX = "tip";
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ProgressForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -46,7 +45,7 @@ public final class ProgressForm {
             .mapToObj(idx -> i18n(TIP_PREFIX + idx))
             .toArray(String[]::new);
 
-    private static final @NonNull ProgressBarInfo[] PROGRESS_BAR_INFO = new ProgressBarInfo[]{
+    private static final ProgressBarInfo[] PROGRESS_BAR_INFO = new ProgressBarInfo[]{
             new ProgressBarInfo(""/*"Loading landscape resources"*/, 10),
             new ProgressBarInfo(""/*"Loading races resources"*/, 30),
             new ProgressBarInfo(""/*"Generating textures"*/, 5),
@@ -59,16 +58,16 @@ public final class ProgressForm {
 
     private static @Nullable ProgressForm current_progress = null;
 
-    private final @NonNull ProgressBar progress_bar;
-    private final @NonNull GUI gui;
+    private final ProgressBar progress_bar;
+    private final GUI gui;
 
-    public static void setProgressForm(@NonNull NetworkSelector network, @NonNull GUI gui,
-            @NonNull LoadCallback callback) {
+    public static void setProgressForm(NetworkSelector network, GUI gui,
+            LoadCallback callback) {
         setProgressForm(network, gui, callback, false);
     }
 
-    public static @Nullable Runnable setProgressForm(@NonNull NetworkSelector network, final @NonNull GUI gui,
-            final @NonNull LoadCallback callback, final boolean first_progress) {
+    public static @Nullable Runnable setProgressForm(NetworkSelector network, final GUI gui,
+            final LoadCallback callback, final boolean first_progress) {
         String texture;
         int texture_width;
         int texture_height;
@@ -110,9 +109,9 @@ public final class ProgressForm {
         return first_progress ? load_fadable::fadingDone : null;
     }
 
-    private ProgressForm(@NonNull NetworkSelector network, final @NonNull GUI gui, final Fadable load_fadable,
-            boolean first_progress, @NonNull ProgressBarInfo @NonNull [] info,
-            @NonNull String texture_name, int texture_width, int texture_height, int image_width, int image_height,
+    private ProgressForm(NetworkSelector network, final GUI gui, final Fadable load_fadable,
+            boolean first_progress, ProgressBarInfo[] info,
+            String texture_name, int texture_width, int texture_height, int image_width, int image_height,
             int progress_x, int progress_y, int progress_width,
             boolean show_tip) {
         this.gui = gui;
@@ -151,7 +150,7 @@ public final class ProgressForm {
         Renderer.getRenderer().updateProgress(gui);
     }
 
-    private static void callback(@NonNull GUI gui, @NonNull LoadCallback callback, boolean first_progress) {
+    private static void callback(GUI gui, LoadCallback callback, boolean first_progress) {
         Fadable start_sources_fadable = () -> Renderer.getRenderer().startSound();
 
         GUIRoot client_root = gui.createRoot();

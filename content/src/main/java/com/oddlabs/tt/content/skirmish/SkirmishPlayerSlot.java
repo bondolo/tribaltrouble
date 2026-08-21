@@ -1,7 +1,6 @@
 package com.oddlabs.tt.content.skirmish;
 
 import com.oddlabs.tt.simulation.model.Race;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Represents a player slot configuration in a skirmish scenario match.
@@ -9,7 +8,7 @@ import org.jspecify.annotations.NonNull;
 public record SkirmishPlayerSlot(
                                  int slotIndex,
                                  boolean isHuman,
-                                 @NonNull Race race,
+                                 Race race,
                                  int team,
                                  int aiDifficulty
 ) {

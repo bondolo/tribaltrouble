@@ -16,7 +16,6 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -26,24 +25,24 @@ import java.util.ResourceBundle;
 public abstract class IconSpinner extends GUIObject {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(IconSpinner.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull ModeIconQuads icon_quad;
-    private final @NonNull String tool_tip;
-    private final @Nullable List<@NonNull IconQuad> tool_tip_icons;
-    private final @NonNull TextField label;
-    private final @NonNull IconButton button_plus;
-    private final @NonNull IconButton button_minus;
-    private final @NonNull WorldViewer viewer;
+    private final ModeIconQuads icon_quad;
+    private final String tool_tip;
+    private final @Nullable List<IconQuad> tool_tip_icons;
+    private final TextField label;
+    private final IconButton button_plus;
+    private final IconButton button_minus;
+    private final WorldViewer viewer;
     private @Nullable IconDisabler icon_disabler = null;
 
     private int text_count = 0;
 
-    public IconSpinner(@NonNull WorldViewer viewer, @NonNull ModeIconQuads icon_quad, @NonNull String tool_tip,
-            @Nullable List<@NonNull IconQuad> tool_tip_icons,
-            @NonNull GameAction action, @NonNull GameAction dec_action) {
+    public IconSpinner(WorldViewer viewer, ModeIconQuads icon_quad, String tool_tip,
+            @Nullable List<IconQuad> tool_tip_icons,
+            GameAction action, GameAction dec_action) {
         this.icon_quad = icon_quad;
         this.tool_tip = tool_tip;
         this.tool_tip_icons = tool_tip_icons;
@@ -116,7 +115,7 @@ public abstract class IconSpinner extends GUIObject {
     }
 
     @Override
-    public void appendToolTip(@NonNull ToolTipBox tool_tip_box) {
+    public void appendToolTip(ToolTipBox tool_tip_box) {
         tool_tip_box.append(tool_tip);
         tool_tip_box.append(tool_tip_icons);
     }
@@ -136,7 +135,7 @@ public abstract class IconSpinner extends GUIObject {
     }
 
     @Override
-    protected final void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected final void renderGeometry(GUIRenderer renderer) {
         int x = (getWidth() - icon_quad.quad(ModeIconQuads.Mode.NORMAL).getWidth()) / 2;
         int y = (getHeight() - icon_quad.quad(ModeIconQuads.Mode.NORMAL).getHeight()) / 2;
 
@@ -155,59 +154,59 @@ public abstract class IconSpinner extends GUIObject {
     }
 
     @Override
-    protected final void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    protected final void mouseReleased(MouseButton button, int x, int y) {
     }
 
     @Override
-    protected final void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected final void mousePressed(MouseButton button, int x, int y) {
     }
 
     @Override
-    protected final void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected final void mouseClicked(MouseButton button, int x, int y, int clicks) {
     }
 
     @Override
-    protected final void mouseHeld(@NonNull MouseButton button, int x, int y) {
+    protected final void mouseHeld(MouseButton button, int x, int y) {
     }
 
     private final class IncreaseListener implements MouseButtonListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
         }
 
         @Override
-        public void mouseHeld(@NonNull MouseButton button, int x, int y) {
+        public void mouseHeld(MouseButton button, int x, int y) {
             mousePressed(button, x, y);
         }
 
         @Override
-        public void mousePressed(@NonNull MouseButton button, int x, int y) {
+        public void mousePressed(MouseButton button, int x, int y) {
             increase(button == MouseButton.RIGHT ? 10 : 1);
         }
 
         @Override
-        public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+        public void mouseReleased(MouseButton button, int x, int y) {
             release();
         }
     }
 
     private final class DecreaseListener implements MouseButtonListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
         }
 
         @Override
-        public void mouseHeld(@NonNull MouseButton button, int x, int y) {
+        public void mouseHeld(MouseButton button, int x, int y) {
             mousePressed(button, x, y);
         }
 
         @Override
-        public void mousePressed(@NonNull MouseButton button, int x, int y) {
+        public void mousePressed(MouseButton button, int x, int y) {
             decrease(button == MouseButton.RIGHT ? 10 : 1);
         }
 
         @Override
-        public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+        public void mouseReleased(MouseButton button, int x, int y) {
             release();
         }
     }

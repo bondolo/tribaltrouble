@@ -1,6 +1,5 @@
 package com.oddlabs.http;
 
-import org.jspecify.annotations.NonNull;
 
 final class ErrorResponse implements HttpResponse {
     private final int error_code;
@@ -12,12 +11,12 @@ final class ErrorResponse implements HttpResponse {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return error_code + " " + error_message;
     }
 
     @Override
-    public void notify(@NonNull HttpCallback callback) {
+    public void notify(HttpCallback callback) {
         callback.error(error_code, error_message);
     }
 }

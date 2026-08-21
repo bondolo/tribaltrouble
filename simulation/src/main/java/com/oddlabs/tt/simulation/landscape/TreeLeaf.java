@@ -1,18 +1,17 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 
 public final class TreeLeaf extends AbstractTreeGroup {
-    private @NonNull TreeSupply @NonNull [] infos = new TreeSupply[0];
+    private TreeSupply[] infos = new TreeSupply[0];
 
     public TreeLeaf(@Nullable AbstractTreeGroup parent) {
         super(parent);
     }
 
-    void insertTree(@NonNull TreeSupply tree) {
+    void insertTree(TreeSupply tree) {
         TreeSupply[] new_infos = Arrays.copyOf(infos, infos.length + 1);
         new_infos[new_infos.length - 1] = tree;
         infos = new_infos;
@@ -35,7 +34,7 @@ public final class TreeLeaf extends AbstractTreeGroup {
         return false;
     }
 
-    public @NonNull TreeSupply @NonNull [] getTrees() {
+    public TreeSupply[] getTrees() {
         return infos;
     }
 }

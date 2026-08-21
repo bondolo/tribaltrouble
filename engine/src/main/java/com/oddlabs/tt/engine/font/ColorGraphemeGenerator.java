@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.font;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -25,17 +24,17 @@ public final class ColorGraphemeGenerator extends TextureGenerator {
     private static final int TEXTURE_SIZE = 64;
     private static final List<String> EMOJI_FONT_NAMES = List.of("Apple Color Emoji", "Segoe UI Emoji",
             "Noto Color Emoji", "Google Sans", "Arial");
-    private static final List<java.awt.@NonNull Font> EMOJI_FONTS = EMOJI_FONT_NAMES.stream()
+    private static final List<java.awt.Font> EMOJI_FONTS = EMOJI_FONT_NAMES.stream()
             .map(name -> new java.awt.Font(name, java.awt.Font.PLAIN, TEXT_SIZE))
             .toList();
     private static final java.awt.Font FALLBACK_FONT = new java.awt.Font(
             java.awt.Font.SANS_SERIF, java.awt.Font.PLAIN, TEXT_SIZE);
 
-    private final @NonNull String grapheme;
+    private final String grapheme;
     private final Thread worker;
-    private final @NonNull GLIntImage glIntImage;
+    private final GLIntImage glIntImage;
 
-    public ColorGraphemeGenerator(@NonNull String grapheme) {
+    public ColorGraphemeGenerator(String grapheme) {
         BreakIterator iterator = BreakIterator.getCharacterInstance();
         iterator.setText(grapheme);
         int count = 0;
@@ -52,7 +51,7 @@ public final class ColorGraphemeGenerator extends TextureGenerator {
         this(Character.toString(codepoint));
     }
 
-    private static void renderColorGrapheme(@NonNull String grapheme, @NonNull GLIntImage glIntImage) {
+    private static void renderColorGrapheme(String grapheme, GLIntImage glIntImage) {
         BufferedImage bufferedImage = new BufferedImage(TEXTURE_SIZE, TEXTURE_SIZE, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = bufferedImage.createGraphics();
         try {
@@ -89,7 +88,7 @@ public final class ColorGraphemeGenerator extends TextureGenerator {
         }
     }
 
-    private static java.awt.@NonNull Font selectEmojiFont(@NonNull String grapheme) {
+    private static java.awt.Font selectEmojiFont(String grapheme) {
         for (java.awt.Font font : EMOJI_FONTS) {
             if (font.canDisplayUpTo(grapheme) == -1) {
                 return font;
@@ -99,7 +98,7 @@ public final class ColorGraphemeGenerator extends TextureGenerator {
     }
 
     @Override
-    protected @NonNull Texture @NonNull [] generate() {
+    protected Texture[] generate() {
         try {
             worker.join();
         } catch (InterruptedException e) {

@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.tt.client.gui.WaitingForPlayersForm;
 import com.oddlabs.tt.net.StallHandler;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /** Handler for client-side rendering during network stalls. */
@@ -10,13 +9,13 @@ final class ViewerStallHandler implements StallHandler {
 
     private static final float SHOW_WAITING_DELAY_SECONDS = 3f;
 
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
 
     private float local_stall_time;
     private int stall_tick;
     private @Nullable WaitingForPlayersForm waiting_for_players_form;
 
-    ViewerStallHandler(@NonNull WorldViewer viewer) {
+    ViewerStallHandler(WorldViewer viewer) {
         this.viewer = viewer;
     }
 

@@ -4,7 +4,6 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.base.event.StateChecksum;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 
 public final class WaveAnimation {
     private static final float TREE_WAVE_SCALE = 0.035f;
@@ -17,11 +16,11 @@ public final class WaveAnimation {
     private float rot_angle = 0;
     private int time = 0;
 
-    public void mulRotation(@NonNull Matrix4f matrix) {
+    public void mulRotation(Matrix4f matrix) {
         matrix.rotate(rot_angle, rot_axis.x, rot_axis.y, rot_axis.z);
     }
 
-    public void updateChecksum(@NonNull StateChecksum checksum) {
+    public void updateChecksum(StateChecksum checksum) {
         checksum.update(rot_angle);
     }
 

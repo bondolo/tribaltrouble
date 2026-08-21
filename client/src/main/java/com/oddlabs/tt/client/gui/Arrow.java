@@ -8,7 +8,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.HeightQuery;
 import com.oddlabs.util.Color;
 import org.joml.Vector4f;
-import org.jspecify.annotations.NonNull;
 
 /**
  * An animated arrow that points toward a specific 3D coordinate in the game world,
@@ -23,10 +22,10 @@ public final class Arrow extends GUIObject {
     private final float target_z;
     private final Color.Linear color;
     private final boolean show_always;
-    private final @NonNull GUIRoot gui_root;
+    private final GUIRoot gui_root;
 
-    public Arrow(@NonNull HeightQuery heightQuery, @NonNull GUIRoot gui_root, float target_x, float target_y,
-            @NonNull Color color, boolean show_always) {
+    public Arrow(HeightQuery heightQuery, GUIRoot gui_root, float target_x, float target_y,
+            Color color, boolean show_always) {
         this.gui_root = gui_root;
         this.target_x = target_x;
         this.target_y = target_y;
@@ -41,7 +40,7 @@ public final class Arrow extends GUIObject {
         setDim(width, height);
     }
 
-    private @NonNull Vector4f project3DTo2D(@NonNull Vector4f point) {
+    private Vector4f project3DTo2D(Vector4f point) {
         if (gui_root.getDelegate() instanceof CameraDelegate<?> cam) {
             cam.getCamera().getState().getProjectionModelView().transform(point, point);
         }
@@ -54,7 +53,7 @@ public final class Arrow extends GUIObject {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         int screen_width = gui_root.getWidth();
         int screen_height = gui_root.getHeight();
         Vector4f point = project3DTo2D(new Vector4f(target_x, target_y, target_z, 1));

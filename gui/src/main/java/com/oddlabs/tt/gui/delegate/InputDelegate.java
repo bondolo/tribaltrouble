@@ -3,7 +3,6 @@ package com.oddlabs.tt.gui.delegate;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -24,7 +23,7 @@ public interface InputDelegate {
      *
      * @param renderer the GUI renderer
      */
-    default void render2D(@NonNull GUIRenderer renderer) {
+    default void render2D(GUIRenderer renderer) {
     }
 
     /**
@@ -62,7 +61,7 @@ public interface InputDelegate {
      * @param height the viewport height in pixels
      * @return the transformed matrix
      */
-    default @NonNull Matrix4f multProjection(@NonNull Matrix4f matrix, int width, int height) {
+    default Matrix4f multProjection(Matrix4f matrix, int width, int height) {
         return matrix;
     }
 

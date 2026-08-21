@@ -1,6 +1,5 @@
 package com.oddlabs.converter;
 
-import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,7 +17,7 @@ public final class AnimationLoader {
     private AnimationLoader() {
     }
 
-    public static @NonNull Map<@NonNull String, float @NonNull []> @NonNull [] loadAnimation(@NonNull Path file) {
+    public static Map<String, float[]>[] loadAnimation(Path file) {
         try (var input_stream = Files.newInputStream(file)) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(true);
@@ -32,7 +31,7 @@ public final class AnimationLoader {
         }
     }
 
-    private static @NonNull Map<@NonNull String, float @NonNull []> @NonNull [] parseAnimation(@NonNull Node node) {
+    private static Map<String, float[]>[] parseAnimation(Node node) {
         NodeList frames = node.getChildNodes();
         Map<Integer, Map<String, float[]>> anim_infos_map = new HashMap<>();
         IntStream.range(0, frames.getLength())
@@ -53,7 +52,7 @@ public final class AnimationLoader {
         return anim_infos;
     }
 
-    public static @NonNull Map<@NonNull String, float @NonNull []> parseFrame(@NonNull Node node) {
+    public static Map<String, float[]> parseFrame(Node node) {
         NodeList bones = node.getChildNodes();
         Map<String, float[]> bone_infos = new HashMap<>();
         IntStream.range(0, bones.getLength())
@@ -83,11 +82,11 @@ public final class AnimationLoader {
         return bone_infos;
     }
 
-    private static int getAttrInt(@NonNull Node node, @NonNull String name) {
+    private static int getAttrInt(Node node, String name) {
         return Integer.parseInt(node.getAttributes().getNamedItem(name).getNodeValue());
     }
 
-    private static float getAttrFloat(@NonNull Node node, @NonNull String name) {
+    private static float getAttrFloat(Node node, String name) {
         return Float.parseFloat(node.getAttributes().getNamedItem(name).getNodeValue());
     }
 }

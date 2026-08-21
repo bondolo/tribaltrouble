@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.base.resource.NativeResource;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -41,7 +40,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         this.height = height;
     }
 
-    public static @NonNull FBO createSceneFBO(int width, int height) {
+    public static FBO createSceneFBO(int width, int height) {
         FBO fbo = new FBO(width, height);
         fbo.bind();
 
@@ -113,7 +112,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         unbind();
     }
 
-    public void bind(@NonNull RenderContext context) {
+    public void bind(RenderContext context) {
         context.bindFramebuffer(GL30.GL_FRAMEBUFFER, getHandle());
         context.setViewport(0, 0, width, height);
     }
@@ -126,7 +125,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         unbind(Renderer.getRenderer().getRenderContext());
     }
 
-    public void unbind(@NonNull RenderContext context) {
+    public void unbind(RenderContext context) {
         context.bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
@@ -153,7 +152,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         return depthTexture;
     }
 
-    public void blitDepthTo(@NonNull FBO target) {
+    public void blitDepthTo(FBO target) {
         var context = Renderer.getRenderer().getRenderContext();
         context.bindFramebuffer(GL30.GL_READ_FRAMEBUFFER, getHandle());
         context.bindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.getHandle());
@@ -163,11 +162,11 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         context.bindFramebuffer(GL30.GL_FRAMEBUFFER, getHandle());
     }
 
-    public void attachTexture(int attachmentPoint, @NonNull Texture texture) {
+    public void attachTexture(int attachmentPoint, Texture texture) {
         attachTexture(attachmentPoint, texture, 0);
     }
 
-    public void attachTexture(int attachmentPoint, @NonNull Texture texture, int level) {
+    public void attachTexture(int attachmentPoint, Texture texture, int level) {
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, attachmentPoint, GL11.GL_TEXTURE_2D, texture.getHandle(),
                 level);
         if (attachmentPoint == GL30.GL_COLOR_ATTACHMENT0) colorTexture = texture;

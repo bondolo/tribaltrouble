@@ -16,7 +16,6 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -26,13 +25,13 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 public final class GameInfoForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GameInfoForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull HorizButton ok_button;
+    private final HorizButton ok_button;
 
-    public GameInfoForm(@NonNull Game game) {
+    public GameInfoForm(Game game) {
         Label label_headline = new Label(i18n("game_info"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
@@ -129,7 +128,7 @@ public final class GameInfoForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {

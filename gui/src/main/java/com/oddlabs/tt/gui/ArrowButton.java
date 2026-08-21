@@ -5,14 +5,13 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public final class ArrowButton extends ButtonObject {
-    private final @NonNull ModeIconQuads pressed;
-    private final @NonNull ModeIconQuads unpressed;
-    private final @NonNull ModeIconQuads arrow;
+    private final ModeIconQuads pressed;
+    private final ModeIconQuads unpressed;
+    private final ModeIconQuads arrow;
 
-    public ArrowButton(@NonNull ModeIconQuads pressed, @NonNull ModeIconQuads unpressed, @NonNull ModeIconQuads arrow) {
+    public ArrowButton(ModeIconQuads pressed, ModeIconQuads unpressed, ModeIconQuads arrow) {
         super(Skin.getSkin().getEditFont());
         setDim(pressed.quad(ModeIconQuads.Mode.NORMAL).getWidth(), pressed.quad(ModeIconQuads.Mode.NORMAL).getHeight());
         this.pressed = pressed;
@@ -21,7 +20,7 @@ public final class ArrowButton extends ButtonObject {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.consumeAction(GameAction.UI_ACTIVATE)) {
             if (event.getPhase() == InputPhase.PRESSED) {
                 mousePressedAll(MouseButton.LEFT, 0, 0);
@@ -41,7 +40,7 @@ public final class ArrowButton extends ButtonObject {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isPressed() && isHovered()
@@ -57,7 +56,7 @@ public final class ArrowButton extends ButtonObject {
     }
 
     @Override
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         // Steal click from scrollbar
     }
 }

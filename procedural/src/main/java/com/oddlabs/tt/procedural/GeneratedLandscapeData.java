@@ -3,7 +3,6 @@ package com.oddlabs.tt.procedural;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.model.Terrain;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -13,11 +12,11 @@ import java.util.List;
  * @param config the configuration used to generate the island
  * @param landscape the procedural landscape instance
  */
-public record GeneratedLandscapeData(@NonNull IslandConfig config,
-                                     @NonNull Landscape landscape) implements LandscapeData {
+public record GeneratedLandscapeData(IslandConfig config,
+                                     Landscape landscape) implements LandscapeData {
 
     @Override
-    public @NonNull Terrain terrain() {
+    public Terrain terrain() {
         return config.terrain();
     }
 
@@ -32,47 +31,47 @@ public record GeneratedLandscapeData(@NonNull IslandConfig config,
     }
 
     @Override
-    public float @NonNull [] heightmap() {
+    public float[] heightmap() {
         return landscape.getHeight();
     }
 
     @Override
-    public @NonNull List<int @NonNull []> trees() {
+    public List<int[]> trees() {
         return landscape.getTrees();
     }
 
     @Override
-    public @NonNull List<int @NonNull []> palmTrees() {
+    public List<int[]> palmTrees() {
         return landscape.getPalmtrees();
     }
 
     @Override
-    public @NonNull List<int @NonNull []> rocks() {
+    public List<int[]> rocks() {
         return landscape.getRock();
     }
 
     @Override
-    public @NonNull List<int @NonNull []> iron() {
+    public List<int[]> iron() {
         return landscape.getIron();
     }
 
     @Override
-    public float @NonNull [] @NonNull [] plants() {
+    public float[][] plants() {
         return landscape.getPlants();
     }
 
     @Override
-    public boolean @NonNull [] @NonNull [] accessGrid() {
+    public boolean[][] accessGrid() {
         return landscape.getAccessGrid();
     }
 
     @Override
-    public byte @NonNull [] @NonNull [] buildGrid() {
+    public byte[][] buildGrid() {
         return landscape.getBuildGrid();
     }
 
     @Override
-    public float @NonNull [] @NonNull [] startingLocations() {
+    public float[][] startingLocations() {
         return landscape.getStartingLocations();
     }
 }

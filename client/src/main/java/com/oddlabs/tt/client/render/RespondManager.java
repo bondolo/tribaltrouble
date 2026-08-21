@@ -8,7 +8,6 @@ import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -20,13 +19,13 @@ public final class RespondManager implements Animated {
     private static final float SECONDS_PER_PICK_RESPOND = 1f / 3f;
 
     private final NavigableMap<Timeout, Object> respond_timeouts = new TreeMap<>();
-    private final Map<@NonNull Object, @NonNull Timeout> respond_targets = new HashMap<>();
+    private final Map<Object, Timeout> respond_targets = new HashMap<>();
 
     private int current_id;
 
     private float time;
 
-    public RespondManager(@NonNull AnimationManager manager) {
+    public RespondManager(AnimationManager manager) {
         manager.registerAnimation(this);
     }
 
@@ -43,15 +42,15 @@ public final class RespondManager implements Animated {
         }
     }
 
-    public void addResponder(@NonNull Object target) {
+    public void addResponder(Object target) {
         addResponder(target, null);
     }
 
-    public void addResponder(@NonNull Object target, Runnable stop_action) {
+    public void addResponder(Object target, Runnable stop_action) {
         addResponder(SECONDS_PER_PICK_RESPOND, target, null);
     }
 
-    private void addResponder(float respond_time, @NonNull Object target, Runnable stop_action) {
+    private void addResponder(float respond_time, Object target, Runnable stop_action) {
         removeResponder(target);
         Timeout timeout = new Timeout(time + respond_time, current_id++, target, stop_action);
         respond_targets.put(target, timeout);
@@ -82,7 +81,7 @@ public final class RespondManager implements Animated {
         return time_diff > 0 && (time_diff >= SECONDS_PER_PICK_RESPOND - blink || time_diff <= blink);
     }
 
-    private record Timeout(float timeout, int id, @NonNull Object target,
+    private record Timeout(float timeout, int id, Object target,
                            @Nullable Runnable stop_action) implements Comparable<Timeout> {
 
         @Override
@@ -102,7 +101,7 @@ public final class RespondManager implements Animated {
         }
 
         @Override
-        public int compareTo(@NonNull Timeout other) {
+        public int compareTo(Timeout other) {
             float diff = timeout - other.timeout;
             return diff != 0f ? (int) diff : id - other.id;
         }

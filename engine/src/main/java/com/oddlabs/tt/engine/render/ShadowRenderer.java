@@ -6,22 +6,21 @@ import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Base class for rendering dynamic shadow decals for world objects.
  */
 public abstract class ShadowRenderer {
-    private Color.@NonNull Linear color = Color.Linear.WHITE;
+    private Color.Linear color = Color.Linear.WHITE;
     private float patternVal = 0.0f;
     private @Nullable Texture currentTexture;
     private boolean radial = false;
     private @Nullable DecalRenderer sharedRenderer;
 
-    public @NonNull ScopedState setupShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
-            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+    public ScopedState setupShadows(RenderContext context, RenderQueues queues,
+            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            MatrixStack projectionStack) {
         this.sharedRenderer = queues.getDecalRenderer();
         var decalState = sharedRenderer.setup(context, renderer, modelViewStack, projectionStack);
 
@@ -33,11 +32,11 @@ public abstract class ShadowRenderer {
         };
     }
 
-    public void setShadowColor(@NonNull Color color) {
+    public void setShadowColor(Color color) {
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
     }
 
-    public void setPattern(Selectable.@NonNull VisualPattern pattern) {
+    public void setPattern(Selectable.VisualPattern pattern) {
         this.patternVal = (float) pattern.ordinal();
     }
 
@@ -45,7 +44,7 @@ public abstract class ShadowRenderer {
         this.patternVal = patternVal;
     }
 
-    public void bindShadowTexture(@NonNull Texture texture) {
+    public void bindShadowTexture(Texture texture) {
         this.currentTexture = texture;
     }
 
@@ -53,21 +52,21 @@ public abstract class ShadowRenderer {
         this.radial = radial;
     }
 
-    public final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            @NonNull Shadowable model) {
+    public final void renderShadow(RenderContext context, LandscapeRenderer renderer,
+            Shadowable model) {
         if (currentTexture != null && sharedRenderer != null) {
             renderShadow(context, renderer, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(),
                     color, model.getShadowVerticalCenter(), model.getShadowOpacity());
         }
     }
 
-    public final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
+    public final void renderShadow(RenderContext context, LandscapeRenderer renderer,
             float f_x, float f_y, float shadow_size) {
         renderShadow(context, renderer, f_x, f_y, shadow_size, color, 0.6f, 1.0f);
     }
 
-    public final void renderShadow(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            float f_x, float f_y, float shadow_size, Color.@NonNull Linear color, float shadowOffsetScale,
+    public final void renderShadow(RenderContext context, LandscapeRenderer renderer,
+            float f_x, float f_y, float shadow_size, Color.Linear color, float shadowOffsetScale,
             float shadowOpacity) {
         if (currentTexture != null && sharedRenderer != null) {
             // Expand the quad for radial halos to provide room for the offset shadow blob and animation padding.

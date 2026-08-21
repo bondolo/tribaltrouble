@@ -4,7 +4,6 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -12,26 +11,26 @@ import java.util.List;
  * Defines a skirmish match setup composing WorldParameters, IslandConfig, and bot slot configurations.
  */
 public final class SkirmishSetup {
-    private final @NonNull WorldParameters worldParameters;
-    private final @NonNull IslandConfig islandConfig;
-    private final @NonNull List<SkirmishPlayerSlot> player_slots;
+    private final WorldParameters worldParameters;
+    private final IslandConfig islandConfig;
+    private final List<SkirmishPlayerSlot> player_slots;
 
-    public SkirmishSetup(@NonNull WorldParameters worldParameters, @NonNull IslandConfig islandConfig,
-            @NonNull List<SkirmishPlayerSlot> player_slots) {
+    public SkirmishSetup(WorldParameters worldParameters, IslandConfig islandConfig,
+            List<SkirmishPlayerSlot> player_slots) {
         this.worldParameters = worldParameters;
         this.islandConfig = islandConfig;
         this.player_slots = List.copyOf(player_slots);
     }
 
-    public @NonNull WorldParameters getWorldParameters() {
+    public WorldParameters getWorldParameters() {
         return worldParameters;
     }
 
-    public @NonNull IslandConfig getIslandConfig() {
+    public IslandConfig getIslandConfig() {
         return islandConfig;
     }
 
-    public @NonNull List<SkirmishPlayerSlot> getPlayerSlots() {
+    public List<SkirmishPlayerSlot> getPlayerSlots() {
         return player_slots;
     }
 
@@ -54,7 +53,7 @@ public final class SkirmishSetup {
     /**
      * Configures player and AI bot slots on the game network server interface and starts the server.
      */
-    public void startSkirmishServer(@NonNull GameNetwork gameNetwork) {
+    public void startSkirmishServer(GameNetwork gameNetwork) {
         var serverInterface = gameNetwork.getClient().getServerInterface();
         for (SkirmishPlayerSlot slot : player_slots) {
             if (slot.isHuman()) {

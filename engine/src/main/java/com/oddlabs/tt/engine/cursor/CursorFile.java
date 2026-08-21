@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.cursor;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.base.resource.File;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ public final class CursorFile extends File<Cursor> {
      * @param xHot x location from top left of cursor hot spot
      * @param yHot y location from top left of cursor hot spot
      */
-    public CursorFile(@NonNull String source, int xHot, int yHot) {
+    public CursorFile(String source, int xHot, int yHot) {
         this(source, xHot, yHot, 1.0f);
     }
 
@@ -36,7 +35,7 @@ public final class CursorFile extends File<Cursor> {
      * @param yHot y location from top left of cursor hot spot
      * @param scale scale factor to apply to the cursor image
      */
-    public CursorFile(@NonNull String source, int xHot, int yHot, float scale) {
+    public CursorFile(String source, int xHot, int yHot, float scale) {
         super(source);
         this.xHot = xHot;
         this.yHot = yHot;
@@ -51,7 +50,7 @@ public final class CursorFile extends File<Cursor> {
     }
 
     @Override
-    public @NonNull Cursor get() {
+    public Cursor get() {
         try {
             GLIntImage image = GLIntImage.loadImage(getURL());
             if (scale != 1.0f) {

@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -15,10 +14,10 @@ import org.jspecify.annotations.Nullable;
  * Allows particle effects to be attached to units or buildings without quadtree overhead.
  */
 public final class EmitterAttachedAccessory implements EmitterAccessory {
-    private final @NonNull Emitter<?> emitter;
-    private final @NonNull Vector3f relativeOffset;
+    private final Emitter<?> emitter;
+    private final Vector3f relativeOffset;
 
-    public EmitterAttachedAccessory(@NonNull Emitter<?> emitter, @NonNull Vector3f offset) {
+    public EmitterAttachedAccessory(Emitter<?> emitter, Vector3f offset) {
         this.emitter = emitter;
         this.relativeOffset = offset;
     }
@@ -29,7 +28,7 @@ public final class EmitterAttachedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         if (parent instanceof Selectable<?> selectable) {
             return !selectable.isDead();
         }
@@ -37,7 +36,7 @@ public final class EmitterAttachedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
         dest.translate(relativeOffset);
     }
 
@@ -47,7 +46,7 @@ public final class EmitterAttachedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public @NonNull Emitter<?> getEmitter() {
+    public Emitter<?> getEmitter() {
         return emitter;
     }
 }

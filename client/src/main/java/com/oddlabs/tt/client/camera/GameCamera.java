@@ -11,7 +11,6 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Target;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -31,7 +30,7 @@ public final class GameCamera extends Camera {
     private static final float ROTATE_PICKING_ANGLE_MAX = (-(RenderConfig.FOV) - 10) * ((float) Math.PI / 180) * .5f;
     private static final float ZOOM_SPEED = 50f;
 
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
 
     private float left_dir_x;
     private float left_dir_y;
@@ -54,7 +53,7 @@ public final class GameCamera extends Camera {
     private boolean rotate_left;
     private boolean rotate_right;
 
-    public GameCamera(@NonNull WorldViewer viewer, @NonNull CameraState camera) {
+    public GameCamera(WorldViewer viewer, CameraState camera) {
         super(viewer.getWorld().getLandscapeEnvironment(), camera, viewer.getAnimationManagerHighPrecision());
         this.default_rotate_radius = viewer.getWorld().getLandscapeEnvironment().getMetersPerWorld() / 4f;
         this.viewer = viewer;
@@ -330,7 +329,7 @@ public final class GameCamera extends Camera {
         rotation_point = target;
     }
 
-    public @NonNull Vector2fc getRotationPoint() {
+    public Vector2fc getRotationPoint() {
         return rotation_point != null
                 ? new Vector2f(rotation_point.getPositionX(), rotation_point.getPositionY())
                 : new Vector2f(getState().getTargetX(), getState().getTargetY());
@@ -381,12 +380,12 @@ public final class GameCamera extends Camera {
         scroll_start_speed = Math.min((float) Math.sqrt(dx * dx + dy * dy + dz * dz), SCROLL_START_MAX_SPEED);
     }
 
-    public @NonNull World getWorld() {
+    public World getWorld() {
         return viewer.getWorld();
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED) {
             boolean handled = false;
 

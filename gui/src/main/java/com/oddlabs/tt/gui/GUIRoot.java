@@ -20,7 +20,6 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -36,36 +35,36 @@ public final class GUIRoot extends GUIObject {
     private static final Logger logger = Logger.getLogger(GUIRoot.class.getName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GUIRoot.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private static final int CURSOR_OFFSET_Y = 27;
 
-    private final Deque<@NonNull InputDelegate> delegate_stack = new ArrayDeque<>();
-    private final Deque<@NonNull ModalDelegate> modal_delegate_stack = new ArrayDeque<>();
-    private final Deque<@NonNull GUIObject> focus_backup_stack = new ArrayDeque<>();
+    private final Deque<InputDelegate> delegate_stack = new ArrayDeque<>();
+    private final Deque<ModalDelegate> modal_delegate_stack = new ArrayDeque<>();
+    private final Deque<GUIObject> focus_backup_stack = new ArrayDeque<>();
 
-    private final @NonNull TimerAnimation tool_tip_timer;
+    private final TimerAnimation tool_tip_timer;
 
-    private final @NonNull GUI gui;
-    private final @NonNull ToolTipBox tool_tip = new ToolTipBox();
-    private final @NonNull InfoPrinter info_printer;
+    private final GUI gui;
+    private final ToolTipBox tool_tip = new ToolTipBox();
+    private final InfoPrinter info_printer;
     private final Status status = new Status();
-    private final @NonNull InputState input_state;
+    private final InputState input_state;
     private boolean render_tool_tip = false;
     private @Nullable IconQuad cheatIcon;
 
     /**
      * the control that currently has focus
      */
-    private @NonNull GUIObject current_gui_object = this;
-    private @NonNull GUIObject global_focus = this;
+    private GUIObject current_gui_object = this;
+    private GUIObject global_focus = this;
 
     private float effective_scale = 1.0f;
     private float physical_scale = 1.0f;
 
-    GUIRoot(@NonNull GUI gui) {
+    GUIRoot(GUI gui) {
         this.gui = gui;
         this.info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
         this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
@@ -81,23 +80,23 @@ public final class GUIRoot extends GUIObject {
         gui.getLocalInput().getPointerInput().setActiveCursor(current_gui_object.getCursorType());
     }
 
-    public @NonNull LocalInput getLocalInput() {
+    public LocalInput getLocalInput() {
         return gui.getLocalInput();
     }
 
-    public @NonNull InputManager getInputManager() {
+    public InputManager getInputManager() {
         return gui.getLocalInput().getInputManager();
     }
 
-    public @NonNull LocalEventQueue getEventQueue() {
+    public LocalEventQueue getEventQueue() {
         return gui.getEventQueue();
     }
 
-    public @NonNull AnimationManager getAnimationManager() {
+    public AnimationManager getAnimationManager() {
         return gui.getAnimationManager();
     }
 
-    public @NonNull AnimationManager getAnimationManagerHighPrecision() {
+    public AnimationManager getAnimationManagerHighPrecision() {
         return gui.getEventQueue().getHighPrecisionManager();
     }
 
@@ -133,7 +132,7 @@ public final class GUIRoot extends GUIObject {
         gui.getLocalInput().getPointerInput().setCursorPosition(x, y);
     }
 
-    public void setActiveCursor(@NonNull CursorType type) {
+    public void setActiveCursor(CursorType type) {
         gui.getLocalInput().getPointerInput().setActiveCursor(type);
     }
 
@@ -142,7 +141,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     @Override
-    public @NonNull GUIRoot self() {
+    public GUIRoot self() {
         return this;
     }
 
@@ -157,22 +156,21 @@ public final class GUIRoot extends GUIObject {
     }
 
     @Override
-    public @NonNull GUIRoot getParentGUIRoot() {
+    public GUIRoot getParentGUIRoot() {
         return self();
     }
 
-    public @NonNull GUI getGUI() {
+    public GUI getGUI() {
         return gui;
     }
 
-    public @NonNull InputState getInputState() {
+    public InputState getInputState() {
         return input_state;
     }
 
     /**
      * {@return the currently focused control}
      */
-    @NonNull
     GUIObject getGlobalFocus() {
         return global_focus;
     }
@@ -180,7 +178,7 @@ public final class GUIRoot extends GUIObject {
     /**
      * set the control which currently has focus
      */
-    void setGlobalFocus(@NonNull GUIObject object) {
+    void setGlobalFocus(GUIObject object) {
         global_focus = object;
     }
 
@@ -189,7 +187,7 @@ public final class GUIRoot extends GUIObject {
                 * ToolTipBox.MAX_DELAY_SECONDS);
     }
 
-    public void timerUpdate(@NonNull TimerAnimation anim) {
+    public void timerUpdate(TimerAnimation anim) {
         render_tool_tip = true;
     }
 
@@ -198,7 +196,7 @@ public final class GUIRoot extends GUIObject {
         tool_tip_timer.stop();
     }
 
-    public @NonNull InfoPrinter getInfoPrinter() {
+    public InfoPrinter getInfoPrinter() {
         return info_printer;
     }
 
@@ -206,7 +204,7 @@ public final class GUIRoot extends GUIObject {
         this.cheatIcon = cheatIcon;
     }
 
-    public void pushDelegate(@NonNull InputDelegate delegate) {
+    public void pushDelegate(InputDelegate delegate) {
         if (!delegate_stack.isEmpty()) {
             InputDelegate current = getDelegate();
             if (current instanceof GUIObject obj) {
@@ -221,7 +219,7 @@ public final class GUIRoot extends GUIObject {
         mousePick();
     }
 
-    public void removeDelegate(@NonNull InputDelegate delegate) {
+    public void removeDelegate(InputDelegate delegate) {
         boolean top_most = getDelegate() == delegate;
         if (delegate instanceof GUIObject obj) {
             obj.remove();
@@ -240,11 +238,11 @@ public final class GUIRoot extends GUIObject {
         mousePick();
     }
 
-    public @NonNull InputDelegate getDelegate() {
+    public InputDelegate getDelegate() {
         return delegate_stack.element();
     }
 
-    private void pushModalDelegate(@NonNull ModalDelegate delegate) {
+    private void pushModalDelegate(ModalDelegate delegate) {
         ModalDelegate old = getModalDelegate();
         modal_delegate_stack.push(delegate);
         if (old != null) {
@@ -255,7 +253,7 @@ public final class GUIRoot extends GUIObject {
         mousePick();
     }
 
-    private void popModalDelegate(@NonNull ModalDelegate delegate) {
+    private void popModalDelegate(ModalDelegate delegate) {
         if (!modal_delegate_stack.contains(delegate)) {
             return;
         }
@@ -297,7 +295,7 @@ public final class GUIRoot extends GUIObject {
         return modal_delegate_stack.peek();
     }
 
-    public boolean isShowingModalForm(@NonNull Class<?> formClass) {
+    public boolean isShowingModalForm(Class<?> formClass) {
         ModalDelegate modal = getModalDelegate();
         if (modal == null) return false;
         GUIObject child = modal.getFirstChild();
@@ -308,7 +306,7 @@ public final class GUIRoot extends GUIObject {
         return false;
     }
 
-    public void addModalForm(@NonNull Form form) {
+    public void addModalForm(Form form) {
         focus_backup_stack.push(global_focus);
         ModalDelegate delegate = new ModalDelegate();
         delegate.addChild(form);
@@ -317,7 +315,7 @@ public final class GUIRoot extends GUIObject {
         form.setFocus();
     }
 
-    void swapFocusBackup(@NonNull GUIObject o) {
+    void swapFocusBackup(GUIObject o) {
         focus_backup_stack.pop();
         focus_backup_stack.push(o);
     }
@@ -371,7 +369,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED) {
             boolean consumed = false;
 
@@ -515,12 +513,12 @@ public final class GUIRoot extends GUIObject {
         }
     }
 
-    public @NonNull GUIObject getCurrentGUIObject() {
+    public GUIObject getCurrentGUIObject() {
         return current_gui_object;
     }
 
     @Override
-    public void addChild(@NonNull GUIObject child) {
+    public void addChild(GUIObject child) {
         super.addChild(child);
         ModalDelegate modal_delegate = getModalDelegate();
         putFirst(info_printer);
@@ -533,7 +531,7 @@ public final class GUIRoot extends GUIObject {
         return getModalDelegate() != null || getDelegate().renderCursor();
     }
 
-    void renderTopmost(@NonNull GUIRenderer renderer, @Nullable ToolTip hovered, boolean cheater) {
+    void renderTopmost(GUIRenderer renderer, @Nullable ToolTip hovered, boolean cheater) {
         if (cheater && cheatIcon != null) {
             renderer.drawIcon(cheatIcon,
                     getWidth() - cheatIcon.getWidth() - 10,
@@ -569,7 +567,7 @@ public final class GUIRoot extends GUIObject {
         }
     }
 
-    public @NonNull Matrix4f multProjection(@NonNull Matrix4f matrix) {
+    public Matrix4f multProjection(Matrix4f matrix) {
         return getDelegate().multProjection(matrix, getWidth(), getHeight());
     }
 
@@ -578,7 +576,7 @@ public final class GUIRoot extends GUIObject {
         return render_tool_tip && obj.hasToolTip() ? obj : null;
     }
 
-    private void renderToolTip(@NonNull GUIRenderer renderer, @NonNull ToolTip hovered) {
+    private void renderToolTip(GUIRenderer renderer, ToolTip hovered) {
         tool_tip.clear();
         hovered.appendToolTip(tool_tip);
         tool_tip.render(renderer,

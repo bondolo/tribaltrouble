@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.model.Selectable;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -13,10 +12,10 @@ public final class FindOccupantFilter<S extends Selectable<?>> implements ScanFi
     private final float y;
     private final float radius;
     private final @Nullable Selectable<?> src;
-    private final @NonNull Class<S> type;
-    private final List<@NonNull S> result = new ArrayList<>();
+    private final Class<S> type;
+    private final List<S> result = new ArrayList<>();
 
-    public FindOccupantFilter(float x, float y, float radius, @Nullable Selectable<?> src, @NonNull Class<S> type) {
+    public FindOccupantFilter(float x, float y, float radius, @Nullable Selectable<?> src, Class<S> type) {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -49,7 +48,7 @@ public final class FindOccupantFilter<S extends Selectable<?>> implements ScanFi
         return false;
     }
 
-    public @NonNull Iterable<@NonNull S> getResult() {
+    public Iterable<S> getResult() {
         return result;
     }
 }

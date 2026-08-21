@@ -1,20 +1,19 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 /**
  * Base abstract template defining properties shared by all unit and building types in the game.
  */
 public abstract sealed class Template permits BuildingTemplate, UnitTemplate {
-    private final @NonNull Abilities abilities;
-    private final float @NonNull [] hit_offset_z;
+    private final Abilities abilities;
+    private final float[] hit_offset_z;
     private final float no_detail_size;
     private final float defense_chance;
     private final float shadow_diameter;
-    private final @NonNull String name;
+    private final String name;
 
-    protected Template(@NonNull Abilities abilities, float shadow_diameter,
-            float @NonNull [] hit_offset_z, float no_detail_size, float defense_chance, @NonNull String name) {
+    protected Template(Abilities abilities, float shadow_diameter,
+            float[] hit_offset_z, float no_detail_size, float defense_chance, String name) {
         this.abilities = abilities;
         this.hit_offset_z = hit_offset_z;
         this.no_detail_size = no_detail_size;
@@ -23,11 +22,11 @@ public abstract sealed class Template permits BuildingTemplate, UnitTemplate {
         this.shadow_diameter = shadow_diameter;
     }
 
-    public final @NonNull String getName() {
+    public final String getName() {
         return name;
     }
 
-    public final @NonNull Abilities getAbilities() {
+    public final Abilities getAbilities() {
         return abilities;
     }
 

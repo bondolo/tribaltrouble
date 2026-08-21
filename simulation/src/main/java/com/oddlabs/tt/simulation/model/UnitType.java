@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -41,7 +40,7 @@ public enum UnitType {
      * @return the corresponding {@link UnitType}
      * @throws IllegalArgumentException if the legacy value is unrecognized
      */
-    public static @NonNull UnitType fromValue(int value) {
+    public static UnitType fromValue(int value) {
         for (UnitType type : VALUES) {
             if (type.value == value) {
                 return type;

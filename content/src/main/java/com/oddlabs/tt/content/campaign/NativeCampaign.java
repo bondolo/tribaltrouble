@@ -10,7 +10,6 @@ import com.oddlabs.tt.client.gui.NativeCampaignIcons;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -40,20 +39,20 @@ public final class NativeCampaign extends Campaign {
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_HIDDEN};
 
-    private final @NonNull Island[] islands = Stream.<Function<Campaign, Island>>of(
+    private final Island[] islands = Stream.<Function<Campaign, Island>>of(
             NativeIsland0::new, NativeIsland1::new, NativeIsland2::new, NativeIsland3::new,
             NativeIsland4::new, NativeIsland5::new, NativeIsland6::new, NativeIsland7::new)
             .map(constructor -> constructor.apply(this))
             .toArray(Island[]::new);
 
-    public NativeCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            @NonNull AudioManager audioManager) {
+    public NativeCampaign(NetworkSelector network, GUIRoot gui_root,
+            AudioManager audioManager) {
         this(network, gui_root, new CampaignState(INITIAL_STATES), audioManager);
     }
 
-    public NativeCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            @NonNull CampaignState campaign_state,
-            @NonNull AudioManager audioManager) {
+    public NativeCampaign(NetworkSelector network, GUIRoot gui_root,
+            CampaignState campaign_state,
+            AudioManager audioManager) {
         super(campaign_state, audioManager);
 
         if (getState().getCurrentIsland() == -1) {
@@ -64,12 +63,12 @@ public final class NativeCampaign extends Campaign {
     }
 
     @Override
-    public @NonNull CampaignIcons getIcons() {
+    public CampaignIcons getIcons() {
         return NativeCampaignIcons.getIcons();
     }
 
     @Override
-    public void islandChosen(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, int number) {
+    public void islandChosen(NetworkSelector network, GUIRoot gui_root, int number) {
         if (Renderer.isRegistered()) {
             Form dialog = new CampaignDialogForm(islands[number].getHeader(),
                     islands[number].getDescription(),
@@ -81,7 +80,7 @@ public final class NativeCampaign extends Campaign {
     }
 
     @Override
-    public @NonNull CharSequence getCurrentObjective() {
+    public CharSequence getCurrentObjective() {
         if (getState().getCurrentIsland() != -1) {
             return islands[getState().getCurrentIsland()].getCurrentObjective();
         }
@@ -89,14 +88,14 @@ public final class NativeCampaign extends Campaign {
     }
 
     @Override
-    public void defeated(@NonNull WorldViewer viewer, @NonNull String game_over_message) {
+    public void defeated(WorldViewer viewer, String game_over_message) {
         if (getState().getCurrentIsland() == 4)
             ((NativeIsland4) islands[4]).removeCounter();
         super.defeated(viewer, game_over_message);
     }
 
     @Override
-    public void startIsland(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, int number) {
+    public void startIsland(NetworkSelector network, GUIRoot gui_root, int number) {
         getState().setCurrentIsland(number);
         islands[number].chosen(network, gui_root);
     }

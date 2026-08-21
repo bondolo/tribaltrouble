@@ -21,7 +21,6 @@ import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -35,7 +34,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
@@ -58,7 +56,7 @@ public final class Renderer implements AutoCloseable {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Renderer.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -73,13 +71,13 @@ public final class Renderer implements AutoCloseable {
     private static volatile boolean finished = false;
 
     private final GamePaths gamePaths;
-    private final @NonNull Settings settings;
+    private final Settings settings;
     private final Locale locale = default_locale;
 
     private final GLRenderContext renderContext = new GLRenderContext();
     private final Window window = new LWJGL3Window();
     private final Network network = new Network();
-    private final @NonNull LocalEventQueue event_queue = new LocalEventQueue();
+    private final LocalEventQueue event_queue = new LocalEventQueue();
 
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
@@ -137,19 +135,19 @@ public final class Renderer implements AutoCloseable {
         window.close();
     }
 
-    public @NonNull Window getWindow() {
+    public Window getWindow() {
         return window;
     }
 
-    public static @NonNull Renderer getRenderer() {
+    public static Renderer getRenderer() {
         return renderer_instance;
     }
 
-    public @NonNull Settings getSettings() {
+    public Settings getSettings() {
         return settings;
     }
 
-    public @NonNull AudioManager getAudioManager() {
+    public AudioManager getAudioManager() {
         AudioManager manager = audioManager;
         if (null == manager) {
             throw new IllegalStateException("AudioManager not initialized");
@@ -159,27 +157,27 @@ public final class Renderer implements AutoCloseable {
 
     /** global sound enable */
     public void startSound() {
-        Objects.requireNonNull(audioManager).startSources();
+        audioManager.startSources();
     }
 
     /** global sound disable */
     public void stopSound() {
-        Objects.requireNonNull(audioManager).stopSources();
+        audioManager.stopSources();
     }
 
-    public @NonNull LocalEventQueue getEventQueue() {
+    public LocalEventQueue getEventQueue() {
         return event_queue;
     }
 
-    public @NonNull Network getNetwork() {
+    public Network getNetwork() {
         return network;
     }
 
-    public @NonNull RenderContext getRenderContext() {
+    public RenderContext getRenderContext() {
         return renderContext;
     }
 
-    private void runGameLoop(@NonNull NetworkSelector network, @NonNull FrameDriver driver) {
+    private void runGameLoop(NetworkSelector network, FrameDriver driver) {
         if (AnimationManager.isTimeFrozen() && !AnimationManager.isTimeStopped())
             AnimationManager.unfreezeTime();
         long current_time;
@@ -254,7 +252,7 @@ public final class Renderer implements AutoCloseable {
         return num_triangles_rendered;
     }
 
-    private void display(@NonNull FrameDriver driver) {
+    private void display(FrameDriver driver) {
         num_triangles_rendered = 0;
         fps.updateDelta(System.currentTimeMillis());
         NativeResource.processCleanupTasks();
@@ -278,7 +276,7 @@ public final class Renderer implements AutoCloseable {
         }
     }
 
-    public void updateProgress(@NonNull FrameDriver driver) {
+    public void updateProgress(FrameDriver driver) {
         renderContext.reset(); // Fix texture bleeding
         display(driver);
         window.update();
@@ -293,7 +291,7 @@ public final class Renderer implements AutoCloseable {
         return finished;
     }
 
-    private static void deleteLog(@NonNull Path log) throws IOException {
+    private static void deleteLog(Path log) throws IOException {
         for (Path LOG_FILES : com.oddlabs.util.Utils.LOG_FILES) {
             Path log_file = log.resolve(LOG_FILES);
             Files.deleteIfExists(log_file);
@@ -301,7 +299,7 @@ public final class Renderer implements AutoCloseable {
         Files.deleteIfExists(log);
     }
 
-    private static void deleteOldLogs(File last_log_dir, File new_log_dir, @NonNull File logs_dir) {
+    private static void deleteOldLogs(File last_log_dir, File new_log_dir, File logs_dir) {
         File[] logs = logs_dir.listFiles();
         if (logs == null)
             return;
@@ -323,7 +321,7 @@ public final class Renderer implements AutoCloseable {
      * @return Path to a directory or null if filesystem operations don't
      *         generally seem to work.
      */
-    public static @Nullable Path getPropertyPath(@NonNull String property) {
+    public static @Nullable Path getPropertyPath(String property) {
         String propertyValue;
         try {
             propertyValue = System.getProperty(property);
@@ -393,7 +391,7 @@ public final class Renderer implements AutoCloseable {
     public record GamePaths(Path dataDir, Path logDir) {
     }
 
-    private static @NonNull GamePaths setupPaths() throws IOException {
+    private static GamePaths setupPaths() throws IOException {
         Path dataDir = null;
         Path logDir = null;
         boolean portable = false;
@@ -575,11 +573,11 @@ public final class Renderer implements AutoCloseable {
         return new GamePaths(dataDir, logDir);
     }
 
-    public @NonNull GamePaths getGamePaths() {
+    public GamePaths getGamePaths() {
         return gamePaths;
     }
 
-    public void run(@NonNull ClientStartup startup, @NonNull String @NonNull... args)
+    public void run(ClientStartup startup, String... args)
             throws IOException {
         Instant start_time = Instant.now();
         logger.info("********** Running tt **********");
@@ -784,11 +782,11 @@ public final class Renderer implements AutoCloseable {
         });
     }
 
-    public @NonNull Locale getDefaultLocale() {
+    public Locale getDefaultLocale() {
         return default_locale;
     }
 
-    private void setupLogging(@NonNull Path event_log_dir, boolean silent) throws IOException {
+    private void setupLogging(Path event_log_dir, boolean silent) throws IOException {
         try {
             Files.createDirectories(event_log_dir);
             logger.info("Writing log files in " + event_log_dir);
@@ -816,7 +814,7 @@ public final class Renderer implements AutoCloseable {
         }
     }
 
-    private static void failedOpenGL(@NonNull Exception e) {
+    private static void failedOpenGL(Exception e) {
         logger.log(Level.SEVERE, "OpenGL Failure", e);
         throw new IllegalStateException("OpenGL Failure", e);
     }
@@ -835,7 +833,7 @@ public final class Renderer implements AutoCloseable {
         logger.info("Cleanup complete. Exiting");
     }
 
-    public @NonNull SerializableDisplayMode getCurrentDisplayMode() {
+    public SerializableDisplayMode getCurrentDisplayMode() {
         return getEventQueue().getDeterministic()
                 .log(window.getDisplayMode());
     }
@@ -852,7 +850,7 @@ public final class Renderer implements AutoCloseable {
         }
     }
 
-    public void switchMode(@NonNull SerializableDisplayMode mode, boolean switch_now) {
+    public void switchMode(SerializableDisplayMode mode, boolean switch_now) {
         if (switch_now) {
             try {
                 window.setDisplayMode(mode);
@@ -864,21 +862,21 @@ public final class Renderer implements AutoCloseable {
             modeSwitchedLater(mode);
     }
 
-    public void setModeToNearest(@NonNull SerializableDisplayMode mode) {
+    public void setModeToNearest(SerializableDisplayMode mode) {
         // Use window create to ensure window is created/resized
         boolean fs = getSettings().window.fullscreen;
         window.create(mode, fs);
         modeSwitchedNow(mode);
     }
 
-    private void modeSwitchedLater(@NonNull SerializableDisplayMode new_mode) {
+    private void modeSwitchedLater(SerializableDisplayMode new_mode) {
         settings.window.fullscreen = window.isFullscreen();
         settings.window.new_view_width = new_mode.getWidth();
         settings.window.new_view_height = new_mode.getHeight();
         settings.window.new_view_freq = new_mode.getFrequency();
     }
 
-    private void modeSwitchedNow(@NonNull SerializableDisplayMode new_mode) {
+    private void modeSwitchedNow(SerializableDisplayMode new_mode) {
         modeSwitchedLater(new_mode);
         modeSwitched();
     }

@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -13,8 +12,8 @@ import java.util.List;
  */
 public final class TextureBatcher {
     private final int maxSlots;
-    private final IdentityHashMap<@NonNull Texture, @NonNull Integer> textureToSlot = new IdentityHashMap<>();
-    private final @NonNull List<@NonNull Texture> activeTextures;
+    private final IdentityHashMap<Texture, Integer> textureToSlot = new IdentityHashMap<>();
+    private final List<Texture> activeTextures;
 
     public TextureBatcher(int maxSlots) {
         this.maxSlots = maxSlots;
@@ -25,7 +24,7 @@ public final class TextureBatcher {
      * Gets the current slot for a texture, or assigns a new one if available.
      * Returns -1 if the texture is not currently batched and the batch is full.
      */
-    public int getOrAssignSlot(@NonNull Texture texture) {
+    public int getOrAssignSlot(Texture texture) {
         Integer slot = textureToSlot.get(texture);
         if (slot != null) {
             return slot;
@@ -42,7 +41,7 @@ public final class TextureBatcher {
     /**
      * Binds all active textures to the provided RenderContext, starting at the specified offset unit.
      */
-    public void bindTextures(@NonNull RenderContext context, int startUnit) {
+    public void bindTextures(RenderContext context, int startUnit) {
         for (int i = 0; i < activeTextures.size(); i++) {
             context.setTexture(startUnit + i, activeTextures.get(i).getHandle());
         }

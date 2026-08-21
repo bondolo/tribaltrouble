@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class AttackBehaviour implements Behaviour {
     private static final float SECONDS_PER_ATTACK = 2f;
@@ -12,12 +11,12 @@ public final class AttackBehaviour implements Behaviour {
         RELEASED
     }
 
-    private final @NonNull Selectable<?> target;
-    private final @NonNull Unit unit;
+    private final Selectable<?> target;
+    private final Unit unit;
     private float anim_time;
-    private @NonNull AttackState state = AttackState.THROWING;
+    private AttackState state = AttackState.THROWING;
 
-    public AttackBehaviour(@NonNull Unit unit, @NonNull Selectable<?> target) {
+    public AttackBehaviour(Unit unit, Selectable<?> target) {
         this.unit = unit;
         this.target = target;
         anim_time = unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ATTACK);
@@ -30,7 +29,7 @@ public final class AttackBehaviour implements Behaviour {
     }
 
     @Override
-    public @NonNull State animate(float t) {
+    public State animate(float t) {
         return switch (state) {
             case THROWING -> {
                 updateAttack(t);

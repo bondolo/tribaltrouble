@@ -5,7 +5,6 @@ import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
@@ -34,7 +33,7 @@ public final class Perlin {
     public Channel[] noise_channels;
 
     public Perlin(int width, int height, int x_factor, int y_factor, float pers, int oct, long seed,
-            @NonNull Interpolation interpolation, @NonNull Summation summation) {
+            Interpolation interpolation, Summation summation) {
         assert Utils.isPowerOf2(width) : "width must be power of 2";
         assert Utils.isPowerOf2(height) : "height must be power of 2";
         assert Utils.isPowerOf2(x_factor) : "x_factor must be power of 2";
@@ -64,7 +63,7 @@ public final class Perlin {
     }
 
     // interpolate and sum octave channels
-    private void mergeNoiseChannels(int width, int height, float pers, int oct, @NonNull Interpolation interpolation) {
+    private void mergeNoiseChannels(int width, int height, float pers, int oct, Interpolation interpolation) {
         channel = new Channel(width, height);
         int method_threshold = 0;
         if (interpolation == Interpolation.SMOOTH) {
@@ -201,7 +200,7 @@ public final class Perlin {
     }
 
     // transform image
-    private void transformImage(int width, int height, @NonNull Summation summation) {
+    private void transformImage(int width, int height, Summation summation) {
         float value = 0;
         switch (summation) {
             case NORMAL -> {
@@ -280,7 +279,7 @@ public final class Perlin {
         }
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel.copy(), channel.copy());
     }
 

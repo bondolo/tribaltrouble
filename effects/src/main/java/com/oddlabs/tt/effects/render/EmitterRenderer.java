@@ -22,7 +22,6 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 
 /**
@@ -51,8 +49,8 @@ public final class EmitterRenderer implements AutoCloseable {
             ParticleShader.Attribute.TEX_SLOT
     );
 
-    private final @NonNull FloatBuffer particle_buffer;
-    private final @NonNull FloatVBO particle_vbo;
+    private final FloatBuffer particle_buffer;
+    private final FloatVBO particle_vbo;
 
     private final ParticleShader shader = new ParticleShader();
 
@@ -62,18 +60,18 @@ public final class EmitterRenderer implements AutoCloseable {
     private record BatchKey(int srcBlend, int dstBlend, boolean fogEnabled) {
     }
 
-    private record BatchEntry<P extends Particle>(@NonNull Emitter<P> emitter, @NonNull List<@NonNull P> particles,
-                                                  @NonNull Texture texture) {
+    private record BatchEntry<P extends Particle>(Emitter<P> emitter, List<P> particles,
+                                                  Texture texture) {
     }
 
     /**
      * Grouping by blend modes. Inside each blend mode group, we will batch.
      */
-    private final Map<@NonNull BatchKey, @NonNull List<@NonNull BatchEntry<?>>> batches = new LinkedHashMap<>();
+    private final Map<BatchKey, List<BatchEntry<?>>> batches = new LinkedHashMap<>();
 
     public EmitterRenderer() {
         int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
-        particle_buffer = Objects.requireNonNull(BufferUtils.createFloatBuffer(MAX_PARTICLES * floatsPerParticle));
+        particle_buffer = BufferUtils.createFloatBuffer(MAX_PARTICLES * floatsPerParticle);
         particle_vbo = new FloatVBO(GL15.GL_STREAM_DRAW, particle_buffer.capacity());
 
         vao.bind();
@@ -95,8 +93,8 @@ public final class EmitterRenderer implements AutoCloseable {
         batches.clear();
     }
 
-    public void prepare(@NonNull RenderQueues render_queues, @NonNull Queue<? extends Emitter<?>> emitters,
-            @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
+    public void prepare(RenderQueues render_queues, Queue<? extends Emitter<?>> emitters,
+            CameraState state, MatrixStack modelViewStack) {
         clear();
         if (DebugFlags.draw_particles)
             for (Emitter<?> emitter : emitters) {
@@ -104,8 +102,8 @@ public final class EmitterRenderer implements AutoCloseable {
             }
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack, @NonNull Texture depthTexture) {
+    public void render(RenderContext context, RenderQueues render_queues, CameraState state,
+            MatrixStack modelViewStack, MatrixStack projectionStack, Texture depthTexture) {
         if (batches.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
@@ -138,7 +136,7 @@ public final class EmitterRenderer implements AutoCloseable {
         }
     }
 
-    private <P extends Particle> void renderParticle(@NonNull P particle, @NonNull Emitter<P> emitter, float layer) {
+    private <P extends Particle> void renderParticle(P particle, Emitter<P> emitter, float layer) {
         particle_buffer.put(particle.getPosX()).put(particle.getPosY()).put(particle.getPosZ()); // World Position
         particle_buffer.put(particle.getRadiusX() * emitter.getScaleX()).put(particle.getRadiusY() * emitter
                 .getScaleY()).put(particle.getRadiusZ() * emitter.getScaleZ()); // Size (3D)
@@ -154,10 +152,10 @@ public final class EmitterRenderer implements AutoCloseable {
         particle_buffer.put(layer);
     }
 
-    private <P extends Particle> void collectParticles(@NonNull RenderQueues render_queues, @NonNull Emitter<P> emitter,
-            @NonNull CameraState state, @NonNull MatrixStack modelViewStack) {
+    private <P extends Particle> void collectParticles(RenderQueues render_queues, Emitter<P> emitter,
+            CameraState state, MatrixStack modelViewStack) {
         TextureKey[] textures = emitter.getTextures();
-        List<@NonNull P>[] particles = emitter.getParticles();
+        List<P>[] particles = emitter.getParticles();
         SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
 
         if (textures != null) {
@@ -182,7 +180,7 @@ public final class EmitterRenderer implements AutoCloseable {
         }
     }
 
-    private void flushBatches(@NonNull RenderContext context) {
+    private void flushBatches(RenderContext context) {
         int floatsPerParticle = VERTEX_LAYOUT.getStride() / Float.BYTES;
 
         for (var entry : batches.entrySet()) {
@@ -203,7 +201,7 @@ public final class EmitterRenderer implements AutoCloseable {
         }
     }
 
-    private <P extends Particle> int processBatchEntry(@NonNull BatchEntry<P> batch, float layer, int particleCount,
+    private <P extends Particle> int processBatchEntry(BatchEntry<P> batch, float layer, int particleCount,
             int floatsPerParticle) {
         var particles = batch.particles();
         var emitter = batch.emitter();
@@ -248,7 +246,7 @@ public final class EmitterRenderer implements AutoCloseable {
         vbo_offset += particleCount;
     }
 
-    public void debugRender(@NonNull Queue<@NonNull Emitter<?>> emitter_queue) {
+    public void debugRender(Queue<Emitter<?>> emitter_queue) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (Emitter<?> emitter : emitter_queue) {
                 emitter.debugRender();

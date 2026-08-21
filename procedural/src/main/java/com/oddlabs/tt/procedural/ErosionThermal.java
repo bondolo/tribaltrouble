@@ -2,7 +2,6 @@ package com.oddlabs.tt.procedural;
 
 
 import com.oddlabs.procedural.Channel;
-import org.jspecify.annotations.NonNull;
 
 public final class ErosionThermal {
 
@@ -15,7 +14,7 @@ public final class ErosionThermal {
     private static Channel height_d;
     private static Channel old;
 
-    public static @NonNull Channel erodeReference(@NonNull Channel channel, int iterations) {
+    public static Channel erodeReference(Channel channel, int iterations) {
         height = channel;
         height_d = new Channel(channel.width, channel.height);
         float talus = 4f / channel.width;
@@ -117,7 +116,7 @@ public final class ErosionThermal {
         return channel;
     }
 
-    public static @NonNull Channel erodeFast(@NonNull Channel channel, int iterations) {
+    public static Channel erodeFast(Channel channel, int iterations) {
         height = channel;
         float talus = 3.75f / channel.width;
         long start = System.currentTimeMillis();
@@ -201,7 +200,7 @@ public final class ErosionThermal {
         return channel;
     }
 
-    public static @NonNull Channel erodeFast2(@NonNull Channel channel, int iterations) {
+    public static Channel erodeFast2(Channel channel, int iterations) {
         height = channel;
         float talus = 12f / channel.width;
         long start = System.currentTimeMillis();
@@ -255,7 +254,7 @@ public final class ErosionThermal {
         return channel;
     }
 
-    public static @NonNull Channel erodeFast3(@NonNull Channel channel, int iterations) {
+    public static Channel erodeFast3(Channel channel, int iterations) {
         height = channel;
         float talus = 16f / channel.width;
         long start = System.currentTimeMillis();

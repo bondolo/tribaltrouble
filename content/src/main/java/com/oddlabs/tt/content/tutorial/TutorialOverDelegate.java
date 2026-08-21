@@ -14,7 +14,6 @@ import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -24,17 +23,17 @@ public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> imp
     private static final float DELAY = 1f;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(TutorialOverDelegate.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull TimerAnimation delay_timer;
-    private final @NonNull Group group_buttons;
-    private final @NonNull TutorialInGameInfo tutorial_info;
-    private final @NonNull WorldViewer viewer;
+    private final TimerAnimation delay_timer;
+    private final Group group_buttons;
+    private final TutorialInGameInfo tutorial_info;
+    private final WorldViewer viewer;
 
-    public TutorialOverDelegate(final @NonNull WorldViewer viewer, @NonNull TutorialInGameInfo tutorial_info,
-            @NonNull Camera old_camera, int tutorial_number) {
+    public TutorialOverDelegate(final WorldViewer viewer, TutorialInGameInfo tutorial_info,
+            Camera old_camera, int tutorial_number) {
         super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
         this.viewer = viewer;
         this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, DELAY);
@@ -75,12 +74,12 @@ public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> imp
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         renderBackgroundAlpha(renderer);
     }
 
     @Override
-    public void update(@NonNull TimerAnimation anim) {
+    public void update(TimerAnimation anim) {
         addChild(group_buttons);
         delay_timer.stop();
     }
@@ -93,7 +92,7 @@ public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> imp
         }
 
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             if (tutorial_info.setNextTutorial(viewer.getGUIRoot(), tutorial_number))
                 viewer.close();
         }

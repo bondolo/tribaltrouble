@@ -1,6 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 
@@ -27,8 +26,8 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
      */
     protected volatile @Nullable Audio audio;
 
-    protected QueuedAudioPlayer(@NonNull AM manager, @Nullable AS source, float x, float y, float z,
-            @NonNull AudioParameters params) {
+    protected QueuedAudioPlayer(AM manager, @Nullable AS source, float x, float y, float z,
+            AudioParameters params) {
         super(manager, source, x, y, z, params);
         if (!isPlaying() || this.source == null) {
             return;
@@ -40,7 +39,7 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
         Thread.startVirtualThread(() -> refiller(params.audio().getURL()));
     }
 
-    private void refiller(@NonNull URL source) {
+    private void refiller(URL source) {
         initThread();
         try (OGGStream stream = new OGGStream(source)) {
             this.audio = initAsync(stream);
@@ -88,19 +87,19 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
     }
 
     /** Run by the Refiller thread */
-    protected abstract @Nullable Audio initAsync(@NonNull OGGStream stream) throws Exception;
+    protected abstract @Nullable Audio initAsync(OGGStream stream) throws Exception;
 
     /** Run by the Refiller thread to initialize thread-local context/capabilities. */
     protected void initThread() {
     }
 
     /** Run by the Refiller thread */
-    protected abstract void refill(@NonNull OGGStream stream) throws IOException;
+    protected abstract void refill(OGGStream stream) throws IOException;
 
     /** Run by the Refiller thread */
     protected abstract void cleanupAsync() throws Exception;
 
-    protected static int readPCM(@NonNull OGGStream stream, @NonNull ShortBuffer pcmBuffer, boolean looping) {
+    protected static int readPCM(OGGStream stream, ShortBuffer pcmBuffer, boolean looping) {
         pcmBuffer.clear(); // Position 0, Limit PCM_SAMPLES
 
         int shortsRead = stream.read(pcmBuffer);
@@ -120,7 +119,7 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
     }
 
     @Override
-    public @NonNull QueuedAudioPlayer<AM, AS> stop() {
+    public QueuedAudioPlayer<AM, AS> stop() {
         if (manager.removeQueuedPlayer(this)) {
             super.stop(); // Sets playing = false and stops the source.
         }

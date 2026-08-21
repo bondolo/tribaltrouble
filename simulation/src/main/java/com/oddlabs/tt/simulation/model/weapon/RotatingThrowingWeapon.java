@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A base class for weapons that rotate as they are thrown (e.g., axes).
@@ -11,7 +10,7 @@ public abstract sealed class RotatingThrowingWeapon extends ThrowingWeapon permi
         RockAxeWeapon, IronAxeWeapon, RubberAxeWeapon {
     private float angle = 0;
 
-    public RotatingThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
+    public RotatingThrowingWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(hit, src, target);
     }
 

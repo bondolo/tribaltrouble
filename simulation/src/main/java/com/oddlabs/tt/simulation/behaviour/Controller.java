@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.behaviour;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 
@@ -8,7 +7,7 @@ public abstract sealed class Controller permits AttackController, DefendControll
         GatherController, HarvestController, HuntController, IdleController, MagicController, NullController,
         PlaceBuildingController, RepairController, StunController, TransferUnitController, WalkController {
     private static final int MAX_TRIES = 1;
-    private final int @NonNull [] give_up_counters;
+    private final int[] give_up_counters;
 
     protected Controller(int num_states) {
         give_up_counters = new int[num_states];
@@ -45,7 +44,7 @@ public abstract sealed class Controller permits AttackController, DefendControll
         }
     }
 
-    public @NonNull String getKey() {
+    public String getKey() {
         return Integer.toString(getClass().hashCode());
     }
 

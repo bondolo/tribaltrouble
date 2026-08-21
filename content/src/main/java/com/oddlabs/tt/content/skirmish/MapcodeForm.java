@@ -13,7 +13,6 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.math.BigInteger;
 import java.util.ResourceBundle;
@@ -27,13 +26,13 @@ public final class MapcodeForm extends Form {
     private static final int BUTTON_WIDTH = 100;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(MapcodeForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final TerrainMenu menu;
 
-    private final @NonNull EditLine editline_seed;
+    private final EditLine editline_seed;
 
     public MapcodeForm(TerrainMenu menu) {
         this.menu = menu;
@@ -46,7 +45,7 @@ public final class MapcodeForm extends Form {
             }
 
             @Override
-            public boolean append(@NonNull CharSequence text) {
+            public boolean append(CharSequence text) {
                 var shifted = text.toString().toUpperCase();
                 return super.append(shifted);
             }
@@ -75,7 +74,7 @@ public final class MapcodeForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -91,7 +90,7 @@ public final class MapcodeForm extends Form {
 
     private final class RandButtonListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             BigInteger rand_int = new BigInteger(60, ThreadLocalRandom.current());
             String rand_string = RegistrationKey.createString(rand_int);
             editline_seed.clear();

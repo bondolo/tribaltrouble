@@ -1,7 +1,6 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.NonNull;
 
 final class LinearParticle extends Particle {
     private float velocity_x = 0f;
@@ -11,11 +10,11 @@ final class LinearParticle extends Particle {
     private float acceleration_y = 0f;
     private float acceleration_z = 0f;
 
-    public LinearParticle(@NonNull World world) {
+    public LinearParticle(World world) {
         this(world, 0f);
     }
 
-    public LinearParticle(@NonNull World world, float angle) {
+    public LinearParticle(World world, float angle) {
         super(world, angle);
     }
 

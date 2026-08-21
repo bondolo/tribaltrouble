@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.FontFile;
 import com.oddlabs.tt.engine.resource.Resources;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
 
@@ -27,50 +26,50 @@ import static com.oddlabs.tt.gui.Icons.getNodeByName;
 public final class Skin {
     static final ScopedValue<Skin> CURRENT = ScopedValue.newInstance();
 
-    private final @NonNull Font edit_font;
-    private final @NonNull Font button_font;
-    private final @NonNull Font headline_font;
+    private final Font edit_font;
+    private final Font button_font;
+    private final Font headline_font;
 
-    private final @NonNull ModeIconQuads plus_button;
-    private final @NonNull ModeIconQuads minus_button;
-    private final @NonNull ModeIconQuads accept_button;
-    private final @NonNull ModeIconQuads cancel_button;
-    private final @NonNull ModeIconQuads back_button;
-    private final @NonNull Horizontal horiz_button_pressed;
-    private final @NonNull Horizontal horiz_button_unpressed;
-    private final @NonNull FormData form_data;
-    private final @NonNull Box edit_box;
-    private final @NonNull Box background_box;
-    private final @NonNull ModeIconQuads check_box_marked;
-    private final @NonNull ModeIconQuads check_box_unmarked;
-    private final @NonNull ModeIconQuads radio_button_marked;
-    private final @NonNull ModeIconQuads radio_button_unmarked;
-    private final @NonNull GroupData group_data;
-    private final @NonNull ScrollBarData scroll_bar_data;
-    private final @NonNull SliderData slider_data;
-    private final @NonNull PulldownData pulldown_data;
-    private final @NonNull ProgressBarData progress_bar_data;
-    private final @NonNull MultiColumnComboBoxData multi_columnCombo_box_data;
-    private final @NonNull ToolTipBoxInfo tool_tip;
-    private final @NonNull ModeIconQuads diode;
-    private final @NonNull PanelData panel_data;
-    private final @NonNull IconQuad flag_default;
-    private final SequencedMap<@NonNull String, @NonNull IconQuad> flags;
+    private final ModeIconQuads plus_button;
+    private final ModeIconQuads minus_button;
+    private final ModeIconQuads accept_button;
+    private final ModeIconQuads cancel_button;
+    private final ModeIconQuads back_button;
+    private final Horizontal horiz_button_pressed;
+    private final Horizontal horiz_button_unpressed;
+    private final FormData form_data;
+    private final Box edit_box;
+    private final Box background_box;
+    private final ModeIconQuads check_box_marked;
+    private final ModeIconQuads check_box_unmarked;
+    private final ModeIconQuads radio_button_marked;
+    private final ModeIconQuads radio_button_unmarked;
+    private final GroupData group_data;
+    private final ScrollBarData scroll_bar_data;
+    private final SliderData slider_data;
+    private final PulldownData pulldown_data;
+    private final ProgressBarData progress_bar_data;
+    private final MultiColumnComboBoxData multi_columnCombo_box_data;
+    private final ToolTipBoxInfo tool_tip;
+    private final ModeIconQuads diode;
+    private final PanelData panel_data;
+    private final IconQuad flag_default;
+    private final SequencedMap<String, IconQuad> flags;
 
-    public static @NonNull Skin getSkin() {
+    public static Skin getSkin() {
         return CURRENT.orElseThrow(() -> new IllegalStateException("Skin not in scope"));
     }
 
-    public static void run(@NonNull Skin skin, @NonNull Runnable operation) {
+    public static void run(Skin skin, Runnable operation) {
         ScopedValue.where(CURRENT, skin).run(operation);
     }
 
-    public static <V, X extends Throwable> V call(@NonNull Skin skin,
-            ScopedValue.@NonNull CallableOp<V, X> operation) throws X {
+    public static <V, X extends Throwable> V call(Skin skin,
+            ScopedValue.CallableOp<V, X> operation) throws X {
         return ScopedValue.where(CURRENT, skin).call(operation);
     }
 
-    public Skin(@NonNull String xml_file) {
+    public Skin(String xml_file) {
         Node root = Icons.loadFile(xml_file, new GUIErrorHandler());
         Texture texture = Icons.loadTexture(root);
         edit_font = parseEditFont(root);
@@ -111,7 +110,7 @@ public final class Skin {
         flags = Collections.unmodifiableSequencedMap(flagMap);
     }
 
-    private @NonNull Horizontal getHorizontal(@NonNull Node n, @NonNull Texture texture) {
+    private Horizontal getHorizontal(Node n, Texture texture) {
         Node horizontal_node = getNodeByName("horizontal", n);
         return new Horizontal(
                 getIconQuads(getNodeByName("left", horizontal_node), texture),
@@ -120,7 +119,7 @@ public final class Skin {
         );
     }
 
-    private @NonNull Vertical getVertical(@NonNull Node n, @NonNull Texture texture) {
+    private Vertical getVertical(Node n, Texture texture) {
         Node vertical_node = getNodeByName("vertical", n);
         return new Vertical(
                 getIconQuads(getNodeByName("bottom", vertical_node), texture),
@@ -129,7 +128,7 @@ public final class Skin {
         );
     }
 
-    private @NonNull Box getBox(@NonNull Node n, @NonNull Texture texture) {
+    private Box getBox(Node n, Texture texture) {
         Node box_node = getNodeByName("box", n);
         ModeIconQuads left_bottom = getIconQuads(getNodeByName("left_bottom", box_node), texture);
         ModeIconQuads bottom = getIconQuads(getNodeByName("bottom", box_node), texture);
@@ -158,100 +157,100 @@ public final class Skin {
                 top_offset);
     }
 
-    private @NonNull Font getFont(@NonNull Node n) {
+    private Font getFont(Node n) {
         String path = n.getFirstChild().getNodeValue();
         FontFile font_file = new FontFile(path);
         return Resources.findResource(font_file);
     }
 
-    private @NonNull Font parseEditFont(@NonNull Node n) {
+    private Font parseEditFont(Node n) {
         Node node = getNodeByName("editfont", n);
         return getFont(node);
     }
 
-    public @NonNull Font getEditFont() {
+    public Font getEditFont() {
         return edit_font;
     }
 
-    private @NonNull Font parseButtonFont(@NonNull Node n) {
+    private Font parseButtonFont(Node n) {
         Node node = getNodeByName("buttonfont", n);
         return getFont(node);
     }
 
-    public @NonNull Font getButtonFont() {
+    public Font getButtonFont() {
         return button_font;
     }
 
-    private @NonNull Font parseHeadlineFont(@NonNull Node n) {
+    private Font parseHeadlineFont(Node n) {
         Node node = getNodeByName("headlinefont", n);
         return getFont(node);
     }
 
-    public @NonNull Font getHeadlineFont() {
+    public Font getHeadlineFont() {
         return headline_font;
     }
 
-    private @NonNull ModeIconQuads parseCheckBoxMarked(@NonNull Node n, @NonNull Texture texture) {
+    private ModeIconQuads parseCheckBoxMarked(Node n, Texture texture) {
         Node node = getNodeByName("checkbox", n);
         node = getNodeByName("marked", node);
         return getIconQuads(node, texture);
     }
 
-    public @NonNull ModeIconQuads getCheckBoxMarked() {
+    public ModeIconQuads getCheckBoxMarked() {
         return check_box_marked;
     }
 
-    private @NonNull ModeIconQuads parseCheckBoxUnmarked(@NonNull Node n, @NonNull Texture texture) {
+    private ModeIconQuads parseCheckBoxUnmarked(Node n, Texture texture) {
         Node node = getNodeByName("checkbox", n);
         node = getNodeByName("unmarked", node);
         return getIconQuads(node, texture);
     }
 
-    public @NonNull ModeIconQuads getCheckBoxUnmarked() {
+    public ModeIconQuads getCheckBoxUnmarked() {
         return check_box_unmarked;
     }
 
-    private @NonNull ModeIconQuads parseRadioButtonMarked(@NonNull Node n, @NonNull Texture texture) {
+    private ModeIconQuads parseRadioButtonMarked(Node n, Texture texture) {
         Node node = getNodeByName("radiobutton", n);
         node = getNodeByName("marked", node);
         return getIconQuads(node, texture);
     }
 
-    public @NonNull ModeIconQuads getRadioButtonMarked() {
+    public ModeIconQuads getRadioButtonMarked() {
         return radio_button_marked;
     }
 
-    private @NonNull ModeIconQuads parseRadioButtonUnmarked(@NonNull Node n, @NonNull Texture texture) {
+    private ModeIconQuads parseRadioButtonUnmarked(Node n, Texture texture) {
         Node node = getNodeByName("radiobutton", n);
         node = getNodeByName("unmarked", node);
         return getIconQuads(node, texture);
     }
 
-    public @NonNull ModeIconQuads getRadioButtonUnmarked() {
+    public ModeIconQuads getRadioButtonUnmarked() {
         return radio_button_unmarked;
     }
 
-    private @NonNull Horizontal parseHorizButtonPressed(@NonNull Node n, @NonNull Texture texture) {
+    private Horizontal parseHorizButtonPressed(Node n, Texture texture) {
         Node node = getNodeByName("horiz_button", n);
         node = getNodeByName("horiz_pressed", node);
         return getHorizontal(node, texture);
     }
 
-    public @NonNull Horizontal getHorizButtonPressed() {
+    public Horizontal getHorizButtonPressed() {
         return horiz_button_pressed;
     }
 
-    private @NonNull Horizontal parseHorizButtonUnpressed(@NonNull Node n, @NonNull Texture texture) {
+    private Horizontal parseHorizButtonUnpressed(Node n, Texture texture) {
         Node node = getNodeByName("horiz_button", n);
         node = getNodeByName("horiz_unpressed", node);
         return getHorizontal(node, texture);
     }
 
-    public @NonNull Horizontal getHorizButtonUnpressed() {
+    public Horizontal getHorizButtonUnpressed() {
         return horiz_button_unpressed;
     }
 
-    private @NonNull ScrollBarData parseScrollBarData(@NonNull Node n, @NonNull Texture texture) {
+    private ScrollBarData parseScrollBarData(Node n, Texture texture) {
         Node node = getNodeByName("vert_scroll", n);
         Vertical scroll_bar = getVertical(node, texture);
 
@@ -298,11 +297,11 @@ public final class Skin {
                 getInt(node, "top_offset"));
     }
 
-    public @NonNull ScrollBarData getScrollBarData() {
+    public ScrollBarData getScrollBarData() {
         return scroll_bar_data;
     }
 
-    private @NonNull SliderData parseSliderData(@NonNull Node n, @NonNull Texture texture) {
+    private SliderData parseSliderData(Node n, Texture texture) {
         Node node = getNodeByName("slider", n);
         Horizontal slider = getHorizontal(node, texture);
 
@@ -314,11 +313,11 @@ public final class Skin {
                 getInt(node, "right_offset"));
     }
 
-    public @NonNull SliderData getSliderData() {
+    public SliderData getSliderData() {
         return slider_data;
     }
 
-    private @NonNull PulldownData parsePulldownData(@NonNull Node n, @NonNull Texture texture) {
+    private PulldownData parsePulldownData(Node n, Texture texture) {
         Node node = getNodeByName("pulldown_menu", n);
 
         Node temp;
@@ -346,11 +345,11 @@ public final class Skin {
                 getFont(getNodeByName("pulldownfont", n)));
     }
 
-    public @NonNull PulldownData getPulldownData() {
+    public PulldownData getPulldownData() {
         return pulldown_data;
     }
 
-    private @NonNull ProgressBarData parseProgressBarData(@NonNull Node n, @NonNull Texture texture) {
+    private ProgressBarData parseProgressBarData(Node n, Texture texture) {
         Node node = getNodeByName("progressbar", n);
         Horizontal progressbar = getHorizontal(node, texture);
 
@@ -371,11 +370,11 @@ public final class Skin {
                 getFont(getNodeByName("progressfont", n)));
     }
 
-    public @NonNull ProgressBarData getProgressBarData() {
+    public ProgressBarData getProgressBarData() {
         return progress_bar_data;
     }
 
-    private @NonNull FormData parseFormData(@NonNull Node n, @NonNull Texture texture) {
+    private FormData parseFormData(Node n, Texture texture) {
         Node node = getNodeByName("slim_form", n);
         Box slim_form = getBox(node, texture);
 
@@ -392,48 +391,48 @@ public final class Skin {
                 getFont(getNodeByName("formfont", n)));
     }
 
-    public @NonNull FormData getFormData() {
+    public FormData getFormData() {
         return form_data;
     }
 
-    public @NonNull ModeIconQuads getPlusButton() {
+    public ModeIconQuads getPlusButton() {
         return plus_button;
     }
 
-    public @NonNull ModeIconQuads getMinusButton() {
+    public ModeIconQuads getMinusButton() {
         return minus_button;
     }
 
-    public @NonNull ModeIconQuads getAcceptButton() {
+    public ModeIconQuads getAcceptButton() {
         return accept_button;
     }
 
-    public @NonNull ModeIconQuads getCancelButton() {
+    public ModeIconQuads getCancelButton() {
         return cancel_button;
     }
 
-    public @NonNull ModeIconQuads getBackButton() {
+    public ModeIconQuads getBackButton() {
         return back_button;
     }
 
-    public @NonNull ModeIconQuads getDiode() {
+    public ModeIconQuads getDiode() {
         return diode;
     }
 
-    private @NonNull Box parseBox(@NonNull Node n, @NonNull String name, @NonNull Texture texture) {
+    private Box parseBox(Node n, String name, Texture texture) {
         Node node = getNodeByName(name, n);
         return getBox(node, texture);
     }
 
-    public @NonNull Box getEditBox() {
+    public Box getEditBox() {
         return edit_box;
     }
 
-    public @NonNull Box getBackgroundBox() {
+    public Box getBackgroundBox() {
         return background_box;
     }
 
-    private @NonNull GroupData parseGroupData(@NonNull Node n, @NonNull Texture texture) {
+    private GroupData parseGroupData(Node n, Texture texture) {
         Node node = getNodeByName("group", n);
         return new GroupData(getBox(node, texture),
                 getInt(node, "caption_left"),
@@ -442,11 +441,11 @@ public final class Skin {
                 getFont(getNodeByName("groupfont", n)));
     }
 
-    public @NonNull GroupData getGroupData() {
+    public GroupData getGroupData() {
         return group_data;
     }
 
-    private @NonNull MultiColumnComboBoxData parseMultiColumnComboBoxData(@NonNull Node n, @NonNull Texture texture) {
+    private MultiColumnComboBoxData parseMultiColumnComboBoxData(Node n, Texture texture) {
         Node node = getNodeByName("multi_column_combo", n);
         Node desc = getNodeByName("descending", node);
         Node asc = getNodeByName("ascending", node);
@@ -462,11 +461,11 @@ public final class Skin {
                 getInt(node, "caption_offset"));
     }
 
-    public @NonNull MultiColumnComboBoxData getMultiColumnComboBoxData() {
+    public MultiColumnComboBoxData getMultiColumnComboBoxData() {
         return multi_columnCombo_box_data;
     }
 
-    private @NonNull ToolTipBoxInfo parseToolTipInfo(@NonNull Node n, @NonNull Texture texture) {
+    private ToolTipBoxInfo parseToolTipInfo(Node n, Texture texture) {
         Node node = getNodeByName("tool_tip", n);
         return new ToolTipBoxInfo(getHorizontal(node, texture),
                 getInt(node, "left_offset"),
@@ -475,11 +474,11 @@ public final class Skin {
                 getInt(node, "top_offset"));
     }
 
-    public @NonNull ToolTipBoxInfo getToolTipInfo() {
+    public ToolTipBoxInfo getToolTipInfo() {
         return tool_tip;
     }
 
-    private @NonNull PanelData parsePanelData(@NonNull Node n, @NonNull Texture texture) {
+    private PanelData parsePanelData(Node n, Texture texture) {
         Node node = getNodeByName("panel", n);
         return new PanelData(getBox(node, texture),
                 getHorizontal(node, texture),
@@ -490,15 +489,15 @@ public final class Skin {
                 getInt(node, "bottom_tab_offset"));
     }
 
-    public @NonNull PanelData getPanelData() {
+    public PanelData getPanelData() {
         return panel_data;
     }
 
-    public @NonNull IconQuad getFlagDefault() {
+    public IconQuad getFlagDefault() {
         return flag_default;
     }
 
-    public @Nullable IconQuad getFlag(@NonNull String language) {
+    public @Nullable IconQuad getFlag(String language) {
         return flags.get(language);
     }
 }

@@ -17,7 +17,6 @@ import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
 import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
-import org.jspecify.annotations.NonNull;
 
 
 /**
@@ -32,7 +31,7 @@ public final class ClientStateInitializer {
      *
      * @param audio the active audio implementation
      */
-    public static void init(@NonNull AudioImplementation audio) {
+    public static void init(AudioImplementation audio) {
         Model.setClientStateFactory(model -> {
             VisualModel visualModel = new VisualModel(model, audio);
             switch (model) {

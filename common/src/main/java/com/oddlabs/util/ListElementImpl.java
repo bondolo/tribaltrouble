@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public abstract class ListElementImpl<T extends ListElementImpl<T>> implements ListElement<T> {
@@ -9,7 +8,7 @@ public abstract class ListElementImpl<T extends ListElementImpl<T>> implements L
     private @Nullable T next;
     private @Nullable T prior;
 
-    protected abstract @NonNull T self();
+    protected abstract T self();
 
     @Override
     public final void setListOwner(@Nullable LinkedList<T> owner) {

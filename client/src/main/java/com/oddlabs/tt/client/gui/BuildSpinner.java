@@ -13,14 +13,13 @@ import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 public final class BuildSpinner extends IconSpinner {
     public static final int INFINITE_LIMIT = BuildProductionContainer.INFINITE_LIMIT;
 
-    private final @NonNull PlayerInterface player_interface;
+    private final PlayerInterface player_interface;
 
     private Building current_building;
     private Class<? extends ThrowingWeapon> type;
@@ -28,14 +27,14 @@ public final class BuildSpinner extends IconSpinner {
     private int order_size;
     private boolean infinite;
 
-    BuildSpinner(@NonNull WorldViewer viewer, @NonNull PlayerInterface player_interface,
-            @NonNull ModeIconQuads icon_quad, @NonNull String tool_tip, @NonNull List<@NonNull IconQuad> tool_tip_icons,
-            @NonNull GameAction action, @NonNull GameAction dec_action) {
+    BuildSpinner(WorldViewer viewer, PlayerInterface player_interface,
+            ModeIconQuads icon_quad, String tool_tip, List<IconQuad> tool_tip_icons,
+            GameAction action, GameAction dec_action) {
         super(viewer, icon_quad, tool_tip, tool_tip_icons, action, dec_action);
         this.player_interface = player_interface;
     }
 
-    void setBuildSupplyContainer(@NonNull Building current_building, @NonNull Class<? extends ThrowingWeapon> type) {
+    void setBuildSupplyContainer(Building current_building, Class<? extends ThrowingWeapon> type) {
         this.current_building = current_building;
         this.type = type;
         if (!current_building.isDead())
@@ -74,7 +73,7 @@ public final class BuildSpinner extends IconSpinner {
     }
 
     @Override
-    public void appendToolTip(@NonNull ToolTipBox tool_tip_box) {
+    public void appendToolTip(ToolTipBox tool_tip_box) {
         if (!isDisabled())
             super.appendToolTip(tool_tip_box);
     }

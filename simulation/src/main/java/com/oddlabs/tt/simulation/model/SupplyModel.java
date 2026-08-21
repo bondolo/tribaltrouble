@@ -5,7 +5,6 @@ import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -14,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply,
         RubberSupply, RockSupply {
     /** This is also known to be a SpriteKey */
-    private final @NonNull BoundsProvider boundsProvider;
+    private final BoundsProvider boundsProvider;
 
     private final float size;
     private final float rotation;
@@ -49,9 +48,9 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
      * @param increase_count a flag indicating whether to notify the supply manager to increment the supply count
      * @param boundsProvider a provider for bounds of the supply model; must not be null. Also, sneakily the SpriteKey
      */
-    public SupplyModel(@NonNull World world, float size, int grid_x, int grid_y,
+    public SupplyModel(World world, float size, int grid_x, int grid_y,
             float x, float y, float offset_z, float rotation, int num_supplies, boolean increase_count,
-            @NonNull BoundsProvider boundsProvider) {
+            BoundsProvider boundsProvider) {
         super(world);
         this.boundsProvider = boundsProvider;
         this.size = size;
@@ -80,7 +79,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     }
 
     @Override
-    public abstract @NonNull SupplyType getSupplyType();
+    public abstract SupplyType getSupplyType();
 
     @Override
     public void animateSpawn(float t, float progress) {
@@ -230,12 +229,12 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         return getSlopeOffset(getSize() * 0.2f);
     }
 
-    public @NonNull BoundsProvider getBoundsProvider() {
+    public BoundsProvider getBoundsProvider() {
         return boundsProvider;
     }
 
     @Override
-    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+    protected BoundingBox[] getLocalBounds() {
         return boundsProvider.bounds();
     }
 

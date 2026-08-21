@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.simulation.model.Model;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -14,7 +13,6 @@ public interface SceneContext {
      *
      * @return render queues
      */
-    @NonNull
     RenderQueues getRenderQueues();
 
     /**
@@ -31,5 +29,5 @@ public interface SceneContext {
      * @param model the model to query
      * @return true if responding
      */
-    boolean isResponding(@NonNull Model model);
+    boolean isResponding(Model model);
 }

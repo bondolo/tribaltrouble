@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -11,14 +10,14 @@ import org.lwjgl.opengl.GL30;
  * Manages the OpenGL Texture state and propagates updates to the GPU.
  */
 public final class HeightMapVisual implements HeightMap.ClientState {
-    private final @NonNull Texture heightTexture;
+    private final Texture heightTexture;
 
     /**
      * Constructs the visual representation of the height map, creating the OpenGL texture.
      *
      * @param heightMap The simulation height map instance
      */
-    public HeightMapVisual(@NonNull HeightMap heightMap) {
+    public HeightMapVisual(HeightMap heightMap) {
         this.heightTexture = new Texture(heightMap.getHeightData(),
                 heightMap.getGridUnitsPerWorld(), heightMap.getGridUnitsPerWorld(),
                 GL30.GL_R32F, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT);
@@ -29,7 +28,7 @@ public final class HeightMapVisual implements HeightMap.ClientState {
      *
      * @return Non-null Texture instance
      */
-    public @NonNull Texture getHeightTexture() {
+    public Texture getHeightTexture() {
         return heightTexture;
     }
 

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -15,8 +14,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * Represents a logical sub-region of the unit grid used to optimize pathfinding and object lookups.
  */
 public final class Region extends Node {
-    private final Map<@NonNull Class<?>, @NonNull Set<?>> objectSets = new HashMap<>();
-    private final List<@NonNull Region> neighbours = new ArrayList<>();
+    private final Map<Class<?>, Set<?>> objectSets = new HashMap<>();
+    private final List<Region> neighbours = new ArrayList<>();
 
     private int center_x;
     private int center_y;
@@ -37,12 +36,12 @@ public final class Region extends Node {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "Region: " + center_x + " " + center_y;
     }
 
     @Override
-    public @NonNull PathNode newPath() {
+    public PathNode newPath() {
         Node graph_node = this;
         assert graph_node != null;
         RegionNode current_node = null;
@@ -60,27 +59,27 @@ public final class Region extends Node {
         r2.addNeighbour(r1);
     }
 
-    public <K> @NonNull Set<K> getObjects(@NonNull Class<? super K> key) {
+    public <K> Set<K> getObjects(Class<? super K> key) {
         //noinspection unchecked
         return (Set<K>) objectSets.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
     }
 
-    public <K> void registerObject(@NonNull Class<? super K> key, K object) {
+    public <K> void registerObject(Class<? super K> key, K object) {
         getObjects(key).add(object);
     }
 
-    public <K> boolean unregisterObject(@NonNull Class<? super K> key, K object) {
+    public <K> boolean unregisterObject(Class<? super K> key, K object) {
         @SuppressWarnings("unchecked") Set<K> list = (Set<K>) objectSets.get(key);
         assert list != null : "Unknown key";
         return null != list && list.remove(object);
     }
 
-    private void addNeighbour(@NonNull Region n) {
+    private void addNeighbour(Region n) {
         neighbours.add(n);
     }
 
     @Override
-    public boolean addNeighbours(@NonNull PathFinderAlgorithm finder, UnitGrid unit_grid) {
+    public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
         for (Region neighbour : neighbours) {
             if (!neighbour.isVisited())
                 PathFinder.addToOpenList(finder, neighbour, this, estimateCost(neighbour.getGridX(), neighbour
@@ -97,7 +96,7 @@ public final class Region extends Node {
         setVisited(false);
     }
 
-    public @NonNull List<@NonNull Region> getNeighbours() {
+    public List<Region> getNeighbours() {
         return neighbours;
     }
 }

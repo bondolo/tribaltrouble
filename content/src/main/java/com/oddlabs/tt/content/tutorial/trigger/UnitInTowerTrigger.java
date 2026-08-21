@@ -3,7 +3,6 @@ package com.oddlabs.tt.content.tutorial.trigger;
 import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Building;
-import org.jspecify.annotations.NonNull;
 
 public final class UnitInTowerTrigger extends TutorialTrigger {
     private final Building tower;
@@ -14,7 +13,7 @@ public final class UnitInTowerTrigger extends TutorialTrigger {
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
+    public void run(Tutorial tutorial) {
         if (tower.getUnitContainer().map(c -> c.getNumSupplies() > 0).orElse(false)) {
             tutorial.next(new AttackTowerTrigger(tower));
         }

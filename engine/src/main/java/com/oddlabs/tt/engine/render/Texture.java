@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.util.OpenGLException;
 import com.oddlabs.util.DXTImage;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
@@ -70,7 +69,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
     private final int height;
     private final int target;
     private int layer = 0;
-    private @NonNull GLImage[] source_mipmaps;
+    private GLImage[] source_mipmaps;
     private @Nullable DXTImage source_dxt;
 
     private static int initTexture(int target, int min_filter, int mag_filter, int wrap_s, int wrap_t,
@@ -114,19 +113,19 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         return NativeTexture.global_size.intValue();
     }
 
-    public Texture(float @NonNull [] pixels, int width, int height, int internal_format, int min_filter, int mag_filter,
+    public Texture(float[] pixels, int width, int height, int internal_format, int min_filter, int mag_filter,
             int wrap) {
         this(width, height, min_filter, mag_filter, wrap, wrap, RenderConfig.NO_MIPMAP_CUTOFF);
         uploadPixels(pixels, internal_format);
     }
 
-    public Texture(@NonNull Channel channel, int internal_format, int min_filter, int mag_filter, int wrap) {
+    public Texture(Channel channel, int internal_format, int min_filter, int mag_filter, int wrap) {
         this(channel.getWidth(), channel.getHeight(), min_filter, mag_filter, wrap, wrap,
                 RenderConfig.NO_MIPMAP_CUTOFF);
         uploadPixels(channel.getPixels(), internal_format);
     }
 
-    private void uploadPixels(float @NonNull [] pixels, int internal_format) {
+    private void uploadPixels(float[] pixels, int internal_format) {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(pixels.length);
         buffer.put(pixels).flip();
 
@@ -161,7 +160,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         GLUtils.checkAndThrow("Texture update (single value)");
     }
 
-    public Texture(@NonNull TextureFile texture_file) {
+    public Texture(TextureFile texture_file) {
         this(texture_file.isDXTImage() ? texture_file.getDXTImage() : null,
                 !texture_file.isDXTImage() ? texture_file.getImage() : null,
                 texture_file.getInternalFormat(),
@@ -253,18 +252,18 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         this.height = height;
     }
 
-    public Texture(@NonNull GLImage image, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t)
+    public Texture(GLImage image, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t)
             throws IllegalArgumentException, NullPointerException {
         this(image.createMipMaps(), internal_format, min_filter, mag_filter, wrap_s, wrap_t,
                 RenderConfig.NO_MIPMAP_CUTOFF);
     }
 
-    public Texture(@NonNull GLImage @NonNull [] mipmaps, int internal_format, int min_filter, int mag_filter,
+    public Texture(GLImage[] mipmaps, int internal_format, int min_filter, int mag_filter,
             int wrap_s, int wrap_t) throws IllegalArgumentException, NullPointerException {
         this(mipmaps, internal_format, min_filter, mag_filter, wrap_s, wrap_t, RenderConfig.NO_MIPMAP_CUTOFF);
     }
 
-    public Texture(@NonNull GLImage @NonNull [] mipmaps, int internal_format, int min_filter, int mag_filter,
+    public Texture(GLImage[] mipmaps, int internal_format, int min_filter, int mag_filter,
             int wrap_s, int wrap_t, int max_mipmap_level) throws IllegalArgumentException, NullPointerException {
         this(getCheckedMipmaps(mipmaps)[0].getWidth(), mipmaps[0].getHeight(), min_filter, mag_filter, wrap_s, wrap_t,
                 max_mipmap_level);
@@ -273,8 +272,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         setSize(total_size);
     }
 
-    private static @NonNull GLImage @NonNull [] getCheckedMipmaps(@NonNull GLImage @NonNull [] mipmaps) {
-        Objects.requireNonNull(mipmaps, "Mipmaps array cannot be null.");
+    private static GLImage[] getCheckedMipmaps(GLImage[] mipmaps) {
         if (mipmaps.length == 0) {
             throw new IllegalArgumentException("Mipmaps array cannot be empty.");
         }
@@ -304,7 +302,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         state.size += size;
     }
 
-    private int uploadDXTTexture(@NonNull DXTImage dxt_image, int internalFormat, int max_mipmap_level) {
+    private int uploadDXTTexture(DXTImage dxt_image, int internalFormat, int max_mipmap_level) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Uploading DXT texture: handle=" + getHandle() + ", " + dxt_image.getWidth() + "x" + dxt_image
                     .getHeight() + ", internalFormat=0x" + Integer.toHexString(internalFormat) + ", mips=" + dxt_image
@@ -329,7 +327,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         return total_size;
     }
 
-    private int uploadTexture(@NonNull GLImage @NonNull [] mipmaps, int internal_format, int min_filter,
+    private int uploadTexture(GLImage[] mipmaps, int internal_format, int min_filter,
             int max_mipmap_level) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Uploading standard texture: handle=" + getHandle() + ", " + mipmaps[0].getWidth() + "x"

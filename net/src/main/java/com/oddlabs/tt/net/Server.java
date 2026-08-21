@@ -12,7 +12,6 @@ import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -33,13 +32,13 @@ public final class Server implements ConnectionListenerInterface {
     private static final int SYNCHRONIZING = 2;
     private static final int CLOSED = 3;
 
-    private final PlayerSlot @NonNull [] players;
+    private final PlayerSlot[] players;
     private final String[] ai_names;
-    private final @NonNull WorldGenerator generator;
+    private final WorldGenerator generator;
     private final Game game;
-    private final @NonNull AbstractConnectionListener local_listener;
+    private final AbstractConnectionListener local_listener;
     private final Map<AbstractConnection, ClientConnection> connection_to_client = new LinkedHashMap<>();
-    private final @NonNull Random random;
+    private final Random random;
     private final @Nullable MatchmakingClient matchmaking_client;
     private AbstractConnectionListener tunnelled_listener;
 
@@ -47,18 +46,18 @@ public final class Server implements ConnectionListenerInterface {
     private final boolean register_server;
 
     private @Nullable PlayerInfoFactory player_info_factory;
-    private final @NonNull PlayerSlotHandler slot_handler;
+    private final PlayerSlotHandler slot_handler;
 
-    public Server(@NonNull NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
-            InetAddress ip, @NonNull WorldGenerator generator,
-            boolean register_server, String[] ai_names, @NonNull PlayerSlotHandler slot_handler) {
+    public Server(NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
+            InetAddress ip, WorldGenerator generator,
+            boolean register_server, String[] ai_names, PlayerSlotHandler slot_handler) {
         this(network, matchmaking_client, game, ip, generator, register_server, ai_names, null, slot_handler);
     }
 
-    public Server(@NonNull NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
-            InetAddress ip, @NonNull WorldGenerator generator,
+    public Server(NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
+            InetAddress ip, WorldGenerator generator,
             boolean register_server, String[] ai_names, @Nullable PlayerInfoFactory player_info_factory,
-            @NonNull PlayerSlotHandler slot_handler) {
+            PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.player_info_factory = player_info_factory;
         this.local_listener = new ConnectionListener(network, ip, NetConfig.DEFAULT_NET_PORT, this);
@@ -74,7 +73,7 @@ public final class Server implements ConnectionListenerInterface {
                 .toArray(PlayerSlot[]::new);
     }
 
-    private @NonNull Iterator<ClientConnection> getClientIterator() {
+    private Iterator<ClientConnection> getClientIterator() {
         return connection_to_client.values().iterator();
     }
 
@@ -140,7 +139,7 @@ public final class Server implements ConnectionListenerInterface {
         }
     }
 
-    private void disconnectClient(@NonNull ClientConnection client) {
+    private void disconnectClient(ClientConnection client) {
         assert client != null;
         client.getConnection().close();
         connection_to_client.remove(client.getConnection());
@@ -156,13 +155,13 @@ public final class Server implements ConnectionListenerInterface {
         return null;
     }
 
-    public void resetSlotState(@NonNull Serializable client_slot, int slot, boolean open) {
+    public void resetSlotState(Serializable client_slot, int slot, boolean open) {
         if (!canControlSlot(client_slot, slot))
             return;
         resetSlotState(players[slot], open);
     }
 
-    private void resetSlotState(@NonNull Serializable client_slot, boolean open) {
+    private void resetSlotState(Serializable client_slot, boolean open) {
         slot_handler.resetSlot(client_slot, open);
         ClientConnection player_client = locateClientForSlot(client_slot);
         if (player_client != null)
@@ -170,13 +169,13 @@ public final class Server implements ConnectionListenerInterface {
         broadcastPlayers(true);
     }
 
-    private boolean canControlSlot(@NonNull Serializable client_slot, int slot) {
+    private boolean canControlSlot(Serializable client_slot, int slot) {
         int client_slot_idx = slot_handler.getSlotIndex(client_slot);
         return slot >= 0 && slot < players.length && state == NEGOTIATING &&
                 ((client_slot_idx == 0 || client_slot_idx == slot));
     }
 
-    public void startServer(@NonNull Serializable slot) {
+    public void startServer(Serializable slot) {
         if (!canControlSlot(slot, 0) || getNumReady() != getNumClients())
             return;
         state = SYNCHRONIZING;
@@ -184,7 +183,7 @@ public final class Server implements ConnectionListenerInterface {
         broadcastInits();
     }
 
-    public void setPlayerSlot(@NonNull Serializable client_slot, int slot, int type, int race, int team, boolean ready,
+    public void setPlayerSlot(Serializable client_slot, int slot, int type, int race, int team, boolean ready,
             int ai_difficulty) {
         if (!slot_handler.isValidType(type))
             return;
@@ -237,7 +236,7 @@ public final class Server implements ConnectionListenerInterface {
         }
     }
 
-    public void chat(@NonNull Serializable player_slot, String chat) {
+    public void chat(Serializable player_slot, String chat) {
         Iterator<ClientConnection> it = getClientIterator();
         while (it.hasNext()) {
             ClientConnection client = it.next();
@@ -263,7 +262,7 @@ public final class Server implements ConnectionListenerInterface {
     }
 
     @Override
-    public void incomingConnection(@NonNull AbstractConnectionListener connection_listener, Object remote_address) {
+    public void incomingConnection(AbstractConnectionListener connection_listener, Object remote_address) {
         IO.println("Incoming host connection from " + remote_address);
         short available_slot = locateAvailableSlot();
         if (state != NEGOTIATING || available_slot == -1 ||

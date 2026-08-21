@@ -42,7 +42,6 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
@@ -66,7 +65,7 @@ import static com.oddlabs.tt.gui.Placement.TOP_RIGHT;
 public final class GameMenu extends Panel implements ConfigurationListener, ChatListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GameMenu.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -87,7 +86,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             return aiDifficulty;
         }
 
-        static @NonNull SlotOption fromAIDifficulty(int difficulty) {
+        static SlotOption fromAIDifficulty(int difficulty) {
             return switch (difficulty) {
                 case PlayerSlot.AI_EASY -> COMPUTER_EASY;
                 case PlayerSlot.AI_NORMAL -> COMPUTER_NORMAL;
@@ -101,29 +100,29 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     private static final int RATING_WIDTH = 80;
 
-    private final PulldownButton<SlotOption> @NonNull [] slot_buttons;
-    private final PulldownButton<Race> @NonNull [] race_buttons;
-    private final PulldownButton<Integer> @NonNull [] team_buttons;
-    private final Label @NonNull [] ratings;
-    private final @NonNull Label chat_info;
-    private final @NonNull TextBox chat_box;
-    private final @NonNull EditLine chat_line;
-    private final Diode @NonNull [] ready_marks;
-    private final @NonNull HorizButton ready_button;
-    private final @NonNull HorizButton start_button;
+    private final PulldownButton<SlotOption>[] slot_buttons;
+    private final PulldownButton<Race>[] race_buttons;
+    private final PulldownButton<Integer>[] team_buttons;
+    private final Label[] ratings;
+    private final Label chat_info;
+    private final TextBox chat_box;
+    private final EditLine chat_line;
+    private final Diode[] ready_marks;
+    private final HorizButton ready_button;
+    private final HorizButton start_button;
     private final SelectGameMenu owner;
     private final GUIRoot gui_root;
     private final int local_player_slot;
     private final boolean rated;
-    private final @NonNull Game game;
-    private final @NonNull GameNetwork game_network;
-    private @NonNull SortedSet<String> human_names = new TreeSet<>();
+    private final Game game;
+    private final GameNetwork game_network;
+    private SortedSet<String> human_names = new TreeSet<>();
 
     private boolean updating;
     private boolean ready;
 
     @SuppressWarnings("unchecked")
-    public GameMenu(@NonNull GameNetwork game_network, GUIRoot gui_root, SelectGameMenu owner, @NonNull Game game,
+    public GameMenu(GameNetwork game_network, GUIRoot gui_root, SelectGameMenu owner, Game game,
             WorldGenerator generator, int player_slot, int compare_width, int compare_height, int button_width) {
         super(i18n("game_caption"));
         this.game_network = game_network;
@@ -264,13 +263,13 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void connected(@NonNull Client client, @NonNull Game game, @NonNull WorldGenerator generator,
+    public void connected(Client client, Game game, WorldGenerator generator,
             int player_slot) {
         assert false;
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -278,7 +277,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         }
     }
 
-    private int countHumans(PlayerSlot @NonNull [] players) {
+    private int countHumans(PlayerSlot[] players) {
         int result = 0;
         for (PlayerSlot player : players) {
             if (player.getType() == PlayerSlot.HUMAN) {
@@ -289,7 +288,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void setPlayers(PlayerSlot @NonNull [] players) {
+    public void setPlayers(PlayerSlot[] players) {
         int num_humans = countHumans(players);
         int[] player_slots = new int[num_humans];
         int[] player_ratings = new int[num_humans];
@@ -365,7 +364,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         updating = false;
     }
 
-    private void updateRatedLabels(int @NonNull [] player_slots, int[] player_ratings, int[][] points) {
+    private void updateRatedLabels(int[] player_slots, int[] player_ratings, int[][] points) {
         for (Label rating : ratings) {
             rating.clear();
         }
@@ -387,13 +386,13 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         return local_player_slot == 0 || slot == local_player_slot;
     }
 
-    private @NonNull GUIObject createPlayerPulldown(GUIRoot gui_root, @NonNull Group group,
+    private GUIObject createPlayerPulldown(GUIRoot gui_root, Group group,
             @Nullable GUIObject previous,
-            @NonNull PulldownButton<?>[] slot_buttons,
-            @NonNull PulldownButton<?>[] race_buttons,
-            @NonNull PulldownButton<?>[] team_buttons,
-            @NonNull Diode[] ready_marks,
-            @NonNull Label[] ratings,
+            PulldownButton<?>[] slot_buttons,
+            PulldownButton<?>[] race_buttons,
+            PulldownButton<?>[] team_buttons,
+            Diode[] ready_marks,
+            Label[] ratings,
             int index,
             int num_players) {
         PulldownMenu<SlotOption> pulldown_menu = new PulldownMenu<>();
@@ -499,7 +498,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.base.util.@NonNull LoadCallback<?, ?> loadCallback) {
+    public void gameStarted(com.oddlabs.tt.base.util.LoadCallback<?, ?> loadCallback) {
         setDisabled(true);
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
                 (LoadCallback) loadCallback);
@@ -511,7 +510,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void chat(@NonNull ChatMessage message) {
+    public void chat(ChatMessage message) {
         if (message.type() != ChatMessage.Type.GAME_MENU)
             return;
         if (!chat_box.isEmpty())
@@ -543,7 +542,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
         }
     }
 
-    private void setStartEnable(PlayerSlot @NonNull [] players) {
+    private void setStartEnable(PlayerSlot[] players) {
         start_button.setDisabled(true);
         if (local_player_slot != 0)
             return;
@@ -562,26 +561,26 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     private final class InfoButtonListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             gui_root.addModalForm(new GameInfoForm(game));
         }
     }
 
     private final class CancelButtonListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             cancel();
         }
     }
 
     private final class ReadyListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             setReady(true);
         }
     }
 
-    private static int getNumTeams(PlayerSlot @NonNull [] players) {
+    private static int getNumTeams(PlayerSlot[] players) {
         Set<Integer> teams = new HashSet<>();
         for (PlayerSlot current : players) {
             PlayerInfo info = (PlayerInfo) current.getInfo();
@@ -593,7 +592,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     private final class StartListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             final int MIN_TEAMS = 2;
             Serializable[] raw_players = game_network.getClient().getPlayers();
             PlayerSlot[] players = new PlayerSlot[raw_players.length];
@@ -613,7 +612,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     private final class ChatListener implements EnterListener {
         @Override
-        public void enterPressed(@NonNull CharSequence text) {
+        public void enterPressed(CharSequence text) {
             String chat = text.toString();
             if (!chat.isEmpty()) {
                 chat_line.clear();
@@ -626,7 +625,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     private final class SendListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             chat_line.enterPressedAll();
         }
     }

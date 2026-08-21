@@ -11,7 +11,6 @@ import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -19,7 +18,7 @@ import java.util.ResourceBundle;
 public final class QuitForm extends QuestionForm {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(QuitForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -29,7 +28,7 @@ public final class QuitForm extends QuestionForm {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED) {
             if (event.consumeAction(GameAction.GLOBAL_QUIT)) {
                 Renderer.shutdown();

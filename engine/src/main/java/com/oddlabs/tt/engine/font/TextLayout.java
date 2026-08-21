@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.font;
 
-import org.jspecify.annotations.NonNull;
 
 import java.text.BreakIterator;
 import java.util.ArrayList;
@@ -15,13 +14,13 @@ public final class TextLayout {
     public record Line(CharSequence content, int startIndex) {
     }
 
-    private final @NonNull Font font;
-    private final @NonNull CharSequence text;
+    private final Font font;
+    private final CharSequence text;
     private final int wrapWidth;
-    private final @NonNull List<@NonNull Line> lines;
+    private final List<Line> lines;
     private final int totalHeight;
 
-    public TextLayout(@NonNull Font font, @NonNull CharSequence text, int wrapWidth) {
+    public TextLayout(Font font, CharSequence text, int wrapWidth) {
         this.font = font;
         this.text = text;
         this.wrapWidth = wrapWidth;
@@ -29,11 +28,11 @@ public final class TextLayout {
         this.totalHeight = lines.size() * font.getHeight();
     }
 
-    public @NonNull Font getFont() {
+    public Font getFont() {
         return font;
     }
 
-    public @NonNull List<@NonNull Line> getLines() {
+    public List<Line> getLines() {
         return lines;
     }
 
@@ -131,7 +130,7 @@ public final class TextLayout {
         return 0; // Should not happen for valid charIndex
     }
 
-    private @NonNull List<@NonNull Line> calculateWordWrap() {
+    private List<Line> calculateWordWrap() {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }

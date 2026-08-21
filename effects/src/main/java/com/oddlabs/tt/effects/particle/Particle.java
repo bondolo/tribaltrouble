@@ -7,7 +7,6 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public class Particle extends Model {
@@ -23,19 +22,19 @@ public class Particle extends Model {
     private float angularVelocity = 0f;
 
     private final Vector3f position = new Vector3f();
-    private Color.@NonNull Linear color = Color.Linear.TRANSPARENT;
-    private Color.@NonNull LinearDelta deltaColor = Color.LinearDelta.ZERO;
+    private Color.Linear color = Color.Linear.TRANSPARENT;
+    private Color.LinearDelta deltaColor = Color.LinearDelta.ZERO;
     private final Vector3f growthRate = new Vector3f();
     private final Vector3f radius = new Vector3f();
 
     private int type;
     private float energy;
 
-    public Particle(@NonNull World world) {
+    public Particle(World world) {
         this(world, 0f);
     }
 
-    public Particle(@NonNull World world, float angle) {
+    public Particle(World world, float angle) {
         super(world);
         this.angle = angle;
         Matrix4f rotMatrix = new Matrix4f();
@@ -132,11 +131,11 @@ public class Particle extends Model {
         return position.z();
     }
 
-    final void setColor(Color.@NonNull Linear color) {
+    final void setColor(Color.Linear color) {
         this.color = color;
     }
 
-    public final Color.@NonNull Linear getColor() {
+    public final Color.Linear getColor() {
         return color;
     }
 
@@ -156,11 +155,11 @@ public class Particle extends Model {
         return color.a();
     }
 
-    public final Color.@NonNull LinearDelta getDeltaColor() {
+    public final Color.LinearDelta getDeltaColor() {
         return deltaColor;
     }
 
-    public final void setDeltaColor(Color.@NonNull LinearDelta delta) {
+    public final void setDeltaColor(Color.LinearDelta delta) {
         this.deltaColor = delta;
     }
 
@@ -214,7 +213,7 @@ public class Particle extends Model {
 
 
     @Override
-    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+    protected BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 }

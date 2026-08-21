@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -22,15 +21,15 @@ import java.util.stream.Stream;
  * Handles the spawning logic and lifecycle (Budgeted or Infinite).
  */
 public abstract class Emitter<P extends Particle> implements Animated {
-    private final @NonNull List<@NonNull P> @NonNull [] particles;
-    private final @NonNull TextureKey @Nullable [] textures;
-    private final @NonNull SpriteKey @Nullable [] sprite_renderers;
+    private final List<P>[] particles;
+    private final TextureKey @Nullable [] textures;
+    private final SpriteKey @Nullable [] sprite_renderers;
     private final int src_blend_func;
     private final int dst_blend_func;
     private final int types;
-    private final @NonNull World world;
+    private final World world;
 
-    private @NonNull Vector3f position;
+    private Vector3f position;
     private float scale_x = 1f;
     private float scale_y = 1f;
     private float scale_z = 1f;
@@ -44,7 +43,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     private boolean fog_enabled = true;
 
     // Relative Clustering Logic
-    private Color.@NonNull LinearDelta cluster_rgb = Color.LinearDelta.ZERO;
+    private Color.LinearDelta cluster_rgb = Color.LinearDelta.ZERO;
 
     private float spectrum_min = 0.0f;
     private float spectrum_max = 1.0f;
@@ -52,7 +51,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     private float jitter_intensity = 0.0f; // No jitter by default
 
-    private Color.@NonNull Linear base_color = Color.Linear.WHITE; // Neutral default
+    private Color.Linear base_color = Color.Linear.WHITE; // Neutral default
 
     // Scripted Transition State
     private float emitter_age = 0;
@@ -60,7 +59,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     private float transition_end = -1;
     private float target_spectrum = -1;
 
-    private @NonNull ColorSpectrum colorSpectrum = (spectrum, baseColor) -> Color.Linear.WHITE;
+    private ColorSpectrum colorSpectrum = (spectrum, baseColor) -> Color.Linear.WHITE;
 
     /**
      * Constructs a new Emitter with the specified world, position, blending functions, textures,
@@ -77,9 +76,9 @@ public abstract class Emitter<P extends Particle> implements Animated {
      * @param particles_per_second rate at which particles are spawned per second
      */
     @SuppressWarnings("unchecked")
-    public Emitter(@NonNull World world, @NonNull Vector3f position,
+    public Emitter(World world, Vector3f position,
             int src_blend_func, int dst_blend_func,
-            @NonNull TextureKey @Nullable [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers,
+            TextureKey @Nullable [] textures, SpriteKey @Nullable [] sprite_renderers,
             int types, int remaining_particles, float particles_per_second) {
         this.world = world;
         this.position = position;
@@ -93,7 +92,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         particles = Stream.generate(ArrayList::new).limit(types).toArray(List[]::new);
     }
 
-    public final void setColorSpectrum(@NonNull ColorSpectrum spectrum) {
+    public final void setColorSpectrum(ColorSpectrum spectrum) {
         this.colorSpectrum = spectrum;
     }
 
@@ -136,7 +135,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return jitter_intensity;
     }
 
-    public final void setBaseColor(Color.@NonNull Linear color) {
+    public final void setBaseColor(Color.Linear color) {
         this.base_color = color;
     }
 
@@ -165,11 +164,11 @@ public abstract class Emitter<P extends Particle> implements Animated {
         cluster_rgb = new Color.LinearDelta(cr, cg, cb, ca);
     }
 
-    protected final Color.@NonNull Linear getClusterColor() {
+    protected final Color.Linear getClusterColor() {
         return colorSpectrum.getColor(current_spectrum, base_color).add(cluster_rgb);
     }
 
-    protected final Color.@NonNull Linear nextParticleColor(Color.@NonNull Linear templateColor) {
+    protected final Color.Linear nextParticleColor(Color.Linear templateColor) {
         Color.Linear clusterColor = getClusterColor();
         float jitter = (float) ThreadLocalRandom.current().nextGaussian() * jitter_intensity;
         float r = Math.clamp(clusterColor.r() + jitter, 0, 1);
@@ -193,19 +192,19 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return Math.clamp(type, 0, types - 1);
     }
 
-    public final @NonNull World getWorld() {
+    public final World getWorld() {
         return world;
     }
 
-    public final @NonNull SpriteKey @Nullable [] getSpriteRenderers() {
+    public final SpriteKey @Nullable [] getSpriteRenderers() {
         return sprite_renderers;
     }
 
-    public final List<@NonNull P> @NonNull [] getParticles() {
+    public final List<P>[] getParticles() {
         return particles;
     }
 
-    public final @NonNull TextureKey @Nullable [] getTextures() {
+    public final TextureKey @Nullable [] getTextures() {
         return textures;
     }
 
@@ -226,11 +225,11 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return Arrays.stream(particles).anyMatch(list -> !list.isEmpty());
     }
 
-    protected final void add(@NonNull P particle) {
+    protected final void add(P particle) {
         particles[particle.getType()].add(particle);
     }
 
-    public final void setPosition(@NonNull Vector3f position) {
+    public final void setPosition(Vector3f position) {
         this.position = position;
     }
 
@@ -238,7 +237,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         this.position.set(x, y, z);
     }
 
-    public final @NonNull Vector3f getPosition() {
+    public final Vector3f getPosition() {
         return position;
     }
 
@@ -272,7 +271,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return scale_z;
     }
 
-    public final void adjustColor(Color.@NonNull LinearDelta delta) {
+    public final void adjustColor(Color.LinearDelta delta) {
         Arrays.stream(particles)
                 .flatMap(List::stream)
                 .forEach(p -> p.setColor(p.getColor().add(delta)));
@@ -351,7 +350,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     }
 
     @Override
-    public final void updateChecksum(@NonNull StateChecksum checksum) {
+    public final void updateChecksum(StateChecksum checksum) {
     }
 
     /**

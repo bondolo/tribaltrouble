@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.behaviour;
 
-import org.jspecify.annotations.NonNull;
 
 /**
  * Represents a logical state or action of a world entity.
@@ -14,7 +13,6 @@ public sealed interface Behaviour permits AttackBehaviour, DieBehaviour, Harvest
         DONE
     }
 
-    @NonNull
     State animate(float t);
 
     boolean isBlocking();

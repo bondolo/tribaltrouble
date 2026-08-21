@@ -2,7 +2,6 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.tt.simulation.model.Distributable;
 import com.oddlabs.util.HashTable;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -12,11 +11,11 @@ import java.util.Map;
  * Maps distributable simulation objects to integer identifiers for ARMI serialization.
  */
 public final class DistributableTable {
-    private final HashTable<@NonNull Distributable> distributables = new HashTable<>();
-    private final Map<@NonNull Distributable, @NonNull Integer> names = new HashMap<>();
+    private final HashTable<Distributable> distributables = new HashTable<>();
+    private final Map<Distributable, Integer> names = new HashMap<>();
     private int current_name = 1;
 
-    public int register(@NonNull Distributable distributable) {
+    public int register(Distributable distributable) {
         int name = current_name++;
         Distributable o = distributables.put(name, distributable);
         assert o == null : "Error registering distributable.";
@@ -25,7 +24,7 @@ public final class DistributableTable {
         return name;
     }
 
-    public void unregister(@NonNull Distributable distributable) {
+    public void unregister(Distributable distributable) {
         Integer name = names.remove(distributable);
         assert name != null : "Error unregistering name.";
 
@@ -33,7 +32,7 @@ public final class DistributableTable {
         assert o == distributable : "Error unregistering distributable.";
     }
 
-    public int getName(@NonNull Distributable distributable) {
+    public int getName(Distributable distributable) {
         Integer val = names.get(distributable);
         assert val != null : distributable + " is not registrered.";
         return val;

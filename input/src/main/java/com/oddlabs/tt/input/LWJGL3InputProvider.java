@@ -2,7 +2,6 @@ package com.oddlabs.tt.input;
 
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.WindowEventListener;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.sdl.SDL_Event;
 import org.lwjgl.sdl.SDL_KeyboardEvent;
@@ -41,17 +40,17 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
 
     private static final Logger logger = Logger.getLogger(LWJGL3InputProvider.class.getName());
 
-    private final @NonNull LWJGL3Window window;
+    private final LWJGL3Window window;
     private long windowHandle;
     private @Nullable Runnable focusGainedCallback;
 
     // Keyboard State
     // @GuardedBy("this")
-    private final Deque<@NonNull KeyEvent> keyEvents = new ArrayDeque<>();
+    private final Deque<KeyEvent> keyEvents = new ArrayDeque<>();
     private @Nullable KeyEvent currentKeyEvent;
 
     // Mouse State
-    private final Deque<@NonNull MouseEvent> mouseEvents = new ArrayDeque<>();
+    private final Deque<MouseEvent> mouseEvents = new ArrayDeque<>();
     private @Nullable MouseEvent currentMouseEvent;
     private double mouseX, mouseY;
     private int lastLogicalX = Integer.MIN_VALUE;
@@ -82,7 +81,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     private record MouseEvent(int button, boolean state, int x, int y, int dWheel, int dWheelX) {
     }
 
-    public LWJGL3InputProvider(@NonNull LWJGL3Window win) {
+    public LWJGL3InputProvider(LWJGL3Window win) {
         this.window = win;
     }
 
@@ -98,7 +97,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     }
 
     @Override
-    public void handleSDLEvent(@NonNull SDL_Event event) {
+    public void handleSDLEvent(SDL_Event event) {
         processEvent(event);
     }
 
@@ -111,7 +110,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
         SDL_StartTextInput(windowHandle);
     }
 
-    public void processEvent(@NonNull SDL_Event event) {
+    public void processEvent(SDL_Event event) {
         switch (event.type()) {
             case SDL_EVENT_KEY_DOWN, SDL_EVENT_KEY_UP -> {
                 SDL_KeyboardEvent keyEvent = event.key();

@@ -6,7 +6,6 @@ import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.base.resource.NativeResource;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
@@ -78,13 +77,13 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         }
     }
 
-    private final @NonNull OpenALManager manager;
+    private final OpenALManager manager;
     private @Nullable AudioPlayer audio_player;
     private @Nullable OpenALFilter directFilter;
     private float rolloff;
     private float reference_distance;
 
-    OpenALAudioSource(@NonNull OpenALManager manager) {
+    OpenALAudioSource(OpenALManager manager) {
         super(new Source(), manager::enqueueCleanup);
         this.manager = manager;
     }
@@ -150,7 +149,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
     }
 
     @Override
-    public @NonNull State getState() {
+    public State getState() {
         if (ALC10.alcGetCurrentContext() == 0) return State.STOPPED;
         return switch (getSourceState()) {
             case AL10.AL_INITIAL -> State.INITIAL;
@@ -162,7 +161,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
     }
 
     @Override
-    public void setAudio(@NonNull Audio audio) {
+    public void setAudio(Audio audio) {
         if (audio instanceof OpenALAudio alAudio) {
             setAudio(alAudio);
         } else {
@@ -170,7 +169,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         }
     }
 
-    void setAudio(@NonNull OpenALAudio audio) {
+    void setAudio(OpenALAudio audio) {
         if (ALC10.alcGetCurrentContext() == 0) return;
         int buffer = audio.getBuffer();
         assert buffer != AL10.AL_NONE;
@@ -181,7 +180,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         }
     }
 
-    void queue(@NonNull IntBuffer al_buffers) {
+    void queue(IntBuffer al_buffers) {
         if (ALC10.alcGetCurrentContext() == 0) return;
         int sourceId = getSource();
         if (AL10.alIsSource(sourceId)) {
@@ -202,7 +201,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         return 0;
     }
 
-    void unqueued(@NonNull IntBuffer al_buffers) {
+    void unqueued(IntBuffer al_buffers) {
         if (ALC10.alcGetCurrentContext() == 0) return;
         int sourceId = getSource();
         if (AL10.alIsSource(sourceId)) {
@@ -379,7 +378,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
     }
 
     @Override
-    public @NonNull Vector3f getPosition() {
+    public Vector3f getPosition() {
         if (ALC10.alcGetCurrentContext() == 0) return new Vector3f();
         int sourceId = getSource();
         if (AL10.alIsSource(sourceId)) {

@@ -7,7 +7,6 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 public class ZoomDelegate extends InGameDelegate<GameCamera> {
     private static final float ZOOM_FACTOR_CORRECTION = .25f;
@@ -21,7 +20,7 @@ public class ZoomDelegate extends InGameDelegate<GameCamera> {
 
     private boolean done = false;
 
-    public ZoomDelegate(@NonNull WorldViewer viewer, GameCamera camera) {
+    public ZoomDelegate(WorldViewer viewer, GameCamera camera) {
         super(viewer, camera);
         game_camera = camera;
         var guiRoot = viewer.getGUIRoot();
@@ -45,7 +44,7 @@ public class ZoomDelegate extends InGameDelegate<GameCamera> {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (!done && event.getPhase() == InputPhase.RELEASED && event.consumeAction(GameAction.CAMERA_ZOOM_MODE)) {
             pop();
         }
@@ -68,20 +67,20 @@ public class ZoomDelegate extends InGameDelegate<GameCamera> {
     }
 
     @Override
-    public void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
+    public void mouseDragged(MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
             int absolute_y) {
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
     }
 
     @Override
-    public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    public void mouseReleased(MouseButton button, int x, int y) {
     }
 
     @Override
-    protected @NonNull CursorType getCursorType() {
+    protected CursorType getCursorType() {
         return CursorType.NULL;
     }
 }

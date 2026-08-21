@@ -1,13 +1,12 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.gui.event.ValueListener;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class NumberEditLine extends EditLine {
-    private final Set<@NonNull ValueListener> value_listeners = new CopyOnWriteArraySet<>();
+    private final Set<ValueListener> value_listeners = new CopyOnWriteArraySet<>();
 
     private final long min_value;
     private final long max_value;
@@ -25,16 +24,16 @@ public class NumberEditLine extends EditLine {
         setValue(init_value);
     }
 
-    public final void addValueListener(@NonNull ValueListener listener) {
+    public final void addValueListener(ValueListener listener) {
         value_listeners.add(listener);
     }
 
-    public final void removeValueListener(@NonNull ValueListener listener) {
+    public final void removeValueListener(ValueListener listener) {
         value_listeners.remove(listener);
     }
 
     @Override
-    protected final void enterPressed(@NonNull CharSequence text) {
+    protected final void enterPressed(CharSequence text) {
         validate();
     }
 

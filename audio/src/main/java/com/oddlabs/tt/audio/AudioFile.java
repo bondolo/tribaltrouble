@@ -1,7 +1,6 @@
 package com.oddlabs.tt.audio;
 
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -15,29 +14,29 @@ import java.net.URL;
  * A resource handle for an audio file.
  */
 public final class AudioFile {
-    private final @NonNull URI uri;
+    private final URI uri;
     private final boolean streaming;
 
     private @Nullable SoftReference<Audio> audio;
 
-    public AudioFile(@NonNull URI uri) {
+    public AudioFile(URI uri) {
         this(uri, uri.toString().contains("/music/"));
     }
 
-    public AudioFile(@NonNull URI uri, boolean streaming) {
+    public AudioFile(URI uri, boolean streaming) {
         this.uri = uri;
         this.streaming = streaming;
     }
 
-    public AudioFile(@NonNull String location) {
+    public AudioFile(String location) {
         this(location, location.contains("/music/"));
     }
 
-    public AudioFile(@NonNull String location, boolean streaming) {
+    public AudioFile(String location, boolean streaming) {
         this(Utils.makeURI(location), streaming);
     }
 
-    public @NonNull URL getURL() {
+    public URL getURL() {
         try {
             return uri.toURL();
         } catch (MalformedURLException e) {
@@ -45,7 +44,7 @@ public final class AudioFile {
         }
     }
 
-    public synchronized @NonNull Audio get(@NonNull AudioManager manager) throws UncheckedIOException {
+    public synchronized Audio get(AudioManager manager) throws UncheckedIOException {
         Audio audio = null == this.audio ? null : this.audio.get();
         if (null == audio) {
             try {
@@ -70,7 +69,7 @@ public final class AudioFile {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "AudioFile{uri=" + uri.toASCIIString() + ", streaming=" + streaming + '}';
     }
 

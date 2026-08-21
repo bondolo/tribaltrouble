@@ -9,7 +9,6 @@ import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
 import com.oddlabs.tt.procedural.Voronoi;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL21;
 
@@ -17,7 +16,7 @@ public final class GeneratorRock extends TextureGenerator {
     private static final int TEXTURE_SIZE = 128;
 
     @Override
-    public Texture @NonNull [] generate() {
+    public Texture[] generate() {
         int seed = LandscapeConfig.LANDSCAPE_SEED;
         Channel voronoi4 = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed).getDistance(0f, -1f, 1f);
         Channel voronoi8 = new Voronoi(TEXTURE_SIZE, 8, 8, 1, 1f, seed).getDistance(0f, -1f, 1f);

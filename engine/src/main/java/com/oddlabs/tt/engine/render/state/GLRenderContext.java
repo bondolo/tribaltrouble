@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render.state;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.window.SerializableDisplayMode;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -46,21 +45,21 @@ public final class GLRenderContext implements RenderContext {
         }
     }
 
-    private @NonNull BlendMode currentBlend = BlendMode.NONE;
-    private @NonNull DepthMode currentDepth = DepthMode.NONE;
-    private @NonNull CullMode currentCull = CullMode.NONE;
+    private BlendMode currentBlend = BlendMode.NONE;
+    private DepthMode currentDepth = DepthMode.NONE;
+    private CullMode currentCull = CullMode.NONE;
     private int currentDepthFunc = -1;
-    private @NonNull GLState sampleAlphaToCoverageEnabled = GLState.UNKNOWN;
-    private @NonNull GLState depthTestEnabled = GLState.UNKNOWN;
-    private @NonNull GLState depthMaskEnabled = GLState.UNKNOWN;
-    private @NonNull GLState blendEnabled = GLState.UNKNOWN;
-    private @NonNull GLState cullFaceEnabled = GLState.UNKNOWN;
-    private @NonNull GLState framebufferSrgbEnabled = GLState.UNKNOWN;
+    private GLState sampleAlphaToCoverageEnabled = GLState.UNKNOWN;
+    private GLState depthTestEnabled = GLState.UNKNOWN;
+    private GLState depthMaskEnabled = GLState.UNKNOWN;
+    private GLState blendEnabled = GLState.UNKNOWN;
+    private GLState cullFaceEnabled = GLState.UNKNOWN;
+    private GLState framebufferSrgbEnabled = GLState.UNKNOWN;
 
-    private @NonNull GLState maskR = GLState.UNKNOWN;
-    private @NonNull GLState maskG = GLState.UNKNOWN;
-    private @NonNull GLState maskB = GLState.UNKNOWN;
-    private @NonNull GLState maskA = GLState.UNKNOWN;
+    private GLState maskR = GLState.UNKNOWN;
+    private GLState maskG = GLState.UNKNOWN;
+    private GLState maskB = GLState.UNKNOWN;
+    private GLState maskA = GLState.UNKNOWN;
 
     private int activeTextureUnit = -1;
     private final int[] boundTextures = new int[32];
@@ -73,7 +72,7 @@ public final class GLRenderContext implements RenderContext {
     private record FboCacheEntry(boolean hasAttachment0, boolean hasAttachment1) {
     }
 
-    private final Map<@NonNull Integer, @NonNull FboCacheEntry> fboCache = new HashMap<>();
+    private final Map<Integer, FboCacheEntry> fboCache = new HashMap<>();
 
     public GLRenderContext() {
         Arrays.fill(boundTextures, -1);
@@ -97,7 +96,7 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public void updateGlobalState(java.nio.@NonNull ByteBuffer data) {
+    public void updateGlobalState(java.nio.ByteBuffer data) {
         GL15.glBindBuffer(GL31.GL_UNIFORM_BUFFER, globalUbo);
         GL15.glBufferSubData(GL31.GL_UNIFORM_BUFFER, 0, data);
         GL15.glBindBuffer(GL31.GL_UNIFORM_BUFFER, 0);
@@ -285,21 +284,21 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public void setBlendMode(@NonNull BlendMode mode) {
+    public void setBlendMode(BlendMode mode) {
         if (this.currentBlend == mode) return;
         this.currentBlend = mode;
         mode.apply(this);
     }
 
     @Override
-    public void setDepthMode(@NonNull DepthMode mode) {
+    public void setDepthMode(DepthMode mode) {
         if (this.currentDepth == mode) return;
         this.currentDepth = mode;
         mode.apply(this);
     }
 
     @Override
-    public void setCullMode(@NonNull CullMode mode) {
+    public void setCullMode(CullMode mode) {
         if (this.currentCull == mode) return;
         this.currentCull = mode;
         mode.apply(this);
@@ -577,7 +576,7 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public void setDrawBuffers(int @NonNull [] attachments) {
+    public void setDrawBuffers(int[] attachments) {
         if (currentFBO == 0) {
             GL11.glDrawBuffer(GL11.GL_BACK);
             maskState = GLState.FALSE;
@@ -613,28 +612,28 @@ public final class GLRenderContext implements RenderContext {
     // Scoped State Implementations
 
     @Override
-    public @NonNull ScopedState withBlendMode(@NonNull BlendMode mode) {
+    public ScopedState withBlendMode(BlendMode mode) {
         BlendMode previous = this.currentBlend;
         setBlendMode(mode);
         return () -> setBlendMode(previous);
     }
 
     @Override
-    public @NonNull ScopedState withDepthMode(@NonNull DepthMode mode) {
+    public ScopedState withDepthMode(DepthMode mode) {
         DepthMode previous = this.currentDepth;
         setDepthMode(mode);
         return () -> setDepthMode(previous);
     }
 
     @Override
-    public @NonNull ScopedState withCullMode(@NonNull CullMode mode) {
+    public ScopedState withCullMode(CullMode mode) {
         CullMode previous = this.currentCull;
         setCullMode(mode);
         return () -> setCullMode(previous);
     }
 
     @Override
-    public @NonNull ScopedState withSampleAlphaToCoverage(boolean enabled) {
+    public ScopedState withSampleAlphaToCoverage(boolean enabled) {
         GLState prevState = sampleAlphaToCoverageEnabled;
         setSampleAlphaToCoverage(enabled);
         return () -> {
@@ -648,7 +647,7 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public @NonNull ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a) {
+    public ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a) {
         GLState pr = maskR;
         GLState pg = maskG;
         GLState pb = maskB;
@@ -668,7 +667,7 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public @NonNull ScopedState withDepthFunc(int func) {
+    public ScopedState withDepthFunc(int func) {
         if (currentDepthFunc == func) return NO_OP;
         int previous = currentDepthFunc;
         setDepthFunc(func);
@@ -682,7 +681,7 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public @NonNull ScopedState withDrawBuffers(boolean mask) {
+    public ScopedState withDrawBuffers(boolean mask) {
         GLState previousState = maskState;
         int previousFBO = currentFBO;
         setDrawBuffers(mask);
@@ -703,7 +702,7 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public @NonNull ScopedState withFramebufferSrgb(boolean enabled) {
+    public ScopedState withFramebufferSrgb(boolean enabled) {
         GLState previousState = framebufferSrgbEnabled;
         setFramebufferSrgb(enabled);
         return () -> {

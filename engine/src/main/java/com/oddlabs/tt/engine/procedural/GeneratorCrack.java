@@ -8,7 +8,6 @@ import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Ring;
 import com.oddlabs.tt.procedural.Voronoi;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -21,7 +20,7 @@ public final class GeneratorCrack extends TextureGenerator {
     private static final int TEXTURE_SIZE = 128;
 
     @Override
-    public @NonNull Texture @NonNull [] generate() {
+    public Texture[] generate() {
         int seed = LandscapeConfig.LANDSCAPE_SEED;
         Channel voronoi = new Voronoi(TEXTURE_SIZE, 5, 5, 1, 1f, seed).getDistance(-1f, 1f, 0f);
         Channel borders = voronoi.dynamicRange().threshold(0.0f, 0.05f);

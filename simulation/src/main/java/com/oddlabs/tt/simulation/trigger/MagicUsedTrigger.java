@@ -3,22 +3,21 @@ package com.oddlabs.tt.simulation.trigger;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.behaviour.MagicController;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Trigger that executes a callback when a specific magic spell is cast by a chieftain.
  */
 public final class MagicUsedTrigger extends IntervalTrigger {
-    private final @NonNull Unit chieftain;
+    private final Unit chieftain;
     private final float x;
     private final float y;
     private final float r;
-    private final @NonNull MagicType magicType;
+    private final MagicType magicType;
     private final Runnable runnable;
 
     private boolean blowing = false;
 
-    public MagicUsedTrigger(@NonNull Unit chieftain, float x, float y, float r, @NonNull MagicType magicType,
+    public MagicUsedTrigger(Unit chieftain, float x, float y, float r, MagicType magicType,
             Runnable runnable) {
         super(chieftain.getOwner().getWorld(), 0f, 0f);
         this.chieftain = chieftain;

@@ -11,7 +11,6 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,10 +19,10 @@ import java.util.concurrent.ThreadLocalRandom;
  * Presentation accessory that manages flight audio for throwing weapons.
  */
 public final class ThrowingWeaponVisualAccessory implements AnimatedAccessory {
-    private final @NonNull ThrowingWeapon weapon;
+    private final ThrowingWeapon weapon;
     private final @Nullable AudioPlayer audioPlayer;
 
-    public ThrowingWeaponVisualAccessory(@NonNull ThrowingWeapon weapon, @NonNull AudioImplementation audio) {
+    public ThrowingWeaponVisualAccessory(ThrowingWeapon weapon, AudioImplementation audio) {
         this.weapon = weapon;
         var sound = weapon instanceof DirectedThrowingWeapon
                 ? AudioAssets.SFX_WEAPON_SPEAR
@@ -48,12 +47,12 @@ public final class ThrowingWeaponVisualAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         return !weapon.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
     }
 
     @Override

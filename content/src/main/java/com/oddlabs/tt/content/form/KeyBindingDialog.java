@@ -17,7 +17,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -30,12 +29,12 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
  * Modal dialog for capturing and assigning key bindings to game actions.
  */
 public class KeyBindingDialog extends Form {
-    private final @NonNull GameAction action;
-    private final @NonNull Consumer<@NonNull Set<@NonNull InputBinding>> onBindingChosen;
-    private final @NonNull GUIRoot guiRoot;
+    private final GameAction action;
+    private final Consumer<Set<InputBinding>> onBindingChosen;
+    private final GUIRoot guiRoot;
 
-    public KeyBindingDialog(@NonNull GUIRoot guiRoot, @NonNull GameAction action,
-            @NonNull Consumer<@NonNull Set<@NonNull InputBinding>> onBindingChosen) {
+    public KeyBindingDialog(GUIRoot guiRoot, GameAction action,
+            Consumer<Set<InputBinding>> onBindingChosen) {
         this.guiRoot = guiRoot;
         this.action = action;
         this.onBindingChosen = onBindingChosen;
@@ -85,7 +84,7 @@ public class KeyBindingDialog extends Form {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED) {
             Key key = event.getKeyCode();
 

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.net.NetworkSelector;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Interface for driving input, game ticks, and rendering for a display frame.
@@ -12,7 +11,7 @@ public interface FrameDriver {
      *
      * @param network the active network selector
      */
-    void tick(@NonNull NetworkSelector network);
+    void tick(NetworkSelector network);
 
     /**
      * Renders the 3D scene and 2D overlay for the current frame.
@@ -34,7 +33,7 @@ public interface FrameDriver {
      *
      * @param session the session loop to execute
      */
-    default void run(@NonNull Runnable session) {
+    default void run(Runnable session) {
         session.run();
     }
 }

@@ -5,18 +5,17 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 public final class RallyPointDelegate extends TargetDelegate {
-    private final @NonNull Building building;
+    private final Building building;
 
-    public RallyPointDelegate(@NonNull WorldViewer viewer, @NonNull GameCamera camera, @NonNull Building building) {
+    public RallyPointDelegate(WorldViewer viewer, GameCamera camera, Building building) {
         super(viewer, camera, Action.DEFAULT);
         this.building = building;
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
         if (building.isDead()) {
             pop();
             return;

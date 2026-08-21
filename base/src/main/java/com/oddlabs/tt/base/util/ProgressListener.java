@@ -1,6 +1,5 @@
 package com.oddlabs.tt.base.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.function.Supplier;
 
@@ -25,7 +24,7 @@ public interface ProgressListener {
      *
      * @return the active progress listener
      */
-    static @NonNull ProgressListener current() {
+    static ProgressListener current() {
         return CURRENT.orElse(NONE);
     }
 
@@ -51,7 +50,7 @@ public interface ProgressListener {
      * @param listener the progress listener to bind
      * @param operation the operation to execute
      */
-    static void run(@NonNull ProgressListener listener, @NonNull Runnable operation) {
+    static void run(ProgressListener listener, Runnable operation) {
         ScopedValue.where(CURRENT, listener).run(operation);
     }
 
@@ -63,7 +62,7 @@ public interface ProgressListener {
      * @param <T> the return type
      * @return the computed value
      */
-    static <T> T supply(@NonNull ProgressListener listener, @NonNull Supplier<T> supplier) {
+    static <T> T supply(ProgressListener listener, Supplier<T> supplier) {
         var ref = new Object() {
             T value;
         };
@@ -81,8 +80,8 @@ public interface ProgressListener {
      * @return the result of the callable operation
      * @throws X if unable to compute a result
      */
-    static <T, X extends Throwable> T call(@NonNull ProgressListener listener,
-            ScopedValue.@NonNull CallableOp<T, X> operation) throws X {
+    static <T, X extends Throwable> T call(ProgressListener listener,
+            ScopedValue.CallableOp<T, X> operation) throws X {
         return ScopedValue.where(CURRENT, listener).call(operation);
     }
 

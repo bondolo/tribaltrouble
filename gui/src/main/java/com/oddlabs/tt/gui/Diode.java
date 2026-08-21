@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
-import org.jspecify.annotations.NonNull;
 
 public final class Diode extends GUIObject {
     private boolean lit;
@@ -18,7 +17,7 @@ public final class Diode extends GUIObject {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : lit

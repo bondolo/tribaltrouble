@@ -1,7 +1,6 @@
 package com.oddlabs.net;
 
 import com.oddlabs.event.Deterministic;
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -18,7 +17,7 @@ public final class NetworkSelector {
     private static final long PING_TIMEOUT = TimeUnit.MINUTES.toMillis(4);
     private static final long PING_DELAY = PING_TIMEOUT / 2;
 
-    private final @NonNull MonotoneTimeManager time_manager;
+    private final MonotoneTimeManager time_manager;
     private int current_handler_id;
     private final Map<Object, Handler> handler_map = new HashMap<>();
     private TaskThread task_thread;
@@ -28,11 +27,11 @@ public final class NetworkSelector {
 
     private final Deterministic deterministic;
 
-    public NetworkSelector(final @NonNull Deterministic deterministic) {
+    public NetworkSelector(final Deterministic deterministic) {
         this(deterministic, () -> deterministic.log(TimeUnit.NANOSECONDS.toMillis(System.nanoTime())));
     }
 
-    public NetworkSelector(Deterministic deterministic, @NonNull TimeManager time_manager) {
+    public NetworkSelector(Deterministic deterministic, TimeManager time_manager) {
         this.deterministic = deterministic;
         this.time_manager = new MonotoneTimeManager(time_manager);
     }
@@ -51,7 +50,7 @@ public final class NetworkSelector {
         getTaskThread().addTask(task);
     }
 
-    public @NonNull TaskThread getTaskThread() {
+    public TaskThread getTaskThread() {
         if (task_thread == null) {
             task_thread = new TaskThread(deterministic, selector::wakeup);
         }
@@ -72,18 +71,18 @@ public final class NetworkSelector {
         return selector;
     }
 
-    void unregisterForPinging(@NonNull Connection conn) {
+    void unregisterForPinging(Connection conn) {
         TimedConnection unregister_key = new TimedConnection(-1, conn);
         ping_timeouts.remove(unregister_key);
         ping_connections.remove(unregister_key);
     }
 
-    void registerForPingTimeout(@NonNull Connection conn) {
+    void registerForPingTimeout(Connection conn) {
         long ping_timeout = time_manager.getMillis() + PING_TIMEOUT;
         ping_timeouts.add(new TimedConnection(ping_timeout, conn));
     }
 
-    void registerForPing(@NonNull Connection conn) {
+    void registerForPing(Connection conn) {
         long ping_time = time_manager.getMillis() + PING_DELAY;
         ping_connections.add(new TimedConnection(ping_time, conn));
     }
@@ -154,11 +153,11 @@ public final class NetworkSelector {
         }
     }
 
-    public @NonNull MonotoneTimeManager getTimeManager() {
+    public MonotoneTimeManager getTimeManager() {
         return time_manager;
     }
 
-    void cancelKey(@NonNull SelectionKey key, Handler handler) {
+    void cancelKey(SelectionKey key, Handler handler) {
         Object handler_key = null;
         if (!deterministic.isPlayback()) {
             handler_key = key.attachment();
@@ -168,7 +167,7 @@ public final class NetworkSelector {
         handler_map.remove(handler_key);
     }
 
-    void attachToKey(@NonNull SelectionKey key, Handler handler) {
+    void attachToKey(SelectionKey key, Handler handler) {
         Object handler_key = null;
         if (!deterministic.isPlayback()) {
             handler_key = current_handler_id++;

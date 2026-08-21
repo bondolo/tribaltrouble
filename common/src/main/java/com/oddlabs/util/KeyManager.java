@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -56,7 +55,7 @@ public final class KeyManager {
         }
     }
 
-    public static @NonNull Cipher createCipher(int cipher_mode, @NonNull KeyAgreement key_agreement,
+    public static Cipher createCipher(int cipher_mode, KeyAgreement key_agreement,
             PublicKey public_key) throws InvalidKeyException, IOException, InvalidAlgorithmParameterException {
         try {
             key_agreement.doPhase(public_key, true);
@@ -69,7 +68,7 @@ public final class KeyManager {
         }
     }
 
-    public static PrivateKey readPrivateKey(byte @NonNull [] encoded_private_key, @NonNull String algorithm)
+    public static PrivateKey readPrivateKey(byte[] encoded_private_key, String algorithm)
             throws InvalidKeySpecException {
         try {
             KeyFactory key_factory = KeyFactory.getInstance(algorithm);
@@ -80,7 +79,7 @@ public final class KeyManager {
         }
     }
 
-    public static PublicKey readPublicKey(byte @NonNull [] encoded_public_key, @NonNull String algorithm)
+    public static PublicKey readPublicKey(byte[] encoded_public_key, String algorithm)
             throws InvalidKeySpecException {
         try {
             KeyFactory key_factory = KeyFactory.getInstance(algorithm);
@@ -91,7 +90,7 @@ public final class KeyManager {
         }
     }
 
-    public static @NonNull KeyAgreement generateAgreement(PrivateKey private_key) {
+    public static KeyAgreement generateAgreement(PrivateKey private_key) {
         try {
             KeyAgreement key_agreement = KeyAgreement.getInstance(AGREEMENT_ALGORITHM);
             key_agreement.init(private_key);
@@ -114,7 +113,7 @@ public final class KeyManager {
         }
     }
 
-    public static @NonNull Cipher createPasswordCipherFromPassword(char[] password, int mode) throws IOException,
+    public static Cipher createPasswordCipherFromPassword(char[] password, int mode) throws IOException,
             GeneralSecurityException {
         PBEKeySpec pbeKeySpec;
         PBEParameterSpec pbeParamSpec;
@@ -149,7 +148,7 @@ public final class KeyManager {
         return pbeCipher;
     }
 
-    public static @NonNull Cipher createPasswordCipher(String pass_prompt, int mode) throws IOException,
+    public static Cipher createPasswordCipher(String pass_prompt, int mode) throws IOException,
             GeneralSecurityException {
         return createPasswordCipherFromPassword(readPassword(pass_prompt, System.in), mode);
     }
@@ -157,7 +156,7 @@ public final class KeyManager {
     /**
      * Reads user password from given input stream.
      */
-    public static char[] readPassword(String pass_prompt, @NonNull InputStream in) throws IOException {
+    public static char[] readPassword(String pass_prompt, InputStream in) throws IOException {
         char[] lineBuffer;
         char[] buf;
         buf = lineBuffer = new char[128];

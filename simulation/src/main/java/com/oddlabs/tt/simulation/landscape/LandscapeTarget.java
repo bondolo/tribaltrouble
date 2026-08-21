@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 
 public record LandscapeTarget(int grid_x, int grid_y) implements Target {
 
@@ -37,7 +36,7 @@ public record LandscapeTarget(int grid_x, int grid_y) implements Target {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "LandscapeTarget: grid_x = " + grid_x + " | grid_y = " + grid_y;
     }
 }

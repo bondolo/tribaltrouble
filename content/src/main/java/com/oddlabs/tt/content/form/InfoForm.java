@@ -14,7 +14,6 @@ import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.OKListener;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -25,13 +24,13 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 public final class InfoForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(InfoForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull HorizButton ok_button;
+    private final HorizButton ok_button;
 
-    public InfoForm(@NonNull Profile profile) {
+    public InfoForm(Profile profile) {
         String profile_str = i18n("profile");
         Label label_headline = new Label(profile_str, Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
@@ -94,7 +93,7 @@ public final class InfoForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {

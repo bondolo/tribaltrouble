@@ -13,7 +13,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.logging.Level;
@@ -33,7 +32,7 @@ public class CampaignDialogForm extends Form {
 
     private final HorizButton ok_button = new OKButton(80) {
         @Override
-        protected void handleInput(@NonNull InputEvent event) {
+        protected void handleInput(InputEvent event) {
             if (event.getPhase() == InputPhase.PRESSED && event.consumeAction(GameAction.UI_ACTIVATE)) {
                 if (dismissed) return;
                 dismissed = true;
@@ -50,18 +49,18 @@ public class CampaignDialogForm extends Form {
         }
     };
 
-    public CampaignDialogForm(@NonNull CharSequence header, @NonNull CharSequence text, @Nullable IconQuad image,
-            @NonNull Origin align) {
+    public CampaignDialogForm(CharSequence header, CharSequence text, @Nullable IconQuad image,
+            Origin align) {
         this(header, text, image, align, null);
     }
 
-    public CampaignDialogForm(@NonNull CharSequence header, @NonNull CharSequence text, @Nullable IconQuad image,
-            @NonNull Origin align, @Nullable Runnable runnable) {
+    public CampaignDialogForm(CharSequence header, CharSequence text, @Nullable IconQuad image,
+            Origin align, @Nullable Runnable runnable) {
         this(header, text, image, align, runnable, false);
     }
 
-    public CampaignDialogForm(@NonNull CharSequence header, @NonNull CharSequence text, @Nullable IconQuad image,
-            @NonNull Origin align, @Nullable Runnable runnable, boolean cancel) {
+    public CampaignDialogForm(CharSequence header, CharSequence text, @Nullable IconQuad image,
+            Origin align, @Nullable Runnable runnable, boolean cancel) {
         this.runnable = runnable;
         this.cancel = cancel;
         buildForm(header, text, image, align, cancel);
@@ -103,8 +102,8 @@ public class CampaignDialogForm extends Form {
             run();
     }
 
-    private void buildForm(@NonNull CharSequence header, @NonNull CharSequence text, @Nullable IconQuad image,
-            @NonNull Origin align, boolean cancel) {
+    private void buildForm(CharSequence header, CharSequence text, @Nullable IconQuad image,
+            Origin align, boolean cancel) {
         GUIIcon gui_icon = null;
         if (image != null) {
             gui_icon = new GUIIcon(image);
@@ -136,7 +135,7 @@ public class CampaignDialogForm extends Form {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         super.handleInput(event);
     }
 

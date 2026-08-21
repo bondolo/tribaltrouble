@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.font.TextLayout;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Quad;
-import org.jspecify.annotations.NonNull;
 
 import java.text.BreakIterator;
 
@@ -18,13 +17,13 @@ public final class TextLineRenderer {
         // private constructor for utility class
     }
 
-    public static void render(@NonNull GUIRenderer renderer, @NonNull TextLayout layout, float x, float y,
-            @NonNull Color color) {
+    public static void render(GUIRenderer renderer, TextLayout layout, float x, float y,
+            Color color) {
         render(renderer, layout, x, y, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, color);
     }
 
-    public static void render(@NonNull GUIRenderer renderer, @NonNull TextLayout layout, float x, float y,
-            float clipLeft, float clipRight, @NonNull Color color) {
+    public static void render(GUIRenderer renderer, TextLayout layout, float x, float y,
+            float clipLeft, float clipRight, Color color) {
         float currentY = y;
         for (TextLayout.Line line : layout.getLines()) {
             render(renderer, layout.getFont(), line.content(), x, currentY, clipLeft, clipRight, color);
@@ -36,9 +35,9 @@ public final class TextLineRenderer {
      * Render a single line of text with the provided renderer using the provided font, location, and color. The text
      * will be clipped to the specified left and right bounds.
      */
-    public static float render(@NonNull GUIRenderer renderer, @NonNull Font font, @NonNull CharSequence text,
+    public static float render(GUIRenderer renderer, Font font, CharSequence text,
             float x, float y, float clipLeft, float clipRight,
-            @NonNull Color color) {
+            Color color) {
         var linearColor = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
 
         float currentX = x;

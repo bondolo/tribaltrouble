@@ -2,16 +2,12 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.engine.render.IconQuad;
-import org.jspecify.annotations.NonNull;
 
 public interface CampaignIcons {
-    @NonNull
-    GUIIcon @NonNull [] getHiddenRoutes();
+    GUIIcon[] getHiddenRoutes();
 
-    @NonNull
-    IconQuad @NonNull [] getFaces();
+    IconQuad[] getFaces();
 
-    @NonNull
     IconQuad getMap();
 
     int getNumIslands();
@@ -20,6 +16,5 @@ public interface CampaignIcons {
 //	public int getOffsetY();
 //	public int getInternalWidth();
 //	public int getInternalHeight();
-    @NonNull
     MapIslandData getMapIslandData(int i);
 }

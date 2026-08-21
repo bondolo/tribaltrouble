@@ -11,7 +11,6 @@ import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
@@ -26,8 +25,8 @@ public final class PlacingRenderer implements AutoCloseable {
     private final PlacingShader shader = new PlacingShader();
     private final Map<SpriteList, VertexArray> vaos = new WeakHashMap<>();
 
-    public void renderGhost(@NonNull RenderContext context, @NonNull Sprite sprite, @NonNull SpriteList spriteList,
-            Color.@NonNull Linear color, @NonNull MatrixStack modelViewStack) {
+    public void renderGhost(RenderContext context, Sprite sprite, SpriteList spriteList,
+            Color.Linear color, MatrixStack modelViewStack) {
 
         VertexArray vao = vaos.computeIfAbsent(spriteList, list -> {
             VertexArray newVao = new VertexArray();

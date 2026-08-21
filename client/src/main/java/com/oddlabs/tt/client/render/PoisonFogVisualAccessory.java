@@ -15,7 +15,6 @@ import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -33,16 +32,16 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
     private static final float GAUSSIAN_LIMIT = 2.5f;
     private static final int MIN_BURSTS_PER_SOUND = 2;
 
-    private final @NonNull PoisonFog poisonFog;
-    private final @NonNull AudioImplementation audio;
-    private final @NonNull AudioPlayer bubblingSound;
+    private final PoisonFog poisonFog;
+    private final AudioImplementation audio;
+    private final AudioPlayer bubblingSound;
 
     private float time = 0f;
     private int bursts = 0;
     private boolean firstRun = true;
     private int nextSound = 1;
 
-    public PoisonFogVisualAccessory(@NonNull PoisonFog poisonFog, @NonNull AudioImplementation audio) {
+    public PoisonFogVisualAccessory(PoisonFog poisonFog, AudioImplementation audio) {
         this.poisonFog = poisonFog;
         this.audio = audio;
         World world = poisonFog.getWorld();
@@ -99,12 +98,12 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         return !poisonFog.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
     }
 
     @Override

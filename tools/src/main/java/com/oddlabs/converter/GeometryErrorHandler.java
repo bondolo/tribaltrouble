@@ -1,6 +1,5 @@
 package com.oddlabs.converter;
 
-import org.jspecify.annotations.NonNull;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 
@@ -12,13 +11,13 @@ public final class GeometryErrorHandler implements ErrorHandler {
 
     // treat validation errors as fatal
     @Override
-    public void error(@NonNull SAXParseException e) throws SAXParseException {
+    public void error(SAXParseException e) throws SAXParseException {
         throw e;
     }
 
     // dump warnings too
     @Override
-    public void warning(@NonNull SAXParseException err) {
+    public void warning(SAXParseException err) {
         IO.println("** Warning, line " + err.getLineNumber() + ", uri " + err.getSystemId());
         IO.println("   " + err.getMessage());
     }

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.base.resource;
 
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -12,12 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class FileTest {
 
     private static final class TestFile extends File<String> {
-        TestFile(@NonNull URI uri) {
+        TestFile(URI uri) {
             super(uri);
         }
 
         @Override
-        public @NonNull String get() {
+        public String get() {
             return "test-content";
         }
     }

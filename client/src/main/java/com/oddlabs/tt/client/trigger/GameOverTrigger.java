@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,17 +18,17 @@ import java.util.ResourceBundle;
  */
 public final class GameOverTrigger implements Animated {
 
-    private final int @NonNull [] teams;
-    private final boolean @NonNull [] dead_tribes;
+    private final int[] teams;
+    private final boolean[] dead_tribes;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GameOverTrigger.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
 
-    public GameOverTrigger(@NonNull WorldViewer viewer) {
+    public GameOverTrigger(WorldViewer viewer) {
         this.viewer = viewer;
         viewer.getWorld().getAnimationManagerRealTime().registerAnimation(this);
         teams = new int[MatchmakingServerInterface.MAX_PLAYERS];
@@ -39,7 +38,7 @@ public final class GameOverTrigger implements Animated {
 
     @Override
     public void animate(float t) {
-        List<@NonNull Player> players = viewer.getWorld().getPlayers();
+        List<Player> players = viewer.getWorld().getPlayers();
         Player local_player = viewer.getLocalPlayer();
         boolean enemy_alive = false;
 
@@ -69,7 +68,7 @@ public final class GameOverTrigger implements Animated {
         }
     }
 
-    private int countTeams(List<@NonNull Player> players) {
+    private int countTeams(List<Player> players) {
         for (int i = 0; i < players.size(); i++) {
             teams[i] = 0;
         }
@@ -91,7 +90,7 @@ public final class GameOverTrigger implements Animated {
         viewer.getWorld().getAnimationManagerRealTime().removeAnimation(this);
     }
 
-    private void createDelayTrigger(@NonNull String text) {
+    private void createDelayTrigger(String text) {
         new GameOverDelayTrigger(viewer, viewer.getDelegate().getCamera(), text);
     }
 

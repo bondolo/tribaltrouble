@@ -10,7 +10,6 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
@@ -22,15 +21,15 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private static final int INITIAL_SUPPLIES = 10;
     private static final float SECOND_PER_TREEFALL = 3f;
 
-    private final @NonNull Matrix4f matrix;
-    private final @NonNull TreeType tree_type;
+    private final Matrix4f matrix;
+    private final TreeType tree_type;
     private final float x;
     private final float y;
     private final int grid_x;
     private final int grid_y;
     private final int grid_size;
     private final float size;
-    private final @NonNull World world;
+    private final World world;
 
     private int num_supplies = INITIAL_SUPPLIES;
     private float animation_time;
@@ -38,9 +37,9 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private float scale = 1f;
     private int hit_counter = 0;
 
-    public TreeSupply(@NonNull World world, @Nullable AbstractTreeGroup parent, float x, float y, int grid_x,
-            int grid_y, int grid_size, float size, @NonNull Matrix4f matrix, @NonNull TreeType tree_type,
-            float @NonNull [] vertices) {
+    public TreeSupply(World world, @Nullable AbstractTreeGroup parent, float x, float y, int grid_x,
+            int grid_y, int grid_size, float size, Matrix4f matrix, TreeType tree_type,
+            float[] vertices) {
         super(parent);
         this.world = world;
         this.x = x;
@@ -71,12 +70,12 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     }
 
     @Override
-    public @NonNull SupplyType getSupplyType() {
+    public SupplyType getSupplyType() {
         return SupplyType.WOOD;
     }
 
     @Override
-    public @NonNull World getWorld() {
+    public World getWorld() {
         return world;
     }
 
@@ -89,7 +88,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     }
 
     @Override
-    public @NonNull TreeSupply respawn() {
+    public TreeSupply respawn() {
         occupyTree();
         hide = false;
         num_supplies = INITIAL_SUPPLIES;
@@ -109,7 +108,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "Tree at " + grid_x + " " + grid_y + " isEmpty() " + isEmpty();
     }
 
@@ -219,7 +218,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         }
     }
 
-    public @NonNull TreeType getTreeType() {
+    public TreeType getTreeType() {
         return tree_type;
     }
 
@@ -238,7 +237,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         }
     }
 
-    public @NonNull Matrix4f getMatrix() {
+    public Matrix4f getMatrix() {
         return matrix;
     }
 

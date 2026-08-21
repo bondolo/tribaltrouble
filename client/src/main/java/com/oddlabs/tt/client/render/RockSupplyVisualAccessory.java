@@ -16,7 +16,6 @@ import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -27,12 +26,12 @@ import java.util.Collection;
  * Manages the rising eruption smoke entirely on the client.
  */
 public final class RockSupplyVisualAccessory implements EmitterAccessory {
-    private final @NonNull RockSupply rockSupply;
-    private final @NonNull AudioImplementation audio;
+    private final RockSupply rockSupply;
+    private final AudioImplementation audio;
     private @Nullable RandomVelocityEmitter smokeEmitter = null;
     private boolean soundPlayed = false;
 
-    public RockSupplyVisualAccessory(@NonNull RockSupply rockSupply, @NonNull AudioImplementation audio) {
+    public RockSupplyVisualAccessory(RockSupply rockSupply, AudioImplementation audio) {
         this.rockSupply = rockSupply;
         this.audio = audio;
     }
@@ -100,7 +99,7 @@ public final class RockSupplyVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void addEmitters(@NonNull Collection<@NonNull Emitter<?>> dest) {
+    public void addEmitters(Collection<Emitter<?>> dest) {
         if (smokeEmitter != null) {
             dest.add(smokeEmitter);
         }
@@ -112,12 +111,12 @@ public final class RockSupplyVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         return !rockSupply.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
     }
 
     @Override

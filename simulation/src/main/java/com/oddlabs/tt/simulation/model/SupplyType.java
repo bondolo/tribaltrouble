@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -13,17 +12,17 @@ public enum SupplyType {
     IRON(IronSupply.class),
     RUBBER(RubberSupply.class);
 
-    private final @NonNull Class<? extends Supply> supplyClass;
+    private final Class<? extends Supply> supplyClass;
 
-    SupplyType(@NonNull Class<? extends Supply> supplyClass) {
+    SupplyType(Class<? extends Supply> supplyClass) {
         this.supplyClass = supplyClass;
     }
 
-    public @NonNull Class<? extends Supply> getSupplyClass() {
+    public Class<? extends Supply> getSupplyClass() {
         return supplyClass;
     }
 
-    public static @Nullable SupplyType fromClass(@NonNull Class<?> cl) {
+    public static @Nullable SupplyType fromClass(Class<?> cl) {
         if (cl == TreeSupply.class) {
             return WOOD;
         } else if (cl == RockSupply.class) {

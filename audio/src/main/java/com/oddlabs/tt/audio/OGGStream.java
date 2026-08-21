@@ -1,7 +1,6 @@
 package com.oddlabs.tt.audio;
 
 import com.oddlabs.tt.base.resource.NativeResource;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBVorbis;
 import org.lwjgl.stb.STBVorbisInfo;
@@ -22,12 +21,12 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
     protected static class Decoder extends NativeResource.NativeState {
         // STBVorbis JNI wrapper doesn't appear to correctly hold a reference to the buffer, so we must hold one.
         @SuppressWarnings("FieldCanBeLocal")
-        private final @NonNull ByteBuffer decoderData;
+        private final ByteBuffer decoderData;
         private final long decoder;
         private final int channels;
         private final int sampleRate;
 
-        private Decoder(byte @NonNull [] vorbis) throws IOException {
+        private Decoder(byte[] vorbis) throws IOException {
             decoderData = BufferUtils.createByteBuffer(vorbis.length);
             decoderData.put(vorbis);
             decoderData.flip();
@@ -53,12 +52,12 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
         }
     }
 
-    public OGGStream(@NonNull URL source) throws IOException {
+    public OGGStream(URL source) throws IOException {
         this(source.openStream());
     }
 
     /** Reads OGG from the stream and in all cases closes the stream */
-    public OGGStream(@NonNull InputStream stream) throws IOException {
+    public OGGStream(InputStream stream) throws IOException {
         byte[] bytes;
         try (stream) {
             bytes = stream.readAllBytes();
@@ -66,7 +65,7 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
         this(bytes);
     }
 
-    public OGGStream(byte @NonNull [] bytes) throws IOException {
+    public OGGStream(byte[] bytes) throws IOException {
         super(new Decoder(bytes));
     }
 
@@ -88,7 +87,7 @@ public final class OGGStream extends NativeResource<OGGStream.Decoder> {
      * @param buffer Destination buffer. Must be direct.
      * @return The number of short values written to the buffer.
      */
-    public int read(@NonNull ShortBuffer buffer) {
+    public int read(ShortBuffer buffer) {
         assert buffer.position() == 0 && buffer.hasRemaining()
                 : "Buffer must have remaining space and be at position 0";
         int samplesPerChannelRequest = buffer.remaining() / state.channels;

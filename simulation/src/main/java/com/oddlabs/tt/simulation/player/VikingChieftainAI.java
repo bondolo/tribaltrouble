@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
-import org.jspecify.annotations.NonNull;
 
 import java.util.stream.StreamSupport;
 
@@ -16,12 +15,12 @@ public final class VikingChieftainAI extends ChieftainAI {
     private static final int NUM_UNITS_FOR_BLAST = 7;
 
     @Override
-    public void decide(@NonNull Unit chieftain) {
+    public void decide(Unit chieftain) {
         nodeBlast(chieftain);
         nodeStun(chieftain);
     }
 
-    private void nodeStun(@NonNull Unit chieftain) {
+    private void nodeStun(Unit chieftain) {
         if (chieftain.getMagicProgress(MagicType.STUN) < 1)
             return;
 
@@ -35,7 +34,7 @@ public final class VikingChieftainAI extends ChieftainAI {
         }
     }
 
-    private void nodeBlast(@NonNull Unit chieftain) {
+    private void nodeBlast(Unit chieftain) {
         if (chieftain.getMagicProgress(MagicType.SONIC_BLAST) < 1)
             return;
 
@@ -52,7 +51,7 @@ public final class VikingChieftainAI extends ChieftainAI {
         }
     }
 
-    private <S extends Selectable<?>> int getNumEnemyUnitsClose(@NonNull Unit chieftain, float hit_radius, Class<
+    private <S extends Selectable<?>> int getNumEnemyUnitsClose(Unit chieftain, float hit_radius, Class<
             S> type) {
         FindOccupantFilter<S> filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(),
                 hit_radius, chieftain, type);
@@ -68,7 +67,7 @@ public final class VikingChieftainAI extends ChieftainAI {
         return (int) num_enemy_units_close;
     }
 
-    private int getNumFriendlyUnitsClose(@NonNull Unit chieftain, float hit_radius) {
+    private int getNumFriendlyUnitsClose(Unit chieftain, float hit_radius) {
         var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
                 Selectable.genericClass());
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());

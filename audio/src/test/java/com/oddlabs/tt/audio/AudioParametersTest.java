@@ -6,7 +6,6 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AudioParametersTest {
@@ -41,10 +40,5 @@ class AudioParametersTest {
         assertTrue(params.relative());
         assertFalse(params.ambient());
         assertTrue(params.audio().isStreaming());
-    }
-
-    @Test
-    void testNullAudioThrows() {
-        assertThrows(NullPointerException.class, () -> new AudioParameters(null, 10, 50.0f));
     }
 }

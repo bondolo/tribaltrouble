@@ -19,7 +19,6 @@ import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import org.joml.Matrix4fc;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -28,7 +27,6 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Objects;
 import java.util.Queue;
 
 /**
@@ -45,20 +43,20 @@ public final class LightningRenderer implements AutoCloseable {
             LightningShader.Attribute.COLOR
     );
 
-    private final @NonNull FloatBuffer particle_buffer = Objects.requireNonNull(BufferUtils.createFloatBuffer(
-            MAX_PARTICLES * VERTICES_PER_PARTICLE * FLOATS_PER_VERTEX));
-    private final @NonNull FloatVBO particle_vbo = new FloatVBO(GL15.GL_STREAM_DRAW, particle_buffer.capacity());
-    private final @NonNull ShortVBO particle_ibo;
+    private final FloatBuffer particle_buffer = BufferUtils.createFloatBuffer(
+            MAX_PARTICLES * VERTICES_PER_PARTICLE * FLOATS_PER_VERTEX);
+    private final FloatVBO particle_vbo = new FloatVBO(GL15.GL_STREAM_DRAW, particle_buffer.capacity());
+    private final ShortVBO particle_ibo;
 
-    private final @NonNull LightningShader shader;
+    private final LightningShader shader;
     private final VertexArray vao = new VertexArray();
     private int vbo_offset = 0;
 
     public LightningRenderer() {
         shader = new LightningShader();
 
-        ShortBuffer iboBuffer = Objects.requireNonNull(BufferUtils.createShortBuffer(MAX_PARTICLES
-                * INDICES_PER_PARTICLE));
+        ShortBuffer iboBuffer = BufferUtils.createShortBuffer(MAX_PARTICLES
+                * INDICES_PER_PARTICLE);
         for (int i = 0; i < MAX_PARTICLES; i++) {
             int offset = i * VERTICES_PER_PARTICLE;
             // First quad
@@ -78,16 +76,16 @@ public final class LightningRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    private final Deque<@NonNull Lightning> activeLightnings = new ArrayDeque<>();
+    private final Deque<Lightning> activeLightnings = new ArrayDeque<>();
 
-    public void prepare(@NonNull Queue<@NonNull Lightning> queue) {
+    public void prepare(Queue<Lightning> queue) {
         activeLightnings.clear();
         activeLightnings.addAll(queue);
         queue.clear();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void render(RenderContext context, RenderQueues render_queues, CameraState state,
+            MatrixStack modelViewStack, MatrixStack projectionStack) {
         if (activeLightnings.isEmpty()) return;
 
         // Reset offset and orphan at start of frame to prevent flickering
@@ -115,7 +113,7 @@ public final class LightningRenderer implements AutoCloseable {
         }
     }
 
-    private void render2DParticle(@NonNull StretchParticle particle) {
+    private void render2DParticle(StretchParticle particle) {
         float src_x = particle.getSrcX();
         float src_y = particle.getSrcY();
         float src_z = particle.getSrcZ();
@@ -149,8 +147,8 @@ public final class LightningRenderer implements AutoCloseable {
         particle_buffer.put(x).put(y).put(z).put(u).put(v).put(r).put(g).put(b).put(a);
     }
 
-    private void renderInternal(@NonNull RenderContext context, @NonNull RenderQueues render_queues,
-            @NonNull Lightning lightning) {
+    private void renderInternal(RenderContext context, RenderQueues render_queues,
+            Lightning lightning) {
         context.setTexture(0, render_queues.getTexture(lightning.getTexture()));
 
         particle_buffer.clear();
@@ -182,7 +180,7 @@ public final class LightningRenderer implements AutoCloseable {
         vbo_offset += count;
     }
 
-    public void debugRender(@NonNull Queue<@NonNull Lightning> emitter_queue) {
+    public void debugRender(Queue<Lightning> emitter_queue) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (Lightning emitter : emitter_queue) {
                 RenderTools.draw(emitter, 1f, 1f, 1f);

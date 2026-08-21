@@ -2,11 +2,10 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.net.ARMIEvent;
 import com.oddlabs.net.AbstractConnection;
-import org.jspecify.annotations.NonNull;
 
 final class ClientConnection {
     private final AbstractConnection connection;
-    private final @NonNull GameClientInterface gameclient_interface;
+    private final GameClientInterface gameclient_interface;
     private final ClientInfo client;
 
     public ClientConnection(AbstractConnection conn, ClientInfo client) {
@@ -15,7 +14,7 @@ final class ClientConnection {
         this.client = client;
     }
 
-    public @NonNull GameClientInterface getClientInterface() {
+    public GameClientInterface getClientInterface() {
         return gameclient_interface;
     }
 

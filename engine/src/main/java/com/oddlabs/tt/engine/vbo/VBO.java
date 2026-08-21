@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.vbo;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.base.resource.NativeResource;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 
@@ -47,12 +46,12 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
     private final int target;
     private final int size;
 
-    public static void releaseAll(@NonNull RenderContext context) {
+    public static void releaseAll(RenderContext context) {
         context.bindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         releaseIndexVBO(context);
     }
 
-    public static void releaseIndexVBO(@NonNull RenderContext context) {
+    public static void releaseIndexVBO(RenderContext context) {
         context.bindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
@@ -66,7 +65,7 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
         bind(Renderer.getRenderer().getRenderContext());
     }
 
-    public final void bind(@NonNull RenderContext context) {
+    public final void bind(RenderContext context) {
         context.bindBuffer(target, state.handle);
     }
 

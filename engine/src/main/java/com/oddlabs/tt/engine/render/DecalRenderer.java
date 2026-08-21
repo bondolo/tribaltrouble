@@ -11,7 +11,6 @@ import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -29,16 +28,16 @@ import java.nio.ShortBuffer;
 public final class DecalRenderer implements AutoCloseable {
 
     private final DecalShader shader = new DecalShader();
-    private final @NonNull VertexArray vao;
-    private final @NonNull FloatVBO meshVBO;
-    private final @NonNull ShortVBO meshIBO;
-    private final @NonNull FloatVBO instanceVBO;
+    private final VertexArray vao;
+    private final FloatVBO meshVBO;
+    private final ShortVBO meshIBO;
+    private final FloatVBO instanceVBO;
 
     public static final int HALO_LUT_RESOLUTION = 256;
 
     private static final int MAX_INSTANCES = 2048;
     private static final int FLOATS_PER_INSTANCE = 2 + 1 + 4 + 1 + 1 + 1 + 1 + 1; // Pos(2)+Size(1)+Color(4)+Pat(1)+Off(1)+Slot(1)+Flags(1)+ShadowOp(1)
-    private final @NonNull FloatBuffer instanceBuffer;
+    private final FloatBuffer instanceBuffer;
 
     private int instanceCount = 0;
     private final TextureBatcher textureBatcher = new TextureBatcher(14);
@@ -147,8 +146,8 @@ public final class DecalRenderer implements AutoCloseable {
     private ScopedState depthState;
     private ScopedState cullState;
 
-    public @NonNull ScopedState setup(@NonNull RenderContext context, @NonNull LandscapeRenderer landscape,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public ScopedState setup(RenderContext context, LandscapeRenderer landscape,
+            MatrixStack modelViewStack, MatrixStack projectionStack) {
         if (setupCount == 0) {
             shaderState = shader.use();
 
@@ -192,8 +191,8 @@ public final class DecalRenderer implements AutoCloseable {
     /**
      * Draws the specified decal texture with the provided tint and pattern at the specified position and size.
      */
-    public void draw(@NonNull RenderContext context, @NonNull Texture texture, float x, float y, float size,
-            Color.@NonNull Linear color, float patternVal, float shadowOffsetScale, boolean radial,
+    public void draw(RenderContext context, Texture texture, float x, float y, float size,
+            Color.Linear color, float patternVal, float shadowOffsetScale, boolean radial,
             float shadowOpacity) {
         int slot = textureBatcher.getOrAssignSlot(texture);
         if (slot == -1 || instanceCount >= MAX_INSTANCES) {
@@ -216,7 +215,7 @@ public final class DecalRenderer implements AutoCloseable {
         instanceCount++;
     }
 
-    private void flush(@NonNull RenderContext context) {
+    private void flush(RenderContext context) {
         if (instanceCount == 0) return;
 
         textureBatcher.bindTextures(context, 2);

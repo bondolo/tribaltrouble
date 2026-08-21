@@ -8,7 +8,6 @@ import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.net.AccountSettings;
 import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -48,14 +47,14 @@ public final class Settings implements Serializable, PropertiesSerializer {
 
     private transient final @Nullable Path game_dir;
 
-    public final @NonNull WindowSettings window;
-    public final @NonNull AudioSettings audio;
-    public final @NonNull AccountSettings account;
-    public final @NonNull AccessibilitySettings accessibility;
-    public final @NonNull ControlSettings control;
-    public final @NonNull InputBindingSettings inputBindings;
+    public final WindowSettings window;
+    public final AudioSettings audio;
+    public final AccountSettings account;
+    public final AccessibilitySettings accessibility;
+    public final ControlSettings control;
+    public final InputBindingSettings inputBindings;
 
-    public transient @NonNull Path last_event_log_dir = Path.of("");
+    public transient Path last_event_log_dir = Path.of("");
     public int last_revision = -1;
     public boolean crashed = false;
 
@@ -97,7 +96,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
      * Retrieves a registered {@link PropertiesSerializer} by its class.
      */
     @SuppressWarnings("unchecked")
-    public <T extends PropertiesSerializer> @NonNull T get(@NonNull Class<T> type) {
+    public <T extends PropertiesSerializer> T get(Class<T> type) {
         T serializer = (T) serializers.get(type);
         if (serializer == null) {
             throw new IllegalArgumentException("No PropertiesSerializer registered for: " + type.getName());
@@ -109,8 +108,8 @@ public final class Settings implements Serializable, PropertiesSerializer {
      * Retrieves a registered {@link PropertiesSerializer} by its class, or creates and registers a new instance.
      */
     @SuppressWarnings("unchecked")
-    public <T extends PropertiesSerializer> @NonNull T getOrCreate(@NonNull Class<T> type,
-            @NonNull Supplier<T> fallback) {
+    public <T extends PropertiesSerializer> T getOrCreate(Class<T> type,
+            Supplier<T> fallback) {
         T serializer = (T) serializers.get(type);
         if (serializer == null) {
             serializer = fallback.get();
@@ -122,7 +121,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
     /**
      * Registers a custom or dynamic {@link PropertiesSerializer}.
      */
-    public void registerSerializer(@NonNull PropertiesSerializer serializer) {
+    public void registerSerializer(PropertiesSerializer serializer) {
         serializers.put(serializer.getClass(), serializer);
     }
 
@@ -167,7 +166,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
     }
 
     @Override
-    public void saveToProperties(@NonNull Properties props) {
+    public void saveToProperties(Properties props) {
         Settings defaults = new Settings();
 
         setProperty(props, "last_event_log_dir", last_event_log_dir, defaults.last_event_log_dir);
@@ -182,7 +181,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
     }
 
     @Override
-    public void loadFromProperties(@NonNull Properties props) {
+    public void loadFromProperties(Properties props) {
         last_event_log_dir = getPath(props, "last_event_log_dir", last_event_log_dir);
         last_revision = getInt(props, "last_revision", last_revision);
         crashed = getBoolean(props, "crashed", crashed);
@@ -195,13 +194,13 @@ public final class Settings implements Serializable, PropertiesSerializer {
     }
 
     @Serial
-    private void writeObject(@NonNull ObjectOutputStream out) throws IOException {
+    private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
         out.writeObject(last_event_log_dir.toString());
     }
 
     @Serial
-    private void readObject(@NonNull ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         last_event_log_dir = Path.of((String) in.readObject());
     }

@@ -10,7 +10,6 @@ import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.window.LWJGL3Window;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDLMessageBox;
 
 import java.util.ResourceBundle;
@@ -27,11 +26,11 @@ public final class Main {
     private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Main.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public static void fail(@NonNull Throwable t) {
+    public static void fail(Throwable t) {
         logger.log(Level.SEVERE, "Critical Failure", t);
 
         if (!DEBUG) {
@@ -63,7 +62,7 @@ public final class Main {
         System.exit(status);
     }
 
-    static void main(@NonNull String @NonNull... args) {
+    static void main(String... args) {
         logger.info("DEBUG mode = " + DEBUG);
         String os_name = System.getProperty("os.name");
         logger.info("os.name = '" + os_name + "'");

@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -12,7 +11,7 @@ import java.util.Map;
  */
 public final class DistanceFogInfo extends FogInfo {
 
-    private static final Map<Terrain, @NonNull Color> FOG_COLOR = new EnumMap<>(Map.of(
+    private static final Map<Terrain, Color> FOG_COLOR = new EnumMap<>(Map.of(
             Terrain.NATIVE, new Color.Standard(0xFF_A5_BF_FF),
             Terrain.VIKING, new Color.Standard(0xFF_33_66_8C)
     ));
@@ -25,7 +24,7 @@ public final class DistanceFogInfo extends FogInfo {
     private final float end;
     private final float height_factor;
 
-    public DistanceFogInfo(FogInfo.@NonNull Mode mode, @NonNull Color color, float density, float height_factor,
+    public DistanceFogInfo(FogInfo.Mode mode, Color color, float density, float height_factor,
             float start, float end) {
         super(mode, color, density);
         this.height_factor = height_factor;
@@ -40,7 +39,7 @@ public final class DistanceFogInfo extends FogInfo {
      * @param meters_per_world world size in meters
      * @return distance fog parameters
      */
-    public static @NonNull DistanceFogInfo forTerrain(@NonNull Terrain terrain, int meters_per_world) {
+    public static DistanceFogInfo forTerrain(Terrain terrain, int meters_per_world) {
         return switch (terrain) {
             case NATIVE ->
                 new DistanceFogInfo(Mode.EXP2, FOG_COLOR.get(terrain), NATIVE_FOG_DENSITY, NATIVE_FOG_HEIGHT

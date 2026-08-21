@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,19 +11,19 @@ public class SupplyManager implements Animated {
     private static final float MAX_EMPTY_SUPPLIES = .75f;
 
     private final List<Supply> empty_supplies = new ArrayList<>();
-    private final @NonNull World world;
+    private final World world;
 
     private int total_num_supplies = 0;
     private float time;
 
 
-    public SupplyManager(@NonNull World world) {
+    public SupplyManager(World world) {
         this.world = world;
         world.getAnimationManagerGameTime().registerAnimation(this);
         resetCounter();
     }
 
-    protected final @NonNull World getWorld() {
+    protected final World getWorld() {
         return world;
     }
 

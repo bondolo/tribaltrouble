@@ -4,16 +4,15 @@ package com.oddlabs.tt.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
 public final class MidpointFractalizer {
 
-    private final @NonNull Random random;
+    private final Random random;
     public Channel channel;
 
-    public MidpointFractalizer(int size, @NonNull Channel base, float amplitude, float pers, long seed) {
+    public MidpointFractalizer(int size, Channel base, float amplitude, float pers, long seed) {
         assert Utils.isPowerOf2(size) : "size must be power of 2";
         assert Utils.isPowerOf2(base.width) : "base image size must be power of 2";
         assert base.width == base.height : "base image must be square";
@@ -174,7 +173,7 @@ public final class MidpointFractalizer {
         }
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel.copy(), channel.copy());
     }
 

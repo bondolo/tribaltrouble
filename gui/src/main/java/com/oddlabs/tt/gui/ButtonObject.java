@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.input.GameAction;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Supplier;
@@ -10,25 +9,25 @@ import java.util.function.Supplier;
 /** A clickable button */
 public abstract class ButtonObject extends GUIObject {
     private boolean pressed = false;
-    private final @NonNull Font font;
+    private final Font font;
     private final @Nullable GameAction action;
 
-    public ButtonObject(@NonNull Font font) {
+    public ButtonObject(Font font) {
         this(font, null);
     }
 
-    public ButtonObject(@NonNull Font font, @Nullable GameAction action) {
+    public ButtonObject(Font font, @Nullable GameAction action) {
         this(font, action, null);
     }
 
-    public ButtonObject(@NonNull Font font, @Nullable GameAction action, @Nullable Supplier<@NonNull String> tool_tip) {
+    public ButtonObject(Font font, @Nullable GameAction action, @Nullable Supplier<String> tool_tip) {
         super(tool_tip);
         this.font = font;
         this.action = action;
         setCanFocus(true);
     }
 
-    protected @NonNull Font getFont() {
+    protected Font getFont() {
         return font;
     }
 
@@ -41,17 +40,17 @@ public abstract class ButtonObject extends GUIObject {
     }
 
     @Override
-    protected final void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    protected final void mouseReleased(MouseButton button, int x, int y) {
         pressed = false;
     }
 
     @Override
-    protected final void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected final void mousePressed(MouseButton button, int x, int y) {
         pressed = true;
     }
 
     @Override
-    protected void mouseHeld(@NonNull MouseButton button, int x, int y) {
+    protected void mouseHeld(MouseButton button, int x, int y) {
         if (pressed)
             mousePressedAll(button, x, y);
     }

@@ -9,7 +9,6 @@ import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.base.event.StateChecksum;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -29,12 +28,12 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private static final float OFFSET_Z = 1.382f;
 
     private final boolean hit;
-    private final @NonNull Unit src;
+    private final Unit src;
     /** rendering offset */
     private final float deterministic_z;
 
     /** the target of the weapon. Mutable because rubber weapons bounce and change targets **/
-    private @NonNull Selectable<?> target;
+    private Selectable<?> target;
     private float start_x;
     private float start_y;
     private float end_x;
@@ -48,7 +47,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     /** absolute height in the world */
     private float current_z;
 
-    public ThrowingWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
+    public ThrowingWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(src.getOwner().getWorld());
         this.src = src;
         this.hit = hit;
@@ -70,24 +69,24 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         src.getOwner().weaponThrown();
     }
 
-    public final @NonNull Unit getSrc() {
+    public final Unit getSrc() {
         return src;
     }
 
-    public abstract @NonNull WeaponVisualType getWeaponVisualType();
+    public abstract WeaponVisualType getWeaponVisualType();
 
     @Override
-    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+    protected BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "ThrowingWeapon: start_x = " + start_x + " | start_y = " + start_y + " | end_x = " + end_x
                 + " | end_y = " + end_y + " | target = " + target + "  " + super.toString();
     }
 
-    protected final void setTarget(@NonNull Selectable<?> target) {
+    protected final void setTarget(Selectable<?> target) {
         this.target = target;
         updateDirection();
         calcNumUpdatesAndZSpeed();
@@ -128,7 +127,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     }
 
     @Override
-    public final void updateChecksum(@NonNull StateChecksum checksum) {
+    public final void updateChecksum(StateChecksum checksum) {
         checksum.update(time);
     }
 
@@ -166,14 +165,14 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         setPosition(x, y, current_z - deterministic_z);
     }
 
-    protected void hitTarget(boolean hit, @NonNull Player owner, @NonNull Selectable<?> target) {
+    protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
         getWorld().getAnimationManagerGameTime().removeAnimation(this);
         remove();
         if (hit)
             damageTarget(target);
     }
 
-    protected final void damageTarget(@NonNull Selectable<?> target) {
+    protected final void damageTarget(Selectable<?> target) {
         if (target instanceof Unit unit) {
             float pitchRange = unit.getTemplate().getDeathPitch();
             getClientState(ModelClient.class).ifPresent(client -> {

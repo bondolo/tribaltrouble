@@ -9,7 +9,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.client.gui.VikingCampaignIcons;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -53,21 +52,21 @@ public final class VikingCampaign extends Campaign {
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE};
 
-    private final @NonNull Island[] islands = Stream.<Function<VikingCampaign, Island>>of(
+    private final Island[] islands = Stream.<Function<VikingCampaign, Island>>of(
             VikingIsland0::new, VikingIsland1::new, VikingIsland2::new, VikingIsland3::new, VikingIsland4::new,
             VikingIsland5::new, VikingIsland6::new, VikingIsland7::new, VikingIsland8::new, VikingIsland9::new,
             VikingIsland10::new, VikingIsland11::new, VikingIsland12::new, VikingIsland13::new, VikingIsland14::new)
             .map(c -> c.apply(this))
             .toArray(Island[]::new);
 
-    public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            @NonNull AudioManager audioManager) {
+    public VikingCampaign(NetworkSelector network, GUIRoot gui_root,
+            AudioManager audioManager) {
         this(network, gui_root, new CampaignState(INITIAL_STATES), audioManager);
     }
 
-    public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            @NonNull CampaignState campaign_state,
-            @NonNull AudioManager audioManager) {
+    public VikingCampaign(NetworkSelector network, GUIRoot gui_root,
+            CampaignState campaign_state,
+            AudioManager audioManager) {
         super(campaign_state, audioManager);
         if (getState().getCurrentIsland() == -1) {
             startIsland(network, gui_root, 0);
@@ -75,12 +74,12 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public @NonNull CampaignIcons getIcons() {
+    public CampaignIcons getIcons() {
         return VikingCampaignIcons.getIcons();
     }
 
     @Override
-    public void islandChosen(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, int number) {
+    public void islandChosen(NetworkSelector network, GUIRoot gui_root, int number) {
         Form dialog = new CampaignDialogForm(islands[number].getHeader(),
                 islands[number].getDescription(),
                 null,
@@ -90,7 +89,7 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public @NonNull CharSequence getCurrentObjective() {
+    public CharSequence getCurrentObjective() {
         if (getState().getCurrentIsland() != -1) {
             return islands[getState().getCurrentIsland()].getCurrentObjective();
         }
@@ -98,14 +97,14 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public void defeated(@NonNull WorldViewer viewer, @NonNull String game_over_message) {
+    public void defeated(WorldViewer viewer, String game_over_message) {
         if (getState().getCurrentIsland() == 13)
             ((VikingIsland13) islands[13]).removeCounter();
         super.defeated(viewer, game_over_message);
     }
 
     @Override
-    public void startIsland(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, int number) {
+    public void startIsland(NetworkSelector network, GUIRoot gui_root, int number) {
         getState().setCurrentIsland(number);
         islands[number].chosen(network, gui_root);
     }

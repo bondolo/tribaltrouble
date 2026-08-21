@@ -11,7 +11,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.ProfileListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -20,7 +19,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 public final class CreatingProfileForm extends Form implements ProfileListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CreatingProfileForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 

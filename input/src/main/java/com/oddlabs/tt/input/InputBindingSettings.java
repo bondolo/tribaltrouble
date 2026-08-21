@@ -1,7 +1,6 @@
 package com.oddlabs.tt.input;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
@@ -236,19 +235,19 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         def(GameAction.DEBUG_TOGGLE_AI, Key.R, Modifier.CONTROL);
     }
 
-    private static void def(@NonNull GameAction action, @NonNull Key key, @NonNull Modifier @NonNull... modifiers) {
+    private static void def(GameAction action, Key key, Modifier... modifiers) {
         Set<Modifier> modSet = EnumSet.noneOf(Modifier.class);
         Collections.addAll(modSet, modifiers);
         DEFAULT_BINDINGS.computeIfAbsent(action, k -> new TreeSet<>())
                 .add(new InputBinding(key, modSet, action));
     }
 
-    private static void defChar(@NonNull GameAction action, char character) {
+    private static void defChar(GameAction action, char character) {
         DEFAULT_BINDINGS.computeIfAbsent(action, k -> new TreeSet<>())
                 .add(new InputBinding(Key.KEY_UNKNOWN, (int) character, EnumSet.noneOf(Modifier.class), action));
     }
 
-    private final NavigableSet<@NonNull InputBinding> bindings = new TreeSet<>();
+    private final NavigableSet<InputBinding> bindings = new TreeSet<>();
 
     public InputBindingSettings() {
         loadDefaultBindings();
@@ -260,7 +259,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
     }
 
     @Override
-    public void loadFromProperties(@NonNull Properties props) {
+    public void loadFromProperties(Properties props) {
         bindings.clear();
         for (GameAction action : GameAction.values()) {
             String key = "key_binding." + action.name();
@@ -285,7 +284,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
     }
 
     @Override
-    public void saveToProperties(@NonNull Properties props) {
+    public void saveToProperties(Properties props) {
         // Group current bindings by action
         Map<GameAction, NavigableSet<InputBinding>> currentMap = new EnumMap<>(GameAction.class);
         for (InputBinding b : bindings) {
@@ -306,27 +305,27 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         }
     }
 
-    public @NonNull NavigableSet<@NonNull InputBinding> getBindings(@NonNull GameAction action) {
+    public NavigableSet<InputBinding> getBindings(GameAction action) {
         return bindings.stream()
                 .filter(b -> b.action() == action)
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
-    public @NonNull NavigableSet<@NonNull InputBinding> getAllBindings() {
+    public NavigableSet<InputBinding> getAllBindings() {
         return Collections.unmodifiableNavigableSet(bindings);
     }
 
-    public @NonNull String getBindingString(@NonNull GameAction action) {
+    public String getBindingString(GameAction action) {
         NavigableSet<InputBinding> set = getBindings(action);
         return set.isEmpty() ? "" : set.getFirst().toString();
     }
 
-    public @NonNull NavigableSet<@NonNull InputBinding> getDefaultBindings(@NonNull GameAction action) {
+    public NavigableSet<InputBinding> getDefaultBindings(GameAction action) {
         var defaults = DEFAULT_BINDINGS.get(action);
         return defaults == null ? Collections.emptyNavigableSet() : new TreeSet<>(defaults);
     }
 
-    public void setBindings(@NonNull GameAction action, @NonNull Collection<@NonNull InputBinding> newBindings) {
+    public void setBindings(GameAction action, Collection<InputBinding> newBindings) {
         bindings.removeIf(b -> b.action() == action);
         bindings.addAll(newBindings);
     }
@@ -336,7 +335,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         DEFAULT_BINDINGS.values().forEach(bindings::addAll);
     }
 
-    public @NonNull String exportBindings() {
+    public String exportBindings() {
         // Group by action
         Map<GameAction, Set<InputBinding>> currentMap = new EnumMap<>(GameAction.class);
         for (InputBinding b : bindings) {
@@ -356,7 +355,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         return sb.toString();
     }
 
-    public void importBindings(@NonNull String json) {
+    public void importBindings(String json) {
         // Regex to find "ACTION": [ ... ]
         String patternStr = "\\\"(\\w+)\\\"\\s*:\\s*(\\[[^\\]]*\\])";
         Pattern p = Pattern.compile(patternStr);
@@ -380,7 +379,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         }
     }
 
-    private static @NonNull String serializeBindings(@NonNull Collection<@NonNull InputBinding> list) {
+    private static String serializeBindings(Collection<InputBinding> list) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         boolean first = true;
@@ -404,8 +403,8 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         return sb.toString();
     }
 
-    private @NonNull NavigableSet<@NonNull InputBinding> parseBindings(@NonNull String json,
-            @NonNull GameAction action) {
+    private NavigableSet<InputBinding> parseBindings(String json,
+            GameAction action) {
         NavigableSet<InputBinding> result = new TreeSet<>();
         String trimmed = json.trim();
         if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
@@ -428,7 +427,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         return result;
     }
 
-    private @Nullable InputBinding parseBindingObject(@NonNull String content, @NonNull GameAction action) {
+    private @Nullable InputBinding parseBindingObject(String content, GameAction action) {
         Key key = Key.KEY_UNKNOWN;
         int codepoint = 0;
         Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
@@ -475,7 +474,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         return null;
     }
 
-    private @NonNull String unquote(@NonNull String s) {
+    private String unquote(String s) {
         if (s.startsWith("\"") && s.endsWith("\"") && s.length() >= 2) {
             return s.substring(1, s.length() - 1);
         }

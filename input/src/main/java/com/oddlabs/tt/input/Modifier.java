@@ -1,6 +1,5 @@
 package com.oddlabs.tt.input;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -30,7 +29,7 @@ public enum Modifier {
      * @param mask bitmask of active modifiers
      * @return set of active modifiers
      */
-    public static @NonNull Set<Modifier> fromMask(int mask) {
+    public static Set<Modifier> fromMask(int mask) {
         Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
         for (Modifier modifier : values()) {
             if ((mask & modifier.mask) != 0) {

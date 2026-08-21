@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.vbo;
 
 import com.oddlabs.tt.engine.render.Renderer;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL31;
@@ -17,7 +16,7 @@ public final class ShortVBO extends VBO {
         super(GL15.GL_ELEMENT_ARRAY_BUFFER, usage, size * Short.BYTES);
     }
 
-    public ShortVBO(int usage, @NonNull ShortBuffer initial_data) {
+    public ShortVBO(int usage, ShortBuffer initial_data) {
         this(usage, initial_data.remaining());
         put(initial_data);
     }
@@ -40,7 +39,7 @@ public final class ShortVBO extends VBO {
         };
     }
 
-    public void put(@NonNull ShortBuffer buffer) {
+    public void put(ShortBuffer buffer) {
         bind();
         GL15.glBufferSubData(getTarget(), 0, buffer);
         buffer.position(buffer.limit());

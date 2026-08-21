@@ -2,33 +2,32 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class UnitGrid {
-    private final @NonNull Region @NonNull [] @NonNull [] regions;
-    private final @Nullable Occupant @NonNull [] @NonNull [] occupants;
-    private final @NonNull HeightMap heightmap;
+    private final Region[][] regions;
+    private final @Nullable Occupant[][] occupants;
+    private final HeightMap heightmap;
 
-    public UnitGrid(@NonNull HeightMap heightmap) {
+    public UnitGrid(HeightMap heightmap) {
         this.heightmap = heightmap;
         int unit_grid_size = heightmap.getAccessGrid().length;
         occupants = new Occupant[unit_grid_size][unit_grid_size];
         regions = new Region[unit_grid_size][unit_grid_size];
     }
 
-    private boolean filter(@NonNull ScanFilter filter, int x, int y) {
+    private boolean filter(ScanFilter filter, int x, int y) {
         return x >= 0 && y >= 0 && x < occupants.length && y < occupants.length && filter.filter(x, y, occupants[y][x]);
     }
 
-    public @Nullable Target @NonNull [] findGridTargets(int center_grid_x, int center_grid_y, int num_targets,
+    public @Nullable Target[] findGridTargets(int center_grid_x, int center_grid_y, int num_targets,
             boolean grid_targets_only) {
         FindTargetsFilter filter = new FindTargetsFilter(num_targets, occupants.length, grid_targets_only);
         scan(filter, center_grid_x, center_grid_y);
         return filter.getTargets();
     }
 
-    public void scan(@NonNull ScanFilter filter, int center_grid_x, int center_grid_y) {
+    public void scan(ScanFilter filter, int center_grid_x, int center_grid_y) {
         int radius = filter.getMinRadius();
         if (radius == 0) {
             if (filter(filter, center_grid_x, center_grid_y))
@@ -95,7 +94,7 @@ public final class UnitGrid {
         occupants[grid_y][grid_x] = null;
     }
 
-    public @NonNull HeightMap getHeightMap() {
+    public HeightMap getHeightMap() {
         return heightmap;
     }
 }

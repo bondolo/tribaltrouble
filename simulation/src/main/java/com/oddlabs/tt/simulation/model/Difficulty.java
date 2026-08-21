@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -47,7 +46,7 @@ public enum Difficulty {
      * @param aiValue AI difficulty integer
      * @return corresponding {@link Difficulty}
      */
-    public static @NonNull Difficulty fromAiValue(int aiValue) {
+    public static Difficulty fromAiValue(int aiValue) {
         for (Difficulty diff : VALUES) {
             if (diff.aiValue == aiValue) {
                 return diff;
@@ -62,7 +61,7 @@ public enum Difficulty {
      * @param campaignValue campaign serialization difficulty integer
      * @return corresponding {@link Difficulty}
      */
-    public static @NonNull Difficulty fromCampaignValue(int campaignValue) {
+    public static Difficulty fromCampaignValue(int campaignValue) {
         for (Difficulty diff : VALUES) {
             if (diff.campaignValue == campaignValue) {
                 return diff;

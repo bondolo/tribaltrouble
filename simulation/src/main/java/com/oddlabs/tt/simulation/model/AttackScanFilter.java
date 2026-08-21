@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class AttackScanFilter implements ScanFilter {
@@ -27,12 +26,12 @@ public final class AttackScanFilter implements ScanFilter {
 
     private final int max_range;
 
-    private final @NonNull Player owner;
+    private final Player owner;
 
     private @Nullable Selectable<?> target = null;
-    private @NonNull Priority target_priority = Priority.NONE;
+    private Priority target_priority = Priority.NONE;
 
-    public AttackScanFilter(@NonNull Player owner, int max_range) {
+    public AttackScanFilter(Player owner, int max_range) {
         this.owner = owner;
         this.max_range = max_range;
     }
@@ -55,7 +54,7 @@ public final class AttackScanFilter implements ScanFilter {
     }
 
     @Override
-    public boolean filter(int grid_x, int grid_y, @NonNull Occupant occ) {
+    public boolean filter(int grid_x, int grid_y, Occupant occ) {
         if (occ instanceof Selectable<?> s && owner.isEnemy(s.getOwner())) {
             Priority priority = s.getAttackPriority();
             if (target_priority.value < priority.value) {

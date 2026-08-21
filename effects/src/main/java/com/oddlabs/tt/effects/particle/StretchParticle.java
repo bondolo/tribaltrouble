@@ -1,7 +1,6 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.NonNull;
 
 public final class StretchParticle extends Particle {
     private float src_x = 0f;
@@ -13,7 +12,7 @@ public final class StretchParticle extends Particle {
     private float src_width = 0f;
     private float dst_width = 0f;
 
-    public StretchParticle(@NonNull World world) {
+    public StretchParticle(World world) {
         super(world);
     }
 

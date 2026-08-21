@@ -1,6 +1,5 @@
 package com.oddlabs.event;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.ByteBuffer;
@@ -73,12 +72,12 @@ public abstract class Deterministic {
 
     protected abstract <T> @Nullable T logObject(@Nullable T o);
 
-    public final void log(@NonNull ByteBuffer o) {
+    public final void log(ByteBuffer o) {
         assert enabled;
         logBuffer(o);
     }
 
-    protected abstract void logBuffer(@NonNull ByteBuffer o);
+    protected abstract void logBuffer(ByteBuffer o);
 
     public abstract void endLog();
 

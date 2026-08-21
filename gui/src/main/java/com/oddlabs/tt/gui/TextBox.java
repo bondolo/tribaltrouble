@@ -6,15 +6,14 @@ import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 public class TextBox extends TextField implements Scrollable, Clipped {
-    private @NonNull TextLayout textLayout;
-    private final @NonNull ScrollBar scroll_bar;
+    private TextLayout textLayout;
+    private final ScrollBar scroll_bar;
 
     private int offset_y;
 
-    public TextBox(int width, int height, @NonNull Font font, int max_codepoints) {
+    public TextBox(int width, int height, Font font, int max_codepoints) {
         super(font, max_codepoints);
         setDim(width, height);
         setCanFocus(true);
@@ -36,14 +35,14 @@ public class TextBox extends TextField implements Scrollable, Clipped {
     }
 
     @Override
-    public @NonNull TextBox setText(@NonNull CharSequence text) {
+    public TextBox setText(CharSequence text) {
         super.setText(text);
         updateLayout();
         return this;
     }
 
     @Override
-    public final boolean append(@NonNull CharSequence str) {
+    public final boolean append(CharSequence str) {
         var result = super.append(str);
         if (result) {
             updateLayout();
@@ -51,17 +50,17 @@ public class TextBox extends TextField implements Scrollable, Clipped {
         return result;
     }
 
-    protected final @NonNull TextLayout getTextLayout() {
+    protected final TextLayout getTextLayout() {
         return textLayout;
     }
 
-    protected final void renderBox(@NonNull GUIRenderer renderer, ModeIconQuads.@NonNull Mode skinMode) {
+    protected final void renderBox(GUIRenderer renderer, ModeIconQuads.Mode skinMode) {
         Box edit_box = Skin.getSkin().getEditBox();
         edit_box.render(renderer, 0f, 0f, getWidth() - scroll_bar.getWidth(), getHeight(), skinMode);
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         Box edit_box = Skin.getSkin().getEditBox();
         renderBox(renderer, ModeIconQuads.Mode.NORMAL);
         TextLineRenderer.render(renderer, textLayout, edit_box.getLeftOffset(), getHeight() - edit_box.getBottomOffset()

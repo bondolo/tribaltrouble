@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.util.LinkedList;
 import com.oddlabs.util.ListElement;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,7 +26,7 @@ public abstract class Element<T extends Element<T>> extends BoundingBox implemen
         this.element_root = element_root;
     }
 
-    protected abstract @NonNull T self();
+    protected abstract T self();
 
     public void register() {
         node_parent = element_root.insertElement(self());

@@ -5,29 +5,28 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A transient expanding-ring effect rendered by {@link com.oddlabs.tt.effects.render.SonicBlastRenderer}.
  * Advances through its animation each game tick and removes itself when its duration elapses.
  */
 public final class SonicBlastEffect extends Element<SonicBlastEffect> implements Animated {
-    private final @NonNull World world;
-    private final @NonNull Vector3f position;
+    private final World world;
+    private final Vector3f position;
     private final float maxRadius;
     private final float duration;
-    private final Color.@NonNull Linear color;
+    private final Color.Linear color;
     private float time;
     private boolean dead;
 
     @SuppressWarnings("unchecked")
-    public SonicBlastEffect(@NonNull World world, @NonNull Vector3f position, float maxRadius, float duration) {
+    public SonicBlastEffect(World world, Vector3f position, float maxRadius, float duration) {
         this(world, position, maxRadius, duration, new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f));
     }
 
     @SuppressWarnings("unchecked")
-    public SonicBlastEffect(@NonNull World world, @NonNull Vector3f position, float maxRadius, float duration,
-            Color.@NonNull Linear color) {
+    public SonicBlastEffect(World world, Vector3f position, float maxRadius, float duration,
+            Color.Linear color) {
         super(world.getElementRoot());
         this.world = world;
         this.position = position;
@@ -44,7 +43,7 @@ public final class SonicBlastEffect extends Element<SonicBlastEffect> implements
         world.getAnimationManagerGameTime().registerAnimation(this);
     }
 
-    public Color.@NonNull Linear getColor() {
+    public Color.Linear getColor() {
         return color;
     }
 
@@ -76,11 +75,11 @@ public final class SonicBlastEffect extends Element<SonicBlastEffect> implements
                 position.z - 1, position.z + 1);
     }
 
-    public @NonNull World getWorld() {
+    public World getWorld() {
         return world;
     }
 
-    public @NonNull Vector3f getPosition() {
+    public Vector3f getPosition() {
         return position;
     }
 
@@ -101,7 +100,7 @@ public final class SonicBlastEffect extends Element<SonicBlastEffect> implements
     }
 
     @Override
-    protected @NonNull SonicBlastEffect self() {
+    protected SonicBlastEffect self() {
         return this;
     }
 }

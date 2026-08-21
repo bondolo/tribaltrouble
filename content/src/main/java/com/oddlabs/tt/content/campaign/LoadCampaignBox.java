@@ -18,7 +18,6 @@ import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializer;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.FileNotFoundException;
@@ -41,15 +40,15 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     private static final int WIDTH_DIFFICULTY = 130;
     private static final int WIDTH_DATE = 170;
 
-    private final @NonNull MultiColumnComboBox<CampaignState> list_box;
-    private final @NonNull GUIRoot gui_root;
+    private final MultiColumnComboBox<CampaignState> list_box;
+    private final GUIRoot gui_root;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public LoadCampaignBox(@NonNull GUIRoot gui_root, @NonNull RowListener<CampaignState> listener) {
+    public LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener) {
         this.gui_root = gui_root;
         ColumnInfo[] infos = {
                 new ColumnInfo(i18n("name"), WIDTH_NAME),
@@ -65,28 +64,28 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         refresh();
     }
 
-    public static <T> void saveSavegames(@NonNull CampaignState @NonNull [] states,
-            @NonNull DeterministicSerializerLoopbackInterface<T> callback) {
+    public static <T> void saveSavegames(CampaignState[] states,
+            DeterministicSerializerLoopbackInterface<T> callback) {
         DeterministicSerializer.save(Renderer.getRenderer().getEventQueue().getDeterministic(), states,
                 getSaveSavegamesFile(), callback);
     }
 
-    private static @NonNull Path getSaveSavegamesFile() {
+    private static Path getSaveSavegamesFile() {
         return Renderer.getRenderer().getGamePaths().dataDir().resolve(SAVEGAMES_FILE_NAME);
     }
 
-    public static <T> void loadSavegames(@NonNull DeterministicSerializerLoopbackInterface<T> callback) {
+    public static <T> void loadSavegames(DeterministicSerializerLoopbackInterface<T> callback) {
         DeterministicSerializer.load(Renderer.getRenderer().getEventQueue().getDeterministic(), getLoadSavegamesFile(),
                 callback);
     }
 
-    private static @NonNull Path getLoadSavegamesFile() {
+    private static Path getLoadSavegamesFile() {
         Path file = getSaveSavegamesFile();
         return !Files.isReadable(file) ? Utils.getInstallDir().resolve(SAVEGAMES_FILE_NAME) : file;
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         list_box.setFocus(direction);
     }
 
@@ -99,7 +98,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         LoadCampaignBox.loadSavegames(this);
     }
 
-    private void fillSlots(@NonNull CampaignState @NonNull [] campaign_states) {
+    private void fillSlots(CampaignState[] campaign_states) {
         Box box = Skin.getSkin().getMultiColumnComboBoxData().box();
         for (CampaignState campaign_state : campaign_states) {
             String race = switch (campaign_state.getRace()) {
@@ -127,7 +126,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     }
 
     @Override
-    public void loadSucceeded(CampaignState @NonNull [] campaign_states) {
+    public void loadSucceeded(CampaignState[] campaign_states) {
         fillSlots(campaign_states);
         if (list_box.getSize() > 0) {
             list_box.selectFirst();
@@ -135,7 +134,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     }
 
     @Override
-    public void failed(@NonNull Throwable e) {
+    public void failed(Throwable e) {
         logger.log(Level.SEVERE, "Failed to load savegames", e);
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
         } else if (e instanceof InvalidClassException) {

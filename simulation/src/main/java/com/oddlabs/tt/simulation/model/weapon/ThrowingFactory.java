@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
@@ -14,13 +13,13 @@ import java.util.Optional;
 public final class ThrowingFactory<W extends ThrowingWeapon> extends WeaponFactory {
     @FunctionalInterface
     public interface WeaponConstructor<W extends ThrowingWeapon> {
-        W create(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target);
+        W create(boolean hit, Unit src, Selectable<?> target);
     }
 
-    private final @NonNull Class<W> weapon_type;
-    private final @NonNull WeaponConstructor<W> weapon_constructor;
+    private final Class<W> weapon_type;
+    private final WeaponConstructor<W> weapon_constructor;
 
-    public ThrowingFactory(@NonNull Class<W> weapon_type, @NonNull WeaponConstructor<W> weapon_constructor,
+    public ThrowingFactory(Class<W> weapon_type, WeaponConstructor<W> weapon_constructor,
             float hit_chance, float range, float release_ratio) {
         super(hit_chance, range, release_ratio);
         this.weapon_type = weapon_type;
@@ -28,12 +27,12 @@ public final class ThrowingFactory<W extends ThrowingWeapon> extends WeaponFacto
     }
 
     @Override
-    protected void doAttack(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
+    protected void doAttack(boolean hit, Unit src, Selectable<?> target) {
         weapon_constructor.create(hit, src, target);
     }
 
     @Override
-    public @NonNull Optional<Class<? extends ThrowingWeapon>> getType() {
+    public Optional<Class<? extends ThrowingWeapon>> getType() {
         return Optional.of(weapon_type);
     }
 }

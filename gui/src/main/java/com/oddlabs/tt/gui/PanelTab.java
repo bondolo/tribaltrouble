@@ -4,14 +4,13 @@ import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 public class PanelTab extends GUIObject {
     private static final Color.Linear HIGHLIGHT_COLOR = Color.Linear.GREEN;
     private boolean selected;
-    private final @NonNull Label label;
+    private final Label label;
 
-    public PanelTab(@NonNull CharSequence caption) {
+    public PanelTab(CharSequence caption) {
         PanelData data = Skin.getSkin().getPanelData();
         Font font = Skin.getSkin().getButtonFont();
         label = new Label(caption, font);
@@ -30,7 +29,7 @@ public class PanelTab extends GUIObject {
             label.setColor(Label.DEFAULT_COLOR);
     }
 
-    public final ModeIconQuads.@NonNull Mode getRenderState() {
+    public final ModeIconQuads.Mode getRenderState() {
         return isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isActive() || selected
@@ -39,7 +38,7 @@ public class PanelTab extends GUIObject {
     }
 
     @Override
-    protected final void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected final void renderGeometry(GUIRenderer renderer) {
         Skin.getSkin().getPanelData().tab()
                 .render(renderer, 0, 0, getWidth(), getRenderState());
     }

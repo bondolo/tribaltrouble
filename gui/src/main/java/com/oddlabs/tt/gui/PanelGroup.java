@@ -2,20 +2,19 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public final class PanelGroup extends GUIObject {
     private final Group focus_group = new Group();
-    private final @NonNull PanelBox box;
-    private final @NonNull Panel @NonNull [] panels;
+    private final PanelBox box;
+    private final Panel[] panels;
 
     private int selected;
 
-    public PanelGroup(@NonNull Panel... panels) {
+    public PanelGroup(Panel... panels) {
         this(0, panels);
     }
 
-    public PanelGroup(int selected, @NonNull Panel @NonNull... panels) {
+    public PanelGroup(int selected, Panel... panels) {
         assert selected < panels.length && panels.length > 0 : "Invalid index selected.";
         this.panels = panels;
 
@@ -52,11 +51,11 @@ public final class PanelGroup extends GUIObject {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         focus_group.setGroupFocus(direction);
     }
 
-    public void cyclePanel(@NonNull FocusDirection dir) {
+    public void cyclePanel(FocusDirection dir) {
         int intDir = (dir == FocusDirection.BACKWARD) ? -1 : 1;
         int next = (selected + intDir + panels.length) % panels.length;
         selectPanel(next);
@@ -85,7 +84,7 @@ public final class PanelGroup extends GUIObject {
         }
 
         @Override
-        protected void renderGeometry(@NonNull GUIRenderer renderer) {
+        protected void renderGeometry(GUIRenderer renderer) {
             Box panelBox = Skin.getSkin().getPanelData().box();
             panelBox.render(renderer, 0f, 0f, getWidth(), getHeight(), panels[selected].getTab().getRenderState());
         }
@@ -99,20 +98,20 @@ public final class PanelGroup extends GUIObject {
         }
 
         @Override
-        public void mousePressed(@NonNull MouseButton button, int x, int y) {
+        public void mousePressed(MouseButton button, int x, int y) {
             selectPanel(index);
         }
 
         @Override
-        public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+        public void mouseReleased(MouseButton button, int x, int y) {
         }
 
         @Override
-        public void mouseHeld(@NonNull MouseButton button, int x, int y) {
+        public void mouseHeld(MouseButton button, int x, int y) {
         }
 
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
         }
     }
 }

@@ -4,7 +4,6 @@ package com.oddlabs.tt.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
@@ -14,11 +13,11 @@ public final class Bricks {
         COLOR
     }
 
-    private final @NonNull Random random;
-    public final @NonNull Channel channel;
+    private final Random random;
+    public final Channel channel;
 
     public Bricks(int width, int height, int bricks, int layers, float x_mortar, float y_mortar, float stagger,
-            float randomness, long seed, @NonNull Type type) {
+            float randomness, long seed, Type type) {
 
         random = new Random(seed);
         float[][] cells = new float[bricks][layers];
@@ -63,11 +62,11 @@ public final class Bricks {
         }
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel, channel);
     }
 
-    public @NonNull Channel toChannel() {
+    public Channel toChannel() {
         return channel;
     }
 

@@ -3,7 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -14,13 +13,13 @@ import java.util.List;
  * Handles row sorting, rendering layout, selection state, and scroll visibility.
  */
 final class RowCollection<T> extends GUIObject implements Clipped {
-    private final List<@NonNull Row<T, ?>> rows = new ArrayList<>();
-    private final @NonNull MultiColumnComboBox<T> multi_box;
+    private final List<Row<T, ?>> rows = new ArrayList<>();
+    private final MultiColumnComboBox<T> multi_box;
     private @Nullable Row<T, ?> selected_row;
     private int sort_index;
     private boolean sorted_descending;
 
-    RowCollection(@NonNull MultiColumnComboBox<T> multi_box, int sort_index, boolean sorted_descending) {
+    RowCollection(MultiColumnComboBox<T> multi_box, int sort_index, boolean sorted_descending) {
         this.multi_box = multi_box;
         this.sort_index = sort_index;
         this.sorted_descending = sorted_descending;
@@ -29,7 +28,7 @@ final class RowCollection<T> extends GUIObject implements Clipped {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.RELEASED && event.consumeAction(GameAction.UI_ACTIVATE)) {
             multi_box.doubleClickedRow();
             event.consume();
@@ -83,7 +82,7 @@ final class RowCollection<T> extends GUIObject implements Clipped {
         ensureVisible(selectRow(sorted_descending ? rows.getLast() : rows.getFirst()));
     }
 
-    private void ensureVisible(@NonNull Row<T, ?> row) {
+    private void ensureVisible(Row<T, ?> row) {
         Scrollable scrollable = multi_box;
         int row_top = row.getY() + row.getHeight();
         int row_bottom = row.getY();
@@ -105,9 +104,9 @@ final class RowCollection<T> extends GUIObject implements Clipped {
         replaceRows();
     }
 
-    void addRow(@NonNull Row<T, ?> row) {
+    void addRow(Row<T, ?> row) {
         rows.add(row);
-        row.addMouseClickListener((@NonNull MouseButton button, int x, int y, int clicks) -> {
+        row.addMouseClickListener((MouseButton button, int x, int y, int clicks) -> {
             setFocus();
             selectRow(row);
             if (button == MouseButton.RIGHT) {
@@ -162,8 +161,7 @@ final class RowCollection<T> extends GUIObject implements Clipped {
         return selected_row != null ? selected_row.getContentObject() : null;
     }
 
-    @NonNull
-    Row<T, ?> selectRow(@NonNull Row<T, ?> row) {
+    Row<T, ?> selectRow(Row<T, ?> row) {
         assert rows.contains(row);
         if (selected_row != null)
             selected_row.mark(false);

@@ -4,20 +4,19 @@ import com.oddlabs.tt.simulation.pathfinder.FinderFilter;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class BuildingFinder implements FinderFilter<Building> {
-    private final @NonNull Player owner;
+    private final Player owner;
     private final int abilities;
 
-    public BuildingFinder(@NonNull Player owner, int abilities) {
+    public BuildingFinder(Player owner, int abilities) {
         this.owner = owner;
         this.abilities = abilities;
     }
 
     @Override
-    public @Nullable Building getOccupantFromRegion(@NonNull Region region, boolean one_region) {
+    public @Nullable Building getOccupantFromRegion(Region region, boolean one_region) {
         return region.getObjects(Building.class).stream()
                 .filter(this::accept)
                 .findFirst()
@@ -29,12 +28,12 @@ public final class BuildingFinder implements FinderFilter<Building> {
         return null;
     }
 
-    private boolean accept(@NonNull Building building) {
+    private boolean accept(Building building) {
         return building.getOwner() == owner && building.getAbilities().hasAbilities(abilities);
     }
 
     @Override
-    public boolean acceptOccupant(@NonNull Occupant occ) {
+    public boolean acceptOccupant(Occupant occ) {
         return occ instanceof Building building && accept(building);
     }
 }

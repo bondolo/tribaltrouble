@@ -9,7 +9,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -41,17 +40,17 @@ public abstract class Camera implements Animated {
     private final @Nullable LandscapeEnvironment landscapeEnvironment;
     private final @Nullable AnimationManager animation_manager;
 
-    private final @NonNull CameraState state;
+    private final CameraState state;
     private float smoothness_factor = SMOOTHNESS_FACTOR;
 
-    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, @NonNull CameraState state,
+    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, CameraState state,
             @Nullable AnimationManager animation_manager) {
         this.landscapeEnvironment = landscapeEnvironment;
         this.state = state;
         this.animation_manager = animation_manager;
     }
 
-    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, @NonNull CameraState state) {
+    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, CameraState state) {
         this(landscapeEnvironment, state, null);
     }
 
@@ -64,7 +63,7 @@ public abstract class Camera implements Animated {
     }
 
     @Override
-    public final void updateChecksum(@NonNull StateChecksum checksum) {
+    public final void updateChecksum(StateChecksum checksum) {
 //System.out.println("camera_x = " + camera_x + " | camera_y = " + camera_y + " | camera_z = " + camera_z + " | dir_x = " + dir_x + " | dir_y = " + dir_y + " | dir_z = " + dir_z);
         state.updateChecksum(checksum);
     }
@@ -142,13 +141,13 @@ public abstract class Camera implements Animated {
         return bounced;
     }
 
-    private void unproject(float winx, float winy, float winz, @NonNull Matrix4f model, @NonNull Matrix4f proj,
+    private void unproject(float winx, float winy, float winz, Matrix4f model, Matrix4f proj,
             int[] viewport) {
         proj.mul(model);
         proj.unproject(winx, winy, winz, viewport, hit_result);
     }
 
-    public final @NonNull CameraState getState() {
+    public final CameraState getState() {
         return state;
     }
 
@@ -168,7 +167,7 @@ public abstract class Camera implements Animated {
         }
     }
 
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
     }
 
     public void mouseScrolled(int amount) {
@@ -186,7 +185,7 @@ public abstract class Camera implements Animated {
         ADAPTIVE
     }
 
-    public static float calculateDynamicFOV(float z, float aspect, @NonNull FOVMode mode) {
+    public static float calculateDynamicFOV(float z, float aspect, FOVMode mode) {
         return switch (mode) {
             case ADAPTIVE -> {
                 float zMin = 15.0f;

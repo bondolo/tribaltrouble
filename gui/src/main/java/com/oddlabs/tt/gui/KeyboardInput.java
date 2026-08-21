@@ -5,7 +5,6 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Set;
 import java.util.logging.Logger;
@@ -29,7 +28,7 @@ public final class KeyboardInput {
     private boolean left_meta_down;
     private boolean right_meta_down;
 
-    public void reset(@NonNull InputProvider<?> input) {
+    public void reset(InputProvider<?> input) {
         while (input != null && input.nextKeyboardEvent())
             ;
         left_shift_down = false;
@@ -59,8 +58,8 @@ public final class KeyboardInput {
      * @param repeat not an initial key-press
      * @return true if the key was handled
      */
-    private boolean checkMagicKey(boolean event_key_down, @NonNull Key event_key, boolean inDeveloperMode,
-            boolean playback, boolean repeat, @NonNull Runnable shutdownAction) {
+    private boolean checkMagicKey(boolean event_key_down, Key event_key, boolean inDeveloperMode,
+            boolean playback, boolean repeat, Runnable shutdownAction) {
         boolean control_down = left_control_down || right_control_down;
         boolean shift_down = left_shift_down || right_shift_down;
         boolean keys_enabled = inDeveloperMode && control_down && shift_down && !repeat;
@@ -99,7 +98,7 @@ public final class KeyboardInput {
         return false;
     }
 
-    public void checkMagicKeys(@NonNull InputProvider<?> input, @NonNull Deterministic deterministic) {
+    public void checkMagicKeys(InputProvider<?> input, Deterministic deterministic) {
         if (deterministic.isPlayback()) {
             // During playback the keyboard is used for playback control
             input.pollKeyboard();
@@ -115,7 +114,7 @@ public final class KeyboardInput {
         }
     }
 
-    public boolean poll(@NonNull InputProvider<?> input, @NonNull LocalInput localInput, @NonNull GUIRoot gui_root) {
+    public boolean poll(InputProvider<?> input, LocalInput localInput, GUIRoot gui_root) {
         Deterministic deterministic = localInput.getDeterministic();
         boolean result = false;
         input.pollKeyboard();

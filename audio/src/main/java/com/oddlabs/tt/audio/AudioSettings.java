@@ -1,7 +1,6 @@
 package com.oddlabs.tt.audio;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -26,7 +25,7 @@ public final class AudioSettings implements Serializable, PropertiesSerializer {
     public boolean warning_no_sound = true;
 
     @Override
-    public void saveToProperties(@NonNull Properties props) {
+    public void saveToProperties(Properties props) {
         AudioSettings defaults = new AudioSettings();
         setProperty(props, "play_music", play_music, defaults.play_music);
         setProperty(props, "play_sfx", play_sfx, defaults.play_sfx);
@@ -37,7 +36,7 @@ public final class AudioSettings implements Serializable, PropertiesSerializer {
     }
 
     @Override
-    public void loadFromProperties(@NonNull Properties props) {
+    public void loadFromProperties(Properties props) {
         play_music = getBoolean(props, "play_music", play_music);
         play_sfx = getBoolean(props, "play_sfx", play_sfx);
         headphone_mode = getBoolean(props, "headphone_mode", headphone_mode);

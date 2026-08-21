@@ -3,21 +3,20 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.CheckBoxListener;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 public final class CheckBox extends GUIObject {
-    private final List<@NonNull CheckBoxListener> event_listeners = new java.util.ArrayList<>();
+    private final List<CheckBoxListener> event_listeners = new java.util.ArrayList<>();
 
     private boolean marked;
     private boolean pressed = false;
 
-    public CheckBox(boolean marked, @NonNull String text) {
+    public CheckBox(boolean marked, String text) {
         this(marked, text, "");
     }
 
-    public CheckBox(boolean marked, @NonNull String text, String tool_tip) {
+    public CheckBox(boolean marked, String text, String tool_tip) {
         super(tool_tip != null && !tool_tip.isEmpty() ? () -> tool_tip : null);
         this.marked = marked;
         Label label = new Label(text, Skin.getSkin().getEditFont());
@@ -46,22 +45,22 @@ public final class CheckBox extends GUIObject {
     }
 
     @Override
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         toggleMarked();
     }
 
     @Override
-    protected void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    protected void mouseReleased(MouseButton button, int x, int y) {
         pressed = false;
     }
 
     @Override
-    protected void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected void mousePressed(MouseButton button, int x, int y) {
         pressed = true;
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isActive()
@@ -96,11 +95,11 @@ public final class CheckBox extends GUIObject {
         */
     }
 
-    public void addCheckBoxListener(@NonNull CheckBoxListener listener) {
+    public void addCheckBoxListener(CheckBoxListener listener) {
         event_listeners.add(listener);
     }
 
-    public void removeCheckBoxListener(@NonNull CheckBoxListener listener) {
+    public void removeCheckBoxListener(CheckBoxListener listener) {
         event_listeners.remove(listener);
     }
 }

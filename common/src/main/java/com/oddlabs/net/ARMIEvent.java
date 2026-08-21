@@ -1,7 +1,6 @@
 package com.oddlabs.net;
 
 import com.oddlabs.util.ByteBufferOutputStream;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -24,11 +23,11 @@ public final class ARMIEvent implements Serializable {
     private final byte method_id;
     private final byte[] command_stream;
 
-    public static @NonNull Object createProxy(ARMIEventWriter broker, @NonNull Class<?> armi_interface) {
+    public static Object createProxy(ARMIEventWriter broker, Class<?> armi_interface) {
         return createProxy(broker, default_writer, armi_interface);
     }
 
-    public static @NonNull Object createProxy(ARMIEventWriter broker, ARMIArgumentWriter writer, @NonNull Class<
+    public static Object createProxy(ARMIEventWriter broker, ARMIArgumentWriter writer, Class<
             ?> armi_interface) {
         ARMIInterfaceMethods armi_interface_methods = new ARMIInterfaceMethods(armi_interface);
         ARMIInvocationHandler handler = new ARMIInvocationHandler(broker, writer, armi_interface_methods);
@@ -40,13 +39,13 @@ public final class ARMIEvent implements Serializable {
         return (short) (HEADER_SIZE + command_stream_length);
     }
 
-    public void write(@NonNull ByteBuffer buffer) {
+    public void write(ByteBuffer buffer) {
         buffer.put(method_id);
         if (command_stream != null)
             buffer.put(command_stream);
     }
 
-    public static @NonNull ARMIEvent read(@NonNull ByteBuffer buffer, short size) {
+    public static ARMIEvent read(ByteBuffer buffer, short size) {
         byte method_id = buffer.get();
         int stream_length = size - HEADER_SIZE;
         byte[] command_stream;
@@ -58,7 +57,7 @@ public final class ARMIEvent implements Serializable {
         return new ARMIEvent(method_id, command_stream);
     }
 
-    private static byte[] createByteArrayFromCommand(@NonNull ARMIArgumentWriter writer, Class<
+    private static byte[] createByteArrayFromCommand(ARMIArgumentWriter writer, Class<
             ?>[] method_parameter_types, Object @Nullable [] args) {
         if (args != null) {
             try {
@@ -76,7 +75,7 @@ public final class ARMIEvent implements Serializable {
             return null;
     }
 
-    public ARMIEvent(@NonNull ARMIArgumentWriter writer, Class<?>[] method_parameter_types, byte method_id,
+    public ARMIEvent(ARMIArgumentWriter writer, Class<?>[] method_parameter_types, byte method_id,
             Object[] args) {
         this(method_id, createByteArrayFromCommand(writer, method_parameter_types, args));
     }
@@ -86,7 +85,7 @@ public final class ARMIEvent implements Serializable {
         this.command_stream = command_stream;
     }
 
-    private Object @Nullable [] parseArgs(@NonNull ARMIArgumentReader reader, @NonNull Method method)
+    private Object @Nullable [] parseArgs(ARMIArgumentReader reader, Method method)
             throws IOException, ClassNotFoundException {
         Class<?>[] parameter_types = method.getParameterTypes();
         int num_params = parameter_types.length;
@@ -102,13 +101,13 @@ public final class ARMIEvent implements Serializable {
         return args;
     }
 
-    public void execute(@NonNull ARMIInterfaceMethods interface_methods, @NonNull Object instance)
+    public void execute(ARMIInterfaceMethods interface_methods, Object instance)
             throws IllegalARMIEventException {
         execute(interface_methods, default_reader, instance);
     }
 
-    public void execute(@NonNull ARMIInterfaceMethods interface_methods, @NonNull ARMIArgumentReader reader,
-            @NonNull Object instance) throws IllegalARMIEventException {
+    public void execute(ARMIInterfaceMethods interface_methods, ARMIArgumentReader reader,
+            Object instance) throws IllegalARMIEventException {
         Method method;
         try {
             method = interface_methods.getMethod(method_id);

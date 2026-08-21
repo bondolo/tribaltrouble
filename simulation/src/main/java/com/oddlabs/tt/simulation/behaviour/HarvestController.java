@@ -5,20 +5,19 @@ import com.oddlabs.tt.simulation.model.SupplyFinder;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Controller that coordinates finding resource targets and dispatching peons to harvest them.
  */
 public final class HarvestController<S extends Supply> extends Controller {
-    private final @NonNull Unit unit;
-    private final @NonNull SupplyType supplyType;
+    private final Unit unit;
+    private final SupplyType supplyType;
     private FinderTrackerAlgorithm<S> tracker;
 
     private @Nullable Supply supply;
 
-    public HarvestController(@NonNull Unit unit, @Nullable S supply, @NonNull SupplyType supplyType) {
+    public HarvestController(Unit unit, @Nullable S supply, SupplyType supplyType) {
         super(1);
         this.unit = unit;
         this.supply = supply;

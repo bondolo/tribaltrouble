@@ -10,19 +10,18 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.simulation.model.SupplyCounter;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
 public class StatusIcon extends GUIObject {
-    private final @NonNull IconQuad icon;
-    private final @NonNull TextField label;
-    private final @NonNull String tooltip;
+    private final IconQuad icon;
+    private final TextField label;
+    private final String tooltip;
 
     private SupplyCounter counter;
     private int text_count = -1;
 
-    public StatusIcon(int label_width, @NonNull IconQuad icon, @NonNull String tooltip) {
+    public StatusIcon(int label_width, IconQuad icon, String tooltip) {
         this.tooltip = tooltip;
         setDim(icon.getWidth() + label_width, icon.getHeight());
         setCanFocus(true); //only to enable tool tips. focus is given to delegate
@@ -47,14 +46,14 @@ public class StatusIcon extends GUIObject {
     }
 
     @Override
-    public final void appendToolTip(@NonNull ToolTipBox tool_tip_box) {
+    public final void appendToolTip(ToolTipBox tool_tip_box) {
         String tooltip_str = Utils.getBundleString(ResourceBundle.getBundle(StatusIcon.class.getName()), "max", tooltip,
                 counter.getMaxSupplies());
         tool_tip_box.append(tooltip_str);
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         renderer.drawIcon(icon, getWidth() - icon.getWidth(), (getHeight() - icon.getHeight()) / 2f);
     }
 }

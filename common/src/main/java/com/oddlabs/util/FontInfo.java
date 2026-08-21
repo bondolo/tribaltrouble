@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -21,16 +20,16 @@ public final class FontInfo implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
-    private final @NonNull String texture_name;
-    private final @NonNull Map<@NonNull String, @NonNull Quad> key_map;
+    private final String texture_name;
+    private final Map<String, Quad> key_map;
     private final int x_border;
     private final int y_border;
     private final int font_height;
     private final int max_ascension;
     private final int max_descension;
 
-    public FontInfo(@NonNull String texture_name,
-            @NonNull Map<@NonNull String, @NonNull Quad> key_map,
+    public FontInfo(String texture_name,
+            Map<String, Quad> key_map,
             int x_border, int y_border,
             int font_height, int max_ascension, int max_descension) {
         this.texture_name = texture_name;
@@ -42,11 +41,11 @@ public final class FontInfo implements Serializable {
         this.max_descension = max_descension;
     }
 
-    public @NonNull String getTextureName() {
+    public String getTextureName() {
         return texture_name;
     }
 
-    public @NonNull Map<String, Quad> getKeyMap() {
+    public Map<String, Quad> getKeyMap() {
         return key_map;
     }
 
@@ -70,7 +69,7 @@ public final class FontInfo implements Serializable {
         return max_descension;
     }
 
-    public void saveToFile(@NonNull Path file_name) {
+    public void saveToFile(Path file_name) {
         try (ObjectOutputStream os = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(
                 file_name)))) {
             os.writeObject(this);
@@ -79,7 +78,7 @@ public final class FontInfo implements Serializable {
         }
     }
 
-    public static FontInfo loadFromFile(@NonNull URL url) {
+    public static FontInfo loadFromFile(URL url) {
         return Utils.loadObject(FontInfo.class, url);
     }
 }

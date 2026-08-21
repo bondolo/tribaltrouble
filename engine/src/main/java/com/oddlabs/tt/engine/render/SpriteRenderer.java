@@ -4,7 +4,6 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -16,19 +15,19 @@ import java.util.function.Consumer;
  * Manages the geometry and textures for a single sprite type.
  */
 public final class SpriteRenderer {
-    private final @NonNull SpriteList sprite_list;
-    private final @NonNull List<@NonNull ModelState<?>> @NonNull [] render_lists;
-    private final @NonNull List<@NonNull ModelState<?>> @NonNull [] respond_render_lists;
-    private final @NonNull Texture @NonNull [] textures;
-    private final @Nullable Texture @NonNull [] team_textures;
-    private final @Nullable Texture @NonNull [] bump_textures;
-    private final List<@NonNull ModelState<?>> no_detail_render_list = new ArrayList<>();
-    private final @NonNull InstancedSpriteRenderer instancedSpriteRenderer;
+    private final SpriteList sprite_list;
+    private final List<ModelState<?>>[] render_lists;
+    private final List<ModelState<?>>[] respond_render_lists;
+    private final Texture[] textures;
+    private final @Nullable Texture[] team_textures;
+    private final @Nullable Texture[] bump_textures;
+    private final List<ModelState<?>> no_detail_render_list = new ArrayList<>();
+    private final InstancedSpriteRenderer instancedSpriteRenderer;
     private final Matrix4f tempMatrix = new Matrix4f();
 
     @SuppressWarnings("unchecked")
-    SpriteRenderer(@NonNull SpriteList sprite_list, int tex_index,
-            @NonNull InstancedSpriteRenderer instancedSpriteRenderer) {
+    SpriteRenderer(SpriteList sprite_list, int tex_index,
+            InstancedSpriteRenderer instancedSpriteRenderer) {
         this.sprite_list = sprite_list;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
 
@@ -55,8 +54,8 @@ public final class SpriteRenderer {
     }
 
     @SuppressWarnings("unchecked")
-    SpriteRenderer(@NonNull SpriteList sprite_list, @NonNull Texture texture,
-            @NonNull InstancedSpriteRenderer instancedSpriteRenderer) {
+    SpriteRenderer(SpriteList sprite_list, Texture texture,
+            InstancedSpriteRenderer instancedSpriteRenderer) {
         this.sprite_list = sprite_list;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
 
@@ -74,15 +73,15 @@ public final class SpriteRenderer {
         }
     }
 
-    public @NonNull SpriteList getSpriteList() {
+    public SpriteList getSpriteList() {
         return sprite_list;
     }
 
-    void addToNoDetailList(@NonNull ModelState<?> model) {
+    void addToNoDetailList(ModelState<?> model) {
         no_detail_render_list.add(model);
     }
 
-    public void addToRenderList(@NonNull PolyDetail detail, ModelState<?> model, boolean respond) {
+    public void addToRenderList(PolyDetail detail, ModelState<?> model, boolean respond) {
         int index = detail.ordinal();
         index = Math.min(sprite_list.getNumSprites() - 1, index);
         if (respond) {
@@ -92,7 +91,7 @@ public final class SpriteRenderer {
         }
     }
 
-    int getTriangleCount(@NonNull PolyDetail detail) {
+    int getTriangleCount(PolyDetail detail) {
         int index = detail.ordinal();
         index = Math.min(sprite_list.getNumSprites() - 1, index);
         return sprite_list.getSprite(index).getTriangleCount();
@@ -102,7 +101,7 @@ public final class SpriteRenderer {
         no_detail_render_list.clear();
     }
 
-    public void getAllPicks(@NonNull Consumer<@NonNull Target> picks) {
+    public void getAllPicks(Consumer<Target> picks) {
         for (int i = 0; i < sprite_list.getNumSprites(); i++) {
             pickFromList(render_lists[i], picks);
             render_lists[i].clear();
@@ -115,8 +114,8 @@ public final class SpriteRenderer {
         clearRenderLists();
     }
 
-    private void pickFromList(@NonNull List<@Nullable ModelState<?>> render_list, @NonNull Consumer<
-            @NonNull Target> picks) {
+    private void pickFromList(List<@Nullable ModelState<?>> render_list, Consumer<
+            Target> picks) {
         for (int i = 0; i < render_list.size(); i++) {
             ModelState<?> model = render_list.get(i);
             render_list.set(i, null);
@@ -132,7 +131,7 @@ public final class SpriteRenderer {
         }
     }
 
-    private void renderAll(int index, @NonNull Texture texture, @Nullable Texture teamTexture,
+    private void renderAll(int index, Texture texture, @Nullable Texture teamTexture,
             @Nullable Texture bumpTexture) {
         List<ModelState<?>> render_list = render_lists[index];
         boolean modulate = sprite_list.getSprite(index).modulateColor();
@@ -187,7 +186,7 @@ public final class SpriteRenderer {
 
     public void addInstance(int spriteIndex, int animation, float animTicks,
             boolean respond, boolean blend, boolean depthWrite, boolean depthTest,
-            @NonNull Matrix4f modelMatrix, @NonNull Color color, @NonNull Color decalColor) {
+            Matrix4f modelMatrix, Color color, Color decalColor) {
         instancedSpriteRenderer.add(sprite_list, spriteIndex, animation, animTicks,
                 textures[spriteIndex], team_textures[spriteIndex], bump_textures[spriteIndex],
                 respond, blend, depthWrite, depthTest, modelMatrix, color, decalColor);

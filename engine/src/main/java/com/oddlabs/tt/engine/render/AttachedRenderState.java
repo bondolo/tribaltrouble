@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -17,13 +16,13 @@ public final class AttachedRenderState implements ModelState<Model> {
     public AttachedRenderState() {
     }
 
-    public void setup(@NonNull ElementSceneContext<?> parentState, @NonNull Accessory accessory) {
+    public void setup(ElementSceneContext<?> parentState, Accessory accessory) {
         this.parentState = parentState;
         this.accessory = accessory;
     }
 
     @Override
-    public @NonNull Matrix4f getTransform(@NonNull Matrix4f dest) {
+    public Matrix4f getTransform(Matrix4f dest) {
         assert parentState != null;
         assert accessory != null;
 
@@ -64,19 +63,19 @@ public final class AttachedRenderState implements ModelState<Model> {
     }
 
     @Override
-    public @NonNull Color getTeamColor() {
+    public Color getTeamColor() {
         assert parentState != null;
         return parentState.getTeamColor();
     }
 
     @Override
-    public @NonNull Color getSelectionColor() {
+    public Color getSelectionColor() {
         assert parentState != null;
         return parentState.getSelectionColor();
     }
 
     @Override
-    public @NonNull Color getColor() {
+    public Color getColor() {
         assert parentState != null;
         Color.Linear parentColor = parentState.getColor();
         if (accessory instanceof VisualSoundAccessory visualSoundAccessory) {
@@ -89,7 +88,7 @@ public final class AttachedRenderState implements ModelState<Model> {
     }
 
     @Override
-    public Selectable.@NonNull VisualPattern getPattern() {
+    public Selectable.VisualPattern getPattern() {
         assert parentState != null;
         return parentState.getPattern();
     }
@@ -106,7 +105,7 @@ public final class AttachedRenderState implements ModelState<Model> {
     }
 
     @Override
-    public void markDetailPolygon(@NonNull PolyDetail detail) {
+    public void markDetailPolygon(PolyDetail detail) {
         assert accessory != null;
         assert parentState != null;
 
@@ -119,7 +118,7 @@ public final class AttachedRenderState implements ModelState<Model> {
     }
 
     @Override
-    public int getTriangleCount(@NonNull PolyDetail detail) {
+    public int getTriangleCount(PolyDetail detail) {
         assert accessory != null;
         assert parentState != null;
 

@@ -18,7 +18,6 @@ import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.ChatMethod;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -35,16 +34,16 @@ public final class InGameChatForm extends Form implements ChatListener {
     private static final int CHAT_HEIGHT = 150;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(InGameChatForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull EditLine chat_line;
+    private final EditLine chat_line;
     private final InfoPrinter info_printer;
-    private final @NonNull TextBox chat_box;
-    private final @NonNull RadioButtonGroup radio_button_group;
-    private final @NonNull RadioButton radio_all;
-    private final @NonNull RadioButton radio_team;
+    private final TextBox chat_box;
+    private final RadioButtonGroup radio_button_group;
+    private final RadioButton radio_all;
+    private final RadioButton radio_team;
     private final WorldViewer viewer;
 
     public InGameChatForm(InfoPrinter info_printer, WorldViewer viewer) {
@@ -98,7 +97,7 @@ public final class InGameChatForm extends Form implements ChatListener {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -124,7 +123,7 @@ public final class InGameChatForm extends Form implements ChatListener {
 
     private final class ChatListener implements EnterListener {
         @Override
-        public void enterPressed(@NonNull CharSequence text) {
+        public void enterPressed(CharSequence text) {
             String chat = text.toString();
             if (!chat.isEmpty()) {
                 chat_line.clear();

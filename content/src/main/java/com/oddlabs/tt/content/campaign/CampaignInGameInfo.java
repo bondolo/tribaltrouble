@@ -13,7 +13,6 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Skin;
-import org.jspecify.annotations.NonNull;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 
@@ -28,7 +27,7 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
-    public void openInGameMenu(@NonNull WorldViewer viewer, @NonNull Camera camera) {
+    public void openInGameMenu(WorldViewer viewer, Camera camera) {
         viewer.getGUIRoot().pushDelegate(new InGameMainMenu(viewer, new StaticCamera(camera.getState())));
     }
 
@@ -48,7 +47,7 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
-    public void addGUI(@NonNull WorldViewer viewer, @NonNull InGameMainMenu menu, @NonNull Group game_infos) {
+    public void addGUI(WorldViewer viewer, InGameMainMenu menu, Group game_infos) {
         menu.addAbortButton(Menu.i18n("end_game"));
         int screen_width = viewer.getGUIRoot().getWidth();
         LabelBox label_objective = new LabelBox(Menu.i18n("objective"), Skin.getSkin().getEditFont(), screen_width / 2);
@@ -62,8 +61,8 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
-    public void addGameOverGUI(WorldViewer viewer, final @NonNull GameStatsDelegate delegate, int header_y,
-            @NonNull Group group) {
+    public void addGameOverGUI(WorldViewer viewer, final GameStatsDelegate delegate, int header_y,
+            Group group) {
         HorizButton button_ok = new OKButton(150);
         button_ok.addMouseClickListener((_, _, _, _) -> delegate.startMenu());
 
@@ -72,7 +71,7 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
-    public void close(@NonNull WorldViewer viewer) {
+    public void close(WorldViewer viewer) {
         if (campaign.getState().getIslandState(0) != CampaignState.ISLAND_COMPLETED) {
             Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI(),
                     viewer.getAudioManager());
@@ -82,7 +81,7 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
-    public void abort(@NonNull WorldViewer viewer) {
+    public void abort(WorldViewer viewer) {
         viewer.getGUIRoot().pushDelegate(new GameStatsDelegate(viewer, viewer.getDelegate().getCamera(),
                 Menu.i18n("game_aborted")));
         campaign.doDefeated();

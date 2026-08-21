@@ -1,7 +1,6 @@
 package com.oddlabs.tt.audio;
 
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -14,7 +13,6 @@ import java.net.URL;
  */
 public interface AudioManager extends AudioImplementation {
 
-    @NonNull
     Vector3fc getListenerPosition();
 
     float getMasterGain();
@@ -29,35 +27,26 @@ public interface AudioManager extends AudioImplementation {
 
     boolean isSfxEnabled();
 
-    @NonNull
     AudioManager setHeadphoneMode(boolean enabled);
 
-    @NonNull
-    AudioManager setListenerOrientation(@NonNull Vector3fc forward, @NonNull Vector3fc up);
+    AudioManager setListenerOrientation(Vector3fc forward, Vector3fc up);
 
-    @NonNull
     AudioManager setListenerPosition(float x, float y, float z);
 
-    @NonNull
     AudioManager setMasterGain(float gain);
 
-    @NonNull
     AudioManager setMusicGain(float gain);
 
-    @NonNull
     AudioManager setSfxGain(float gain);
 
-    @NonNull
     AudioManager setSfxEnabled(boolean enabled);
 
     boolean startPlaying();
 
-    @NonNull
-    Audio createAudio(@NonNull URL file) throws IOException;
+    Audio createAudio(URL file) throws IOException;
 
     @Override
-    @NonNull
-    AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params);
+    AudioPlayer newAudio(float x, float y, float z, AudioParameters params);
 
     /**
      * Toggles music playback on or off based on current settings.
@@ -81,13 +70,13 @@ public interface AudioManager extends AudioImplementation {
     /**
      * Sets the background music track with an optional start delay in seconds.
      */
-    default void setMusic(@NonNull AudioParameters musicAudio, float delay) {
+    default void setMusic(AudioParameters musicAudio, float delay) {
     }
 
     /**
      * Sets the background music track immediately.
      */
-    default void setMusic(@NonNull AudioParameters musicAudio) {
+    default void setMusic(AudioParameters musicAudio) {
         setMusic(musicAudio, 0f);
     }
 
@@ -116,7 +105,7 @@ public interface AudioManager extends AudioImplementation {
      *
      * @param type The reverb type to apply.
      */
-    default void setReverb(@NonNull ReverbType type) {
+    default void setReverb(ReverbType type) {
     }
 
     /**
@@ -126,6 +115,6 @@ public interface AudioManager extends AudioImplementation {
      * @param to The target reverb environment.
      * @param factor Blending factor [0.0 - 1.0].
      */
-    default void setReverb(@NonNull ReverbType from, @NonNull ReverbType to, float factor) {
+    default void setReverb(ReverbType from, ReverbType to, float factor) {
     }
 }

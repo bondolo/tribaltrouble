@@ -1,7 +1,6 @@
 package com.oddlabs.tt.client.delegate;
 
 import com.oddlabs.tt.gui.Form;
-import org.jspecify.annotations.NonNull;
 
 import java.util.function.Supplier;
 
@@ -12,11 +11,10 @@ import java.util.function.Supplier;
  */
 @FunctionalInterface
 public interface FormFactory<F extends Form> extends Supplier<F> {
-    @NonNull
     F create();
 
     @Override
-    default @NonNull F get() {
+    default F get() {
         return create();
     }
 }

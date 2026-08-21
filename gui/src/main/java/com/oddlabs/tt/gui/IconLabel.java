@@ -2,13 +2,12 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public final class IconLabel extends GUIObject implements Comparable<IconLabel> {
-    private final @NonNull IconQuad icon;
-    private final @NonNull Label label;
+    private final IconQuad icon;
+    private final Label label;
 
-    public IconLabel(@NonNull IconQuad icon, @NonNull Label label) {
+    public IconLabel(IconQuad icon, Label label) {
         this.icon = icon;
         this.label = label;
         label.setPos(icon.getWidth(), 0);
@@ -19,16 +18,16 @@ public final class IconLabel extends GUIObject implements Comparable<IconLabel> 
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         renderer.drawIcon(icon, 0, 0);
     }
 
-    private @NonNull Label getLabel() {
+    private Label getLabel() {
         return label;
     }
 
     @Override
-    public int compareTo(@NonNull IconLabel o) {
+    public int compareTo(IconLabel o) {
         return label.compareTo(o.getLabel());
     }
 }

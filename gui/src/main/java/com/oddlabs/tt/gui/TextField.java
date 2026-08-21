@@ -4,26 +4,25 @@ import com.oddlabs.tt.base.util.TextAppender;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * A mutable text field that allows text to be appended
  */
 public abstract class TextField extends GUIObject implements CharSequence, TextAppender {
-    private final @NonNull StringBuilder text;
-    private final @NonNull Font font;
+    private final StringBuilder text;
+    private final Font font;
     /**
      * This is the maximum number of codepoints that can be stored in the text field.
      * Note that this may differ from the number of bytes, characters, and graphemes.
      */
     private final int max_codepoints;
 
-    public TextField(@NonNull Font font, int max_codepoints) {
+    public TextField(Font font, int max_codepoints) {
         this("", font, max_codepoints);
     }
 
-    public TextField(@NonNull CharSequence text, @NonNull Font font, int max_codepoints) {
+    public TextField(CharSequence text, Font font, int max_codepoints) {
         this.font = font;
         this.text = new StringBuilder(max_codepoints < Integer.MAX_VALUE ? max_codepoints : text.length());
         this.max_codepoints = max_codepoints;
@@ -31,7 +30,7 @@ public abstract class TextField extends GUIObject implements CharSequence, TextA
     }
 
     @Override
-    public final @NonNull String toString() {
+    public final String toString() {
         return text.toString();
     }
 
@@ -46,7 +45,7 @@ public abstract class TextField extends GUIObject implements CharSequence, TextA
     }
 
     @Override
-    public final @NonNull CharSequence subSequence(int start, int end) {
+    public final CharSequence subSequence(int start, int end) {
         return text.subSequence(start, end);
     }
 
@@ -58,25 +57,25 @@ public abstract class TextField extends GUIObject implements CharSequence, TextA
         return font.getWidth(text);
     }
 
-    public final @NonNull Font getFont() {
+    public final Font getFont() {
         return font;
     }
 
-    public final @NonNull String getContents() {
+    public final String getContents() {
         return text.toString();
     }
 
-    protected final @NonNull StringBuilder getText() {
+    protected final StringBuilder getText() {
         return text;
     }
 
-    public @NonNull TextField setText(@NonNull CharSequence text) {
+    public TextField setText(CharSequence text) {
         this.text.setLength(0);
         this.text.append(text);
         return this;
     }
 
-    public final void set(@NonNull CharSequence str) {
+    public final void set(CharSequence str) {
         clear();
         append(str);
     }
@@ -85,7 +84,7 @@ public abstract class TextField extends GUIObject implements CharSequence, TextA
         text.delete(0, text.length());
     }
 
-    public boolean append(@NonNull CharSequence text) {
+    public boolean append(CharSequence text) {
         if (this.text.codePointCount(0, this.text.length()) + text.codePoints().count() > max_codepoints) {
             return false;
         }
@@ -121,11 +120,11 @@ public abstract class TextField extends GUIObject implements CharSequence, TextA
         text.delete(index, index + Character.charCount(text.codePointAt(index)));
     }
 
-    protected void appendNotify(@NonNull CharSequence str) {
+    protected void appendNotify(CharSequence str) {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         event.consumeAction(GameAction.UI_ACTIVATE);
         super.handleInput(event);
     }

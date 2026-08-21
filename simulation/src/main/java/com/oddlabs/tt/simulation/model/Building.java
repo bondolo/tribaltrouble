@@ -17,7 +17,6 @@ import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -51,11 +50,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private static final Color.Linear SOOT_TINT = new Color.Linear(1.0f, 0.9f, 0.7f, 1.0f);
     private static final Color.LinearDelta SOOT_DELTA = Color.LinearDelta.red(0.05f);
 
-    private final Map<@NonNull Class<?>, @NonNull SupplyContainer> supply_containers = new HashMap<>();
-    private final Map<@NonNull SupplyType, @NonNull SupplyContainer> resource_containers
+    private final Map<Class<?>, SupplyContainer> supply_containers = new HashMap<>();
+    private final Map<SupplyType, SupplyContainer> resource_containers
             = new EnumMap<>(SupplyType.class);
-    private final Map<@NonNull Class<?>, @NonNull BuildProductionContainer> build_containers = new HashMap<>();
-    private final Map<@NonNull DeployType, @NonNull DeployContainer> deploy_containers
+    private final Map<Class<?>, BuildProductionContainer> build_containers = new HashMap<>();
+    private final Map<DeployType, DeployContainer> deploy_containers
             = new EnumMap<>(DeployType.class);
 
     private @Nullable ChieftainContainer chieftain_container = null;
@@ -65,7 +64,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     private int build_points = 0; // 0 = not placed, > 0 = placed
     private float[][] old_landscape_heights;
 
-    private @NonNull Target rally_point = this;
+    private Target rally_point = this;
     private boolean is_training_chieftain = false;
 
     /**
@@ -82,7 +81,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         BUILT
     }
 
-    public Building(@NonNull Player owner, @NonNull BuildingTemplate template, int grid_x, int grid_y) {
+    public Building(Player owner, BuildingTemplate template, int grid_x, int grid_y) {
         super(owner, template);
         setGridPosition(grid_x, grid_y);
         float x = UnitGrid.coordinateFromGrid(grid_x);
@@ -95,7 +94,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return rally_point != this;
     }
 
-    public @NonNull Target getRallyPoint() {
+    public Target getRallyPoint() {
         return rally_point;
     }
 
@@ -141,12 +140,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         getClientState(ModelClient.class).ifPresent(ModelClient::close);
     }
 
-    public @NonNull Optional<UnitContainer> getUnitContainer() {
+    public Optional<UnitContainer> getUnitContainer() {
         assert !isDead();
         return getSupplyContainer(Unit.class).map(c -> (UnitContainer) c);
     }
 
-    public @NonNull Optional<SupplyContainer> getSupplyContainer(@NonNull Class<?> key) {
+    public Optional<SupplyContainer> getSupplyContainer(Class<?> key) {
         assert !isDead();
         SupplyContainer container = supply_containers.get(key);
         if (container == null) {
@@ -158,12 +157,12 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return Optional.ofNullable(container);
     }
 
-    public @NonNull Optional<SupplyContainer> getSupplyContainer(@NonNull SupplyType key) {
+    public Optional<SupplyContainer> getSupplyContainer(SupplyType key) {
         assert !isDead();
         return Optional.ofNullable(resource_containers.get(key));
     }
 
-    public @NonNull Optional<BuildSupplyContainer> getBuildSupplyContainer(@NonNull Class<?> key) {
+    public Optional<BuildSupplyContainer> getBuildSupplyContainer(Class<?> key) {
         assert !isDead();
         return Optional.ofNullable(build_containers.get(key));
     }
@@ -173,7 +172,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return deploy_containers.get(type);
     }
 
-    public @NonNull Optional<ChieftainContainer> getChieftainContainer() {
+    public Optional<ChieftainContainer> getChieftainContainer() {
         assert !isDead();
         return Optional.ofNullable(chieftain_container);
     }
@@ -203,7 +202,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
     }
 
-    public void deployUnits(@NonNull DeployType type, int num_units) {
+    public void deployUnits(DeployType type, int num_units) {
         assert !isDead();
         getOwner().getWorld().updateGlobalChecksum(type.ordinal());
         getOwner().getWorld().updateGlobalChecksum(num_units);
@@ -218,7 +217,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         createHarvesters(SupplyType.RUBBER, num_rubber);
     }
 
-    private void createHarvesters(@NonNull SupplyType supplyType, int amount) {
+    private void createHarvesters(SupplyType supplyType, int amount) {
         RaceInfo raceInfo = getOwner().getRaceInfo();
         for (int i = 0; i < amount; i++) {
             getUnitContainer().ifPresent(c -> {
@@ -230,7 +229,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         }
     }
 
-    public void buildWeapons(@NonNull Class<? extends ThrowingWeapon> type, int num_weapons, boolean infinite) {
+    public void buildWeapons(Class<? extends ThrowingWeapon> type, int num_weapons, boolean infinite) {
         assert !isDead();
         if (infinite)
             getOwner().getWorld().updateGlobalChecksum(num_weapons);
@@ -268,7 +267,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         getOwner().setActiveChieftain(chieftain);
     }
 
-    private @NonNull Unit createUnit(@Nullable Target rally_point, @NonNull UnitTemplate template) {
+    private Unit createUnit(@Nullable Target rally_point, UnitTemplate template) {
         return new Unit(getOwner(), getPositionX(), getPositionY(), rally_point, template, null, true, true);
     }
 
@@ -280,7 +279,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         createArmy(num_rubber, UnitType.WARRIOR_RUBBER);
     }
 
-    private void createArmy(int amount, @NonNull UnitType template) {
+    private void createArmy(int amount, UnitType template) {
         RaceInfo raceInfo = getOwner().getRaceInfo();
         checkRallyPoint();
         for (int i = 0; i < amount; i++) {
@@ -357,7 +356,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         adjustHitPoints(amount);
     }
 
-    public static boolean isPlacingLegal(@NonNull UnitGrid unit_grid, @NonNull BuildingTemplate template, int grid_x,
+    public static boolean isPlacingLegal(UnitGrid unit_grid, BuildingTemplate template, int grid_x,
             int grid_y) {
         return doIsPlacingLegal(unit_grid, grid_x, grid_y, template.getPlacingSize());
     }
@@ -383,7 +382,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return build_points;
     }
 
-    public @NonNull BuildStage getBuildStage() {
+    public BuildStage getBuildStage() {
         var max_points = getTemplate().getMaxHitPoints();
         return build_points == max_points
                 ? BuildStage.BUILT
@@ -479,7 +478,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return getTemplate().getHitOffsetZ(index);
     }
 
-    public static boolean doIsPlacingLegal(@NonNull UnitGrid unit_grid, int grid_x, int grid_y, int size) {
+    public static boolean doIsPlacingLegal(UnitGrid unit_grid, int grid_x, int grid_y, int size) {
         if (!unit_grid.getHeightMap().canBuild(grid_x, grid_y, size))
             return false;
 
@@ -497,7 +496,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    public AttackScanFilter.@NonNull Priority getAttackPriority() {
+    public AttackScanFilter.Priority getAttackPriority() {
         return getAbilities().hasAbilities(Abilities.ATTACK)
                 ? AttackScanFilter.Priority.TOWER
                 : getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
@@ -506,7 +505,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    protected void setTarget(@NonNull Target target, @NonNull Action action, boolean aggressive) {
+    protected void setTarget(Target target, Action action, boolean aggressive) {
         if (getAbilities().hasAbilities(Abilities.ATTACK)) {
             if (target != this) {
                 Unit unit = ((MountUnitContainer) getUnitContainer().orElseThrow()).getUnit();
@@ -575,7 +574,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
                 b.getAbilities().hasAbilities(Abilities.RALLY_TO);
     }
 
-    public void setRallyPoint(@NonNull Target target) {
+    public void setRallyPoint(Target target) {
         if (!getOwner().canSetRallyPoints())
             return;
         rally_point = isValidRallyPoint(target)
@@ -592,7 +591,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+    protected BoundingBox[] getLocalBounds() {
         return switch (getBuildStage()) {
             case START -> getTemplate().getStartBounds();
             case HALFBUILT -> getTemplate().getHalfbuiltBounds();
@@ -662,7 +661,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    public void hit(int damage, float dir_x, float dir_y, @NonNull Player owner) {
+    public void hit(int damage, float dir_x, float dir_y, Player owner) {
         super.hit(damage, dir_x, dir_y, owner);
         if (!isDead()) {
             adjustHitPoints(-damage);
@@ -679,17 +678,17 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "Building: isDead() = " + isDead();
     }
 
-    public void fillSupplies(@NonNull Class<?> key, int max) {
+    public void fillSupplies(Class<?> key, int max) {
         getSupplyContainer(key).ifPresent(container -> {
             container.increaseSupply(Math.min(container.getMaxSupplyCount() - container.getNumSupplies(), max));
         });
     }
 
-    public void removeSupplies(@NonNull Class<?> key) {
+    public void removeSupplies(Class<?> key) {
         getSupplyContainer(key).ifPresent(container -> {
             container.increaseSupply(-container.getNumSupplies());
         });

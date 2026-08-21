@@ -7,7 +7,6 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +18,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * A dropdown menu group containing list items that can be chosen.
  */
 public final class PulldownMenu<T> extends Group {
-    private final Set<@NonNull ItemChosenListener<T>> chosen_listeners = new CopyOnWriteArraySet<>();
+    private final Set<ItemChosenListener<T>> chosen_listeners = new CopyOnWriteArraySet<>();
 
-    private final List<@NonNull PulldownItem<T>> items = new ArrayList<>();
+    private final List<PulldownItem<T>> items = new ArrayList<>();
     private int chosen_item_index = -1;
 
     public PulldownMenu() {
@@ -29,7 +28,7 @@ public final class PulldownMenu<T> extends Group {
         setFocusCycle(true);
     }
 
-    public @NonNull Optional<PulldownItem<T>> getItem(int index) {
+    public Optional<PulldownItem<T>> getItem(int index) {
         return index >= 0 && index < items.size() ? Optional.of(items.get(index)) : Optional.empty();
     }
 
@@ -38,7 +37,7 @@ public final class PulldownMenu<T> extends Group {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         // Render bottom edge
         Horizontal bot = Skin.getSkin().getPulldownData().pulldownBottom();
         bot.render(renderer, 0, 0, getWidth(), ModeIconQuads.Mode.NORMAL);
@@ -48,7 +47,7 @@ public final class PulldownMenu<T> extends Group {
         top.render(renderer, 0, getHeight() - top.getHeight(), getWidth(), ModeIconQuads.Mode.NORMAL);
     }
 
-    public void addItem(@NonNull PulldownItem<T> item) {
+    public void addItem(PulldownItem<T> item) {
         items.add(item);
         addChild(item);
         item.addMouseClickListener(new ItemListener(items.size() - 1));
@@ -63,7 +62,7 @@ public final class PulldownMenu<T> extends Group {
     }
 
     @Override
-    public @NonNull PulldownMenu<T> setDim(int width, int height) {
+    public PulldownMenu<T> setDim(int width, int height) {
         int min_width = 0;
         Box item_box = Skin.getSkin().getPulldownData().pulldownItem();        // Adjust all items
         for (PulldownItem<T> item : items) {
@@ -84,7 +83,7 @@ public final class PulldownMenu<T> extends Group {
         return this;
     }
 
-    public @NonNull Optional<PulldownItem<T>> getChosenItem() {
+    public Optional<PulldownItem<T>> getChosenItem() {
         return -1 != chosen_item_index ? Optional.of(items.get(chosen_item_index)) : Optional.empty();
     }
 
@@ -111,7 +110,7 @@ public final class PulldownMenu<T> extends Group {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (event.consumeAction(GameAction.UI_NAV_UP)) {
                 focusPrior();
@@ -128,7 +127,7 @@ public final class PulldownMenu<T> extends Group {
     }
 
     // Sending click on to appropriate item when PulldownButton has been pressed and released on an item
-    void clickItem(@NonNull MouseButton button, int x, int y, int clicks) {
+    void clickItem(MouseButton button, int x, int y, int clicks) {
         for (PulldownItem<T> item : items) {
             if (item.isHovered())
                 item.mouseClickedAll(button, x, y, clicks);
@@ -141,11 +140,11 @@ public final class PulldownMenu<T> extends Group {
         }
     }
 
-    public void addItemChosenListener(@NonNull ItemChosenListener<T> listener) {
+    public void addItemChosenListener(ItemChosenListener<T> listener) {
         chosen_listeners.add(listener);
     }
 
-    public void removeItemChosenListener(@NonNull ItemChosenListener<T> listener) {
+    public void removeItemChosenListener(ItemChosenListener<T> listener) {
         chosen_listeners.remove(listener);
     }
 
@@ -157,7 +156,7 @@ public final class PulldownMenu<T> extends Group {
         }
 
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             chooseItem(index);
         }
     }

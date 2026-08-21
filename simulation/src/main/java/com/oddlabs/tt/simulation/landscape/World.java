@@ -15,7 +15,6 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
@@ -41,44 +40,44 @@ public final class World implements SimulationClock {
             AnimationManager.ANIMATION_SECONDS_PER_TICK * 4
     };
 
-    private final @NonNull HeightMap world;
-    private final @NonNull Random random;
-    private final @NonNull AnimationManager animation_manager_game_time;
-    private final @NonNull AnimationManager animation_manager_real_time;
+    private final HeightMap world;
+    private final Random random;
+    private final AnimationManager animation_manager_game_time;
+    private final AnimationManager animation_manager_real_time;
 
     private final int max_unit_count;
-    private final @NonNull NotificationListener notification_listener;
+    private final NotificationListener notification_listener;
 
-    private final @NonNull List<@NonNull Player> players;
-    private final @NonNull SupplyManagers supply_managers;
-    private final @NonNull UnitGrid unit_grid;
-    private final @NonNull PatchGroup patch_root;
-    private final @NonNull AbstractTreeGroup tree_root;
-    private final @NonNull AbstractElementNode<?> element_root;
+    private final List<Player> players;
+    private final SupplyManagers supply_managers;
+    private final UnitGrid unit_grid;
+    private final PatchGroup patch_root;
+    private final AbstractTreeGroup tree_root;
+    private final AbstractElementNode<?> element_root;
     private final @Nullable RacesResources races_resources;
-    private final @NonNull LandscapeBoundsProvider landscape_resources;
-    private final @NonNull Terrain terrain;
-    private final float @NonNull [] @NonNull [] plantCoordinates;
-    private final List<@NonNull Plants> activePlants = new ArrayList<>();
+    private final LandscapeBoundsProvider landscape_resources;
+    private final Terrain terrain;
+    private final float[][] plantCoordinates;
+    private final List<Plants> activePlants = new ArrayList<>();
 
     private int global_checksum;
     private int gamespeed;
 
-    public static @NonNull World newWorld(
-            @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
-            @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
-            @NonNull LandscapeData landscapeData, List<@NonNull PlayerInfo> player_infos,
-            Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants) {
+    public static World newWorld(
+            LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
+            NotificationListener notification_listener, WorldParameters world_params,
+            LandscapeData landscapeData, List<PlayerInfo> player_infos,
+            Color.Linear[] teamColors, boolean insertPlants) {
         return newWorld(landscape_resources, races_resources, notification_listener, world_params,
                 landscapeData, player_infos, teamColors, insertPlants, ProgressListener.NONE);
     }
 
-    public static @NonNull World newWorld(
-            @NonNull LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
-            @NonNull NotificationListener notification_listener, @NonNull WorldParameters world_params,
-            @NonNull LandscapeData landscapeData, List<@NonNull PlayerInfo> player_infos,
-            Color.@NonNull Linear @NonNull [] teamColors, boolean insertPlants,
-            @NonNull ProgressListener progress_listener) {
+    public static World newWorld(
+            LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
+            NotificationListener notification_listener, WorldParameters world_params,
+            LandscapeData landscapeData, List<PlayerInfo> player_infos,
+            Color.Linear[] teamColors, boolean insertPlants,
+            ProgressListener progress_listener) {
         progress_listener.onProgress();
         World world = new World(landscape_resources, races_resources, notification_listener,
                 world_params, landscapeData, player_infos, teamColors, insertPlants, progress_listener);
@@ -89,11 +88,11 @@ public final class World implements SimulationClock {
         return world;
     }
 
-    public @NonNull Terrain getTerrainType() {
+    public Terrain getTerrainType() {
         return terrain;
     }
 
-    public @NonNull LandscapeBoundsProvider getLandscapeResources() {
+    public LandscapeBoundsProvider getLandscapeResources() {
         return landscape_resources;
     }
 
@@ -153,11 +152,11 @@ public final class World implements SimulationClock {
         return getAnimationManagerRealTime().getTick();
     }
 
-    private World(@NonNull LandscapeBoundsProvider landscape_resources,
-            @Nullable RacesResources races_resources, @NonNull NotificationListener notification_listener,
-            @NonNull WorldParameters world_params, @NonNull LandscapeData landscapeData,
-            @NonNull List<@NonNull PlayerInfo> player_infos, Color.@NonNull Linear @NonNull [] teamColors,
-            boolean insertPlants, @NonNull ProgressListener progress_listener) {
+    private World(LandscapeBoundsProvider landscape_resources,
+            @Nullable RacesResources races_resources, NotificationListener notification_listener,
+            WorldParameters world_params, LandscapeData landscapeData,
+            List<PlayerInfo> player_infos, Color.Linear[] teamColors,
+            boolean insertPlants, ProgressListener progress_listener) {
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscapeData.terrain();
         this.plantCoordinates = landscapeData.plants();
@@ -194,27 +193,27 @@ public final class World implements SimulationClock {
         activeWorlds.add(new WeakReference<>(this));
     }
 
-    public @NonNull AbstractElementNode getElementRoot() {
+    public AbstractElementNode getElementRoot() {
         return element_root;
     }
 
-    public @NonNull AbstractTreeGroup getTreeRoot() {
+    public AbstractTreeGroup getTreeRoot() {
         return tree_root;
     }
 
-    public @NonNull AbstractPatchGroup getPatchRoot() {
+    public AbstractPatchGroup getPatchRoot() {
         return patch_root;
     }
 
-    public @NonNull UnitGrid getUnitGrid() {
+    public UnitGrid getUnitGrid() {
         return unit_grid;
     }
 
-    public @Nullable SupplyManager getSupplyManager(@NonNull SupplyType type) {
+    public @Nullable SupplyManager getSupplyManager(SupplyType type) {
         return supply_managers.getSupplyManager(type);
     }
 
-    public @NonNull List<@NonNull Player> getPlayers() {
+    public List<Player> getPlayers() {
         return players;
     }
 
@@ -222,31 +221,31 @@ public final class World implements SimulationClock {
         return max_unit_count;
     }
 
-    public @NonNull NotificationListener getNotificationListener() {
+    public NotificationListener getNotificationListener() {
         return notification_listener;
     }
 
-    public @NonNull HeightMap getHeightMap() {
+    public HeightMap getHeightMap() {
         return world;
     }
 
-    public @NonNull LandscapeEnvironment getLandscapeEnvironment() {
+    public LandscapeEnvironment getLandscapeEnvironment() {
         return world;
     }
 
-    public @NonNull AnimationManager getAnimationManagerGameTime() {
+    public AnimationManager getAnimationManagerGameTime() {
         return animation_manager_game_time;
     }
 
-    public @NonNull AnimationManager getAnimationManagerRealTime() {
+    public AnimationManager getAnimationManagerRealTime() {
         return animation_manager_real_time;
     }
 
-    public @NonNull Random getRandom() {
+    public Random getRandom() {
         return random;
     }
 
-    public void registerPlant(@NonNull Plants plant) {
+    public void registerPlant(Plants plant) {
         synchronized (activePlants) {
             activePlants.add(plant);
         }

@@ -2,7 +2,6 @@ package com.oddlabs.registration;
 
 import com.oddlabs.util.KeyManager;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.math.BigInteger;
 import java.net.URL;
@@ -28,7 +27,7 @@ public final class RegistrationKey {
         return KeyManager.readPublicKey(encoded_key, RegServiceInterface.KEY_ALGORITHM);
     }
 
-    public static boolean verify(PublicKey public_key, @NonNull SignedObject signed_object)
+    public static boolean verify(PublicKey public_key, SignedObject signed_object)
             throws GeneralSecurityException {
         return signed_object.verify(public_key, Signature.getInstance(RegServiceInterface.SIGN_ALGORITHM));
     }
@@ -37,7 +36,7 @@ public final class RegistrationKey {
         return (int) (Math.log(CHAR_TO_WORD.length()) / Math.log(2));
     }
 
-    public static @NonNull BigInteger parseBits(@NonNull String str) throws RegistrationKeyFormatException {
+    public static BigInteger parseBits(String str) throws RegistrationKeyFormatException {
         byte[] index = new byte[1]; // must be two bytes, to avoid negative values
         BigInteger result = BigInteger.ZERO;
         int shifting = computeShifting();
@@ -55,7 +54,7 @@ public final class RegistrationKey {
         return result;
     }
 
-    public static @NonNull String createString(@NonNull BigInteger val) throws NumberFormatException {
+    public static String createString(BigInteger val) throws NumberFormatException {
         String result = "";
         int shifting = computeShifting();
         BigInteger filter = new BigInteger(new byte[]{(byte) (CHAR_TO_WORD.length() - 1)});
@@ -78,7 +77,7 @@ public final class RegistrationKey {
         return bytes;
     }
 
-    public static @NonNull String normalize(String key_str) throws RegistrationKeyFormatException {
+    public static String normalize(String key_str) throws RegistrationKeyFormatException {
         return encode(decode(key_str));
     }
 
@@ -99,7 +98,7 @@ public final class RegistrationKey {
         return key_code;
     }
 
-    private static @NonNull BigInteger computeChecksum(long key) {
+    private static BigInteger computeChecksum(long key) {
         Checksum crc = new CRC32();
         byte[] key_bytes = splitToBytes(key);
         crc.update(key_bytes, 0, key_bytes.length);
@@ -107,7 +106,7 @@ public final class RegistrationKey {
         return new BigInteger(splitToBytes(crc_val));
     }
 
-    public static @NonNull String encode(long key_code) {
+    public static String encode(long key_code) {
         key_code = key_code & 0x7fffffffffffffffL;
         BigInteger key_big = new BigInteger(splitToBytes(key_code));
         BigInteger crc = computeChecksum(key_code);

@@ -5,7 +5,6 @@ import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.procedural.Tools;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
@@ -24,7 +23,7 @@ public final class Spectral {
     public Channel[] noise_channels;
 
     public Spectral(int size, int base_frequency, int octaves, float persistence, long seed,
-            @NonNull Interpolation interpolation) {
+            Interpolation interpolation) {
         assert Utils.isPowerOf2(size) : "size must be power of 2";
         assert Utils.isPowerOf2(base_frequency) : "base_frequency must be power of 2";
         generateOctaves(base_frequency, octaves, seed);
@@ -49,7 +48,7 @@ public final class Spectral {
     }
 
     // interpolate and sum octave channels
-    private void mergeOctaves(int size, float persistence, int octaves, @NonNull Interpolation interpolation) {
+    private void mergeOctaves(int size, float persistence, int octaves, Interpolation interpolation) {
         channel = new Channel(size, size);
         int method_threshold = 0;
         if (interpolation == Interpolation.SMOOTH) {
@@ -181,7 +180,7 @@ public final class Spectral {
         }
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel.copy(), channel.copy());
     }
 

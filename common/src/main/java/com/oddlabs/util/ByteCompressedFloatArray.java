@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -14,11 +13,11 @@ public final class ByteCompressedFloatArray implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
-    private final float @NonNull [] scale;
-    private final float @NonNull [] offset;
-    private final byte @NonNull [] @NonNull [] data;
+    private final float[] scale;
+    private final float[] offset;
+    private final byte[][] data;
 
-    public ByteCompressedFloatArray(float @NonNull [] array, int channels) {
+    public ByteCompressedFloatArray(float[] array, int channels) {
         int channel_length = array.length / channels;
         scale = new float[channels];
         offset = new float[channels];
@@ -34,7 +33,7 @@ public final class ByteCompressedFloatArray implements Serializable {
         }
     }
 
-    private void compress(float @NonNull [] array, int channel) {
+    private void compress(float[] array, int channel) {
         float min = array[0];
         float max = array[0];
 
@@ -57,7 +56,7 @@ public final class ByteCompressedFloatArray implements Serializable {
         }
     }
 
-    public float @NonNull [] getFloatArray() {
+    public float[] getFloatArray() {
         int channels = data.length;
         int channel_length = data[0].length;
         float[] result = new float[channels * channel_length];
@@ -71,7 +70,7 @@ public final class ByteCompressedFloatArray implements Serializable {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         float[] array = getFloatArray();
         return IntStream.range(0, array.length)
                 .mapToObj(idx -> Float.toString(array[idx]))

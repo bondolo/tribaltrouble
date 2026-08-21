@@ -8,7 +8,6 @@ import com.oddlabs.matchmaking.ChatRoomUser;
 import com.oddlabs.tt.net.ChatHistory;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -22,13 +21,13 @@ import java.util.Set;
 public final class ChatRoomHistory extends ChatHistory {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ChatRoomHistory.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private @Nullable ChatRoomUser[] old_users;
 
-    public void update(ChatRoomUser @NonNull [] new_users) {
+    public void update(ChatRoomUser[] new_users) {
         if (old_users == null) {
             old_users = Arrays.copyOf(new_users, new_users.length);
             return;
@@ -49,7 +48,7 @@ public final class ChatRoomHistory extends ChatHistory {
     }
 
     @Override
-    public void chat(@NonNull ChatMessage message) {
+    public void chat(ChatMessage message) {
         if (message.type() != ChatMessage.Type.PRIVATE && message.type() != ChatMessage.Type.CHATROOM)
             return;
         addMessage(message.formatLong());

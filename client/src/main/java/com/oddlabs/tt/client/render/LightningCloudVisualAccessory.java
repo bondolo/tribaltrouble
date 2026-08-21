@@ -19,7 +19,6 @@ import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -39,10 +38,10 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     private static final float PARTICLE_RADIUS_Z = 0.7f;
     private static final float LIGHTING_INTENSITY = 0.10f;
 
-    private final @NonNull LightningCloud cloud;
-    private final @NonNull ParametricEmitter emitter;
-    private final @NonNull AudioImplementation audio;
-    private final @NonNull AudioPlayer bubblingSound;
+    private final LightningCloud cloud;
+    private final ParametricEmitter emitter;
+    private final AudioImplementation audio;
+    private final AudioPlayer bubblingSound;
     private @Nullable AudioPlayer cloudSound;
 
     private float lightningTimer = 0f;
@@ -50,7 +49,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     private boolean firstRun = true;
     private float strikeAudioCooldown = 0f;
 
-    public LightningCloudVisualAccessory(@NonNull LightningCloud cloud, @NonNull AudioImplementation audio) {
+    public LightningCloudVisualAccessory(LightningCloud cloud, AudioImplementation audio) {
         this.cloud = cloud;
         this.audio = audio;
         World world = cloud.getWorld();
@@ -144,7 +143,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     }
 
     @Override
-    public @NonNull Emitter<?> getEmitter() {
+    public Emitter<?> getEmitter() {
         return emitter;
     }
 
@@ -154,12 +153,12 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         return !cloud.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
     }
 
     @Override

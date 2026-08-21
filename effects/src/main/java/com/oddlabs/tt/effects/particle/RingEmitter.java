@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -37,14 +36,14 @@ public final class RingEmitter extends LinearEmitter {
      * @param dst_blend_func OpenGL destination blend function
      * @param textures textures to assign to spawned particles
      */
-    public RingEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
+    public RingEmitter(World world, Vector3f position, float offset_z,
             float emitter_radius, float emitter_height,
             int num_particles, float particles_per_second,
-            @NonNull Vector3f velocity, @NonNull Vector3f acceleration,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3f particle_radius, @NonNull Vector3f growth_rate, float energy, float friction,
+            Vector3f velocity, Vector3f acceleration,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3f particle_radius, Vector3f growth_rate, float energy, float friction,
             int src_blend_func, int dst_blend_func,
-            @NonNull TextureKey @NonNull [] textures) {
+            TextureKey[] textures) {
         super(world, position,
                 offset_z,
                 emitter_radius,
@@ -68,9 +67,9 @@ public final class RingEmitter extends LinearEmitter {
     }
 
     @Override
-    protected int initParticle(@NonNull Vector3f position, @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-            Color.@NonNull Linear templateColor, Color.@NonNull LinearDelta templateDeltaColor,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy) {
+    protected int initParticle(Vector3f position, Vector3fc velocity, Vector3fc acceleration,
+            Color.Linear templateColor, Color.LinearDelta templateDeltaColor,
+            Vector3fc particle_radius, Vector3fc growth_rate, float energy) {
         float baseAngle = 2 * (float) Math.PI / num_particles;
         for (int i = 0; i < num_particles; i++) {
             LinearParticle particle = new LinearParticle(getWorld());

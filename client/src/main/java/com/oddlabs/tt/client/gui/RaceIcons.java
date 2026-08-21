@@ -2,34 +2,33 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
-import org.jspecify.annotations.NonNull;
 
 /**
  * UI icon collection specific to a playable race.
  */
-public record RaceIcons(@NonNull IconQuad unitStatusIcon,
-                        @NonNull IconQuad weaponRockStatusIcon,
-                        @NonNull IconQuad weaponIronStatusIcon,
-                        @NonNull IconQuad weaponRubberStatusIcon,
-                        @NonNull ModeIconQuads buildWeaponsIcon,
-                        @NonNull ModeIconQuads buildWeaponRockIcon,
-                        @NonNull ModeIconQuads buildWeaponIronIcon,
-                        @NonNull ModeIconQuads buildWeaponRubberIcon,
-                        @NonNull ModeIconQuads armyIcon,
-                        @NonNull ModeIconQuads warriorRockIcon,
-                        @NonNull ModeIconQuads warriorIronIcon,
-                        @NonNull ModeIconQuads warriorRubberIcon,
-                        @NonNull ModeIconQuads peonIcon,
-                        @NonNull ModeIconQuads chieftainIcon,
-                        @NonNull ModeIconQuads transportIcon,
-                        @NonNull ModeIconQuads attackIcon,
-                        @NonNull ModeIconQuads moveIcon,
-                        @NonNull ModeIconQuads gatherRepairIcon,
-                        @NonNull ModeIconQuads quartersIcon,
-                        @NonNull ModeIconQuads armoryIcon,
-                        @NonNull ModeIconQuads towerIcon,
-                        @NonNull ModeIconQuads towerExitIcon,
-                        @NonNull ModeIconQuads rallyPointIcon,
-                        @NonNull ModeIconQuads magic1Icon,
-                        @NonNull ModeIconQuads magic2Icon) {
+public record RaceIcons(IconQuad unitStatusIcon,
+                        IconQuad weaponRockStatusIcon,
+                        IconQuad weaponIronStatusIcon,
+                        IconQuad weaponRubberStatusIcon,
+                        ModeIconQuads buildWeaponsIcon,
+                        ModeIconQuads buildWeaponRockIcon,
+                        ModeIconQuads buildWeaponIronIcon,
+                        ModeIconQuads buildWeaponRubberIcon,
+                        ModeIconQuads armyIcon,
+                        ModeIconQuads warriorRockIcon,
+                        ModeIconQuads warriorIronIcon,
+                        ModeIconQuads warriorRubberIcon,
+                        ModeIconQuads peonIcon,
+                        ModeIconQuads chieftainIcon,
+                        ModeIconQuads transportIcon,
+                        ModeIconQuads attackIcon,
+                        ModeIconQuads moveIcon,
+                        ModeIconQuads gatherRepairIcon,
+                        ModeIconQuads quartersIcon,
+                        ModeIconQuads armoryIcon,
+                        ModeIconQuads towerIcon,
+                        ModeIconQuads towerExitIcon,
+                        ModeIconQuads rallyPointIcon,
+                        ModeIconQuads magic1Icon,
+                        ModeIconQuads magic2Icon) {
 }

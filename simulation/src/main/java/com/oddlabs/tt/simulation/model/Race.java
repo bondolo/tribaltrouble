@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -37,7 +36,7 @@ public enum Race {
      * @return the corresponding {@link Race}
      * @throws IllegalArgumentException if the legacy value is unrecognized
      */
-    public static @NonNull Race fromValue(int value) {
+    public static Race fromValue(int value) {
         for (Race type : VALUES) {
             if (type.value == value) {
                 return type;

@@ -1,21 +1,20 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class MountUnitContainer extends UnitContainer {
     public static final float ATTACK_RANGE_INCREASE = 8f;
 
-    private final @NonNull Building building;
+    private final Building building;
     private @Nullable Unit unit;
 
-    public MountUnitContainer(@NonNull Building building) {
+    public MountUnitContainer(Building building) {
         super(1);
         this.building = building;
     }
 
     @Override
-    public void enter(@NonNull Unit unit) {
+    public void enter(Unit unit) {
         this.unit = unit;
         unit.mount(building);
         unit.increaseRange(ATTACK_RANGE_INCREASE);
@@ -24,7 +23,7 @@ public final class MountUnitContainer extends UnitContainer {
     }
 
     @Override
-    public @NonNull Unit exit() {
+    public Unit exit() {
         assert unit != null;
         unit.unmount();
         unit.increaseRange(-ATTACK_RANGE_INCREASE);
@@ -36,7 +35,7 @@ public final class MountUnitContainer extends UnitContainer {
     }
 
     @Override
-    public boolean canEnter(@NonNull Unit unit) {
+    public boolean canEnter(Unit unit) {
         return !isSupplyFull() && unit.getAbilities().hasAbilities(Abilities.THROW);
     }
 

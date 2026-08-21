@@ -1,6 +1,5 @@
 package com.oddlabs.converter;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -20,8 +19,8 @@ public final class MeshLoader {
     private MeshLoader() {
     }
 
-    public static @NonNull ModelInfo loadMesh(@NonNull Path file, @Nullable Map<@NonNull String,
-            @NonNull Bone> name_to_bone_map, float scale) {
+    public static ModelInfo loadMesh(Path file, @Nullable Map<String,
+            Bone> name_to_bone_map, float scale) {
         try (var input_stream = Files.newInputStream(file)) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(true);
@@ -35,7 +34,7 @@ public final class MeshLoader {
         }
     }
 
-    private static @NonNull ModelInfo createModelInfo(@NonNull Node node, @Nullable Map<String, Bone> name_to_bone_map,
+    private static ModelInfo createModelInfo(Node node, @Nullable Map<String, Bone> name_to_bone_map,
             float scale) {
 //		String texture_name = cutTextureName(node.getAttributes().getNamedItem("texture").getNodeValue());
 
@@ -125,7 +124,7 @@ public final class MeshLoader {
                 skin_weights);
     }
 
-    private static @NonNull String cutTextureName(@NonNull String name) {
+    private static String cutTextureName(String name) {
         if (name.isEmpty())
             return name;
         String result = name.replaceAll("\\\\", "/");
@@ -136,7 +135,7 @@ public final class MeshLoader {
         return result;
     }
 
-    private static int countPolys(@NonNull NodeList polygon_list) {
+    private static int countPolys(NodeList polygon_list) {
         int counter = 0;
         for (int i = 0; i < polygon_list.getLength(); i++) {
             Node polygon = polygon_list.item(i);
@@ -146,11 +145,11 @@ public final class MeshLoader {
         return counter;
     }
 
-    private static float getAttrFloat(@NonNull Node node, @NonNull String name) {
+    private static float getAttrFloat(Node node, String name) {
         return Float.parseFloat(node.getAttributes().getNamedItem(name).getNodeValue());
     }
 
-    private static float getAttrFloat(@NonNull Node node, @NonNull String name, float defaultValue) {
+    private static float getAttrFloat(Node node, String name, float defaultValue) {
         Node attr = node.getAttributes().getNamedItem(name);
         return attr != null ? Float.parseFloat(attr.getNodeValue()) : defaultValue;
     }

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 /**
  * Callbacks that the simulation can trigger on the client-side state.
@@ -18,14 +17,14 @@ public interface ModelClient extends ClientState, AutoCloseable {
      * @param duration The duration to display the thought.
      * @param audioDistance The maximum distance at which the sound/visual is audible.
      */
-    void addVisualSound(@NonNull EmojiType emoji, float duration, float audioDistance);
+    void addVisualSound(EmojiType emoji, float duration, float audioDistance);
 
     /**
      * Handles presentation audio and visual effects when a unit harvests a supply.
      *
      * @param supplyType The supply type harvested.
      */
-    default void onHarvest(@NonNull SupplyType supplyType) {
+    default void onHarvest(SupplyType supplyType) {
     }
 
     /**
@@ -47,7 +46,7 @@ public interface ModelClient extends ClientState, AutoCloseable {
      * @param unitType The visual type of the unit.
      * @param pitchRange The pitch variation range for the death sound.
      */
-    default void onUnitDeath(@NonNull Race race, @NonNull UnitVisualType unitType, float pitchRange) {
+    default void onUnitDeath(Race race, UnitVisualType unitType, float pitchRange) {
     }
 
     /**

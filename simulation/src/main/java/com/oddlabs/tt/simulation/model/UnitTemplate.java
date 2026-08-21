@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -10,10 +9,10 @@ import org.jspecify.annotations.Nullable;
  */
 public final class UnitTemplate extends Template {
     private final float meters_per_second;
-    private final @NonNull WeaponFactory weapon_factory;
-    private final @NonNull UnitVisualType visual_type;
-    private final @NonNull BoundingBox @NonNull [] bounds;
-    private final AnimationInfo.@NonNull AnimationType @NonNull [] anim_types;
+    private final WeaponFactory weapon_factory;
+    private final UnitVisualType visual_type;
+    private final BoundingBox[] bounds;
+    private final AnimationInfo.AnimationType[] anim_types;
     private final @Nullable UnitSupplyContainerFactory supply_container_factory;
     private final float death_pitch;
     private final float selection_radius;
@@ -26,19 +25,19 @@ public final class UnitTemplate extends Template {
 
     public UnitTemplate(float selection_radius,
             float selection_height,
-            @NonNull Abilities abilities,
+            Abilities abilities,
             float meters_per_second,
-            @NonNull WeaponFactory weapon_factory,
-            @NonNull UnitVisualType visual_type,
-            @NonNull BoundingBox @NonNull [] bounds,
-            AnimationInfo.@NonNull AnimationType @NonNull [] anim_types,
+            WeaponFactory weapon_factory,
+            UnitVisualType visual_type,
+            BoundingBox[] bounds,
+            AnimationInfo.AnimationType[] anim_types,
             float shadow_diameter,
             @Nullable UnitSupplyContainerFactory supply_container_factory,
             float death_pitch,
-            float @NonNull [] hit_offset_z,
+            float[] hit_offset_z,
             float no_detail_size,
             float defense_chance,
-            @NonNull String name,
+            String name,
             int max_hit_points,
             float stun_x,
             float stun_y,
@@ -74,20 +73,20 @@ public final class UnitTemplate extends Template {
         return meters_per_second;
     }
 
-    public @NonNull WeaponFactory getWeaponFactory() {
+    public WeaponFactory getWeaponFactory() {
         return weapon_factory;
     }
 
-    public @NonNull UnitVisualType getVisualType() {
+    public UnitVisualType getVisualType() {
         return visual_type;
     }
 
-    public @NonNull BoundingBox @NonNull [] getBounds() {
+    public BoundingBox[] getBounds() {
         return bounds;
     }
 
     /** {@return the animation type for the specified unit animation} */
-    public AnimationInfo.@NonNull AnimationType getAnimationType(Unit.@NonNull Animation animation) {
+    public AnimationInfo.AnimationType getAnimationType(Unit.Animation animation) {
         return anim_types[animation.ordinal()];
     }
 

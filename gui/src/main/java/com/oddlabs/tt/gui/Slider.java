@@ -5,16 +5,15 @@ import com.oddlabs.tt.gui.event.MouseButtonListener;
 import com.oddlabs.tt.gui.event.MouseMotionListener;
 import com.oddlabs.tt.gui.event.ValueListener;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public final class Slider extends GUIObject {
-    private final Set<@NonNull ValueListener> value_listeners = new CopyOnWriteArraySet<>();
-    private final Set<@NonNull Runnable> release_listeners = new CopyOnWriteArraySet<>();
+    private final Set<ValueListener> value_listeners = new CopyOnWriteArraySet<>();
+    private final Set<Runnable> release_listeners = new CopyOnWriteArraySet<>();
 
-    private final @NonNull SliderButton button;
+    private final SliderButton button;
     private final int left_offset;
     private final int cardinality;
     private final float step;
@@ -41,7 +40,7 @@ public final class Slider extends GUIObject {
         button.addMouseButtonListener(drag_listener);
     }
 
-    public void addReleaseListener(@NonNull Runnable listener) {
+    public void addReleaseListener(Runnable listener) {
         release_listeners.add(listener);
     }
 
@@ -52,7 +51,7 @@ public final class Slider extends GUIObject {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         Skin.getSkin().getSliderData().slider()
                 .render(renderer, 0, 0, getWidth(), isDisabled() ? ModeIconQuads.Mode.DISABLED
                         : ModeIconQuads.Mode.NORMAL);
@@ -71,7 +70,7 @@ public final class Slider extends GUIObject {
     }
 
     @Override
-    public void mouseHeld(@NonNull MouseButton button, int x, int y) {
+    public void mouseHeld(MouseButton button, int x, int y) {
         mousePressed(button, x, y);
     }
 
@@ -87,7 +86,7 @@ public final class Slider extends GUIObject {
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
         if (!isDisabled()) {
             int dx = x - this.button.getX();
             if (dx < -step / 2)
@@ -101,7 +100,7 @@ public final class Slider extends GUIObject {
     }
 
     @Override
-    public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    public void mouseReleased(MouseButton button, int x, int y) {
         if (!isDisabled()) {
             notifyRelease();
         }
@@ -139,11 +138,11 @@ public final class Slider extends GUIObject {
         */
     }
 
-    public void addValueListener(@NonNull ValueListener listener) {
+    public void addValueListener(ValueListener listener) {
         value_listeners.add(listener);
     }
 
-    public void removeValueListener(@NonNull ValueListener listener) {
+    public void removeValueListener(ValueListener listener) {
         value_listeners.remove(listener);
     }
 
@@ -152,12 +151,12 @@ public final class Slider extends GUIObject {
         float start_offset;
 
         @Override
-        public void mousePressed(@NonNull MouseButton button, int x, int y) {
+        public void mousePressed(MouseButton button, int x, int y) {
             start_offset = valueToOffset(value);
         }
 
         @Override
-        public void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
+        public void mouseDragged(MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
                 int abs_y) {
             if (!isDisabled()) {
                 setValue(offsetToValue((int) (start_offset + abs_x)) + min);
@@ -177,16 +176,16 @@ public final class Slider extends GUIObject {
         }
 
         @Override
-        public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+        public void mouseReleased(MouseButton button, int x, int y) {
             notifyRelease();
         }
 
         @Override
-        public void mouseHeld(@NonNull MouseButton button, int x, int y) {
+        public void mouseHeld(MouseButton button, int x, int y) {
         }
 
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
         }
     }
 }

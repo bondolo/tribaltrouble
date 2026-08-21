@@ -6,7 +6,6 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Maintains the internal state of a camera, including its position, orientation,
@@ -39,7 +38,7 @@ public final class CameraState {
     private float vert_angle;
     private float horiz_angle;
 
-    private @NonNull FogInfo fog;
+    private FogInfo fog;
     private boolean no_detail_mode;
     private int width;
     private int height;
@@ -48,15 +47,15 @@ public final class CameraState {
         this(new FogInfo(FogInfo.Mode.NONE, Color.Standard.BLACK, 0f));
     }
 
-    public CameraState(@NonNull FogInfo fog) {
+    public CameraState(FogInfo fog) {
         this.fog = fog;
     }
 
-    public void setFog(@NonNull FogInfo fog) {
+    public void setFog(FogInfo fog) {
         this.fog = fog;
     }
 
-    public void updateChecksum(@NonNull StateChecksum checksum) {
+    public void updateChecksum(StateChecksum checksum) {
         //System.out.println("camera_x = " + camera_x + " | camera_y = " + camera_y + " | camera_z = " + camera_z + " | dir_x = " + dir_x + " | dir_y = " + dir_y + " | dir_z = " + dir_z);
         checksum.update(camera_x);
         checksum.update(camera_y);
@@ -105,15 +104,15 @@ public final class CameraState {
         return camera_z;
     }
 
-    public @NonNull Vector3fc getTargetPosition() {
+    public Vector3fc getTargetPosition() {
         return new Vector3f(target_camera_x, target_camera_y, target_camera_z);
     }
 
-    public @NonNull Vector3fc getCurrentPosition() {
+    public Vector3fc getCurrentPosition() {
         return new Vector3f(camera_x, camera_y, camera_z);
     }
 
-    public @NonNull FogInfo getFog() {
+    public FogInfo getFog() {
         return fog;
     }
 
@@ -149,7 +148,7 @@ public final class CameraState {
         no_detail_mode = s;
     }
 
-    public void set(@NonNull CameraState camera) {
+    public void set(CameraState camera) {
         target_camera_x = camera.target_camera_x;
         target_camera_y = camera.target_camera_y;
         target_camera_z = camera.target_camera_z;
@@ -218,15 +217,15 @@ public final class CameraState {
         setCurrentHorizAngle(ha);
     }
 
-    public void updateDirectionAndNormal(@NonNull Vector3f f, @NonNull Vector3f u, @NonNull Vector3f s) {
+    public void updateDirectionAndNormal(Vector3f f, Vector3f u, Vector3f s) {
         updateDirectionAndNormal(horiz_angle, vert_angle, f, u, s);
     }
 
     private static final Vector3f tmp = new Vector3f();
     private static final Vector3f tmp2 = new Vector3f();
 
-    private static void updateDirectionAndNormal(float hangle, float vangle, @NonNull Vector3f f, @NonNull Vector3f u,
-            @NonNull Vector3f s) {
+    private static void updateDirectionAndNormal(float hangle, float vangle, Vector3f f, Vector3f u,
+            Vector3f s) {
         float radius = (float) Math.cos(vangle);
         float dir_x = (float) Math.cos(hangle);
         float dir_y = (float) Math.sin(hangle);
@@ -240,25 +239,25 @@ public final class CameraState {
         u.normalize();
     }
 
-    public void setTargetView(@NonNull Matrix4f proj) {
+    public void setTargetView(Matrix4f proj) {
         doSetView(target_camera_x, target_camera_y, target_camera_z, target_horiz_angle, target_vert_angle, proj);
     }
 
-    public void setView(@NonNull Matrix4f proj, int width, int height) {
+    public void setView(Matrix4f proj, int width, int height) {
         this.width = width;
         this.height = height;
         doSetView(camera_x, camera_y, camera_z, horiz_angle, vert_angle, proj);
     }
 
-    public @NonNull Matrix4f getModelView() {
+    public Matrix4f getModelView() {
         return modl;
     }
 
-    public @NonNull Matrix4f getProjectionMatrix() {
+    public Matrix4f getProjectionMatrix() {
         return proj;
     }
 
-    public @NonNull Matrix4f getProjectionModelView() {
+    public Matrix4f getProjectionModelView() {
         return proj_modl;
     }
 
@@ -266,7 +265,7 @@ public final class CameraState {
         return frustum;
     }
 
-    private void doSetView(float cx, float cy, float cz, float hangle, float vangle, @NonNull Matrix4f proj) {
+    private void doSetView(float cx, float cy, float cz, float hangle, float vangle, Matrix4f proj) {
         updateDirectionAndNormal(hangle, vangle, f, u, s);
         // Eye position: (cx, cy, cz)
         // Center position: (cx + f.x, cy + f.y, cz + f.z) - looking along the forward vector
@@ -280,7 +279,7 @@ public final class CameraState {
         findFrustumPlanes(proj_modl);
     }
 
-    public void findFrustumPlanes(@NonNull Matrix4f matrix) {
+    public void findFrustumPlanes(Matrix4f matrix) {
         /* Extract the numbers for the RIGHT plane */
         frustum[0][0] = matrix.m03() - matrix.m00();
         frustum[0][1] = matrix.m13() - matrix.m10();

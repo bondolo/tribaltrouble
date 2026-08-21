@@ -16,7 +16,6 @@ import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -27,13 +26,13 @@ import java.util.concurrent.ThreadLocalRandom;
  * Spawns musical note particles entirely on the client.
  */
 public final class StunVisualAccessory implements EmitterAccessory {
-    private final @NonNull Stun stun;
-    private final @NonNull RandomVelocityEmitter emitter;
-    private final @NonNull AudioPlayer sound;
+    private final Stun stun;
+    private final RandomVelocityEmitter emitter;
+    private final AudioPlayer sound;
 
     private float age = 0f;
 
-    public StunVisualAccessory(@NonNull Stun stun, @NonNull AudioImplementation audio) {
+    public StunVisualAccessory(Stun stun, AudioImplementation audio) {
         this.stun = stun;
         World world = stun.getWorld();
         Vector3f pos = new Vector3f(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ());
@@ -66,7 +65,7 @@ public final class StunVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public @NonNull Emitter<?> getEmitter() {
+    public Emitter<?> getEmitter() {
         return emitter;
     }
 
@@ -76,12 +75,12 @@ public final class StunVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         return !stun.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
     }
 
     @Override

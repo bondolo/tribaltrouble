@@ -1,16 +1,15 @@
 package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.engine.render.Texture;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public abstract class TextureGenerator implements Supplier<@NonNull Texture @NonNull []> {
-    protected abstract @NonNull Texture @NonNull [] generate();
+public abstract class TextureGenerator implements Supplier<Texture[]> {
+    protected abstract Texture[] generate();
 
     @Override
-    public final @NonNull Texture @NonNull [] get() {
+    public final Texture[] get() {
         return generate();
     }
 

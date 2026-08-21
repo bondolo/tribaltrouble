@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
@@ -10,7 +9,7 @@ import java.util.Optional;
  * Represents a world entity with visual representation and world association.
  */
 public abstract class Model extends Element<Model> implements Shadowable {
-    private final @NonNull World world;
+    private final World world;
     private @Nullable ClientState clientState;
     /** ground height if {@link #groundBased} */
     private float baseZ;
@@ -22,13 +21,13 @@ public abstract class Model extends Element<Model> implements Shadowable {
     /** Offset from the base Z position to account for terrain slope surrounding model */
     private float cachedSlopeOffset;
 
-    protected Model(@NonNull World world) {
+    protected Model(World world) {
         super(world.getElementRoot());
         this.world = world;
     }
 
     @Override
-    protected @NonNull Model self() {
+    protected Model self() {
         return this;
     }
 
@@ -92,7 +91,7 @@ public abstract class Model extends Element<Model> implements Shadowable {
     }
 
     /** {@return the bounds of the model in the local coordinate system for each animation} */
-    protected abstract @NonNull BoundingBox @Nullable [] getLocalBounds();
+    protected abstract BoundingBox @Nullable [] getLocalBounds();
 
     protected void updateBounds() {
         var modelBounds = getLocalBounds();
@@ -116,7 +115,7 @@ public abstract class Model extends Element<Model> implements Shadowable {
         return world.getHeightMap().getLeafFromCoordinates(getPositionX(), getPositionY()).getMaxError();
     }
 
-    public final @NonNull World getWorld() {
+    public final World getWorld() {
         return world;
     }
 
@@ -174,7 +173,7 @@ public abstract class Model extends Element<Model> implements Shadowable {
 
     public interface ClientStateFactory {
         @Nullable
-        ClientState createClientState(@NonNull Model model);
+        ClientState createClientState(Model model);
     }
 
     private static @Nullable ClientStateFactory clientStateFactory;
@@ -184,7 +183,7 @@ public abstract class Model extends Element<Model> implements Shadowable {
     }
 
     /** {@return the client state of the specified class type, or empty if not set or of a different type} */
-    public final <C extends ClientState> @NonNull Optional<C> getClientState(@NonNull Class<? extends C> type) {
+    public final <C extends ClientState> Optional<C> getClientState(Class<? extends C> type) {
         if (clientState == null && clientStateFactory != null) {
             clientState = clientStateFactory.createClientState(this);
         }

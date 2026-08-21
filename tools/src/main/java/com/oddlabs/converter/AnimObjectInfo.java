@@ -1,24 +1,23 @@
 package com.oddlabs.converter;
 
 import com.oddlabs.geometry.AnimationInfo;
-import org.jspecify.annotations.NonNull;
 
 import java.nio.file.Path;
 
 public final class AnimObjectInfo extends ObjectInfo {
     private final float wpc;
-    private final AnimationInfo.@NonNull AnimationType type;
-    private final @NonNull String name;
+    private final AnimationInfo.AnimationType type;
+    private final String name;
 
-    public AnimObjectInfo(@NonNull Path file, float wpc, AnimationInfo.@NonNull AnimationType type,
-            @NonNull String name) {
+    public AnimObjectInfo(Path file, float wpc, AnimationInfo.AnimationType type,
+            String name) {
         super(file);
         this.wpc = wpc;
         this.type = type;
         this.name = name;
     }
 
-    public AnimationInfo.@NonNull AnimationType getType() {
+    public AnimationInfo.AnimationType getType() {
         return type;
     }
 
@@ -26,7 +25,7 @@ public final class AnimObjectInfo extends ObjectInfo {
         return wpc;
     }
 
-    public @NonNull String getName() {
+    public String getName() {
         return name;
     }
 }

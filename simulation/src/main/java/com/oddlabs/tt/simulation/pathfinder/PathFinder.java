@@ -2,19 +2,18 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.base.util.PocketList;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class PathFinder {
-    private static final PocketList<@NonNull Node> open_list = new PocketList<>(RegionBuilder.MAX_PATH_COST);
-    private static final List<@NonNull Node> visited_list = new ArrayList<>();
+    private static final PocketList<Node> open_list = new PocketList<>(RegionBuilder.MAX_PATH_COST);
+    private static final List<Node> visited_list = new ArrayList<>();
     public static int stat_pathfinder_per_frame = 0;
 
-    public static Region findPathRegion(@NonNull UnitGrid unit_grid, @NonNull Region src_region,
-            @NonNull Region dst_region) {
+    public static Region findPathRegion(UnitGrid unit_grid, Region src_region,
+            Region dst_region) {
         /*		Node src_region = unit_grid.getRegion(src_grid_x, src_grid_y);
         		Node dst_region = unit_grid.getRegion(dst_grid_x, dst_grid_y);*/
         assert src_region != null;// : "src_grid_x = " + src_grid_x + " | src_grid_y = " + src_grid_y;
@@ -23,14 +22,14 @@ public final class PathFinder {
         return (Region) doFindPath(finder, src_region, unit_grid);
     }
 
-    public static Region findPathRegion(@NonNull UnitGrid unit_grid, @NonNull PathFinderAlgorithm finder,
-            @NonNull Region current_region) {
+    public static Region findPathRegion(UnitGrid unit_grid, PathFinderAlgorithm finder,
+            Region current_region) {
 //		Node current_region = UnitGrid.getGrid().getRegion(src_grid_x, src_grid_y);
         assert current_region != null;// : "src_grid_x = " + src_grid_x + " | src_grid_y = " + src_grid_y + " | occupant " + UnitGrid.getGrid().getOccupant(src_grid_x, src_grid_y);
         return (Region) doFindPath(finder, current_region, unit_grid);
     }
 
-    public static @Nullable GridPathNode findPathGrid(UnitGrid unit_grid, @NonNull PathFinderAlgorithm finder,
+    public static @Nullable GridPathNode findPathGrid(UnitGrid unit_grid, PathFinderAlgorithm finder,
             int src_grid_x, int src_grid_y) {
         GridNode.Offset offset = GridNode.setupPathFinding(src_grid_x, src_grid_y, src_grid_x, src_grid_y);
         if (offset == null)
@@ -40,7 +39,7 @@ public final class PathFinder {
         return grid_node != null ? (GridPathNode) grid_node.newPath() : null;
     }
 
-    public static @Nullable GridPathNode findPathGrid(@NonNull UnitGrid unit_grid, Region dst_region,
+    public static @Nullable GridPathNode findPathGrid(UnitGrid unit_grid, Region dst_region,
             Region dst_region2, int src_grid_x, int src_grid_y, int dst_grid_x, int dst_grid_y, Target target,
             float max_dist, boolean allow_second_best) {
         GridNode.Offset offset = GridNode.setupPathFinding(src_grid_x, src_grid_y, src_grid_x, src_grid_y);
@@ -53,7 +52,7 @@ public final class PathFinder {
         return grid_node != null ? (GridPathNode) grid_node.newPath() : null;
     }
 
-    private static Node doFindPath(@NonNull PathFinderAlgorithm finder, @Nullable Node start_node, UnitGrid unit_grid) {
+    private static Node doFindPath(PathFinderAlgorithm finder, @Nullable Node start_node, UnitGrid unit_grid) {
         if (start_node == null)
             return null;
         Node current_node = start_node;
@@ -74,13 +73,13 @@ public final class PathFinder {
         return result != null ? result.get() : null;
     }
 
-    public static void addToOpenList(@NonNull PathFinderAlgorithm finder, @NonNull Node current_node,
-            @NonNull Node parent, int cost) {
+    public static void addToOpenList(PathFinderAlgorithm finder, Node current_node,
+            Node parent, int cost) {
         current_node.setPath(parent, cost, finder.computeEstimatedCost(current_node));
         addToLists(current_node);
     }
 
-    private static void addToLists(@NonNull Node current_node) {
+    private static void addToLists(Node current_node) {
         open_list.add(current_node.getTotalCost(), current_node);
         visited_list.add(current_node);
     }

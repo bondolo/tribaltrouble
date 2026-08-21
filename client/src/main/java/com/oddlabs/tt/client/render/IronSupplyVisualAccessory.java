@@ -16,7 +16,6 @@ import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -35,17 +34,17 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
 
     private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f);
 
-    private final @NonNull IronSupply ironSupply;
-    private final @NonNull AudioImplementation audio;
+    private final IronSupply ironSupply;
+    private final AudioImplementation audio;
 
     private boolean landed = false;
     private boolean cooling = false;
     private boolean airBurstPlayed = false;
     private @Nullable RandomVelocityEmitter trailEmitter = null;
     private @Nullable RandomVelocityEmitter coolingEmitter = null;
-    private final @NonNull List<@NonNull Emitter<?>> oneShotEmitters = new ArrayList<>();
+    private final List<Emitter<?>> oneShotEmitters = new ArrayList<>();
 
-    public IronSupplyVisualAccessory(@NonNull IronSupply ironSupply, @NonNull AudioImplementation audio) {
+    public IronSupplyVisualAccessory(IronSupply ironSupply, AudioImplementation audio) {
         this.ironSupply = ironSupply;
         this.audio = audio;
     }
@@ -256,7 +255,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void addEmitters(@NonNull Collection<@NonNull Emitter<?>> dest) {
+    public void addEmitters(Collection<Emitter<?>> dest) {
         if (trailEmitter != null) {
             dest.add(trailEmitter);
         }
@@ -272,12 +271,12 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         return !ironSupply.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
     }
 
     @Override

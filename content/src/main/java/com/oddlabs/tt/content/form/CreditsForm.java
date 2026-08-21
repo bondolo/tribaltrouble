@@ -15,7 +15,6 @@ import com.oddlabs.tt.gui.PanelGroup;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.TextBox;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -24,7 +23,7 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 public final class CreditsForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CreditsForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -46,7 +45,7 @@ public final class CreditsForm extends Form {
         centerPos();
     }
 
-    private static @NonNull Panel createAboutPanel(@NonNull ResourceBundle bundle) {
+    private static Panel createAboutPanel(ResourceBundle bundle) {
         Panel about = new Panel(i18n("about"));
         TextBox about_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
         about.addChild(about_box);
@@ -58,7 +57,7 @@ public final class CreditsForm extends Form {
         return about;
     }
 
-    private static @NonNull Panel createCreditsPanel(@NonNull ResourceBundle bundle) {
+    private static Panel createCreditsPanel(ResourceBundle bundle) {
         Panel credits = new Panel(i18n("credits"));
         TextBox credits_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
         credits.addChild(credits_box);
@@ -80,7 +79,7 @@ public final class CreditsForm extends Form {
         return credits;
     }
 
-    private static @NonNull Panel createThanksPanel(@NonNull ResourceBundle bundle) {
+    private static Panel createThanksPanel(ResourceBundle bundle) {
         Panel thanks = new Panel(i18n("thanks_to"));
         TextBox thanks_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
         thanks.addChild(thanks_box);

@@ -4,7 +4,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.ToolTip;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -20,7 +19,7 @@ public interface UIRenderer {
      * @param camera_state the active camera frustum state
      * @param gui_root the root GUI container
      */
-    void render(@NonNull RenderContext context, @NonNull CameraState camera_state, @NonNull GUIRoot gui_root);
+    void render(RenderContext context, CameraState camera_state, GUIRoot gui_root);
 
     /**
      * Performs mouse hover picking against the 3D scene.
@@ -30,7 +29,7 @@ public interface UIRenderer {
      * @param x the mouse X coordinate
      * @param y the mouse Y coordinate
      */
-    void pickHover(boolean can_hover_behind, @NonNull CameraState camera, int x, int y);
+    void pickHover(boolean can_hover_behind, CameraState camera, int x, int y);
 
     /**
      * Retrieves the tool tip text or descriptor provided by the underlying scene.
@@ -52,7 +51,7 @@ public interface UIRenderer {
      *
      * @param context the current render context
      */
-    void startFrame(@NonNull RenderContext context);
+    void startFrame(RenderContext context);
 
     /**
      * Finalizes frame rendering and invokes the 2D GUI overlay callback.
@@ -60,7 +59,7 @@ public interface UIRenderer {
      * @param context the current render context
      * @param guiRenderCallback callback to render the 2D GUI overlay
      */
-    void endFrame(@NonNull RenderContext context, @NonNull Consumer<@NonNull RenderContext> guiRenderCallback);
+    void endFrame(RenderContext context, Consumer<RenderContext> guiRenderCallback);
 
     /**
      * Checks if this renderer has been closed.

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.net;
 
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class Network {
@@ -17,11 +16,11 @@ public final class Network {
         matchmaking_listener = listener;
     }
 
-    public @NonNull ChatHub getChatHub() {
+    public ChatHub getChatHub() {
         return chat_hub;
     }
 
-    public @NonNull MatchmakingClient getMatchmakingClient() {
+    public MatchmakingClient getMatchmakingClient() {
         return matchmaking_client;
     }
 

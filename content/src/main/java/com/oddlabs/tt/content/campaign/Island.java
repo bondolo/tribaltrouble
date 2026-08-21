@@ -28,7 +28,6 @@ import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -41,31 +40,31 @@ import java.util.List;
 public abstract class Island {
     private static final float CAMPAIGN_DIFFICULTY_BONUS = .75f;
 
-    private final @NonNull Campaign campaign;
+    private final Campaign campaign;
 
     private @Nullable WorldViewer world_viewer;
 
-    public Island(@NonNull Campaign campaign) {
+    public Island(Campaign campaign) {
         this.campaign = campaign;
     }
 
-    protected final @NonNull Campaign getCampaign() {
+    protected final Campaign getCampaign() {
         return campaign;
     }
 
-    public final void chosen(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
+    public final void chosen(NetworkSelector network, GUIRoot gui_root) {
         init(network, gui_root);
     }
 
-    protected final void addModalForm(@NonNull Form form) {
+    protected final void addModalForm(Form form) {
         world_viewer.getGUIRoot().addModalForm(form);
     }
 
-    protected final @NonNull GameNetwork startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            int meters_per_world, @NonNull Terrain terrain, float hills, float vegetation_amount,
+    protected final GameNetwork startNewGame(NetworkSelector network, GUIRoot gui_root,
+            int meters_per_world, Terrain terrain, float hills, float vegetation_amount,
             float supplies_amount, int seed, int campaign_num, int initial_units, String[] ai_names) {
         InGameInfo ingame_info = new CampaignInGameInfo(campaign);
-        WorldInitAction init_action = (@NonNull WorldViewer viewer) -> {
+        WorldInitAction init_action = (WorldViewer viewer) -> {
             world_viewer = viewer;
             Menu.completeGameSetupHack(world_viewer);
             if (!campaign.getState().hasRubberWeapons()) {
@@ -77,7 +76,7 @@ public abstract class Island {
             if (!campaign.getState().hasMagic1()) {
                 viewer.getLocalPlayer().enableMagic(viewer.getLocalPlayer().getRaceInfo().getMagicType(1), false);
             }
-            List<@NonNull Player> players = viewer.getWorld().getPlayers();
+            List<Player> players = viewer.getWorld().getPlayers();
             switch (campaign.getState().getDifficulty()) {
                 case Difficulty.EASY -> {
                     for (Player player : players) {
@@ -116,17 +115,17 @@ public abstract class Island {
         return world_viewer;
     }
 
-    protected abstract void init(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root);
+    protected abstract void init(NetworkSelector network, GUIRoot gui_root);
 
     protected abstract void start();
 
-    protected abstract @NonNull CharSequence getHeader();
+    protected abstract CharSequence getHeader();
 
-    protected abstract @NonNull CharSequence getDescription();
+    protected abstract CharSequence getDescription();
 
-    protected abstract @NonNull CharSequence getCurrentObjective();
+    protected abstract CharSequence getCurrentObjective();
 
-    protected final @Nullable Unit changeOwner(@NonNull Unit unit, @NonNull Player owner) {
+    protected final @Nullable Unit changeOwner(Unit unit, Player owner) {
         float x = unit.getPositionX();
         float y = unit.getPositionY();
         UnitTemplate template = unit.getTemplate();
@@ -139,7 +138,7 @@ public abstract class Island {
             return null;
     }
 
-    protected final void insertGuardTower(@NonNull Player owner, @NonNull UnitType warrior_type, int grid_x,
+    protected final void insertGuardTower(Player owner, UnitType warrior_type, int grid_x,
             int grid_y) {
         owner.buildBuilding(BuildingType.TOWER, grid_x, grid_y).ifPresent(tower -> {
             Unit unit = new Unit(owner,
@@ -151,7 +150,7 @@ public abstract class Island {
         });
     }
 
-    protected final void placePrisoners(@NonNull Player captive, @NonNull Player enemy, int peons, int rock_warriors,
+    protected final void placePrisoners(Player captive, Player enemy, int peons, int rock_warriors,
             int iron_warriors, int rubber_warriors, boolean chieftain) {
         int ox = UnitGrid.toGridCoordinate(enemy.getStartX());
         int oy = UnitGrid.toGridCoordinate(enemy.getStartY());
@@ -184,7 +183,7 @@ public abstract class Island {
         }
     }
 
-    protected final void deploy(@NonNull Player enemy, int num_units) {
+    protected final void deploy(Player enemy, int num_units) {
         enemy.getArmory().ifPresent(armory -> {
             if (!armory.isDead()) {
                 enemy.deployUnits(armory, DeployType.IRON_WARRIOR, num_units);
@@ -192,16 +191,16 @@ public abstract class Island {
         });
     }
 
-    protected final void attack(@NonNull Player enemy, @NonNull Target target, int num_units) {
+    protected final void attack(Player enemy, Target target, int num_units) {
         //int ordered =
         AI.attackLandscape(enemy, target, num_units);
     }
 
-    protected final @Nullable Unit getWarrior(@NonNull Player player) {
+    protected final @Nullable Unit getWarrior(Player player) {
         return AI.getWarrior(player);
     }
 
-    protected final void refillArmory(@NonNull Player enemy) {
+    protected final void refillArmory(Player enemy) {
         enemy.getQuarters().ifPresent(quarters -> {
             enemy.getArmory().ifPresent(armory -> {
                 quarters.removeSupplies(Unit.class);
@@ -212,6 +211,6 @@ public abstract class Island {
         });
     }
 
-    public final void updateChecksum(@NonNull StateChecksum checksum) {
+    public final void updateChecksum(StateChecksum checksum) {
     }
 }

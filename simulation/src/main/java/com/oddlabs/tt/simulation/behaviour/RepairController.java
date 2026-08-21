@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Controller that handles unit repair cycles, including gathering resources if needed.
@@ -29,7 +28,7 @@ public final class RepairController extends Controller {
     }
 
     @Override
-    public @NonNull String getKey() {
+    public String getKey() {
         return super.getKey() + building.hashCode();
     }
 

@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.procedural.Landscape;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -24,17 +23,17 @@ public final class GeneratorHalos extends TextureGenerator {
     }
 
     private final int size;
-    private final float @NonNull [] @NonNull [] shadow_parms;
-    private final float @NonNull [] @NonNull [] ring_parms;
+    private final float[][] shadow_parms;
+    private final float[][] ring_parms;
 
-    public GeneratorHalos(int size, float @NonNull [] @NonNull [] shadow_parms,
-            float @NonNull [] @NonNull [] ring_parms) {
+    public GeneratorHalos(int size, float[][] shadow_parms,
+            float[][] ring_parms) {
         this.size = size;
         this.shadow_parms = shadow_parms;
         this.ring_parms = ring_parms;
     }
 
-    private @NonNull Channel generateLUT(int size, float @NonNull [] @NonNull [] gradient_list, boolean smooth) {
+    private Channel generateLUT(int size, float[][] gradient_list, boolean smooth) {
         Channel channel = new Channel(size, 1);
         int index_max = gradient_list.length - 1;
         for (int i = 0; i < size; i++) {
@@ -65,7 +64,7 @@ public final class GeneratorHalos extends TextureGenerator {
     }
 
     @Override
-    public Texture @NonNull [] generate() {
+    public Texture[] generate() {
         Channel channel_shadow = generateLUT(size, shadow_parms, true);
         Channel channel_ring = generateLUT(size, ring_parms, false);
         Channel channel_black = new Channel(size, 1).fill(0f);

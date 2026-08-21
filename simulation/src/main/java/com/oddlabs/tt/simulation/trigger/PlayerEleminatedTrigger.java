@@ -1,13 +1,12 @@
 package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 public final class PlayerEleminatedTrigger extends IntervalTrigger {
     private final Runnable runnable;
-    private final @NonNull Player player;
+    private final Player player;
 
-    public PlayerEleminatedTrigger(Runnable runnable, @NonNull Player player) {
+    public PlayerEleminatedTrigger(Runnable runnable, Player player) {
         super(player.getWorld(), .5f, 0f);
         this.runnable = runnable;
         this.player = player;

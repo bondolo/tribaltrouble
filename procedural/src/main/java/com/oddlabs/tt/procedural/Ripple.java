@@ -3,13 +3,12 @@ package com.oddlabs.tt.procedural;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Procedural texture generator for creating ripple effects, typically used for water or impact waves.
  */
 public final class Ripple {
-    public final @NonNull Channel channel;
+    public final Channel channel;
 
     public Ripple(int width, int height, float point_x, float point_y, float factor) {
 
@@ -85,11 +84,11 @@ public final class Ripple {
 
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel, channel);
     }
 
-    public @NonNull Channel toChannel() {
+    public Channel toChannel() {
         return channel;
     }
 

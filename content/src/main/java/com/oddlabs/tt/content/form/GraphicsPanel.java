@@ -23,7 +23,6 @@ import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -32,9 +31,9 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
 public class GraphicsPanel extends Panel {
-    private final @NonNull Label label_pct;
+    private final Label label_pct;
 
-    public GraphicsPanel(@NonNull GUIRoot gui_root, @NonNull Form options) {
+    public GraphicsPanel(GUIRoot gui_root, Form options) {
         super(AbstractOptionsMenu.i18n("graphics_caption"));
         var labelFont = Skin.getSkin().getEditFont();
 
@@ -136,7 +135,7 @@ public class GraphicsPanel extends Panel {
 
         mode_list_box.addRowListener(new RowListener<>() {
             @Override
-            public void rowDoubleClicked(@NonNull SerializableDisplayMode mode) {
+            public void rowDoubleClicked(SerializableDisplayMode mode) {
                 Window window = Renderer.getRenderer().getWindow();
                 boolean currentIsExclusive = window.isExclusiveFullscreen();
                 boolean targetFullscreen = Renderer.getRenderer().getSettings().window.fullscreen;
@@ -169,7 +168,7 @@ public class GraphicsPanel extends Panel {
         compileCanvas();
     }
 
-    private void refreshResolutionList(boolean fullscreen, @NonNull MultiColumnComboBox<
+    private void refreshResolutionList(boolean fullscreen, MultiColumnComboBox<
             SerializableDisplayMode> list_box) {
         var window = Renderer.getRenderer().getWindow();
         var currentMode = Renderer.getRenderer().getCurrentDisplayMode();

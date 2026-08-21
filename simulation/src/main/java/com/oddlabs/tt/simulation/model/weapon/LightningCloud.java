@@ -9,7 +9,6 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -19,7 +18,7 @@ public final class LightningCloud extends Model implements Magic {
     private static final int NUM_STRIKES = 6;
     private static final float SECONDS_BETWEEN_STRIKES = .125f;
 
-    private final @NonNull Player owner;
+    private final Player owner;
     private final float seconds_per_hit;
     private final float meters_per_second;
     private final float hit_chance;
@@ -34,9 +33,9 @@ public final class LightningCloud extends Model implements Magic {
     private float hit_timer = 0f;
     private int strike_counter = 0;
 
-    public LightningCloud(@NonNull World world, float offset_x, float offset_y, float offset_z, float seconds_to_live,
+    public LightningCloud(World world, float offset_x, float offset_y, float offset_z, float seconds_to_live,
             float seconds_per_hit, float seconds_to_init, float meters_per_second, float hit_chance, int damage,
-            float height, @NonNull Unit src) {
+            float height, Unit src) {
         super(world);
         float start_x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
         float start_y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
@@ -87,7 +86,7 @@ public final class LightningCloud extends Model implements Magic {
     }
 
     @Override
-    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+    protected BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 
@@ -146,7 +145,7 @@ public final class LightningCloud extends Model implements Magic {
         animateClientState(t);
     }
 
-    private void strike(@NonNull Target target) {
+    private void strike(Target target) {
         float x = target.getPositionX();
         float y = target.getPositionY();
         float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);

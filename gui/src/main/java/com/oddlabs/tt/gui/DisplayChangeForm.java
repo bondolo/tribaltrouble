@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -14,14 +13,14 @@ import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 public final class DisplayChangeForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(DisplayChangeForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull DoNowListener donow_listener;
-    private final @NonNull HorizButton later_button;
+    private final DoNowListener donow_listener;
+    private final HorizButton later_button;
 
-    public DisplayChangeForm(@NonNull DoNowListener donow_listener) {
+    public DisplayChangeForm(DoNowListener donow_listener) {
         this.donow_listener = donow_listener;
         LabelBox info_label = new LabelBox(i18n("warning_message"), Skin.getSkin().getEditFont(), 500);
         addChild(info_label);
@@ -45,7 +44,7 @@ public final class DisplayChangeForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {

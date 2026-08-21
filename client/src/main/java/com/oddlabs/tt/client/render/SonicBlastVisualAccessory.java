@@ -13,7 +13,6 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -21,13 +20,13 @@ import org.jspecify.annotations.Nullable;
  * Manages the expanding ring visual effect and cast audio entirely on the client.
  */
 public final class SonicBlastVisualAccessory implements AnimatedAccessory, SonicBlastAccessory {
-    private final @NonNull SonicBlast blast;
-    private final @NonNull AudioImplementation audio;
+    private final SonicBlast blast;
+    private final AudioImplementation audio;
     private @Nullable SonicBlastEffect effect;
-    private final @NonNull AudioPlayer lur;
-    private final @NonNull AudioPlayer rumble;
+    private final AudioPlayer lur;
+    private final AudioPlayer rumble;
 
-    public SonicBlastVisualAccessory(@NonNull SonicBlast blast, @NonNull AudioImplementation audio) {
+    public SonicBlastVisualAccessory(SonicBlast blast, AudioImplementation audio) {
         this.blast = blast;
         this.audio = audio;
         World world = blast.getWorld();
@@ -76,12 +75,12 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         return !blast.isDead();
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
     }
 
     @Override

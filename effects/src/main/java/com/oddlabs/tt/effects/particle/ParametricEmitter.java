@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
 import java.util.List;
@@ -20,21 +19,21 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ParametricEmitter extends Emitter<ParametricParticle> {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
     private final Vector3f randomized_offset = new Vector3f();
-    protected final @NonNull ParametricFunction function;
+    protected final ParametricFunction function;
     protected final float area_xy;
     protected final float area_z;
     protected final float velocity_u;
     protected final float velocity_v;
     protected final float velocity_random_margin;
-    protected final Color.@NonNull Linear color;
-    protected final @NonNull Vector3fc particle_radius;
-    protected final @NonNull Vector3fc growth_rate;
+    protected final Color.Linear color;
+    protected final Vector3fc particle_radius;
+    protected final Vector3fc growth_rate;
     private final BoundingBox bounds = new BoundingBox();
     private boolean randomizeScale = false;
     private float heightLightingIntensity = 0.0f;
     private float maxLocalZ = 1.0f;
 
-    protected Color.@NonNull LinearDelta delta_color;
+    protected Color.LinearDelta delta_color;
     protected float energy;
 
     /**
@@ -59,12 +58,12 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
      * @param dst_blend_func OpenGL destination blend function
      * @param textures textures to assign to spawned particles
      */
-    public ParametricEmitter(@NonNull World world, @NonNull ParametricFunction function, @NonNull Vector3f position,
+    public ParametricEmitter(World world, ParametricFunction function, Vector3f position,
             float area_xy, float area_z, float velocity_u, float velocity_v, float velocity_random_margin,
             int num_particles, float particles_per_second,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
-            int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate, float energy,
+            int src_blend_func, int dst_blend_func, TextureKey[] textures) {
         super(world, position, src_blend_func, dst_blend_func, textures, null, textures.length, num_particles,
                 particles_per_second);
         this.function = function;
@@ -80,7 +79,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         this.energy = energy;
     }
 
-    public final void setDeltaColor(Color.@NonNull LinearDelta delta_color) {
+    public final void setDeltaColor(Color.LinearDelta delta_color) {
         this.delta_color = delta_color;
     }
 
@@ -148,10 +147,10 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         return initiated;
     }
 
-    protected int initParticle(@NonNull ParametricFunction function,
+    protected int initParticle(ParametricFunction function,
             float velocity_u, float velocity_v,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate,
             float energy) {
 
         Vector3f offset = randomOffset(area_xy, area_xy, area_z);
@@ -180,7 +179,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         return 1;
     }
 
-    protected final @NonNull Vector3f randomOffset(float a, float b, float c) {
+    protected final Vector3f randomOffset(float a, float b, float c) {
         Random random = ThreadLocalRandom.current();
         float x = a > 0f ? random.nextFloat(-a, a) : 0f;
         float y = b > 0f ? random.nextFloat(-b, b) : 0f;

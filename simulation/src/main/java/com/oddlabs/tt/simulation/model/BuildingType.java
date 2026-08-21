@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -39,7 +38,7 @@ public enum BuildingType {
      * @return the corresponding {@link BuildingType}
      * @throws IllegalArgumentException if the legacy value is unrecognized
      */
-    public static @NonNull BuildingType fromValue(int value) {
+    public static BuildingType fromValue(int value) {
         for (BuildingType type : VALUES) {
             if (type.value == value) {
                 return type;

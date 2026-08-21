@@ -17,7 +17,6 @@ import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
-import org.jspecify.annotations.NonNull;
 
 import java.io.FileNotFoundException;
 import java.io.InvalidClassException;
@@ -33,24 +32,24 @@ import static com.oddlabs.tt.gui.Placement.LEFT_MID;
  * Menu form for selecting, creating, or loading campaigns.
  */
 public final class CampaignForm extends Form implements DeterministicSerializerLoopbackInterface<
-        @NonNull CampaignState[]> {
+        CampaignState[]> {
     private static final Logger logger = Logger.getLogger(CampaignForm.class.getSimpleName());
 
-    private final @NonNull HorizButton button_vikings;
-    private final @NonNull HorizButton button_load;
-    private final @NonNull HorizButton button_delete;
-    private final @NonNull LoadCampaignBox load_campaign_box;
+    private final HorizButton button_vikings;
+    private final HorizButton button_load;
+    private final HorizButton button_delete;
+    private final LoadCampaignBox load_campaign_box;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull GUIRoot gui_root;
-    private final @NonNull NetworkSelector network;
-    private final @NonNull Menu main_menu;
+    private final GUIRoot gui_root;
+    private final NetworkSelector network;
+    private final Menu main_menu;
 
-    public CampaignForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu) {
+    public CampaignForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
         this.gui_root = gui_root;
         this.network = network;
         this.main_menu = main_menu;
@@ -74,12 +73,12 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         // Combo box
         RowListener<CampaignState> listListener = new RowListener<>() {
             @Override
-            public void rowDoubleClicked(@NonNull CampaignState object) {
+            public void rowDoubleClicked(CampaignState object) {
                 load(object);
             }
 
             @Override
-            public void rowChosen(@NonNull CampaignState object) {
+            public void rowChosen(CampaignState object) {
                 button_delete.setDisabled(false);
                 button_load.setDisabled(false);
             }
@@ -114,7 +113,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -122,7 +121,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         }
     }
 
-    public void load(@NonNull CampaignState campaign_state) {
+    public void load(CampaignState campaign_state) {
         Campaign campaign = campaign_state.getRace() == Race.VIKINGS
                 ? new VikingCampaign(network, gui_root, campaign_state, main_menu.getAudioManager())
                 : new NativeCampaign(network, gui_root, campaign_state, main_menu.getAudioManager());
@@ -139,7 +138,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     }
 
     @Override
-    public void loadSucceeded(CampaignState @NonNull [] campaign_states) {
+    public void loadSucceeded(CampaignState[] campaign_states) {
         CampaignState selected = load_campaign_box.getSelected();
         if (selected != null) {
             CampaignState[] new_states = new CampaignState[campaign_states.length - 1];
@@ -156,7 +155,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     }
 
     @Override
-    public void failed(@NonNull Throwable e) {
+    public void failed(Throwable e) {
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
         } else if (e instanceof InvalidClassException) {
         } else {
@@ -166,7 +165,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         }
     }
 
-    private void mouseClickedDelete(@NonNull MouseButton button, int x, int y, int clicks) {
+    private void mouseClickedDelete(MouseButton button, int x, int y, int clicks) {
         CampaignState state = load_campaign_box.getSelected();
         if (state != null) {
             String confirm_str = i18n("confirm_delete", state.getName());

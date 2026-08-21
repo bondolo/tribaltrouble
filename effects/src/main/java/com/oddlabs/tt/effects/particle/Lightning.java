@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -21,23 +20,23 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class Lightning extends Element<Lightning> implements Animated {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
 
-    private final @NonNull AnimationManager manager;
-    private final Deque<@NonNull StretchParticle> particles = new ArrayDeque<>();
-    private final @NonNull Vector3fc src;
-    private final @NonNull Vector3fc dst;
+    private final AnimationManager manager;
+    private final Deque<StretchParticle> particles = new ArrayDeque<>();
+    private final Vector3fc src;
+    private final Vector3fc dst;
     private final float width;
     private final int num_particles;
-    private final Color.@NonNull Linear color;
-    private final Color.@NonNull LinearDelta delta_color;
-    private final @NonNull TextureKey texture;
-    private final @NonNull World world;
+    private final Color.Linear color;
+    private final Color.LinearDelta delta_color;
+    private final TextureKey texture;
+    private final World world;
 
     private final float energy;
 
-    public Lightning(@NonNull World world, @NonNull Vector3fc src, @NonNull Vector3fc dst, float width,
-            int num_particles, Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull TextureKey texture, float energy,
-            @NonNull AnimationManager manager) {
+    public Lightning(World world, Vector3fc src, Vector3fc dst, float width,
+            int num_particles, Color.Linear color, Color.LinearDelta delta_color,
+            TextureKey texture, float energy,
+            AnimationManager manager) {
         super(world.getElementRoot());
         this.world = world;
         this.src = src;
@@ -54,15 +53,15 @@ public final class Lightning extends Element<Lightning> implements Animated {
     }
 
     @Override
-    protected @NonNull Lightning self() {
+    protected Lightning self() {
         return this;
     }
 
-    public @NonNull Deque<@NonNull StretchParticle> getParticles() {
+    public Deque<StretchParticle> getParticles() {
         return particles;
     }
 
-    public @NonNull TextureKey getTexture() {
+    public TextureKey getTexture() {
         return texture;
     }
 
@@ -101,7 +100,7 @@ public final class Lightning extends Element<Lightning> implements Animated {
         }
     }
 
-    private void initParticle(@NonNull StretchParticle particle) {
+    private void initParticle(StretchParticle particle) {
         particle.setSrcWidth(width);
         particle.setColor(color);
         particle.setDeltaColor(delta_color);

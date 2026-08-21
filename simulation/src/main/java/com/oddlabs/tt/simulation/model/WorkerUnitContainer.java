@@ -1,25 +1,24 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class WorkerUnitContainer extends UnitContainer {
-    private final @NonNull Building building;
+    private final Building building;
 
-    public WorkerUnitContainer(@NonNull Building building) {
+    public WorkerUnitContainer(Building building) {
         super(building.getOwner().getWorld().getMaxUnitCount());
         this.building = building;
     }
 
     @Override
-    public void enter(@NonNull Unit unit) {
+    public void enter(Unit unit) {
         assert canEnter(unit);
         unit.removeNow();
         increaseSupply(1);
     }
 
     @Override
-    public boolean canEnter(@NonNull Unit unit) {
+    public boolean canEnter(Unit unit) {
         return getTotalSupplies() != getMaxSupplyCount();
     }
 

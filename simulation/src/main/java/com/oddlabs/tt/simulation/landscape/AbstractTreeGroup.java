@@ -6,7 +6,6 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -57,8 +56,8 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
         return num_responding_trees > 0;
     }
 
-    public static @NonNull AbstractTreeGroup newRoot(@NonNull World world, @NonNull List<int[]> tree_positions,
-            @NonNull List<int[]> palm_tree_positions, @NonNull Terrain terrain) {
+    public static AbstractTreeGroup newRoot(World world, List<int[]> tree_positions,
+            List<int[]> palm_tree_positions, Terrain terrain) {
         AbstractTreeGroup root = new TreeGroup(null, 0);
 
         switch (terrain) {
@@ -76,8 +75,8 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
         return root;
     }
 
-    private void buildTrees(final @NonNull World world, final @NonNull TreeType tree_type, final int grid_size,
-            final float radius, @NonNull List<int[]> tree_positions, float scale_factor, float min_size) {
+    private void buildTrees(final World world, final TreeType tree_type, final int grid_size,
+            final float radius, List<int[]> tree_positions, float scale_factor, float min_size) {
         Matrix4f matrix2 = new Matrix4f();
         Vector3f vector = new Vector3f();
         // Generate dummy bounding box vertices for culling (Radius + Height 15m)
@@ -118,8 +117,8 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
         }
     }
 
-    private void insertTreeRecursive(@NonNull AbstractTreeGroup node, @NonNull World world, @NonNull TreeType tree_type,
-            int grid_size, float radius, @NonNull Matrix4f matrix, float @NonNull [] vertices, float tree_x,
+    private void insertTreeRecursive(AbstractTreeGroup node, World world, TreeType tree_type,
+            int grid_size, float radius, Matrix4f matrix, float[] vertices, float tree_x,
             float tree_y, int center_grid_x, int center_grid_y, int size, int x, int y) {
         switch (node) {
             case TreeLeaf leaf -> {

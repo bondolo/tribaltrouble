@@ -57,7 +57,6 @@ import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
 import com.oddlabs.tt.simulation.player.NativeChieftainAI;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -73,23 +72,23 @@ public final class RacesAssetsLoader {
     private static final Logger logger = Logger.getLogger(RacesAssetsLoader.class.getSimpleName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private static final int MAX_UNIT_RESOURCES = 1;
 
-    private static @NonNull BuildingTemplate createBuildingTemplate(
-            @NonNull RenderQueues queues,
-            @NonNull BuildingType building_type,
-            @NonNull Race race,
-            @NonNull String built_name,
+    private static BuildingTemplate createBuildingTemplate(
+            RenderQueues queues,
+            BuildingType building_type,
+            Race race,
+            String built_name,
             float built_selection_radius,
             float built_selection_height,
-            @NonNull String halfbuilt_name,
+            String halfbuilt_name,
             float halfbuilt_selection_radius,
             float halfbuilt_selection_height,
-            @NonNull String start_name,
+            String start_name,
             float start_selection_radius,
             float start_selection_height,
             float shadow_diameter,
@@ -99,8 +98,8 @@ public final class RacesAssetsLoader {
             int num_fragments,
             int max_hit_points,
             UnitContainerFactory unit_container_factory,
-            @NonNull Abilities abilities,
-            float @NonNull [] hit_offset_z,
+            Abilities abilities,
+            float[] hit_offset_z,
             float mount_offset,
             float no_detail_size,
             float rally_x,
@@ -109,7 +108,7 @@ public final class RacesAssetsLoader {
             float chimney_x,
             float chimney_y,
             float chimney_z,
-            @NonNull String name) {
+            String name) {
         assert hit_offset_z.length == 3;
 
         final float ring_mid = 0.445f;
@@ -164,7 +163,7 @@ public final class RacesAssetsLoader {
                 name);
     }
 
-    public static @NonNull RacesResources load(@NonNull RenderQueues queues) {
+    public static RacesResources load(RenderQueues queues) {
         int num_progress = 23;
         SpriteFile native_rock_sprite = new SpriteFile("/geometry/natives/rock_resource.binsprite",
                 RenderConfig.NO_MIPMAP_CUTOFF,
@@ -707,7 +706,7 @@ public final class RacesAssetsLoader {
                         1f, false, true),
                 AudioAssets.MUSIC_VIKING);
 
-        EnumMap<Race, @NonNull RaceInfo> raceInfos = new EnumMap<>(Race.class);
+        EnumMap<Race, RaceInfo> raceInfos = new EnumMap<>(Race.class);
         raceInfos.put(Race.NATIVES, natives_raceInfo);
         raceInfos.put(Race.VIKINGS, vikings_raceInfo);
 
@@ -788,8 +787,8 @@ public final class RacesAssetsLoader {
         return new RacesResources(raceInfos);
     }
 
-    private static @NonNull SpriteKey registerIconSprite(@NonNull RenderQueues queues,
-            @NonNull IconQuad icon) {
+    private static SpriteKey registerIconSprite(RenderQueues queues,
+            IconQuad icon) {
         return queues.registerQuadSprite(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2(), icon.getTexture());
     }
 }

@@ -8,7 +8,6 @@ import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.NonNull;
 
 public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     private final boolean key_pressed;
@@ -16,7 +15,7 @@ public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
 
     private boolean done = false;
 
-    public FirstPersonDelegate(@NonNull WorldViewer viewer, @NonNull CameraState camera_state, boolean key_pressed) {
+    public FirstPersonDelegate(WorldViewer viewer, CameraState camera_state, boolean key_pressed) {
         super(viewer, new FirstPersonCamera(viewer, viewer.getWorld().getHeightMap(), camera_state));
         this.key_pressed = key_pressed;
         created_tick = viewer.getAnimationManager().getTick();
@@ -35,7 +34,7 @@ public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         super.handleInput(event);
         if (event.isConsumed()) return;
 
@@ -61,7 +60,7 @@ public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     }
 
     @Override
-    public void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
+    public void mouseDragged(MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
             int absolute_y) {
         if (created_tick == getViewer().getAnimationManager().getTick())
             return;
@@ -71,18 +70,18 @@ public class FirstPersonDelegate extends InGameDelegate<FirstPersonCamera> {
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
     }
 
     @Override
-    public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    public void mouseReleased(MouseButton button, int x, int y) {
         if (button == MouseButton.MIDDLE && !key_pressed && !done) {
             pop();
         }
     }
 
     @Override
-    protected @NonNull CursorType getCursorType() {
+    protected CursorType getCursorType() {
         return CursorType.NULL;
     }
 }

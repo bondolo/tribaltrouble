@@ -12,4 +12,7 @@
  * effects, UI animations, and spatial audio positioning.</li>
  * </ul>
  */
+@NullMarked
 package com.oddlabs.tt.base.event;
+
+import org.jspecify.annotations.NullMarked;

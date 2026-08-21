@@ -6,27 +6,26 @@ import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.input.InputEvent;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public abstract class CameraDelegate<C extends Camera> extends Delegate {
-    private final @NonNull GUIRoot gui_root;
+    private final GUIRoot gui_root;
     private @Nullable C camera;
 
-    public CameraDelegate(@NonNull GUIRoot gui_root, @Nullable C camera) {
+    public CameraDelegate(GUIRoot gui_root, @Nullable C camera) {
         this.camera = camera;
         this.gui_root = gui_root;
     }
 
-    public final @NonNull GUIRoot getGUIRoot() {
+    public final GUIRoot getGUIRoot() {
         return gui_root;
     }
 
-    public final void setCamera(@NonNull C camera) {
+    public final void setCamera(C camera) {
         this.camera = camera;
     }
 
-    public final @NonNull C getCamera() {
+    public final C getCamera() {
         if (camera == null) {
             throw new IllegalStateException("Camera not set");
         }
@@ -39,7 +38,7 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
     }
 
     @Override
-    public @NonNull Matrix4f multProjection(@NonNull Matrix4f matrix, int width, int height) {
+    public Matrix4f multProjection(Matrix4f matrix, int width, int height) {
         if (camera != null && height > 0) {
             float aspect = (float) width / height;
             float fovy = Camera.calculateDynamicFOV(camera.getState().getCurrentZ(), aspect, Camera.FOVMode.DIAGONAL);
@@ -52,7 +51,7 @@ public abstract class CameraDelegate<C extends Camera> extends Delegate {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (camera != null) {
             camera.handleInput(event);
         }

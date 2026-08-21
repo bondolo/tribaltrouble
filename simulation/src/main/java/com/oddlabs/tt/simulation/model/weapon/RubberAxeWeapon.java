@@ -5,7 +5,6 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A throwing axe weapon made of rubber.
@@ -19,7 +18,7 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
 
     private boolean bouncing = false;
 
-    public RubberAxeWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
+    public RubberAxeWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(hit, src, target);
     }
 
@@ -29,7 +28,7 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
     }
 
     @Override
-    protected void hitTarget(boolean hit, @NonNull Player owner, @NonNull Selectable<?> target) {
+    protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
         if (hit)
             damageTarget(target);
         AttackScanFilter filter = new AttackScanFilter(owner, MAX_BOUNDS_LENGTH);
@@ -43,7 +42,7 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
     }
 
     @Override
-    public @NonNull WeaponVisualType getWeaponVisualType() {
+    public WeaponVisualType getWeaponVisualType() {
         return WeaponVisualType.RUBBER;
     }
 
