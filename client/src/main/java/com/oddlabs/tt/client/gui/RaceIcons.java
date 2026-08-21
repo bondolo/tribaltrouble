@@ -4,8 +4,9 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import org.jspecify.annotations.NonNull;
 
-import java.util.function.Supplier;
-
+/**
+ * UI icon collection specific to a playable race.
+ */
 public record RaceIcons(@NonNull IconQuad unitStatusIcon,
                         @NonNull IconQuad weaponRockStatusIcon,
                         @NonNull IconQuad weaponIronStatusIcon,
@@ -30,7 +31,5 @@ public record RaceIcons(@NonNull IconQuad unitStatusIcon,
                         @NonNull ModeIconQuads towerExitIcon,
                         @NonNull ModeIconQuads rallyPointIcon,
                         @NonNull ModeIconQuads magic1Icon,
-                        @NonNull Supplier<@NonNull String> magic1Desc,
-                        @NonNull ModeIconQuads magic2Icon,
-                        @NonNull Supplier<@NonNull String> magic2Desc) {
+                        @NonNull ModeIconQuads magic2Icon) {
 }

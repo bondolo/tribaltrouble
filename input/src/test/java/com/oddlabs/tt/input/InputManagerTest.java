@@ -3,29 +3,14 @@ package com.oddlabs.tt.input;
 import org.junit.jupiter.api.Test;
 
 import java.util.NavigableSet;
-import java.util.Properties;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InputManagerTest {
-
-    @Test
-    void testScopedValueResolution() {
-        assertThrows(IllegalStateException.class, InputManager::current);
-
-        InputManager manager = new InputManager();
-        ScopedValue.where(InputManager.CURRENT, manager).run(() -> {
-            assertSame(manager, InputManager.current());
-        });
-
-        assertThrows(IllegalStateException.class, InputManager::current);
-    }
 
     @Test
     void testDefaultBindingsNotNull() {
@@ -53,19 +38,14 @@ class InputManagerTest {
     }
 
     @Test
-    void testCustomBindingPersistence() {
-        InputManager manager = new InputManager();
+    void testInputManagerWithCustomSettings() {
+        InputBindingSettings settings = new InputBindingSettings();
         InputBinding customBinding = new InputBinding(Key.SPACE, Set.of(Modifier.CONTROL), GameAction.GLOBAL_MENU);
-        manager.setBindings(GameAction.GLOBAL_MENU, Set.of(customBinding));
+        settings.setBindings(GameAction.GLOBAL_MENU, Set.of(customBinding));
 
-        Properties props = new Properties();
-        manager.saveToProperties(props);
-
-        InputManager reloaded = new InputManager();
-        reloaded.loadFromProperties(props);
-
-        NavigableSet<InputBinding> reloadedBindings = reloaded.getBindings(GameAction.GLOBAL_MENU);
-        assertEquals(1, reloadedBindings.size());
-        assertEquals(customBinding, reloadedBindings.first());
+        InputManager manager = new InputManager(settings);
+        KeyboardEvent event = new KeyboardEvent(Key.SPACE, 0, Set.of(Modifier.CONTROL), 1);
+        Set<GameAction> actions = manager.getActions(event);
+        assertTrue(actions.contains(GameAction.GLOBAL_MENU));
     }
 }

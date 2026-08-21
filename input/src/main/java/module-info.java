@@ -11,5 +11,5 @@ module com.oddlabs.tt.input {
 
     provides com.oddlabs.tt.base.global.PropertiesSerializer with
             com.oddlabs.tt.input.ControlSettings,
-            com.oddlabs.tt.input.InputManager;
+            com.oddlabs.tt.input.InputBindingSettings;
 }

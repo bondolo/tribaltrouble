@@ -27,6 +27,7 @@ import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.net.DistributableTable;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.net.ServerMessageBundler;
@@ -360,5 +361,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public @NonNull SelectionDelegate getDelegate() {
         return delegate;
+    }
+
+    public @NonNull InputManager getInputManager() {
+        return gui_root.getInputManager();
     }
 }
