@@ -1,6 +1,8 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GUIRenderer;
@@ -44,11 +46,11 @@ public final class GUIRoot extends GUIObject {
     private final Deque<@NonNull ModalDelegate> modal_delegate_stack = new ArrayDeque<>();
     private final Deque<@NonNull GUIObject> focus_backup_stack = new ArrayDeque<>();
 
-    private final TimerAnimation tool_tip_timer = new TimerAnimation(this::timerUpdate, 0);
+    private final @NonNull TimerAnimation tool_tip_timer;
 
     private final @NonNull GUI gui;
     private final @NonNull ToolTipBox tool_tip = new ToolTipBox();
-    private final @NonNull InfoPrinter info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
+    private final @NonNull InfoPrinter info_printer;
     private final Status status = new Status();
     private final @NonNull InputState input_state;
     private boolean render_tool_tip = false;
@@ -65,6 +67,8 @@ public final class GUIRoot extends GUIObject {
 
     GUIRoot(@NonNull GUI gui) {
         this.gui = gui;
+        this.info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
+        this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
         this.input_state = new InputState(this);
         setPos(0, 0);
         setCanFocus(true);
@@ -83,6 +87,22 @@ public final class GUIRoot extends GUIObject {
 
     public @NonNull InputManager getInputManager() {
         return gui.getLocalInput().getInputManager();
+    }
+
+    public @NonNull LocalEventQueue getEventQueue() {
+        return gui.getEventQueue();
+    }
+
+    public @NonNull AnimationManager getAnimationManager() {
+        return gui.getAnimationManager();
+    }
+
+    public @NonNull AnimationManager getAnimationManagerHighPrecision() {
+        return gui.getEventQueue().getHighPrecisionManager();
+    }
+
+    public float getTime() {
+        return gui.getTime();
     }
 
     public int getMouseX() {
@@ -451,7 +471,7 @@ public final class GUIRoot extends GUIObject {
                     }
                     if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
                         logger.info("*********************************************************");
-                        Renderer.getRenderer().getEventQueue().debugPrintAnimations();
+                        gui.getEventQueue().debugPrintAnimations();
                         logger.info("Texture.globalSize() = " + Texture.globalSize());
                         consumed = true;
                     }

@@ -1,7 +1,5 @@
 package com.oddlabs.tt.gui.render;
 
-import com.oddlabs.tt.base.animation.TimerAnimation;
-import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
@@ -10,43 +8,25 @@ import org.jspecify.annotations.NonNull;
 /**
  * Renders a blinking text insertion cursor (caret) for text input fields.
  */
-public final class Index implements Updatable<TimerAnimation> {
+public final class Index {
     public static final int INDEX_WIDTH = 1;
-    private static final float BLINK_INTERVAL = .5f;
+    private static final long BLINK_INTERVAL_MS = 500L;
 
-    private static final Index index = new Index();
-
-    private final TimerAnimation timer = new TimerAnimation(this, BLINK_INTERVAL);
-    private boolean blink_on;
+    private static long last_reset_time = System.currentTimeMillis();
 
     private Index() {
-        timer.start();
-        blink_on = true;
     }
 
     public static void resetBlinking() {
-        index.doResetBlinking();
-    }
-
-    private void doResetBlinking() {
-        blink_on = true;
-        timer.resetTime();
+        last_reset_time = System.currentTimeMillis();
     }
 
     public static void renderIndex(@NonNull GUIRenderer renderer, int render_x, int render_y, @NonNull Font font,
             Color.@NonNull Linear color) {
-        index.doRenderIndex(renderer, render_x, render_y, font, color);
-    }
-
-    private void doRenderIndex(@NonNull GUIRenderer renderer, int render_x, int render_y, @NonNull Font font,
-            Color.@NonNull Linear color) {
+        long elapsed = System.currentTimeMillis() - last_reset_time;
+        boolean blink_on = (elapsed / BLINK_INTERVAL_MS) % 2 == 0;
         if (blink_on) {
             renderer.drawColoredQuad(render_x, render_y + 3, INDEX_WIDTH, font.getHeight() - 6, color);
         }
-    }
-
-    @Override
-    public void update(@NonNull TimerAnimation anim) {
-        blink_on = !blink_on;
     }
 }

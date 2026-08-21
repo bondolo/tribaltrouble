@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
@@ -60,11 +59,11 @@ public final class KeyboardInput {
      * @param repeat not an initial key-press
      * @return true if the key was handled
      */
-    private boolean checkMagicKey(boolean event_key_down, @NonNull Key event_key, boolean playback, boolean repeat) {
+    private boolean checkMagicKey(boolean event_key_down, @NonNull Key event_key, boolean inDeveloperMode,
+            boolean playback, boolean repeat, @NonNull Runnable shutdownAction) {
         boolean control_down = left_control_down || right_control_down;
         boolean shift_down = left_shift_down || right_shift_down;
-        boolean keys_enabled = Renderer.getRenderer().getSettings().inDeveloperMode() && control_down && shift_down
-                && !repeat;
+        boolean keys_enabled = inDeveloperMode && control_down && shift_down && !repeat;
         if (event_key_down && (keys_enabled || playback)) {
             // check for special events that shouldn't generate events
             switch (event_key) {
@@ -81,7 +80,7 @@ public final class KeyboardInput {
                     return true;
                 }
                 case Q -> {
-                    Renderer.shutdown();
+                    shutdownAction.run();
                     return true;
                 }
                 case SPACE -> {
@@ -100,8 +99,7 @@ public final class KeyboardInput {
         return false;
     }
 
-    public void checkMagicKeys(@NonNull InputProvider<?> input) {
-        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
+    public void checkMagicKeys(@NonNull InputProvider<?> input, @NonNull Deterministic deterministic) {
         if (deterministic.isPlayback()) {
             // During playback the keyboard is used for playback control
             input.pollKeyboard();
@@ -110,14 +108,15 @@ public final class KeyboardInput {
                 var event_key = Key.fromSdlCode(event_key_code);
                 if (Key.KEY_UNKNOWN != event_key) {
                     boolean event_key_state = input.getEventKeyState();
-                    checkMagicKey(event_key_state, event_key, true, input.isRepeatEvent());
+                    checkMagicKey(event_key_state, event_key, true, true, input.isRepeatEvent(), () -> {
+                    });
                 }
             }
         }
     }
 
     public boolean poll(@NonNull InputProvider<?> input, @NonNull LocalInput localInput, @NonNull GUIRoot gui_root) {
-        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
+        Deterministic deterministic = localInput.getDeterministic();
         boolean result = false;
         input.pollKeyboard();
         // Update modifiers from raw state to handle lost events or initial state
@@ -154,7 +153,8 @@ public final class KeyboardInput {
                 // They are processed into the actions set below.
             }
 
-            if (checkMagicKey(event_key_down, event_key, false, repeat_event))
+            if (checkMagicKey(event_key_down, event_key, localInput.inDeveloperMode(), false, repeat_event,
+                    localInput::shutdown))
                 continue;
 
             Set<Modifier> modifiers = Modifier.fromMask(event_key_mods);

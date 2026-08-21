@@ -2,6 +2,8 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
@@ -21,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 public final class GUI implements Animated, FrameDriver {
     private final @NonNull Skin skin;
     private final @NonNull LocalInput localInput;
+    private final @NonNull LocalEventQueue eventQueue;
     private final GUIRenderer guiRenderer = new GUIRenderer();
     private @NonNull GUIRoot current_root;
     private @Nullable Fade fade;
@@ -28,14 +31,31 @@ public final class GUI implements Animated, FrameDriver {
     private final CameraState frustum_state = new CameraState();
     private @Nullable Runnable closeHandler;
 
-    public GUI(@NonNull LocalInput localInput, @NonNull Skin skin) {
+    public GUI(@NonNull LocalInput localInput, @NonNull LocalEventQueue eventQueue, @NonNull Skin skin) {
         this.localInput = localInput;
+        this.eventQueue = eventQueue;
         this.skin = skin;
         this.current_root = createRoot();
     }
 
+    public GUI(@NonNull LocalInput localInput, @NonNull LocalEventQueue eventQueue) {
+        this(localInput, eventQueue, new Skin("/gui/gui_skin.xml"));
+    }
+
     public GUI(@NonNull LocalInput localInput) {
-        this(localInput, new Skin("/gui/gui_skin.xml"));
+        this(localInput, Renderer.getRenderer().getEventQueue());
+    }
+
+    public @NonNull LocalEventQueue getEventQueue() {
+        return eventQueue;
+    }
+
+    public @NonNull AnimationManager getAnimationManager() {
+        return eventQueue.getManager();
+    }
+
+    public float getTime() {
+        return eventQueue.getTime();
     }
 
     public @NonNull Skin getSkin() {
@@ -92,7 +112,7 @@ public final class GUI implements Animated, FrameDriver {
     public @NonNull GUIRoot newFade(@Nullable Fadable fadable, @NonNull GUIRoot gui_root,
             @Nullable UIRenderer renderer) {
         fade = new Fade(fadable, gui_root, renderer);
-        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
+        eventQueue.getManager().registerAnimation(this);
         return gui_root;
     }
 
@@ -114,7 +134,7 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     void stopFade() {
-        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
+        eventQueue.getManager().removeAnimation(this);
         fade = null;
     }
 
