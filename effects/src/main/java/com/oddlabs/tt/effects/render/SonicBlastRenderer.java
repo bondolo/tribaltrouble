@@ -15,7 +15,6 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
@@ -34,10 +33,10 @@ public final class SonicBlastRenderer implements AutoCloseable {
             SonicBlastShader.Attribute.POSITION,
             SonicBlastShader.Attribute.TEX_COORD
     );
-    private final @NonNull SonicBlastShader shader = new SonicBlastShader();
-    private final @NonNull FloatVBO vbo;
+    private final SonicBlastShader shader = new SonicBlastShader();
+    private final FloatVBO vbo;
     private final VertexArray vao = new VertexArray();
-    private final @NonNull Texture[] noiseTextures;
+    private final Texture[] noiseTextures;
 
     public SonicBlastRenderer() {
         // Create a simple quad centered at 0,0 on XY plane, scaled to 1x1
@@ -63,16 +62,16 @@ public final class SonicBlastRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    private final @NonNull Deque<SonicBlastEffect> activeEffects = new ArrayDeque<>();
+    private final Deque<SonicBlastEffect> activeEffects = new ArrayDeque<>();
 
-    public void prepare(@NonNull Queue<@NonNull SonicBlastEffect> queue) {
+    public void prepare(Queue<SonicBlastEffect> queue) {
         activeEffects.clear();
         activeEffects.addAll(queue);
         queue.clear();
     }
 
-    public void render(@NonNull RenderContext context, @NonNull RenderQueues render_queues, @NonNull CameraState state,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void render(RenderContext context, RenderQueues render_queues, CameraState state,
+            MatrixStack modelViewStack, MatrixStack projectionStack) {
         if (activeEffects.isEmpty()) return;
 
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ADDITIVE); var _ = context.withDepthMode(

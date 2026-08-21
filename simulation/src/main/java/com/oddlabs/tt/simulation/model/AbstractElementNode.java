@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.util.LinkedList;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         return child_count - models.size();
     }
 
-    protected final AbstractElementNode<T> insertElement(@NonNull T model) {
+    protected final AbstractElementNode<T> insertElement(T model) {
         checkBoundsZ(model.bmin_z);
         checkBoundsZ(model.bmax_z);
         return doInsertElement(model);
@@ -36,7 +35,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
 
     protected abstract AbstractElementNode<T> doInsertElement(T model);
 
-    public final void removeElement(@NonNull T model) {
+    public final void removeElement(T model) {
         models.remove(model);
     }
 
@@ -44,7 +43,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         child_count++;
     }
 
-    protected final AbstractElementNode<T> reinsertElement(@NonNull T model) {
+    protected final AbstractElementNode<T> reinsertElement(T model) {
         child_count--;
         assert child_count >= 0;
         if (contains(model) || owner == null) {
@@ -61,22 +60,22 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
             return 0;
     }
 
-    protected final @NonNull AbstractElementNode<T> addElement(@NonNull T model) {
+    protected final AbstractElementNode<T> addElement(T model) {
         models.addLast(model);
         return this;
     }
 
-    public final @NonNull LinkedList<T> getModels() {
+    public final LinkedList<T> getModels() {
         return models;
     }
 
-    public static <T extends Element<T>> @NonNull AbstractElementNode<T> newRoot(@NonNull HeightMap heightmap) {
+    public static <T extends Element<T>> AbstractElementNode<T> newRoot(HeightMap heightmap) {
         AbstractElementNode<T> root = new ElementNode<>(null, heightmap.getGridUnitsPerWorld(), 0, 0);
         return root;
     }
 
-    public static void buildSupplies(@NonNull World world, @NonNull List<int[]> iron_positions, @NonNull List<
-            int[]> rock_positions, float @NonNull [] @NonNull [] plants, @NonNull Terrain terrain,
+    public static void buildSupplies(World world, List<int[]> iron_positions, List<
+            int[]> rock_positions, float[][] plants, Terrain terrain,
             boolean insertPlants) {
         buildRockSupplies(world, rock_positions);
         buildIronSupplies(world, iron_positions);
@@ -85,7 +84,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         }
     }
 
-    private static void buildRockSupplies(@NonNull World world, @NonNull List<int[]> positions) {
+    private static void buildRockSupplies(World world, List<int[]> positions) {
         IO.println("num_rocks = " + positions.size());
         positions.forEach(coords -> {
             int grid_x = coords[0];
@@ -96,7 +95,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         });
     }
 
-    private static void buildIronSupplies(@NonNull World world, @NonNull List<int[]> positions) {
+    private static void buildIronSupplies(World world, List<int[]> positions) {
         IO.println("num_iron = " + positions.size());
         positions.forEach(coords -> {
             int grid_x = coords[0];
@@ -107,8 +106,8 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
         });
     }
 
-    public static void addPlants(@NonNull World world, float @NonNull [] @NonNull [] plants,
-            @NonNull Terrain terrain) {
+    public static void addPlants(World world, float[][] plants,
+            Terrain terrain) {
         int num_plants = 0;
         for (int t = 0; t < plants.length; t++) {
             num_plants += plants[t].length / 2;

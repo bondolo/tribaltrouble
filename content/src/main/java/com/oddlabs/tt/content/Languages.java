@@ -1,6 +1,5 @@
 package com.oddlabs.tt.content;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,7 +12,7 @@ import java.util.TreeSet;
  * Supported languages and locale configuration for game content.
  */
 public final class Languages {
-    private static final SequencedSet<@NonNull Locale> LANGUAGES;
+    private static final SequencedSet<Locale> LANGUAGES;
 
     static {
         var langs = new TreeSet<>(Comparator.comparing(Locale::toLanguageTag));
@@ -30,11 +29,11 @@ public final class Languages {
     private Languages() {
     }
 
-    public static boolean hasLanguage(@NonNull Locale locale) {
+    public static boolean hasLanguage(Locale locale) {
         return LANGUAGES.contains(locale) || LANGUAGES.contains(Locale.of(locale.getLanguage()));
     }
 
-    public static @NonNull SequencedSet<@NonNull Locale> getLanguages() {
+    public static SequencedSet<Locale> getLanguages() {
         return LANGUAGES;
     }
 }

@@ -3,18 +3,17 @@ package com.oddlabs.tt.content.form;
 import com.oddlabs.matchmaking.MatchmakingClientInterface;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.MessageForm;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
 public final class ChatErrorForm extends MessageForm {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ChatErrorForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private static @NonNull String getErrorFromCode(int error_code) {
+    private static String getErrorFromCode(int error_code) {
         return i18n(switch (error_code) {
             case MatchmakingClientInterface.CHAT_ERROR_TOO_MANY_USERS -> "chat_error_too_many_users";
             case MatchmakingClientInterface.CHAT_ERROR_INVALID_NAME -> "chat_error_invalid_name";

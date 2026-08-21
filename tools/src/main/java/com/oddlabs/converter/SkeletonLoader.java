@@ -1,6 +1,5 @@
 package com.oddlabs.converter;
 
-import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,7 +18,7 @@ public final class SkeletonLoader {
     private SkeletonLoader() {
     }
 
-    public static @NonNull Skeleton loadSkeleton(@NonNull Path file) {
+    public static Skeleton loadSkeleton(Path file) {
         try (var input_stream = Files.newInputStream(file)) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(true);
@@ -33,7 +32,7 @@ public final class SkeletonLoader {
         }
     }
 
-    private static @NonNull Skeleton parseSkeleton(@NonNull Node skel_node) {
+    private static Skeleton parseSkeleton(Node skel_node) {
         Map<String, Bone> name_to_bone_map = new HashMap<>();
         Map<String, float[]> initial_pose = AnimationLoader.parseFrame(ConvertToBinary.getNodeByName("init_pose",
                 skel_node));
@@ -67,9 +66,9 @@ public final class SkeletonLoader {
         return new Skeleton(bone_root, initial_pose, name_to_bone_map);
     }
 
-    private static @NonNull Bone buildBone(byte index, @NonNull Map<@NonNull String, @NonNull List<
-            @NonNull String>> bone_children_map, @NonNull String bone_name, @NonNull Map<@NonNull String,
-                    @NonNull Bone> name_to_bone_map) {
+    private static Bone buildBone(byte index, Map<String, List<
+            String>> bone_children_map, String bone_name, Map<String,
+                    Bone> name_to_bone_map) {
         List<String> children_list = bone_children_map.getOrDefault(bone_name, List.of());
         Bone[] children_array = new Bone[children_list.size()];
         for (int i = 0; i < children_array.length; i++) {

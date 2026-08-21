@@ -6,10 +6,9 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 public final class BuildingChieftainTrigger extends TutorialTrigger {
-    public BuildingChieftainTrigger(@NonNull Player player) {
+    public BuildingChieftainTrigger(Player player) {
         super(1f, 0f, "building_chieftain");
         player.enableRepairing(false);
         player.enableAttacking(false);
@@ -25,7 +24,7 @@ public final class BuildingChieftainTrigger extends TutorialTrigger {
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
+    public void run(Tutorial tutorial) {
         for (var s : tutorial.getViewer().getLocalPlayer().getUnits().getSet()) {
             if (s instanceof Building b) {
                 b.getChieftainContainer().ifPresent(container -> {

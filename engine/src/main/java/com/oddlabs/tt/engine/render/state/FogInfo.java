@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Base configuration for distance and screen-space fog rendering.
@@ -25,12 +24,12 @@ public class FogInfo {
         RADIAL
     }
 
-    protected final @NonNull Mode mode;
-    protected final Color.@NonNull Linear color;
+    protected final Mode mode;
+    protected final Color.Linear color;
     protected final float density;
     private boolean enabled = true;
 
-    public FogInfo(@NonNull Mode mode, @NonNull Color color, float density) {
+    public FogInfo(Mode mode, Color color, float density) {
         this.mode = mode;
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         this.density = density;
@@ -49,7 +48,7 @@ public class FogInfo {
      *
      * @return Linear color
      */
-    public Color.@NonNull Linear getColor() {
+    public Color.Linear getColor() {
         return color;
     }
 
@@ -57,7 +56,7 @@ public class FogInfo {
         return density;
     }
 
-    public @NonNull Mode getMode() {
+    public Mode getMode() {
         return mode;
     }
 }

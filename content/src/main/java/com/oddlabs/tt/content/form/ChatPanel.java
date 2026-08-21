@@ -15,7 +15,6 @@ import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.ChatRoomInfo;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -31,11 +30,11 @@ public class ChatPanel extends Panel implements ChatListener {
     private static final int PULLDOWN_INDEX_INFO = 1;
     private static final int PULLDOWN_INDEX_IGNORE = 2;
 
-    private final @NonNull MultiColumnComboBox<ChatRoomUser> lobby_users_list_box;
-    private final @NonNull MultiColumnComboBox<ChatRoomUser> playing_users_list_box;
-    private final @NonNull TextBox chat_box;
-    private final @NonNull EditLine chat_line;
-    private final @NonNull GUIRoot gui_root;
+    private final MultiColumnComboBox<ChatRoomUser> lobby_users_list_box;
+    private final MultiColumnComboBox<ChatRoomUser> playing_users_list_box;
+    private final TextBox chat_box;
+    private final EditLine chat_line;
+    private final GUIRoot gui_root;
 
     private final int user_list_width;
 
@@ -45,12 +44,12 @@ public class ChatPanel extends Panel implements ChatListener {
         return ResourceBundle.getBundle(ChatPanel.class.getName());
     }
 
-    private static @NonNull String getI18N(@NonNull String key) {
+    private static String getI18N(String key) {
         return Utils.getBundleString(getBundle(), key);
     }
 
-    public ChatPanel(@NonNull GUIRoot gui_root, @NonNull ChatRoomInfo info, int compare_width, int compare_height,
-            int button_width, @NonNull EnterListener chat_listener, @NonNull MouseClickListener leave_listener) {
+    public ChatPanel(GUIRoot gui_root, ChatRoomInfo info, int compare_width, int compare_height,
+            int button_width, EnterListener chat_listener, MouseClickListener leave_listener) {
         super(getI18N("chat"));
         this.gui_root = gui_root;
         FormData fdata = Skin.getSkin().getFormData();
@@ -129,7 +128,7 @@ public class ChatPanel extends Panel implements ChatListener {
         update(info);
     }
 
-    public final void update(@NonNull ChatRoomInfo info) {
+    public final void update(ChatRoomInfo info) {
         ChatRoomUser[] users = info.users();
         if (users != null) {
             lobby_users_list_box.clear();
@@ -151,7 +150,7 @@ public class ChatPanel extends Panel implements ChatListener {
     }
 
     @Override
-    public final void chat(@NonNull ChatMessage message) {
+    public final void chat(ChatMessage message) {
         if (message.type() != ChatMessage.Type.PRIVATE && message.type() != ChatMessage.Type.CHATROOM)
             return;
         if (message.type() != ChatMessage.Type.PRIVATE) {
@@ -177,15 +176,15 @@ public class ChatPanel extends Panel implements ChatListener {
             private_message_form.remove();
     }
 
-    private final class PulldownListener implements ItemChosenListener<@NonNull ChatRoomUser> {
+    private final class PulldownListener implements ItemChosenListener<ChatRoomUser> {
         private final MultiColumnComboBox<ChatRoomUser> box;
 
-        PulldownListener(MultiColumnComboBox<@NonNull ChatRoomUser> box) {
+        PulldownListener(MultiColumnComboBox<ChatRoomUser> box) {
             this.box = box;
         }
 
         @Override
-        public void itemChosen(@NonNull PulldownMenu<@NonNull ChatRoomUser> menu, int item_index) {
+        public void itemChosen(PulldownMenu<ChatRoomUser> menu, int item_index) {
             ChatRoomUser user = box.getRightClickedRowData();
             String nick = user.getNick();
             switch (item_index) {
@@ -204,21 +203,21 @@ public class ChatPanel extends Panel implements ChatListener {
         }
     }
 
-    private final class ChatRoomUserDoubleClickedListener implements RowListener<@NonNull ChatRoomUser> {
-        private final @NonNull PulldownMenu<@NonNull ChatRoomUser> menu;
+    private final class ChatRoomUserDoubleClickedListener implements RowListener<ChatRoomUser> {
+        private final PulldownMenu<ChatRoomUser> menu;
 
-        ChatRoomUserDoubleClickedListener(@NonNull PulldownMenu<@NonNull ChatRoomUser> menu) {
+        ChatRoomUserDoubleClickedListener(PulldownMenu<ChatRoomUser> menu) {
             this.menu = menu;
         }
 
         @Override
-        public void rowDoubleClicked(@NonNull ChatRoomUser user) {
+        public void rowDoubleClicked(ChatRoomUser user) {
             private_message_form = new PrivateMessageForm(gui_root, user.getNick());
             gui_root.addModalForm(private_message_form);
         }
 
         @Override
-        public void rowChosen(@NonNull ChatRoomUser user) {
+        public void rowChosen(ChatRoomUser user) {
             String item_text = ChatCommand.isIgnoring(user.getNick())
                     ? getI18N("unignore") : getI18N("ignore");
             menu.getItem(PULLDOWN_INDEX_IGNORE).ifPresent(pi -> pi.setLabelString(item_text));

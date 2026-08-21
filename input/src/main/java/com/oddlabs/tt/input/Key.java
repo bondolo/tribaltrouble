@@ -1,6 +1,5 @@
 package com.oddlabs.tt.input;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -226,7 +225,7 @@ public enum Key {
         return from_sdl_map.getOrDefault(code, KEY_UNKNOWN);
     }
 
-    public @NonNull String getDisplayName() {
+    public String getDisplayName() {
         String name = name();
         if (name.startsWith("KEY_")) return name.substring(4);
         if (name.startsWith("NUMPAD")) return "Num " + name.substring(6);

@@ -1,12 +1,11 @@
 package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.NonNull;
 
 public final class TimeTrigger extends IntervalTrigger {
-    private final @NonNull Runnable runnable;
+    private final Runnable runnable;
 
-    public TimeTrigger(@NonNull World world, float time, @NonNull Runnable runnable) {
+    public TimeTrigger(World world, float time, Runnable runnable) {
         super(time, 0f, world.getAnimationManagerGameTime());
         this.runnable = runnable;
     }

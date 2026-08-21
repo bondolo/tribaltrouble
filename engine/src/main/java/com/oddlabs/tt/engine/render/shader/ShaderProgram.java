@@ -8,7 +8,6 @@ import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -42,14 +41,14 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         private final int vertexShaderId;
         private final int fragmentShaderId;
         private final int geometryShaderId;
-        private final Map<@NonNull String, @NonNull Integer> uniformLocations = new HashMap<>();
-        private final Map<@NonNull String, @NonNull Integer> attributeLocations = new HashMap<>();
-        private final Map<Integer, @NonNull Integer> intUniforms = new HashMap<>();
-        private final Map<Integer, @NonNull Float> floatUniforms = new HashMap<>();
-        private final Map<Integer, @NonNull Vector2fc> vec2Uniforms = new HashMap<>();
-        private final Map<Integer, @NonNull Vector3fc> vec3Uniforms = new HashMap<>();
-        private final Map<Integer, @NonNull Color> colorUniforms = new HashMap<>();
-        private final Map<Integer, float @NonNull []> mat4Uniforms = new HashMap<>();
+        private final Map<String, Integer> uniformLocations = new HashMap<>();
+        private final Map<String, Integer> attributeLocations = new HashMap<>();
+        private final Map<Integer, Integer> intUniforms = new HashMap<>();
+        private final Map<Integer, Float> floatUniforms = new HashMap<>();
+        private final Map<Integer, Vector2fc> vec2Uniforms = new HashMap<>();
+        private final Map<Integer, Vector3fc> vec3Uniforms = new HashMap<>();
+        private final Map<Integer, Color> colorUniforms = new HashMap<>();
+        private final Map<Integer, float[]> mat4Uniforms = new HashMap<>();
 
         Program(int vertexShaderId, int fragmentShaderId, int geometryShaderId) {
             this.vertexShaderId = vertexShaderId;
@@ -104,11 +103,11 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         }
     }
 
-    public ShaderProgram(@NonNull String vertexSource, @NonNull String fragmentSource) throws IllegalArgumentException {
+    public ShaderProgram(String vertexSource, String fragmentSource) throws IllegalArgumentException {
         this(vertexSource, fragmentSource, null);
     }
 
-    public ShaderProgram(@NonNull String vertexSource, @NonNull String fragmentSource, @Nullable String geometrySource)
+    public ShaderProgram(String vertexSource, String fragmentSource, @Nullable String geometrySource)
             throws IllegalArgumentException {
         super(new Program(
                 compileShader(GL20.GL_VERTEX_SHADER, vertexSource),
@@ -117,7 +116,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         ));
     }
 
-    protected void bindFragDataLocation(int colorNumber, @NonNull String name) {
+    protected void bindFragDataLocation(int colorNumber, String name) {
         GL30.glBindFragDataLocation(state.programId, colorNumber, name);
     }
 
@@ -128,7 +127,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         state.link();
     }
 
-    private static int compileShader(int type, @NonNull String source) throws IllegalArgumentException {
+    private static int compileShader(int type, String source) throws IllegalArgumentException {
         int shaderId = GL20.glCreateShader(type);
         GL20.glShaderSource(shaderId, source);
         GL20.glCompileShader(shaderId);
@@ -151,7 +150,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         }
     }
 
-    public @NonNull ScopedState use() {
+    public ScopedState use() {
         if (closed) {
             throw new IllegalStateException("Attempting to use a closed ShaderProgram: " + getClass().getName());
         }
@@ -175,7 +174,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public int getAttributeLocation(@NonNull String name) {
+    public int getAttributeLocation(String name) {
         return state.attributeLocations.computeIfAbsent(name, n -> {
             int loc = GL20.glGetAttribLocation(state.programId, n);
             return loc;
@@ -183,7 +182,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public int getUniformLocation(@NonNull String name) {
+    public int getUniformLocation(String name) {
         return state.uniformLocations.computeIfAbsent(name, n -> {
             int loc = GL20.glGetUniformLocation(state.programId, n);
             return loc;
@@ -191,14 +190,14 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public void setUniform(@NonNull String name, int @NonNull [] values) {
+    public void setUniform(String name, int[] values) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
         GL20.glUniform1iv(loc, values);
     }
 
     @Override
-    public void setUniform(@NonNull String name, int value) {
+    public void setUniform(String name, int value) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
         Integer lastValue = state.intUniforms.get(loc);
@@ -208,7 +207,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public void setUniform(@NonNull String name, float value) {
+    public void setUniform(String name, float value) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
         Float lastValue = state.floatUniforms.get(loc);
@@ -218,16 +217,16 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public void setUniform(@NonNull String name, boolean value) {
+    public void setUniform(String name, boolean value) {
         setUniform(name, value ? 1 : 0);
     }
 
     @Override
-    public void setUniform(@NonNull String name, float x, float y) {
+    public void setUniform(String name, float x, float y) {
         setUniform(name, new Vector2f(x, y));
     }
 
-    public void setUniform(@NonNull String name, @NonNull Vector2fc value) {
+    public void setUniform(String name, Vector2fc value) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
         Vector2fc lastValue = state.vec2Uniforms.get(loc);
@@ -237,11 +236,11 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public void setUniform(@NonNull String name, float x, float y, float z) {
+    public void setUniform(String name, float x, float y, float z) {
         setUniform(name, new Vector3f(x, y, z));
     }
 
-    public void setUniform(@NonNull String name, @NonNull Vector3fc value) {
+    public void setUniform(String name, Vector3fc value) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
         Vector3fc lastValue = state.vec3Uniforms.get(loc);
@@ -251,7 +250,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public void setUniform(@NonNull String name, @NonNull Color value) {
+    public void setUniform(String name, Color value) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
         Color lastValue = state.colorUniforms.get(loc);
@@ -261,7 +260,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         state.colorUniforms.put(loc, linearColor);
     }
 
-    public void setUniformColor3(@NonNull String name, @NonNull Color value) {
+    public void setUniformColor3(String name, Color value) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
 
@@ -275,18 +274,18 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     }
 
     @Override
-    public void setUniform(@NonNull String name, @NonNull Matrix4fc matrix) {
+    public void setUniform(String name, Matrix4fc matrix) {
         setUniform(name, false, matrix);
     }
 
     @Override
-    public void setUniform(@NonNull String name, boolean transpose, @NonNull Matrix4fc matrix) {
+    public void setUniform(String name, boolean transpose, Matrix4fc matrix) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             setUniformMatrix4(name, transpose, matrix.get(stack.mallocFloat(16)));
         }
     }
 
-    private void setUniformMatrix4(@NonNull String name, boolean transpose, @NonNull FloatBuffer matrix) {
+    private void setUniformMatrix4(String name, boolean transpose, FloatBuffer matrix) {
         int loc = getUniformLocation(name);
         if (loc == -1) return;
 
@@ -308,7 +307,7 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
      * @param uniformToSubroutine A map where the key is the subroutine uniform name and the value is the subroutine
      *            function name.
      */
-    protected void setFragmentSubroutines(Map<@NonNull String, @NonNull String> uniformToSubroutine) {
+    protected void setFragmentSubroutines(Map<String, String> uniformToSubroutine) {
         int count = GL40.glGetProgramStagei(state.programId, GL20.GL_FRAGMENT_SHADER,
                 GL40.GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS);
         if (count <= 0) return;

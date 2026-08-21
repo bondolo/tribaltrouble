@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.base.resource.File;
 import com.oddlabs.tt.engine.render.SpriteList;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class SpriteFile extends File<SpriteList> {
@@ -13,12 +12,12 @@ public final class SpriteFile extends File<SpriteList> {
     private final boolean max_alpha;
     private final int mipmap_cutoff;
 
-    public SpriteFile(@NonNull String location, int mipmap_cutoff, boolean lighting, boolean cullface, boolean alpha,
+    public SpriteFile(String location, int mipmap_cutoff, boolean lighting, boolean cullface, boolean alpha,
             boolean modulate_color) {
         this(location, mipmap_cutoff, lighting, cullface, alpha, modulate_color, false);
     }
 
-    public SpriteFile(@NonNull String location, int mipmap_cutoff, boolean lighting, boolean cullface, boolean alpha,
+    public SpriteFile(String location, int mipmap_cutoff, boolean lighting, boolean cullface, boolean alpha,
             boolean modulate_color, boolean max_alpha) {
         super(location);
         this.lighting = lighting;
@@ -30,7 +29,7 @@ public final class SpriteFile extends File<SpriteList> {
     }
 
     @Override
-    public @NonNull SpriteList get() {
+    public SpriteList get() {
         return new SpriteList(this);
     }
 
@@ -45,7 +44,7 @@ public final class SpriteFile extends File<SpriteList> {
                 super.equals(o);
     }
 
-    public @NonNull String getLocation() {
+    public String getLocation() {
         return getURL().toString();
     }
 

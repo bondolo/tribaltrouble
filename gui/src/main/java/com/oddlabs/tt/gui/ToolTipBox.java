@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -13,19 +12,19 @@ import java.util.List;
 public final class ToolTipBox extends TextField {
     static final float MAX_DELAY_SECONDS = 1.5f;
 
-    private @Nullable List<@NonNull IconQuad> icons;
+    private @Nullable List<IconQuad> icons;
 
     public ToolTipBox() {
         super(Skin.getSkin().getEditFont(), 200);
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         throw new UnsupportedOperationException(
                 "ToolTipBox.renderGeometry should not be called directly. Use render(GUIRenderer, ...)");
     }
 
-    public void append(@Nullable List<@NonNull IconQuad> icons) {
+    public void append(@Nullable List<IconQuad> icons) {
         this.icons = icons;
     }
 
@@ -35,7 +34,7 @@ public final class ToolTipBox extends TextField {
         icons = null;
     }
 
-    public void render(@NonNull GUIRenderer renderer, int center_x, int top_y, int width, int height) {
+    public void render(GUIRenderer renderer, int center_x, int top_y, int width, int height) {
         if (getText().isEmpty())
             return;
         ToolTipBoxInfo box = Skin.getSkin().getToolTipInfo();

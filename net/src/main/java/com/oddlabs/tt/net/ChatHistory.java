@@ -1,6 +1,5 @@
 package com.oddlabs.tt.net;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.SequencedCollection;
@@ -11,7 +10,7 @@ import java.util.SequencedCollection;
 public abstract class ChatHistory implements ChatListener {
     private static final int MAX_HISTORY = 50;
 
-    private final SequencedCollection<@NonNull String> messages = new ArrayDeque<>(MAX_HISTORY);
+    private final SequencedCollection<String> messages = new ArrayDeque<>(MAX_HISTORY);
 
     public final void clear() {
         messages.clear();
@@ -27,7 +26,7 @@ public abstract class ChatHistory implements ChatListener {
         messages.add(msg);
     }
 
-    public final @NonNull SequencedCollection<@NonNull String> getMessages() {
+    public final SequencedCollection<String> getMessages() {
         return messages;
     }
 }

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Maps a spectrum position and base color to a Linear Color.
@@ -15,5 +14,5 @@ public interface ColorSpectrum {
      * @param baseColor The base color of the emitter (must be in linear space).
      * @return The resolved linear Color value.
      */
-    Color.@NonNull Linear getColor(float spectrum, Color.@NonNull Linear baseColor);
+    Color.Linear getColor(float spectrum, Color.Linear baseColor);
 }

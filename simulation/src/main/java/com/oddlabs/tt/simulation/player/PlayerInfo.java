@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
 import com.oddlabs.tt.simulation.model.Race;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
@@ -14,10 +13,10 @@ public final class PlayerInfo implements Serializable {
     public static final int TEAM_NEUTRAL = -1;
 
     private final int race;
-    private final @NonNull String name;
+    private final String name;
     private final int team;
 
-    public PlayerInfo(int team, @NonNull Race race, @NonNull String name) {
+    public PlayerInfo(int team, Race race, String name) {
         this.team = team;
         this.race = race.getValue();
         this.name = name;
@@ -30,11 +29,11 @@ public final class PlayerInfo implements Serializable {
                 race == player.race;
     }
 
-    public @NonNull Race getRace() {
+    public Race getRace() {
         return Race.fromValue(race);
     }
 
-    public @NonNull String getName() {
+    public String getName() {
         return name;
     }
 
@@ -43,7 +42,7 @@ public final class PlayerInfo implements Serializable {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return name;
     }
 }

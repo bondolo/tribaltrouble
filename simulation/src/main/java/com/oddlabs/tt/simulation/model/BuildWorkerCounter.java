@@ -1,9 +1,8 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 public final class BuildWorkerCounter<S extends Supply> extends SupplyCounter {
-    public BuildWorkerCounter(@NonNull Building building, @NonNull Class<S> supply_type) {
+    public BuildWorkerCounter(Building building, Class<S> supply_type) {
         super(building, supply_type);
         setDelta(building.getBuildSupplyContainer(supply_type).map(c -> c.getNumOrders()).orElse(0));
     }

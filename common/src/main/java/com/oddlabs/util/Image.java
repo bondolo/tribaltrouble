@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -24,19 +23,19 @@ public final class Image implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
-    private transient @NonNull ByteBuffer data;
+    private transient ByteBuffer data;
 
     private final int width;
     private final int height;
 
-    public Image(int width, int height, @NonNull ByteBuffer data) {
+    public Image(int width, int height, ByteBuffer data) {
         assert width * height * Integer.BYTES == data.remaining() : "Image is incorrect size.";
         this.width = width;
         this.height = height;
         this.data = data;
     }
 
-    public static @NonNull Image read(@NonNull URL url) {
+    public static Image read(URL url) {
         try (var source = url.openStream()) {
             return read(source);
         } catch (IOException e) {
@@ -44,7 +43,7 @@ public final class Image implements Serializable {
         }
     }
 
-    public static @NonNull Image read(@NonNull InputStream source) throws IOException {
+    public static Image read(InputStream source) throws IOException {
         try (var input = new ObjectInputStream(new InflaterInputStream(new BufferedInputStream(source)))) {
             var object = input.readObject();
             if (object instanceof Image image) {
@@ -61,7 +60,7 @@ public final class Image implements Serializable {
         write(Path.of(filename + ".image"));
     }
 
-    public void write(@NonNull Path file) {
+    public void write(Path file) {
         data.rewind();
         //Utils.saveAsPNG(filename, data, width, height);
         try (var output = Files.newOutputStream(file)) {
@@ -71,14 +70,14 @@ public final class Image implements Serializable {
         }
     }
 
-    private static void write(@NonNull Image image, @NonNull OutputStream os) throws IOException {
+    private static void write(Image image, OutputStream os) throws IOException {
         try (var output = new ObjectOutputStream(new DeflaterOutputStream(new BufferedOutputStream(os)))) {
             output.writeObject(image);
         }
     }
 
     @Serial
-    private void writeObject(@NonNull ObjectOutputStream stream) throws IOException {
+    private void writeObject(ObjectOutputStream stream) throws IOException {
         stream.defaultWriteObject();
 
         data.rewind();
@@ -88,7 +87,7 @@ public final class Image implements Serializable {
     }
 
     @Serial
-    private void readObject(@NonNull ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
 
         int length = width * height * Integer.BYTES;
@@ -101,7 +100,7 @@ public final class Image implements Serializable {
         mergePlanes(deltaPlanes);
     }
 
-    private @NonNull ByteBuffer splitIntoPlanes() {
+    private ByteBuffer splitIntoPlanes() {
         ByteBuffer buf = ByteBuffer.allocate(data.capacity());
 
         buf.position(buf.capacity() / 4);
@@ -141,7 +140,7 @@ public final class Image implements Serializable {
         return buf;
     }
 
-    private void mergePlanes(@NonNull ByteBuffer buf) {
+    private void mergePlanes(ByteBuffer buf) {
         buf.flip();
 
         buf.position(buf.capacity() / Integer.BYTES);
@@ -166,7 +165,7 @@ public final class Image implements Serializable {
         data.clear();
     }
 
-    public @NonNull ByteBuffer getPixels() {
+    public ByteBuffer getPixels() {
         return data;
     }
 
@@ -179,7 +178,7 @@ public final class Image implements Serializable {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "Image: width = " + width + " | height = " + height;
     }
 }

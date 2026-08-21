@@ -12,7 +12,6 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,16 +21,16 @@ import java.util.concurrent.ThreadLocalRandom;
  * Manages the client-side visual state (accessories) and audio dispatch for a simulation model.
  */
 public final class VisualModel implements ModelClient {
-    private final @NonNull Model model;
-    private final @NonNull AudioImplementation audio;
-    private final @NonNull List<@NonNull Accessory> accessories = new ArrayList<>();
+    private final Model model;
+    private final AudioImplementation audio;
+    private final List<Accessory> accessories = new ArrayList<>();
 
-    public VisualModel(@NonNull Model model, @NonNull AudioImplementation audio) {
+    public VisualModel(Model model, AudioImplementation audio) {
         this.model = model;
         this.audio = audio;
     }
 
-    public @NonNull List<@NonNull Accessory> getAccessories() {
+    public List<Accessory> getAccessories() {
         return accessories;
     }
 
@@ -65,7 +64,7 @@ public final class VisualModel implements ModelClient {
     }
 
     @Override
-    public void onHarvest(@NonNull SupplyType supplyType) {
+    public void onHarvest(SupplyType supplyType) {
         var params = AudioAssets.getHarvestSound(supplyType);
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), params);
         addVisualSound(EmojiType.fromSupply(supplyType), ModelClient.DURATION_HARVEST,
@@ -87,7 +86,7 @@ public final class VisualModel implements ModelClient {
     }
 
     @Override
-    public void onUnitDeath(@NonNull Race race, @NonNull UnitVisualType unitType, float pitchRange) {
+    public void onUnitDeath(Race race, UnitVisualType unitType, float pitchRange) {
         addVisualSound(EmojiType.GRAVESTONE, ModelClient.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
         AudioFile deathSound = switch (unitType) {
             case PEON -> AudioAssets.SFX_DEATH_PEON;
@@ -143,7 +142,7 @@ public final class VisualModel implements ModelClient {
     }
 
     @Override
-    public void addVisualSound(@NonNull EmojiType emoji, float duration, float audioDistance) {
+    public void addVisualSound(EmojiType emoji, float duration, float audioDistance) {
         AssetRegistry.getInstance().getEmojiSprite(emoji)
                 .map(sprite -> new VisualSoundAccessory(sprite, duration, audioDistance))
                 .ifPresent(accessories::add);

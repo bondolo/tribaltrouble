@@ -16,7 +16,6 @@ import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -30,15 +29,15 @@ public final class PrivateMessageForm extends Form {
     private static final int EDITLINE_WIDTH = 240;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(PrivateMessageForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull EditLine editline_name;
-    private final @NonNull String nick;
-    private final @NonNull GUIRoot gui_root;
+    private final EditLine editline_name;
+    private final String nick;
+    private final GUIRoot gui_root;
 
-    public PrivateMessageForm(@NonNull GUIRoot gui_root, @NonNull String nick) {
+    public PrivateMessageForm(GUIRoot gui_root, String nick) {
         this.gui_root = gui_root;
         this.nick = nick;
         // headline
@@ -72,7 +71,7 @@ public final class PrivateMessageForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {

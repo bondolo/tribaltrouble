@@ -14,43 +14,42 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Container for the 2D user interface
  */
 public final class GUI implements Animated, FrameDriver {
-    private final @NonNull Skin skin;
-    private final @NonNull LocalInput localInput;
-    private final @NonNull LocalEventQueue eventQueue;
+    private final Skin skin;
+    private final LocalInput localInput;
+    private final LocalEventQueue eventQueue;
     private final GUIRenderer guiRenderer = new GUIRenderer();
-    private @NonNull GUIRoot current_root;
+    private GUIRoot current_root;
     private @Nullable Fade fade;
     private @Nullable UIRenderer renderer;
     private final CameraState frustum_state = new CameraState();
     private @Nullable Runnable closeHandler;
 
-    public GUI(@NonNull LocalInput localInput, @NonNull LocalEventQueue eventQueue, @NonNull Skin skin) {
+    public GUI(LocalInput localInput, LocalEventQueue eventQueue, Skin skin) {
         this.localInput = localInput;
         this.eventQueue = eventQueue;
         this.skin = skin;
         this.current_root = createRoot();
     }
 
-    public GUI(@NonNull LocalInput localInput, @NonNull LocalEventQueue eventQueue) {
+    public GUI(LocalInput localInput, LocalEventQueue eventQueue) {
         this(localInput, eventQueue, new Skin("/gui/gui_skin.xml"));
     }
 
-    public GUI(@NonNull LocalInput localInput) {
+    public GUI(LocalInput localInput) {
         this(localInput, Renderer.getRenderer().getEventQueue());
     }
 
-    public @NonNull LocalEventQueue getEventQueue() {
+    public LocalEventQueue getEventQueue() {
         return eventQueue;
     }
 
-    public @NonNull AnimationManager getAnimationManager() {
+    public AnimationManager getAnimationManager() {
         return eventQueue.getManager();
     }
 
@@ -58,19 +57,19 @@ public final class GUI implements Animated, FrameDriver {
         return eventQueue.getTime();
     }
 
-    public @NonNull Skin getSkin() {
+    public Skin getSkin() {
         return skin;
     }
 
-    public void runWithSkin(@NonNull Runnable operation) {
+    public void runWithSkin(Runnable operation) {
         Skin.run(skin, operation);
     }
 
-    public <V, X extends Throwable> V callWithSkin(ScopedValue.@NonNull CallableOp<V, X> operation) throws X {
+    public <V, X extends Throwable> V callWithSkin(ScopedValue.CallableOp<V, X> operation) throws X {
         return Skin.call(skin, operation);
     }
 
-    public @NonNull LocalInput getLocalInput() {
+    public LocalInput getLocalInput() {
         return localInput;
     }
 
@@ -79,12 +78,12 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     @Override
-    public void run(@NonNull Runnable session) {
+    public void run(Runnable session) {
         runWithSkin(session);
     }
 
     @Override
-    public void tick(@NonNull NetworkSelector network) {
+    public void tick(NetworkSelector network) {
         ScopedValue.where(Skin.CURRENT, skin).run(() -> localInput.poll(getGUIRoot()));
     }
 
@@ -99,24 +98,24 @@ public final class GUI implements Animated, FrameDriver {
         });
     }
 
-    public @NonNull GUIRoot newFade() {
+    public GUIRoot newFade() {
         return newFade(null, null);
     }
 
-    public @NonNull GUIRoot newFade(@Nullable Fadable fadable, @Nullable UIRenderer renderer) {
+    public GUIRoot newFade(@Nullable Fadable fadable, @Nullable UIRenderer renderer) {
         GUIRoot gui_root = createRoot();
         newFade(fadable, gui_root, renderer);
         return gui_root;
     }
 
-    public @NonNull GUIRoot newFade(@Nullable Fadable fadable, @NonNull GUIRoot gui_root,
+    public GUIRoot newFade(@Nullable Fadable fadable, GUIRoot gui_root,
             @Nullable UIRenderer renderer) {
         fade = new Fade(fadable, gui_root, renderer);
         eventQueue.getManager().registerAnimation(this);
         return gui_root;
     }
 
-    public @NonNull GUIRoot createRoot() {
+    public GUIRoot createRoot() {
         return ScopedValue.where(Skin.CURRENT, skin).call(() -> {
             GUIRoot gui_root = new GUIRoot(this);
             // This happens early before the viewport is fully initialized
@@ -138,13 +137,13 @@ public final class GUI implements Animated, FrameDriver {
         fade = null;
     }
 
-    void switchRoot(@NonNull GUIRoot gui_root, @Nullable UIRenderer renderer) {
+    void switchRoot(GUIRoot gui_root, @Nullable UIRenderer renderer) {
         current_root.removeTree();
         current_root = gui_root;
         this.renderer = renderer;
     }
 
-    public @NonNull GUIRoot getGUIRoot() {
+    public GUIRoot getGUIRoot() {
         return current_root;
     }
 
@@ -204,7 +203,7 @@ public final class GUI implements Animated, FrameDriver {
         }
     }
 
-    private void renderGUI(@NonNull RenderContext context) {
+    private void renderGUI(RenderContext context) {
         GUIRoot guiRoot = getGUIRoot();
 
         // If we are rendering directly to the back buffer (e.g. loading screen),

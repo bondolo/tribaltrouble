@@ -4,20 +4,19 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Race;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Defines a complete multiplayer match setup composing WorldParameters, Game, IslandConfig, and player info.
  */
 public final class MultiplayerSetup {
-    private final @NonNull WorldParameters worldParameters;
-    private final @NonNull IslandConfig islandConfig;
-    private final @NonNull Game game;
-    private final @NonNull Race player0_race;
+    private final WorldParameters worldParameters;
+    private final IslandConfig islandConfig;
+    private final Game game;
+    private final Race player0_race;
     private final int player0_team;
 
-    public MultiplayerSetup(@NonNull WorldParameters worldParameters, @NonNull Game game,
-            @NonNull IslandConfig islandConfig, @NonNull Race player0_race, int player0_team) {
+    public MultiplayerSetup(WorldParameters worldParameters, Game game,
+            IslandConfig islandConfig, Race player0_race, int player0_team) {
         this.worldParameters = worldParameters;
         this.game = game;
         this.islandConfig = islandConfig;
@@ -25,19 +24,19 @@ public final class MultiplayerSetup {
         this.player0_team = player0_team;
     }
 
-    public @NonNull WorldParameters getWorldParameters() {
+    public WorldParameters getWorldParameters() {
         return worldParameters;
     }
 
-    public @NonNull Game getGame() {
+    public Game getGame() {
         return game;
     }
 
-    public @NonNull IslandConfig getIslandConfig() {
+    public IslandConfig getIslandConfig() {
         return islandConfig;
     }
 
-    public @NonNull Race getPlayer0Race() {
+    public Race getPlayer0Race() {
         return player0_race;
     }
 

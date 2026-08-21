@@ -1,6 +1,5 @@
 package com.oddlabs.tt.input;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.EnumMap;
@@ -13,17 +12,17 @@ import java.util.Set;
  * Manages game action input evaluation and runtime polling state.
  */
 public final class InputManager {
-    private final @NonNull InputBindingSettings settings;
-    private final @NonNull ControlSettings controlSettings;
-    private final Set<@NonNull GameAction> activeActions = EnumSet.noneOf(GameAction.class);
-    private final Map<@NonNull Key, @NonNull Set<@NonNull GameAction>> keyState = new EnumMap<>(Key.class);
+    private final InputBindingSettings settings;
+    private final ControlSettings controlSettings;
+    private final Set<GameAction> activeActions = EnumSet.noneOf(GameAction.class);
+    private final Map<Key, Set<GameAction>> keyState = new EnumMap<>(Key.class);
 
-    public InputManager(@NonNull InputBindingSettings settings, @NonNull ControlSettings controlSettings) {
+    public InputManager(InputBindingSettings settings, ControlSettings controlSettings) {
         this.settings = settings;
         this.controlSettings = controlSettings;
     }
 
-    public InputManager(@NonNull InputBindingSettings settings) {
+    public InputManager(InputBindingSettings settings) {
         this(settings, new ControlSettings());
     }
 
@@ -31,27 +30,27 @@ public final class InputManager {
         this(new InputBindingSettings(), new ControlSettings());
     }
 
-    public @NonNull ControlSettings getControlSettings() {
+    public ControlSettings getControlSettings() {
         return controlSettings;
     }
 
-    public @NonNull InputBindingSettings getSettings() {
+    public InputBindingSettings getSettings() {
         return settings;
     }
 
-    public @NonNull NavigableSet<@NonNull InputBinding> getBindings(@NonNull GameAction action) {
+    public NavigableSet<InputBinding> getBindings(GameAction action) {
         return settings.getBindings(action);
     }
 
-    public @NonNull String getBindingString(@NonNull GameAction action) {
+    public String getBindingString(GameAction action) {
         return settings.getBindingString(action);
     }
 
-    public @NonNull NavigableSet<@NonNull InputBinding> getDefaultBindings(@NonNull GameAction action) {
+    public NavigableSet<InputBinding> getDefaultBindings(GameAction action) {
         return settings.getDefaultBindings(action);
     }
 
-    public void setBindings(@NonNull GameAction action, @NonNull Collection<@NonNull InputBinding> newBindings) {
+    public void setBindings(GameAction action, Collection<InputBinding> newBindings) {
         settings.setBindings(action, newBindings);
     }
 
@@ -59,15 +58,15 @@ public final class InputManager {
         settings.resetToDefaults();
     }
 
-    public @NonNull String exportBindings() {
+    public String exportBindings() {
         return settings.exportBindings();
     }
 
-    public void importBindings(@NonNull String json) {
+    public void importBindings(String json) {
         settings.importBindings(json);
     }
 
-    public @NonNull Set<@NonNull GameAction> getActions(@NonNull KeyboardEvent event) {
+    public Set<GameAction> getActions(KeyboardEvent event) {
         Set<GameAction> actions = EnumSet.noneOf(GameAction.class);
         for (InputBinding binding : settings.getAllBindings()) {
             if (binding.matches(event)) {
@@ -78,7 +77,7 @@ public final class InputManager {
     }
 
     // Called by LocalInput or InputState to update polling state
-    public void updateState(@NonNull KeyboardEvent event, boolean pressed) {
+    public void updateState(KeyboardEvent event, boolean pressed) {
         if (pressed) {
             Set<GameAction> actions = getActions(event);
             if (!actions.isEmpty()) {
@@ -93,7 +92,7 @@ public final class InputManager {
         }
     }
 
-    public boolean isActive(@NonNull GameAction action) {
+    public boolean isActive(GameAction action) {
         return activeActions.contains(action);
     }
 

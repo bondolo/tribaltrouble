@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.simulation.model.BoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Provides access to visual bounds of landscape elements (rocks, iron, plants, chickens)
@@ -14,15 +13,11 @@ public interface LandscapeBoundsProvider {
     /** Iron/Rock supply fragment variations */
     int SUPPLY_FRAGMENT_COUNT = 5;
 
-    @NonNull
     BoundsProvider getRockBounds(int index);
 
-    @NonNull
     BoundsProvider getIronBounds(int index);
 
-    @NonNull
     BoundsProvider getPlantBounds(Terrain terrain, int index);
 
-    @NonNull
     BoundsProvider getChickenBounds();
 }

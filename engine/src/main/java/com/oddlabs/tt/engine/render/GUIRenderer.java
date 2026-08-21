@@ -12,7 +12,6 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -36,14 +35,14 @@ public final class GUIRenderer {
     private static final int MAX_TEXTURES = 8;
     private static final Matrix4fc IDENTITY_MATRIX = new Matrix4f();
 
-    private final @NonNull ShaderProgram shader;
+    private final ShaderProgram shader;
     private final MatrixStack matrixStack = new MatrixStack(); // No flush callback
     private final Matrix4f projectionMatrix = new Matrix4f();
-    private final @NonNull VertexLayout<GUIShader.Attribute> layout;
+    private final VertexLayout<GUIShader.Attribute> layout;
 
-    private final @NonNull VertexArray vao;
+    private final VertexArray vao;
     private final int vbo;
-    private final @NonNull ByteBuffer vertexBuffer;
+    private final ByteBuffer vertexBuffer;
 
     // Texture batching state
     private final @Nullable Texture[] currentTextures = new Texture[MAX_TEXTURES];
@@ -51,12 +50,12 @@ public final class GUIRenderer {
     private int quadCount = 0;
 
     // Modulation stack
-    private final Deque<Color.@NonNull Linear> modulationStack = new ArrayDeque<>();
+    private final Deque<Color.Linear> modulationStack = new ArrayDeque<>();
     private Color.Linear currentModulation = Color.Linear.WHITE;
 
     // Clip stack (logical coordinates)
-    private final Deque<@NonNull Vector4f> clipStack = new ArrayDeque<>();
-    private @NonNull Vector4f currentClip = new Vector4f();
+    private final Deque<Vector4f> clipStack = new ArrayDeque<>();
+    private Vector4f currentClip = new Vector4f();
 
     private @Nullable RenderContext currentContext;
 
@@ -79,7 +78,7 @@ public final class GUIRenderer {
         setupBuffers(ibo);
     }
 
-    public void pushModulation(Color.@NonNull Linear modulation) {
+    public void pushModulation(Color.Linear modulation) {
         flush();
         modulationStack.push(modulation);
         currentModulation = modulation;
@@ -116,8 +115,8 @@ public final class GUIRenderer {
         vao.unbind();
     }
 
-    public void renderFrame(@NonNull RenderContext context, float width, float height,
-            @NonNull Runnable frameCommands) {
+    public void renderFrame(RenderContext context, float width, float height,
+            Runnable frameCommands) {
         GLUtils.checkGLError("Before GUI Render");
         this.currentContext = context;
 
@@ -149,7 +148,7 @@ public final class GUIRenderer {
         }
     }
 
-    public void drawColoredQuad(float x, float y, float w, float h, Color.@NonNull Linear color) {
+    public void drawColoredQuad(float x, float y, float w, float h, Color.Linear color) {
         if (quadCount >= MAX_QUADS) {
             flush();
         }
@@ -157,27 +156,27 @@ public final class GUIRenderer {
         putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color);
     }
 
-    public void drawModeIcon(@NonNull ModeIconQuads iconQuad, ModeIconQuads.@NonNull Mode skinMode, float x, float y) {
+    public void drawModeIcon(ModeIconQuads iconQuad, ModeIconQuads.Mode skinMode, float x, float y) {
         drawIcon(iconQuad.quad(skinMode), x, y);
     }
 
-    public void drawIcon(@NonNull IconQuad iconQuad, float x, float y) {
+    public void drawIcon(IconQuad iconQuad, float x, float y) {
         drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad
                 .getV1(), iconQuad.getU2(), iconQuad.getV2(), Color.Linear.WHITE);
     }
 
-    public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, @NonNull Color tint) {
+    public void drawIcon(IconQuad iconQuad, float x, float y, Color tint) {
         drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad
                 .getV1(), iconQuad.getU2(), iconQuad.getV2(), tint);
     }
 
-    public void drawIcon(@NonNull IconQuad iconQuad, float x, float y, float w, float h) {
+    public void drawIcon(IconQuad iconQuad, float x, float y, float w, float h) {
         drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad
                 .getV2(), Color.Linear.WHITE);
     }
 
-    public void drawTexture(@NonNull Texture texture, float x, float y, float w, float h, float u1, float v1, float u2,
-            float v2, @NonNull Color tint) {
+    public void drawTexture(Texture texture, float x, float y, float w, float h, float u1, float v1, float u2,
+            float v2, Color tint) {
         if (quadCount >= MAX_QUADS) {
             flush();
         }
@@ -187,7 +186,7 @@ public final class GUIRenderer {
                 tint));
     }
 
-    private float getTextureIndex(@NonNull Texture texture) {
+    private float getTextureIndex(Texture texture) {
         for (int i = 0; i < textureCount; i++) {
             if (currentTextures[i].getHandle() == texture.getHandle()) {
                 return (float) i;
@@ -207,7 +206,7 @@ public final class GUIRenderer {
      * @param tint Assumed to be a linear color.
      */
     private void putQuad(float x, float y, float w, float h, float u1, float v1, float u2, float v2, float texIndex,
-            @NonNull Color tint) {
+            Color tint) {
         assert tint instanceof Color.Linear : "Tint must be linear not " + tint.getClass().getSimpleName();
         Matrix4f mat = matrixStack.current();
 
@@ -313,7 +312,6 @@ public final class GUIRenderer {
         assert currentClip != null;
     }
 
-    @NonNull
     public MatrixStack getMatrixStack() {
         return matrixStack;
     }

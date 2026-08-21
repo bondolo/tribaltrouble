@@ -21,7 +21,6 @@ import com.oddlabs.tt.simulation.behaviour.PlaceBuildingController;
 import com.oddlabs.tt.simulation.behaviour.WalkController;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Random;
@@ -42,7 +41,7 @@ public abstract class AI implements Animated {
         run_ai = run;
     }
 
-    private final @NonNull Player owner;
+    private final Player owner;
     private int INDEX_IDLE_PEONS;
     private int INDEX_IDLE_CHIEFTAINS;
     private int INDEX_IDLE_WARRIORS;
@@ -63,7 +62,7 @@ public abstract class AI implements Animated {
     private boolean tower_under_construction = false;
     private float sleep_time;
 
-    public AI(@NonNull Player owner, @Nullable UnitInfo unit_info) {
+    public AI(Player owner, @Nullable UnitInfo unit_info) {
         this.owner = owner;
         owner.getWorld().getAnimationManagerRealTime().registerAnimation(this);
         reset();
@@ -116,11 +115,11 @@ public abstract class AI implements Animated {
         }
     }
 
-    protected final @NonNull UnitGrid getUnitGrid() {
+    protected final UnitGrid getUnitGrid() {
         return owner.getWorld().getUnitGrid();
     }
 
-    protected final @NonNull Player getOwner() {
+    protected final Player getOwner() {
         return owner;
     }
 
@@ -129,59 +128,59 @@ public abstract class AI implements Animated {
         classifyIndex(lists);
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getIdlePeons() {
+    protected final Selectable<?> @Nullable [] getIdlePeons() {
         return INDEX_IDLE_PEONS == -1 ? null : lists[INDEX_IDLE_PEONS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getIdleChieftains() {
+    protected final Selectable<?> @Nullable [] getIdleChieftains() {
         return INDEX_IDLE_CHIEFTAINS == -1 ? null : lists[INDEX_IDLE_CHIEFTAINS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getIdleWarriors() {
+    protected final Selectable<?> @Nullable [] getIdleWarriors() {
         return INDEX_IDLE_WARRIORS == -1 ? null : lists[INDEX_IDLE_WARRIORS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getGatherTreePeons() {
+    protected final Selectable<?> @Nullable [] getGatherTreePeons() {
         return INDEX_GATHER_TREE_PEONS == -1 ? null : lists[INDEX_GATHER_TREE_PEONS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getGatherRockPeons() {
+    protected final Selectable<?> @Nullable [] getGatherRockPeons() {
         return INDEX_GATHER_ROCK_PEONS == -1 ? null : lists[INDEX_GATHER_ROCK_PEONS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getGatherIronPeons() {
+    protected final Selectable<?> @Nullable [] getGatherIronPeons() {
         return INDEX_GATHER_IRON_PEONS == -1 ? null : lists[INDEX_GATHER_IRON_PEONS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getGatherRubberPeons() {
+    protected final Selectable<?> @Nullable [] getGatherRubberPeons() {
         return INDEX_GATHER_RUBBER_PEONS == -1 ? null : lists[INDEX_GATHER_RUBBER_PEONS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getArmory() {
+    protected final Selectable<?> @Nullable [] getArmory() {
         return INDEX_ARMORY == -1 ? null : lists[INDEX_ARMORY];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getQuarters() {
+    protected final Selectable<?> @Nullable [] getQuarters() {
         return INDEX_QUARTERS == -1 ? null : lists[INDEX_QUARTERS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getTowers() {
+    protected final Selectable<?> @Nullable [] getTowers() {
         return INDEX_TOWERS == -1 ? null : lists[INDEX_TOWERS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getConstructionSites() {
+    protected final Selectable<?> @Nullable [] getConstructionSites() {
         return INDEX_CONSTRUCTION_SITES == -1 ? null : lists[INDEX_CONSTRUCTION_SITES];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getPlaceBuildingPeons() {
+    protected final Selectable<?> @Nullable [] getPlaceBuildingPeons() {
         return INDEX_PLACE_BUILDING_PEONS == -1 ? null : lists[INDEX_PLACE_BUILDING_PEONS];
     }
 
-    protected final @NonNull Selectable<?> @Nullable [] getDefendingUnits() {
+    protected final Selectable<?> @Nullable [] getDefendingUnits() {
         return INDEX_DEFENDING_UNITS == -1 ? null : lists[INDEX_DEFENDING_UNITS];
     }
 
-    private void classifyIndex(@NonNull Selectable<?> @NonNull [] @NonNull [] lists) {
+    private void classifyIndex(Selectable<?>[][] lists) {
         INDEX_IDLE_PEONS = -1;
         INDEX_IDLE_CHIEFTAINS = -1;
         INDEX_IDLE_WARRIORS = -1;
@@ -295,7 +294,7 @@ public abstract class AI implements Animated {
         }
     }
 
-    public static int attackLandscape(@NonNull Player owner, @NonNull Target target, int num_warriors) {
+    public static int attackLandscape(Player owner, Target target, int num_warriors) {
         int ordered = 0;
         Selectable<?>[][] lists = owner.classifyUnits();
         for (Selectable<?>[] list : lists) {
@@ -317,7 +316,7 @@ public abstract class AI implements Animated {
         return ordered;
     }
 
-    public static @Nullable Unit getWarrior(@NonNull Player owner) {
+    public static @Nullable Unit getWarrior(Player owner) {
         Selectable<?>[][] lists = owner.classifyUnits();
         for (Selectable<?>[] list : lists) {
             Selectable<?> s = list[0];
@@ -328,7 +327,7 @@ public abstract class AI implements Animated {
         return null;
     }
 
-    protected final Target getTarget(@NonNull Random random) {
+    protected final Target getTarget(Random random) {
         float RADIUS = 30;
         float target_x = owner.getStartX() + random.nextFloat(-RADIUS, RADIUS);
         float target_y = owner.getStartY() + random.nextFloat(-RADIUS, RADIUS);

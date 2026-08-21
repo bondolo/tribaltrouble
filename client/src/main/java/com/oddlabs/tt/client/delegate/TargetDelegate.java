@@ -8,12 +8,11 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 public class TargetDelegate extends ControllableCameraDelegate<GameCamera> {
-    private final @NonNull Action action;
+    private final Action action;
 
-    public TargetDelegate(@NonNull WorldViewer viewer, @NonNull GameCamera camera, @NonNull Action action) {
+    public TargetDelegate(WorldViewer viewer, GameCamera camera, Action action) {
         super(viewer, camera);
         this.action = action;
     }
@@ -29,12 +28,12 @@ public class TargetDelegate extends ControllableCameraDelegate<GameCamera> {
     }
 
     @Override
-    protected final @NonNull CursorType getCursorType() {
+    protected final CursorType getCursorType() {
         return CursorType.TARGET;
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (event.consumeAction(GameAction.UI_CANCEL)) {
                 pop();
@@ -47,7 +46,7 @@ public class TargetDelegate extends ControllableCameraDelegate<GameCamera> {
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
         if (button == MouseButton.LEFT) {
             getViewer().getPicker().pickTarget(getViewer().getSelection().getCurrentSelection(),
                     getCamera().getState(), getViewer().getPeerHub().getPlayerInterface(),

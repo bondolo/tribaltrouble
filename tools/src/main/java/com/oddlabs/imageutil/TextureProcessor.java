@@ -3,7 +3,6 @@ package com.oddlabs.imageutil;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.util.DXTImage;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.stb.STBDXT;
 import org.lwjgl.system.MemoryUtil;
@@ -34,7 +33,7 @@ public final class TextureProcessor {
         DATA_LINEAR
     }
 
-    public record SourceTarget(@NonNull Path source, @NonNull Path target) {
+    public record SourceTarget(Path source, Path target) {
     }
 
     private TextureProcessor() {
@@ -43,7 +42,7 @@ public final class TextureProcessor {
     /**
      * Processes a single file to a specific output file.
      */
-    public static void processFile(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile)
+    public static void processFile(Path infile, List<String> operations, Path outfile)
             throws IOException {
         String basisuPath = System.getProperty("basisu.path");
         UsageMode usageMode = determineMode(infile, operations);
@@ -63,8 +62,8 @@ public final class TextureProcessor {
         }
     }
 
-    private static void processWithBasisu(@NonNull Path infile, @NonNull List<String> operations, @NonNull Path outfile,
-            @NonNull String basisuPath, @NonNull UsageMode usageMode) throws IOException {
+    private static void processWithBasisu(Path infile, List<String> operations, Path outfile,
+            String basisuPath, UsageMode usageMode) throws IOException {
         Path workDir = Files.createTempDirectory("basisu_work");
         try {
             // copy input to workDir to have a clean, known name
@@ -161,7 +160,7 @@ public final class TextureProcessor {
         }
     }
 
-    private static void deleteDirectory(@NonNull Path path) throws IOException {
+    private static void deleteDirectory(Path path) throws IOException {
         if (Files.exists(path)) {
             try (Stream<Path> s = Files.walk(path)) {
                 s.sorted(Comparator.reverseOrder()).forEach(p -> {
@@ -175,7 +174,7 @@ public final class TextureProcessor {
         }
     }
 
-    private static void execute(@NonNull List<String> command, @NonNull Path workingDir) throws IOException {
+    private static void execute(List<String> command, Path workingDir) throws IOException {
         try (Process process = new ProcessBuilder(command)
                 .directory(workingDir.toFile())
                 .start()) {
@@ -194,16 +193,16 @@ public final class TextureProcessor {
     /**
      * Processes all PNG files in a directory into an output directory.
      */
-    public static void processBatch(@NonNull Path inputDir, @NonNull List<@NonNull String> operations,
-            @NonNull Path outputDir) throws IOException {
+    public static void processBatch(Path inputDir, List<String> operations,
+            Path outputDir) throws IOException {
         Files.createDirectories(outputDir);
         try (Stream<Path> stream = Files.list(inputDir)) {
             processFiles(stream, operations, outputDir);
         }
     }
 
-    public static void processFiles(@NonNull Stream<Path> stream, @NonNull List<@NonNull String> operations,
-            @NonNull Path outputDir) throws IOException {
+    public static void processFiles(Stream<Path> stream, List<String> operations,
+            Path outputDir) throws IOException {
         String format = "dds";
         // Check for -format in operations
         for (int i = 0; i < operations.size(); i++) {
@@ -227,7 +226,7 @@ public final class TextureProcessor {
         }
     }
 
-    public static void processFiles(@NonNull Stream<@NonNull SourceTarget> stream, @NonNull List<String> operations)
+    public static void processFiles(Stream<SourceTarget> stream, List<String> operations)
             throws IOException {
         try {
             stream.filter(st -> {
@@ -254,8 +253,8 @@ public final class TextureProcessor {
         }
     }
 
-    private static Layer @NonNull [] applyOperations(@NonNull Iterator<String> args, Layer @NonNull [] images,
-            @NonNull Path infile) {
+    private static Layer[] applyOperations(Iterator<String> args, Layer[] images,
+            Path infile) {
         UsageMode usageMode = inferUsageFromName(infile);
         while (args.hasNext()) {
             String op = args.next();
@@ -281,8 +280,8 @@ public final class TextureProcessor {
         return images;
     }
 
-    private static Layer @NonNull [] applyOperation(@NonNull String op, @NonNull Iterator<String> args,
-            Layer @NonNull [] images, @NonNull UsageMode usageMode) {
+    private static Layer[] applyOperation(String op, Iterator<String> args,
+            Layer[] images, UsageMode usageMode) {
         boolean isData = usageMode == UsageMode.DATA_LINEAR;
 
         switch (op) {
@@ -355,12 +354,12 @@ public final class TextureProcessor {
         return images;
     }
 
-    private static @NonNull UsageMode determineMode(@NonNull Path infile, @NonNull List<String> operations) {
+    private static UsageMode determineMode(Path infile, List<String> operations) {
         UsageMode usageMode = parseExplictMode(operations);
         return usageMode != null ? usageMode : inferUsageFromName(infile);
     }
 
-    private static @Nullable UsageMode parseExplictMode(@NonNull List<String> operations) {
+    private static @Nullable UsageMode parseExplictMode(List<String> operations) {
         for (int i = 0; i < operations.size(); i++) {
             String op = operations.get(i);
             if ("-data".equals(op)) {
@@ -382,14 +381,14 @@ public final class TextureProcessor {
         return null;
     }
 
-    private static @NonNull UsageMode inferUsageFromName(@NonNull Path infile) {
+    private static UsageMode inferUsageFromName(Path infile) {
         String lowerName = infile.getFileName().toString().toLowerCase(Locale.ROOT);
         return lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica")
                 ? UsageMode.DATA_LINEAR
                 : UsageMode.COLOR_SRGB;
     }
 
-    public static @NonNull Layer loadFile(@NonNull Path file) throws IOException {
+    public static Layer loadFile(Path file) throws IOException {
         try (var in = new BufferedInputStream(Files.newInputStream(file))) {
             BufferedImage image = ImageIO.read(in);
             int width = image.getWidth();
@@ -418,7 +417,7 @@ public final class TextureProcessor {
         }
     }
 
-    public static void saveDDS(@NonNull Path file, @NonNull Layer @NonNull [] images) throws IOException {
+    public static void saveDDS(Path file, Layer[] images) throws IOException {
         int width = images[0].getWidth();
         int height = images[0].getHeight();
         boolean hasAlpha = images[0].a != null;
@@ -482,7 +481,7 @@ public final class TextureProcessor {
         new DXTImage((short) width, (short) height, fourCC, mipmap_bytes).write(file);
     }
 
-    private static void save(@NonNull Path file, @NonNull Layer @NonNull [] images) throws IOException {
+    private static void save(Path file, Layer[] images) throws IOException {
         String filename = file.getFileName().toString();
         String extension = filename.substring(filename.lastIndexOf('.') + 1);
         switch (extension) {

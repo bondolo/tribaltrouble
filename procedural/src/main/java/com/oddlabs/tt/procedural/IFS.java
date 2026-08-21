@@ -3,15 +3,14 @@ package com.oddlabs.tt.procedural;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
 public final class IFS {
-    public final @NonNull Channel channel;
+    public final Channel channel;
 
     public IFS(int width, int height, int maxpoints, int seed,
-            float @NonNull [] @NonNull [] @NonNull [] transformations, float[] probabilities) {
+            float[][][] transformations, float[] probabilities) {
         channel = new Channel(width, height);
         Random random = new Random(seed);
 
@@ -51,11 +50,11 @@ public final class IFS {
         }
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel, channel);
     }
 
-    public @NonNull Channel toChannel() {
+    public Channel toChannel() {
         return channel;
     }
 

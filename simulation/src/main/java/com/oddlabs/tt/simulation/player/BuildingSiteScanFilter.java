@@ -6,7 +6,6 @@ import com.oddlabs.tt.simulation.model.BuildingTemplate;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,7 @@ public final class BuildingSiteScanFilter implements ScanFilter {
         return false;
     }
 
-    public @NonNull List<LandscapeTarget> getResult() {
+    public List<LandscapeTarget> getResult() {
         return result;
     }
 }

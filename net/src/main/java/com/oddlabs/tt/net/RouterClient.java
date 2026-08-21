@@ -13,24 +13,23 @@ import com.oddlabs.router.RouterInterface;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.router.SessionInfo;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public final class RouterClient implements ConnectionInterface {
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(RouterClientInterface.class);
-    private final @NonNull AbstractConnection connection;
-    private final @NonNull GameInterface game_interface;
+    private final AbstractConnection connection;
+    private final GameInterface game_interface;
     private final RouterHandler router_handler;
 
-    public RouterClient(@NonNull NetworkSelector network, RouterHandler router_handler, int port) {
+    public RouterClient(NetworkSelector network, RouterHandler router_handler, int port) {
         this.router_handler = router_handler;
         this.connection = new Connection(network, new InetSocketAddress(Utils.getLoopbackAddress(), port), this);
         this.game_interface = (GameInterface) ARMIEvent.createProxy(connection, GameInterface.class);
     }
 
-    public RouterClient(@NonNull NetworkSelector network, String address, RouterHandler router_handler) {
+    public RouterClient(NetworkSelector network, String address, RouterHandler router_handler) {
         this.router_handler = router_handler;
         this.connection = new Connection(network, address, RouterInterface.PORT, this);
         this.game_interface = (GameInterface) ARMIEvent.createProxy(connection, GameInterface.class);
@@ -41,12 +40,12 @@ public final class RouterClient implements ConnectionInterface {
         router_interface.login(session_id, session_info, client_id);
     }
 
-    public @NonNull GameInterface getInterface() {
+    public GameInterface getInterface() {
         return game_interface;
     }
 
     @Override
-    public void handle(Object sender, @NonNull ARMIEvent armi_event) {
+    public void handle(Object sender, ARMIEvent armi_event) {
         try {
             armi_event.execute(interface_methods, router_handler);
         } catch (IllegalARMIEventException e) {

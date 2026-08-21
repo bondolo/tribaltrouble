@@ -7,7 +7,6 @@ import com.oddlabs.tt.gui.Icons;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.Texture;
-import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Node;
 
 public final class VikingCampaignIcons implements CampaignIcons {
@@ -15,22 +14,22 @@ public final class VikingCampaignIcons implements CampaignIcons {
 
     private static final VikingCampaignIcons ICONS = new VikingCampaignIcons("/gui/viking_campaign.xml");
 
-    private final @NonNull IconQuad map;
-    private final @NonNull MapIslandData[] islands = new MapIslandData[NUM_ISLANDS];
-    private final @NonNull IconQuad[] flags = new IconQuad[5];
-    private final @NonNull IconQuad[] boats = new IconQuad[5];
-    private final @NonNull GUIIcon[] hidden = new GUIIcon[2];
-    private final @NonNull IconQuad[] faces = new IconQuad[9];
+    private final IconQuad map;
+    private final MapIslandData[] islands = new MapIslandData[NUM_ISLANDS];
+    private final IconQuad[] flags = new IconQuad[5];
+    private final IconQuad[] boats = new IconQuad[5];
+    private final GUIIcon[] hidden = new GUIIcon[2];
+    private final IconQuad[] faces = new IconQuad[9];
     private final int offset_x;
     private final int offset_y;
     private final int width;
     private final int height;
 
-    public static @NonNull VikingCampaignIcons getIcons() {
+    public static VikingCampaignIcons getIcons() {
         return ICONS;
     }
 
-    private VikingCampaignIcons(@NonNull String xml_file) {
+    private VikingCampaignIcons(String xml_file) {
         Node root = Icons.loadFile(xml_file, new GUIErrorHandler());
         Texture atlas = Icons.loadTexture(root);
 
@@ -68,8 +67,8 @@ public final class VikingCampaignIcons implements CampaignIcons {
         height = Icons.getInt(map_node, "height");
     }
 
-    private @NonNull MapIslandData loadMapIslandData(@NonNull Node root, @NonNull String name,
-            @NonNull Texture texture) {
+    private MapIslandData loadMapIslandData(Node root, String name,
+            Texture texture) {
         Node node = Icons.getNodeByName(name, root);
         ModeIconQuads quads = Icons.getNamedIconQuads(node, "island", texture);
         Node n = Icons.getNodeByName("island", node);
@@ -81,7 +80,7 @@ public final class VikingCampaignIcons implements CampaignIcons {
         return new MapIslandData(quads, x, y, flags[pin_index], boats[pin_index], pin_x, pin_y);
     }
 
-    private @NonNull GUIIcon getNamedGUIIcon(@NonNull Node root, @NonNull String name, @NonNull Texture texture) {
+    private GUIIcon getNamedGUIIcon(Node root, String name, Texture texture) {
         IconQuad temp = Icons.getNamedIconQuad(root, name, texture);
         Node n = Icons.getNodeByName(name, root);
         int x = Icons.getInt(n, "x");
@@ -92,17 +91,17 @@ public final class VikingCampaignIcons implements CampaignIcons {
     }
 
     @Override
-    public @NonNull GUIIcon @NonNull [] getHiddenRoutes() {
+    public GUIIcon[] getHiddenRoutes() {
         return hidden;
     }
 
     @Override
-    public @NonNull IconQuad @NonNull [] getFaces() {
+    public IconQuad[] getFaces() {
         return faces;
     }
 
     @Override
-    public @NonNull IconQuad getMap() {
+    public IconQuad getMap() {
         return map;
     }
 
@@ -128,7 +127,7 @@ public final class VikingCampaignIcons implements CampaignIcons {
     }
 
     @Override
-    public @NonNull MapIslandData getMapIslandData(int i) {
+    public MapIslandData getMapIslandData(int i) {
         return islands[i];
     }
 }

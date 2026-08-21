@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.settings;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -44,10 +43,10 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
     public boolean team_stencil = false;
     public boolean sound_emojis = true;
 
-    public Color.@NonNull Standard @NonNull [] team_colours = Arrays.copyOf(DEFAULT_TEAM_COLOURS,
+    public Color.Standard[] team_colours = Arrays.copyOf(DEFAULT_TEAM_COLOURS,
             DEFAULT_TEAM_COLOURS.length);
 
-    public transient Color.Linear @NonNull [] linear_team_colours = Arrays.stream(team_colours)
+    public transient Color.Linear[] linear_team_colours = Arrays.stream(team_colours)
             .map(Color.Linear::new)
             .toArray(Color.Linear[]::new);
 
@@ -58,7 +57,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
     }
 
     @Override
-    public void saveToProperties(@NonNull Properties props) {
+    public void saveToProperties(Properties props) {
         AccessibilitySettings defaults = new AccessibilitySettings();
         setProperty(props, "cvd_mode", cvd_mode, defaults.cvd_mode);
         setProperty(props, "cvd_intensity", cvd_intensity, defaults.cvd_intensity);
@@ -73,7 +72,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
     }
 
     @Override
-    public void loadFromProperties(@NonNull Properties props) {
+    public void loadFromProperties(Properties props) {
         cvd_mode = getInt(props, "cvd_mode", cvd_mode);
         cvd_intensity = getFloat(props, "cvd_intensity", cvd_intensity);
         high_contrast = getBoolean(props, "high_contrast", high_contrast);
@@ -87,8 +86,8 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
         updateLinearColors();
     }
 
-    private static void setColoursProperty(@NonNull Properties props, @NonNull String key,
-            Color.@NonNull Standard @NonNull [] value, Color.@NonNull Standard @NonNull [] defaultValue) {
+    private static void setColoursProperty(Properties props, String key,
+            Color.Standard[] value, Color.Standard[] defaultValue) {
         if (!Arrays.equals(value, defaultValue)) {
             String colors = Arrays.stream(value)
                     .mapToInt(Color.Standard::toInt)
@@ -98,8 +97,8 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
         }
     }
 
-    private static Color.@NonNull Standard @NonNull [] getColours(@NonNull Properties props, @NonNull String key,
-            Color.@NonNull Standard @NonNull [] defaultValue) {
+    private static Color.Standard[] getColours(Properties props, String key,
+            Color.Standard[] defaultValue) {
         String value = props.getProperty(key);
         if (value == null) {
             return defaultValue;

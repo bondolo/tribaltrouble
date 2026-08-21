@@ -1,12 +1,11 @@
 package com.oddlabs.tt.net;
 
-import org.jspecify.annotations.NonNull;
 
 public final class GameNetwork {
     private final Server server;
-    private final @NonNull Client client;
+    private final Client client;
 
-    public GameNetwork(Server server, @NonNull Client client) {
+    public GameNetwork(Server server, Client client) {
         this.server = server;
         this.client = client;
         assert client != null;
@@ -17,7 +16,7 @@ public final class GameNetwork {
             server.close();
     }
 
-    public @NonNull Client getClient() {
+    public Client getClient() {
         return client;
     }
 

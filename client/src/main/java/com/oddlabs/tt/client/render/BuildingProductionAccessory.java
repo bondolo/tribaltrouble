@@ -16,7 +16,6 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
@@ -46,18 +45,18 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
         GOING_IDLE
     }
 
-    private final @NonNull Building building;
-    private final @NonNull LinearEmitter emitter;
-    private final @NonNull Vector3fc chimneyOffset;
-    private final @NonNull AudioImplementation audio;
+    private final Building building;
+    private final LinearEmitter emitter;
+    private final Vector3fc chimneyOffset;
+    private final AudioImplementation audio;
 
-    private @NonNull State state = State.IDLE;
+    private State state = State.IDLE;
     private float productionTimer = 0f;
     private float idleTimer = 0f;
     private float goingIdleTimer = 0f;
     private @Nullable AudioPlayer productionPlayer = null;
 
-    public BuildingProductionAccessory(@NonNull Building building, @NonNull AudioImplementation audio) {
+    public BuildingProductionAccessory(Building building, AudioImplementation audio) {
         this.building = building;
         this.audio = audio;
         this.chimneyOffset = building.getTemplate().getChimney();
@@ -166,7 +165,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         if (parent instanceof Building b) {
             return b.getAbilities().hasAbilities(Abilities.BUILD_ARMIES) &&
                     (state != State.IDLE || !emitter.isFinished());
@@ -175,7 +174,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
         dest.translate(chimneyOffset);
     }
 
@@ -185,7 +184,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     }
 
     @Override
-    public @NonNull LinearEmitter getEmitter() {
+    public LinearEmitter getEmitter() {
         return emitter;
     }
 

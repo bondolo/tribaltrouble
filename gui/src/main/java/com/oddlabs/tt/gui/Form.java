@@ -9,14 +9,13 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class Form extends Group {
-    private final Set<@NonNull CloseListener> close_listeners = new CopyOnWriteArraySet<>();
+    private final Set<CloseListener> close_listeners = new CopyOnWriteArraySet<>();
 
     private final @Nullable String caption;
 
@@ -83,7 +82,7 @@ public class Form extends Group {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         var data = Skin.getSkin().getFormData();
         var form = caption != null
                 ? data.form()
@@ -95,18 +94,18 @@ public class Form extends Group {
     }
 
     @Override
-    protected final void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected final void mousePressed(MouseButton button, int x, int y) {
         if (caption != null && y >= getHeight() - Skin.getSkin().getFormData().form().getTopOffset())
             drag = true;
     }
 
     @Override
-    protected final void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    protected final void mouseReleased(MouseButton button, int x, int y) {
         drag = false;
     }
 
     @Override
-    public final void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
+    public final void mouseDragged(MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
             int abs_y) {
         if (drag)
             setPos(getX() + rel_x, getY() + rel_y);
@@ -129,11 +128,11 @@ public class Form extends Group {
     }
 
     @Override
-    protected final void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected final void mouseClicked(MouseButton button, int x, int y, int clicks) {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (event.consumeAction(GameAction.UI_NEXT_PANEL)) {
                 cyclePanelGroup(this, FocusDirection.FORWARD);
@@ -154,7 +153,7 @@ public class Form extends Group {
         super.handleInput(event);
     }
 
-    private boolean cyclePanelGroup(GUIObject root, @NonNull FocusDirection dir) {
+    private boolean cyclePanelGroup(GUIObject root, FocusDirection dir) {
         if (root instanceof PanelGroup pg) {
             pg.cyclePanel(dir);
             return true;
@@ -168,7 +167,7 @@ public class Form extends Group {
     }
 
     @Override
-    protected final void mouseHeld(@NonNull MouseButton button, int x, int y) {
+    protected final void mouseHeld(MouseButton button, int x, int y) {
     }
 
     public final void closedAll() {
@@ -179,11 +178,11 @@ public class Form extends Group {
     protected void closed() {
     }
 
-    public final void addCloseListener(@NonNull CloseListener listener) {
+    public final void addCloseListener(CloseListener listener) {
         close_listeners.add(listener);
     }
 
-    public final void removeCloseListener(@NonNull CloseListener listener) {
+    public final void removeCloseListener(CloseListener listener) {
         close_listeners.remove(listener);
     }
 
@@ -210,7 +209,7 @@ public class Form extends Group {
         }
 
         @Override
-        public void mouseDragged(@NonNull MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
+        public void mouseDragged(MouseButton button, int x, int y, int rel_x, int rel_y, int abs_x,
                 int abs_y) {
             owner.mouseDragged(button, x, y, rel_x, rel_y, abs_x, abs_y);
         }

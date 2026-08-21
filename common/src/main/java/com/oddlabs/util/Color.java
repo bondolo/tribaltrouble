@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serializable;
 import java.nio.FloatBuffer;
@@ -43,22 +42,22 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
     float a();
 
     /** stores color in the provided float buffer in RGBA order */
-    default void get(int offset, @NonNull FloatBuffer dest) {
+    default void get(int offset, FloatBuffer dest) {
         dest.put(offset++, r());
         dest.put(offset++, g());
         dest.put(offset++, b());
         dest.put(offset, a());
     }
 
-    default @NonNull Color desaturate(float factor) {
+    default Color desaturate(float factor) {
         return this;
     }
 
-    default @NonNull Color saturate(float factor) {
+    default Color saturate(float factor) {
         return this;
     }
 
-    default @NonNull Color alpha(float alpha) {
+    default Color alpha(float alpha) {
         return this;
     }
 
@@ -74,7 +73,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
         public static final Color.Linear YELLOW = new Linear(Standard.YELLOW);
         public static final Color.Linear TRANSPARENT = new Linear(Standard.TRANSPARENT);
 
-        public Linear(@NonNull Color color) {
+        public Linear(Color color) {
             this(
                     color instanceof Standard ? toLinear(color.r()) : color.r(),
                     color instanceof Standard ? toLinear(color.g()) : color.g(),
@@ -87,24 +86,24 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
             this(gray, gray, gray, alpha);
         }
 
-        public @NonNull Linear add(Color.@NonNull LinearDelta delta) {
+        public Linear add(Color.LinearDelta delta) {
             return new Linear(r + delta.r(), g + delta.g(), b + delta.b(), a + delta.a());
         }
 
-        public @NonNull Linear sub(Color.@NonNull LinearDelta delta) {
+        public Linear sub(Color.LinearDelta delta) {
             return new Linear(r - delta.r(), g - delta.g(), b - delta.b(), a - delta.a());
         }
 
-        public @NonNull Linear mul(float factor) {
+        public Linear mul(float factor) {
             return new Linear(r * factor, g * factor, b * factor, a * factor);
         }
 
-        public @NonNull Linear mul(Color.@NonNull Linear other) {
+        public Linear mul(Color.Linear other) {
             return new Linear(r * other.r(), g * other.g(), b * other.b(), a * other.a());
         }
 
         @Override
-        public @NonNull Linear alpha(float alpha) {
+        public Linear alpha(float alpha) {
             return new Linear(r, g, b, alpha);
         }
 
@@ -115,7 +114,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
          * @param t interpolation factor, typically in [0, 1]
          * @return a new Linear color representing the interpolated state
          */
-        public @NonNull Linear lerp(Color.@NonNull Linear other, float t) {
+        public Linear lerp(Color.Linear other, float t) {
             return new Linear(
                     r + (other.r() - r) * t,
                     g + (other.g() - g) * t,
@@ -124,18 +123,18 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
             );
         }
 
-        public @NonNull LinearDelta delta(Color.@NonNull Linear other) {
+        public LinearDelta delta(Color.Linear other) {
             return new LinearDelta(r - other.r(), g - other.g(), b - other.b(), a - other.a());
         }
 
         @Override
-        public @NonNull Linear desaturate(float factor) {
+        public Linear desaturate(float factor) {
             float gray = 0.2126f * r + 0.7152f * g + 0.0722f * b;
             return this.lerp(new Linear(gray, a), factor);
         }
 
         @Override
-        public @NonNull Linear saturate(float factor) {
+        public Linear saturate(float factor) {
             return desaturate(-factor);
         }
     }
@@ -157,7 +156,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
         public static final Color.Standard MAGENTA = new Color.Standard(MAGENTA_INT);
         public static final Color.Standard TRANSPARENT = new Color.Standard(TRANSPARENT_INT);
 
-        public Standard(@NonNull Color color) {
+        public Standard(Color color) {
             this(
                     color instanceof Linear ? toStandard(color.r()) : color.r(),
                     color instanceof Linear ? toStandard(color.g()) : color.g(),
@@ -188,25 +187,25 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
         }
 
         @Override
-        public @NonNull Standard alpha(float alpha) {
+        public Standard alpha(float alpha) {
             return new Standard(r, g, b, alpha);
         }
 
-        public @NonNull LinearDelta delta(Color.@NonNull Standard other) {
+        public LinearDelta delta(Color.Standard other) {
             return new LinearDelta(r - other.r(), g - other.g(), b - other.b(), a - other.a());
         }
 
-        public @NonNull Linear linear() {
+        public Linear linear() {
             return new Linear(Color.toLinear(r()), Color.toLinear(g()), Color.toLinear(b()), a());
         }
 
         @Override
-        public @NonNull Standard desaturate(float factor) {
+        public Standard desaturate(float factor) {
             return new Standard(this.linear().desaturate(factor));
         }
 
         @Override
-        public @NonNull Standard saturate(float factor) {
+        public Standard saturate(float factor) {
             return new Standard(this.linear().saturate(factor));
         }
 
@@ -218,7 +217,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
          * @param brightness the brightness component, typically in range [0, 1]
          * @return a new standard sRGB color with alpha set to 1.0
          */
-        public static Color.@NonNull Standard hsbToRgb(float hue, float saturation, float brightness) {
+        public static Color.Standard hsbToRgb(float hue, float saturation, float brightness) {
             float r = 0, g = 0, b = 0;
             if (saturation == 0) {
                 r = g = b = brightness;
@@ -273,7 +272,7 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
          *         index 1: saturation (in range [0, 1]),
          *         index 2: brightness (in range [0, 1])
          */
-        public static float @NonNull [] rgbToHsb(Color.@NonNull Standard color) {
+        public static float[] rgbToHsb(Color.Standard color) {
             float r = color.r();
             float g = color.g();
             float b = color.b();
@@ -319,28 +318,28 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
             this(gray, gray, gray, alpha);
         }
 
-        public static @NonNull LinearDelta red(float r) {
+        public static LinearDelta red(float r) {
             return new LinearDelta(r, 0f, 0f, 0f);
         }
 
-        public @NonNull LinearDelta mul(float factor) {
+        public LinearDelta mul(float factor) {
             return new LinearDelta(r * factor, g * factor, b * factor, a * factor);
         }
 
-        public @NonNull LinearDelta add(Color.@NonNull LinearDelta delta) {
+        public LinearDelta add(Color.LinearDelta delta) {
             return new LinearDelta(r + delta.r, g + delta.g, b + delta.b, a + delta.a);
         }
 
-        public @NonNull LinearDelta sub(Color.@NonNull LinearDelta delta) {
+        public LinearDelta sub(Color.LinearDelta delta) {
             return new LinearDelta(r - delta.r, g - delta.g, b - delta.b, a - delta.a);
         }
 
         @Override
-        public @NonNull LinearDelta alpha(float alpha) {
+        public LinearDelta alpha(float alpha) {
             return new LinearDelta(r, g, b, alpha);
         }
 
-        public @NonNull LinearDelta negate() {
+        public LinearDelta negate() {
             return new LinearDelta(-r, -g, -b, -a);
         }
     }

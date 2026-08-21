@@ -2,21 +2,20 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A 9-patch box definition for GUI background and border rendering.
  */
 public final class Box {
-    private final @NonNull ModeIconQuads left_bottom;
-    private final @NonNull ModeIconQuads bottom;
-    private final @NonNull ModeIconQuads right_bottom;
-    private final @NonNull ModeIconQuads right;
-    private final @NonNull ModeIconQuads right_top;
-    private final @NonNull ModeIconQuads top;
-    private final @NonNull ModeIconQuads left_top;
-    private final @NonNull ModeIconQuads left;
-    private final @NonNull ModeIconQuads center;
+    private final ModeIconQuads left_bottom;
+    private final ModeIconQuads bottom;
+    private final ModeIconQuads right_bottom;
+    private final ModeIconQuads right;
+    private final ModeIconQuads right_top;
+    private final ModeIconQuads top;
+    private final ModeIconQuads left_top;
+    private final ModeIconQuads left;
+    private final ModeIconQuads center;
     private final int left_offset;
     private final int bottom_offset;
     private final int right_offset;
@@ -27,15 +26,15 @@ public final class Box {
     private final int bottom_height;
     private final int top_height;
 
-    public Box(@NonNull ModeIconQuads left_bottom,
-            @NonNull ModeIconQuads bottom,
-            @NonNull ModeIconQuads right_bottom,
-            @NonNull ModeIconQuads right,
-            @NonNull ModeIconQuads right_top,
-            @NonNull ModeIconQuads top,
-            @NonNull ModeIconQuads left_top,
-            @NonNull ModeIconQuads left,
-            @NonNull ModeIconQuads center,
+    public Box(ModeIconQuads left_bottom,
+            ModeIconQuads bottom,
+            ModeIconQuads right_bottom,
+            ModeIconQuads right,
+            ModeIconQuads right_top,
+            ModeIconQuads top,
+            ModeIconQuads left_top,
+            ModeIconQuads left,
+            ModeIconQuads center,
             int left_offset,
             int bottom_offset,
             int right_offset,
@@ -60,8 +59,8 @@ public final class Box {
         top_height = top.quad(ModeIconQuads.Mode.NORMAL).getHeight();
     }
 
-    public void render(@NonNull GUIRenderer renderer, float x, float y, int width, int height,
-            ModeIconQuads.@NonNull Mode skinMode) {
+    public void render(GUIRenderer renderer, float x, float y, int width, int height,
+            ModeIconQuads.Mode skinMode) {
         int center_width = width - left_width - right_width;
         int center_height = height - bottom_height - top_height;
 
@@ -94,39 +93,39 @@ public final class Box {
         return top_offset;
     }
 
-    public @NonNull ModeIconQuads getLeftBottom() {
+    public ModeIconQuads getLeftBottom() {
         return left_bottom;
     }
 
-    public @NonNull ModeIconQuads getBottom() {
+    public ModeIconQuads getBottom() {
         return bottom;
     }
 
-    public @NonNull ModeIconQuads getRightBottom() {
+    public ModeIconQuads getRightBottom() {
         return right_bottom;
     }
 
-    public @NonNull ModeIconQuads getRight() {
+    public ModeIconQuads getRight() {
         return right;
     }
 
-    public @NonNull ModeIconQuads getRightTop() {
+    public ModeIconQuads getRightTop() {
         return right_top;
     }
 
-    public @NonNull ModeIconQuads getTop() {
+    public ModeIconQuads getTop() {
         return top;
     }
 
-    public @NonNull ModeIconQuads getLeftTop() {
+    public ModeIconQuads getLeftTop() {
         return left_top;
     }
 
-    public @NonNull ModeIconQuads getLeft() {
+    public ModeIconQuads getLeft() {
         return left;
     }
 
-    public @NonNull ModeIconQuads getCenter() {
+    public ModeIconQuads getCenter() {
         return center;
     }
 

@@ -2,7 +2,6 @@ package com.oddlabs.geometry;
 
 import com.oddlabs.util.ByteCompressedFloatArray;
 import com.oddlabs.util.ShortCompressedFloatArray;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
@@ -13,17 +12,17 @@ public final class SpriteInfo implements Serializable {
     private static final long serialVersionUID = 1;
 
     private final short[] indices;
-    private final @NonNull ShortCompressedFloatArray vertices;
-    private final @NonNull ByteCompressedFloatArray normals;
-    private final @NonNull ShortCompressedFloatArray texcoords;
+    private final ShortCompressedFloatArray vertices;
+    private final ByteCompressedFloatArray normals;
+    private final ShortCompressedFloatArray texcoords;
     private final @Nullable ShortCompressedFloatArray texcoords2;
     private final byte[][] skin_names;
     private final float[][] skin_weights;
     private final String[][] textures;
     private final float[] clear_color;
 
-    public SpriteInfo(String[][] textures, short[] indices, float @NonNull [] vertices, float @NonNull [] normals,
-            float @NonNull [] texcoords, float @Nullable [] texcoords2, byte[][] skin_names, float[][] skin_weights,
+    public SpriteInfo(String[][] textures, short[] indices, float[] vertices, float[] normals,
+            float[] texcoords, float @Nullable [] texcoords2, byte[][] skin_names, float[][] skin_weights,
             float[] clear_color) {
         this.textures = textures;
         this.indices = indices;

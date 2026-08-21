@@ -1,10 +1,8 @@
 package com.oddlabs.tt.base.resource;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.Cleaner;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,14 +25,14 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
      * the thread with a specific context such as the OpenGL context.
      */
     private static final Queue<Runnable> cleanupTasks = new ConcurrentLinkedQueue<>();
-    private static volatile @Nullable Consumer<@NonNull String> errorChecker = null;
+    private static volatile @Nullable Consumer<String> errorChecker = null;
 
     /**
      * Sets an error checker callback to check for errors after running a cleanup task.
      *
      * @param checker The error checker callback.
      */
-    public static void setErrorChecker(@Nullable Consumer<@NonNull String> checker) {
+    public static void setErrorChecker(@Nullable Consumer<String> checker) {
         errorChecker = checker;
     }
 
@@ -44,7 +42,7 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
      *
      * @param task The Runnable task to execute on the GL thread for cleanup.
      */
-    public static void addCleanupTask(@NonNull Runnable task) {
+    public static void addCleanupTask(Runnable task) {
         cleanupTasks.add(task);
     }
 
@@ -97,15 +95,15 @@ public abstract class NativeResource<R extends NativeResource.NativeState> imple
         }
     }
 
-    private final Cleaner.@NonNull Cleanable cleanable;
-    protected final @NonNull R state;
+    private final Cleaner.Cleanable cleanable;
+    protected final R state;
 
-    public NativeResource(@NonNull R state) {
+    public NativeResource(R state) {
         this(state, NativeResource::addCleanupTask);
     }
 
-    protected NativeResource(@NonNull R state, @NonNull Consumer<@NonNull Runnable> cleanupStrategy) {
-        this.state = Objects.requireNonNull(state, "state");
+    protected NativeResource(R state, Consumer<Runnable> cleanupStrategy) {
+        this.state = state;
         this.cleanable = cleaner.register(this, () -> cleanupStrategy.accept(state));
     }
 

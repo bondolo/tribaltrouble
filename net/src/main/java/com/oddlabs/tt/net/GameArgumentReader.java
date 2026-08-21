@@ -3,7 +3,6 @@ package com.oddlabs.tt.net;
 import com.oddlabs.net.ByteBufferInputStream;
 import com.oddlabs.net.DefaultARMIArgumentReader;
 import com.oddlabs.tt.simulation.model.Distributable;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -18,7 +17,7 @@ public final class GameArgumentReader extends DefaultARMIArgumentReader {
     }
 
     @Override
-    public @Nullable Object readArgument(@NonNull Class<?> type, @NonNull ByteBufferInputStream in) throws IOException,
+    public @Nullable Object readArgument(Class<?> type, ByteBufferInputStream in) throws IOException,
             ClassNotFoundException {
         if (Distributable.class.isAssignableFrom(type)) {
             int name = in.buffer().getInt();

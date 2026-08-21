@@ -5,7 +5,6 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.base.event.StateChecksum;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -13,7 +12,7 @@ import org.jspecify.annotations.Nullable;
  * Decoupled from rendering-bound keys; stores its bounding box array directly.
  */
 public sealed class SceneryModel extends Model implements Occupant, ModelToolTip, Animated permits Plants {
-    private final @NonNull BoundsProvider boundsProvider;
+    private final BoundsProvider boundsProvider;
     private final float shadow_diameter;
     private final boolean occupy;
     private final @Nullable String name;
@@ -22,35 +21,35 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     private float anim_time = 0;
     private boolean registeredTarget = false;
 
-    public SceneryModel(@NonNull World world, float x, float y, float dir_x, float dir_y,
-            @NonNull BoundsProvider boundsProvider) {
+    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+            BoundsProvider boundsProvider) {
         this(world, x, y, dir_x, dir_y, boundsProvider, 0f, false, null);
     }
 
-    public SceneryModel(@NonNull World world, float x, float y, float dir_x, float dir_y,
-            @NonNull BoundingBox @NonNull [] bounds) {
+    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+            BoundingBox[] bounds) {
         this(world, x, y, dir_x, dir_y, () -> bounds, 0f, false, null);
     }
 
-    public SceneryModel(@NonNull World world, float x, float y, float dir_x, float dir_y,
-            @NonNull BoundsProvider boundsProvider, float shadow_diameter, boolean occupy, @Nullable String name) {
+    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+            BoundsProvider boundsProvider, float shadow_diameter, boolean occupy, @Nullable String name) {
         this(world, x, y, dir_x, dir_y, boundsProvider, shadow_diameter, occupy, name, -1, -1, 0);
     }
 
-    public SceneryModel(@NonNull World world, float x, float y, float dir_x, float dir_y,
-            @NonNull BoundingBox @NonNull [] bounds, float shadow_diameter, boolean occupy, @Nullable String name) {
+    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+            BoundingBox[] bounds, float shadow_diameter, boolean occupy, @Nullable String name) {
         this(world, x, y, dir_x, dir_y, () -> bounds, shadow_diameter, occupy, name, -1, -1, 0);
     }
 
-    public SceneryModel(@NonNull World world, float x, float y, float dir_x, float dir_y,
-            @NonNull BoundingBox @NonNull [] bounds, float shadow_diameter, boolean occupy, @Nullable String name,
+    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+            BoundingBox[] bounds, float shadow_diameter, boolean occupy, @Nullable String name,
             int animation, float seconds_per_animation_cycle, float anim_offset) {
         this(world, x, y, dir_x, dir_y, () -> bounds, shadow_diameter, occupy, name, animation,
                 seconds_per_animation_cycle, anim_offset);
     }
 
-    public SceneryModel(@NonNull World world, float x, float y, float dir_x, float dir_y,
-            @NonNull BoundsProvider boundsProvider, float shadow_diameter, boolean occupy, @Nullable String name,
+    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+            BoundsProvider boundsProvider, float shadow_diameter, boolean occupy, @Nullable String name,
             int animation, float seconds_per_animation_cycle, float anim_offset) {
         super(world);
         this.boundsProvider = boundsProvider;
@@ -68,7 +67,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
         }
     }
 
-    public final @NonNull BoundsProvider getBoundsProvider() {
+    public final BoundsProvider getBoundsProvider() {
         return boundsProvider;
     }
 
@@ -123,7 +122,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     }
 
     @Override
-    public final void updateChecksum(@NonNull StateChecksum checksum) {
+    public final void updateChecksum(StateChecksum checksum) {
     }
 
     @Override
@@ -156,7 +155,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     }
 
     @Override
-    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+    protected BoundingBox[] getLocalBounds() {
         return boundsProvider.bounds();
     }
 }

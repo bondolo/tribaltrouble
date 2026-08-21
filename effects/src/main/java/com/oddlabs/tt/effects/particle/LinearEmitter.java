@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Iterator;
@@ -26,15 +25,15 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     private final float offset_z;
     private final float emitter_radius;
     private final float emitter_height;
-    protected final @NonNull Vector3f velocity;
-    protected final @NonNull Vector3f acceleration;
-    protected final Color.@NonNull Linear color;
-    protected final @NonNull Vector3f particle_radius;
-    protected final @NonNull Vector3f growth_rate;
+    protected final Vector3f velocity;
+    protected final Vector3f acceleration;
+    protected final Color.Linear color;
+    protected final Vector3f particle_radius;
+    protected final Vector3f growth_rate;
     protected final float friction;
     private final BoundingBox bounds = new BoundingBox();
 
-    protected Color.@NonNull LinearDelta delta_color;
+    protected Color.LinearDelta delta_color;
     protected float energy;
 
     /**
@@ -61,14 +60,14 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
      * @param sprite_renderers sprite renderers to assign to spawned particles
      * @param types number of different particle types/textures
      */
-    protected LinearEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
+    protected LinearEmitter(World world, Vector3f position, float offset_z,
             float emitter_radius, float emitter_height,
             int num_particles, float particles_per_second,
-            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
+            Vector3fc velocity, Vector3fc acceleration,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate, float energy, float friction,
             int src_blend_func, int dst_blend_func,
-            @NonNull TextureKey @NonNull [] textures, @NonNull SpriteKey @Nullable [] sprite_renderers, int types) {
+            TextureKey[] textures, SpriteKey @Nullable [] sprite_renderers, int types) {
         super(world, position, src_blend_func, dst_blend_func, textures, sprite_renderers, types, num_particles,
                 particles_per_second);
         this.offset_z = offset_z;
@@ -85,7 +84,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         position.set(position.x(), position.y(), position.z() + offset_z);
     }
 
-    public final void setParticleRadius(@NonNull Vector3fc radius) {
+    public final void setParticleRadius(Vector3fc radius) {
         this.particle_radius.set(radius);
     }
 
@@ -93,7 +92,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.particle_radius.set(x, y, z);
     }
 
-    public final void setGrowthRate(@NonNull Vector3fc growth_rate) {
+    public final void setGrowthRate(Vector3fc growth_rate) {
         this.growth_rate.set(growth_rate);
     }
 
@@ -101,7 +100,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.growth_rate.set(x, y, z);
     }
 
-    public final void setVelocity(@NonNull Vector3fc velocity) {
+    public final void setVelocity(Vector3fc velocity) {
         this.velocity.set(velocity);
     }
 
@@ -109,7 +108,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.velocity.set(x, y, z);
     }
 
-    public final void setAcceleration(@NonNull Vector3fc acceleration) {
+    public final void setAcceleration(Vector3fc acceleration) {
         this.acceleration.set(acceleration);
     }
 
@@ -117,7 +116,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.acceleration.set(x, y, z);
     }
 
-    public final void setDeltaColor(Color.@NonNull LinearDelta delta_color) {
+    public final void setDeltaColor(Color.LinearDelta delta_color) {
         this.delta_color = delta_color;
     }
 
@@ -194,13 +193,13 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         return initiated;
     }
 
-    protected abstract int initParticle(@NonNull Vector3f position,
-            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
+    protected abstract int initParticle(Vector3f position,
+            Vector3fc velocity, Vector3fc acceleration,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate,
             float energy);
 
-    protected final @NonNull Vector3f randomPosition() {
+    protected final Vector3f randomPosition() {
         Random random = ThreadLocalRandom.current();
         float r = emitter_radius * (float) (1 - random.nextGaussian());
         float a = random.nextFloat(0f, (float) Math.PI * 2);

@@ -1,6 +1,5 @@
 package com.oddlabs.net;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.InvocationHandler;
@@ -19,7 +18,7 @@ final class ARMIInvocationHandler implements InvocationHandler {
     }
 
     @Override
-    public @Nullable Object invoke(Object proxy, @NonNull Method method, Object[] args) {
+    public @Nullable Object invoke(Object proxy, Method method, Object[] args) {
         byte method_id = armi_interface_methods.getMethodIndex(method);
         broker.handle(new ARMIEvent(writer, method.getParameterTypes(), method_id, args));
         return null;

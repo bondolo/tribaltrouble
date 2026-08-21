@@ -2,7 +2,6 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class BorderGroup extends Group {
@@ -12,7 +11,7 @@ public final class BorderGroup extends Group {
         label = null;
     }
 
-    public BorderGroup(@NonNull String caption) {
+    public BorderGroup(String caption) {
         GroupData data = Skin.getSkin().getGroupData();
         label = new Label(caption, data.captionFont());
     }
@@ -36,7 +35,7 @@ public final class BorderGroup extends Group {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         Skin.getSkin().getGroupData().group().render(renderer, 0f, 0f, getWidth(), getHeight(),
                 ModeIconQuads.Mode.NORMAL);
     }

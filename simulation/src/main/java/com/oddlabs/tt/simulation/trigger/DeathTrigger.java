@@ -1,13 +1,12 @@
 package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.simulation.model.Selectable;
-import org.jspecify.annotations.NonNull;
 
 public final class DeathTrigger extends IntervalTrigger {
-    private final @NonNull Selectable<?> selectable;
-    private final @NonNull Runnable runnable;
+    private final Selectable<?> selectable;
+    private final Runnable runnable;
 
-    public DeathTrigger(@NonNull Selectable<?> selectable, @NonNull Runnable runnable) {
+    public DeathTrigger(Selectable<?> selectable, Runnable runnable) {
         super(selectable.getOwner().getWorld(), .5f, 0f);
         this.selectable = selectable;
         this.runnable = runnable;

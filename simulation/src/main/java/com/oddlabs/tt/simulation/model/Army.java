@@ -1,15 +1,14 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Army {
-    private final Set<@NonNull Selectable<?>> selection = new LinkedHashSet<>();
+    private final Set<Selectable<?>> selection = new LinkedHashSet<>();
 
-    public final @NonNull Selectable<?> @NonNull [] filter(int ability_filter) {
+    public final Selectable<?>[] filter(int ability_filter) {
         return (Selectable<?>[]) selection.stream()
                 .filter(s -> s.getAbilities().hasAbilities(ability_filter))
                 .toArray(Selectable[]::new);
@@ -24,23 +23,23 @@ public class Army {
         selection.clear();
     }
 
-    public void remove(@NonNull Selectable<?> selectable) {
+    public void remove(Selectable<?> selectable) {
         selection.remove(selectable);
     }
 
-    public final boolean contains(@NonNull Selectable<?> selectable) {
+    public final boolean contains(Selectable<?> selectable) {
         return selection.contains(selectable);
     }
 
-    public final @NonNull Set<@NonNull Selectable<?>> getSet() {
+    public final Set<Selectable<?>> getSet() {
         return selection;
     }
 
-    public void add(@NonNull Selectable<?> selectable) {
+    public void add(Selectable<?> selectable) {
         selection.add(selectable);
     }
 
-    public void addAll(@NonNull Collection<? extends @NonNull Selectable<?>> selectable) {
+    public void addAll(Collection<? extends Selectable<?>> selectable) {
         selection.addAll(selectable);
     }
 

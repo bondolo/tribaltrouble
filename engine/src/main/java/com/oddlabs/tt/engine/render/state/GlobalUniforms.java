@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render.state;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.render.shader.FogShader;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.ByteBuffer;
@@ -13,8 +12,8 @@ import java.nio.ByteBuffer;
  */
 public final class GlobalUniforms {
 
-    public void update(@NonNull CameraState camera, float time, float seaLevel, @Nullable Water water,
-            @NonNull ByteBuffer buffer) {
+    public void update(CameraState camera, float time, float seaLevel, @Nullable Water water,
+            ByteBuffer buffer) {
         buffer.clear();
 
         // 0: mat4 projection (64)

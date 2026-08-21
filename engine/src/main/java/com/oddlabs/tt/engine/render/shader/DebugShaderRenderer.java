@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -20,8 +19,8 @@ public final class DebugShaderRenderer extends ShaderRenderer {
      *
      * @param shader The shader program to use for rendering.
      */
-    public DebugShaderRenderer(@NonNull ShaderProgram shader, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+    public DebugShaderRenderer(ShaderProgram shader, MatrixStack modelViewStack,
+            MatrixStack projectionStack) {
         super(shader, modelViewStack, projectionStack);
     }
 
@@ -59,7 +58,7 @@ public final class DebugShaderRenderer extends ShaderRenderer {
      *
      * @param color A float array containing the RGB or RGBA color components.
      */
-    public void vertex(float x, float y, float z, float @NonNull [] color) {
+    public void vertex(float x, float y, float z, float[] color) {
         vertex(x, y, z, color[0], color[1], color[2], color.length >= 4 ? color[3] : 1);
     }
 
@@ -81,8 +80,8 @@ public final class DebugShaderRenderer extends ShaderRenderer {
         }
     }
 
-    public void drawAxes(float center, float z, float @NonNull [] xAxisColor, float @NonNull [] yAxisColor,
-            float @NonNull [] zAxisColor) {
+    public void drawAxes(float center, float z, float[] xAxisColor, float[] yAxisColor,
+            float[] zAxisColor) {
         begin(GL11.GL_LINES);
         try {
             // X axis - red

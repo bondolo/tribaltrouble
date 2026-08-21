@@ -8,14 +8,13 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Gradient;
 import com.oddlabs.tt.procedural.Landscape;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 public final class GeneratorLightning extends TextureGenerator {
     private static final int TEXTURE_SIZE = 128;
 
     @Override
-    public Texture @NonNull [] generate() {
+    public Texture[] generate() {
         Channel gradient = new Gradient(TEXTURE_SIZE, TEXTURE_SIZE, new float[][]{{0f, 0f}, {.47f, .25f}, {.5f, 1f}, {
                 .53f, .25f},
                 {1f, 0f}}, Gradient.Orientation.HORIZONTAL, Gradient.Interpolation.SMOOTH).toChannel();

@@ -3,7 +3,6 @@ package com.oddlabs.tt.procedural;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
@@ -38,15 +37,15 @@ public final class Cellular {
     public static final int Y = 1;
     public static final int SEED = 2;
 
-    private final @NonNull Random random;
+    private final Random random;
     public Channel channel;
     public Channel dist1;
     public Channel dist2;
     public Channel dist3;
 
     public Cellular(int width, int height, int x_order, int y_order, int checkradius, float randomness,
-            float[] coefficients, long seed, @NonNull Distribution distribution_type, @NonNull Metric metric_type,
-            @NonNull Value value_type) {
+            float[] coefficients, long seed, Distribution distribution_type, Metric metric_type,
+            Value value_type) {
         x_order = Math.max(1, x_order);
         y_order = Math.max(1, y_order);
         checkradius = Math.max(1, checkradius);
@@ -206,7 +205,7 @@ public final class Cellular {
         channel = channel.dynamicRange();
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel, channel);
     }
 

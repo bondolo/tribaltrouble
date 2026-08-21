@@ -7,20 +7,19 @@ import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.effects.render.*;
 
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Tracks the level of detail (LOD) and spatial state for rendering a tree supply element.
  */
 final class TreeRenderState implements LODObject {
-    private final @NonNull TreePicker tree_renderer;
+    private final TreePicker tree_renderer;
     private TreeSupply tree_supply;
 
-    TreeRenderState(@NonNull TreePicker tree_renderer) {
+    TreeRenderState(TreePicker tree_renderer) {
         this.tree_renderer = tree_renderer;
     }
 
-    void setup(@NonNull TreeSupply tree_supply) {
+    void setup(TreeSupply tree_supply) {
         this.tree_supply = tree_supply;
     }
 
@@ -30,12 +29,12 @@ final class TreeRenderState implements LODObject {
     }
 
     @Override
-    public void markDetailPolygon(@NonNull PolyDetail level) {
+    public void markDetailPolygon(PolyDetail level) {
         tree_renderer.markDetailPolygon(tree_supply, level);
     }
 
     @Override
-    public int getTriangleCount(@NonNull PolyDetail level) {
+    public int getTriangleCount(PolyDetail level) {
         int index = level.ordinal();
         Tree tree = tree_renderer.getTrees().get(tree_supply.getTreeType());
         return switch (PolyDetail.values()[index]) {

@@ -1,25 +1,24 @@
 package com.oddlabs.converter;
 
-import org.jspecify.annotations.NonNull;
 
 import java.nio.file.Path;
 
 public final class ModelObjectInfo extends ObjectInfo {
-    private final float @NonNull [] clear_color;
-    private final @NonNull String @NonNull [] @NonNull [] textures;
+    private final float[] clear_color;
+    private final String[][] textures;
 
-    public ModelObjectInfo(@NonNull Path file, @NonNull String @NonNull [] @NonNull [] textures,
-            float @NonNull [] clear_color) {
+    public ModelObjectInfo(Path file, String[][] textures,
+            float[] clear_color) {
         super(file);
         this.textures = textures;
         this.clear_color = clear_color;
     }
 
-    public @NonNull String @NonNull [] @NonNull [] getTextures() {
+    public String[][] getTextures() {
         return textures;
     }
 
-    public float @NonNull [] getClearColor() {
+    public float[] getClearColor() {
         return clear_color;
     }
 }

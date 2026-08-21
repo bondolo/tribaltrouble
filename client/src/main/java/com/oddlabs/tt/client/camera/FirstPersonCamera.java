@@ -4,7 +4,6 @@ import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
-import org.jspecify.annotations.NonNull;
 
 /**
  * First-person perspective camera controller.
@@ -15,9 +14,9 @@ public final class FirstPersonCamera extends Camera {
 
     private final int last_x;
     private final int last_y;
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
 
-    public FirstPersonCamera(@NonNull WorldViewer viewer, LandscapeEnvironment heightmap, @NonNull CameraState camera) {
+    public FirstPersonCamera(WorldViewer viewer, LandscapeEnvironment heightmap, CameraState camera) {
         super(heightmap, camera, viewer.getAnimationManagerHighPrecision());
         this.viewer = viewer;
         var guiRoot = viewer.getGUIRoot();

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class PoisonFogFactory implements MagicFactory {
     private final float offset_x;
@@ -52,7 +51,7 @@ public final class PoisonFogFactory implements MagicFactory {
     }
 
     @Override
-    public @NonNull Magic execute(@NonNull Unit src) {
+    public Magic execute(Unit src) {
         return new PoisonFog(offset_x, offset_y, offset_z, hit_radius, hit_chance, interval, time, damage, src);
     }
 }

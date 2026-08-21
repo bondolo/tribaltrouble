@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /** Hierarchical linked-list */
@@ -12,7 +11,7 @@ public final class LinkedList<T extends ListElement<T>> {
     /**
      * {@return true if element is already in list otherwise false}
      */
-    private boolean checkOwner(@NonNull T elem) {
+    private boolean checkOwner(T elem) {
         if (elem.getListOwner() == this) return true;
         if (elem.getListOwner() != null) {
             elem.getListOwner().remove(elem);
@@ -21,7 +20,7 @@ public final class LinkedList<T extends ListElement<T>> {
         return false;
     }
 
-    public void addLast(@NonNull T elem) {
+    public void addLast(T elem) {
         if (checkOwner(elem)) return;
         if (last == null) {
             first = elem;
@@ -37,7 +36,7 @@ public final class LinkedList<T extends ListElement<T>> {
         size++;
     }
 
-    public void addFirst(@NonNull T elem) {
+    public void addFirst(T elem) {
         if (checkOwner(elem)) return;
         if (last == null) {
             first = elem;
@@ -53,7 +52,7 @@ public final class LinkedList<T extends ListElement<T>> {
         size++;
     }
 
-    public void remove(@NonNull T element) {
+    public void remove(T element) {
         assert element.getListOwner() == this;
         element.setListOwner(null);
         if (last == element && first == element) {
@@ -72,7 +71,7 @@ public final class LinkedList<T extends ListElement<T>> {
         size--;
     }
 
-    public void insert(@NonNull T element, @Nullable T next_elem) {
+    public void insert(T element, @Nullable T next_elem) {
         if (next_elem == null) {
             addLast(element);
             return;
@@ -108,12 +107,12 @@ public final class LinkedList<T extends ListElement<T>> {
         return last;
     }
 
-    public void putLast(@NonNull T element) {
+    public void putLast(T element) {
         remove(element);
         addLast(element);
     }
 
-    public void putFirst(@NonNull T element) {
+    public void putFirst(T element) {
         remove(element);
         addFirst(element);
     }

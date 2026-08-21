@@ -1,18 +1,17 @@
 package com.oddlabs.net;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 public final class ByteBufferInputStream extends InputStream {
-    private final @NonNull ByteBuffer buffer;
+    private final ByteBuffer buffer;
 
-    public ByteBufferInputStream(byte @NonNull [] array) {
+    public ByteBufferInputStream(byte[] array) {
         buffer = ByteBuffer.wrap(array);
     }
 
-    public @NonNull ByteBuffer buffer() {
+    public ByteBuffer buffer() {
         return buffer;
     }
 
@@ -22,7 +21,7 @@ public final class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte @NonNull [] bytes, int offset, int length) {
+    public int read(byte[] bytes, int offset, int length) {
         if (available() == 0)
             return -1;
         length = Math.min(length, available());

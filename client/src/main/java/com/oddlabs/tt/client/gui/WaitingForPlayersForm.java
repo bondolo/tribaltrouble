@@ -13,14 +13,13 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
 public final class WaitingForPlayersForm extends Form {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(WaitingForPlayersForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -41,7 +40,7 @@ public final class WaitingForPlayersForm extends Form {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.consumeAction(GameAction.UI_CANCEL)) {
             // KEY_ESCAPE should not close this form
             // Swallow escape.
@@ -57,7 +56,7 @@ public final class WaitingForPlayersForm extends Form {
 
     private final class AbortListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             viewer.getGUIRoot().addModalForm(new QuestionForm(i18n("confirm_abort"), new CancelListener(
                     WaitingForPlayersForm.this)));
         }

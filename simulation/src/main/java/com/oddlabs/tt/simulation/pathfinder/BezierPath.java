@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import org.jspecify.annotations.NonNull;
 
 /**
  * Cubic Bezier curve path for smooth unit movement.
@@ -43,7 +42,7 @@ public final class BezierPath {
         }
     }
 
-    private void computeCurvePointFromTime(float t, float @NonNull [] point, float @NonNull [] dir) {
+    private void computeCurvePointFromTime(float t, float[] point, float[] dir) {
         float t2 = t * t;
         float t3 = t2 * t;
         float b0 = 1 - 3 * t + 3 * t2 - t3;
@@ -140,7 +139,7 @@ public final class BezierPath {
      * writing the resulting position into {@code point} and direction into {@code dir}.
      * Used by the debug renderer.
      */
-    public void sampleCurve(float t, float @NonNull [] point, float @NonNull [] dir) {
+    public void sampleCurve(float t, float[] point, float[] dir) {
         computeCurvePointFromTime(t, point, dir);
     }
 }

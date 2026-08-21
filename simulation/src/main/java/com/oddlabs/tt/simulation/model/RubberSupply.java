@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.pathfinder.PathTracker;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.TargetTrackerAlgorithm;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Represents a rubber resource, visually represented as a chicken.
@@ -39,20 +38,20 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         }
     }
 
-    private final @NonNull PathTracker path_tracker;
+    private final PathTracker path_tracker;
     private final int start_grid_x;
     private final int start_grid_y;
     private final float spawn_x;
     private final float spawn_y;
 
-    private final @NonNull RubberGroup group;
+    private final RubberGroup group;
 
     private float anim_time = 0;
-    private @NonNull Animation animation = Animation.IDLING;
+    private Animation animation = Animation.IDLING;
     private boolean is_hit = false;
 
-    public RubberSupply(@NonNull World world, int grid_x, int grid_y,
-            float x, float y, @NonNull RubberGroup group, float spawn_x, float spawn_y) {
+    public RubberSupply(World world, int grid_x, int grid_y,
+            float x, float y, RubberGroup group, float spawn_x, float spawn_y) {
         var spawn_z = world.getRandom().nextFloat(MIN_TREE_FALL_HEIGHT, MAX_TREE_FALL_HEIGHT);
         super(world, 2f, grid_x, grid_y, x, y, spawn_z, 0f, INITIAL_SUPPLIES, false,
                 world.getLandscapeResources().getChickenBounds());
@@ -71,7 +70,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     }
 
     @Override
-    public @NonNull SupplyType getSupplyType() {
+    public SupplyType getSupplyType() {
         return SupplyType.RUBBER;
     }
 
@@ -102,12 +101,12 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     }
 
     @Override
-    public @NonNull Supply respawn() {
+    public Supply respawn() {
         throw new UnsupportedOperationException("RubberSupply cannot respawn");
     }
 
     @Override
-    public @NonNull PathTracker getTracker() {
+    public PathTracker getTracker() {
         return path_tracker;
     }
 
@@ -197,7 +196,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         }
     }
 
-    private void setNewAnimation(@NonNull Animation animation) {
+    private void setNewAnimation(Animation animation) {
         anim_time = 0;
         this.animation = animation;
     }

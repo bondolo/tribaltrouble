@@ -6,7 +6,6 @@ import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +16,15 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
     private static final Color.Linear PRIVATE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
     private static final Color.Linear TEAM_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
 
-    private final @NonNull Font font;
-    private final List<@NonNull LabelBox> history = new ArrayList<>();
-    private final List<@NonNull Float> timers = new ArrayList<>();
+    private final Font font;
+    private final List<LabelBox> history = new ArrayList<>();
+    private final List<Float> timers = new ArrayList<>();
     private final int lines;
-    private final @NonNull GUIRoot gui_root;
+    private final GUIRoot gui_root;
 
     private float time;
 
-    public InfoPrinter(@NonNull GUIRoot gui_root, int lines, @NonNull Font font) {
+    public InfoPrinter(GUIRoot gui_root, int lines, Font font) {
         this.gui_root = gui_root;
         this.lines = lines;
         this.font = font;
@@ -34,7 +33,7 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
         time = 0;
     }
 
-    public @NonNull GUIRoot getGUIRoot() {
+    public GUIRoot getGUIRoot() {
         return gui_root;
     }
 
@@ -57,11 +56,11 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
     }
 
     @Override
-    public void chat(@NonNull ChatMessage message) {
+    public void chat(ChatMessage message) {
         chat(message.formatShort(), message.type());
     }
 
-    public void chat(@NonNull String text, ChatMessage.@NonNull Type type) {
+    public void chat(String text, ChatMessage.Type type) {
         switch (type) {
             case NORMAL -> print(text);
             case TEAM -> print(text, TEAM_COLOR);
@@ -72,11 +71,11 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
     }
 
     @Override
-    public void print(@NonNull String text) {
+    public void print(String text) {
         print(text, Color.Linear.TRANSPARENT);
     }
 
-    public void print(@NonNull String text, @NonNull Color color) {
+    public void print(String text, Color color) {
         int width = Math.min(font.getWidth(text), getWidth());
         LabelBox label_box = new BackgroundLabelBox(text, font, width);
         if (color.a() > .2f)

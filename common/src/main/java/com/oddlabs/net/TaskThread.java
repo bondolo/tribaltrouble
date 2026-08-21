@@ -1,7 +1,6 @@
 package com.oddlabs.net;
 
 import com.oddlabs.event.Deterministic;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serializable;
@@ -20,9 +19,9 @@ public final class TaskThread {
     private Thread thread;
     private volatile boolean finished;
 
-    private final @NonNull Deterministic deterministic;
+    private final Deterministic deterministic;
 
-    public TaskThread(@NonNull Deterministic deterministic, @Nullable Runnable notification_action) {
+    public TaskThread(Deterministic deterministic, @Nullable Runnable notification_action) {
         this.deterministic = deterministic;
         this.notification_action = notification_action;
     }
@@ -32,14 +31,14 @@ public final class TaskThread {
     }
 
     static final class TaskFailed<T> implements TaskResult<T> {
-        private final @NonNull Throwable result;
+        private final Throwable result;
 
-        TaskFailed(@NonNull Throwable e) {
+        TaskFailed(Throwable e) {
             this.result = e;
         }
 
         @Override
-        public void deliverResult(@NonNull TaskExecutorLoopbackInterface<T> callback) {
+        public void deliverResult(TaskExecutorLoopbackInterface<T> callback) {
             callback.taskFailed(result);
         }
     }
@@ -52,7 +51,7 @@ public final class TaskThread {
         }
 
         @Override
-        public void deliverResult(@NonNull TaskExecutorLoopbackInterface<T> callback) {
+        public void deliverResult(TaskExecutorLoopbackInterface<T> callback) {
             callback.taskCompleted(result);
         }
     }
@@ -89,11 +88,11 @@ public final class TaskThread {
             notification_action.run();
     }
 
-    public @NonNull Deterministic getDeterministic() {
+    public Deterministic getDeterministic() {
         return deterministic;
     }
 
-    public @NonNull Task addTask(Callable<?> callable) {
+    public Task addTask(Callable<?> callable) {
         BlockingTask task;
         synchronized (lock) {
             int task_id = current_id++;
@@ -133,7 +132,7 @@ public final class TaskThread {
         }
     }
 
-    private Callable<?> lookupCallable(@NonNull BlockingTask task) {
+    private Callable<?> lookupCallable(BlockingTask task) {
         return id_to_callable.get(task.id);
     }
 

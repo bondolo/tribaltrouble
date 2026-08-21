@@ -4,17 +4,16 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
-import org.jspecify.annotations.NonNull;
 
 public final class ColumnButton<T> extends RadioButtonGroupElement {
-    private final @NonNull RowCollection<T> rows;
+    private final RowCollection<T> rows;
     private final int arrow_offset;
     private final int column_index;
 
     private boolean sorted_descending;
     private boolean pressed = false;
 
-    ColumnButton(@NonNull RadioButtonGroup group, @NonNull RowCollection<T> rows, @NonNull ColumnInfo info,
+    ColumnButton(RadioButtonGroup group, RowCollection<T> rows, ColumnInfo info,
             int column_index, boolean sorted_descending) {
         super(column_index == 0, group);
         this.rows = rows;
@@ -34,17 +33,17 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
     }
 
     @Override
-    protected void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    protected void mouseReleased(MouseButton button, int x, int y) {
         pressed = false;
     }
 
     @Override
-    protected void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected void mousePressed(MouseButton button, int x, int y) {
         pressed = true;
     }
 
     @Override
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         sorted_descending = !isMarked() || !sorted_descending;
         super.mouseClicked(button, x, y, clicks);
         rows.markChanged(column_index, sorted_descending);
@@ -55,7 +54,7 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isHovered() && pressed
@@ -74,7 +73,7 @@ public final class ColumnButton<T> extends RadioButtonGroupElement {
             renderMark(renderer, skinMode);
     }
 
-    private void renderMark(@NonNull GUIRenderer renderer, ModeIconQuads.@NonNull Mode skinMode) {
+    private void renderMark(GUIRenderer renderer, ModeIconQuads.Mode skinMode) {
         var data = Skin.getSkin().getMultiColumnComboBoxData();
         ModeIconQuads arrow = sorted_descending
                 ? data.descending()

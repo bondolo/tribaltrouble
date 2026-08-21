@@ -11,7 +11,6 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -22,24 +21,24 @@ import java.util.function.Supplier;
  * Crack texture and per-instance colour are driven by the owning {@link com.oddlabs.tt.simulation.model.SupplyModel}.
  */
 public final class CrackDecalRenderer extends ShadowListRenderer {
-    private final @NonNull Texture crackTexture;
-    private final Deque<@NonNull Shadowable> crack_list = new ArrayDeque<>();
+    private final Texture crackTexture;
+    private final Deque<Shadowable> crack_list = new ArrayDeque<>();
 
-    public CrackDecalRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
+    public CrackDecalRenderer(Supplier<Texture[]> desc) {
         crackTexture = Resources.findResource(desc)[0];
         setRadial(false);
     }
 
-    public void addToCrackList(@NonNull Shadowable shadowable) {
+    public void addToCrackList(Shadowable shadowable) {
         if (DebugFlags.process_shadows) {
             crack_list.add(shadowable);
         }
     }
 
     @Override
-    public void renderShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
-            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+    public void renderShadows(RenderContext context, RenderQueues queues,
+            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            MatrixStack projectionStack) {
         if (crack_list.isEmpty()) {
             return;
         }

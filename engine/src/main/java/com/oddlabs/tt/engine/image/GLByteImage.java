@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.image;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -15,7 +14,7 @@ public final class GLByteImage extends GLImage {
         return Byte.BYTES;
     }
 
-    public GLByteImage(int width, int height, @NonNull ByteBuffer pixel_data, int format) {
+    public GLByteImage(int width, int height, ByteBuffer pixel_data, int format) {
         super(width, height, pixel_data, format);
     }
 
@@ -23,11 +22,11 @@ public final class GLByteImage extends GLImage {
         this(width, height, BufferUtils.createByteBuffer((width * height + 3) & ~3), format);
     }
 
-    public GLByteImage(@NonNull Channel channel) {
+    public GLByteImage(Channel channel) {
         this(channel, GL11.GL_RED);
     }
 
-    public GLByteImage(@NonNull Channel channel, int format) {
+    public GLByteImage(Channel channel, int format) {
         this(channel.getWidth(), channel.getHeight(), format);
         float[] pixels = channel.getPixels();
         ByteBuffer buffer = getPixels();
@@ -38,12 +37,12 @@ public final class GLByteImage extends GLImage {
     }
 
     @Override
-    public @NonNull GLImage createImage(int width, int height, int format) {
+    public GLImage createImage(int width, int height, int format) {
         return new GLByteImage(width, height, format);
     }
 
     @Override
-    public @NonNull GLImage createFromLayer(@NonNull Layer layer, int format) {
+    public GLImage createFromLayer(Layer layer, int format) {
         Channel sourceChannel;
         if (format == GL11.GL_RED && layer.a != null) {
             sourceChannel = layer.a;
@@ -55,7 +54,7 @@ public final class GLByteImage extends GLImage {
         return new GLByteImage(sourceChannel, format);
     }
 
-    public @NonNull Channel toChannel() {
+    public Channel toChannel() {
         Channel channel = new Channel(getWidth(), getHeight());
         float[] dest = channel.getPixels();
         ByteBuffer source = getPixels();
@@ -66,7 +65,7 @@ public final class GLByteImage extends GLImage {
     }
 
     @Override
-    public @NonNull GLImage scale(int newWidth, int newHeight) {
+    public GLImage scale(int newWidth, int newHeight) {
         return newWidth == getWidth() && newHeight == getHeight()
                 ? this
                 : new GLByteImage(toChannel().scale(newWidth, newHeight), getGLFormat());

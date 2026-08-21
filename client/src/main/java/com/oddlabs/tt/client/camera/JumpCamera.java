@@ -4,7 +4,6 @@ package com.oddlabs.tt.client.camera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
 import org.joml.Vector2fc;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A specialized camera that performs a transition jump from one camera
@@ -14,7 +13,7 @@ public final class JumpCamera extends Camera {
     private static final float DEFAULT_METERS_PER_SECOND = 300f;
     private static final float DEFAULT_MAX_SECONDS = .5f;
 
-    private final @NonNull CameraDelegate<?> delegate;
+    private final CameraDelegate<?> delegate;
 
     private final float dst_x;
     private final float dst_y;
@@ -28,11 +27,11 @@ public final class JumpCamera extends Camera {
     private float z_speed;
     private float temp_z;
 
-    public JumpCamera(@NonNull JumpDelegate delegate, @NonNull GameCamera old_camera, float x, float y) {
+    public JumpCamera(JumpDelegate delegate, GameCamera old_camera, float x, float y) {
         this(delegate, old_camera, x, y, DEFAULT_METERS_PER_SECOND, DEFAULT_MAX_SECONDS);
     }
 
-    public JumpCamera(@NonNull JumpDelegate delegate, @NonNull GameCamera old_camera, float x, float y,
+    public JumpCamera(JumpDelegate delegate, GameCamera old_camera, float x, float y,
             float meters_per_second, float max_seconds) {
         super(old_camera.getLandscapeEnvironment(), old_camera.getState(), old_camera.getAnimationManager());
         this.delegate = delegate;

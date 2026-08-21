@@ -1,6 +1,5 @@
 package com.oddlabs.net;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,13 +22,13 @@ public final class DNSTask implements Callable<InetSocketAddress> {
     }
 
     @Override
-    public void taskFailed(@NonNull Throwable e) {
+    public void taskFailed(Throwable e) {
         connection.dnsError((IOException) e);
     }
 
     /* WARNING: Potentially threaded and not deterministic. See Callable.java for details */
     @Override
-    public @NonNull InetSocketAddress call() throws Exception {
+    public InetSocketAddress call() throws Exception {
         InetAddress inet_address = InetAddress.getByName(dns_name);
         InetSocketAddress address = new InetSocketAddress(inet_address, port);
         return address;

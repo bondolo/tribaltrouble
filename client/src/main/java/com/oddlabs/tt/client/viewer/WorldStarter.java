@@ -14,7 +14,6 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -34,13 +33,13 @@ public final class WorldStarter implements LoadCallback {
     private final WorldParameters world_params;
     private final @Nullable WorldInitAction initial_action;
     private final int session_id;
-    private final @NonNull AudioManager audioManager;
+    private final AudioManager audioManager;
 
-    public WorldStarter(NetworkSelector network, int session_id, @NonNull WorldGenerator generator,
+    public WorldStarter(NetworkSelector network, int session_id, WorldGenerator generator,
             WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
             @Nullable WorldInitAction initial_action,
-            @NonNull AudioManager audioManager) {
+            AudioManager audioManager) {
         this.initial_action = initial_action;
         this.session_id = session_id;
         this.world_params = world_params;
@@ -54,7 +53,7 @@ public final class WorldStarter implements LoadCallback {
     }
 
     @Override
-    public @NonNull UIRenderer load(@NonNull GUIRoot gui_root) {
+    public UIRenderer load(GUIRoot gui_root) {
         AnimationManager.freezeTime();
         List<PlayerSlot> player_slot_list = new ArrayList<>();
         List<UnitInfo> unit_info_list = new ArrayList<>();
@@ -83,10 +82,10 @@ public final class WorldStarter implements LoadCallback {
         return viewer.getRenderer();
     }
 
-    private static @NonNull Participant @NonNull [] getParticipants(@NonNull WorldViewer viewer,
-            @NonNull PlayerSlot @NonNull [] player_slots) {
+    private static Participant[] getParticipants(WorldViewer viewer,
+            PlayerSlot[] player_slots) {
         List<Participant> participant_list = new ArrayList<>();
-        List<@NonNull Player> players = viewer.getWorld().getPlayers();
+        List<Player> players = viewer.getWorld().getPlayers();
         for (short i = 0; i < players.size(); i++) {
             Player player = players.get(i);
             if (player_slots[i].getType() != PlayerSlot.HUMAN)

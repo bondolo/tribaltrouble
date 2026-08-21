@@ -1,14 +1,13 @@
 package com.oddlabs.net;
 
 import com.oddlabs.util.ByteBufferOutputStream;
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 public class DefaultARMIArgumentWriter implements ARMIArgumentWriter {
     @Override
-    public void writeArgument(@NonNull Class<?> type, @NonNull Object arg, @NonNull ByteBufferOutputStream out)
+    public void writeArgument(Class<?> type, Object arg, ByteBufferOutputStream out)
             throws IOException {
         if (type.equals(char.class)) {
             char c = ((Character) arg);

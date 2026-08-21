@@ -1,6 +1,5 @@
 package com.oddlabs.net;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -20,12 +19,12 @@ import java.util.logging.Logger;
 public final class ConnectionListener extends AbstractConnectionListener implements Handler {
     private static final Logger logger = Logger.getLogger(ConnectionListener.class.getSimpleName());
 
-    private final @NonNull NetworkSelector network;
+    private final NetworkSelector network;
     private SelectionKey key;
 
     private final Deque<SocketChannel> incoming_connections = new ArrayDeque<>();
 
-    private static SelectionKey createServerSocket(@NonNull NetworkSelector network, InetAddress ip, int port)
+    private static SelectionKey createServerSocket(NetworkSelector network, InetAddress ip, int port)
             throws IOException {
         ServerSocketChannel server_channel = ServerSocketChannel.open();
         server_channel.configureBlocking(false);
@@ -36,7 +35,7 @@ public final class ConnectionListener extends AbstractConnectionListener impleme
         return key;
     }
 
-    public ConnectionListener(@NonNull NetworkSelector network, InetAddress ip, int port,
+    public ConnectionListener(NetworkSelector network, InetAddress ip, int port,
             ConnectionListenerInterface connection_listener_interface) {
         super(connection_listener_interface);
         this.network = network;
@@ -124,7 +123,7 @@ public final class ConnectionListener extends AbstractConnectionListener impleme
     }
 
     @Override
-    protected @NonNull AbstractConnection doAcceptConnection(ConnectionInterface conn_interface) {
+    protected AbstractConnection doAcceptConnection(ConnectionInterface conn_interface) {
         SelectionKey socket_key;
         if (!network.getDeterministic().isPlayback())
             socket_key = getNextConnectionKey();
@@ -160,7 +159,7 @@ public final class ConnectionListener extends AbstractConnectionListener impleme
     }
 
     @Override
-    public void handleError(@NonNull IOException e) throws IOException {
+    public void handleError(IOException e) throws IOException {
         error(e);
     }
 }

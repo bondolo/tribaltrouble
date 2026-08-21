@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
@@ -17,20 +16,20 @@ public final class HeightMap implements LandscapeEnvironment {
     static final int MIN_INTERSECTING_LEVEL = 5;
     private static final Vector3f plane = new Vector3f();
 
-    private final @NonNull World world_instance;
-    private final @NonNull LandscapeData landscapeData;
+    private final World world_instance;
+    private final LandscapeData landscapeData;
     private final int patches_per_world;
     private final int meters_per_patch;
     private final int grid_units_per_world;
     private final float inv_meters_per_patch;
     private final float inv_meters_per_grid_unit;
 
-    private final LandscapeLeaf @NonNull [] @NonNull [] landscape_leaves;
+    private final LandscapeLeaf[][] landscape_leaves;
 
     private @Nullable ClientState clientState;
     private static @Nullable ClientStateFactory clientStateFactory;
 
-    public HeightMap(@NonNull World world_instance, @NonNull LandscapeData landscapeData) {
+    public HeightMap(World world_instance, LandscapeData landscapeData) {
         this.world_instance = world_instance;
         this.landscapeData = landscapeData;
         this.grid_units_per_world = (int) Math.sqrt(landscapeData.heightmap().length);
@@ -54,7 +53,7 @@ public final class HeightMap implements LandscapeEnvironment {
      */
     public interface ClientStateFactory {
         @Nullable
-        ClientState createClientState(@NonNull HeightMap heightMap);
+        ClientState createClientState(HeightMap heightMap);
     }
 
     public static void setClientStateFactory(@Nullable ClientStateFactory factory) {
@@ -70,16 +69,16 @@ public final class HeightMap implements LandscapeEnvironment {
         return Optional.ofNullable(type.isInstance(clientState) ? (C) clientState : null);
     }
 
-    public float @NonNull [] getHeightData() {
+    public float[] getHeightData() {
         return landscapeData.heightmap();
     }
 
-    public @NonNull LandscapeData getLandscapeData() {
+    public LandscapeData getLandscapeData() {
         return landscapeData;
     }
 
     @Override
-    public @NonNull World getWorld() {
+    public World getWorld() {
         return world_instance;
     }
 
@@ -130,22 +129,22 @@ public final class HeightMap implements LandscapeEnvironment {
         landscape_leaves[y][x] = leaf;
     }
 
-    public @NonNull List<int @NonNull []> getTrees() {
+    public List<int[]> getTrees() {
         return landscapeData.trees();
     }
 
-    public boolean @NonNull [] @NonNull [] getAccessGrid() {
+    public boolean[][] getAccessGrid() {
         return landscapeData.accessGrid();
     }
 
-    void makePlaneVector(int x0, int y0, int x1, int y1, int x2, int y2, @NonNull Vector3f plane) {
+    void makePlaneVector(int x0, int y0, int x1, int y1, int x2, int y2, Vector3f plane) {
         makePlaneVector(x0, y0, getWrappedHeight(x0, y0),
                 x1, y1, getWrappedHeight(x1, y1),
                 x2, y2, getWrappedHeight(x2, y2), plane);
     }
 
     private static void makePlaneVector(float h1x, float h1y, float h1z, float h2x, float h2y, float h2z, float h3x,
-            float h3y, float h3z, @NonNull Vector3f plane) {
+            float h3y, float h3z, Vector3f plane) {
         float v1x = h2x - h1x;
         float v1y = h2y - h1y;
         float v1z = h2z - h1z;
@@ -162,7 +161,7 @@ public final class HeightMap implements LandscapeEnvironment {
         plane.set(vec2.x * inv_z, vec2.y * inv_z, (-vec2.x * h1x - vec2.y * h1y) * inv_z + h1z);
     }
 
-    static float planeHeight(float x, float y, @NonNull Vector3f plane) {
+    static float planeHeight(float x, float y, Vector3f plane) {
         return plane.x * x + plane.y * y + plane.z;
     }
 

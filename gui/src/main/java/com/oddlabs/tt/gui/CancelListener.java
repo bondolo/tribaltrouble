@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import org.jspecify.annotations.NonNull;
 
 public final class CancelListener implements MouseClickListener {
     private final Form form;
@@ -11,7 +10,7 @@ public final class CancelListener implements MouseClickListener {
     }
 
     @Override
-    public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
         form.cancel();
     }
 }

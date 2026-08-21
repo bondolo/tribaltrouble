@@ -4,7 +4,6 @@ import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.engine.cursor.Cursor;
 import com.oddlabs.tt.engine.cursor.CursorFile;
 import com.oddlabs.tt.input.InputProvider;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -19,18 +18,18 @@ import java.util.logging.Logger;
 public final class PointerInput {
     private static final Logger logger = Logger.getLogger(PointerInput.class.getName());
     private static final boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
-    private final Set<@NonNull MouseButton> buttons = EnumSet.noneOf(MouseButton.class);
+    private final Set<MouseButton> buttons = EnumSet.noneOf(MouseButton.class);
     private short last_x;
     private short last_y;
-    private @NonNull Cursor active_cursor = Cursor.NULL_CURSOR;
+    private Cursor active_cursor = Cursor.NULL_CURSOR;
     private @Nullable CursorType active_cursor_type = null;
     private @Nullable MouseButton drag_button = null;
 
-    private final @NonNull InputProvider<?> inputProvider;
-    private final @NonNull LocalInput localInput;
+    private final InputProvider<?> inputProvider;
+    private final LocalInput localInput;
 
-    private final Map<@NonNull CursorType, @NonNull Cursor> cursors = new EnumMap<>(CursorType.class);
-    private @NonNull Cursor debug_cursor = Cursor.NULL_CURSOR;
+    private final Map<CursorType, Cursor> cursors = new EnumMap<>(CursorType.class);
+    private Cursor debug_cursor = Cursor.NULL_CURSOR;
 
     private float current_scale = 1.0f;
     private float current_pixel_density = 1.0f;
@@ -91,7 +90,7 @@ public final class PointerInput {
         }
     }
 
-    public PointerInput(@NonNull InputProvider<?> inputProvider, @NonNull LocalInput localInput) {
+    public PointerInput(InputProvider<?> inputProvider, LocalInput localInput) {
         this.inputProvider = inputProvider;
         this.localInput = localInput;
     }
@@ -105,7 +104,7 @@ public final class PointerInput {
         }
     }
 
-    public void setActiveCursor(@NonNull CursorType type) {
+    public void setActiveCursor(CursorType type) {
         this.active_cursor_type = type;
         Cursor c = cursors.get(type);
         if (c != null) {
@@ -113,7 +112,7 @@ public final class PointerInput {
         }
     }
 
-    public void setActiveCursor(@NonNull Cursor cursor) {
+    public void setActiveCursor(Cursor cursor) {
         if (cursor != Cursor.NULL_CURSOR && inputProvider.isGrabbed()) {
             inputProvider.setGrabbed(false);
             resetCursorPos();
@@ -138,7 +137,7 @@ public final class PointerInput {
             ;
     }
 
-    private void doSetActiveCursor(@NonNull Cursor cursor) {
+    private void doSetActiveCursor(Cursor cursor) {
         active_cursor = cursor;
         //noinspection unchecked
         InputProvider<Long> provider = (InputProvider<Long>) inputProvider;
@@ -148,7 +147,7 @@ public final class PointerInput {
         provider.setNativeCursor(useCursor.getCursor());
     }
 
-    private void updateMouse(@NonNull GUIRoot gui_root, int x, int y, int dz, int dx) {
+    private void updateMouse(GUIRoot gui_root, int x, int y, int dz, int dx) {
         if (x != last_x || y != last_y) {
             last_x = (short) x;
             last_y = (short) y;
@@ -164,7 +163,7 @@ public final class PointerInput {
             localInput.mouseScrolledHorizontally(gui_root, dx);
     }
 
-    public void poll(@NonNull GUIRoot gui_root) {
+    public void poll(GUIRoot gui_root) {
         Deterministic deterministic = localInput.getDeterministic();
         inputProvider.pollMouse();
         int accum_x = last_x;

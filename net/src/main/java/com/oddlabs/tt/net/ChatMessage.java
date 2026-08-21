@@ -1,10 +1,9 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.tt.base.util.SpamFilter;
-import org.jspecify.annotations.NonNull;
 
 /** Record representing a structured chat message payload. */
-public record ChatMessage(@NonNull String nick, @NonNull String message, @NonNull Type type) {
+public record ChatMessage(String nick, String message, Type type) {
     public enum Type {
         NORMAL,
         TEAM,
@@ -13,17 +12,17 @@ public record ChatMessage(@NonNull String nick, @NonNull String message, @NonNul
         GAME_MENU
     }
 
-    public ChatMessage(@NonNull String nick, @NonNull String message, @NonNull Type type) {
+    public ChatMessage(String nick, String message, Type type) {
         this.nick = nick;
         this.message = SpamFilter.scan(message);
         this.type = type;
     }
 
-    public @NonNull String formatShort() {
+    public String formatShort() {
         return "<" + nick + "> " + message;
     }
 
-    public @NonNull String formatLong() {
+    public String formatLong() {
         return switch (type) {
             case TEAM -> "(Team) " + formatShort();
             case PRIVATE -> "(Private) " + formatShort(); /* Fall through */

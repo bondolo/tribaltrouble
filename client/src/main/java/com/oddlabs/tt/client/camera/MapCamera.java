@@ -14,7 +14,6 @@ import com.oddlabs.tt.engine.render.state.RadialFogInfo;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.util.Color;
 import org.joml.Vector2fc;
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.ResourceBundle;
@@ -50,16 +49,16 @@ public final class MapCamera extends Camera {
         FROM_MAP
     }
 
-    private final @NonNull SelectionDelegate delegate;
-    private final @NonNull CameraState original_camera_state;
+    private final SelectionDelegate delegate;
+    private final CameraState original_camera_state;
     private final float distance_to_landscape;
     private final Label label = new Label(Utils.getBundleString(ResourceBundle.getBundle(MapCamera.class.getName()),
             "map_mode"), Skin.getSkin().getHeadlineFont());
 
-    private @NonNull MapMode map_mode = MapMode.TO_MAP;
+    private MapMode map_mode = MapMode.TO_MAP;
     private float fogTime = 0f;
 
-    public MapCamera(@NonNull SelectionDelegate delegate, @NonNull GameCamera old_camera) {
+    public MapCamera(SelectionDelegate delegate, GameCamera old_camera) {
         original_camera_state = old_camera.getState();
         FogInfo radialFog = new RadialFogInfo(Color.Standard.WHITE, 0.25f);
         CameraState mapCameraState = new CameraState(radialFog);
@@ -175,7 +174,7 @@ public final class MapCamera extends Camera {
         }
     }
 
-    private void changeMode(@NonNull MapMode mode) {
+    private void changeMode(MapMode mode) {
         map_mode = mode;
         switch (mode) {
             case TO_MAP -> {
@@ -217,7 +216,7 @@ public final class MapCamera extends Camera {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         // Block camera controls and delegate switches while in map mode
         for (GameAction action : BLOCKED_ACTIONS) {
             if (event.consumeAction(action)) {

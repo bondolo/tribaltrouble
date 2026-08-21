@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -18,8 +17,8 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
 
     private final float angle_bound;
     private final float angle_max_jump;
-    private final @NonNull Vector3f current_acceleration;
-    private final @NonNull Vector3fc base_acceleration;
+    private final Vector3f current_acceleration;
+    private final Vector3fc base_acceleration;
     private final float acceleration_factor;
 
     private float x_angle = 0;
@@ -53,15 +52,15 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
      * @param sprite_renderers sprite renderers to assign to spawned particles
      * @param types number of different particle types/textures
      */
-    public RandomAccelerationEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
+    public RandomAccelerationEmitter(World world, Vector3f position, float offset_z,
             float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
             int num_particles, float particles_per_second,
-            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
+            Vector3fc velocity, Vector3fc acceleration,
             float acceleration_factor,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate, float energy, float friction,
             int src_blend_func, int dst_blend_func,
-            TextureKey @NonNull [] textures, SpriteKey[] sprite_renderers, int types) {
+            TextureKey[] textures, SpriteKey[] sprite_renderers, int types) {
         super(world, position, offset_z, emitter_radius, emitter_height, num_particles, particles_per_second,
                 velocity, acceleration, color, delta_color, particle_radius, growth_rate, energy, friction,
                 src_blend_func, dst_blend_func, textures, sprite_renderers, types);
@@ -97,15 +96,15 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
      * @param dst_blend_func OpenGL destination blend function
      * @param textures textures to assign to spawned particles
      */
-    public RandomAccelerationEmitter(@NonNull World world, @NonNull Vector3f position, float offset_z,
+    public RandomAccelerationEmitter(World world, Vector3f position, float offset_z,
             float emitter_radius, float emitter_height, float angle_bound, float angle_max_jump,
             int num_particles, float particles_per_second,
-            @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
+            Vector3fc velocity, Vector3fc acceleration,
             float acceleration_factor,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy, float friction,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate, float energy, float friction,
             int src_blend_func, int dst_blend_func,
-            TextureKey @NonNull [] textures) {
+            TextureKey[] textures) {
         this(world, position, offset_z, emitter_radius, emitter_height, angle_bound, angle_max_jump, num_particles,
                 particles_per_second, velocity, acceleration, acceleration_factor, color, delta_color,
                 particle_radius, growth_rate, energy, friction, src_blend_func, dst_blend_func, textures, null,
@@ -113,9 +112,9 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
     }
 
     @Override
-    protected int initParticle(@NonNull Vector3f position, @NonNull Vector3fc velocity, @NonNull Vector3fc acceleration,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy) {
+    protected int initParticle(Vector3f position, Vector3fc velocity, Vector3fc acceleration,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate, float energy) {
         randomizeAcceleration();
 
         LinearParticle particle = new LinearParticle(getWorld());

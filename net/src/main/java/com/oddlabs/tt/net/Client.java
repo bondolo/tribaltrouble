@@ -11,7 +11,6 @@ import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -30,15 +29,15 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     private static final int NEGOTIATING = 2;
     private static final int CLOSED = 5;
 
-    private final @NonNull AbstractConnection connection;
+    private final AbstractConnection connection;
 
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameClientInterface.class);
-    private final @NonNull GameServerInterface gameserver_interface;
-    private final UnitInfo @NonNull [] unit_infos;
+    private final GameServerInterface gameserver_interface;
+    private final UnitInfo[] unit_infos;
     private final @Nullable LoadCallbackFactory starter_factory;
-    private final @NonNull PlayerSlotHandler slot_handler;
+    private final PlayerSlotHandler slot_handler;
     private final @Nullable ChatHub chat_hub;
-    private final @NonNull NetworkSelector network;
+    private final NetworkSelector network;
     private final Runnable cleanup_action;
     private int state = CONNECTING;
 
@@ -48,9 +47,9 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     private short player_slot = -1;
     private ConfigurationListener configuration_listener;
 
-    public Client(Runnable cleanup_action, @NonNull NetworkSelector network,
+    public Client(Runnable cleanup_action, NetworkSelector network,
             @Nullable MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
-            @Nullable LoadCallbackFactory starter_factory, @NonNull PlayerSlotHandler slot_handler) {
+            @Nullable LoadCallbackFactory starter_factory, PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.cleanup_action = cleanup_action;
         this.network = network;
@@ -77,11 +76,11 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
         configuration_listener = listener;
     }
 
-    public void setUnitInfo(int slot, @NonNull UnitInfo unit_info) {
+    public void setUnitInfo(int slot, UnitInfo unit_info) {
         this.unit_infos[slot] = unit_info;
     }
 
-    public @NonNull GameServerInterface getServerInterface() {
+    public GameServerInterface getServerInterface() {
         return gameserver_interface;
     }
 
@@ -94,7 +93,7 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     }
 
     @Override
-    public void setWorldGeneratorAndPlayerSlot(@NonNull Game game, @NonNull WorldGenerator generator,
+    public void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator generator,
             short player_slot) {
         if (state != CONNECTING)
             return;
@@ -119,7 +118,7 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
         return player_slots;
     }
 
-    public @NonNull NetworkSelector getNetwork() {
+    public NetworkSelector getNetwork() {
         return network;
     }
 
@@ -136,13 +135,13 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     }
 
     @Override
-    public void setPlayers(PlayerSlot @NonNull [] player_slots) {
+    public void setPlayers(PlayerSlot[] player_slots) {
         this.player_slots = player_slots;
         getConfigurationListener().setPlayers(player_slots);
     }
 
     @Override
-    public void handle(Object sender, @NonNull ARMIEvent armi_event) {
+    public void handle(Object sender, ARMIEvent armi_event) {
         try {
             armi_event.execute(interface_methods, this);
         } catch (IllegalARMIEventException _) {

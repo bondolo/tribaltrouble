@@ -10,7 +10,6 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -23,22 +22,22 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
     private static final float SHADOW_SIZE = 1.6f;
     private final Texture ring;
 
-    private final Deque<@NonNull LandscapeTargetRespond> target_list = new ArrayDeque<>();
+    private final Deque<LandscapeTargetRespond> target_list = new ArrayDeque<>();
 
-    public TargetRespondRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc) {
+    public TargetRespondRenderer(Supplier<Texture[]> desc) {
         ring = Resources.findResource(desc)[0];
         setRadial(true);
     }
 
-    public void addToTargetList(@NonNull LandscapeTargetRespond target) {
+    public void addToTargetList(LandscapeTargetRespond target) {
         if (DebugFlags.process_shadows)
             target_list.push(target);
     }
 
     @Override
-    public void renderShadows(@NonNull RenderContext context, @NonNull RenderQueues queues,
-            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+    public void renderShadows(RenderContext context, RenderQueues queues,
+            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            MatrixStack projectionStack) {
         if (target_list.isEmpty()) return;
 
         try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {

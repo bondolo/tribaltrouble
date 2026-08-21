@@ -20,7 +20,6 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,15 +34,15 @@ public final class GameStatsDelegate extends CameraDelegate<StaticCamera> implem
     private static final int TEXT_OFFSET = -4;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GameStatsDelegate.class.getName());
 
-    public static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    public static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull TimerAnimation delay_timer;
-    private final @NonNull Group group_buttons;
-    private final @NonNull WorldViewer viewer;
+    private final TimerAnimation delay_timer;
+    private final Group group_buttons;
+    private final WorldViewer viewer;
 
-    public GameStatsDelegate(@NonNull WorldViewer viewer, @NonNull Camera old_camera, @NonNull String label_str) {
+    public GameStatsDelegate(WorldViewer viewer, Camera old_camera, String label_str) {
         super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
         this.viewer = viewer;
         this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, .6f);
@@ -52,7 +51,7 @@ public final class GameStatsDelegate extends CameraDelegate<StaticCamera> implem
         addChild(label);
         label.setPos((getWidth() - label.getWidth()) / 2, (getHeight() - label.getHeight()) * 4 / 5);
 
-        List<@NonNull Player> players = viewer.getWorld().getPlayers();
+        List<Player> players = viewer.getWorld().getPlayers();
 
         ColumnInfo[] score_infos = new ColumnInfo[players.size() + 1];
         score_infos[0] = new ColumnInfo(i18n("type"), 160);
@@ -193,18 +192,18 @@ public final class GameStatsDelegate extends CameraDelegate<StaticCamera> implem
     }
 
     @Override
-    public void update(@NonNull TimerAnimation anim) {
+    public void update(TimerAnimation anim) {
         addChild(group_buttons);
         delay_timer.stop();
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         renderBackgroundAlpha(renderer);
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (event.consumeAction(GameAction.UI_FOCUS_NEXT)) {
                 switchFocus(FocusDirection.FORWARD);
@@ -225,7 +224,7 @@ public final class GameStatsDelegate extends CameraDelegate<StaticCamera> implem
         setDisabled(true);
     }
 
-    public @NonNull WorldViewer getViewer() {
+    public WorldViewer getViewer() {
         return viewer;
     }
 }

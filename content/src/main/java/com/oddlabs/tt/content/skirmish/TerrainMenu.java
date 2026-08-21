@@ -42,7 +42,6 @@ import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
@@ -73,7 +72,7 @@ public final class TerrainMenu extends Group {
     private static final int DIFFICULTY_CARDINALITY = 4;
     private static final int RACE_CARDINALITY = 2;
     private static final int TEAM_CARDINALITY = 6;
-    private static final @NonNull BigInteger MAX_VALUE;
+    private static final BigInteger MAX_VALUE;
 
     private enum SlotDifficultyOption {
         CLOSED(0, PlayerSlot.AI_NONE),
@@ -97,7 +96,7 @@ public final class TerrainMenu extends Group {
             return aiDifficulty;
         }
 
-        static @NonNull SlotDifficultyOption fromIndex(int index) {
+        static SlotDifficultyOption fromIndex(int index) {
             for (SlotDifficultyOption option : values()) {
                 if (option.index == index) {
                     return option;
@@ -109,32 +108,32 @@ public final class TerrainMenu extends Group {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final @Nullable Menu main_menu;
     private final @Nullable TerrainMenuListener owner;
 
-    private final @NonNull PulldownMenu<Integer> pulldown_size;
-    private final @NonNull EditLine editline_name;
-    private final @NonNull PulldownMenu<Terrain> pm_terrain;
-    private final @NonNull Slider slider_hills;
-    private final @NonNull Slider slider_vegetation;
-    private final @NonNull Slider slider_supplies;
-    private final @NonNull Label label_mapcode;
-    private final @NonNull HorizButton button_ok;
-    private final @NonNull PulldownMenu<SlotDifficultyOption> @NonNull [] difficulty_pulldown_menus;
-    private final @NonNull PulldownButton<Race> @NonNull [] race_pulldown_buttons;
-    private final @NonNull PulldownMenu<Race> @NonNull [] race_pulldown_menus;
-    private final @NonNull PulldownMenu<Integer> @NonNull [] team_pulldown_menus;
-    private final @NonNull PulldownButton<Integer> @NonNull [] team_pulldown_buttons;
-    private final @NonNull Label @NonNull [] labels_players;
-    private final @NonNull CheckBox cb_rated;
+    private final PulldownMenu<Integer> pulldown_size;
+    private final EditLine editline_name;
+    private final PulldownMenu<Terrain> pm_terrain;
+    private final Slider slider_hills;
+    private final Slider slider_vegetation;
+    private final Slider slider_supplies;
+    private final Label label_mapcode;
+    private final HorizButton button_ok;
+    private final PulldownMenu<SlotDifficultyOption>[] difficulty_pulldown_menus;
+    private final PulldownButton<Race>[] race_pulldown_buttons;
+    private final PulldownMenu<Race>[] race_pulldown_menus;
+    private final PulldownMenu<Integer>[] team_pulldown_menus;
+    private final PulldownButton<Integer>[] team_pulldown_buttons;
+    private final Label[] labels_players;
+    private final CheckBox cb_rated;
     private final boolean multiplayer;
-    private final @NonNull PulldownMenu<Gamespeed> pm_gamespeed;
-    private final @NonNull GUIRoot gui_root;
-    private final @NonNull NetworkSelector network;
+    private final PulldownMenu<Gamespeed> pm_gamespeed;
+    private final GUIRoot gui_root;
+    private final NetworkSelector network;
     private int seed;
 
     static {
@@ -156,7 +155,7 @@ public final class TerrainMenu extends Group {
     }
 
     @SuppressWarnings("unchecked")
-    public TerrainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @Nullable Menu main_menu,
+    public TerrainMenu(NetworkSelector network, GUIRoot gui_root, @Nullable Menu main_menu,
             boolean multiplayer, @Nullable TerrainMenuListener owner) {
         this.network = network;
         this.main_menu = main_menu;
@@ -541,7 +540,7 @@ public final class TerrainMenu extends Group {
         label_mapcode.append(code);
     }
 
-    public void parseMapcode(@NonNull String text) {
+    public void parseMapcode(String text) {
         String code = text.toUpperCase();
         BigInteger result = RegistrationKey.parseBits(code);
         parseBigInteger(result);
@@ -614,13 +613,13 @@ public final class TerrainMenu extends Group {
         this.seed = seed;
     }
 
-    public @NonNull GUIObject getButtonOK() {
+    public GUIObject getButtonOK() {
         return button_ok;
     }
 
     private final class CancelButtonListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             owner.terrainMenuCancel();
         }
     }
@@ -640,12 +639,12 @@ public final class TerrainMenu extends Group {
         }
     }
 
-    private boolean isChosen(@NonNull PulldownMenu<SlotDifficultyOption> menu) {
+    private boolean isChosen(PulldownMenu<SlotDifficultyOption> menu) {
         return menu.getChosenItem().map(PulldownItem::getAttachment).orElse(SlotDifficultyOption.CLOSED)
                 != SlotDifficultyOption.CLOSED;
     }
 
-    private @NonNull SkirmishSetup buildSkirmishSetup(@NonNull Terrain terrain, int hills, int vegetation_amount,
+    private SkirmishSetup buildSkirmishSetup(Terrain terrain, int hills, int vegetation_amount,
             int supplies_amount) {
         Race p0_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(Race.NATIVES);
         int p0_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
@@ -671,7 +670,7 @@ public final class TerrainMenu extends Group {
         return new SkirmishSetup(worldParameters, islandConfig, slots);
     }
 
-    private @Nullable MultiplayerSetup buildMultiplayerSetup(@NonNull Terrain terrain, int hills, int vegetation_amount,
+    private @Nullable MultiplayerSetup buildMultiplayerSetup(Terrain terrain, int hills, int vegetation_amount,
             int supplies_amount, boolean rated) {
         String game_name = editline_name.getContents();
         if (game_name.length() < Game.MIN_LENGTH) {
@@ -770,14 +769,14 @@ public final class TerrainMenu extends Group {
 
     private final class MapcodeListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             gui_root.addModalForm(new MapcodeForm(TerrainMenu.this));
         }
     }
 
     private final class OKListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             boolean started = startGame();
             if (started)
                 button_ok.setDisabled(true);

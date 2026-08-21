@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -42,13 +41,13 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
      * @param dst_blend_func OpenGL destination blend function
      * @param textures textures to assign to spawned particles
      */
-    public BalancedParametricEmitter(@NonNull World world, @NonNull ParametricFunction function,
-            @NonNull Vector3f position,
+    public BalancedParametricEmitter(World world, ParametricFunction function,
+            Vector3f position,
             float velocity_u, float velocity_v, float dist_u, float dist_v,
             int num_particles, float margin_u, float margin_v,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate, float energy,
-            int src_blend_func, int dst_blend_func, TextureKey @NonNull [] textures) {
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate, float energy,
+            int src_blend_func, int dst_blend_func, TextureKey[] textures) {
         super(world, function, position,
                 0f, 0f, velocity_u, velocity_v, 0f,
                 num_particles, Float.MAX_VALUE,
@@ -63,10 +62,10 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
     }
 
     @Override
-    protected int initParticle(@NonNull ParametricFunction function,
+    protected int initParticle(ParametricFunction function,
             float velocity_u, float velocity_v,
-            Color.@NonNull Linear color, Color.@NonNull LinearDelta delta_color,
-            @NonNull Vector3fc particle_radius, @NonNull Vector3fc growth_rate,
+            Color.Linear color, Color.LinearDelta delta_color,
+            Vector3fc particle_radius, Vector3fc growth_rate,
             float energy) {
 
         for (int i = 0; i < num_particles; i++) {

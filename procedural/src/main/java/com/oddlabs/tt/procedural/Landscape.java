@@ -12,7 +12,6 @@ import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +49,7 @@ public final class Landscape {
     // Misc colors
     private static final float DETAIL_GREY = 0.5f;
 
-    private static final Map<Terrain, Color.@NonNull Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
+    private static final Map<Terrain, Color.Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
             Terrain.NATIVE, new Color.Standard(0xFF_73_40_99).linear(),
             Terrain.VIKING, Color.Linear.BLACK
     ));
@@ -63,22 +62,22 @@ public final class Landscape {
      * @param terrain the terrain type
      * @return the linear color representing the terrain's dust/soil
      */
-    public static Color.@NonNull Linear getDustColor(@NonNull Terrain terrain) {
+    public static Color.Linear getDustColor(Terrain terrain) {
         return switch (terrain) {
             case NATIVE -> new Color.Linear(NATIVE_SAND_COLOR);
             case VIKING -> new Color.Linear(VIKING_SOIL_COLOR);
         };
     }
 
-    private final @NonNull Random random;
-    private final @NonNull BlendInfo @NonNull [] blend_infos;
+    private final Random random;
+    private final BlendInfo[] blend_infos;
 
     public record StructureLayers(Layer diffuse, Layer normal) {
     }
 
     private Layer detail;
     private Layer detail_normal;
-    private @NonNull Channel[] alpha_maps;
+    private Channel[] alpha_maps;
 
     private Channel height;
     private Channel slope;
@@ -114,14 +113,14 @@ public final class Landscape {
     private final int max_plants;
     private final float access_threshold;
     private final float build_threshold;
-    private final @NonNull Terrain terrain;
+    private final Terrain terrain;
 
-    private byte @NonNull [] @NonNull [] build;
-    private float @NonNull [] @NonNull [] player_locations;
-    private int @NonNull [] @NonNull [] supply_locations;
-    private float @NonNull [] @NonNull [] plants;
+    private byte[][] build;
+    private float[][] player_locations;
+    private int[][] supply_locations;
+    private float[][] plants;
 
-    public Landscape(int num_players, @NonNull IslandConfig config, float detail_alpha_value,
+    public Landscape(int num_players, IslandConfig config, float detail_alpha_value,
             int initial_unit_count, float random_start_pos) {
         this.terrain = config.terrain();
         this.hills = (float) Math.sqrt(config.hills());
@@ -249,9 +248,9 @@ public final class Landscape {
     // **************
     // * STRUCTURES *
     // **************
-    private @NonNull StructureLayers @NonNull [] generateStructuresNative(@NonNull Channel voronoi4,
-            @NonNull Channel voronoi8, Channel voronoi8_hit, @NonNull Channel voronoi16, Channel voronoi16_hit,
-            @NonNull Channel voronoi32, Channel voronoi32_hit, @NonNull Channel noise8, @NonNull Channel noise256) {
+    private StructureLayers[] generateStructuresNative(Channel voronoi4,
+            Channel voronoi8, Channel voronoi8_hit, Channel voronoi16, Channel voronoi16_hit,
+            Channel voronoi32, Channel voronoi32_hit, Channel noise8, Channel noise256) {
         var structures = new StructureLayers[7];
         ProgressListener.progress(1 / 8f);
 
@@ -284,9 +283,9 @@ public final class Landscape {
         return structures;
     }
 
-    private @NonNull StructureLayers @NonNull [] generateStructuresViking(@NonNull Channel voronoi4,
-            @NonNull Channel voronoi8, Channel voronoi8_hit, @NonNull Channel voronoi16, Channel voronoi16_hit,
-            @NonNull Channel voronoi32, Channel voronoi32_hit, @NonNull Channel noise8, @NonNull Channel noise256) {
+    private StructureLayers[] generateStructuresViking(Channel voronoi4,
+            Channel voronoi8, Channel voronoi8_hit, Channel voronoi16, Channel voronoi16_hit,
+            Channel voronoi32, Channel voronoi32_hit, Channel noise8, Channel noise256) {
         var structures = new StructureLayers[7];
         ProgressListener.progress(1 / 8f);
 
@@ -315,22 +314,22 @@ public final class Landscape {
         return structures;
     }
 
-    private static @NonNull Layer toNormalMapWithZeroSpecular(@NonNull Channel bump, float strength, int size) {
+    private static Layer toNormalMapWithZeroSpecular(Channel bump, float strength, int size) {
         return toNormalMapWithSpecular(bump, strength, 0f, size);
     }
 
-    private static @NonNull Layer toNormalMapWithSpecular(@NonNull Channel bump, float strength, float specular,
+    private static Layer toNormalMapWithSpecular(Channel bump, float strength, float specular,
             int size) {
         Channel spec = new Channel(size, size).fill(specular);
         return bump.toNormalMap(strength, spec);
     }
 
-    private static @NonNull Layer toLayerWithAlpha(@NonNull Layer layer, float alpha) {
+    private static Layer toLayerWithAlpha(Layer layer, float alpha) {
         Channel a = new Channel(layer.r.getWidth(), layer.r.getHeight()).fill(alpha);
         return new Layer(layer.r, layer.g, layer.b, a);
     }
 
-    private static @NonNull StructureLayers genSand(int size, @NonNull Channel noise8, @NonNull Channel noise256) {
+    private static StructureLayers genSand(int size, Channel noise8, Channel noise256) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel sand_bump1 = noise8.brightness(0.75f);
         Channel sand_bump2 = noise256.brightness(0.15f);
@@ -343,7 +342,7 @@ public final class Landscape {
         return new StructureLayers(toLayerWithAlpha(sand, 0.3f), toNormalMapWithSpecular(bump, 0.3f, 0.15f, size));
     }
 
-    private static @NonNull StructureLayers genGravel(int size, @NonNull Channel noise8, @NonNull Channel noise256) {
+    private static StructureLayers genGravel(int size, Channel noise8, Channel noise256) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel gravel_bump1 = noise8.brightness(0.5f);
         Channel gravel_bump2 = noise256.brightness(0.5f);
@@ -356,8 +355,8 @@ public final class Landscape {
         return new StructureLayers(toLayerWithAlpha(gravel, 1.0f), toNormalMapWithSpecular(bump, 0.6f, 0.1f, size));
     }
 
-    private static @NonNull StructureLayers genDirt(int size, @NonNull Channel noise8, @NonNull Channel noise256,
-            @NonNull Channel voronoi32) {
+    private static StructureLayers genDirt(int size, Channel noise8, Channel noise256,
+            Channel voronoi32) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel dirt_bump1 = noise8.brightness(0.8f);
         Channel dirt_bump2 = noise256.brightness(0.1f);
@@ -372,8 +371,8 @@ public final class Landscape {
         return new StructureLayers(toLayerWithAlpha(dirt, 1.0f), toNormalMapWithSpecular(dirt_bump, 0.6f, 0.1f, size));
     }
 
-    private static @NonNull StructureLayers genSoil(int size, @NonNull Channel noise8, @NonNull Channel noise256,
-            @NonNull Channel voronoi32) {
+    private static StructureLayers genSoil(int size, Channel noise8, Channel noise256,
+            Channel voronoi32) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel soil_bump1 = noise8.brightness(0.8f);
         Channel soil_bump2 = noise256.brightness(0.1f);
@@ -388,8 +387,8 @@ public final class Landscape {
         return new StructureLayers(toLayerWithAlpha(soil, 1.0f), toNormalMapWithSpecular(soil_bump, 1.5f, 0.1f, size));
     }
 
-    private static @NonNull StructureLayers genGrass(int size, @NonNull Color grassColor, @NonNull Channel noise8,
-            @NonNull Channel noise256) {
+    private static StructureLayers genGrass(int size, Color grassColor, Channel noise8,
+            Channel noise256) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel grass_bump = noise8.copy().rotate(90).channelAdd(noise256.brightness(0.02f));
         Layer grass = new Layer(empty.copy().fill(grassColor.r()), empty.copy().fill(grassColor.g()), empty.copy().fill(
@@ -401,8 +400,8 @@ public final class Landscape {
         return new StructureLayers(toLayerWithAlpha(grass, 1.0f), getFlatNormal(size));
     }
 
-    private static @NonNull StructureLayers genRubble(int size, @NonNull Channel noise8, @NonNull Channel voronoi4,
-            @NonNull Channel voronoi8, @NonNull Channel voronoi16, @NonNull Layer rubble) {
+    private static StructureLayers genRubble(int size, Channel noise8, Channel voronoi4,
+            Channel voronoi8, Channel voronoi16, Layer rubble) {
         Channel rubble_bump1 = voronoi4.multiply(0.4f);
         Channel rubble_bump2 = voronoi8.multiply(0.3f);
         Channel rubble_bump3 = voronoi16.multiply(0.2f);
@@ -415,9 +414,9 @@ public final class Landscape {
                 size));
     }
 
-    private static @NonNull StructureLayers genRock(int size, @NonNull Channel noise8, @NonNull Channel noise256,
-            @NonNull Channel voronoi4, @NonNull Channel voronoi8, @NonNull Channel voronoi16, @NonNull Layer rubble,
-            @NonNull Layer grass) {
+    private static StructureLayers genRock(int size, Channel noise8, Channel noise256,
+            Channel voronoi4, Channel voronoi8, Channel voronoi16, Layer rubble,
+            Layer grass) {
         Channel rock_bump1 = voronoi4.dynamicRange().contrast(1.1f).brightness(2f).gamma2().multiply(0.35f);
         Channel rock_bump2 = voronoi8.dynamicRange().contrast(1.1f).brightness(2f).gamma2().multiply(0.3f);
         Channel rock_bump3 = voronoi16.dynamicRange().contrast(1.1f).brightness(2f).gamma2().multiply(0.2f);
@@ -438,9 +437,9 @@ public final class Landscape {
         return new StructureLayers(toLayerWithAlpha(rock, 1.0f), toNormalMapWithSpecular(rock_bump, 2.5f, 0.35f, size));
     }
 
-    private static @NonNull StructureLayers genCliff(int size, @NonNull Channel noise8, @NonNull Channel noise256,
-            @NonNull Channel voronoi4, @NonNull Channel voronoi8, @NonNull Channel voronoi16, @NonNull Layer rubble,
-            @NonNull Layer grass) {
+    private static StructureLayers genCliff(int size, Channel noise8, Channel noise256,
+            Channel voronoi4, Channel voronoi8, Channel voronoi16, Layer rubble,
+            Layer grass) {
         Channel cliff_bump1 = voronoi4.dynamicRange().contrast(1.1f).brightness(2f).gamma2().multiply(0.3f);
         Channel cliff_bump2 = voronoi8.dynamicRange().contrast(1.1f).brightness(2f).gamma2().multiply(0.3f);
         Channel cliff_bump3 = voronoi16.dynamicRange().contrast(1.1f).brightness(2f).gamma2().multiply(0.25f);
@@ -463,7 +462,7 @@ public final class Landscape {
                 size));
     }
 
-    private static @NonNull StructureLayers genSnow(int size, @NonNull Channel noise8, @NonNull Channel noise256) {
+    private static StructureLayers genSnow(int size, Channel noise8, Channel noise256) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel snow_bump1 = noise8.brightness(0.75f);
         Channel snow_bump2 = noise256.brightness(0.25f);
@@ -478,13 +477,13 @@ public final class Landscape {
     }
 
 
-    private static @NonNull StructureLayers genBlack() {
+    private static StructureLayers genBlack() {
         return new StructureLayers(new Channel(1, 1).fill(0f).toLayer(), getFlatNormal(1));
     }
 
-    private static @NonNull StructureLayers genSeabottom(
+    private static StructureLayers genSeabottom(
             Terrain terrain, int size,
-            @NonNull Channel noise8, @NonNull Channel noise256, @NonNull Channel voronoi4, @NonNull Channel voronoi8) {
+            Channel noise8, Channel noise256, Channel voronoi4, Channel voronoi8) {
         Color.Standard color = new Color.Standard(SEA_BOTTOM_COLOR.get(terrain));
         Layer bottom = new Layer(
                 new Channel(size, size).fill(color.r()),
@@ -495,8 +494,8 @@ public final class Landscape {
         return new StructureLayers(bottom, getFlatNormal(size));
     }
 
-    private static @NonNull StructureLayers genDetail(int size, float detail_alpha_value, int seed,
-            @NonNull Channel noise8) {
+    private static StructureLayers genDetail(int size, float detail_alpha_value, int seed,
+            Channel noise8) {
         Channel detail_noise = new Midpoint(size, 4, 0.4f, seed).toChannel();
         detail_noise.perturb(noise8.scale(size, size), 0.05f);
         Channel detail_grey = new Channel(size, size).fill(DETAIL_GREY);
@@ -507,7 +506,7 @@ public final class Landscape {
         return new StructureLayers(detail, toNormalMapWithSpecular(detail_noise, 2.0f, 1.0f, size));
     }
 
-    private static @NonNull Layer getFlatNormal(int size) {
+    private static Layer getFlatNormal(int size) {
         return new Layer(
                 new Channel(size, size).fill(0.5f),
                 new Channel(size, size).fill(0.5f),
@@ -631,7 +630,7 @@ public final class Landscape {
     }
 
     // shape beaches
-    private static @NonNull Channel beaches(@NonNull Channel channel) {
+    private static Channel beaches(Channel channel) {
         float sealevel = 1.1f * SimulationConfig.SEA_LEVEL;
         float threshold = 2f * sealevel;
         for (int y = 0; y < channel.height; y++) {
@@ -651,7 +650,7 @@ public final class Landscape {
     }
 
     // generate threshold map
-    private @NonNull Channel generateThresholdMap(@NonNull Channel slopemap, float threshold) {
+    private Channel generateThresholdMap(Channel slopemap, float threshold) {
         Channel channel = slopemap.copy().threshold(0f, threshold).channelSubtract(height.copy().threshold(0f,
                 SimulationConfig.SEA_LEVEL));
         // fix edges
@@ -669,7 +668,7 @@ public final class Landscape {
     }
 
     // generate build map
-    private static byte @NonNull [] @NonNull [] generateBuildMap(@NonNull Channel thresholdmap) {
+    private static byte[][] generateBuildMap(Channel thresholdmap) {
         if (DEBUG) thresholdmap.toLayer().saveAsPNG("build_tresholdmap");
         int size = thresholdmap.getWidth();
         boolean[][] build_grid = new boolean[size][size];
@@ -709,7 +708,7 @@ public final class Landscape {
     // **********
     // * ALPHAS *
     // **********
-    private @NonNull Channel generateAlphas() {
+    private Channel generateAlphas() {
         int seed = DEFAULT_LANDSCAPE_SEED;
         Channel alpha0, alpha1, alpha2, alpha3;
         Channel grass_alpha = switch (terrain) {
@@ -820,7 +819,7 @@ public final class Landscape {
     }
 
     // generate dirt alpha
-    private @NonNull Channel generateDirtAlpha() {
+    private Channel generateDirtAlpha() {
         Channel dirt_alpha = height.copy().dynamicRange(1.1f * SimulationConfig.SEA_LEVEL, 2f
                 * SimulationConfig.SEA_LEVEL, 0f, 1f);
         dirt_alpha.channelSubtract(relheight.copy().invert().dynamicRange(0.5f, 0.6f, 0f, 0.5f));
@@ -828,7 +827,7 @@ public final class Landscape {
     }
 
     // generate rubble alpha
-    private @NonNull Channel generateRubbleAlpha() {
+    private Channel generateRubbleAlpha() {
         Channel rubble_alpha = slope.copy().dynamicRange(build_threshold, access_threshold, 0f, 1f);
         rubble_alpha.channelSubtract(height.copy().invert().dynamicRange(0.8f, 1f, 0f, 1f));
         rubble_alpha.channelSubtract(relheight.copy().invert().dynamicRange(0.5f, 0.65f, 0f, 0.5f));
@@ -836,13 +835,13 @@ public final class Landscape {
     }
 
     // generate rock alpha
-    private static @NonNull Channel generateRockAlpha(@NonNull Channel slope, float access_threshold) {
+    private static Channel generateRockAlpha(Channel slope, float access_threshold) {
         Channel rock_alpha = slope.copy().threshold(access_threshold, 1f);
         return rock_alpha;
     }
 
     // generate grass alpha
-    private @NonNull Channel generateGrassAlpha(int size, int seed) {
+    private Channel generateGrassAlpha(int size, int seed) {
         float v_boost = Math.min(1.0f, vegetation_amount * 1.5f);
         float lower = 1.0f - v_boost;
         Channel grass_alpha = new Midpoint(size, 4, 0.45f, seed).toChannel().dynamicRange(lower, 1f, 0f, 1f);
@@ -857,7 +856,7 @@ public final class Landscape {
     }
 
     // generate soil alpha
-    private @NonNull Channel generateSoilAlpha() {
+    private Channel generateSoilAlpha() {
         Channel soil_alpha = height.copy().dynamicRange(1.1f * SimulationConfig.SEA_LEVEL, 2f
                 * SimulationConfig.SEA_LEVEL, 0f, 1f);
         soil_alpha.channelSubtract(relheight.copy().invert().dynamicRange(0.5f, 0.6f, 0f, 0.5f));
@@ -865,13 +864,13 @@ public final class Landscape {
     }
 
     // generate cliff alpha
-    private static @NonNull Channel generateCliffAlpha(@NonNull Channel slope, float access_threshold) {
+    private static Channel generateCliffAlpha(Channel slope, float access_threshold) {
         Channel cliff_alpha = slope.copy().threshold(access_threshold, 1f);
         return cliff_alpha;
     }
 
     // generate snow alpha
-    private static @NonNull Channel generateSnowAlpha(@NonNull Channel height, @NonNull Channel cliff_alpha) {
+    private static Channel generateSnowAlpha(Channel height, Channel cliff_alpha) {
         Channel snow_alpha = height.copy().dynamicRange(0.5f, 0.6f, 0f, 1f);
         snow_alpha.channelSubtract(cliff_alpha);
         snow_alpha.smooth(1).smooth(1);
@@ -880,7 +879,7 @@ public final class Landscape {
     }
 
     // generate seabottom alpha
-    private static @NonNull Channel generateSeabottomAlpha(@NonNull Terrain terrain, @NonNull Channel height) {
+    private static Channel generateSeabottomAlpha(Terrain terrain, Channel height) {
         Channel seabottom_alpha = height.copy().invert().dynamicRange(1f - SimulationConfig.SEA_LEVEL, 1f, 0f, 1f);
         return switch (terrain) {
             case NATIVE -> seabottom_alpha.grow(0f, 1).gamma(0.5f);
@@ -892,7 +891,7 @@ public final class Landscape {
     // ************
     // * SUPPLIES *
     // ************
-    private void generateSupplies(@NonNull Channel grass_alpha) {
+    private void generateSupplies(Channel grass_alpha) {
         // generate overall probability map for rock and iron resources
         Channel centerprob = new Hill(unit_grids_per_world, Hill.Shape.CIRCLE).toChannel().addClip(-.5f).dynamicRange();
 
@@ -1027,7 +1026,7 @@ public final class Landscape {
     }
 
     // place supplies on map
-    private @NonNull Channel placeSupplies(@NonNull Channel probability, @NonNull Channel supplies, int intervals,
+    private Channel placeSupplies(Channel probability, Channel supplies, int intervals,
             int max_count) {
         max_count = Math.min(probability.width * probability.height, max_count);
         int i = 0;
@@ -1071,7 +1070,7 @@ public final class Landscape {
     }
 
     // place plants on map
-    private @NonNull Channel placePlants(@NonNull Channel probability, @NonNull Channel place, int intervals,
+    private Channel placePlants(Channel probability, Channel place, int intervals,
             int max_count, int plant_type) {
         max_count = Math.min(probability.width * probability.height, max_count);
         int i = 0;
@@ -1185,7 +1184,7 @@ public final class Landscape {
     // * GET METHODS *
     // ***************
 
-    public BlendInfo @NonNull [] getBlendInfos() {
+    public BlendInfo[] getBlendInfos() {
         return blend_infos;
     }
 
@@ -1197,7 +1196,7 @@ public final class Landscape {
         return detail_normal;
     }
 
-    public float @NonNull [] getHeight() {
+    public float[] getHeight() {
         return height.getPixels();
     }
 
@@ -1216,23 +1215,23 @@ public final class Landscape {
         return build;
     }
 
-    public @NonNull List<int @NonNull []> getTrees() {
+    public List<int[]> getTrees() {
         return getPositions(trees);
     }
 
-    public @NonNull List<int @NonNull []> getPalmtrees() {
+    public List<int[]> getPalmtrees() {
         return getPositions(palmtrees);
     }
 
-    public @NonNull List<int @NonNull []> getRock() {
+    public List<int[]> getRock() {
         return getPositions(rock);
     }
 
-    public @NonNull List<int @NonNull []> getIron() {
+    public List<int[]> getIron() {
         return getPositions(iron);
     }
 
-    private @NonNull List<int @NonNull []> getPositions(@NonNull Channel channel) {
+    private List<int[]> getPositions(Channel channel) {
         int count = channel.count(1f);
         List<int[]> list = new ArrayList<>(count);
         channel.matching(p -> p == 1f, list::add);

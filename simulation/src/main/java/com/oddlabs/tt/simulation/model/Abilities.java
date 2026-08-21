@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 // TODO convert to enum
 public final class Abilities {
@@ -37,7 +36,7 @@ public final class Abilities {
         return (this.abilities | abilities) == this.abilities;
     }
 
-    public void addAbilities(@NonNull Abilities abilities) {
+    public void addAbilities(Abilities abilities) {
         addAbilities(abilities.abilities);
     }
 
@@ -45,7 +44,7 @@ public final class Abilities {
         this.abilities = this.abilities | abilities;
     }
 
-    public void removeAbilities(@NonNull Abilities abilities) {
+    public void removeAbilities(Abilities abilities) {
         removeAbilities(abilities.abilities);
     }
 

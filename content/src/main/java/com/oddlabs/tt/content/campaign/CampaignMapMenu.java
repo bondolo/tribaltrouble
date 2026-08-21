@@ -17,7 +17,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,16 +25,16 @@ import org.jspecify.annotations.Nullable;
  */
 final class CampaignMapMenu extends Form {
     private static final Color.Linear DARK_GLASS = Color.Linear.BLACK.alpha(0.345f);
-    private final @NonNull GUIRoot gui_root;
-    private final @NonNull NetworkSelector network;
-    private final @NonNull AudioManager audio;
-    private final @NonNull GUIImage overlay;
-    private final @NonNull GUIImage logo;
-    private final @NonNull MenuButton resumeButton;
+    private final GUIRoot gui_root;
+    private final NetworkSelector network;
+    private final AudioManager audio;
+    private final GUIImage overlay;
+    private final GUIImage logo;
+    private final MenuButton resumeButton;
 
     private @Nullable Form current_menu;
 
-    CampaignMapMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull AudioManager audio) {
+    CampaignMapMenu(NetworkSelector network, GUIRoot gui_root, AudioManager audio) {
         this.network = network;
         this.gui_root = gui_root;
         this.audio = audio;
@@ -78,12 +77,12 @@ final class CampaignMapMenu extends Form {
         }
     }
 
-    private void setMenuCentered(@NonNull Form menu) {
+    private void setMenuCentered(Form menu) {
         setMenu(menu);
         menu.centerPos();
     }
 
-    private void setMenu(@NonNull Form menu) {
+    private void setMenu(Form menu) {
         if (current_menu != null) {
             current_menu.remove();
         }
@@ -98,7 +97,7 @@ final class CampaignMapMenu extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -171,7 +170,7 @@ final class CampaignMapMenu extends Form {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED) {
             if (event.consumeAction(GameAction.UI_CANCEL)) {
                 cancel();
@@ -183,7 +182,7 @@ final class CampaignMapMenu extends Form {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         // Draw subtle dark background
         renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), DARK_GLASS);
     }

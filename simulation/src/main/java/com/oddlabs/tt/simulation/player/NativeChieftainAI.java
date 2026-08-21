@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
-import org.jspecify.annotations.NonNull;
 
 import java.util.stream.StreamSupport;
 
@@ -16,12 +15,12 @@ public final class NativeChieftainAI extends ChieftainAI {
     private static final int NUM_UNITS_FOR_POISON = 5;
 
     @Override
-    public void decide(@NonNull Unit chieftain) {
+    public void decide(Unit chieftain) {
         nodeLightningCloud(chieftain);
         nodePoisonFog(chieftain);
     }
 
-    private void nodeLightningCloud(@NonNull Unit chieftain) {
+    private void nodeLightningCloud(Unit chieftain) {
         if (chieftain.getMagicProgress(MagicType.LIGHTNING_CLOUD) < 1)
             return;
 
@@ -35,7 +34,7 @@ public final class NativeChieftainAI extends ChieftainAI {
         }
     }
 
-    private void nodePoisonFog(@NonNull Unit chieftain) {
+    private void nodePoisonFog(Unit chieftain) {
         if (chieftain.getMagicProgress(MagicType.POISON_FOG) < 1)
             return;
 
@@ -52,7 +51,7 @@ public final class NativeChieftainAI extends ChieftainAI {
         }
     }
 
-    private int getNumEnemyUnitsClose(@NonNull Unit chieftain, float hit_radius) {
+    private int getNumEnemyUnitsClose(Unit chieftain, float hit_radius) {
         var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
                 Unit.class);
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
@@ -67,7 +66,7 @@ public final class NativeChieftainAI extends ChieftainAI {
         return (int) num_enemy_units_close;
     }
 
-    private int getNumFriendlyUnitsClose(@NonNull Unit chieftain, float hit_radius) {
+    private int getNumFriendlyUnitsClose(Unit chieftain, float hit_radius) {
         var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
                 Selectable.genericClass());
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());

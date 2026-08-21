@@ -1,16 +1,15 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.animation.Animated;
-import org.jspecify.annotations.NonNull;
 
 
 public class SupplySpawnAnimation implements Animated {
-    private final @NonNull Supply supply;
+    private final Supply supply;
     private final float limit;
 
     private float time = 0;
 
-    public SupplySpawnAnimation(@NonNull Supply supply, float limit) {
+    public SupplySpawnAnimation(Supply supply, float limit) {
         this.supply = supply;
         this.limit = limit;
         supply.getWorld().getAnimationManagerGameTime().registerAnimation(this);

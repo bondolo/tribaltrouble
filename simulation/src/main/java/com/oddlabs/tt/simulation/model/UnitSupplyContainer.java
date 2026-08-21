@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
@@ -20,7 +19,7 @@ public final class UnitSupplyContainer extends SupplyContainer {
         throw new UnsupportedOperationException("UnitSupplyContainer requires a supply type");
     }
 
-    public int increaseSupply(int amount, @NonNull SupplyType type) {
+    public int increaseSupply(int amount, SupplyType type) {
         if (this.type != type) {
             this.type = type;
             super.increaseSupply(-getNumSupplies());
@@ -28,7 +27,7 @@ public final class UnitSupplyContainer extends SupplyContainer {
         return super.increaseSupply(amount);
     }
 
-    public @NonNull Optional<SupplyType> getSupplyType() {
+    public Optional<SupplyType> getSupplyType() {
         return Optional.ofNullable(type);
     }
 }

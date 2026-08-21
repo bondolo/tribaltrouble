@@ -9,27 +9,25 @@ import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.ElementNode;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Traverses element spatial hierarchy and dispatches visible entities to {@link RenderState}.
  */
 final class ElementRenderer<T extends Element<T>> {
 
-    private final @NonNull RenderState render_state;
+    private final RenderState render_state;
     private final boolean picking;
     private CameraState camera;
 
     private boolean visible_override;
 
-    ElementRenderer(@NonNull Player local_player, @NonNull RenderQueues render_queues, @NonNull Picker picker,
-            boolean picking, @NonNull SpriteSorter sprite_sorter, Selection selection,
-            @NonNull AudioImplementation audio) {
+    ElementRenderer(Player local_player, RenderQueues render_queues, Picker picker,
+            boolean picking, SpriteSorter sprite_sorter, Selection selection,
+            AudioImplementation audio) {
         this.picking = picking;
         this.render_state = new RenderState(local_player, sprite_sorter, render_queues, picker, selection, audio);
     }
 
-    @NonNull
     RenderState getRenderState() {
         return render_state;
     }
@@ -39,7 +37,7 @@ final class ElementRenderer<T extends Element<T>> {
         render_state.setup(picking, camera);
     }
 
-    public void visit(@NonNull AbstractElementNode<T> node) {
+    public void visit(AbstractElementNode<T> node) {
         RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
                 ? RenderTools.FrustumIntersection.ALL_INSIDE // Force all in frustum for map mode
                 : RenderTools.inFrustum(node, camera.getFrustum());

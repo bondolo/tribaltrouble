@@ -6,12 +6,11 @@ import com.oddlabs.tt.gui.IconButton;
 
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public class MapIslandButton extends IconButton {
     private final int islandIndex;
 
-    public MapIslandButton(@NonNull ModeIconQuads icon, int islandIndex) {
+    public MapIslandButton(ModeIconQuads icon, int islandIndex) {
         super(icon, () -> "");
         this.islandIndex = islandIndex;
         setCanFocus(true);
@@ -22,7 +21,7 @@ public class MapIslandButton extends IconButton {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode;
         if (isDisabled()) {
             skinMode = ModeIconQuads.Mode.DISABLED;

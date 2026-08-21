@@ -9,7 +9,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 public final class EditBox extends TextBox {
     private int index;
@@ -20,7 +19,7 @@ public final class EditBox extends TextBox {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         Box edit_box = Skin.getSkin().getEditBox();
         super.renderBox(renderer, isDisabled() ? ModeIconQuads.Mode.DISABLED : ModeIconQuads.Mode.NORMAL);
         var c = isDisabled() ? new Color.Linear(0.5f, 0.8f) : Color.Linear.WHITE;
@@ -40,7 +39,7 @@ public final class EditBox extends TextBox {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             boolean consumed = true;
 
@@ -124,12 +123,12 @@ public final class EditBox extends TextBox {
     }
 
     @Override
-    protected @NonNull CursorType getCursorType() {
+    protected CursorType getCursorType() {
         return isDisabled() ? CursorType.NORMAL : CursorType.TEXT;
     }
 
     @Override
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         if (button == MouseButton.LEFT) {
             Box edit_box = Skin.getSkin().getEditBox();
             float relativeX = x - (getRootX() + edit_box.getLeftOffset());

@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL15;
@@ -19,7 +18,6 @@ import org.lwjgl.opengl.GL31;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -27,24 +25,24 @@ import java.util.stream.Stream;
  * including index buffers, vertex attributes, and TBO textures.
  */
 public final class SpriteList implements AutoCloseable {
-    private static final @NonNull SpriteList QUAD_INSTANCE = new SpriteList(new float[]{0, 0, 1, 0, 1, 1, 0, 1});
+    private static final SpriteList QUAD_INSTANCE = new SpriteList(new float[]{0, 0, 1, 0, 1, 1, 0, 1});
 
-    private final @NonNull BoundingBox @NonNull [] bounds;
-    private final @NonNull Sprite @NonNull [] sprites;
-    private final AnimationInfo.@NonNull AnimationType @NonNull [] type_array;
-    private final @NonNull String @NonNull [] animation_names;
+    private final BoundingBox[] bounds;
+    private final Sprite[] sprites;
+    private final AnimationInfo.AnimationType[] type_array;
+    private final String[] animation_names;
 
-    private final @NonNull ShortVBO indices;
-    private final @NonNull FloatVBO vertices_and_normals;
-    private final @NonNull FloatVBO texcoords;
+    private final ShortVBO indices;
+    private final FloatVBO vertices_and_normals;
+    private final FloatVBO texcoords;
     private @Nullable VertexArray vao;
     private int tboTextureHandle;
 
-    public static @NonNull SpriteList getQuadInstance() {
+    public static SpriteList getQuadInstance() {
         return QUAD_INSTANCE;
     }
 
-    public static @NonNull SpriteList createQuadInstance(float u1, float v1, float u2, float v2) {
+    public static SpriteList createQuadInstance(float u1, float v1, float u2, float v2) {
         return new SpriteList(new float[]{u1, v1, u2, v1, u2, v2, u1, v2});
     }
 
@@ -82,7 +80,7 @@ public final class SpriteList implements AutoCloseable {
         initTBO();
     }
 
-    public SpriteList(@NonNull SpriteFile sprite_file) {
+    public SpriteList(SpriteFile sprite_file) {
         Object[] sprites_and_animations = Utils.loadObject(Object[].class, sprite_file.getURL());
         SpriteInfo[] sprite_infos = (SpriteInfo[]) sprites_and_animations[0];
         AnimationInfo[] animation_infos = (AnimationInfo[]) sprites_and_animations[1];
@@ -95,8 +93,8 @@ public final class SpriteList implements AutoCloseable {
             total_vertices += sprite_info.getTexCoords().length / 2;
         }
 
-        ShortBuffer all_indices = Objects.requireNonNull(BufferUtils.createShortBuffer(total_indices));
-        FloatBuffer all_texcoords = Objects.requireNonNull(BufferUtils.createFloatBuffer(total_vertices * 2));
+        ShortBuffer all_indices = BufferUtils.createShortBuffer(total_indices);
+        FloatBuffer all_texcoords = BufferUtils.createFloatBuffer(total_vertices * 2);
 
         int vert_and_normal_buffer_size = 0;
         for (SpriteInfo sprite_info : sprite_infos) {
@@ -108,8 +106,8 @@ public final class SpriteList implements AutoCloseable {
             }
         }
 
-        FloatBuffer all_vertices_and_normals = Objects.requireNonNull(BufferUtils.createFloatBuffer(
-                vert_and_normal_buffer_size));
+        FloatBuffer all_vertices_and_normals = BufferUtils.createFloatBuffer(
+                vert_and_normal_buffer_size);
 
         float[] cpw_array = new float[animation_infos.length];
         type_array = new AnimationInfo.AnimationType[animation_infos.length];
@@ -158,11 +156,11 @@ public final class SpriteList implements AutoCloseable {
         return tboTextureHandle;
     }
 
-    public float @NonNull [] getClearColor() {
+    public float[] getClearColor() {
         return getSprite(0).getClearColor();
     }
 
-    public @NonNull BoundingBox @NonNull [] getBounds() {
+    public BoundingBox[] getBounds() {
         return bounds;
     }
 
@@ -170,19 +168,19 @@ public final class SpriteList implements AutoCloseable {
         return sprites.length;
     }
 
-    public @NonNull Sprite getSprite(int index) {
+    public Sprite getSprite(int index) {
         return sprites[index];
     }
 
-    public AnimationInfo.@NonNull AnimationType @NonNull [] getAnimationTypes() {
+    public AnimationInfo.AnimationType[] getAnimationTypes() {
         return type_array;
     }
 
-    public @NonNull String @NonNull [] getAnimationNames() {
+    public String[] getAnimationNames() {
         return animation_names;
     }
 
-    public int getAnimationIndex(@NonNull String name) {
+    public int getAnimationIndex(String name) {
         for (int i = 0; i < animation_names.length; i++) {
             if (animation_names[i].equals(name)) {
                 return i;
@@ -191,15 +189,15 @@ public final class SpriteList implements AutoCloseable {
         return -1;
     }
 
-    public @NonNull ShortVBO getIndices() {
+    public ShortVBO getIndices() {
         return indices;
     }
 
-    public @NonNull FloatVBO getVerticesAndNormals() {
+    public FloatVBO getVerticesAndNormals() {
         return vertices_and_normals;
     }
 
-    public @NonNull FloatVBO getTexcoords() {
+    public FloatVBO getTexcoords() {
         return texcoords;
     }
 

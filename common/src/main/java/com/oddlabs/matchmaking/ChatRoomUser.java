@@ -1,6 +1,5 @@
 package com.oddlabs.matchmaking;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
@@ -10,15 +9,15 @@ public final class ChatRoomUser implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
-    private final @NonNull String nick;
+    private final String nick;
     private final boolean playing;
 
-    public ChatRoomUser(@NonNull String nick, boolean playing) {
+    public ChatRoomUser(String nick, boolean playing) {
         this.nick = nick;
         this.playing = playing;
     }
 
-    public @NonNull String getNick() {
+    public String getNick() {
         return nick;
     }
 

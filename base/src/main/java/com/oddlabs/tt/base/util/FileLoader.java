@@ -1,7 +1,6 @@
 package com.oddlabs.tt.base.util;
 
 import com.oddlabs.event.Deterministic;
-import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,17 +8,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Objects;
 
 public final class FileLoader implements FileLoaderInterface {
     private final FileLoaderListener listener;
     private final ReadableByteChannel file_channel;
-    private final @NonNull ByteBuffer buffer;
-    private final @NonNull Deterministic deterministic;
+    private final ByteBuffer buffer;
+    private final Deterministic deterministic;
 
-    public FileLoader(@NonNull File file, FileLoaderListener listener, int num_bytes,
-            @NonNull Deterministic deterministic) {
-        this.deterministic = Objects.requireNonNull(deterministic);
+    public FileLoader(File file, FileLoaderListener listener, int num_bytes,
+            Deterministic deterministic) {
+        this.deterministic = deterministic;
         this.buffer = ByteBuffer.allocate(num_bytes);
         this.listener = listener;
         IOException exception;

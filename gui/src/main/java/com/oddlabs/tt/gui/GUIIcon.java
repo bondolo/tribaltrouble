@@ -2,19 +2,18 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public class GUIIcon extends GUIObject {
-    private final @NonNull IconQuad icon;
+    private final IconQuad icon;
 
-    public GUIIcon(@NonNull IconQuad icon) {
+    public GUIIcon(IconQuad icon) {
         this.icon = icon;
         setDim(icon.getWidth(), icon.getHeight());
         setCanFocus(false);
     }
 
     @Override
-    public void renderGeometry(@NonNull GUIRenderer renderer) {
+    public void renderGeometry(GUIRenderer renderer) {
         renderer.drawIcon(icon, 0, 0, getWidth(), getHeight());
     }
 }

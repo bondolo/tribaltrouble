@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.model.weapon;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A throwing spear weapon made of rock.
@@ -11,12 +10,12 @@ import org.jspecify.annotations.NonNull;
 public final class RockSpearWeapon extends DirectedThrowingWeapon {
     private static final float METERS_PER_SECOND = 20f; //multiplied by meters/second (in 2D)
 
-    public RockSpearWeapon(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
+    public RockSpearWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(hit, src, target);
     }
 
     @Override
-    public @NonNull WeaponVisualType getWeaponVisualType() {
+    public WeaponVisualType getWeaponVisualType() {
         return WeaponVisualType.ROCK;
     }
 

@@ -3,18 +3,17 @@ package com.oddlabs.tt.net;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.registration.RegistrationKeyFormatException;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
 public final class ServerMessageBundler {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ServerMessageBundler.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public static @NonNull String getSizeString(int index) {
+    public static String getSizeString(int index) {
         return i18n(switch (index) {
             case Game.SIZE_SMALL -> "size_small";
             case Game.SIZE_MEDIUM -> "size_medium";
@@ -23,7 +22,7 @@ public final class ServerMessageBundler {
         });
     }
 
-    public static @NonNull String getTerrainTypeString(int index) {
+    public static String getTerrainTypeString(int index) {
         return i18n(switch (index) {
             case Game.TERRAIN_TYPE_NATIVE -> "terrain_type_native";
             case Game.TERRAIN_TYPE_VIKING -> "terrain_type_viking";
@@ -31,11 +30,11 @@ public final class ServerMessageBundler {
         });
     }
 
-    public static @NonNull String getRatedString(boolean rated) {
+    public static String getRatedString(boolean rated) {
         return i18n(rated ? "rated_yes" : "rated_no");
     }
 
-    public static @NonNull String getGamespeedString(int index) {
+    public static String getGamespeedString(int index) {
         return i18n(switch (index) {
             case Game.GAMESPEED_PAUSE -> "gamespeed_pause";
             case Game.GAMESPEED_SLOW -> "gamespeed_slow";
@@ -46,19 +45,19 @@ public final class ServerMessageBundler {
         });
     }
 
-    public static @NonNull String getHillsString(int index) {
+    public static String getHillsString(int index) {
         return (10 * index) + "%";
     }
 
-    public static @NonNull String getTreesString(int index) {
+    public static String getTreesString(int index) {
         return (10 * index) + "%";
     }
 
-    public static @NonNull String getSuppliesString(int index) {
+    public static String getSuppliesString(int index) {
         return (10 * index) + "%";
     }
 
-    public static @NonNull String getRegistrationKeyFormatExceptionMessage(@NonNull RegistrationKeyFormatException e) {
+    public static String getRegistrationKeyFormatExceptionMessage(RegistrationKeyFormatException e) {
         return switch (e.getType()) {
             case RegistrationKeyFormatException.TYPE_INVALID_CHAR -> i18n("invalid_char", e.getInvalidChar());
             case RegistrationKeyFormatException.TYPE_INVALID_LENGTH -> i18n("invalid_length", e.getStrippedLength());

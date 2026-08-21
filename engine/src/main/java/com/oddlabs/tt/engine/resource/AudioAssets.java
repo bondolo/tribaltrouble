@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.resource;
 import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.simulation.model.SupplyType;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,10 +22,10 @@ public class AudioAssets {
     public static final AudioFile SFX_ARMORY = new AudioFile("/sfx/armory.ogg");
     public static final AudioFile SFX_ATTACKNOTIFY_NATIVE = new AudioFile("/sfx/attacknotify_native.ogg");
     public static final AudioFile SFX_ATTACKNOTIFY_VIKING = new AudioFile("/sfx/attacknotify_viking.ogg");
-    public static final @NonNull AudioFile @NonNull [] SFX_AXE_CUTTING_STONES = IntStream.rangeClosed(1, 5)
+    public static final AudioFile[] SFX_AXE_CUTTING_STONES = IntStream.rangeClosed(1, 5)
             .mapToObj(i -> String.format("/sfx/axe_cutting_stone%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
-    public static final @NonNull AudioFile @NonNull [] SFX_AXE_CUTTING_WOODS = IntStream.rangeClosed(1, 6)
+    public static final AudioFile[] SFX_AXE_CUTTING_WOODS = IntStream.rangeClosed(1, 6)
             .mapToObj(i -> String.format("/sfx/axe_cutting_wood%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
     public static final AudioFile SFX_BUBBLING = new AudioFile("/sfx/bubbling.ogg");
@@ -34,16 +33,16 @@ public class AudioAssets {
     public static final AudioFile SFX_BUILDINGNOTIFY_VIKING = new AudioFile("/sfx/buildingnotify_viking.ogg");
     public static final AudioFile SFX_BUILDING_CRASH = new AudioFile("/sfx/building_crash.ogg");
     public static final AudioFile SFX_CHICKEN_DEATH = new AudioFile("/sfx/chicken_death.ogg");
-    public static final @NonNull AudioFile[] SFX_CHICKEN_IDLES = IntStream.rangeClosed(1, 4)
+    public static final AudioFile[] SFX_CHICKEN_IDLES = IntStream.rangeClosed(1, 4)
             .mapToObj(i -> String.format("/sfx/chicken_idle%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
     public static final AudioFile SFX_CHICKEN_PECK = new AudioFile("/sfx/chicken_peck.ogg");
     public static final AudioFile SFX_CRACKLING_CLOUD = new AudioFile("/sfx/crackling_cloud.ogg");
-    public static final @NonNull AudioFile @NonNull [] SFX_DEATH_NATIVE_WARRIORS = IntStream.rangeClosed(1, 2)
+    public static final AudioFile[] SFX_DEATH_NATIVE_WARRIORS = IntStream.rangeClosed(1, 2)
             .mapToObj(i -> String.format("/sfx/death_native_warrior%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
     public static final AudioFile SFX_DEATH_PEON = new AudioFile("/sfx/death_peon.ogg");
-    public static final @NonNull AudioFile @NonNull [] SFX_DEATH_VIKING_WARRIORS = IntStream.rangeClosed(1, 2)
+    public static final AudioFile[] SFX_DEATH_VIKING_WARRIORS = IntStream.rangeClosed(1, 2)
             .mapToObj(i -> String.format("/sfx/death_viking_warrior%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
     public static final AudioFile SFX_FELLING_PALMTREE = new AudioFile("/sfx/felling_palmtree.ogg");
@@ -54,30 +53,30 @@ public class AudioAssets {
     public static final AudioFile SFX_WEAPON_AXE = new AudioFile("/sfx/weapon_axe.ogg");
     public static final AudioFile SFX_WEAPON_SPEAR = new AudioFile("/sfx/weapon_spear.ogg");
 
-    public static final @NonNull AudioFile @NonNull [] SFX_HITS = IntStream.rangeClosed(1, 7)
+    public static final AudioFile[] SFX_HITS = IntStream.rangeClosed(1, 7)
             .mapToObj(i -> String.format("/sfx/hit%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
-    public static final @NonNull AudioFile @NonNull [] SFX_VIKING_CHIEFTAIN_HITS = new AudioFile[]{
+    public static final AudioFile[] SFX_VIKING_CHIEFTAIN_HITS = new AudioFile[]{
             SFX_HITS[0], SFX_HITS[1], SFX_HITS[5], SFX_HITS[6]
     };
-    public static final @NonNull AudioFile @NonNull [] SFX_NATIVE_CHIEFTAIN_HITS = new AudioFile[]{
+    public static final AudioFile[] SFX_NATIVE_CHIEFTAIN_HITS = new AudioFile[]{
             SFX_HITS[2], SFX_HITS[3], SFX_HITS[4], SFX_HITS[5]
     };
-    public static final @NonNull AudioFile @NonNull [] SFX_IMPACT_MEATS = IntStream.rangeClosed(1, 5)
+    public static final AudioFile[] SFX_IMPACT_MEATS = IntStream.rangeClosed(1, 5)
             .mapToObj(i -> String.format("/sfx/impact_meat%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
 
-    public static final @NonNull AudioFile @NonNull [] SFX_IMPACT_WOODS = IntStream.rangeClosed(1, 4)
+    public static final AudioFile[] SFX_IMPACT_WOODS = IntStream.rangeClosed(1, 4)
             .mapToObj(i -> String.format("/sfx/impact_wood%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
     public static final AudioFile SFX_LURBLAST = new AudioFile("/sfx/lurblast.ogg");
-    public static final @NonNull AudioFile[] SFX_LURBLASTS = IntStream.rangeClosed(1, 3)
+    public static final AudioFile[] SFX_LURBLASTS = IntStream.rangeClosed(1, 3)
             .mapToObj(i -> String.format("/sfx/lur_blast%d.ogg", i)).map(AudioFile::new).toArray(AudioFile[]::new);
-    public static final @NonNull AudioFile @NonNull [] SFX_LUR_STUNS = IntStream.rangeClosed(1, 3)
+    public static final AudioFile[] SFX_LUR_STUNS = IntStream.rangeClosed(1, 3)
             .mapToObj(i -> String.format("/sfx/lur_stun%d.ogg", i))
             .map(AudioFile::new).toArray(AudioFile[]::new);
 
-    public static final @NonNull Map<@NonNull SupplyType, @NonNull AudioFile[]> SFX_HARVEST_SOUNDS;
+    public static final Map<SupplyType, AudioFile[]> SFX_HARVEST_SOUNDS;
 
     static {
         var map = new EnumMap<SupplyType, AudioFile[]>(SupplyType.class);
@@ -181,7 +180,7 @@ public class AudioAssets {
     public static final float AUDIO_RADIUS_BLAST_BLAST = 1f;
     public static final float AUDIO_RADIUS_ARMORY = 5f;
 
-    public static @NonNull AudioParameters getHarvestSound(@NonNull SupplyType key) {
+    public static AudioParameters getHarvestSound(SupplyType key) {
         AudioFile[] sounds = SFX_HARVEST_SOUNDS.get(key);
         var audioFile = sounds[ThreadLocalRandom.current().nextInt(sounds.length)];
         return new AudioParameters(audioFile, AUDIO_RANK_HARVEST,
@@ -197,7 +196,7 @@ public class AudioAssets {
             AUDIO_DISTANCE_BUILDING_COLLAPSE, AUDIO_GAIN_BUILDING_COLLAPSE,
             AUDIO_RADIUS_BUILDING_COLLAPSE);
 
-    public static final @NonNull AudioParameters[] BUILDING_HITS = Arrays.stream(SFX_IMPACT_WOODS)
+    public static final AudioParameters[] BUILDING_HITS = Arrays.stream(SFX_IMPACT_WOODS)
             .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_WEAPON_HIT,
                     AUDIO_DISTANCE_WEAPON_HIT, AUDIO_GAIN_WEAPON_HIT,
                     AUDIO_RADIUS_WEAPON_HIT))
@@ -213,7 +212,7 @@ public class AudioAssets {
             AUDIO_DISTANCE_DEATH, AUDIO_GAIN_CHICKEN_DEATH,
             AUDIO_RADIUS_CHICKEN_DEATH);
 
-    public static final @NonNull AudioParameters[] CHICKEN_IDLES = Arrays.stream(SFX_CHICKEN_IDLES)
+    public static final AudioParameters[] CHICKEN_IDLES = Arrays.stream(SFX_CHICKEN_IDLES)
             .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_CHICKEN,
                     AUDIO_DISTANCE_CHICKEN, AUDIO_GAIN_CHICKEN_IDLE,
                     AUDIO_RADIUS_CHICKEN_IDLE))
@@ -238,7 +237,7 @@ public class AudioAssets {
             SFX_GAS, AUDIO_RANK_GAS,
             AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_GAS, AUDIO_RADIUS_GAS);
 
-    public static final @NonNull AudioParameters[] SONIC_BLAST_LUR = Arrays.stream(SFX_LURBLASTS)
+    public static final AudioParameters[] SONIC_BLAST_LUR = Arrays.stream(SFX_LURBLASTS)
             .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_MAGIC,
                     AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_BLAST_LUR,
                     AUDIO_RADIUS_BLAST_LUR))
@@ -254,7 +253,7 @@ public class AudioAssets {
             AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_BLAST_BLAST,
             AUDIO_RADIUS_BLAST_BLAST);
 
-    public static final @NonNull AudioParameters[] STUN_LUR = Arrays.stream(SFX_LUR_STUNS)
+    public static final AudioParameters[] STUN_LUR = Arrays.stream(SFX_LUR_STUNS)
             .map(audio -> new AudioParameters(audio, AUDIO_RANK_MAGIC,
                     AUDIO_DISTANCE_MAGIC, AUDIO_GAIN_STUN_LUR,
                     AUDIO_RADIUS_STUN_LUR))
@@ -278,7 +277,7 @@ public class AudioAssets {
             AUDIO_RADIUS_AMBIENT_WIND,
             1f, true, true, true);
 
-    public static final @NonNull AudioParameters[] TREE_FALL = Stream.of(SFX_FELLING_TREE,
+    public static final AudioParameters[] TREE_FALL = Stream.of(SFX_FELLING_TREE,
             SFX_FELLING_PALMTREE)
             .map(rsrc -> new AudioParameters(rsrc, AUDIO_RANK_SUPPLY_ACTION,
                     AUDIO_DISTANCE_SUPPLY_ACTION, AUDIO_GAIN_SUPPLY_ACTION,

@@ -5,7 +5,6 @@ import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,17 +16,17 @@ import java.util.logging.Logger;
 
 public final class Router implements ConnectionListenerInterface {
     private final Logger logger;
-    private final @NonNull SessionManager manager;
-    private final @NonNull AbstractConnectionListener listener;
+    private final SessionManager manager;
+    private final AbstractConnectionListener listener;
     private final Set<RouterClient> clients = new LinkedHashSet<>();
     private final RouterListener router_listener;
     private final int port;
 
-    public Router(@NonNull NetworkSelector network, Logger logger) {
+    public Router(NetworkSelector network, Logger logger) {
         this(network, null, RouterInterface.PORT, logger, null);
     }
 
-    public Router(@NonNull NetworkSelector network, InetAddress address, int port, Logger logger,
+    public Router(NetworkSelector network, InetAddress address, int port, Logger logger,
             RouterListener router_listener) {
         this.manager = new SessionManager(network.getTimeManager(), logger);
         this.logger = logger;
@@ -50,7 +49,7 @@ public final class Router implements ConnectionListenerInterface {
     }
 
     @Override
-    public void incomingConnection(@NonNull AbstractConnectionListener connection_listener, Object remote_address) {
+    public void incomingConnection(AbstractConnectionListener connection_listener, Object remote_address) {
         logger.log(Level.INFO, "Incoming connection from {0}", remote_address);
         AbstractConnection conn = connection_listener.acceptConnection(null);
         RouterClient client = new RouterClient(manager, conn, logger, this);

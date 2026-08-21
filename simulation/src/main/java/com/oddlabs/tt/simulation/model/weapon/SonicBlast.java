@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.model.BoundingBox;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -22,16 +21,16 @@ public final class SonicBlast extends Model implements Magic {
     private final int damage_closest;
     private final int damage_farthest;
     private final float seconds;
-    private final @NonNull Player owner;
+    private final Player owner;
     private final float start_x;
     private final float start_y;
     private final float start_z;
 
     private float time = 0f;
-    private final @NonNull Iterable<? extends Selectable<?>> blast_targets;
+    private final Iterable<? extends Selectable<?>> blast_targets;
 
     public SonicBlast(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance_closest,
-            float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, @NonNull Unit src) {
+            float hit_chance_farthest, int damage_closest, int damage_farthest, float seconds, Unit src) {
         super(src.getOwner().getWorld());
         this.hit_radius = hit_radius;
         this.hit_chance_closest = hit_chance_closest;
@@ -120,7 +119,7 @@ public final class SonicBlast extends Model implements Magic {
     }
 
     @Override
-    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+    protected BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 

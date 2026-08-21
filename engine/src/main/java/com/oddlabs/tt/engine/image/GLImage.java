@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.image;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
@@ -15,7 +14,7 @@ public abstract class GLImage {
     private final int height;
     private final int type;
     private final int format;
-    private final @NonNull ByteBuffer pixel_data;
+    private final ByteBuffer pixel_data;
 
     public final int getWidth() {
         return width;
@@ -33,7 +32,7 @@ public abstract class GLImage {
 
     public abstract void putPixel(int x, int y, int pixel);
 
-    public GLImage(int width, int height, @NonNull ByteBuffer pixel_data, int format) {
+    public GLImage(int width, int height, ByteBuffer pixel_data, int format) {
         //assert Utils.isPowerOf2(width): "Width must be power of 2";
         //assert Utils.isPowerOf2(height): "Height must be power of 2";
         this.width = width;
@@ -64,13 +63,13 @@ public abstract class GLImage {
 
     public abstract GLImage createImage(int width, int height, int format);
 
-    public abstract GLImage createFromLayer(@NonNull Layer layer, int format);
+    public abstract GLImage createFromLayer(Layer layer, int format);
 
-    public final @NonNull GLImage @NonNull [] createMipMaps() {
+    public final GLImage[] createMipMaps() {
         return buildMipMaps(10000, 1.0f, false, false);
     }
 
-    public final @NonNull GLImage @NonNull [] buildMipMaps(int base_fadeout_level, float fadeout_factor,
+    public final GLImage[] buildMipMaps(int base_fadeout_level, float fadeout_factor,
             boolean wrapping, boolean max_alpha) {
         int max = Math.max(height, width);
         int max_level = (int) (Math.log(max) / Math.log(2));
@@ -97,7 +96,7 @@ public abstract class GLImage {
         return result;
     }
 
-    private static void applyFadeout(@NonNull GLImage image, float factor) {
+    private static void applyFadeout(GLImage image, float factor) {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int pixel = image.getPixel(x, y);
@@ -129,7 +128,7 @@ public abstract class GLImage {
      * @param height The height of the area to modify.
      * @param max_alpha If true, only pixels with full alpha (255) are faded.
      */
-    public static void updateMipMapsArea(GLImage @NonNull [] mipmaps, int base_fadeout_level, float fadeout_factor,
+    public static void updateMipMapsArea(GLImage[] mipmaps, int base_fadeout_level, float fadeout_factor,
             int start_x, int start_y, int width, int height, boolean max_alpha) {
         for (int i = 1; i < mipmaps.length; i++) {
             int height_div = mipmaps[i - 1].getHeight() / mipmaps[i].getHeight();
@@ -147,7 +146,7 @@ public abstract class GLImage {
         }
     }
 
-    public static void blendMipMapsArea(GLImage @NonNull [] dest_mipmaps, GLImage @NonNull [] source_mipmaps,
+    public static void blendMipMapsArea(GLImage[] dest_mipmaps, GLImage[] source_mipmaps,
             int base_fadeout_level, float fadeout_factor, int start_x, int start_y, int width, int height) {
         int mip_map_level = 0;
         while (source_mipmaps[0].getWidth() != dest_mipmaps[mip_map_level].getWidth() && source_mipmaps[0].getHeight()
@@ -186,7 +185,7 @@ public abstract class GLImage {
      *            otherwise, it's the average.
      * @return The calculated 32-bit ARGB pixel value.
      */
-    private static int averagePixel(@NonNull GLImage last_img, int x, int y, int height_div, int width_div,
+    private static int averagePixel(GLImage last_img, int x, int y, int height_div, int width_div,
             int base_fadeout_level, float fadeout_factor, int current_level, boolean max_alpha) {
         float inv_num_averaged = 1f / (height_div * width_div);
         int a_acc = 0;
@@ -272,7 +271,7 @@ public abstract class GLImage {
      * @return The calculated 32-bit ARGB pixel value.
      */
 
-    private static int averagePixelThreshold(@NonNull GLImage last_img, int x, int y, int height_div, int width_div,
+    private static int averagePixelThreshold(GLImage last_img, int x, int y, int height_div, int width_div,
             int base_fadeout_level, float fadeout_factor, int current_level, boolean max_alpha) {
         float inv_num_averaged = 1f / (height_div * width_div);
         int col1 = 0; // Alpha (MSB)
@@ -324,7 +323,7 @@ public abstract class GLImage {
         }
     }
 
-    public final void drawImageBlended(@NonNull GLImage img, int dx, int dy, int sx, int sy, int w, int h,
+    public final void drawImageBlended(GLImage img, int dx, int dy, int sx, int sy, int w, int h,
             float alpha_factor) {
         int spixel;
         int dpixel;
@@ -374,7 +373,7 @@ public abstract class GLImage {
 
     protected abstract int getPixelSize();
 
-    public final @NonNull ByteBuffer getPixels() {
+    public final ByteBuffer getPixels() {
         return pixel_data;
     }
 
@@ -385,9 +384,9 @@ public abstract class GLImage {
      * @param newHeight The new height.
      * @return A new GLImage with the scaled content.
      */
-    public abstract @NonNull GLImage scale(int newWidth, int newHeight);
+    public abstract GLImage scale(int newWidth, int newHeight);
 
-    public final void drawImage(@NonNull GLImage img, int dx, int dy, int sx, int sy, int w, int h) {
+    public final void drawImage(GLImage img, int dx, int dy, int sx, int sy, int w, int h) {
         int pixel_size = getPixelSize();
         assert pixel_size == img.getPixelSize();
         ByteBuffer pixels = getPixels();
@@ -408,7 +407,7 @@ public abstract class GLImage {
         }
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         int width = getWidth();
         int height = getHeight();
         Channel r = new Channel(width, height);
@@ -437,7 +436,7 @@ public abstract class GLImage {
         toLayer().saveAsPNG(filename);
     }
 
-    public final void saveAsBMP(@NonNull String filename) {
+    public final void saveAsBMP(String filename) {
         Utils.saveAsBMP(filename, getPixels(), getWidth(), getHeight());
     }
 }

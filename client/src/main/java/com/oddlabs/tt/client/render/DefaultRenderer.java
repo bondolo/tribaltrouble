@@ -40,7 +40,6 @@ import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
@@ -53,35 +52,35 @@ import java.util.function.Consumer;
  * of the landscape, units, buildings, and transient effects.
  */
 public final class DefaultRenderer implements UIRenderer, AutoCloseable {
-    private final @NonNull Picker picker;
-    private final @NonNull Water water;
-    private final @NonNull Sky sky;
-    private final @NonNull LandscapeRenderer landscape_renderer;
-    private final @NonNull World world;
-    private final @NonNull ElementRenderer<?> element_renderer;
-    private final @NonNull TreeRenderer tree_renderer;
+    private final Picker picker;
+    private final Water water;
+    private final Sky sky;
+    private final LandscapeRenderer landscape_renderer;
+    private final World world;
+    private final ElementRenderer<?> element_renderer;
+    private final TreeRenderer tree_renderer;
     private final SpriteSorter sprite_sorter = new SpriteSorter();
-    private final @NonNull RenderQueues render_queues;
-    private final @NonNull MatrixStack modelViewStack;
-    private final @NonNull MatrixStack projectionStack;
-    private final @NonNull Selection selection;
-    private final @NonNull LightningRenderer lightningRenderer;
-    private final @NonNull SonicBlastRenderer sonicBlastRenderer;
-    private final @NonNull EmitterRenderer emitterRenderer;
+    private final RenderQueues render_queues;
+    private final MatrixStack modelViewStack;
+    private final MatrixStack projectionStack;
+    private final Selection selection;
+    private final LightningRenderer lightningRenderer;
+    private final SonicBlastRenderer sonicBlastRenderer;
+    private final EmitterRenderer emitterRenderer;
     private final InstancedSpriteRenderer treeSpriteRenderer = new InstancedSpriteRenderer();
-    private final @NonNull PostProcessor postProcessor;
+    private final PostProcessor postProcessor;
     private final @Nullable Cheat cheat;
-    private final @NonNull AmbientAudio ambient;
+    private final AmbientAudio ambient;
 
     private final GlobalUniforms globalUniforms = new GlobalUniforms();
 
     private @Nullable Building selected_building;
 
-    public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues,
-            @NonNull WorldInfo<Texture> world_info, @NonNull LandscapeRenderer landscape_renderer,
-            @NonNull Picker picker,
-            @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack,
-            @NonNull AudioManager audioManager) {
+    public DefaultRenderer(@Nullable Cheat cheat, Player local_player, RenderQueues render_queues,
+            WorldInfo<Texture> world_info, LandscapeRenderer landscape_renderer,
+            Picker picker,
+            Selection selection, MatrixStack modelViewStack, MatrixStack projectionStack,
+            AudioManager audioManager) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
         this.ambient = new AmbientAudio(audioManager);
@@ -121,7 +120,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.selected_building = building;
     }
 
-    private void renderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state) {
+    private void renderRallyPoint(RenderContext context, CameraState camera_state) {
         if (selected_building != null && !selected_building.isDead() && selected_building.hasRallyPoint())
             doRenderRallyPoint(context, camera_state,
                     selected_building.getRallyPoint(), AssetRegistry.getInstance().getRallyPoint(selected_building
@@ -129,8 +128,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
                     SelectableVisitor.getTeamColor(selected_building));
     }
 
-    private void doRenderRallyPoint(@NonNull RenderContext context, @NonNull CameraState camera_state,
-            @NonNull Target rally_point, @NonNull SpriteKey rally_sprite, Color.@NonNull Linear teamColor) {
+    private void doRenderRallyPoint(RenderContext context, CameraState camera_state,
+            Target rally_point, SpriteKey rally_sprite, Color.Linear teamColor) {
 
         SpriteRenderer rally_point_renderer = render_queues.getRenderer(rally_sprite);
 
@@ -170,7 +169,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     }
 
     @Override
-    public void pickHover(boolean can_hover_behind, @NonNull CameraState camera, int x, int y) {
+    public void pickHover(boolean can_hover_behind, CameraState camera, int x, int y) {
         if (can_hover_behind) {
             picker.pickHoverPhysical(camera, x, y);
         } else {
@@ -183,11 +182,11 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         return picker.getCurrentToolTip();
     }
 
-    private @NonNull TreeRenderer getTreeRenderer() {
+    private TreeRenderer getTreeRenderer() {
         return tree_renderer;
     }
 
-    private void renderDebugElements(@NonNull CameraState frustum_state) {
+    private void renderDebugElements(CameraState frustum_state) {
         if (DebugFlags.draw_axes) drawAxes();
         landscape_renderer.debugRender(frustum_state);
         lightningRenderer.debugRender(element_renderer.getRenderState().getLightningQueue());
@@ -209,19 +208,19 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     }
 
     @Override
-    public void startFrame(@NonNull RenderContext context) {
+    public void startFrame(RenderContext context) {
         postProcessor.bindSceneFBO(context);
         context.clear(true, true);
     }
 
     @Override
-    public void endFrame(@NonNull RenderContext context, @NonNull Consumer<@NonNull RenderContext> guiRenderCallback) {
+    public void endFrame(RenderContext context, Consumer<RenderContext> guiRenderCallback) {
         postProcessor.renderComposite(context, guiRenderCallback);
     }
 
     @Override
-    public void render(@NonNull RenderContext context,
-            @NonNull CameraState frustum_state, @NonNull GUIRoot gui_root) {
+    public void render(RenderContext context,
+            CameraState frustum_state, GUIRoot gui_root) {
         treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
 

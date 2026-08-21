@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.base.util.TextAppender;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /// Tracks and manages unit pathfinding through the game world. Combines high-level region pathfinding with low-level
@@ -24,8 +23,8 @@ public final class PathTracker {
     private static final int REGION_SEARCH_TRIES = 4;
 
     private final BezierPath bezier_path = new BezierPath();
-    private final @NonNull UnitGrid unit_grid;
-    private @NonNull final Movable unit;
+    private final UnitGrid unit_grid;
+    private final Movable unit;
 
     private @Nullable RegionNode region_path;
     private @Nullable Region target_region;
@@ -39,21 +38,21 @@ public final class PathTracker {
     private @Nullable TrackerAlgorithm tracker_algorithm;
 
     private boolean initial_path;
-    private @NonNull State state = State.DONE;
+    private State state = State.DONE;
 
-    public PathTracker(@NonNull UnitGrid unit_grid, @NonNull Movable unit) {
+    public PathTracker(UnitGrid unit_grid, Movable unit) {
         this.unit_grid = unit_grid;
         this.unit = unit;
     }
 
-    public void appendToolTip(@NonNull TextAppender tool_tip_box) {
+    public void appendToolTip(TextAppender tool_tip_box) {
         tool_tip_box.append(" next_x=");
         tool_tip_box.append(next_unit_grid_x);
         tool_tip_box.append(" next_y=");
         tool_tip_box.append(next_unit_grid_y);
     }
 
-    public @NonNull State animate(float speed) {
+    public State animate(float speed) {
         doAnimate(speed);
         if (state != State.SOFTBLOCKED && state != State.BLOCKED) {
             current_blocker = null;
@@ -230,7 +229,7 @@ public final class PathTracker {
         return tracker_algorithm.findPathGrid(target_region, next_region, src_x, src_y, allow_secondary_targets);
     }
 
-    private @NonNull State lookAhead() {
+    private State lookAhead() {
         checkRegionPath(next_unit_grid_x, next_unit_grid_y);
         if (region_path == null) {
             return State.DONE;
@@ -268,7 +267,7 @@ public final class PathTracker {
         return State.OK;
     }
 
-    private void initBezierPath(@NonNull DirectionNode dir_node) {
+    private void initBezierPath(DirectionNode dir_node) {
         next_unit_grid_x = unit.getGridX() + dir_node.getDirectionX();
         next_unit_grid_y = unit.getGridY() + dir_node.getDirectionY();
         float next_node_x = UnitGrid.coordinateFromGrid(next_unit_grid_x);
@@ -276,7 +275,7 @@ public final class PathTracker {
         bezier_path.init(dir_node.getInvLength(), unit.getPositionX(), unit.getPositionY(), next_node_x, next_node_y);
     }
 
-    public void setTarget(@NonNull TrackerAlgorithm tracker_algorithm) {
+    public void setTarget(TrackerAlgorithm tracker_algorithm) {
         this.tracker_algorithm = tracker_algorithm;
         initial_path = true;
         region_path = null;
@@ -284,7 +283,7 @@ public final class PathTracker {
         target_region = null;
     }
 
-    private @NonNull State initPath() {
+    private State initPath() {
         checkRegionPath(unit.getGridX(), unit.getGridY());
         if (region_path == null) {
             return State.DONE;
@@ -301,11 +300,11 @@ public final class PathTracker {
         return State.OK;
     }
 
-    public @NonNull UnitGrid getUnitGrid() {
+    public UnitGrid getUnitGrid() {
         return unit_grid;
     }
 
-    public @NonNull BezierPath getBezierPath() {
+    public BezierPath getBezierPath() {
         return bezier_path;
     }
 

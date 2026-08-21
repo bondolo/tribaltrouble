@@ -1,13 +1,12 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class TargetRegionFinder implements PathFinderAlgorithm {
-    private final @NonNull FinderFilter<?> filter;
-    private final @NonNull UnitGrid unit_grid;
+    private final FinderFilter<?> filter;
+    private final UnitGrid unit_grid;
 
-    public TargetRegionFinder(@NonNull UnitGrid unit_grid, @NonNull FinderFilter<?> filter) {
+    public TargetRegionFinder(UnitGrid unit_grid, FinderFilter<?> filter) {
         this.unit_grid = unit_grid;
         this.filter = filter;
     }

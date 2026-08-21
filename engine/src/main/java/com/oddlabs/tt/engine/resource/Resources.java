@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.resource;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,10 +14,10 @@ import java.util.logging.Logger;
 public final class Resources {
     private static final Logger logger = Logger.getLogger(Resources.class.getSimpleName());
     // TODO Consider replacing with WeakHashMap, but some native resources may not be strongly held so would be GCed.
-    private static final ConcurrentMap<@NonNull Supplier<? extends @NonNull Object>, @NonNull Object> LOADED_RESOURCES
+    private static final ConcurrentMap<Supplier<? extends Object>, Object> LOADED_RESOURCES
             = new ConcurrentHashMap<>();
 
-    public static <R> @NonNull R findResource(@NonNull Supplier<R> resSupplier) {
+    public static <R> R findResource(Supplier<R> resSupplier) {
         Object resource = LOADED_RESOURCES.get(resSupplier);
         // We can't use computeIfAbsent because some resources are recursive
         if (resource == null) {

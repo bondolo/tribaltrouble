@@ -6,10 +6,9 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 public final class SelectArmoryTrigger extends TutorialTrigger {
-    public SelectArmoryTrigger(@NonNull Player player) {
+    public SelectArmoryTrigger(Player player) {
         super(.1f, 0f, "select_armory");
         player.enableRepairing(false);
         player.enableAttacking(false);
@@ -24,7 +23,7 @@ public final class SelectArmoryTrigger extends TutorialTrigger {
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
+    public void run(Tutorial tutorial) {
         tutorial.getViewer().getSelection().getCurrentSelection().getBuilding().ifPresent(building -> {
             if (building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES))
                 tutorial.next(new HarvestMenuTrigger(tutorial.getViewer().getLocalPlayer()));

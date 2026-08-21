@@ -20,7 +20,6 @@ import com.oddlabs.tt.simulation.model.weapon.RubberAxeWeapon;
 import com.oddlabs.tt.simulation.model.weapon.RubberSpearWeapon;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -113,7 +112,7 @@ public final class AdvancedAI extends AI {
 
     private @Nullable LandscapeTarget defense_target = null;
 
-    public AdvancedAI(@NonNull Player owner, UnitInfo unit_info, @NonNull Difficulty difficulty) {
+    public AdvancedAI(Player owner, UnitInfo unit_info, Difficulty difficulty) {
         super(owner, unit_info);
         this.params = PARAMS.get(difficulty);
         this.numWarriors = params.numWarriorsDefault();
@@ -228,7 +227,7 @@ public final class AdvancedAI extends AI {
         }
     }
 
-    private int addFromList(Selectable<?> @NonNull [] list, @NonNull List<Unit> new_list, int progress, int score) {
+    private int addFromList(Selectable<?>[] list, List<Unit> new_list, int progress, int score) {
         int result = progress;
         for (Selectable<?> list1 : list) {
             Unit unit = (Unit) list1;
@@ -240,7 +239,7 @@ public final class AdvancedAI extends AI {
         return result;
     }
 
-    private int scanForEnemies(@NonNull Selectable<?> src) {
+    private int scanForEnemies(Selectable<?> src) {
         FindOccupantFilter<Unit> filter = new FindOccupantFilter<>(src.getPositionX(), src.getPositionY(), 30f, src,
                 Unit.class);
         getUnitGrid().scan(filter, src.getGridX(), src.getGridY());
@@ -256,7 +255,7 @@ public final class AdvancedAI extends AI {
         return score;
     }
 
-    private int getUnitScore(@NonNull Unit unit) {
+    private int getUnitScore(Unit unit) {
         if (unit.getAbilities().hasAbilities(Abilities.HARVEST)) {
             return SCORE_PEON;
         } else if (unit.getAbilities().hasAbilities(Abilities.MAGIC)) {
@@ -407,7 +406,7 @@ public final class AdvancedAI extends AI {
         }
     }
 
-    private void nodeGather(@NonNull Building armory, int num_units) {
+    private void nodeGather(Building armory, int num_units) {
         int tree = 0;
         int rock = 0;
         int iron = 0;
@@ -464,7 +463,7 @@ public final class AdvancedAI extends AI {
         } while (deployed);
     }
 
-    private void nodeTransferUnits(int num_units, @NonNull Building armory) {
+    private void nodeTransferUnits(int num_units, Building armory) {
         Building quarters = null;
         if (getQuarters() != null && getQuarters().length > 0) {
             quarters = (Building) getQuarters()[0];
@@ -524,7 +523,7 @@ public final class AdvancedAI extends AI {
         }
     }
 
-    private @NonNull Selectable<?> @NonNull [] getPeons(int min_num_peons) {
+    private Selectable<?>[] getPeons(int min_num_peons) {
         var idle = getIdlePeons();
         int idleCount = null != idle ? idle.length : 0;
         var active = Stream.of((Supplier<Selectable<?>[]>) this::getGatherIronPeons, this::getGatherRockPeons,
@@ -549,7 +548,7 @@ public final class AdvancedAI extends AI {
             return result;
         }
     */
-    private int numWeapons(@NonNull Building armory) {
+    private int numWeapons(Building armory) {
         return armory.getSupplyContainer(RockAxeWeapon.class).orElseThrow().getNumSupplies()
                 + armory.getSupplyContainer(IronAxeWeapon.class).orElseThrow().getNumSupplies()
                 + armory.getSupplyContainer(RubberAxeWeapon.class).orElseThrow().getNumSupplies();
@@ -573,7 +572,7 @@ public final class AdvancedAI extends AI {
         return squared_dist_target < squared_dist_building / 2 ? best_target : best_building;
     }
 
-    private boolean buildBuilding(@NonNull BuildingType building_type, Selectable<?> @NonNull [] selection, int grid_x,
+    private boolean buildBuilding(BuildingType building_type, Selectable<?>[] selection, int grid_x,
             int grid_y) {
         BuildingSiteScanFilter filter = new BuildingSiteScanFilter(getUnitGrid(), getOwner().getRaceInfo()
                 .getBuildingTemplate(building_type), 40, true);

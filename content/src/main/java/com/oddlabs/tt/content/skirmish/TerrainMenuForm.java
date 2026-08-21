@@ -5,12 +5,11 @@ import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUIRoot;
-import org.jspecify.annotations.NonNull;
 
 public final class TerrainMenuForm extends Form implements TerrainMenuListener {
-    private final @NonNull TerrainMenu terrain;
+    private final TerrainMenu terrain;
 
-    public TerrainMenuForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu) {
+    public TerrainMenuForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
         terrain = new TerrainMenu(network, gui_root, main_menu, false, this);
         addChild(terrain);
         terrain.place();
@@ -18,7 +17,7 @@ public final class TerrainMenuForm extends Form implements TerrainMenuListener {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {

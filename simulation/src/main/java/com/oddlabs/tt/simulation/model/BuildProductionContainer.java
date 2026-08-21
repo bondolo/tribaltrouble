@@ -1,24 +1,23 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
 public class BuildProductionContainer extends BuildSupplyContainer {
     public static final int INFINITE_LIMIT = 30;
 
-    private final @NonNull SupplyContainer dest_container;
-    private final @NonNull Building building;
-    private final @NonNull Cost cost;
+    private final SupplyContainer dest_container;
+    private final Building building;
+    private final Cost cost;
     private final float man_seconds_per_production;
 
     private float man_seconds = 0;
     private boolean infinite = false;
 
     public BuildProductionContainer(int max_supply_count,
-            @NonNull SupplyContainer dest_container,
-            @NonNull Building building,
-            @NonNull Cost cost,
+            SupplyContainer dest_container,
+            Building building,
+            Cost cost,
             float man_seconds_per_production) {
         super(max_supply_count);
         this.dest_container = dest_container;
@@ -36,7 +35,7 @@ public class BuildProductionContainer extends BuildSupplyContainer {
     }
 
     public final boolean hasEnoughSupplies() {
-        for (Map.Entry<@NonNull SupplyType, @NonNull Integer> entry : cost.costs().entrySet()) {
+        for (Map.Entry<SupplyType, Integer> entry : cost.costs().entrySet()) {
             if (building.getSupplyContainer(entry.getKey()).orElseThrow().getNumSupplies() < entry.getValue()) {
                 return false;
             }
@@ -49,7 +48,7 @@ public class BuildProductionContainer extends BuildSupplyContainer {
         if (man_seconds >= man_seconds_per_production) {
             man_seconds = 0;
             if (!dest_container.isSupplyFull()) {
-                for (Map.Entry<@NonNull SupplyType, @NonNull Integer> entry : cost.costs().entrySet()) {
+                for (Map.Entry<SupplyType, Integer> entry : cost.costs().entrySet()) {
                     building.getSupplyContainer(entry.getKey()).orElseThrow().increaseSupply(-entry.getValue());
                 }
                 if (!infinite)

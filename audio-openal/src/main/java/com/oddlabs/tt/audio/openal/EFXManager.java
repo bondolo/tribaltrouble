@@ -1,7 +1,6 @@
 package com.oddlabs.tt.audio.openal;
 
 import com.oddlabs.tt.audio.ReverbType;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
@@ -62,7 +61,7 @@ public final class EFXManager implements AutoCloseable {
         static final ReverbSnapshot UNDERWATER = new ReverbSnapshot(1.0f, 0.1f, 0.8f, 0.1f, 1.2f, 0.01f, 0.01f, 0.0f,
                 0.9f);
 
-        static ReverbSnapshot get(@NonNull ReverbType type) {
+        static ReverbSnapshot get(ReverbType type) {
             return switch (type) {
                 case NONE -> NONE;
                 case GENERIC -> GENERIC;
@@ -72,7 +71,7 @@ public final class EFXManager implements AutoCloseable {
             };
         }
 
-        static ReverbSnapshot blend(@NonNull ReverbSnapshot a, @NonNull ReverbSnapshot b, float factor) {
+        static ReverbSnapshot blend(ReverbSnapshot a, ReverbSnapshot b, float factor) {
             float f = Math.clamp(factor, 0f, 1f);
             return new ReverbSnapshot(
                     lerp(a.density, b.density, f),
@@ -92,8 +91,8 @@ public final class EFXManager implements AutoCloseable {
         }
     }
 
-    private @NonNull ReverbType currentFrom = ReverbType.NONE;
-    private @NonNull ReverbType currentTo = ReverbType.NONE;
+    private ReverbType currentFrom = ReverbType.NONE;
+    private ReverbType currentTo = ReverbType.NONE;
     private float currentFactor = -1f;
 
     public void init(long device) {
@@ -124,7 +123,7 @@ public final class EFXManager implements AutoCloseable {
         }
     }
 
-    public void setReverb(@NonNull ReverbType type) {
+    public void setReverb(ReverbType type) {
         setReverb(type, type, 1.0f);
     }
 
@@ -135,7 +134,7 @@ public final class EFXManager implements AutoCloseable {
      * @param to The target reverb environment.
      * @param factor Blending factor [0.0 - 1.0]. 0.0 is fully 'from', 1.0 is fully 'to'.
      */
-    public void setReverb(@NonNull ReverbType from, @NonNull ReverbType to, float factor) {
+    public void setReverb(ReverbType from, ReverbType to, float factor) {
         if (!supported || ALC10.alcGetCurrentContext() == 0) return;
         // Small epsilon for factor comparison to avoid redundant GL updates
         if (from == currentFrom && to == currentTo && Math.abs(factor - currentFactor) < 0.005f) return;
@@ -164,7 +163,7 @@ public final class EFXManager implements AutoCloseable {
         OpenALManager.checkALError("alAuxiliaryEffectSloti AL_EFFECTSLOT_EFFECT");
     }
 
-    private void applySnapshot(@NonNull ReverbSnapshot s) {
+    private void applySnapshot(ReverbSnapshot s) {
         if (ALC10.alcGetCurrentContext() == 0) return;
         alEffectf(reverbEffect, AL_EAXREVERB_DENSITY, s.density);
         alEffectf(reverbEffect, AL_EAXREVERB_DIFFUSION, s.diffusion);

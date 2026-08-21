@@ -4,7 +4,6 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -19,8 +18,8 @@ public final class TutorialOverTrigger extends TutorialTrigger {
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
-        List<@NonNull Player> players = tutorial.getViewer().getWorld().getPlayers();
+    public void run(Tutorial tutorial) {
+        List<Player> players = tutorial.getViewer().getWorld().getPlayers();
         Player local_player = tutorial.getViewer().getLocalPlayer();
 
         for (Player current : players) {

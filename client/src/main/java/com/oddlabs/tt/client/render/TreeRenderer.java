@@ -18,7 +18,6 @@ import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -31,26 +30,26 @@ import java.util.logging.Logger;
  */
 final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer {
     private static final Logger logger = Logger.getLogger(TreeRenderer.class.getName());
-    private final @NonNull InstancedSpriteRenderer instancedSpriteRenderer;
+    private final InstancedSpriteRenderer instancedSpriteRenderer;
     private final WaveAnimation wave_animation = new WaveAnimation();
     private final @Nullable Cheat cheat;
     private final Matrix4f tempMatrix = new Matrix4f();
 
-    TreeRenderer(@Nullable Cheat cheat, @NonNull SpriteSorter sprite_sorter,
-            @NonNull RespondManager respond_manager,
-            @NonNull InstancedSpriteRenderer instancedSpriteRenderer
+    TreeRenderer(@Nullable Cheat cheat, SpriteSorter sprite_sorter,
+            RespondManager respond_manager,
+            InstancedSpriteRenderer instancedSpriteRenderer
     ) {
         super(sprite_sorter, respond_manager);
         this.cheat = cheat;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
     }
 
-    public void renderShadows(@NonNull SelectableShadowRenderer shadowRenderer) {
+    public void renderShadows(SelectableShadowRenderer shadowRenderer) {
         Arrays.stream(getRenderLists()).forEach(shadowRenderer::addToShadowList);
     }
 
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack, float currentTime) {
+    public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
+            MatrixStack projectionStack, float currentTime) {
         if (!state.inNoDetailMode()) {
             wave_animation.setTime(currentTime);
         }
@@ -80,7 +79,7 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         for (List<TreeSupply> list : getRespondRenderLists()) list.clear();
     }
 
-    private void prepareMatrix(@NonNull TreeSupply tree) {
+    private void prepareMatrix(TreeSupply tree) {
         tempMatrix.set(tree.getMatrix());
         if (tree.isEmpty()) {
             float time = tree.getTreeFallProgress();
@@ -95,7 +94,7 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         }
     }
 
-    private void renderList(@NonNull Tree tree, @NonNull List<TreeSupply> render_list, boolean respond) {
+    private void renderList(Tree tree, List<TreeSupply> render_list, boolean respond) {
         SpriteList crownList = tree.crown();
         SpriteList trunkList = tree.trunk();
 
@@ -121,8 +120,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         render_list.clear();
     }
 
-    public void debugRender(@NonNull List<TreeSupply> @NonNull [] render_lists, @NonNull List<
-            TreeSupply> @NonNull [] respond_render_lists) {
+    public void debugRender(List<TreeSupply>[] render_lists, List<
+            TreeSupply>[] respond_render_lists) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (List<TreeSupply> render_list : render_lists) {
                 for (TreeSupply group : render_list) {
@@ -138,8 +137,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     }
 
     @Override
-    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+    public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
+            MatrixStack projectionStack) {
         render(context, state, modelViewStack, projectionStack, 0f);
     }
 

@@ -14,7 +14,6 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 
 import java.util.logging.Logger;
 
@@ -29,23 +28,23 @@ public final class AmbientAudio implements AutoCloseable {
     private static final float CANYON_PROXIMITY_DISTANCE = 30f;
 
 
-    private final @NonNull AudioManager audioManager;
-    private final @NonNull AudioPlayer ambient_forest;
-    private final @NonNull AudioPlayer ambient_beach;
-    private final @NonNull AudioPlayer ambient_wind;
+    private final AudioManager audioManager;
+    private final AudioPlayer ambient_forest;
+    private final AudioPlayer ambient_beach;
+    private final AudioPlayer ambient_wind;
 
     private final Vector3f f = new Vector3f();
     private final Vector3f s = new Vector3f();
     private final Vector3f u = new Vector3f();
 
-    public AmbientAudio(@NonNull AudioManager audioManager) {
+    public AmbientAudio(AudioManager audioManager) {
         this.audioManager = audioManager;
         this.ambient_forest = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_FOREST);
         this.ambient_beach = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_BEACH);
         this.ambient_wind = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_WIND);
     }
 
-    private static int countTrees(@NonNull AbstractTreeGroup node, float x, float y, float radiusSq, int threshold,
+    private static int countTrees(AbstractTreeGroup node, float x, float y, float radiusSq, int threshold,
             int currentCount) {
         if (currentCount >= threshold) return currentCount;
 
@@ -84,7 +83,7 @@ public final class AmbientAudio implements AutoCloseable {
     }
 
     @SuppressWarnings("MathClampMigration")
-    private static boolean intersects(@NonNull BoundingBox box, float x, float y, float radiusSq) {
+    private static boolean intersects(BoundingBox box, float x, float y, float radiusSq) {
         float dx = x - Math.max(box.bmin_x, Math.min(x, box.bmax_x));
         float dy = y - Math.max(box.bmin_y, Math.min(y, box.bmax_y));
         return (dx * dx + dy * dy) < radiusSq;
@@ -97,7 +96,7 @@ public final class AmbientAudio implements AutoCloseable {
         ambient_wind.stop();
     }
 
-    public void updateSoundListener(@NonNull CameraState camera, @NonNull LandscapeEnvironment landscapeEnvironment) {
+    public void updateSoundListener(CameraState camera, LandscapeEnvironment landscapeEnvironment) {
         if (!audioManager.isSfxEnabled()) {
             return;
         }

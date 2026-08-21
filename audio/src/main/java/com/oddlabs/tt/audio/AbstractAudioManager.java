@@ -5,7 +5,6 @@ import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -27,12 +26,12 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
     private static final float DEFAULT_MUSIC_FADE_OUT = 1.2f;
 
-    private final @NonNull AudioSettings audioSettings;
-    private final @NonNull AnimationManager animationManager;
-    private final Set<@NonNull AS> ambients = new CopyOnWriteArraySet<>();
-    private final Set<@NonNull AmbientAudioSource> active_ambient = new CopyOnWriteArraySet<>();
-    private final Set<@NonNull QueuedAudioPlayer<AM, AS>> queued_players = new CopyOnWriteArraySet<>();
-    private final Set<@NonNull AbstractAudioPlayer<AM, AS>> fading_players = new CopyOnWriteArraySet<>();
+    private final AudioSettings audioSettings;
+    private final AnimationManager animationManager;
+    private final Set<AS> ambients = new CopyOnWriteArraySet<>();
+    private final Set<AmbientAudioSource> active_ambient = new CopyOnWriteArraySet<>();
+    private final Set<QueuedAudioPlayer<AM, AS>> queued_players = new CopyOnWriteArraySet<>();
+    private final Set<AbstractAudioPlayer<AM, AS>> fading_players = new CopyOnWriteArraySet<>();
     private float updateTime = 0f;
     private volatile boolean closed = false;
 
@@ -52,13 +51,13 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
     private final AtomicInteger sound_play_counter = new AtomicInteger(0);
 
-    protected AbstractAudioManager(@NonNull AudioSettings audioSettings, @NonNull AnimationManager animationManager) {
+    protected AbstractAudioManager(AudioSettings audioSettings, AnimationManager animationManager) {
         this.audioSettings = audioSettings;
         this.animationManager = animationManager;
     }
 
     @SuppressWarnings("unchecked")
-    protected @NonNull AM self() {
+    protected AM self() {
         return (AM) this;
     }
 
@@ -66,7 +65,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return closed;
     }
 
-    protected abstract @NonNull Iterable<@NonNull AS> getSources();
+    protected abstract Iterable<AS> getSources();
 
     /**
      * Controls the gain for ALL audio sources.
@@ -75,7 +74,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
      * @return this
      */
     @Override
-    public @NonNull AM setMasterGain(float gain) {
+    public AM setMasterGain(float gain) {
         this.masterGain = gain;
         return self();
     }
@@ -86,7 +85,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public @NonNull AM setSfxGain(float gain) {
+    public AM setSfxGain(float gain) {
         this.sfxGain = gain;
         for (AS source : getSources()) {
             AudioPlayer player = source.getAudioPlayer();
@@ -105,7 +104,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public @NonNull AM setMusicGain(float gain) {
+    public AM setMusicGain(float gain) {
         this.musicGain = gain;
         for (AS source : getSources()) {
             AudioPlayer player = source.getAudioPlayer();
@@ -123,7 +122,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public synchronized @NonNull AM setSfxEnabled(boolean enabled) {
+    public synchronized AM setSfxEnabled(boolean enabled) {
         if (this.sfxEnabled == enabled) return self();
         this.sfxEnabled = enabled;
         if (sound_play_counter.get() > 0) {
@@ -152,7 +151,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public abstract @NonNull AM setHeadphoneMode(boolean enabled);
+    public abstract AM setHeadphoneMode(boolean enabled);
 
     @Override
     public abstract boolean isHRTFSupported();
@@ -170,22 +169,22 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
      * @return this
      */
     @Override
-    public @NonNull AudioManager setListenerOrientation(@NonNull Vector3fc forward, @NonNull Vector3fc up) {
+    public AudioManager setListenerOrientation(Vector3fc forward, Vector3fc up) {
         listenerForward.set(forward);
         listenerUp.set(up);
         return self();
     }
 
-    public @NonNull Vector3fc getListenerForward() {
+    public Vector3fc getListenerForward() {
         return listenerForward;
     }
 
-    public @NonNull Vector3fc getListenerUp() {
+    public Vector3fc getListenerUp() {
         return listenerUp;
     }
 
     @Override
-    public @NonNull Vector3fc getListenerPosition() {
+    public Vector3fc getListenerPosition() {
         return listenerPosition;
     }
 
@@ -198,7 +197,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
      * @return this
      */
     @Override
-    public @NonNull AM setListenerPosition(float x, float y, float z) {
+    public AM setListenerPosition(float x, float y, float z) {
         listenerPosition.set(x, y, z);
         return self();
     }
@@ -210,7 +209,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
      * @return the created instance
      */
     @Override
-    public abstract @NonNull Audio createAudio(@NonNull URL file) throws IOException;
+    public abstract Audio createAudio(URL file) throws IOException;
 
     private void resetVolumes() {
         for (AmbientAudioSource anActive_ambient : active_ambient) {
@@ -314,13 +313,13 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public final @NonNull AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params) {
+    public final AudioPlayer newAudio(float x, float y, float z, AudioParameters params) {
         AudioSource source = getSource(x, y, z, params);
         return newAudio(source, x, y, z, params);
     }
 
-    protected @NonNull AudioPlayer newAudio(@Nullable AudioSource source, float x, float y, float z,
-            @NonNull AudioParameters params) {
+    protected AudioPlayer newAudio(@Nullable AudioSource source, float x, float y, float z,
+            AudioParameters params) {
         if (null != source && !params.audio().isStreaming()) {
             // Bind the audio to the source before creating the player.
             source.setAudio(params.audio().get(this));
@@ -328,7 +327,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return createPlayer(source, x, y, z, params);
     }
 
-    public @NonNull AM startSources() {
+    public AM startSources() {
         if (sound_play_counter.getAndIncrement() == 0) {
             if (sfxEnabled) {
                 ambients.forEach(AudioSource::play);
@@ -343,7 +342,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return self();
     }
 
-    public @NonNull AM stopSources() {
+    public AM stopSources() {
         if (sound_play_counter.decrementAndGet() == 0) {
             for (AS source : getSources()) {
                 int rank = source.getRank();
@@ -358,20 +357,20 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return self();
     }
 
-    protected boolean addQueuedPlayer(@NonNull QueuedAudioPlayer<AM, AS> player) {
+    protected boolean addQueuedPlayer(QueuedAudioPlayer<AM, AS> player) {
         return queued_players.add(player);
     }
 
-    boolean removeQueuedPlayer(@NonNull QueuedAudioPlayer<AM, AS> player) {
+    boolean removeQueuedPlayer(QueuedAudioPlayer<AM, AS> player) {
         return queued_players.remove(player);
     }
 
-    protected boolean registerAmbient(@NonNull AbstractAudioPlayer<AM, AS> player) {
+    protected boolean registerAmbient(AbstractAudioPlayer<AM, AS> player) {
         var source = player.getSource();
         return source != null && ambients.add(source);
     }
 
-    boolean removeAmbient(@NonNull AbstractAudioPlayer<AM, AS> player) {
+    boolean removeAmbient(AbstractAudioPlayer<AM, AS> player) {
         var source = player.getSource();
 
         var removed = null != source && ambients.remove(source);
@@ -381,11 +380,11 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return removed;
     }
 
-    public final void registerFadingPlayer(@NonNull AbstractAudioPlayer<AM, AS> player) {
+    public final void registerFadingPlayer(AbstractAudioPlayer<AM, AS> player) {
         fading_players.add(player);
     }
 
-    private @Nullable AS findSource(float x, float y, float z, @NonNull AudioParameters params) {
+    private @Nullable AS findSource(float x, float y, float z, AudioParameters params) {
         float lowest_perceived_gain = Float.MAX_VALUE;
         int lowest_rank = Integer.MAX_VALUE;
         var listenerPosition = getListenerPosition();
@@ -424,8 +423,8 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return null;
     }
 
-    private float calculatePerceivedGain(float x, float y, float z, @NonNull AudioParameters p,
-            @NonNull Vector3fc listenerPosition) {
+    private float calculatePerceivedGain(float x, float y, float z, AudioParameters p,
+            Vector3fc listenerPosition) {
         if (p.relative()) return p.gain();
 
         float dist = listenerPosition.distance(x, y, z);
@@ -440,7 +439,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return p.gain() * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
     }
 
-    private float calculatePerceivedGain(@NonNull AudioSource source, @NonNull Vector3fc listenerPosition) {
+    private float calculatePerceivedGain(AudioSource source, Vector3fc listenerPosition) {
         AudioPlayer player = source.getAudioPlayer();
         if (player == null) return 0f;
 
@@ -456,7 +455,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return p.gain() * (refDist / (refDist + rolloff * Math.max(0, dist - refDist)));
     }
 
-    private synchronized @Nullable AudioSource getSource(float x, float y, float z, @NonNull AudioParameters params) {
+    private synchronized @Nullable AudioSource getSource(float x, float y, float z, AudioParameters params) {
         if (closed) return null;
         AudioSource best_source = findSource(x, y, z, params);
         stopSource(best_source);
@@ -476,12 +475,12 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
      *
      * @param task The cleanup task to enqueue.
      */
-    public abstract void enqueueCleanup(@NonNull Runnable task);
+    public abstract void enqueueCleanup(Runnable task);
 
     protected abstract void processCleanupTasks();
 
-    protected abstract @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z,
-            @NonNull AudioParameters params);
+    protected abstract AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z,
+            AudioParameters params);
 
     @Override
     public void toggleMusic() {
@@ -507,7 +506,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public void setMusic(@NonNull AudioParameters musicAudio, float delay) {
+    public void setMusic(AudioParameters musicAudio, float delay) {
         this.currentMusicAudio = musicAudio;
 
         if (currentMusicPlayer != null && audioSettings.play_music) {
@@ -554,7 +553,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
     private final class MusicTimer implements Updatable<TimerAnimation> {
         @Override
-        public void update(@NonNull TimerAnimation anim) {
+        public void update(TimerAnimation anim) {
             if (musicTimer != null) {
                 musicTimer.stop();
             }
@@ -578,17 +577,17 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     private class AmbientAudioSource {
-        private final @NonNull AS source;
+        private final AS source;
         private float gain_target = 0f;
         private float gain = 0f;
         private boolean playing = false;
 
-        AmbientAudioSource(@NonNull AS source) {
+        AmbientAudioSource(AS source) {
             this.source = source;
             source.setGain(0f);
         }
 
-        boolean isUsing(@NonNull AS s) {
+        boolean isUsing(AS s) {
             return source == s;
         }
 
@@ -612,7 +611,6 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
             source.stop();
         }
 
-        @NonNull
         Vector3f getPosition() {
             return source.getPosition();
         }

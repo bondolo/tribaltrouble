@@ -1,13 +1,12 @@
 package com.oddlabs.tt.base.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public final class PocketList<T> {
-    private final @NonNull List<@NonNull T> @NonNull [] pockets;
+    private final List<T>[] pockets;
     private int min_list_index;
     private int max_list_index;
     private int size;
@@ -20,7 +19,7 @@ public final class PocketList<T> {
         reset();
     }
 
-    public void add(int cost, @NonNull T obj) {
+    public void add(int cost, T obj) {
         if (cost >= pockets.length)
             cost = pockets.length - 1;
         pockets[cost].add(obj);
@@ -31,7 +30,7 @@ public final class PocketList<T> {
         size++;
     }
 
-    public @NonNull T removeBest() {
+    public T removeBest() {
         assert !isEmpty();
         List<T> current_pocket = pockets[min_list_index];
         while (current_pocket.isEmpty()) {

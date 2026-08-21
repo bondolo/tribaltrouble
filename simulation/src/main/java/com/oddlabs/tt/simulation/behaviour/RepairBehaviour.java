@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Logic for unit repairing behavior.
@@ -13,14 +12,14 @@ import org.jspecify.annotations.NonNull;
 public final class RepairBehaviour implements Behaviour {
     private static final int REPAIRS_PER_SUPPLY = 5;
     private static final float SECONDS_PER_ANIMATION_CYCLE = 1f;
-    private final @NonNull Building building;
-    private final @NonNull Unit unit;
+    private final Building building;
+    private final Unit unit;
 
     private float anim_time;
     private int repairs;
     private boolean sound;
 
-    public RepairBehaviour(@NonNull Unit unit, @NonNull Building building) {
+    public RepairBehaviour(Unit unit, Building building) {
         this.unit = unit;
         this.building = building;
         unit.aimAtTarget(building);
@@ -35,7 +34,7 @@ public final class RepairBehaviour implements Behaviour {
     }
 
     @Override
-    public @NonNull State animate(float t) {
+    public State animate(float t) {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;

@@ -11,7 +11,6 @@ import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.model.BoundingBox;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -19,19 +18,19 @@ import org.jspecify.annotations.Nullable;
  */
 public final class Stun extends Model implements Magic {
 
-    private final @NonNull Unit src;
+    private final Unit src;
     private final float offset_x;
     private final float offset_y;
     private final float offset_z;
     private final float hit_radius;
     private final float stun_time_closest;
     private final float stun_time_farthest;
-    private final @NonNull Player owner;
+    private final Player owner;
 
-    private final @NonNull Iterable<? extends Selectable<?>> target_list;
+    private final Iterable<? extends Selectable<?>> target_list;
 
     public Stun(float offset_x, float offset_y, float offset_z, float hit_radius, float stun_time_closest,
-            float stun_time_farthest, @NonNull Unit src) {
+            float stun_time_farthest, Unit src) {
         super(src.getOwner().getWorld());
         this.src = src;
         this.offset_x = offset_x;
@@ -73,7 +72,7 @@ public final class Stun extends Model implements Magic {
     }
 
     @Override
-    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+    protected BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 

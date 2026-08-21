@@ -27,8 +27,8 @@ import java.util.Set;
 
 public final class Client implements MatchmakingServerInterface, ConnectionInterface {
     private static final int CHUNK_SIZE = 10;
-    private static final Set<@NonNull Client> game_hosts = new HashSet<>();
-    private static final Map<@NonNull String, @NonNull Client> active_clients = new HashMap<>();
+    private static final Set<Client> game_hosts = new HashSet<>();
+    private static final Map<String, Client> active_clients = new HashMap<>();
 
     private static int current_random_seed = 1;
 
@@ -37,7 +37,7 @@ public final class Client implements MatchmakingServerInterface, ConnectionInter
     private final MatchmakingClientInterface client_interface;
 
     private final AbstractConnection conn;
-    private final Map<@NonNull HostSequenceID, @NonNull Client> tunnels = new HashMap<>();
+    private final Map<HostSequenceID, Client> tunnels = new HashMap<>();
     private final InetAddress remote_address;
     private final InetAddress local_remote_address;
     private final int host_id;
@@ -55,7 +55,7 @@ public final class Client implements MatchmakingServerInterface, ConnectionInter
     private TimestampedGameSession current_session;
     private @Nullable ChatRoom current_room;
 
-    public Client(@NonNull MatchmakingServer server, AbstractConnection conn, InetAddress remote_address, InetAddress local_remote_address, String username, boolean guest, int revision, int host_id) {
+    public Client(MatchmakingServer server, AbstractConnection conn, InetAddress remote_address, InetAddress local_remote_address, String username, boolean guest, int revision, int host_id) {
         this.conn = conn;
         this.server = server;
         this.remote_address = remote_address;

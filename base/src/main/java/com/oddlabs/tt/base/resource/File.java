@@ -1,7 +1,6 @@
 package com.oddlabs.tt.base.resource;
 
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -22,17 +21,17 @@ import java.util.function.Supplier;
  */
 public abstract class File<R> implements Supplier<R> {
 
-    private final @NonNull URI uri;
+    private final URI uri;
 
-    public File(@NonNull URI uri) {
+    public File(URI uri) {
         this.uri = uri;
     }
 
-    protected File(@NonNull String location) {
+    protected File(String location) {
         this(Utils.makeURI(location));
     }
 
-    public final @NonNull URL getURL() {
+    public final URL getURL() {
         try {
             return uri.toURL();
         } catch (MalformedURLException e) {
@@ -41,7 +40,7 @@ public abstract class File<R> implements Supplier<R> {
     }
 
     @Override
-    public abstract @NonNull R get();
+    public abstract R get();
 
     @Override
     public final int hashCode() {
@@ -54,11 +53,11 @@ public abstract class File<R> implements Supplier<R> {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return getClass().getSimpleName() + "{uri=" + uri.toASCIIString() + '}';
     }
 
-    protected static @NonNull Optional<URI> locate(@NonNull String location) {
+    protected static Optional<URI> locate(String location) {
         URL url_classpath = Utils.class.getResource(location);
         if (url_classpath != null) try {
             return Optional.of(url_classpath.toURI());

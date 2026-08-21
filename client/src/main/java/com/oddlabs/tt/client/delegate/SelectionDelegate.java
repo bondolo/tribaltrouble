@@ -27,7 +27,6 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.Notification;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -64,9 +63,9 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
             GameAction.ARMY_SELECT_8,
             GameAction.ARMY_SELECT_9
     };
-    private final @NonNull InGameChatForm chat_form;
-    private final @NonNull Label observer_label;
-    private final @NonNull GameCamera game_camera;
+    private final InGameChatForm chat_form;
+    private final Label observer_label;
+    private final GameCamera game_camera;
 
     private boolean close_chat_override = false;
     private boolean chat_visible;
@@ -80,7 +79,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     private boolean observer = false;
     private int last_idle_peon_name = -1;
 
-    public SelectionDelegate(@NonNull WorldViewer viewer, @NonNull GameCamera camera) {
+    public SelectionDelegate(WorldViewer viewer, GameCamera camera) {
         super(viewer, camera);
         String observer_mode = Utils.getBundleString(ResourceBundle.getBundle(SelectionDelegate.class.getName()),
                 "observer_mode");
@@ -99,7 +98,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         ((GameCamera) getCamera()).setOwner(this);
     }
 
-    public @NonNull InGameChatForm getChatForm() {
+    public InGameChatForm getChatForm() {
         return chat_form;
     }
 
@@ -108,7 +107,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         getGUIRoot().pushDelegate(new ZoomDelegate(getViewer(), game_camera));
     }
 
-    private @NonNull ActionButtonPanel getActionButtonPanel() {
+    private ActionButtonPanel getActionButtonPanel() {
         return getViewer().getPanel();
     }
 
@@ -120,7 +119,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         // Intercept Esc for armory submenu navigation before super reaches InGameDelegate
         if ((event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT)
                 && !map_mode && !observer
@@ -385,7 +384,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     @Override
-    protected @NonNull CursorType getCursorType() {
+    protected CursorType getCursorType() {
         return map_mode ? CursorType.TARGET : CursorType.NORMAL;
     }
 
@@ -406,7 +405,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         }
     }
 
-    private void updateSelection(@NonNull List<@NonNull Selectable<UnitTemplate>> friendly_units, Selectable<
+    private void updateSelection(List<Selectable<UnitTemplate>> friendly_units, Selectable<
             BuildingTemplate> friendly_building, Selectable<?> enemy) {
         Army current_selection = getViewer().getSelection().getCurrentSelection();
         Selectable<?> first = current_selection.getSet().iterator().next();
@@ -434,7 +433,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         }
     }
 
-    private void replaceSelection(@NonNull List<Selectable<UnitTemplate>> friendly_units, @Nullable Selectable<
+    private void replaceSelection(List<Selectable<UnitTemplate>> friendly_units, @Nullable Selectable<
             BuildingTemplate> friendly_building, @Nullable Selectable<?> enemy) {
         Army current_selection = getViewer().getSelection().getCurrentSelection();
         current_selection.clear();
@@ -448,7 +447,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     @Override
-    public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
         if (button == MouseButton.LEFT && !map_mode && !observer) {
             if (selection) {
                 selection = false;
@@ -484,7 +483,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     @Override
-    public void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    public void mouseReleased(MouseButton button, int x, int y) {
         if (map_mode) {
             if (button == MouseButton.LEFT) {
                 getViewer().getPicker().pickMapGoto(x, y, (MapCamera) getCamera());
@@ -505,7 +504,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     @Override
-    public void mouseDragged(@NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
+    public void mouseDragged(MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
             int absolute_y) {
         if (!map_mode) {
             if (!observer) {
@@ -522,7 +521,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     @Override
-    public void mousePressed(@NonNull MouseButton button, int x, int y) {
+    public void mousePressed(MouseButton button, int x, int y) {
         if (!map_mode) {
             if (!observer) {
                 var inputManager = getViewer().getInputManager();
@@ -563,7 +562,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
     }
 
     @Override
-    public void render2D(@NonNull GUIRenderer renderer) {
+    public void render2D(GUIRenderer renderer) {
         if (selection) {
             float minX = Math.min(selection_x1, selection_x2);
             float minY = Math.min(selection_y1, selection_y2);

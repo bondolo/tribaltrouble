@@ -1,6 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /** base implementation of {@link AudioPlayer} */
@@ -10,17 +9,17 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
     /** The volume threshold at which a sound is considered silent (reached at max distance). */
     static final float SILENCE_THRESHOLD = 0.032f;
 
-    protected final @NonNull AM manager;
+    protected final AM manager;
     protected final @Nullable AS source;
-    protected final @NonNull AudioParameters parameters;
+    protected final AudioParameters parameters;
     protected volatile boolean playing = false;
 
     private float decay_rate;
     private boolean is_fading = false;
     private float current_gain;
 
-    protected AbstractAudioPlayer(@NonNull AM manager, @Nullable AS source,
-            float x, float y, float z, @NonNull AudioParameters params) {
+    protected AbstractAudioPlayer(AM manager, @Nullable AS source,
+            float x, float y, float z, AudioParameters params) {
         this.manager = manager;
         this.source = source;
         this.parameters = params;
@@ -67,7 +66,7 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
     }
 
     @Override
-    public final @NonNull AudioParameters getParameters() {
+    public final AudioParameters getParameters() {
         return parameters;
     }
 
@@ -127,7 +126,7 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
     }
 
     @Override
-    public @NonNull AudioPlayer stop() {
+    public AudioPlayer stop() {
         if (playing) {
             if (source != null) {
                 source.stop();
@@ -145,7 +144,7 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
      * {@inheritDoc}
      */
     @Override
-    public final @NonNull AudioPlayer stop(float decayRate) {
+    public final AudioPlayer stop(float decayRate) {
         assert decayRate > 0.0f : "decayRate must be positive";
         if (!playing) return this;
         this.decay_rate = decayRate;

@@ -1,6 +1,5 @@
 package com.oddlabs.util;
 
-import org.jspecify.annotations.NonNull;
 
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ public final class IndexListOptimizer {
     private static final float VALENCE_BOOST_SCALE = 2f;
     private static final float VALENCE_BOOST_POWER = .5f;
 
-    public static void optimize(@NonNull ShortBuffer buffer) {
+    public static void optimize(ShortBuffer buffer) {
         /*System.out.println("buffer:");
         dumpBuffer(buffer);*/
         Index[] lru = new Index[LRU_SIZE];
@@ -109,7 +108,7 @@ public final class IndexListOptimizer {
         dumpBuffer(buffer);*/
     }
 
-    private static void dumpBuffer(@NonNull ShortBuffer buffer) {
+    private static void dumpBuffer(ShortBuffer buffer) {
         for (int i = 0; i < buffer.remaining(); i++) {
             IO.print(buffer.get(buffer.position() + i) + " ");
         }
@@ -151,16 +150,16 @@ public final class IndexListOptimizer {
         }
 
         @Override
-        public @NonNull String toString() {
+        public String toString() {
             return "[index = " + index + " score = " + score + " round = " + round_added + " num_triangles = "
                     + triangle_list.size() + "]";
         }
     }
 
-    private record Triangle(Index @NonNull [] indices) {
+    private record Triangle(Index[] indices) {
         /*		private float score;
          */
-        private Triangle(Index @NonNull [] indices) {
+        private Triangle(Index[] indices) {
             this.indices = indices;
             for (Index indice : indices) {
                 indice.add(this);
@@ -187,14 +186,14 @@ public final class IndexListOptimizer {
             }
         }
 
-        void addToBuffer(@NonNull ShortBuffer buffer) {
+        void addToBuffer(ShortBuffer buffer) {
             for (Index indice : indices) {
                 buffer.put(indice.index);
             }
         }
 
         @Override
-        public @NonNull String toString() {
+        public String toString() {
             return "Triangle score = " + getScore() +
                     Arrays.stream(indices)
                             .map(Object::toString)

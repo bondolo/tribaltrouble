@@ -3,7 +3,6 @@ package com.oddlabs.tt.content.tutorial.trigger;
 import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class UnitsInQuartersTrigger extends TutorialTrigger {
     public UnitsInQuartersTrigger() {
@@ -11,7 +10,7 @@ public final class UnitsInQuartersTrigger extends TutorialTrigger {
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
+    public void run(Tutorial tutorial) {
         var set = tutorial.getViewer().getLocalPlayer().getUnits().getSet();
         var it = set.iterator();
         int count = 0;

@@ -9,7 +9,6 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -32,29 +31,29 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         NEUTRAL_BUILDING(Color.Standard.BLUE, Color.Standard.DARK_BLUE),
         ENEMY_BUILDING(Color.Standard.RED, Color.Standard.DARK_RED);
 
-        public final @NonNull Color selectedColor;
-        public final @NonNull Color hoveredColor;
+        public final Color selectedColor;
+        public final Color hoveredColor;
 
-        VisualPattern(@NonNull Color selectedColor, @NonNull Color hoveredColor) {
+        VisualPattern(Color selectedColor, Color hoveredColor) {
             this.selectedColor = selectedColor;
             this.hoveredColor = hoveredColor;
         }
     }
 
-    private final @NonNull Player owner;
+    private final Player owner;
     private @Nullable Behaviour current_behaviour;
     private final Abilities abilities = new Abilities(Abilities.NONE);
-    private final @NonNull T template;
-    private final List<@NonNull Controller> controller_stack = new ArrayList<>();
+    private final T template;
+    private final List<Controller> controller_stack = new ArrayList<>();
 
     private boolean dead;
     private boolean should_decide;
-    private Behaviour.@NonNull State last = Behaviour.State.DONE;
+    private Behaviour.State last = Behaviour.State.DONE;
 
     private int grid_x;
     private int grid_y;
 
-    protected Selectable(@NonNull Player owner, @NonNull T template) {
+    protected Selectable(Player owner, T template) {
         super(owner.getWorld());
         this.owner = owner;
         this.template = template;
@@ -65,7 +64,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return template.getShadowDiameter();
     }
 
-    public final @NonNull T getTemplate() {
+    public final T getTemplate() {
         return template;
     }
 
@@ -84,7 +83,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return template.getHitOffsetZ(0);
     }
 
-    public final @NonNull Controller getCurrentController() {
+    public final Controller getCurrentController() {
         return controller_stack.getLast();
     }
 
@@ -116,16 +115,16 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return current_behaviour;
     }
 
-    public final @NonNull UnitGrid getUnitGrid() {
+    public final UnitGrid getUnitGrid() {
         return owner.getWorld().getUnitGrid();
     }
 
-    public final void scanVicinity(@NonNull ScanFilter filter) {
+    public final void scanVicinity(ScanFilter filter) {
         assert !isDead();
         getUnitGrid().scan(filter, getGridX(), getGridY());
     }
 
-    private static boolean isAdjacent(@NonNull UnitGrid unit_grid, int grid_x, int grid_y, @NonNull Occupant occ) {
+    private static boolean isAdjacent(UnitGrid unit_grid, int grid_x, int grid_y, Occupant occ) {
         int t_x = occ.getGridX();
         int t_y = occ.getGridY();
         int dx = 0;
@@ -142,13 +141,13 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return unit_grid.getOccupant(grid_x + dx, grid_y + dy) == occ;
     }
 
-    public final boolean isCloseEnough(float max_dist, @NonNull Target target) {
+    public final boolean isCloseEnough(float max_dist, Target target) {
         assert !isDead();
         return isCloseEnough(getUnitGrid(), max_dist, getGridX(), getGridY(), target);
     }
 
-    public static boolean isCloseEnough(@NonNull UnitGrid unit_grid, float max_dist, int grid_x, int grid_y,
-            @NonNull Target target) {
+    public static boolean isCloseEnough(UnitGrid unit_grid, float max_dist, int grid_x, int grid_y,
+            Target target) {
         if (max_dist == 0f && target instanceof Occupant occupant) {
             return isAdjacent(unit_grid, grid_x, grid_y, occupant);
         } else {
@@ -190,19 +189,19 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         doDecide();
     }
 
-    public final void pushController(@NonNull Controller controller) {
+    public final void pushController(Controller controller) {
         assert !isDead();
         controller_stack.add(controller);
         decide();
     }
 
-    public final void pushControllers(@NonNull Controller @NonNull... controllers) {
+    public final void pushControllers(Controller... controllers) {
         assert !isDead();
         controller_stack.addAll(Arrays.asList(controllers));
         decide();
     }
 
-    public final void swapController(@NonNull Controller controller) {
+    public final void swapController(Controller controller) {
         assert !isDead();
         controller_stack.removeLast();
         pushController(controller);
@@ -214,7 +213,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         decide();
     }
 
-    public final void setBehaviour(@NonNull Behaviour behaviour) {
+    public final void setBehaviour(Behaviour behaviour) {
         assert !isDead();
         assert last != Behaviour.State.UNINTERRUPTIBLE : "Invalid behaviour state";
         if (current_behaviour != null) {
@@ -223,7 +222,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         current_behaviour = behaviour;
     }
 
-    public final @NonNull Controller getPrimaryController() {
+    public final Controller getPrimaryController() {
         assert !isDead();
         return controller_stack.size() > 1 ? controller_stack.get(1) : controller_stack.getFirst(); // Jump over the default controller
     }
@@ -234,7 +233,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         controller_stack.add(default_controller);
     }
 
-    public final void initTarget(@Nullable Target target, @NonNull Action action, boolean aggressive) {
+    public final void initTarget(@Nullable Target target, Action action, boolean aggressive) {
         assert !isDead();
         if (target == null)
             return;
@@ -242,13 +241,13 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         setTarget(target, action, aggressive);
     }
 
-    protected abstract void setTarget(@NonNull Target target, @NonNull Action action, boolean aggressive);
+    protected abstract void setTarget(Target target, Action action, boolean aggressive);
 
-    public abstract AttackScanFilter.@NonNull Priority getAttackPriority();
+    public abstract AttackScanFilter.Priority getAttackPriority();
 
     public abstract int getStatusValue();
 
-    public final @NonNull Abilities getAbilities() {
+    public final Abilities getAbilities() {
         return abilities;
     }
 
@@ -270,15 +269,15 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         this.grid_y = grid_y;
     }
 
-    public final @NonNull Player getOwnerNoCheck() {
+    public final Player getOwnerNoCheck() {
         return owner;
     }
 
-    public final @NonNull Player getOwner() {
+    public final Player getOwner() {
         return getOwnerNoCheck();
     }
 
-    public final @NonNull VisualPattern getVisualPattern(@NonNull Player localPlayer) {
+    public final VisualPattern getVisualPattern(Player localPlayer) {
         boolean isBuilding = this instanceof Building;
         return owner == localPlayer
                 ? isBuilding ? VisualPattern.FRIENDLY_BUILDING : VisualPattern.FRIENDLY
@@ -287,7 +286,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
                 : isBuilding ? VisualPattern.NEUTRAL_BUILDING : VisualPattern.NEUTRAL;
     }
 
-    public final @NonNull Color getSelectionColor(@NonNull Player localPlayer, boolean selected, boolean hovered) {
+    public final Color getSelectionColor(Player localPlayer, boolean selected, boolean hovered) {
         VisualPattern pattern = getVisualPattern(localPlayer);
         return selected
                 ? pattern.selectedColor
@@ -303,7 +302,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     }
 
     @Override
-    public final void updateChecksum(@NonNull StateChecksum checksum) {
+    public final void updateChecksum(StateChecksum checksum) {
         /*		checksum.update(getGridX());
         		checksum.update(getGridY());
         		checksum.update(getPositionX());
@@ -331,23 +330,23 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return dead;
     }
 
-    public void hit(int damage, float direction_x, float direction_y, @NonNull Player attacker) {
+    public void hit(int damage, float direction_x, float direction_y, Player attacker) {
         if (owner.isEnemy(attacker))
             owner.getWorld().getNotificationListener().newAttackNotification(this);
     }
 
-    public static <T extends Template> @NonNull Class<Selectable<T>> genericClass() {
+    public static <T extends Template> Class<Selectable<T>> genericClass() {
         //noinspection unchecked
         return (Class<Selectable<T>>) (Class<?>) Selectable.class;
     }
 
-    public static <T extends Template> Selectable<T> @NonNull [] newArray(int length) {
+    public static <T extends Template> Selectable<T>[] newArray(int length) {
         //noinspection unchecked
         return (Selectable<T>[]) new Selectable[length];
     }
 
-    public static <T extends Template> Selectable<T> @NonNull [] newArray(@NonNull Selectable<
-            T> @NonNull... selectables) {
+    public static <T extends Template> Selectable<T>[] newArray(Selectable<
+            T>... selectables) {
         return selectables;
     }
 }

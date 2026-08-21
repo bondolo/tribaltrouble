@@ -14,7 +14,6 @@ import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
-import org.jspecify.annotations.NonNull;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
@@ -27,8 +26,8 @@ public class SoundPanel extends Panel {
     private static final int MAX_VALUE = 20;
     private static final boolean TEMPORARILY_DISABLE_MUSIC_CONTROLS = false;
 
-    public SoundPanel(@NonNull GUIRoot gui_root, @NonNull AudioSettings audioSettings,
-            @NonNull AccessibilitySettings accessibilitySettings, @NonNull AudioManager audioManager
+    public SoundPanel(GUIRoot gui_root, AudioSettings audioSettings,
+            AccessibilitySettings accessibilitySettings, AudioManager audioManager
     ) {
         super(AbstractOptionsMenu.i18n("sound_caption"));
 
@@ -153,7 +152,7 @@ public class SoundPanel extends Panel {
         compileCanvas();
     }
 
-    public SoundPanel(@NonNull GUIRoot gui_root, @NonNull AudioManager audioManager) {
+    public SoundPanel(GUIRoot gui_root, AudioManager audioManager) {
         this(gui_root, Renderer.getRenderer().getSettings().audio, Renderer.getRenderer().getSettings().accessibility,
                 audioManager
         );

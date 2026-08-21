@@ -12,16 +12,15 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitSupplyContainer;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * An accessory representing resources (wood, rock, iron, rubber) currently being carried by a unit.
  */
 public final class CarriedResourceAccessory implements StaticAccessory {
-    private final @NonNull Unit unit;
+    private final Unit unit;
 
-    public CarriedResourceAccessory(@NonNull Unit unit) {
+    public CarriedResourceAccessory(Unit unit) {
         this.unit = unit;
     }
 
@@ -37,7 +36,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         return unit.getAbilities().hasAbilities(Abilities.BUILD) &&
                 supply_container != null &&
@@ -46,7 +45,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
         // Carried resources currently use the parent's exact transform in the old code.
         // We can add offsets here later if needed.
     }

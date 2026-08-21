@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -13,15 +12,15 @@ public class WeaponsProducer {
     private static final float BREAK_PROBABILITY = .2f;
 
 
-    private final @NonNull Building building;
-    private final @NonNull WorkerUnitContainer unit_container;
-    private final @NonNull BuildProductionContainer @NonNull [] production_containers;
+    private final Building building;
+    private final WorkerUnitContainer unit_container;
+    private final BuildProductionContainer[] production_containers;
 
     private float break_time = 0f;
     private boolean producing;
 
-    public WeaponsProducer(@NonNull Building building, @NonNull WorkerUnitContainer unit_container,
-            @NonNull BuildProductionContainer @NonNull [] production_containers) {
+    public WeaponsProducer(Building building, WorkerUnitContainer unit_container,
+            BuildProductionContainer[] production_containers) {
         this.building = building;
         this.unit_container = unit_container;
         this.production_containers = production_containers;
@@ -32,7 +31,7 @@ public class WeaponsProducer {
     }
 
     public final void animate(float t) {
-        Deque<@NonNull BuildProductionContainer> build_list = new ArrayDeque<>();
+        Deque<BuildProductionContainer> build_list = new ArrayDeque<>();
         for (var production_container : production_containers) {
             if (production_container.getNumSupplies() > 0 && production_container.hasEnoughSupplies()) {
                 build_list.add(production_container);

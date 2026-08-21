@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Provides world-space bounding volumes for collision detection, frustum culling, and spatial sorting.
@@ -34,7 +33,7 @@ public class BoundingBox {
                 bmin_z <= this.bmax_z && bmax_z > this.bmin_z);
     }
 
-    public final boolean collides(@NonNull BoundingBox other) {
+    public final boolean collides(BoundingBox other) {
         return collides(other.bmin_x, other.bmax_x, other.bmin_y, other.bmax_y, other.bmin_z, other.bmax_z);
     }
 
@@ -45,7 +44,7 @@ public class BoundingBox {
                 bmax_z <= this.bmax_z && bmin_z > this.bmin_z);
     }
 
-    public final boolean contains(@NonNull BoundingBox other) {
+    public final boolean contains(BoundingBox other) {
         return contains(other.bmin_x, other.bmax_x, other.bmin_y, other.bmax_y, other.bmin_z, other.bmax_z);
     }
 
@@ -108,14 +107,14 @@ public class BoundingBox {
         checkBoundsZ(bmax_z);
     }
 
-    public final void checkBoundsXY(@NonNull BoundingBox other) {
+    public final void checkBoundsXY(BoundingBox other) {
         checkBoundsX(other.bmin_x);
         checkBoundsX(other.bmax_x);
         checkBoundsY(other.bmin_y);
         checkBoundsY(other.bmax_y);
     }
 
-    public final void checkBounds(@NonNull BoundingBox other) {
+    public final void checkBounds(BoundingBox other) {
         checkBoundsXY(other);
         checkBoundsZ(other.bmin_z);
         checkBoundsZ(other.bmax_z);
@@ -130,7 +129,7 @@ public class BoundingBox {
         this.bmax_z = Float.POSITIVE_INFINITY;
     }
 
-    public final void setBounds(@NonNull BoundingBox other) {
+    public final void setBounds(BoundingBox other) {
         this.bmin_x = other.bmin_x;
         this.bmax_x = other.bmax_x;
         this.bmin_y = other.bmin_y;
@@ -169,7 +168,7 @@ public class BoundingBox {
         return (float) Math.sqrt(longest_x * longest_x + longest_y * longest_y);
     }
 
-    public final void transformBounds(@NonNull Matrix4f matrix) {
+    public final void transformBounds(Matrix4f matrix) {
         Vector4f v = new Vector4f(bmin_x, bmin_y, bmin_z, 1f);
         matrix.transform(v, v);
         bmin_x = v.x;
@@ -203,7 +202,7 @@ public class BoundingBox {
         computeXYCenter();
     }
 
-    public final void setBoundsFromLandscape(@NonNull HeightMap heightmap, int start_x, int start_y, int size_x,
+    public final void setBoundsFromLandscape(HeightMap heightmap, int start_x, int start_y, int size_x,
             int size_y) {
         float corner1 = heightmap.getWrappedHeight(start_x, start_y);
         setBounds(start_x * HeightMap.METERS_PER_UNIT_GRID, (start_x + size_x) * HeightMap.METERS_PER_UNIT_GRID, start_y

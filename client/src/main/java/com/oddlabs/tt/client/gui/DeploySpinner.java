@@ -9,28 +9,27 @@ import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
 public final class DeploySpinner extends IconSpinner {
-    private final @NonNull PlayerInterface player_interface;
+    private final PlayerInterface player_interface;
     private @Nullable Class<?> supply_type;
     private DeployType deploy_type;
     private Building current_building;
     private int num_orders = 0;
     private int order_size = 0;
 
-    public DeploySpinner(@NonNull WorldViewer viewer, @NonNull PlayerInterface player_interface,
-            @NonNull ModeIconQuads icon_quad, @NonNull String tool_tip, @Nullable List<
-                    @NonNull IconQuad> tool_tip_icons,
-            @NonNull GameAction action, @NonNull GameAction dec_action) {
+    public DeploySpinner(WorldViewer viewer, PlayerInterface player_interface,
+            ModeIconQuads icon_quad, String tool_tip, @Nullable List<
+                    IconQuad> tool_tip_icons,
+            GameAction action, GameAction dec_action) {
         super(viewer, icon_quad, tool_tip, tool_tip_icons, action, dec_action);
         this.player_interface = player_interface;
     }
 
-    public void setContainers(@NonNull Building current_building, @NonNull DeployType deploy_type, @Nullable Class<
+    public void setContainers(Building current_building, DeployType deploy_type, @Nullable Class<
             ?> supply_type) {
         this.current_building = current_building;
         this.deploy_type = deploy_type;

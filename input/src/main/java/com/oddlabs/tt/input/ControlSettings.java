@@ -1,7 +1,6 @@
 package com.oddlabs.tt.input;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -23,10 +22,10 @@ public final class ControlSettings implements Serializable, PropertiesSerializer
     public float mapmode_delay = 0.5f;
     public float tooltip_delay = 0.5f;
     public float ui_scale = 0.0f; // 0.0 = 100% (Scale 1.0), 1.0 = Max Scale
-    public @NonNull String language = "default";
+    public String language = "default";
 
     @Override
-    public void saveToProperties(@NonNull Properties props) {
+    public void saveToProperties(Properties props) {
         ControlSettings defaults = new ControlSettings();
         setProperty(props, "invert_camera_pitch", invert_camera_pitch, defaults.invert_camera_pitch);
         setProperty(props, "aggressive_units", aggressive_units, defaults.aggressive_units);
@@ -37,7 +36,7 @@ public final class ControlSettings implements Serializable, PropertiesSerializer
     }
 
     @Override
-    public void loadFromProperties(@NonNull Properties props) {
+    public void loadFromProperties(Properties props) {
         invert_camera_pitch = getBoolean(props, "invert_camera_pitch", invert_camera_pitch);
         aggressive_units = getBoolean(props, "aggressive_units", aggressive_units);
         mapmode_delay = getFloat(props, "mapmode_delay", mapmode_delay);

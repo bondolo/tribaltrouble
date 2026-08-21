@@ -9,7 +9,6 @@ import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.audio.ReverbType;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
@@ -59,20 +58,20 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
         }
     }
 
-    private final @NonNull ALData data;
+    private final ALData data;
     private final EFXManager efxManager = new EFXManager();
-    private final @NonNull OpenALAudioSource @NonNull [] sources;
-    private final @NonNull Iterable<@NonNull OpenALAudioSource> sharedSources;
+    private final OpenALAudioSource[] sources;
+    private final Iterable<OpenALAudioSource> sharedSources;
 
     // Queue for OpenAL cleanup tasks to be executed when this manager's context is current
-    private final Queue<@NonNull Runnable> alCleanupTasks = new ConcurrentLinkedQueue<>();
+    private final Queue<Runnable> alCleanupTasks = new ConcurrentLinkedQueue<>();
 
-    public OpenALManager(@NonNull AudioSettings audioSettings, @NonNull AnimationManager animationManager) {
+    public OpenALManager(AudioSettings audioSettings, AnimationManager animationManager) {
         this(audioSettings, animationManager, initAL(audioSettings.headphone_mode));
     }
 
-    private OpenALManager(@NonNull AudioSettings audioSettings, @NonNull AnimationManager animationManager,
-            @NonNull ALData data) {
+    private OpenALManager(AudioSettings audioSettings, AnimationManager animationManager,
+            ALData data) {
         super(audioSettings, animationManager);
         this.data = data;
         this.efxManager.init(data.device);
@@ -95,7 +94,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
         checkALError("alDistanceModel");
     }
 
-    private static @NonNull ALData initAL(boolean headphoneMode) {
+    private static ALData initAL(boolean headphoneMode) {
         String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
         long device = alcOpenDevice(defaultDeviceName);
         if (device == 0) {
@@ -121,7 +120,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     }
 
     @Override
-    public void enqueueCleanup(@NonNull Runnable task) {
+    public void enqueueCleanup(Runnable task) {
         alCleanupTasks.add(task);
     }
 
@@ -149,7 +148,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
 
     @SuppressWarnings("ClassEscapesDefinedScope")
     @Override
-    protected @NonNull Iterable<@NonNull OpenALAudioSource> getSources() {
+    protected Iterable<OpenALAudioSource> getSources() {
         return sharedSources;
     }
 
@@ -177,7 +176,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     }
 
     @Override
-    public @NonNull OpenALManager setHeadphoneMode(boolean enabled) {
+    public OpenALManager setHeadphoneMode(boolean enabled) {
         if (isHRTFSupported()) {
             int[] attrs = {ALC_HRTF_SOFT, enabled ? ALC_TRUE : ALC_FALSE, 0};
             if (!alcResetDeviceSOFT(data.device, attrs)) {
@@ -191,7 +190,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     }
 
     @Override
-    public @NonNull OpenALManager setMasterGain(float gain) {
+    public OpenALManager setMasterGain(float gain) {
         super.setMasterGain(gain);
         AL10.alListenerf(AL10.AL_GAIN, gain);
         checkALError("alListenerf AL_GAIN");
@@ -199,7 +198,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     }
 
     @Override
-    public @NonNull OpenALManager setListenerOrientation(@NonNull Vector3fc forward, @NonNull Vector3fc up) {
+    public OpenALManager setListenerOrientation(Vector3fc forward, Vector3fc up) {
         super.setListenerOrientation(forward, up);
         try (var stack = MemoryStack.stackPush()) {
             var fb = stack.mallocFloat(6);
@@ -213,7 +212,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     }
 
     @Override
-    public @NonNull OpenALManager setListenerPosition(float x, float y, float z) {
+    public OpenALManager setListenerPosition(float x, float y, float z) {
         super.setListenerPosition(x, y, z);
         AL10.alListener3f(AL10.AL_POSITION, x, y, z);
         checkALError("alListener3f AL_POSITION");
@@ -221,13 +220,13 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     }
 
     @Override
-    protected @NonNull AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z,
-            @NonNull AudioParameters params) {
+    protected AudioPlayer createPlayer(@Nullable AudioSource source, float x, float y, float z,
+            AudioParameters params) {
         return createPlayer((OpenALAudioSource) source, x, y, z, params);
     }
 
-    private @NonNull AudioPlayer createPlayer(@Nullable OpenALAudioSource source, float x, float y, float z,
-            @NonNull AudioParameters params) {
+    private AudioPlayer createPlayer(@Nullable OpenALAudioSource source, float x, float y, float z,
+            AudioParameters params) {
         AudioPlayer player;
         if (!params.audio().isStreaming()) {
             var ourPlayer = new OpenALAudioPlayer(this, source, x, y, z, params);
@@ -245,7 +244,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     }
 
     @Override
-    public @NonNull Audio createAudio(@NonNull URL file) throws IOException {
+    public Audio createAudio(URL file) throws IOException {
         return new OpenALAudio(this, file);
     }
 
@@ -274,17 +273,17 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
         }
     }
 
-    public @NonNull EFXManager getEfxManager() {
+    public EFXManager getEfxManager() {
         return efxManager;
     }
 
     @Override
-    public void setReverb(@NonNull ReverbType type) {
+    public void setReverb(ReverbType type) {
         efxManager.setReverb(type);
     }
 
     @Override
-    public void setReverb(@NonNull ReverbType from, @NonNull ReverbType to, float factor) {
+    public void setReverb(ReverbType from, ReverbType to, float factor) {
         efxManager.setReverb(from, to, factor);
     }
 
@@ -293,7 +292,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
      *
      * @param message A descriptive message for the context of the OpenAL call.
      */
-    public static void checkALError(@NonNull String message) {
+    public static void checkALError(String message) {
         if (DEBUG) {
             long context = ALC10.alcGetCurrentContext();
             if (context != 0) {
@@ -308,7 +307,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
         }
     }
 
-    private static @NonNull String errorToString(int error) {
+    private static String errorToString(int error) {
         return switch (error) {
             case AL10.AL_NO_ERROR -> "AL_NO_ERROR";
             case AL10.AL_INVALID_NAME -> "AL_INVALID_NAME";

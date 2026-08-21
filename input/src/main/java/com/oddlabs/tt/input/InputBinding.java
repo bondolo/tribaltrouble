@@ -1,33 +1,28 @@
 package com.oddlabs.tt.input;
 
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serializable;
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.Set;
 
 /**
  * Binds a key (with modifiers) or a character to an action.
  */
-public record InputBinding(@NonNull Key key, int codepoint, @NonNull Set<@NonNull Modifier> modifiers,
-                           @NonNull GameAction action)
+public record InputBinding(Key key, int codepoint, Set<Modifier> modifiers,
+                           GameAction action)
         implements Comparable<InputBinding>, Serializable {
     private static final boolean IS_MACOS = System.getProperty("os.name", "").toLowerCase().contains("mac");
 
-    public InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> modifiers, @NonNull GameAction action) {
+    public InputBinding(Key key, Set<Modifier> modifiers, GameAction action) {
         this(key, -1, modifiers, action);
     }
 
     public InputBinding {
-        Objects.requireNonNull(key, "key");
-        Objects.requireNonNull(modifiers, "modifiers");
-        Objects.requireNonNull(action, "action");
 
         modifiers = modifiers.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(modifiers);
     }
 
-    public boolean matches(@NonNull KeyboardEvent event) {
+    public boolean matches(KeyboardEvent event) {
         return ((codepoint != -1) && (event.keyCodepoint() != -1))
                 ? event.keyCodepoint() == codepoint
                 : event.keyCode() == key && modifiers.equals(event.modifiers());
@@ -50,7 +45,7 @@ public record InputBinding(@NonNull Key key, int codepoint, @NonNull Set<@NonNul
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         if (codepoint != -1) {
             return String.valueOf((char) codepoint);
         }
@@ -70,7 +65,7 @@ public record InputBinding(@NonNull Key key, int codepoint, @NonNull Set<@NonNul
     }
 
     @Override
-    public int compareTo(@NonNull InputBinding o) {
+    public int compareTo(InputBinding o) {
         if (this.codepoint != o.codepoint) {
             return Integer.compare(this.codepoint, o.codepoint);
         }

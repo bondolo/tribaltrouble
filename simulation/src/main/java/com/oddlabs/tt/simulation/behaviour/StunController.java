@@ -1,18 +1,17 @@
 package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Controller that manages the application of the stun state to a unit.
  */
 public final class StunController extends Controller {
-    private final @NonNull Unit unit;
-    private final @NonNull StunBehaviour stun_behaviour;
+    private final Unit unit;
+    private final StunBehaviour stun_behaviour;
 
     private float time;
 
-    public StunController(@NonNull Unit unit, float time) {
+    public StunController(Unit unit, float time) {
         super(0);
         this.unit = unit;
         this.time = time;

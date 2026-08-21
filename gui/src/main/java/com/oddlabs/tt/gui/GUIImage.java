@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -47,7 +46,7 @@ public final class GUIImage extends GUIIcon {
      * @param v2 The v-coordinate of the bottom-right corner of the texture region.
      * @param texture The texture to display.
      */
-    private GUIImage(int width, int height, float u1, float v1, float u2, float v2, @NonNull Texture texture) {
+    private GUIImage(int width, int height, float u1, float v1, float u2, float v2, Texture texture) {
         boolean useTexture = width < 0 || height < 0;
         int useHeight = useTexture ? texture.getHeight() : height;
         int useWidth = useTexture ? texture.getWidth() : width;

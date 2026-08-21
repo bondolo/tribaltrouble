@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.render.shader;
 
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL20;
@@ -9,7 +8,6 @@ import org.lwjgl.opengl.GL20;
  * describes a vertex attribute used by a shader
  */
 public interface VertexAttribute {
-    @NonNull
     String getName();
 
     int getComponentCount();

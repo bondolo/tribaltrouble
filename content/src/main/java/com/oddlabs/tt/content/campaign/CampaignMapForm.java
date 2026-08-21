@@ -24,7 +24,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,22 +38,22 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     private static final float BASE_HEIGHT = 600f;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignMapForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final float scale_x;
     private final float scale_y;
 
-    private final @NonNull Campaign campaign;
-    private final @NonNull NetworkSelector network;
+    private final Campaign campaign;
+    private final NetworkSelector network;
     private final List<MapIslandButton> islandButtons = new ArrayList<>();
     private boolean initialFocusSet = false;
 
     private float flicker_time;
-    private Color.@NonNull Linear mapColor = Color.Linear.WHITE;
+    private Color.Linear mapColor = Color.Linear.WHITE;
 
-    public CampaignMapForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Campaign campaign) {
+    public CampaignMapForm(NetworkSelector network, GUIRoot gui_root, Campaign campaign) {
         super(gui_root, new StaticCamera(new CameraState()));
         this.campaign = campaign;
         this.network = network;
@@ -150,7 +149,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -190,7 +189,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (!event.isConsumed() && event.getPhase() == InputPhase.PRESSED) {
             int dx = 0;
             int dy = 0;
@@ -273,13 +272,13 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         }
     }
 
-    public static void closeCampaign(@NonNull NetworkSelector network, @NonNull GUI gui,
-            @NonNull AudioManager audioManager) {
+    public static void closeCampaign(NetworkSelector network, GUI gui,
+            AudioManager audioManager) {
         Menu.startMenu(network, gui, audioManager);
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         renderer.drawIcon(campaign.getIcons().getMap(), 0f, 0f, Color.Linear.WHITE);
     }
 
@@ -313,7 +312,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     }
 
     @Override
-    protected void render(@NonNull GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
+    protected void render(GUIRenderer renderer, float clip_left, float clip_right, float clip_bottom,
             float clip_top) {
         renderer.getMatrixStack().push();
         renderer.getMatrixStack().scale(scale_x, scale_y, 1f);

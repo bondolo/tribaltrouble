@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Interface for world objects that can cast a dynamic shadow decal.
@@ -20,7 +19,7 @@ public interface Shadowable {
         return 0.6f;
     }
 
-    default Color.@NonNull Linear getShadowColor() {
+    default Color.Linear getShadowColor() {
         return Color.Linear.BLACK;
     }
 

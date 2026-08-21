@@ -4,16 +4,15 @@ import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingFactory;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Controller that handles unit movement and entry into buildings (towers or armories).
  */
 public final class EnterController extends Controller {
-    private final @NonNull Building building;
-    private final @NonNull Unit unit;
+    private final Building building;
+    private final Unit unit;
 
-    public EnterController(@NonNull Unit unit, @NonNull Building building) {
+    public EnterController(Unit unit, Building building) {
         super(1);
         this.unit = unit;
         this.building = building;

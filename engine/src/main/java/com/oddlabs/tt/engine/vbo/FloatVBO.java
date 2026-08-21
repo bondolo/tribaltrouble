@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.vbo;
 
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -16,7 +15,7 @@ public final class FloatVBO extends VBO {
         super(GL15.GL_ARRAY_BUFFER, usage, size * Float.BYTES);
     }
 
-    public FloatVBO(int usage, @NonNull FloatBuffer initial_data) {
+    public FloatVBO(int usage, FloatBuffer initial_data) {
         this(usage, initial_data.remaining());
         put(initial_data);
     }
@@ -26,11 +25,11 @@ public final class FloatVBO extends VBO {
         GL20.glVertexAttribPointer(location, size, GL11.GL_FLOAT, false, stride, offset);
     }
 
-    public void put(@NonNull FloatBuffer buffer) {
+    public void put(FloatBuffer buffer) {
         putSubData(0, buffer);
     }
 
-    public void putSubData(int index, @NonNull FloatBuffer buffer) {
+    public void putSubData(int index, FloatBuffer buffer) {
         bind();
         GL15.glBufferSubData(getTarget(), (long) index << 2, buffer);
         buffer.position(buffer.limit());

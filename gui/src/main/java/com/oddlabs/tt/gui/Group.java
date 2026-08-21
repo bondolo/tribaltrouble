@@ -3,7 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import org.jspecify.annotations.NonNull;
 
 public class Group extends GUIObject {
     public Group() {
@@ -92,7 +91,7 @@ public class Group extends GUIObject {
     }
 
     @Override
-    protected void handleInput(@NonNull InputEvent event) {
+    protected void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             if (event.consumeAction(GameAction.UI_FOCUS_NEXT)) {
                 switchFocus(FocusDirection.FORWARD);
@@ -106,12 +105,12 @@ public class Group extends GUIObject {
         super.handleInput(event);
     }
 
-    public void setGroupFocus(@NonNull FocusDirection dir) {
+    public void setGroupFocus(FocusDirection dir) {
         setFocus(dir);
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         super.setFocus(direction);
         switchFocus(direction, false);
     }

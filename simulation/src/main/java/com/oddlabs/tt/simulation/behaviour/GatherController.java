@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
 import com.oddlabs.tt.simulation.pathfinder.TargetTrackerAlgorithm;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -20,24 +19,24 @@ public final class GatherController<S extends Supply> extends Controller {
         DROPOFF
     }
 
-    private final @NonNull Unit unit;
-    private final @NonNull SupplyType supplyType;
+    private final Unit unit;
+    private final SupplyType supplyType;
     private @Nullable S supply;
     private @Nullable FinderTrackerAlgorithm<Building> building_tracker;
 
-    public GatherController(@NonNull Unit unit, @Nullable S supply, @NonNull SupplyType supplyType) {
+    public GatherController(Unit unit, @Nullable S supply, SupplyType supplyType) {
         super(State.values().length);
         this.unit = unit;
         this.supply = supply;
         this.supplyType = supplyType;
     }
 
-    public @NonNull SupplyType getSupplyType() {
+    public SupplyType getSupplyType() {
         return supplyType;
     }
 
     @Override
-    public @NonNull String getKey() {
+    public String getKey() {
         return super.getKey() + supplyType;
     }
 

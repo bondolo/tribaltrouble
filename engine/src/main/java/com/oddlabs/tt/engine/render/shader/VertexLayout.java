@@ -1,16 +1,15 @@
 package com.oddlabs.tt.engine.render.shader;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 public final class VertexLayout<A extends Enum<A> & VertexAttribute> {
 
-    private final @NonNull List<@NonNull A> attributes;
+    private final List<A> attributes;
     private final int stride;
 
     @SafeVarargs
-    public VertexLayout(@NonNull A @NonNull... attributes) {
+    public VertexLayout(A... attributes) {
         this.attributes = List.of(attributes);
         this.stride = this.attributes.stream()
                 .mapToInt(VertexAttribute::getSizeBytes)
@@ -21,11 +20,11 @@ public final class VertexLayout<A extends Enum<A> & VertexAttribute> {
         return stride;
     }
 
-    public boolean has(@NonNull A attribute) {
+    public boolean has(A attribute) {
         return attributes.contains(attribute);
     }
 
-    public int getOffset(@NonNull A attribute) {
+    public int getOffset(A attribute) {
         int offset = 0;
         for (A attr : attributes) {
             if (attr == attribute) {
@@ -36,7 +35,7 @@ public final class VertexLayout<A extends Enum<A> & VertexAttribute> {
         throw new IllegalArgumentException("Attribute not present in layout: " + attribute);
     }
 
-    public void bind(@NonNull ShaderProgram shader) {
+    public void bind(ShaderProgram shader) {
         for (A attr : attributes) {
             int location = shader.getAttributeLocation(attr.getName());
             if (location >= 0) {
@@ -46,7 +45,7 @@ public final class VertexLayout<A extends Enum<A> & VertexAttribute> {
         }
     }
 
-    public void unbind(@NonNull ShaderProgram shader) {
+    public void unbind(ShaderProgram shader) {
         for (A attr : attributes) {
             int location = shader.getAttributeLocation(attr.getName());
             if (location >= 0) {

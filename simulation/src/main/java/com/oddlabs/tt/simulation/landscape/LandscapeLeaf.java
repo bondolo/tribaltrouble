@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class LandscapeLeaf extends AbstractPatchGroup {
@@ -11,7 +10,7 @@ public final class LandscapeLeaf extends AbstractPatchGroup {
         return 0;
     }
 
-    public LandscapeLeaf(@NonNull World world, int index_x, int index_y, @Nullable AbstractPatchGroup parent) {
+    public LandscapeLeaf(World world, int index_x, int index_y, @Nullable AbstractPatchGroup parent) {
         super(world.getHeightMap(), 1, index_x, index_y, parent);
         HeightMap heightmap = world.getHeightMap();
         this.patch_x = index_x;

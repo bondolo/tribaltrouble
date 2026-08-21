@@ -2,11 +2,10 @@ package com.oddlabs.tt.procedural;
 
 
 import com.oddlabs.procedural.Channel;
-import org.jspecify.annotations.NonNull;
 
 public final class Analyzer {
 
-    public static void analyze(@NonNull Channel height, String name) throws Exception {
+    public static void analyze(Channel height, String name) throws Exception {
         IO.println("*** Performing image analysis on \"" + name + "\" ****");
         height.flipV();
         IO.println("Height map...");
@@ -102,7 +101,7 @@ public final class Analyzer {
         IO.println("*** Image analysis complete ****");
     }
 
-    public static @NonNull Channel histogram(@NonNull Channel channel, int size) {
+    public static Channel histogram(Channel channel, int size) {
         assert channel.findMin() >= 0 && channel.findMax() <= 1 : "image must be normalized";
         Channel hist = new Channel(size, size).fill(1f);
         int[] histogram = new int[size];
@@ -127,21 +126,21 @@ public final class Analyzer {
         return hist;
     }
 
-    public static void score(@NonNull Channel channel, String name) {
+    public static void score(Channel channel, String name) {
         float average = average(channel);
         float variance = variance(channel);
         float deviation = standardDeviation(variance);
         IO.println(name + " erosion score: " + deviation / average);
     }
 
-    public static float score(@NonNull Channel channel) {
+    public static float score(Channel channel) {
         float average = average(channel);
         float variance = variance(channel);
         float deviation = standardDeviation(variance);
         return deviation / average;
     }
 
-    public static void statistics(@NonNull Channel channel, String name) {
+    public static void statistics(Channel channel, String name) {
         float average = average(channel);
         float variance = variance(channel);
         float deviation = standardDeviation(variance);
@@ -149,7 +148,7 @@ public final class Analyzer {
         IO.println(name + " standard deviation: " + deviation);
     }
 
-    public static float average(@NonNull Channel channel) {
+    public static float average(Channel channel) {
         float sum = 0;
         for (int x = 0; x < channel.width; x++) {
             for (int y = 0; y < channel.height; y++) {
@@ -159,7 +158,7 @@ public final class Analyzer {
         return sum / (channel.width * channel.height);
     }
 
-    public static float variance(@NonNull Channel channel) {
+    public static float variance(Channel channel) {
         float average = average(channel);
         float sum = 0;
         for (int x = 0; x < channel.width; x++) {
@@ -171,7 +170,7 @@ public final class Analyzer {
         return sum / (channel.width * channel.height);
     }
 
-    public static float deviation(@NonNull Channel channel) {
+    public static float deviation(Channel channel) {
         return (float) Math.sqrt(variance(channel));
     }
 
@@ -179,7 +178,7 @@ public final class Analyzer {
         return (float) Math.sqrt(variance);
     }
 
-    public static @NonNull Channel connectedness(@NonNull Channel height, int steps) {
+    public static Channel connectedness(Channel height, int steps) {
         IO.print("Analyzing connectedness");
         Channel channel = new Channel(height.width, height.height);
         Channel slope = height.copy().lineart();
@@ -193,7 +192,7 @@ public final class Analyzer {
         return channel;
     }
 
-    public static float squareScore(@NonNull Channel height, float threshold, int square_size) {
+    public static float squareScore(Channel height, float threshold, int square_size) {
         return height.copy().lineart().threshold(0f, threshold).squareFit(1f, square_size).count(1f)
                 / (float) (height.width * height.height);
     }

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class ElementNode<T extends Element<T>> extends AbstractElementNode<T> {
@@ -11,7 +10,7 @@ public final class ElementNode<T extends Element<T>> extends AbstractElementNode
      * child[0] | child[1]
      *
      */
-    private final @NonNull AbstractElementNode<T> @NonNull [] children;
+    private final AbstractElementNode<T>[] children;
 
     public ElementNode(@Nullable AbstractElementNode<T> owner, int size, int x, int y) {
         super(owner);
@@ -29,7 +28,7 @@ public final class ElementNode<T extends Element<T>> extends AbstractElementNode
         checkBoundsXY(children[3]);
     }
 
-    private @NonNull AbstractElementNode<T> createChild(int size, int x, int y) {
+    private AbstractElementNode<T> createChild(int size, int x, int y) {
         if (size != MIN_NODE_SIZE)
             return new ElementNode<>(this, size, x, y);
         else
@@ -37,7 +36,7 @@ public final class ElementNode<T extends Element<T>> extends AbstractElementNode
     }
 
     @Override
-    protected AbstractElementNode<T> doInsertElement(@NonNull T model) {
+    protected AbstractElementNode<T> doInsertElement(T model) {
         incElementCount();
         if (model.bmin_x >= getCX()) {
             if (model.bmin_y >= getCY())
@@ -53,7 +52,7 @@ public final class ElementNode<T extends Element<T>> extends AbstractElementNode
         return addElement(model);
     }
 
-    public @NonNull AbstractElementNode<T> @NonNull [] children() {
+    public AbstractElementNode<T>[] children() {
         return children;
     }
 }

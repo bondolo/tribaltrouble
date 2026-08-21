@@ -10,7 +10,6 @@ import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
 import com.oddlabs.tt.simulation.model.Terrain;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,14 +23,14 @@ public final class GeneratorClouds extends TextureGenerator {
     public static final int INNER = 0;
     public static final int OUTER = 1;
 
-    private final @NonNull Terrain terrain;
+    private final Terrain terrain;
 
-    public GeneratorClouds(@NonNull Terrain terrain) {
+    public GeneratorClouds(Terrain terrain) {
         this.terrain = terrain;
     }
 
     @Override
-    public Texture @NonNull [] generate() {
+    public Texture[] generate() {
         int seed = LandscapeConfig.LANDSCAPE_SEED;
         Channel clouds1 = new Midpoint(TEXTURE_SIZE, 3, 0.55f, seed).toChannel();
         Channel clouds2 = new Midpoint(TEXTURE_SIZE, 2, 0.4f, seed).toChannel();
@@ -62,7 +61,7 @@ public final class GeneratorClouds extends TextureGenerator {
     }
 
     @Override
-    public boolean equals(@NonNull Object o) {
+    public boolean equals(Object o) {
         return super.equals(o) && ((GeneratorClouds) o).terrain == terrain;
     }
 }

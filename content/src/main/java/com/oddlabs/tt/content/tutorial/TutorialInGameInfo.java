@@ -10,7 +10,6 @@ import com.oddlabs.tt.content.menu.InGameMenuHook;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
-import org.jspecify.annotations.NonNull;
 
 /**
  * In-game session handler and menu hook for tutorial mode.
@@ -19,7 +18,7 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     private int next_tutorial = -1;
 
     @Override
-    public void openInGameMenu(@NonNull WorldViewer viewer, @NonNull Camera camera) {
+    public void openInGameMenu(WorldViewer viewer, Camera camera) {
         viewer.getGUIRoot().pushDelegate(new InGameMainMenu(viewer, new StaticCamera(camera.getState())));
     }
 
@@ -47,7 +46,7 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
-    public void addGUI(WorldViewer viewer, @NonNull InGameMainMenu menu, Group game_infos) {
+    public void addGUI(WorldViewer viewer, InGameMainMenu menu, Group game_infos) {
         menu.addAbortButton(Menu.i18n("end_tutorial"));
     }
 
@@ -57,13 +56,13 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
-    public void abort(@NonNull WorldViewer viewer) {
+    public void abort(WorldViewer viewer) {
         next_tutorial = -1;
         viewer.close();
     }
 
     @Override
-    public void close(@NonNull WorldViewer viewer) {
+    public void close(WorldViewer viewer) {
         if (next_tutorial != -1)
             TutorialForm.startTutorial(viewer.getNetwork(), viewer.getGUIRoot(), next_tutorial,
                     viewer.getAudioManager());

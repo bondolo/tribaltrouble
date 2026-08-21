@@ -8,20 +8,19 @@ import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.jspecify.annotations.NonNull;
 
 public final class ParticleModelState implements ModelState<Particle> {
     private static final Color NO_SELECTION = Color.Linear.TRANSPARENT;
-    private final @NonNull Particle particle;
-    private final @NonNull Matrix4fc viewMatrix;
+    private final Particle particle;
+    private final Matrix4fc viewMatrix;
 
-    public ParticleModelState(@NonNull Particle particle, @NonNull Matrix4fc viewMatrix) {
+    public ParticleModelState(Particle particle, Matrix4fc viewMatrix) {
         this.particle = particle;
         this.viewMatrix = viewMatrix;
     }
 
     @Override
-    public @NonNull Particle getModel() {
+    public Particle getModel() {
         return particle;
     }
 
@@ -36,27 +35,27 @@ public final class ParticleModelState implements ModelState<Particle> {
     }
 
     @Override
-    public @NonNull Color getTeamColor() {
+    public Color getTeamColor() {
         return particle.getColor();
     }
 
     @Override
-    public @NonNull Color getSelectionColor() {
+    public Color getSelectionColor() {
         return NO_SELECTION;
     }
 
     @Override
-    public Selectable.@NonNull VisualPattern getPattern() {
+    public Selectable.VisualPattern getPattern() {
         return Selectable.VisualPattern.NONE;
     }
 
     @Override
-    public @NonNull Color getColor() {
+    public Color getColor() {
         return particle.getColor();
     }
 
     @Override
-    public @NonNull Matrix4f getTransform(@NonNull Matrix4f dest) {
+    public Matrix4f getTransform(Matrix4f dest) {
         // Create the billboard transformation
         // 1. Translate to the particle's position
         dest.translation(particle.getPosX(), particle.getPosY(), particle.getPosZ());
@@ -88,12 +87,12 @@ public final class ParticleModelState implements ModelState<Particle> {
     }
 
     @Override
-    public int getTriangleCount(@NonNull PolyDetail detail) {
+    public int getTriangleCount(PolyDetail detail) {
         return 2;
     }
 
     @Override
-    public void markDetailPolygon(@NonNull PolyDetail detail) {
+    public void markDetailPolygon(PolyDetail detail) {
         // No-op for particles
     }
 

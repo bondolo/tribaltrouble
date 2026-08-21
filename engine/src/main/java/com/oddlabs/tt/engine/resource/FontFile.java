@@ -3,16 +3,15 @@ package com.oddlabs.tt.engine.resource;
 import com.oddlabs.tt.base.resource.File;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.util.FontInfo;
-import org.jspecify.annotations.NonNull;
 
 public final class FontFile extends File<Font> {
 
-    public FontFile(@NonNull String file_name) {
+    public FontFile(String file_name) {
         super(file_name);
     }
 
     @Override
-    public @NonNull Font get() {
+    public Font get() {
         FontInfo font_info = FontInfo.loadFromFile(getURL());
         return new Font(font_info);
     }

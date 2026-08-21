@@ -5,19 +5,18 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 public final class SupplyTrigger extends TutorialTrigger {
     private static final int TREE = 20;
     private static final int ROCK = 10;
 
-    public SupplyTrigger(@NonNull Player player) {
+    public SupplyTrigger(Player player) {
         super(.5f, 0f, "supply", new Object[]{TREE, ROCK});
         player.enableHarvesting(true);
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
+    public void run(Tutorial tutorial) {
         for (var s : tutorial.getViewer().getSelection().getCurrentSelection().getSet()) {
             if (s instanceof Building armory && s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
                 if (armory.getSupplyContainer(com.oddlabs.tt.simulation.model.RockSupply.class).map(c -> c

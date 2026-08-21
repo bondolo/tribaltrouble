@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.net.NetworkSelector;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -15,7 +14,7 @@ public interface ClientStartup {
      * @param driver the active frame driver
      * @param loadTask optional background runnable to execute after the first frame
      */
-    record Session(@NonNull FrameDriver driver, @Nullable Runnable loadTask) {
+    record Session(FrameDriver driver, @Nullable Runnable loadTask) {
     }
 
     /**
@@ -25,6 +24,5 @@ public interface ClientStartup {
      * @param firstProgress whether this is the initial application load
      * @return client session holding the frame driver and load task
      */
-    @NonNull
-    Session init(@NonNull NetworkSelector network, boolean firstProgress);
+    Session init(NetworkSelector network, boolean firstProgress);
 }

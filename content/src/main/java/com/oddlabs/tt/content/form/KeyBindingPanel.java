@@ -24,7 +24,6 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDLDialog;
 import org.lwjgl.sdl.SDL_DialogFileFilter;
 import org.lwjgl.system.MemoryStack;
@@ -47,10 +46,10 @@ public class KeyBindingPanel extends Panel {
     private static final int COL_ACTION_WIDTH = 200;
     private static final int COL_BINDINGS_WIDTH = 300;
 
-    private final @NonNull MultiColumnComboBox<GameAction> list_box;
-    private final @NonNull GUIRoot gui_root;
+    private final MultiColumnComboBox<GameAction> list_box;
+    private final GUIRoot gui_root;
 
-    public KeyBindingPanel(@NonNull GUIRoot gui_root) {
+    public KeyBindingPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("key_bindings_title"));
         this.gui_root = gui_root;
 
@@ -66,7 +65,7 @@ public class KeyBindingPanel extends Panel {
 
         list_box.addRowListener(new RowListener<>() {
             @Override
-            public void rowDoubleClicked(@NonNull GameAction action) {
+            public void rowDoubleClicked(GameAction action) {
                 gui_root.addModalForm(new KeyBindingDialog(gui_root, action, bindings -> {
                     gui_root.getInputManager().setBindings(action, bindings);
                     updateList();
@@ -275,13 +274,13 @@ public class KeyBindingPanel extends Panel {
     }
 
     private static final class InvertedLabel extends Label {
-        InvertedLabel(@NonNull String text, @NonNull Font font, int width) {
+        InvertedLabel(String text, Font font, int width) {
             super(text, font, width, Origin.AT_MIDDLE);
             setColor(Color.Standard.BLACK);
         }
 
         @Override
-        protected void renderGeometry(@NonNull GUIRenderer renderer) {
+        protected void renderGeometry(GUIRenderer renderer) {
             renderer.drawColoredQuad(0, 0, getWidth(), getHeight(), Label.DEFAULT_COLOR);
             super.renderGeometry(renderer);
         }

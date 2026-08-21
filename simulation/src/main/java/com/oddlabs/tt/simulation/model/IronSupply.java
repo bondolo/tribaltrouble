@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -35,12 +34,12 @@ public final class IronSupply extends SupplyModel {
     private boolean cooling = false;
     private boolean useRockTexture = true;
 
-    public IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
+    public IronSupply(World world, int grid_x, int grid_y, float x, float y, boolean increase) {
         var fragmentIndex = ThreadLocalRandom.current().nextInt(LandscapeBoundsProvider.SUPPLY_FRAGMENT_COUNT);
         this(world, grid_x, grid_y, x, y, increase, fragmentIndex);
     }
 
-    private IronSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase,
+    private IronSupply(World world, int grid_x, int grid_y, float x, float y, boolean increase,
             int fragmentIndex) {
         super(world, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, ThreadLocalRandom.current().nextFloat((float) -Math.PI,
                 (float) Math.PI), INITIAL_SUPPLIES, increase,
@@ -49,19 +48,19 @@ public final class IronSupply extends SupplyModel {
     }
 
     @Override
-    public @NonNull BoundsProvider getBoundsProvider() {
+    public BoundsProvider getBoundsProvider() {
         // Use rock texture while hot to show tinting
         return useRockTexture ? getWorld().getLandscapeResources().getRockBounds(fragmentIndex)
                 : super.getBoundsProvider();
     }
 
     @Override
-    public @NonNull SupplyType getSupplyType() {
+    public SupplyType getSupplyType() {
         return SupplyType.IRON;
     }
 
     @Override
-    public @NonNull Supply respawn() {
+    public Supply respawn() {
         return new IronSupply(getWorld(), getGridX(), getGridY(), getPositionX(), getPositionY(), false);
     }
 

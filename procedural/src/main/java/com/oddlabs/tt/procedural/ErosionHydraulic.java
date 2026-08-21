@@ -2,7 +2,6 @@ package com.oddlabs.tt.procedural;
 
 
 import com.oddlabs.procedural.Channel;
-import org.jspecify.annotations.NonNull;
 
 public final class ErosionHydraulic {
 
@@ -256,7 +255,7 @@ public final class ErosionHydraulic {
         old = height.copy();
     }
 
-    public static @NonNull Channel erodeFast(@NonNull Channel channel, int iterations) {
+    public static Channel erodeFast(Channel channel, int iterations) {
         height = channel;
         water = new Channel(channel.width, channel.height);
         deposition = new Channel(channel.width, channel.height);

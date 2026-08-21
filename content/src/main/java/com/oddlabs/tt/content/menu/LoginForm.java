@@ -21,7 +21,6 @@ import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -35,19 +34,19 @@ public final class LoginForm extends Form {
     private static final int BUTTON_WIDTH_LONG = 150;
     private static final int EDITLINE_WIDTH = 240;
 
-    private final @NonNull Menu main_menu;
+    private final Menu main_menu;
     private final GUIRoot gui_root;
-    private final @NonNull NetworkSelector network;
-    private final @NonNull EditLine editline_username;
-    private final @NonNull PasswordLine editline_password;
-    private final @NonNull CheckBox remember_checkbox;
+    private final NetworkSelector network;
+    private final EditLine editline_username;
+    private final PasswordLine editline_password;
+    private final CheckBox remember_checkbox;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(LoginForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public LoginForm(@NonNull NetworkSelector network, GUIRoot gui_root, @NonNull Menu main_menu) {
+    public LoginForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
         this.main_menu = main_menu;
         this.gui_root = gui_root;
         this.network = network;
@@ -133,7 +132,7 @@ public final class LoginForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -151,7 +150,7 @@ public final class LoginForm extends Form {
             doLogin(username, password, login, remember_checkbox.isMarked());
     }
 
-    private void doLogin(@NonNull String username, @NonNull String password, Login login, boolean remember_login) {
+    private void doLogin(String username, String password, Login login, boolean remember_login) {
         if (remember_login) {
             Renderer.getRenderer().getSettings().account.username = username;
             Renderer.getRenderer().getSettings().account.pw_digest = password;
@@ -163,7 +162,7 @@ public final class LoginForm extends Form {
 
     private final class NewUserListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             remove();
             main_menu.setMenu(new NewUserForm(network, gui_root, main_menu));
         }
@@ -171,12 +170,12 @@ public final class LoginForm extends Form {
 
     private final class LoginListener implements MouseClickListener, EnterListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             login();
         }
 
         @Override
-        public void enterPressed(@NonNull CharSequence text) {
+        public void enterPressed(CharSequence text) {
             login();
         }
     }

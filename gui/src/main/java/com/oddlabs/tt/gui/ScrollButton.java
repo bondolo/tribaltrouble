@@ -4,7 +4,6 @@ import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public final class ScrollButton extends GUIObject {
     public ScrollButton() {
@@ -12,13 +11,13 @@ public final class ScrollButton extends GUIObject {
 //		setupPos();
     }
 
-    public void setupPos(@NonNull ScrollBar owner) {
+    public void setupPos(ScrollBar owner) {
         setPos(owner.getButtonX(), owner.getButtonY());
         setDim(Skin.getSkin().getScrollBarData().scrollButton().getWidth(), owner.getButtonHeight());
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.hasAction(GameAction.UI_FOCUS_NEXT)) {
             // Bubble Tab
             return;
@@ -28,7 +27,7 @@ public final class ScrollButton extends GUIObject {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isActive()
@@ -40,6 +39,6 @@ public final class ScrollButton extends GUIObject {
     }
 
     @Override
-    public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    public void mouseClicked(MouseButton button, int x, int y, int clicks) {
     }
 }

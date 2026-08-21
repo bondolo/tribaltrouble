@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.cursor;
 
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.base.resource.NativeResource;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.sdl.SDL_Surface;
 import org.lwjgl.system.MemoryUtil;
 
@@ -36,7 +35,7 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
          * @param xHot x location from top left of cursor hot spot
          * @param yHot y location from top left of cursor hot spot
          */
-        NativeCursor(@NonNull GLImage image, int xHot, int yHot) {
+        NativeCursor(GLImage image, int xHot, int yHot) {
             int width = image.getWidth();
             int height = image.getHeight();
 
@@ -77,7 +76,7 @@ public final class Cursor extends NativeResource<Cursor.NativeCursor> {
      * @param xHot x location from top left of cursor hot spot
      * @param yHot y location from top left of cursor hot spot
      */
-    public Cursor(@NonNull GLImage image, int xHot, int yHot) {
+    public Cursor(GLImage image, int xHot, int yHot) {
         super(new NativeCursor(image, xHot, yHot));
     }
 

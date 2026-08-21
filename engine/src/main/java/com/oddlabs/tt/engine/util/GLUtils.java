@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.util;
 
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 
@@ -18,7 +17,7 @@ public final class GLUtils {
     private static final Logger logger = Logger.getLogger(GLUtils.class.getSimpleName());
     public static final String SCREENSHOT_DEFAULT = "screenshot";
 
-    public static @NonNull String takeScreenshot(@NonNull String filename) {
+    public static String takeScreenshot(String filename) {
         if (filename.isEmpty()) {
             int i = 0;
             File file;
@@ -47,7 +46,7 @@ public final class GLUtils {
         return filename;
     }
 
-    public static void saveTexture(int mipmap_level, @NonNull String filename) {
+    public static void saveTexture(int mipmap_level, String filename) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer int_buf = stack.mallocInt(16);
             GL11.glGetTexLevelParameteriv(GL11.GL_TEXTURE_2D, mipmap_level, GL11.GL_TEXTURE_WIDTH, int_buf);
@@ -69,7 +68,7 @@ public final class GLUtils {
      * @param message A descriptive message for the context of the OpenGL call.
      * @return A list of error codes found.
      */
-    public static @NonNull List<Integer> checkGLError(@NonNull String message) {
+    public static List<Integer> checkGLError(String message) {
         List<Integer> errors = null;
         if (DEBUG) {
             int error;
@@ -89,7 +88,7 @@ public final class GLUtils {
      * @param message A descriptive message for the context.
      * @throws OpenGLException if any OpenGL errors were detected.
      */
-    public static void checkAndThrow(@NonNull String message) {
+    public static void checkAndThrow(String message) {
         List<Integer> errors = checkGLError(message);
         if (!errors.isEmpty()) {
             throw new OpenGLException("OpenGL failure (" + message + "): " + errorToString(errors.getFirst()));
@@ -102,7 +101,7 @@ public final class GLUtils {
      * @param error The OpenGL error code.
      * @return A string representation of the error.
      */
-    public static @NonNull String errorToString(int error) {
+    public static String errorToString(int error) {
         return switch (error) {
             case GL11.GL_NO_ERROR -> "GL_NO_ERROR";
             case GL11.GL_INVALID_ENUM -> "GL_INVALID_ENUM";

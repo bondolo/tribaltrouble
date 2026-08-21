@@ -9,14 +9,13 @@ import com.oddlabs.tt.content.skirmish.TerrainMenuForm;
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.audio.AudioManager;
-import org.jspecify.annotations.NonNull;
 
 /**
  * The game main menu
  */
 public final class MainMenu extends Menu {
-    public MainMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Camera camera,
-            @NonNull AudioManager audioManager) {
+    public MainMenu(NetworkSelector network, GUIRoot gui_root, Camera camera,
+            AudioManager audioManager) {
         super(network, gui_root, camera, audioManager);
         reload();
     }

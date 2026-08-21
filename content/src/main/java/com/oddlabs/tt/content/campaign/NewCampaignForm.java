@@ -25,7 +25,6 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.FileNotFoundException;
@@ -49,21 +48,21 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NewCampaignForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull NetworkSelector network;
-    private final @NonNull GUIRoot gui_root;
-    private final @NonNull Menu main_menu;
-    private final @NonNull CampaignForm campaign_form;
+    private final NetworkSelector network;
+    private final GUIRoot gui_root;
+    private final Menu main_menu;
+    private final CampaignForm campaign_form;
     private final EditLine editline_name = new EditLine(EDITLINE_WIDTH, 200);
     private final PulldownMenu<Race> race_pulldown = new PulldownMenu<>();
     private final PulldownMenu<Difficulty> difficulty_pulldown = new PulldownMenu<>();
-    private @NonNull CampaignState @Nullable [] campaign_states;
+    private CampaignState @Nullable [] campaign_states;
 
-    public NewCampaignForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu,
-            @NonNull CampaignForm campaign_form) {
+    public NewCampaignForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu,
+            CampaignForm campaign_form) {
         this.network = network;
         this.gui_root = gui_root;
         this.main_menu = main_menu;
@@ -83,7 +82,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         Label race_label = new Label(i18n("race"), Skin.getSkin().getEditFont());
         race_pulldown.addItem(new PulldownItem<>(i18n("vikings"), Race.VIKINGS));
         race_pulldown.addItem(new PulldownItem<>(i18n("natives"), Race.NATIVES));
-        race_pulldown.addItemChosenListener((@NonNull PulldownMenu<Race> menu, int item_index) -> {
+        race_pulldown.addItemChosenListener((PulldownMenu<Race> menu, int item_index) -> {
             if (menu.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS) == Race.NATIVES
                     && (!Renderer.getRenderer().getSettings().has_native_campaign)) {
                 menu.chooseItem(INDEX_VIKINGS);
@@ -140,7 +139,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -148,7 +147,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         }
     }
 
-    private boolean nameIsUnique(@NonNull String name) {
+    private boolean nameIsUnique(String name) {
         return campaign_states == null || Arrays.stream(campaign_states)
                 .map(CampaignState::getName)
                 .noneMatch(campaign_name -> campaign_name.equals(name));
@@ -193,12 +192,12 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     }
 
     @Override
-    public void loadSucceeded(CampaignState @NonNull [] campaign_states) {
+    public void loadSucceeded(CampaignState[] campaign_states) {
         this.campaign_states = campaign_states;
     }
 
     @Override
-    public void failed(@NonNull Throwable e) {
+    public void failed(Throwable e) {
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
         } else if (e instanceof InvalidClassException) {
         } else {
@@ -209,12 +208,12 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
 
     private final class NameListener implements MouseClickListener, EnterListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             save();
         }
 
         @Override
-        public void enterPressed(@NonNull CharSequence text) {
+        public void enterPressed(CharSequence text) {
             save();
         }
     }

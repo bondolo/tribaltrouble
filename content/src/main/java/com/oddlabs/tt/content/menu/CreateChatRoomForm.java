@@ -16,7 +16,6 @@ import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -29,7 +28,7 @@ public final class CreateChatRoomForm extends Form {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CreateChatRoomForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -37,7 +36,7 @@ public final class CreateChatRoomForm extends Form {
     private final GUIRoot gui_root;
     private final Menu main_menu;
 
-    private final @NonNull EditLine editline_room_name;
+    private final EditLine editline_room_name;
 
     public CreateChatRoomForm(GUIRoot gui_root, Menu main_menu, SelectGameMenu menu) {
         this.menu = menu;
@@ -77,7 +76,7 @@ public final class CreateChatRoomForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -95,12 +94,12 @@ public final class CreateChatRoomForm extends Form {
 
     private final class CreateListener implements MouseClickListener, EnterListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             create();
         }
 
         @Override
-        public void enterPressed(@NonNull CharSequence text) {
+        public void enterPressed(CharSequence text) {
             create();
         }
     }

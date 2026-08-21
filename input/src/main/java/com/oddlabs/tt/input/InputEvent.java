@@ -1,6 +1,5 @@
 package com.oddlabs.tt.input;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -9,8 +8,8 @@ import java.util.logging.Logger;
 
 public final class InputEvent {
     private static final Logger logger = Logger.getLogger(InputEvent.class.getSimpleName());
-    private final @NonNull Set<@NonNull GameAction> actions;
-    private final @NonNull InputPhase phase;
+    private final Set<GameAction> actions;
+    private final InputPhase phase;
     private final int codepoint;
     private final boolean shiftDown;
     private final boolean controlDown;
@@ -23,8 +22,8 @@ public final class InputEvent {
 
     private boolean consumed;
 
-    public InputEvent(@NonNull KeyboardEvent keyboardEvent, @NonNull Set<@NonNull GameAction> actions,
-            @NonNull InputPhase phase) {
+    public InputEvent(KeyboardEvent keyboardEvent, Set<GameAction> actions,
+            InputPhase phase) {
         this.actions = EnumSet.copyOf(actions);
         this.phase = phase;
         this.keyCode = keyboardEvent.keyCode();
@@ -43,11 +42,11 @@ public final class InputEvent {
                 + consumed + '}';
     }
 
-    public @NonNull Set<GameAction> getActions() {
+    public Set<GameAction> getActions() {
         return actions;
     }
 
-    public @NonNull InputPhase getPhase() {
+    public InputPhase getPhase() {
         return phase;
     }
 
@@ -108,14 +107,14 @@ public final class InputEvent {
         return !actions.isEmpty();
     }
 
-    public boolean hasAction(@NonNull GameAction action) {
+    public boolean hasAction(GameAction action) {
         return actions.contains(action);
     }
 
     /**
      * Removes a specific logical action from this event, but allows propagation to continue.
      */
-    public boolean consumeAction(@NonNull GameAction action) {
+    public boolean consumeAction(GameAction action) {
         return actions.remove(action);
     }
 }

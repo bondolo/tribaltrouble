@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -25,7 +24,7 @@ public final class RockSupply extends SupplyModel {
     private float crackDecalDiameter = 0.0f;
     private float crackDecalPattern = 0.0f;
 
-    public RockSupply(@NonNull World world, int grid_x, int grid_y, float x, float y, boolean increase) {
+    public RockSupply(World world, int grid_x, int grid_y, float x, float y, boolean increase) {
         var rotation = ThreadLocalRandom.current().nextFloat((float) -Math.PI, (float) Math.PI);
         var fragmentIndex = ThreadLocalRandom.current().nextInt(LandscapeBoundsProvider.SUPPLY_FRAGMENT_COUNT);
         super(world, 2f, grid_x, grid_y, x, y, SPAWN_OFFSET_Z, rotation, INITIAL_SUPPLIES, increase,
@@ -33,12 +32,12 @@ public final class RockSupply extends SupplyModel {
     }
 
     @Override
-    public @NonNull SupplyType getSupplyType() {
+    public SupplyType getSupplyType() {
         return SupplyType.ROCK;
     }
 
     @Override
-    public @NonNull Supply respawn() {
+    public Supply respawn() {
         return new RockSupply(getWorld(), getGridX(), getGridY(), getPositionX(), getPositionY(), false);
     }
 

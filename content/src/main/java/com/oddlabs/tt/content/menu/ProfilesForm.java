@@ -19,7 +19,6 @@ import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -30,14 +29,14 @@ import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 public final class ProfilesForm extends Form {
     private static final int NICK_SIZE = 200;
 
-    private final @NonNull Menu main_menu;
-    private final @NonNull SelectGameMenu game_menu;
-    private final @NonNull MultiColumnComboBox<String> profile_list_box;
-    private final @NonNull HorizButton join_button;
-    private final @NonNull GUIRoot gui_root;
+    private final Menu main_menu;
+    private final SelectGameMenu game_menu;
+    private final MultiColumnComboBox<String> profile_list_box;
+    private final HorizButton join_button;
+    private final GUIRoot gui_root;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ProfilesForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -45,7 +44,7 @@ public final class ProfilesForm extends Form {
     private NewProfileForm new_profile_form;
     private QuestionForm confirm_delete_form;
 
-    public ProfilesForm(@NonNull GUIRoot gui_root, @NonNull Menu main_menu, @NonNull SelectGameMenu game_menu) {
+    public ProfilesForm(GUIRoot gui_root, Menu main_menu, SelectGameMenu game_menu) {
         this.gui_root = gui_root;
         this.main_menu = main_menu;
         this.game_menu = game_menu;
@@ -61,7 +60,7 @@ public final class ProfilesForm extends Form {
         profile_list_box = new MultiColumnComboBox<>(gui_root, infos, 200);
         profile_list_box.addRowListener(new RowListener<>() {
             @Override
-            public void rowDoubleClicked(@NonNull String nick) {
+            public void rowDoubleClicked(String nick) {
                 join(nick);
             }
         });
@@ -90,7 +89,7 @@ public final class ProfilesForm extends Form {
         addChild(join_button);
 
         HorizButton logout_button = new HorizButton(i18n("logout"), 100);
-        logout_button.addMouseClickListener((@NonNull MouseButton _, int _, int _, int _) -> this.cancel());
+        logout_button.addMouseClickListener((MouseButton _, int _, int _, int _) -> this.cancel());
         addChild(logout_button);
 
         label_headline.place();
@@ -104,7 +103,7 @@ public final class ProfilesForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -117,7 +116,7 @@ public final class ProfilesForm extends Form {
         Renderer.getRenderer().getNetwork().getMatchmakingClient().close();
     }
 
-    public void receivedProfiles(Profile @NonNull [] profiles, String last_nick) {
+    public void receivedProfiles(Profile[] profiles, String last_nick) {
         profile_list_box.clear();
         Row<String, Label> selected_row = null;
         for (Profile p : profiles) {
@@ -142,7 +141,7 @@ public final class ProfilesForm extends Form {
 
     private final class DeleteProfileListener implements MouseClickListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             String nick = profile_list_box.getSelected();
             if (nick == null) {
                 gui_root.addModalForm(new MessageForm(i18n("no_profiles")));

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.player;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serializable;
@@ -34,7 +33,6 @@ public interface PlayerSlotHandler {
     @Nullable
     Serializable getInfo(Serializable slot);
 
-    @NonNull
     String getPlayerName(Serializable slot);
 
     void resetSlot(Serializable slot, boolean open);

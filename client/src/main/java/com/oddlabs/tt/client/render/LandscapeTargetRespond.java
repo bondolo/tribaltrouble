@@ -4,9 +4,7 @@ import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Element;
-import org.jspecify.annotations.NonNull;
 
-import java.util.Objects;
 
 /**
  * Visual element that appears as a target indicator when the user clicks on the landscape.
@@ -15,12 +13,12 @@ public final class LandscapeTargetRespond extends Element<LandscapeTargetRespond
     public static final int SIZE = 128;
     private static final float SECOND_PER_PICK_RESPOND = 1f / 3f;
 
-    private final @NonNull AnimationManager animation_manager;
+    private final AnimationManager animation_manager;
     private float time;
 
-    public LandscapeTargetRespond(@NonNull World world, @NonNull AnimationManager animation_manager, float x, float y) {
+    public LandscapeTargetRespond(World world, AnimationManager animation_manager, float x, float y) {
         super(world.getElementRoot());
-        this.animation_manager = Objects.requireNonNull(animation_manager);
+        this.animation_manager = animation_manager;
         setPosition(x, y);
         setPositionZ(world.getHeightMap().getNearestHeight(x, y));
         setBounds(x - SIZE / 2, x + SIZE / 2, y - SIZE / 2, y + SIZE / 2, Float.NEGATIVE_INFINITY,
@@ -29,7 +27,7 @@ public final class LandscapeTargetRespond extends Element<LandscapeTargetRespond
     }
 
     @Override
-    protected @NonNull LandscapeTargetRespond self() {
+    protected LandscapeTargetRespond self() {
         return this;
     }
 

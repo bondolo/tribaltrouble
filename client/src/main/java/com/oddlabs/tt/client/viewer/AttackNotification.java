@@ -9,7 +9,6 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Alerts the local player when one of their units or buildings is under attack.
@@ -20,9 +19,9 @@ final class AttackNotification extends Notification {
 
     private boolean active = true;
 
-    public AttackNotification(@NonNull Player local_player, @NonNull AudioImplementation audio,
-            @NonNull GUIRoot gui_root, @NonNull Selectable<?> center,
-            @NonNull NotificationManager manager, @NonNull AnimationManager animation_manager) {
+    public AttackNotification(Player local_player, AudioImplementation audio,
+            GUIRoot gui_root, Selectable<?> center,
+            NotificationManager manager, AnimationManager animation_manager) {
         super(local_player.getWorld().getHeightMap(), audio, gui_root, center.getPositionX(), center.getPositionY(),
                 manager,
                 Color.Standard.RED,
@@ -30,7 +29,7 @@ final class AttackNotification extends Notification {
                 animation_manager);
     }
 
-    public boolean contains(@NonNull Target target) {
+    public boolean contains(Target target) {
         float dx = getX() - target.getPositionX();
         float dy = getY() - target.getPositionY();
         float dist = dx * dx + dy * dy;
@@ -43,7 +42,7 @@ final class AttackNotification extends Notification {
     }
 
     @Override
-    public void update(@NonNull TimerAnimation anim) {
+    public void update(TimerAnimation anim) {
         if (active) {
             active = false;
             getArrow().remove();

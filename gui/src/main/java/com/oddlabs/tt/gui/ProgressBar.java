@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.ResourceBundle;
@@ -15,25 +14,25 @@ import java.util.ResourceBundle;
 public final class ProgressBar extends GUIObject {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private record Waypoint(int point, float weight) {
     }
 
-    private final @NonNull ProgressBarInfo @NonNull [] info;
-    private final @NonNull Waypoint @NonNull [] waypoints;
+    private final ProgressBarInfo[] info;
+    private final Waypoint[] waypoints;
     private final boolean text_only;
 
-    private final @NonNull NetworkSelector network;
+    private final NetworkSelector network;
     private int left_margin;
     private int right_margin;
 
     private int index;
     private float step;
 
-    public ProgressBar(@NonNull NetworkSelector network, int width, @NonNull ProgressBarInfo @NonNull [] info,
+    public ProgressBar(NetworkSelector network, int width, ProgressBarInfo[] info,
             boolean text_only) {
         this.info = info;
         this.network = network;
@@ -72,7 +71,7 @@ public final class ProgressBar extends GUIObject {
         update();
     }
 
-    private void renderText(@NonNull GUIRenderer renderer) {
+    private void renderText(GUIRenderer renderer) {
         int offset = index > 0 ? waypoints[index - 1].point() : 0;
         float done = (offset + step) / getWidth();
         ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
@@ -83,7 +82,7 @@ public final class ProgressBar extends GUIObject {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         if (text_only)
             renderText(renderer);
         else {
@@ -93,7 +92,7 @@ public final class ProgressBar extends GUIObject {
         }
     }
 
-    private Waypoint @NonNull [] pixelize(@NonNull ProgressBarInfo @NonNull [] info, int width) {
+    private Waypoint[] pixelize(ProgressBarInfo[] info, int width) {
         float sum = (float) Arrays.stream(info).mapToDouble(ProgressBarInfo::getWeight).sum();
 
         Waypoint[] waypoints = new Waypoint[info.length];
@@ -107,7 +106,7 @@ public final class ProgressBar extends GUIObject {
         return waypoints;
     }
 
-    private void renderFill(@NonNull GUIRenderer renderer, int y) {
+    private void renderFill(GUIRenderer renderer, int y) {
         ProgressBarData data = Skin.getSkin().getProgressBarData();
         ModeIconQuads left = data.leftFill();
         ModeIconQuads center = data.centerFill();

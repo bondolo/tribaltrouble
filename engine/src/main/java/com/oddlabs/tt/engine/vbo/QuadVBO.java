@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.vbo;
 
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -21,7 +20,7 @@ public final class QuadVBO implements AutoCloseable {
             -1f, -1f, 0f, 0f  // bottom-left
     };
     private final VertexArray vao = new VertexArray();
-    private final @NonNull FloatVBO vbo;
+    private final FloatVBO vbo;
 
     public QuadVBO() {
         try (var stack = MemoryStack.stackPush()) {

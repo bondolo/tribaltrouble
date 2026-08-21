@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -24,18 +23,18 @@ import java.util.function.Supplier;
  * Acts as a central hub for accessing various specialized rendering systems.
  */
 public final class RenderQueues implements AutoCloseable {
-    private final List<@NonNull SpriteRenderer> sprite_renderers = new ArrayList<>();
-    private final List<@NonNull SpriteRenderer> blend_sprite_renderers = new ArrayList<>();
-    private final List<@NonNull SpriteRenderer> plant_renderers = new ArrayList<>();
+    private final List<SpriteRenderer> sprite_renderers = new ArrayList<>();
+    private final List<SpriteRenderer> blend_sprite_renderers = new ArrayList<>();
+    private final List<SpriteRenderer> plant_renderers = new ArrayList<>();
 
-    private final List<@NonNull SpriteRenderer> sprite_list_lookup = new ArrayList<>();
-    private final List<@NonNull ShadowListRenderer> shadow_renderer_lookup = new ArrayList<>();
-    private final Map<@NonNull Supplier<@NonNull Texture @NonNull []>, @NonNull ShadowListKey> desc_to_shadow_key
+    private final List<SpriteRenderer> sprite_list_lookup = new ArrayList<>();
+    private final List<ShadowListRenderer> shadow_renderer_lookup = new ArrayList<>();
+    private final Map<Supplier<Texture[]>, ShadowListKey> desc_to_shadow_key
             = new HashMap<>();
-    private final List<@NonNull Texture> texture_lookup = new ArrayList<>();
+    private final List<Texture> texture_lookup = new ArrayList<>();
     /** Shared Array for particle effects */
     private @Nullable TextureArray effect_texture_array;
-    private final Map<@NonNull Integer, @NonNull GLImage @NonNull []> pending_array_uploads = new HashMap<>();
+    private final Map<Integer, GLImage[]> pending_array_uploads = new HashMap<>();
 
     private final InstancedSpriteRenderer spriteRenderer = new InstancedSpriteRenderer();
     private final DecalRenderer decalRenderer = new DecalRenderer();
@@ -43,11 +42,11 @@ public final class RenderQueues implements AutoCloseable {
     public RenderQueues() {
     }
 
-    public @NonNull TextureArray getEffectTextureArray() {
+    public TextureArray getEffectTextureArray() {
         return ensureTextureArray();
     }
 
-    public @NonNull TextureKey registerEffectTexture(@NonNull Supplier<Texture[]> desc, int index, int layer) {
+    public TextureKey registerEffectTexture(Supplier<Texture[]> desc, int index, int layer) {
         assert effect_texture_array == null : "Cannot register effect textures after the array has been built";
         TextureKey key = registerTexture(desc, index);
         Texture texture = getTexture(key);
@@ -63,7 +62,7 @@ public final class RenderQueues implements AutoCloseable {
         return key;
     }
 
-    public @NonNull TextureKey registerEffectTexture(@NonNull Supplier<Texture> desc, int layer) {
+    public TextureKey registerEffectTexture(Supplier<Texture> desc, int layer) {
         assert effect_texture_array == null : "Cannot register effect textures after the array has been built";
         TextureKey key = registerTexture(desc);
         Texture texture = getTexture(key);
@@ -79,7 +78,7 @@ public final class RenderQueues implements AutoCloseable {
         return key;
     }
 
-    public @NonNull TextureArray ensureTextureArray() {
+    public TextureArray ensureTextureArray() {
         if (effect_texture_array != null) {
             assert pending_array_uploads.isEmpty() : "Pending effect textures found but array is already built";
             return effect_texture_array;
@@ -123,37 +122,37 @@ public final class RenderQueues implements AutoCloseable {
         return effect_texture_array;
     }
 
-    public @NonNull DecalRenderer getDecalRenderer() {
+    public DecalRenderer getDecalRenderer() {
         return decalRenderer;
     }
 
-    public @NonNull TextureKey registerTexture(@NonNull Supplier<Texture[]> desc, int index) {
+    public TextureKey registerTexture(Supplier<Texture[]> desc, int index) {
         TextureKey key = new TextureKey(texture_lookup.size());
         Texture[] textures = Resources.findResource(desc);
         texture_lookup.add(textures[index]);
         return key;
     }
 
-    public @NonNull TextureKey registerTexture(@NonNull Supplier<Texture> desc) {
+    public TextureKey registerTexture(Supplier<Texture> desc) {
         TextureKey key = new TextureKey(texture_lookup.size());
         texture_lookup.add(Resources.findResource(desc));
         return key;
     }
 
-    public @NonNull Texture getTexture(@NonNull TextureKey key) {
+    public Texture getTexture(TextureKey key) {
         return texture_lookup.get(key.key());
     }
 
-    public @NonNull ShadowListKey registerShadowRenderer(@NonNull Supplier<@NonNull Texture @NonNull []> desc,
-            @NonNull ShadowListRenderer renderer) {
+    public ShadowListKey registerShadowRenderer(Supplier<Texture[]> desc,
+            ShadowListRenderer renderer) {
         ShadowListKey key = desc_to_shadow_key.get(desc);
         if (key != null)
             return key;
         return register(desc, renderer);
     }
 
-    private @NonNull ShadowListKey register(@NonNull Supplier<@NonNull Texture @NonNull []> desc,
-            @NonNull ShadowListRenderer renderer) {
+    private ShadowListKey register(Supplier<Texture[]> desc,
+            ShadowListRenderer renderer) {
         int index = shadow_renderer_lookup.size();
         shadow_renderer_lookup.add(renderer);
         ShadowListKey key = new ShadowListKey(index);
@@ -161,15 +160,15 @@ public final class RenderQueues implements AutoCloseable {
         return key;
     }
 
-    public @NonNull ShadowListRenderer getShadowRenderer(@NonNull ShadowListKey key) {
+    public ShadowListRenderer getShadowRenderer(ShadowListKey key) {
         return shadow_renderer_lookup.get(key.key());
     }
 
-    public @NonNull SpriteKey register(@NonNull SpriteFile sprite_file) {
+    public SpriteKey register(SpriteFile sprite_file) {
         return register(sprite_file, 0);
     }
 
-    public @NonNull SpriteKey register(@NonNull SpriteFile sprite_file, int tex_index) {
+    public SpriteKey register(SpriteFile sprite_file, int tex_index) {
         int index = sprite_list_lookup.size();
         SpriteList sprite_list = Resources.findResource(sprite_file);
 
@@ -180,11 +179,11 @@ public final class RenderQueues implements AutoCloseable {
         return new SpriteKey(index, sprite_list.getBounds(), animation_types);
     }
 
-    public @NonNull SpriteRenderer getRenderer(@NonNull SpriteKey key) {
+    public SpriteRenderer getRenderer(SpriteKey key) {
         return sprite_list_lookup.get(key.key());
     }
 
-    public @NonNull SpriteKey registerDynamicSprite(@NonNull SpriteList sprite_list, @NonNull Texture texture) {
+    public SpriteKey registerDynamicSprite(SpriteList sprite_list, Texture texture) {
         int index = sprite_list_lookup.size();
 
         SpriteRenderer sprite_renderer = new SpriteRenderer(sprite_list, texture, spriteRenderer);
@@ -194,20 +193,20 @@ public final class RenderQueues implements AutoCloseable {
         return new SpriteKey(index, sprite_list.getBounds(), animation_types);
     }
 
-    public @NonNull SpriteKey registerDynamicSprite(@NonNull SpriteList sprite_list, @NonNull TextureKey texture_key) {
+    public SpriteKey registerDynamicSprite(SpriteList sprite_list, TextureKey texture_key) {
         return registerDynamicSprite(sprite_list, getTexture(texture_key));
     }
 
-    public @NonNull SpriteKey registerQuadSprite(float u1, float v1, float u2, float v2, @NonNull Texture texture) {
+    public SpriteKey registerQuadSprite(float u1, float v1, float u2, float v2, Texture texture) {
         SpriteList sprite_list = SpriteList.createQuadInstance(u1, v1, u2, v2);
         return registerDynamicSprite(sprite_list, texture);
     }
 
-    public @NonNull InstancedSpriteRenderer getInstancedRenderer() {
+    public InstancedSpriteRenderer getInstancedRenderer() {
         return spriteRenderer;
     }
 
-    private void registerSpriteRenderer(@NonNull SpriteRenderer sprite_renderer, @NonNull String location) {
+    private void registerSpriteRenderer(SpriteRenderer sprite_renderer, String location) {
         if (sprite_renderer.getSpriteList().getSprite(0).modulateColor()) {
             blend_sprite_renderers.add(sprite_renderer);
         } else if (location.contains("plant") || location.contains("leaf")) {
@@ -217,7 +216,7 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    public void getAllPicks(@NonNull Consumer<@NonNull Target> pick_list) {
+    public void getAllPicks(Consumer<Target> pick_list) {
         for (SpriteRenderer spriteRenderer : sprite_renderers) {
             spriteRenderer.getAllPicks(pick_list);
         }
@@ -226,20 +225,20 @@ public final class RenderQueues implements AutoCloseable {
         }
     }
 
-    public void renderAll(@NonNull RenderContext context, @NonNull CameraState camera_state,
-            @NonNull MatrixStack projectionStack) {
+    public void renderAll(RenderContext context, CameraState camera_state,
+            MatrixStack projectionStack) {
         sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
-    public void renderPlants(@NonNull RenderContext context, @NonNull CameraState camera_state,
-            @NonNull MatrixStack projectionStack) {
+    public void renderPlants(RenderContext context, CameraState camera_state,
+            MatrixStack projectionStack) {
         plant_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
 
-    public void renderBlends(@NonNull RenderContext context, @NonNull CameraState camera_state,
-            @NonNull MatrixStack projectionStack) {
+    public void renderBlends(RenderContext context, CameraState camera_state,
+            MatrixStack projectionStack) {
         blend_sprite_renderers.forEach(SpriteRenderer::renderAll);
         spriteRenderer.renderAll(context, camera_state, projectionStack);
     }
@@ -250,8 +249,8 @@ public final class RenderQueues implements AutoCloseable {
         blend_sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
     }
 
-    public void renderShadows(@NonNull RenderContext context, @NonNull LandscapeRenderer renderer,
-            @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+    public void renderShadows(RenderContext context, LandscapeRenderer renderer,
+            MatrixStack modelViewStack, MatrixStack projectionStack) {
         decalRenderer.clear();
         try (var _ = decalRenderer.setup(context, renderer, modelViewStack, projectionStack)) {
             for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {

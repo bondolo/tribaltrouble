@@ -15,7 +15,6 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.gui.render.UIRenderer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class LogoScreen extends CameraDelegate<StaticCamera> implements Updatable<TimerAnimation> {
@@ -26,14 +25,14 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     private static final int overlay_image_height = 600;
 
     private final @Nullable GUIIcon overlay;
-    private final @NonNull TimerAnimation delay_timer;
-    private final @NonNull GUIRoot client_root;
+    private final TimerAnimation delay_timer;
+    private final GUIRoot client_root;
     private final @Nullable Fadable fadable;
     private final UIRenderer renderer;
     private boolean fade_started = false;
 
-    public LogoScreen(@NonNull GUIRoot gui_root, @Nullable Texture logo, @Nullable Fadable fadable,
-            @NonNull GUIRoot client_root, UIRenderer renderer) {
+    public LogoScreen(GUIRoot gui_root, @Nullable Texture logo, @Nullable Fadable fadable,
+            GUIRoot client_root, UIRenderer renderer) {
         super(gui_root, new StaticCamera(new CameraState()));
         this.delay_timer = new TimerAnimation(gui_root.getAnimationManager(), this, DELAY);
         this.client_root = client_root;
@@ -64,7 +63,7 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     }
 
     @Override
-    public void update(@NonNull TimerAnimation anim) {
+    public void update(TimerAnimation anim) {
         delay_timer.stop();
         fade();
     }
@@ -84,7 +83,7 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED || event.getPhase() == InputPhase.REPEAT) {
             fade();
             event.consume();
@@ -93,7 +92,7 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     }
 
     @Override
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         fade();
     }
 }

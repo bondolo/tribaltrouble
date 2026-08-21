@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class DieBehaviour implements Behaviour {
     private static final float SECONDS_PER_DEATH = 3f;
@@ -16,20 +15,20 @@ public final class DieBehaviour implements Behaviour {
         MOVING
     }
 
-    private final @NonNull Unit unit;
+    private final Unit unit;
     private float anim_time = SECONDS_PER_DEATH;
-    private @NonNull DieState state = DieState.DYING;
+    private DieState state = DieState.DYING;
 
     private float offset_z = 0;
     private float dz = 0;
 
-    public DieBehaviour(@NonNull Unit unit) {
+    public DieBehaviour(Unit unit) {
         this.unit = unit;
         unit.switchAnimation(1f / anim_time, Unit.Animation.DYING);
     }
 
     @Override
-    public @NonNull State animate(float t) {
+    public State animate(float t) {
         anim_time -= t;
         offset_z -= dz * t;
         if (anim_time < 0)

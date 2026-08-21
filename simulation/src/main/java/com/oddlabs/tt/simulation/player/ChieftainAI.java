@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.player;
 
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 
 /**
@@ -11,7 +10,7 @@ import org.jspecify.annotations.NonNull;
 public abstract sealed class ChieftainAI permits NativeChieftainAI, VikingChieftainAI {
     public abstract void decide(Unit chieftain);
 
-    protected final int numEnemyUnits(@NonNull Player owner) {
+    protected final int numEnemyUnits(Player owner) {
         return owner.getWorld().getPlayers().stream()
                 .filter(owner::isEnemy)
                 .mapToInt(p -> p.getUnits().size())

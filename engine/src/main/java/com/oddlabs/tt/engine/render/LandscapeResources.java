@@ -5,7 +5,6 @@ import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -18,12 +17,12 @@ import java.util.stream.IntStream;
 public final class LandscapeResources implements LandscapeBoundsProvider {
     public static final int SUPPLY_FRAGMENT_COUNT = 5;
 
-    private final @NonNull SpriteKey @NonNull [] rock_fragment_sprites;
-    private final @NonNull SpriteKey @NonNull [] iron_fragment_sprites;
-    private final @NonNull EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(Terrain.class);
-    private final @NonNull SpriteKey chicken;
+    private final SpriteKey[] rock_fragment_sprites;
+    private final SpriteKey[] iron_fragment_sprites;
+    private final EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(Terrain.class);
+    private final SpriteKey chicken;
 
-    public LandscapeResources(@NonNull RenderQueues queues) {
+    public LandscapeResources(RenderQueues queues) {
         int num_progress = 13;
         ProgressListener.progress(10f / num_progress);
 
@@ -63,28 +62,28 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
         ProgressListener.progress(1f / num_progress);
     }
 
-    public @NonNull SpriteKey getChicken() {
+    public SpriteKey getChicken() {
         return chicken;
     }
 
     @Override
-    public @NonNull SpriteKey getRockBounds(int index) {
+    public SpriteKey getRockBounds(int index) {
         return rock_fragment_sprites[index % rock_fragment_sprites.length];
     }
 
     @Override
-    public @NonNull SpriteKey getIronBounds(int index) {
+    public SpriteKey getIronBounds(int index) {
         return iron_fragment_sprites[index % iron_fragment_sprites.length];
     }
 
     @Override
-    public @NonNull SpriteKey getPlantBounds(Terrain terrain, int index) {
+    public SpriteKey getPlantBounds(Terrain terrain, int index) {
         var sprites = plant_sprites.get(terrain);
         return sprites[index % sprites.length];
     }
 
     @Override
-    public @NonNull SpriteKey getChickenBounds() {
+    public SpriteKey getChickenBounds() {
         return chicken;
     }
 }

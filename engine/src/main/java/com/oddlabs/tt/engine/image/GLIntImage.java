@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.image;
 
 import com.oddlabs.procedural.Layer;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.stb.STBImage;
@@ -11,31 +10,30 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Objects;
 
 public final class GLIntImage extends GLImage {
-    private final @NonNull IntBuffer pixels;
+    private final IntBuffer pixels;
 
     @Override
     public int getPixelSize() {
         return Integer.BYTES;
     }
 
-    public @NonNull IntBuffer getIntPixels() {
+    public IntBuffer getIntPixels() {
         return pixels;
     }
 
-    public GLIntImage(int width, int height, @NonNull ByteBuffer pixel_data, int format) {
+    public GLIntImage(int width, int height, ByteBuffer pixel_data, int format) {
         super(width, height, pixel_data, format);
         pixels = pixel_data.asIntBuffer();
     }
 
     public GLIntImage(int width, int height, int format) {
-        this(width, height, Objects.requireNonNull(BufferUtils.createByteBuffer(width * height * Integer.BYTES)),
+        this(width, height, BufferUtils.createByteBuffer(width * height * Integer.BYTES),
                 format);
     }
 
-    public GLIntImage(@NonNull Layer layer) {
+    public GLIntImage(Layer layer) {
         this(layer.getWidth(), layer.getHeight(), GL11.GL_RGBA);
         for (int y = 0; y < getHeight(); y++) {
             for (int x = 0; x < getWidth(); x++) {
@@ -50,17 +48,17 @@ public final class GLIntImage extends GLImage {
     }
 
     @Override
-    public @NonNull GLImage createImage(int width, int height, int format) {
+    public GLImage createImage(int width, int height, int format) {
         return new GLIntImage(width, height, format);
     }
 
     @Override
-    public @NonNull GLImage createFromLayer(@NonNull Layer layer, int format) {
+    public GLImage createFromLayer(Layer layer, int format) {
         return new GLIntImage(layer);
     }
 
     @Override
-    public @NonNull GLImage scale(int newWidth, int newHeight) {
+    public GLImage scale(int newWidth, int newHeight) {
         if (newWidth == getWidth() && newHeight == getHeight()) {
             return this;
         }
@@ -77,7 +75,7 @@ public final class GLIntImage extends GLImage {
         pixels.put(y * getWidth() + x, pixel);
     }
 
-    public static @NonNull GLIntImage loadImage(@NonNull URL url) throws IOException {
+    public static GLIntImage loadImage(URL url) throws IOException {
         ByteBuffer fileData = com.oddlabs.tt.base.util.Utils.ioResourceToByteBuffer(url);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer w = stack.mallocInt(1);

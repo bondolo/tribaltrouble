@@ -2,7 +2,6 @@ package com.oddlabs.tt.audio;
 
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -22,47 +21,47 @@ class AudioFileTest {
         };
 
         @Override
-        public @NonNull Audio createAudio(@NonNull URL file) {
+        public Audio createAudio(URL file) {
             return dummyAudio;
         }
 
         @Override
-        public @NonNull AudioPlayer newAudio(float x, float y, float z, @NonNull AudioParameters params) {
+        public AudioPlayer newAudio(float x, float y, float z, AudioParameters params) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public @NonNull AudioManager setListenerOrientation(@NonNull Vector3fc forward, @NonNull Vector3fc up) {
+        public AudioManager setListenerOrientation(Vector3fc forward, Vector3fc up) {
             return this;
         }
 
         @Override
-        public @NonNull AudioManager setListenerPosition(float x, float y, float z) {
+        public AudioManager setListenerPosition(float x, float y, float z) {
             return this;
         }
 
         @Override
-        public @NonNull AudioManager setHeadphoneMode(boolean enabled) {
+        public AudioManager setHeadphoneMode(boolean enabled) {
             return this;
         }
 
         @Override
-        public @NonNull AudioManager setMasterGain(float gain) {
+        public AudioManager setMasterGain(float gain) {
             return this;
         }
 
         @Override
-        public @NonNull AudioManager setMusicGain(float gain) {
+        public AudioManager setMusicGain(float gain) {
             return this;
         }
 
         @Override
-        public @NonNull AudioManager setSfxGain(float gain) {
+        public AudioManager setSfxGain(float gain) {
             return this;
         }
 
         @Override
-        public @NonNull AudioManager setSfxEnabled(boolean enabled) {
+        public AudioManager setSfxEnabled(boolean enabled) {
             return this;
         }
 
@@ -102,7 +101,7 @@ class AudioFileTest {
         }
 
         @Override
-        public @NonNull Vector3fc getListenerPosition() {
+        public Vector3fc getListenerPosition() {
             return new Vector3f();
         }
     }

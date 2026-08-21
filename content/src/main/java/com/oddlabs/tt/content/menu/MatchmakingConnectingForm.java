@@ -16,7 +16,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.MatchmakingListener;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -27,14 +26,14 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
     private final Menu main_menu;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(MatchmakingConnectingForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final GUIRoot gui_root;
-    private final @NonNull NetworkSelector network;
+    private final NetworkSelector network;
 
-    public MatchmakingConnectingForm(@NonNull NetworkSelector network, GUIRoot gui_root, Form parent_form,
+    public MatchmakingConnectingForm(NetworkSelector network, GUIRoot gui_root, Form parent_form,
             Menu main_menu, Login login, LoginDetails login_details) {
         this.parent_form = parent_form;
         this.main_menu = main_menu;

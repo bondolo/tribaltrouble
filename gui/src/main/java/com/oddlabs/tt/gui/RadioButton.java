@@ -3,12 +3,11 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import org.jspecify.annotations.NonNull;
 
 public final class RadioButton extends RadioButtonGroupElement {
     private boolean pressed = false;
 
-    public RadioButton(boolean marked, @NonNull RadioButtonGroup group, @NonNull String text) {
+    public RadioButton(boolean marked, RadioButtonGroup group, String text) {
         super(marked, group);
         Label label = new Label(text, Skin.getSkin().getEditFont());
         label.setPos(Skin.getSkin().getRadioButtonMarked().get(ModeIconQuads.Mode.NORMAL).getWidth(), (Skin.getSkin()
@@ -20,17 +19,17 @@ public final class RadioButton extends RadioButtonGroupElement {
     }
 
     @Override
-    protected void mouseReleased(@NonNull MouseButton button, int x, int y) {
+    protected void mouseReleased(MouseButton button, int x, int y) {
         pressed = false;
     }
 
     @Override
-    protected void mousePressed(@NonNull MouseButton button, int x, int y) {
+    protected void mousePressed(MouseButton button, int x, int y) {
         pressed = true;
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         ModeIconQuads.Mode skinMode = isDisabled()
                 ? ModeIconQuads.Mode.DISABLED
                 : isActive()

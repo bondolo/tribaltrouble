@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.model.BoundingBox;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,8 +25,8 @@ public final class PoisonFog extends Model implements Magic {
     private final float hit_chance;
     private final float interval;
     private final int damage;
-    private final @NonNull Unit src;
-    private final @NonNull Player owner;
+    private final Unit src;
+    private final Player owner;
     private final float start_x;
     private final float start_y;
     private final float offset_z;
@@ -38,7 +37,7 @@ public final class PoisonFog extends Model implements Magic {
     private int num_hits = 0;
 
     public PoisonFog(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance, float interval,
-            float time, int damage, @NonNull Unit src) {
+            float time, int damage, Unit src) {
         super(src.getOwner().getWorld());
         this.hit_radius = hit_radius;
         this.hit_chance = hit_chance;
@@ -80,7 +79,7 @@ public final class PoisonFog extends Model implements Magic {
     }
 
     @Override
-    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+    protected BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 

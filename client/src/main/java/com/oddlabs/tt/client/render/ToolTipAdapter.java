@@ -17,7 +17,6 @@ import com.oddlabs.tt.simulation.behaviour.Controller;
 import com.oddlabs.tt.simulation.behaviour.GatherController;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.gui.ToolTip;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,15 +25,15 @@ import java.util.Objects;
  * Adapter that maps simulation-side ModelToolTip entities to the UI ToolTip representation.
  */
 public final class ToolTipAdapter implements ToolTip {
-    private final @NonNull ModelToolTip model;
-    private final @NonNull Player local_player;
+    private final ModelToolTip model;
+    private final Player local_player;
 
-    public ToolTipAdapter(@NonNull ModelToolTip model, @NonNull Player local_player) {
+    public ToolTipAdapter(ModelToolTip model, Player local_player) {
         this.local_player = local_player;
         this.model = model;
     }
 
-    private void visitPlayer(@NonNull ToolTipBox tool_tip, @NonNull Player player) {
+    private void visitPlayer(ToolTipBox tool_tip, Player player) {
         tool_tip.append(player.getPlayerInfo().getName());
         tool_tip.append(" - ");
         //      tool_tip.append(team_tip);
@@ -46,7 +45,7 @@ public final class ToolTipAdapter implements ToolTip {
         //      }
     }
 
-    private void visitSelectable(@NonNull ToolTipBox tool_tip, @NonNull Selectable<?> selectable) {
+    private void visitSelectable(ToolTipBox tool_tip, Selectable<?> selectable) {
         assert !selectable.isDead();
         visitPlayer(tool_tip, selectable.getOwner());
         /*      if (Renderer.getRenderer().getSettings().developer_mode) {
@@ -69,18 +68,18 @@ public final class ToolTipAdapter implements ToolTip {
         }
     }
 
-    private void visitSceneryModel(@NonNull ToolTipBox tool_tip, @NonNull SceneryModel model) {
+    private void visitSceneryModel(ToolTipBox tool_tip, SceneryModel model) {
         String name = model.getName();
         if (name != null)
             tool_tip.append(name);
     }
 
-    private void visitSupply(@NonNull ToolTipBox tool_tip, @NonNull Supply supply) {
+    private void visitSupply(ToolTipBox tool_tip, Supply supply) {
         tool_tip.append(supply.getName());
         tool_tip.append(GUIIcons.getIcons().getToolTipIcon(supply.getSupplyType()));
     }
 
-    private void visitBuilding(@NonNull ToolTipBox tool_tip, @NonNull Building building) {
+    private void visitBuilding(ToolTipBox tool_tip, Building building) {
         visitSelectable(tool_tip, building);
         tool_tip.append(building.getTemplate().getName());
         var health = (float) building.getHitPoints() / building.getTemplate().getMaxHitPoints();
@@ -93,7 +92,7 @@ public final class ToolTipAdapter implements ToolTip {
 
     }
 
-    private void visitUnit(@NonNull ToolTipBox tool_tip, @NonNull Unit unit) {
+    private void visitUnit(ToolTipBox tool_tip, Unit unit) {
         visitSelectable(tool_tip, unit);
         String name = unit.getName();
         tool_tip.append(Objects.requireNonNullElseGet(name, () -> unit.getTemplate().getName()));

@@ -5,7 +5,6 @@ import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;
 import org.joml.Matrix4f;
 import org.joml.Vector3fc;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -17,17 +16,17 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     private static final float BASE_Z_OFFSET = 3.5f;
     private static final float FADEOUT_DURATION = 0.25f;
 
-    private final @NonNull SpriteKey emojiSprite;
+    private final SpriteKey emojiSprite;
     private final float duration;
     private final float maxDistance;
     private final @Nullable Vector3fc customOffset;
     private float age;
 
-    public VisualSoundAccessory(@NonNull SpriteKey emojiSprite, float duration, float maxDistance) {
+    public VisualSoundAccessory(SpriteKey emojiSprite, float duration, float maxDistance) {
         this(emojiSprite, duration, maxDistance, null);
     }
 
-    public VisualSoundAccessory(@NonNull SpriteKey emojiSprite, float duration, float maxDistance,
+    public VisualSoundAccessory(SpriteKey emojiSprite, float duration, float maxDistance,
             @Nullable Vector3fc customOffset) {
         this.emojiSprite = emojiSprite;
         this.duration = duration;
@@ -42,7 +41,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isVisible(@NonNull Model parent, @NonNull CameraState camera) {
+    public boolean isVisible(Model parent, CameraState camera) {
         if (!Renderer.getRenderer().getSettings().accessibility.sound_emojis) {
             return false;
         }
@@ -83,7 +82,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public void getRelativeTransform(@NonNull Matrix4f dest, @NonNull Model parent) {
+    public void getRelativeTransform(Matrix4f dest, Model parent) {
         float mountOffset = 0.0f;
         if (parent instanceof Unit unit) {
             if (unit.isRegistered() && !unit.isDead()) {

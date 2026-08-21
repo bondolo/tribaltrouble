@@ -18,7 +18,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.net.ServerMessageBundler;
-import org.jspecify.annotations.NonNull;
 
 import java.util.function.IntConsumer;
 
@@ -34,7 +33,7 @@ public class GeneralPanel extends Panel {
 
     private final PulldownMenu<Gamespeed> pm_gamespeed = new PulldownMenu<>();
 
-    public GeneralPanel(@NonNull GUIRoot gui_root, @NonNull IntConsumer onGamespeedChange) {
+    public GeneralPanel(GUIRoot gui_root, IntConsumer onGamespeedChange) {
         super(AbstractOptionsMenu.i18n("general_settings_caption"));
 
         // Invert camera

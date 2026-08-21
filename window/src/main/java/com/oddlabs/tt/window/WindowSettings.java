@@ -1,7 +1,6 @@
 package com.oddlabs.tt.window;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -32,7 +31,7 @@ public final class WindowSettings implements Serializable, PropertiesSerializer 
     public final boolean vsync = true;
 
     @Override
-    public void saveToProperties(@NonNull Properties props) {
+    public void saveToProperties(Properties props) {
         WindowSettings defaults = new WindowSettings();
         setProperty(props, "view_width", view_width, defaults.view_width);
         setProperty(props, "view_height", view_height, defaults.view_height);
@@ -46,7 +45,7 @@ public final class WindowSettings implements Serializable, PropertiesSerializer 
     }
 
     @Override
-    public void loadFromProperties(@NonNull Properties props) {
+    public void loadFromProperties(Properties props) {
         view_width = getInt(props, "view_width", view_width);
         view_height = getInt(props, "view_height", view_height);
         view_freq = getInt(props, "view_freq", view_freq);

@@ -1,16 +1,14 @@
 package com.oddlabs.tt.engine.util;
 
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ShortBuffer;
 import java.util.Arrays;
-import java.util.Objects;
 
 public final class Stitcher {
-    public static <V extends Vertex<V>> @NonNull ShortBuffer stitch(@NonNull V @NonNull [] vertices)
+    public static <V extends Vertex<V>> ShortBuffer stitch(V[] vertices)
             throws IllegalArgumentException {
-        ShortBuffer indices = Objects.requireNonNull(BufferUtils.createShortBuffer(vertices.length * 3));
+        ShortBuffer indices = BufferUtils.createShortBuffer(vertices.length * 3);
         vertices = vertices.clone();
         Arrays.sort(vertices);
         int start_index = getStartIndex(vertices);
@@ -31,7 +29,7 @@ public final class Stitcher {
         return indices;
     }
 
-    private static <V extends Vertex<V>> int getStartIndex(@NonNull V @NonNull [] vertices)
+    private static <V extends Vertex<V>> int getStartIndex(V[] vertices)
             throws IllegalArgumentException {
         int vertex_index;
         for (vertex_index = 0; vertex_index < vertices.length; vertex_index++) {

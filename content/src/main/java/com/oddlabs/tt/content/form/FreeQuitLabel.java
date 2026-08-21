@@ -9,7 +9,6 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -17,14 +16,14 @@ import java.util.ResourceBundle;
 public final class FreeQuitLabel extends Label implements Animated {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(FreeQuitLabel.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull World world;
-    private final @NonNull AnimationManager manager;
+    private final World world;
+    private final AnimationManager manager;
 
-    public FreeQuitLabel(@NonNull World world, @NonNull AnimationManager manager) {
+    public FreeQuitLabel(World world, AnimationManager manager) {
         super("", Skin.getSkin().getEditFont(), 300);
         this.world = world;
         this.manager = manager;

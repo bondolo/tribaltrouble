@@ -21,7 +21,6 @@ import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.PathTracker;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -59,12 +58,12 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     private final @Nullable UnitSupplyContainer supply_container;
     private final @Nullable String name;
-    private final @NonNull PathTracker path_tracker;
-    private final @NonNull EnumMap<MagicType, Float> magic_energy = new EnumMap<>(MagicType.class);
+    private final PathTracker path_tracker;
+    private final EnumMap<MagicType, Float> magic_energy = new EnumMap<>(MagicType.class);
     private @Nullable MagicType last_magic_type = null;
 
     private int hit_points;
-    private @NonNull Animation animation = Animation.IDLING;
+    private Animation animation = Animation.IDLING;
     private float anim_speed;
     private float anim_time;
     private int path_penalty;
@@ -76,23 +75,23 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     private Building mounted_building;
     private float range_bonus;
 
-    public Unit(@NonNull Player owner, float x, float y, @Nullable Target rally_point,
-            @NonNull UnitTemplate unit_template) {
+    public Unit(Player owner, float x, float y, @Nullable Target rally_point,
+            UnitTemplate unit_template) {
         this(owner, x, y, rally_point, unit_template, null);
     }
 
-    public Unit(@NonNull Player owner, float x, float y, @Nullable Target rally_point,
-            @NonNull UnitTemplate unit_template, @Nullable String name) {
+    public Unit(Player owner, float x, float y, @Nullable Target rally_point,
+            UnitTemplate unit_template, @Nullable String name) {
         this(owner, x, y, rally_point, unit_template, name, true);
     }
 
-    public Unit(@NonNull Player owner, float x, float y, @Nullable Target rally_point,
-            @NonNull UnitTemplate unit_template, @Nullable String name, boolean notify_by_chieftain) {
+    public Unit(Player owner, float x, float y, @Nullable Target rally_point,
+            UnitTemplate unit_template, @Nullable String name, boolean notify_by_chieftain) {
         this(owner, x, y, rally_point, unit_template, name, notify_by_chieftain, false);
     }
 
-    public Unit(@NonNull Player owner, float x, float y, @Nullable Target rally_point,
-            @NonNull UnitTemplate unit_template, @Nullable String name, boolean notify_by_chieftain,
+    public Unit(Player owner, float x, float y, @Nullable Target rally_point,
+            UnitTemplate unit_template, @Nullable String name, boolean notify_by_chieftain,
             boolean grid_targets_only) {
         super(owner, unit_template);
         this.name = name;
@@ -138,7 +137,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     @Override
-    protected @NonNull Unit self() {
+    protected Unit self() {
         return this;
     }
 
@@ -152,7 +151,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         if (!isDead())
             return "Unit: " + hashCode() + " | getOwner() = " + getOwner() + " | mounted = " + mounted
                     + " | getGridX() = " + getGridX() + " | getGridY() = " + getGridY();
@@ -194,7 +193,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     @Override
-    public AttackScanFilter.@NonNull Priority getAttackPriority() {
+    public AttackScanFilter.Priority getAttackPriority() {
         assert !isDead();
         return getTemplate().getAbilities().hasAbilities(Abilities.BUILD)
                 ? AttackScanFilter.Priority.PEON
@@ -219,7 +218,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         findInitialPosition(getPositionX(), getPositionY(), true);
     }
 
-    public void mount(@NonNull Building building) {
+    public void mount(Building building) {
         assert !isDead();
         mounted_building = building;
         mount_offset = building.getTemplate().getMountOffset();
@@ -248,7 +247,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
             return getTemplate().getMetersPerSecond();
     }
 
-    public void aimAtTarget(@NonNull Target target) {
+    public void aimAtTarget(Target target) {
         assert !isDead();
         float dx = target.getPositionX() - getPositionX();
         float dy = target.getPositionY() - getPositionY();
@@ -263,12 +262,12 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         switchAnimation(IDLE_SPEED, Animation.IDLING);
     }
 
-    public @NonNull WeaponFactory getWeaponFactory() {
+    public WeaponFactory getWeaponFactory() {
         assert !isDead();
         return getTemplate().getWeaponFactory();
     }
 
-    public float getRange(@NonNull Target target) {
+    public float getRange(Target target) {
         assert !isDead();
         return getWeaponFactory().getRange() + range_bonus + target.getSize();
     }
@@ -280,7 +279,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
 
     @Override
-    protected @NonNull BoundingBox @NonNull [] getLocalBounds() {
+    protected BoundingBox[] getLocalBounds() {
         return getTemplate().getBounds();
     }
 
@@ -296,25 +295,25 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         }
     }
 
-    private float getMagicEnergy(@NonNull MagicType type) {
+    private float getMagicEnergy(MagicType type) {
         return magic_energy.getOrDefault(type, 0f);
     }
 
-    private void setMagicEnergy(@NonNull MagicType type, float value) {
+    private void setMagicEnergy(MagicType type, float value) {
         magic_energy.put(type, value);
     }
 
-    public void increaseMagicEnergy(@NonNull MagicType type, float amount) {
+    public void increaseMagicEnergy(MagicType type, float amount) {
         float nextVal = Math.min(MAX_MAGIC_ENERGY.get(type), getMagicEnergy(type) + amount);
         setMagicEnergy(type, nextVal);
     }
 
-    public void maxMagicEnergy(@NonNull MagicType type) {
+    public void maxMagicEnergy(MagicType type) {
         setMagicEnergy(type, MAX_MAGIC_ENERGY.get(type));
     }
 
     @Override
-    public @NonNull PathTracker getTracker() {
+    public PathTracker getTracker() {
         assert !isDead();
         return path_tracker;
     }
@@ -379,7 +378,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     }
      */
     @Override
-    public void hit(int damage, float direction_x, float direction_y, @NonNull Player owner) {
+    public void hit(int damage, float direction_x, float direction_y, Player owner) {
         super.hit(damage, direction_x, direction_y, owner);
         if (mounted) {
             mounted_building.hit(damage, direction_x, direction_y, owner);
@@ -409,7 +408,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         forceDecide();
     }
 
-    public boolean canAttack(@NonNull Target target, boolean kill_friendly) {
+    public boolean canAttack(Target target, boolean kill_friendly) {
         assert !isDead();
         if (!(target instanceof Selectable<?> selectable) || !getAbilities().hasAbilities(Abilities.ATTACK))
             return false;
@@ -417,17 +416,17 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         return kill_friendly || getOwner().isEnemy(target_player);
     }
 
-    private boolean canBuild(@NonNull Target target) {
+    private boolean canBuild(Target target) {
         return target instanceof Building building &&
                 getAbilities().hasAbilities(Abilities.BUILD) &&
                 !building.isPlaced();
     }
 
-    private boolean canGather(@NonNull Target target) {
+    private boolean canGather(Target target) {
         return target instanceof Supply && getAbilities().hasAbilities(Abilities.BUILD);
     }
 
-    private boolean canRepair(@NonNull Target target, boolean action_repair) {
+    private boolean canRepair(Target target, boolean action_repair) {
         return target instanceof Building building &&
                 getAbilities().hasAbilities(Abilities.BUILD) &&
                 (action_repair || !building.getAbilities().hasAbilities(Abilities.SUPPLY_CONTAINER) || !building
@@ -436,7 +435,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 !getOwner().isEnemy(building.getOwner()) && building.isPlaced() && building.isDamaged();
     }
 
-    private boolean canEnter(@NonNull Target target) {
+    private boolean canEnter(Target target) {
         return target instanceof Building building &&
                 !getAbilities().hasAbilities(Abilities.MAGIC) &&
                 building.getUnitContainer().isPresent() &&
@@ -449,13 +448,13 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         return getCurrentController() instanceof StunController ? 0 : super.getDefenseChance();
     }
 
-    private void walkToTarget(@NonNull Target target, boolean scan_attack) {
+    private void walkToTarget(Target target, boolean scan_attack) {
         Target walkable_target = getUnitGrid().findGridTargets(target.getGridX(), target.getGridY(), 1, false)[0];
         pushController(new WalkController(this, walkable_target, scan_attack));
     }
 
     @Override
-    public void setTarget(@NonNull Target target, @NonNull Action action, boolean aggressive) {
+    public void setTarget(Target target, Action action, boolean aggressive) {
         if (target == this)
             return;
         assert !target.isDead() : "Setting dead target";
@@ -514,7 +513,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         }
     }
 
-    public boolean canDoMagic(@NonNull MagicType type) {
+    public boolean canDoMagic(MagicType type) {
         return !isDead() && getOwner().canDoMagic(type) && getMagicEnergy(type) == MAX_MAGIC_ENERGY.get(type);
     }
 
@@ -522,7 +521,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         return canDoMagic(getOwner().getRaceInfo().getMagicType(slotIndex));
     }
 
-    public void doMagic(@NonNull MagicType type, boolean clear_stack) {
+    public void doMagic(MagicType type, boolean clear_stack) {
         if (canDoMagic(type)) {
             if (clear_stack)
                 clearControllerStack();
@@ -539,11 +538,11 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         return last_magic_type;
     }
 
-    public float getMagicProgress(@NonNull MagicType type) {
+    public float getMagicProgress(MagicType type) {
         return getMagicEnergy(type) / MAX_MAGIC_ENERGY.get(type);
     }
 
-    public void switchAnimation(float anim_speed, @NonNull Animation animation) {
+    public void switchAnimation(float anim_speed, Animation animation) {
         assert !isDead();
         this.anim_speed = anim_speed;
         if (this.animation != animation) {
@@ -582,7 +581,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         }
     }
 
-    public @NonNull PathTracker getPathTracker() {
+    public PathTracker getPathTracker() {
         return path_tracker;
     }
 }

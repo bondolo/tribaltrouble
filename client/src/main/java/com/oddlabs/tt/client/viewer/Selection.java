@@ -3,22 +3,21 @@ package com.oddlabs.tt.client.viewer;
 import com.oddlabs.tt.simulation.model.Army;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 
 public final class Selection {
     private final @Nullable Army[] shortcut_armies = new Army[10];
-    private final @NonNull Player local_player;
-    private @NonNull SelectionArmy current_selection;
+    private final Player local_player;
+    private SelectionArmy current_selection;
 
-    public Selection(@NonNull Player local_player) {
+    public Selection(Player local_player) {
         this.local_player = local_player;
         clearSelection();
     }
 
-    public @NonNull SelectionArmy getCurrentSelection() {
+    public SelectionArmy getCurrentSelection() {
         return current_selection;
     }
 
@@ -30,7 +29,7 @@ public final class Selection {
         Arrays.fill(shortcut_armies, null);
     }
 
-    void removeFromArmies(@NonNull Selectable<?> selectable) {
+    void removeFromArmies(Selectable<?> selectable) {
         current_selection.remove(selectable);
         for (Army shortcut_armie : shortcut_armies) {
             if (shortcut_armie != null) {

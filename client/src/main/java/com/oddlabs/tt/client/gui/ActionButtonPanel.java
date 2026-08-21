@@ -38,7 +38,6 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -82,52 +81,52 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     private final Group build_group = new NonFocusGroup();
     private final Group army_group = new NonFocusGroup();
     private final Group transport_group = new NonFocusGroup();
-    private final @NonNull NonFocusIconButton tower_attack_button;
-    private final @NonNull NonFocusIconButton tower_exit_button;
+    private final NonFocusIconButton tower_attack_button;
+    private final NonFocusIconButton tower_exit_button;
     //	private boolean tower_exit_button_disabled;
-    private final @NonNull NonFocusIconButton move_button;
-    private final @NonNull NonFocusIconButton attack_button;
-    private final @NonNull NonFocusIconButton gather_repair_button;
-    private final @NonNull NonFocusIconButton quarters_button;
+    private final NonFocusIconButton move_button;
+    private final NonFocusIconButton attack_button;
+    private final NonFocusIconButton gather_repair_button;
+    private final NonFocusIconButton quarters_button;
     //	private boolean quarters_button_disabled;
-    private final @NonNull RechargeButton magic1_button;
-    private final @NonNull RechargeButton magic2_button;
-    private final @NonNull NonFocusIconButton armory_button;
+    private final RechargeButton magic1_button;
+    private final RechargeButton magic2_button;
+    private final NonFocusIconButton armory_button;
     //	private boolean armory_button_disabled;
-    private final @NonNull NonFocusIconButton tower_button;
+    private final NonFocusIconButton tower_button;
     //	private boolean tower_button_disabled;
-    private final @NonNull NonFocusIconButton harvest_button;
-    private final @NonNull NonFocusIconButton build_button;
-    private final @NonNull NonFocusIconButton army_button;
-    private final @NonNull NonFocusIconButton transport_button;
-    private final @NonNull StatusIcon unit_status;
-    private final @NonNull StatusIcon weapon_rock_status;
-    private final @NonNull StatusIcon weapon_iron_status;
-    private final @NonNull StatusIcon weapon_rubber_status;
-    private final @NonNull StatusIcon tree_status;
-    private final @NonNull StatusIcon rock_status;
-    private final @NonNull StatusIcon iron_status;
-    private final @NonNull StatusIcon rubber_status;
-    private final @NonNull WatchStatusIcon quarters_unit_status;
-    private final @NonNull DeploySpinner quarters_peon_button;
-    private final @NonNull ChieftainButton quarters_chieftain_button;
-    private final @NonNull DeploySpinner harvest_tree_button;
-    private final @NonNull DeploySpinner harvest_rock_button;
-    private final @NonNull DeploySpinner harvest_iron_button;
-    private final @NonNull DeploySpinner harvest_rubber_button;
-    private final @NonNull BuildSpinner build_weapon_rock_button;
-    private final @NonNull BuildSpinner build_weapon_iron_button;
-    private final @NonNull BuildSpinner build_weapon_rubber_button;
-    private final @NonNull DeploySpinner army_peon_button;
-    private final @NonNull DeploySpinner army_warrior_rock_button;
-    private final @NonNull DeploySpinner army_warrior_iron_button;
-    private final @NonNull DeploySpinner army_warrior_rubber_button;
-    private final @NonNull DeploySpinner transport_tree_button;
-    private final @NonNull DeploySpinner transport_rock_button;
-    private final @NonNull DeploySpinner transport_iron_button;
-    private final @NonNull DeploySpinner transport_rubber_button;
-    private final @NonNull GameCamera camera;
-    private final @NonNull WorldViewer viewer;
+    private final NonFocusIconButton harvest_button;
+    private final NonFocusIconButton build_button;
+    private final NonFocusIconButton army_button;
+    private final NonFocusIconButton transport_button;
+    private final StatusIcon unit_status;
+    private final StatusIcon weapon_rock_status;
+    private final StatusIcon weapon_iron_status;
+    private final StatusIcon weapon_rubber_status;
+    private final StatusIcon tree_status;
+    private final StatusIcon rock_status;
+    private final StatusIcon iron_status;
+    private final StatusIcon rubber_status;
+    private final WatchStatusIcon quarters_unit_status;
+    private final DeploySpinner quarters_peon_button;
+    private final ChieftainButton quarters_chieftain_button;
+    private final DeploySpinner harvest_tree_button;
+    private final DeploySpinner harvest_rock_button;
+    private final DeploySpinner harvest_iron_button;
+    private final DeploySpinner harvest_rubber_button;
+    private final BuildSpinner build_weapon_rock_button;
+    private final BuildSpinner build_weapon_iron_button;
+    private final BuildSpinner build_weapon_rubber_button;
+    private final DeploySpinner army_peon_button;
+    private final DeploySpinner army_warrior_rock_button;
+    private final DeploySpinner army_warrior_iron_button;
+    private final DeploySpinner army_warrior_rubber_button;
+    private final DeploySpinner transport_tree_button;
+    private final DeploySpinner transport_rock_button;
+    private final DeploySpinner transport_iron_button;
+    private final DeploySpinner transport_rubber_button;
+    private final GameCamera camera;
+    private final WorldViewer viewer;
     private @Nullable Group current_submenu = null;
     private boolean update = false;
     private boolean current_quarters = false;
@@ -138,11 +137,11 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     private @Nullable Unit current_chieftain;
     private boolean current_tower = false;
 
-    public ActionButtonPanel(@NonNull WorldViewer viewer, @NonNull GameCamera camera) {
+    public ActionButtonPanel(WorldViewer viewer, GameCamera camera) {
         this(viewer, camera, viewer.getGUIRoot().getWidth(), viewer.getGUIRoot().getHeight());
     }
 
-    public ActionButtonPanel(final @NonNull WorldViewer viewer, @NonNull GameCamera camera, int width, int height) {
+    public ActionButtonPanel(final WorldViewer viewer, GameCamera camera, int width, int height) {
         this.viewer = viewer;
         this.camera = camera;
         GUIIcons icons = GUIIcons.getIcons();
@@ -493,15 +492,15 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     }
 //	private boolean[] magic_disabled = new boolean[2];
 
-    public static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    public static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private @NonNull String getBinding(@NonNull GameAction action) {
+    private String getBinding(GameAction action) {
         return viewer.getInputManager().getBindingString(action);
     }
 
-    private @NonNull String getMagicTooltip(@NonNull MagicType magicType) {
+    private String getMagicTooltip(MagicType magicType) {
         return switch (magicType) {
             case STUN -> i18n("terrifying_toot", getBinding(GameAction.MAGIC_1));
             case SONIC_BLAST -> i18n("ravaging_roar", getBinding(GameAction.MAGIC_2));
@@ -770,7 +769,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         InputPhase phase = event.getPhase();
         boolean pressed = phase == InputPhase.PRESSED || phase == InputPhase.REPEAT;
         boolean released = phase == InputPhase.RELEASED;
@@ -802,7 +801,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
      * Handles direct switching between Armory submenus.
      * Allowed only when the input event does not collide with active submenu controls.
      */
-    private boolean handleSubmenuSwitch(@NonNull InputEvent event) {
+    private boolean handleSubmenuSwitch(InputEvent event) {
         if (!canSwitchSubmenu(event)) {
             return false;
         }
@@ -828,7 +827,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     /**
      * Handles primary unit and building hotkeys.
      */
-    private void handleUnitAndBuildingActions(@NonNull InputEvent event) {
+    private void handleUnitAndBuildingActions(InputEvent event) {
         if (event.consumeAction(GameAction.UNIT_MOVE)) {
             if (current_unit) activate(event, move_button);
         } else if (event.consumeAction(GameAction.UNIT_BUILD_QUARTERS)) {
@@ -864,7 +863,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     /**
      * Handles spinner adjustments for peons and armory resources.
      */
-    private void handleSpinners(@NonNull InputEvent event, boolean pressed) {
+    private void handleSpinners(InputEvent event, boolean pressed) {
         var peon = checkResourceAction(event, GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC,
                 GameAction.TRAIN_PEON_BATCH, GameAction.TRAIN_PEON_BATCH_DEC);
         if (peon.active()) {
@@ -924,14 +923,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         }
     }
 
-    private void activate(@NonNull InputEvent event, @NonNull GUIObject button) {
+    private void activate(InputEvent event, GUIObject button) {
         button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
         event.consume();
     }
 
-    private @NonNull ResourceAction checkResourceAction(
-            @NonNull InputEvent event, @NonNull GameAction base,
-            @NonNull GameAction dec, @NonNull GameAction batch, @NonNull GameAction batchDec
+    private ResourceAction checkResourceAction(
+            InputEvent event, GameAction base,
+            GameAction dec, GameAction batch, GameAction batchDec
     ) {
         if (event.consumeAction(base)) return new ResourceAction(true, false, false);
         if (event.consumeAction(dec)) return new ResourceAction(true, true, false);
@@ -941,7 +940,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     }
 
     private void handleArmoryShortcut(
-            boolean pressed, @NonNull ResourceAction action,
+            boolean pressed, ResourceAction action,
             @Nullable IconSpinner harvestBtn,
             @Nullable IconSpinner buildBtn,
             @Nullable IconSpinner armyBtn,
@@ -984,14 +983,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
 
     @Override
     public void mouseDragged(
-            @NonNull MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
+            MouseButton button, int x, int y, int relative_x, int relative_y, int absolute_x,
             int absolute_y
     ) {
         if (getParent() != null)
             getParent().mouseDraggedAll(button, x, y, relative_x, relative_y, absolute_x, absolute_y);
     }
 
-    private void setRallyPoint(@NonNull MouseButton button, int x, int y, int clicks) {
+    private void setRallyPoint(MouseButton button, int x, int y, int clicks) {
         if (current_building != null && !current_building.isDead()) {
             pushDelegate(new RallyPointDelegate(viewer, camera, current_building));
         }
@@ -999,7 +998,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         update = true;
     }
 
-    private void pushDelegate(@NonNull CameraDelegate<?> delegate) {
+    private void pushDelegate(CameraDelegate<?> delegate) {
         var root = viewer.getGUIRoot();
         var current = root.getDelegate();
         if (current instanceof TargetDelegate || current instanceof PlacingDelegate
@@ -1009,12 +1008,12 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         root.pushDelegate(delegate);
     }
 
-    private void cancelSubMenu(@NonNull MouseButton button, int x, int y, int clicks) {
+    private void cancelSubMenu(MouseButton button, int x, int y, int clicks) {
         removeGroups();
         update = true;
     }
 
-    private void openSubmenu(@NonNull Group submenu) {
+    private void openSubmenu(Group submenu) {
         if (current_submenu != null)
             current_submenu.remove();
         armory_group.remove();
@@ -1027,7 +1026,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
      * submenus handle (spinners, back). On collision the submenu meaning wins everywhere, so a key bound to a spinner
      * row never switches submenus.
      */
-    private boolean canSwitchSubmenu(@NonNull InputEvent event) {
+    private boolean canSwitchSubmenu(InputEvent event) {
         if (current_submenu == null) return true;
         for (GameAction action : ARMORY_SUBMENU_ACTIONS) {
             if (event.hasAction(action)) return false;
@@ -1041,7 +1040,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
      *
      * @return true if a submenu was closed
      */
-    public boolean tryCloseSubmenu(@NonNull InputEvent event) {
+    public boolean tryCloseSubmenu(InputEvent event) {
         if (current_armory && current_submenu != null) {
             event.consumeAction(GameAction.GLOBAL_MENU);
             event.consumeAction(GameAction.UI_CANCEL);
@@ -1052,7 +1051,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         return false;
     }
 
-    private boolean suppliesEmpty(@NonNull SupplyCounter @NonNull... counters) {
+    private boolean suppliesEmpty(SupplyCounter... counters) {
         return Arrays.stream(counters).anyMatch(c -> c.getNumSupplies() == 0);
     }
 

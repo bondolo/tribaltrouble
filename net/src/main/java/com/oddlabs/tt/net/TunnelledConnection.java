@@ -4,16 +4,15 @@ import com.oddlabs.net.ARMIEvent;
 import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.HostSequenceID;
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 
 public final class TunnelledConnection extends AbstractConnection {
-    private final @NonNull MatchmakingClient matchmaking_client;
+    private final MatchmakingClient matchmaking_client;
     private final HostSequenceID address;
     private boolean open = true;
 
-    public TunnelledConnection(@NonNull MatchmakingClient matchmaking_client, HostSequenceID address,
+    public TunnelledConnection(MatchmakingClient matchmaking_client, HostSequenceID address,
             ConnectionInterface conn_interface) {
         this.matchmaking_client = matchmaking_client;
         setConnectionInterface(conn_interface);
@@ -22,7 +21,7 @@ public final class TunnelledConnection extends AbstractConnection {
         notifyConnected();
     }
 
-    public TunnelledConnection(@NonNull MatchmakingClient matchmaking_client, int address,
+    public TunnelledConnection(MatchmakingClient matchmaking_client, int address,
             ConnectionInterface conn_interface) {
         this.matchmaking_client = matchmaking_client;
         setConnectionInterface(conn_interface);

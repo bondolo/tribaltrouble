@@ -2,16 +2,15 @@ package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.vbo.VBO;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public interface RenderContext {
     // State Management
-    void setBlendMode(@NonNull BlendMode mode);
+    void setBlendMode(BlendMode mode);
 
-    void setDepthMode(@NonNull DepthMode mode);
+    void setDepthMode(DepthMode mode);
 
-    void setCullMode(@NonNull CullMode mode);
+    void setCullMode(CullMode mode);
 
     // Alpha to Coverage
     void setSampleAlphaToCoverage(boolean enabled);
@@ -82,32 +81,24 @@ public interface RenderContext {
 
     // Scoped State (Try-with-resources)
     // These return a Closeable that restores the PREVIOUS state.
-    @NonNull
-    ScopedState withBlendMode(@NonNull BlendMode mode);
+    ScopedState withBlendMode(BlendMode mode);
 
-    @NonNull
-    ScopedState withDepthMode(@NonNull DepthMode mode);
+    ScopedState withDepthMode(DepthMode mode);
 
-    @NonNull
-    ScopedState withCullMode(@NonNull CullMode mode);
+    ScopedState withCullMode(CullMode mode);
 
-    @NonNull
     ScopedState withSampleAlphaToCoverage(boolean enabled);
 
-    @NonNull
     ScopedState withColorMask(boolean r, boolean g, boolean b, boolean a);
 
-    @NonNull
     ScopedState withDepthFunc(int func);
 
-    @NonNull
     ScopedState withDrawBuffers(boolean mask);
 
-    @NonNull
     ScopedState withFramebufferSrgb(boolean enabled);
 
     // UBO Management
-    void updateGlobalState(java.nio.@NonNull ByteBuffer data);
+    void updateGlobalState(java.nio.ByteBuffer data);
 
     // Custom State
     void setBlendFunc(int src, int dst);
@@ -122,7 +113,7 @@ public interface RenderContext {
 
     void setDrawBuffers(boolean mask);
 
-    void setDrawBuffers(int @NonNull [] attachments);
+    void setDrawBuffers(int[] attachments);
 
     void setFramebufferSrgb(boolean enabled);
 

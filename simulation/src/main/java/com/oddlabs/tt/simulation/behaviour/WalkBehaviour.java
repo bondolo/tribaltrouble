@@ -10,16 +10,15 @@ import com.oddlabs.tt.simulation.pathfinder.PathTracker;
 import com.oddlabs.tt.simulation.pathfinder.TargetTrackerAlgorithm;
 import com.oddlabs.tt.simulation.pathfinder.TrackerAlgorithm;
 import com.oddlabs.tt.simulation.model.Target;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class WalkBehaviour implements Behaviour {
     private static final float WAIT_RETRY_DELAY = 1f / 2f;
     private static final float MAX_WAIT_RETRY_DELAY = 5f;
 
-    private final @NonNull Unit unit;
-    private final @NonNull TrackerAlgorithm tracker_algorithm;
-    private final @NonNull AttackScanFilter scan_filter;
+    private final Unit unit;
+    private final TrackerAlgorithm tracker_algorithm;
+    private final AttackScanFilter scan_filter;
     private final boolean scan_attack;
 
     private @Nullable Movable blocking_movable;
@@ -30,7 +29,7 @@ public final class WalkBehaviour implements Behaviour {
 
     private PathTracker.State state;
 
-    public WalkBehaviour(@NonNull Unit unit, @NonNull TrackerAlgorithm tracker_algorithm, boolean scan_attack) {
+    public WalkBehaviour(Unit unit, TrackerAlgorithm tracker_algorithm, boolean scan_attack) {
         this.unit = unit;
         this.tracker_algorithm = tracker_algorithm;
         this.scan_attack = scan_attack;
@@ -39,7 +38,7 @@ public final class WalkBehaviour implements Behaviour {
         unit.getTracker().setTarget(tracker_algorithm);
     }
 
-    public WalkBehaviour(@NonNull Unit unit, @NonNull Target t, float range, boolean scan_attack) {
+    public WalkBehaviour(Unit unit, Target t, float range, boolean scan_attack) {
         this(unit, new TargetTrackerAlgorithm(unit.getUnitGrid(), range, t), scan_attack);
     }
 
@@ -48,7 +47,7 @@ public final class WalkBehaviour implements Behaviour {
         return state == PathTracker.State.BLOCKED;
     }
 
-    public void appendToolTip(@NonNull TextAppender tool_tip_box) {
+    public void appendToolTip(TextAppender tool_tip_box) {
         tool_tip_box.append("WalkBehaviour: state=");
         tool_tip_box.append(state.toString());
         tool_tip_box.append(" | retry_delay=");
@@ -64,7 +63,7 @@ public final class WalkBehaviour implements Behaviour {
     }
 
     @Override
-    public @NonNull State animate(float t) {
+    public State animate(float t) {
         retry_delay_counter -= t;
         boolean blocker_moved = blocking_movable != null && (blocking_movable.getGridX() != blocker_x
                 || blocking_movable.getGridY() != blocker_y);
@@ -121,7 +120,7 @@ public final class WalkBehaviour implements Behaviour {
             retry_delay_counter = 0f;
         }
     */
-    private @NonNull State doRetry() {
+    private State doRetry() {
         retry_delay_counter = retry_delay;
         unit.switchToIdleAnimation();
         return State.INTERRUPTIBLE;

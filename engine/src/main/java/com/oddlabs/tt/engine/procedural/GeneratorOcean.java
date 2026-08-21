@@ -14,7 +14,6 @@ import com.oddlabs.tt.procedural.Perlin.Interpolation;
 import com.oddlabs.tt.procedural.Perlin.Summation;
 import com.oddlabs.tt.procedural.Voronoi;
 import com.oddlabs.tt.simulation.model.Terrain;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 
 public final class GeneratorOcean extends TextureGenerator {
@@ -27,7 +26,7 @@ public final class GeneratorOcean extends TextureGenerator {
     }
 
     @Override
-    public Texture @NonNull [] generate() {
+    public Texture[] generate() {
         int seed = LandscapeConfig.LANDSCAPE_SEED + 1;
 
         // water1
@@ -96,7 +95,7 @@ public final class GeneratorOcean extends TextureGenerator {
     }
 
     @Override
-    public boolean equals(@NonNull Object o) {
+    public boolean equals(Object o) {
         return super.equals(o) && ((GeneratorOcean) o).terrain == terrain;
     }
 }

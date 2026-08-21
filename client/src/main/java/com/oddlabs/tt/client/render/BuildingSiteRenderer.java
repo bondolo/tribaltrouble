@@ -8,7 +8,6 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -16,7 +15,7 @@ import java.util.List;
 
 public final class BuildingSiteRenderer extends ShadowRenderer {
 
-    private final @NonNull Texture green;
+    private final Texture green;
 
     public BuildingSiteRenderer() {
         GLIntImage img = new GLIntImage(16, 16, GL11.GL_RGBA);
@@ -25,9 +24,9 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
                 GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
     }
 
-    public void renderSites(@NonNull RenderContext context, @NonNull RenderQueues queues,
-            @NonNull LandscapeRenderer renderer, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack, @NonNull List<? extends @NonNull Target> targets, float center_x,
+    public void renderSites(RenderContext context, RenderQueues queues,
+            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            MatrixStack projectionStack, List<? extends Target> targets, float center_x,
             float center_y, float max_radius) {
         try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
             bindShadowTexture(green);

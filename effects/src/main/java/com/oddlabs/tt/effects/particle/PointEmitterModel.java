@@ -5,7 +5,6 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.simulation.model.Model;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -13,8 +12,8 @@ import org.jspecify.annotations.Nullable;
  * Used for standalone particle effects like explosions, rubble, or poison gas bursts.
  */
 public class PointEmitterModel extends Model implements Animated {
-    protected final @NonNull Emitter<?> emitter;
-    private final @NonNull AnimationManager manager;
+    protected final Emitter<?> emitter;
+    private final AnimationManager manager;
 
     /**
      * Constructs a new PointEmitterModel using the world's game-time animation manager.
@@ -22,7 +21,7 @@ public class PointEmitterModel extends Model implements Animated {
      * @param world the world
      * @param emitter the particle emitter to host
      */
-    public PointEmitterModel(@NonNull World world, @NonNull Emitter<?> emitter) {
+    public PointEmitterModel(World world, Emitter<?> emitter) {
         this(world, emitter, world.getAnimationManagerGameTime());
     }
 
@@ -33,8 +32,8 @@ public class PointEmitterModel extends Model implements Animated {
      * @param emitter the particle emitter to host
      * @param manager the animation manager to register with
      */
-    public PointEmitterModel(@NonNull World world, @NonNull Emitter<?> emitter,
-            @NonNull AnimationManager manager) {
+    public PointEmitterModel(World world, Emitter<?> emitter,
+            AnimationManager manager) {
         super(world);
         this.emitter = emitter;
         this.manager = manager;
@@ -74,7 +73,7 @@ public class PointEmitterModel extends Model implements Animated {
     }
 
     @Override
-    protected @NonNull BoundingBox @Nullable [] getLocalBounds() {
+    protected BoundingBox @Nullable [] getLocalBounds() {
         return null;
     }
 
@@ -83,7 +82,7 @@ public class PointEmitterModel extends Model implements Animated {
      *
      * @return the hosted emitter
      */
-    public final @NonNull Emitter<?> getEmitter() {
+    public final Emitter<?> getEmitter() {
         return emitter;
     }
 }

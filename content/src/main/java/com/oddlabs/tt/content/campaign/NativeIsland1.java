@@ -28,7 +28,6 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.TimeTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -40,18 +39,18 @@ public final class NativeIsland1 extends Island {
     private static final int NUM_CAPTIVES = 10;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland1.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private int objective = 0;
 
-    public NativeIsland1(@NonNull Campaign campaign) {
+    public NativeIsland1(Campaign campaign) {
         super(campaign);
     }
 
     @Override
-    public void init(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
+    public void init(NetworkSelector network, GUIRoot gui_root) {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
@@ -362,17 +361,17 @@ public final class NativeIsland1 extends Island {
     }
 
     @Override
-    public @NonNull CharSequence getHeader() {
+    public CharSequence getHeader() {
         return i18n("header");
     }
 
     @Override
-    public @NonNull CharSequence getDescription() {
+    public CharSequence getDescription() {
         return i18n("description");
     }
 
     @Override
-    public @NonNull CharSequence getCurrentObjective() {
+    public CharSequence getCurrentObjective() {
         return i18n("objective" + objective);
     }
 

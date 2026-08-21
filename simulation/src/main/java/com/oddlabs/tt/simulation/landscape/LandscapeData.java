@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
 import com.oddlabs.tt.simulation.model.Terrain;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -15,7 +14,6 @@ public interface LandscapeData {
      *
      * @return the terrain type
      */
-    @NonNull
     Terrain terrain();
 
     /**
@@ -37,65 +35,61 @@ public interface LandscapeData {
      *
      * @return the height array
      */
-    float @NonNull [] heightmap();
+    float[] heightmap();
 
     /**
      * Returns the coordinates and attributes of standard trees.
      *
      * @return the standard trees list
      */
-    @NonNull
-    List<int @NonNull []> trees();
+    List<int[]> trees();
 
     /**
      * Returns the coordinates and attributes of palm trees.
      *
      * @return the palm trees list
      */
-    @NonNull
-    List<int @NonNull []> palmTrees();
+    List<int[]> palmTrees();
 
     /**
      * Returns the coordinates of rock supply deposits.
      *
      * @return the rock deposits list
      */
-    @NonNull
-    List<int @NonNull []> rocks();
+    List<int[]> rocks();
 
     /**
      * Returns the coordinates of iron supply deposits.
      *
      * @return the iron deposits list
      */
-    @NonNull
-    List<int @NonNull []> iron();
+    List<int[]> iron();
 
     /**
      * Returns the coordinates of cosmetic ground vegetation.
      *
      * @return the cosmetic plant coordinates
      */
-    float @NonNull [] @NonNull [] plants();
+    float[][] plants();
 
     /**
      * Returns the movement accessibility grid.
      *
      * @return the 2D accessibility boolean grid
      */
-    boolean @NonNull [] @NonNull [] accessGrid();
+    boolean[][] accessGrid();
 
     /**
      * Returns the structure building placement grid.
      *
      * @return the 2D building placement byte grid
      */
-    byte @NonNull [] @NonNull [] buildGrid();
+    byte[][] buildGrid();
 
     /**
      * Returns the starting player coordinate pairs.
      *
      * @return the starting locations array
      */
-    float @NonNull [] @NonNull [] startingLocations();
+    float[][] startingLocations();
 }

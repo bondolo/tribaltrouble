@@ -6,7 +6,6 @@ import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import kotlin.collections.ArrayDeque;
-import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.logging.Logger;
 
 final class RouterClient implements ConnectionInterface {
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(RouterInterface.class);
-    private final @NonNull RouterClientInterface client_interface;
+    private final RouterClientInterface client_interface;
     private final Logger logger;
     private final AbstractConnection connection;
     private final Router router;
@@ -25,7 +24,7 @@ final class RouterClient implements ConnectionInterface {
     private Session session;
     private Interface current_interface;
 
-    RouterClient(final @NonNull SessionManager session_manager, AbstractConnection conn, Logger logger, Router router) {
+    RouterClient(final SessionManager session_manager, AbstractConnection conn, Logger logger, Router router) {
         this.router = router;
         this.connection = conn;
         this.logger = logger;
@@ -37,7 +36,6 @@ final class RouterClient implements ConnectionInterface {
         });
     }
 
-    @NonNull
     List<Integer> getChecksums() {
         return checksums;
     }
@@ -58,7 +56,6 @@ final class RouterClient implements ConnectionInterface {
         client_interface.heartbeat(millis);
     }
 
-    @NonNull
     RouterClientInterface getInterface() {
         return client_interface;
     }
@@ -73,7 +70,7 @@ final class RouterClient implements ConnectionInterface {
         return client_id;
     }
 
-    private void doLogin(@NonNull Session session, SessionInfo session_info, int client_id) {
+    private void doLogin(Session session, SessionInfo session_info, int client_id) {
         this.session = session;
         this.client_id = client_id;
         this.current_interface = new Interface(GameInterface.class, new GameInterface() {
@@ -127,7 +124,7 @@ final class RouterClient implements ConnectionInterface {
     }
 
     @Override
-    public void handle(Object sender, @NonNull ARMIEvent event) {
+    public void handle(Object sender, ARMIEvent event) {
         try {
             event.execute(current_interface.methods, current_interface.instance);
         } catch (IllegalARMIEventException e) {
@@ -160,8 +157,8 @@ final class RouterClient implements ConnectionInterface {
         logger.log(Level.INFO, "Client disconnected, reason: {0}", e);
     }
 
-    private record Interface(@NonNull ARMIInterfaceMethods methods, Object instance) {
-        private Interface(@NonNull Class<?> methods, Object instance) {
+    private record Interface(ARMIInterfaceMethods methods, Object instance) {
+        private Interface(Class<?> methods, Object instance) {
             this(new ARMIInterfaceMethods(methods), instance);
         }
     }

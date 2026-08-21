@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 /**
  * Factory class for constructing UnitSupplyContainers.
@@ -12,7 +11,7 @@ public final class UnitSupplyContainerFactory extends SupplyContainerFactory {
     }
 
     @Override
-    public @NonNull SupplyContainer createContainer(Selectable<?> selectable) {
+    public SupplyContainer createContainer(Selectable<?> selectable) {
         return new UnitSupplyContainer(getMaxResourceCount());
     }
 }

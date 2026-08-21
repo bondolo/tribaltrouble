@@ -9,7 +9,6 @@ import com.oddlabs.tt.client.gui.Arrow;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 /**
  * A temporary, animated on-screen alert directing the player's attention
@@ -21,14 +20,14 @@ public class Notification implements Updatable<TimerAnimation> {
 
     private final float center_x;
     private final float center_y;
-    private final @NonNull NotificationManager manager;
-    private final @NonNull TimerAnimation timer;
-    private final @NonNull Arrow arrow;
+    private final NotificationManager manager;
+    private final TimerAnimation timer;
+    private final Arrow arrow;
 
-    public Notification(@NonNull HeightMap heightMap, @NonNull AudioImplementation audio, @NonNull GUIRoot gui_root,
-            float x, float y, @NonNull NotificationManager manager, @NonNull Color color,
-            @NonNull AudioParameters params, boolean show_always,
-            @NonNull AnimationManager animation_manager) {
+    public Notification(HeightMap heightMap, AudioImplementation audio, GUIRoot gui_root,
+            float x, float y, NotificationManager manager, Color color,
+            AudioParameters params, boolean show_always,
+            AnimationManager animation_manager) {
         this.center_x = x;
         this.center_y = y;
         this.manager = manager;
@@ -45,20 +44,20 @@ public class Notification implements Updatable<TimerAnimation> {
     }
 
     @Override
-    public void update(@NonNull TimerAnimation anim) {
+    public void update(TimerAnimation anim) {
         remove();
         manager.removeNotification(this);
     }
 
-    protected final @NonNull Arrow getArrow() {
+    protected final Arrow getArrow() {
         return arrow;
     }
 
-    protected final @NonNull TimerAnimation getTimer() {
+    protected final TimerAnimation getTimer() {
         return timer;
     }
 
-    protected final @NonNull NotificationManager getManager() {
+    protected final NotificationManager getManager() {
         return manager;
     }
 

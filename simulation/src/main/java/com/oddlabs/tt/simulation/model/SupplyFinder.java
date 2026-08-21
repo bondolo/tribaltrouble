@@ -4,7 +4,6 @@ import com.oddlabs.tt.simulation.pathfinder.FinderFilter;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;
@@ -15,18 +14,18 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * Finder filter that searches for closest available resources of a specific type.
  */
 public final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
-    private final @NonNull Unit unit;
-    private final @NonNull SupplyType supplyType;
-    private final Set<@NonNull Set<@NonNull S>> regions = new CopyOnWriteArraySet<>();
+    private final Unit unit;
+    private final SupplyType supplyType;
+    private final Set<Set<S>> regions = new CopyOnWriteArraySet<>();
     private int max_region_dist_sqr;
 
-    public SupplyFinder(@NonNull Unit unit, @NonNull SupplyType supplyType) {
+    public SupplyFinder(Unit unit, SupplyType supplyType) {
         this.unit = unit;
         this.supplyType = supplyType;
     }
 
     @Override
-    public @Nullable S getOccupantFromRegion(@NonNull Region region, boolean one_region) {
+    public @Nullable S getOccupantFromRegion(Region region, boolean one_region) {
         @SuppressWarnings("unchecked") Class<S> supplyClass = (Class<S>) supplyType.getSupplyClass();
         Set<S> supplies = region.getObjects(supplyClass);
         if (one_region) {
@@ -61,7 +60,7 @@ public final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
         return findClosest();
     }
 
-    private @Nullable S findClosest(@NonNull Set<S> supplies) {
+    private @Nullable S findClosest(Set<S> supplies) {
         return supplies.stream()
                 .min(Comparator.comparingInt(this::distanceSquared))
                 .orElse(null);
@@ -76,14 +75,14 @@ public final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
         return closest;
     }
 
-    private int distanceSquared(@NonNull S supply) {
+    private int distanceSquared(S supply) {
         int dx = supply.getGridX() - unit.getGridX();
         int dy = supply.getGridY() - unit.getGridY();
         return dx * dx + dy * dy;
     }
 
     @Override
-    public boolean acceptOccupant(@NonNull Occupant occ) {
+    public boolean acceptOccupant(Occupant occ) {
         if (supplyType.getSupplyClass().isInstance(occ)) {
             Supply supply = (Supply) occ;
             assert !supply.isEmpty();

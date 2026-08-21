@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.util.Quad;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -10,7 +9,7 @@ import java.util.Objects;
  * coordinates. This is useful for defining icons from a texture atlas.
  */
 public final class IconQuad extends Quad {
-    private final @NonNull Texture atlas;
+    private final Texture atlas;
 
     /**
      * Creates an IconQuad from explicit normalized texture coordinates.
@@ -26,7 +25,7 @@ public final class IconQuad extends Quad {
      *             u1/v1 are greater than u2/v2.
      * @throws NullPointerException if the texture is null
      */
-    public IconQuad(float u1, float v1, float u2, float v2, int width, int height, @NonNull Texture texture)
+    public IconQuad(float u1, float v1, float u2, float v2, int width, int height, Texture texture)
             throws IllegalArgumentException, NullPointerException {
         if (!Float.isFinite(u1) || !Float.isFinite(v1) || !Float.isFinite(u2) || !Float.isFinite(v2)) {
             throw new IllegalArgumentException("Texture coordinates must be finite numbers.");
@@ -55,7 +54,7 @@ public final class IconQuad extends Quad {
      * @throws IndexOutOfBoundsException if the defined area is outside the texture bounds
      * @throws NullPointerException if the texture is null
      */
-    public IconQuad(int x, int y, int width, int height, @NonNull Texture texture)
+    public IconQuad(int x, int y, int width, int height, Texture texture)
             throws IndexOutOfBoundsException, NullPointerException {
         this((float) x / getCheckedTexture(x, y, width, height, texture).getWidth(),
                 (float) y / texture.getHeight(),
@@ -66,14 +65,13 @@ public final class IconQuad extends Quad {
                 texture);
     }
 
-    private static @NonNull Texture getCheckedTexture(int x, int y, int width, int height, @NonNull Texture texture) {
-        Objects.requireNonNull(texture, "Texture cannot be null");
+    private static Texture getCheckedTexture(int x, int y, int width, int height, Texture texture) {
         Objects.checkFromIndexSize(x, width, texture.getWidth());
         Objects.checkFromIndexSize(y, height, texture.getHeight());
         return texture;
     }
 
-    public @NonNull Texture getTexture() {
+    public Texture getTexture() {
         return atlas;
     }
 }

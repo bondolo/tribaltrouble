@@ -11,7 +11,6 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.PanelGroup;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.simulation.SimulationConfig;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -25,14 +24,14 @@ public abstract class AbstractOptionsMenu extends Form {
     private static final int BUTTON_WIDTH = 100;
     public static final ResourceBundle bundle = ResourceBundle.getBundle(OptionsMenu.class.getName());
 
-    static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull GeneralPanel generalPanel;
-    private final @NonNull GraphicsPanel graphicsPanel;
+    private final GeneralPanel generalPanel;
+    private final GraphicsPanel graphicsPanel;
 
-    AbstractOptionsMenu(@NonNull GUIRoot gui_root, @NonNull AudioManager audioManager) {
+    AbstractOptionsMenu(GUIRoot gui_root, AudioManager audioManager) {
         Label label_headline = new Label(i18n("options_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 

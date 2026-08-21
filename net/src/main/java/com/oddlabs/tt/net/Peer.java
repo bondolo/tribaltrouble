@@ -6,7 +6,6 @@ import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -35,7 +34,7 @@ public final class Peer implements PeerHubInterface {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "player: " + player.toString();
     }
 
@@ -54,7 +53,7 @@ public final class Peer implements PeerHubInterface {
     }
 
     @Override
-    public void chat(@NonNull String text, boolean team) {
+    public void chat(String text, boolean team) {
         peer_hub.receiveChat(player.getPlayerInfo().getName(), text, team);
     }
 
@@ -67,7 +66,7 @@ public final class Peer implements PeerHubInterface {
         return peerhub_interface;
     }
 
-    public @NonNull PlayerInfo getPlayerInfo() {
+    public PlayerInfo getPlayerInfo() {
         return player.getPlayerInfo();
     }
 

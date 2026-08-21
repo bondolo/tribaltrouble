@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -38,7 +37,7 @@ public enum CVDMode {
      * @return the corresponding {@link CVDMode}
      * @throws IllegalArgumentException if the legacy value is unrecognized
      */
-    public static @NonNull CVDMode fromValue(int value) {
+    public static CVDMode fromValue(int value) {
         for (CVDMode mode : VALUES) {
             if (mode.value == value) {
                 return mode;

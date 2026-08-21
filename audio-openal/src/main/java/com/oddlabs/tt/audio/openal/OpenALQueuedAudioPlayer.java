@@ -5,7 +5,6 @@ import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.audio.OGGStream;
 import com.oddlabs.tt.audio.QueuedAudioPlayer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
@@ -29,9 +28,9 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
     private volatile int al_format;
     private volatile int al_rate;
 
-    OpenALQueuedAudioPlayer(@NonNull OpenALManager manager, @Nullable OpenALAudioSource source, float x, float y,
+    OpenALQueuedAudioPlayer(OpenALManager manager, @Nullable OpenALAudioSource source, float x, float y,
             float z,
-            @NonNull AudioParameters params) {
+            AudioParameters params) {
         super(manager, source, x, y, z, params);
     }
 
@@ -45,7 +44,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
     }
 
     @Override
-    public @NonNull OpenALQueuedAudioPlayer stop() {
+    public OpenALQueuedAudioPlayer stop() {
         super.stop();
         synchronized (this) {
             this.notifyAll(); // Wake up the filler thread.
@@ -56,7 +55,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
     }
 
     @Override
-    protected @Nullable OpenALAudio initAsync(@NonNull OGGStream stream) {
+    protected @Nullable OpenALAudio initAsync(OGGStream stream) {
         if (this.source == null || !isPlaying()) {
             return null;
         }
@@ -113,7 +112,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
     }
 
     @Override
-    public void refill(@NonNull OGGStream stream) {
+    public void refill(OGGStream stream) {
         if (source == null || !isPlaying()) return;
 
         int processed;

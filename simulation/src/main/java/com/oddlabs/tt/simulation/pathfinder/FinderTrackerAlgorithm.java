@@ -1,15 +1,14 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
 import com.oddlabs.tt.simulation.model.Selectable;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class FinderTrackerAlgorithm<O extends Occupant> implements TrackerAlgorithm {
-    private final @NonNull FinderFilter<O> filter;
-    private final @NonNull UnitGrid unit_grid;
+    private final FinderFilter<O> filter;
+    private final UnitGrid unit_grid;
     private O target;
 
-    public FinderTrackerAlgorithm(@NonNull UnitGrid unit_grid, @NonNull FinderFilter<O> filter) {
+    public FinderTrackerAlgorithm(UnitGrid unit_grid, FinderFilter<O> filter) {
         this.unit_grid = unit_grid;
         this.filter = filter;
     }
@@ -20,7 +19,7 @@ public final class FinderTrackerAlgorithm<O extends Occupant> implements Tracker
     }
 
     @Override
-    public boolean acceptRegion(@NonNull Region region) {
+    public boolean acceptRegion(Region region) {
         return filter.getOccupantFromRegion(region, true) != null;
     }
 
@@ -38,7 +37,7 @@ public final class FinderTrackerAlgorithm<O extends Occupant> implements Tracker
     }
 
     @Override
-    public @Nullable GridPathNode findPathGrid(@NonNull Region target_region, @NonNull Region next_region, int src_x,
+    public @Nullable GridPathNode findPathGrid(Region target_region, Region next_region, int src_x,
             int src_y, boolean allow_secondary_targets) {
         O hint_occupant = filter.getOccupantFromRegion(target_region, true);
         TargetFinderAlgorithm<O> grid_finder = new TargetFinderAlgorithm<>(unit_grid, filter, next_region, hint_occupant

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.window;
 
 import org.joml.Vector2f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -10,12 +9,11 @@ import java.util.List;
  * Main interface for window management, display mode handling, and fullscreen controls.
  */
 public interface Window extends AutoCloseable {
-    void create(@NonNull SerializableDisplayMode mode, boolean fullscreen);
+    void create(SerializableDisplayMode mode, boolean fullscreen);
 
-    @NonNull
     WindowSettings getSettings();
 
-    void setSettings(@NonNull WindowSettings settings);
+    void setSettings(WindowSettings settings);
 
     void setEventListener(@Nullable WindowEventListener listener);
 
@@ -85,8 +83,7 @@ public interface Window extends AutoCloseable {
      *
      * @return List of SerializableDisplayMode
      */
-    @NonNull
-    List<@NonNull SerializableDisplayMode> getFullscreenDisplayModes();
+    List<SerializableDisplayMode> getFullscreenDisplayModes();
 
     /**
      * Returns a list of standard resolutions suitable for windowed mode, filtered to fit within the usable area of the
@@ -94,14 +91,12 @@ public interface Window extends AutoCloseable {
      *
      * @return List of SerializableDisplayMode
      */
-    @NonNull
-    List<@NonNull SerializableDisplayMode> getWindowedDisplayModes();
+    List<SerializableDisplayMode> getWindowedDisplayModes();
 
     /** {@return the current display mode} */
-    @NonNull
     SerializableDisplayMode getDisplayMode();
 
-    void setDisplayMode(@NonNull SerializableDisplayMode mode) throws Exception;
+    void setDisplayMode(SerializableDisplayMode mode) throws Exception;
 
     void setIcon(java.nio.file.Path imagePath);
 
@@ -122,7 +117,6 @@ public interface Window extends AutoCloseable {
      *
      * @return Vector2f [width, height] in mm
      */
-    @NonNull
     Vector2f getMonitorPhysicalSize();
 
     /**
@@ -130,7 +124,6 @@ public interface Window extends AutoCloseable {
      *
      * @return Vector2f [xScale, yScale]
      */
-    @NonNull
     Vector2f getMonitorContentScale();
 
     /**
@@ -138,7 +131,6 @@ public interface Window extends AutoCloseable {
      *
      * @return Vector2f [xScale, yScale]
      */
-    @NonNull
     Vector2f getWindowContentScale();
 
     /**
@@ -154,7 +146,7 @@ public interface Window extends AutoCloseable {
      * @param mode the display mode to check
      * @return true if it corresponds to an exclusive fullscreen mode
      */
-    boolean isExclusiveFullscreenMode(@NonNull SerializableDisplayMode mode);
+    boolean isExclusiveFullscreenMode(SerializableDisplayMode mode);
 
     /**
      * Returns true if the window is currently in native hardware exclusive fullscreen mode.

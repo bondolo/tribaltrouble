@@ -1,30 +1,29 @@
 package com.oddlabs.tt.base.animation;
 
 import com.oddlabs.tt.base.event.StateChecksum;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 
 public final class TimerAnimation implements Animated {
-    private final @NonNull AnimationManager manager;
+    private final AnimationManager manager;
     private float time = 0;
     private float interval;
     private @Nullable Updatable<TimerAnimation> timer_owner;
     private boolean running = false;
 
-    public TimerAnimation(@NonNull AnimationManager manager, @NonNull Updatable<TimerAnimation> owner, float interval) {
+    public TimerAnimation(AnimationManager manager, Updatable<TimerAnimation> owner, float interval) {
         this.manager = manager;
         this.interval = interval;
         this.timer_owner = owner;
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return "TimerAnimation{owner=" + timer_owner + "}";
     }
 
     @Override
-    public void updateChecksum(@NonNull StateChecksum checksum) {
+    public void updateChecksum(StateChecksum checksum) {
         checksum.update(time);
     }
 

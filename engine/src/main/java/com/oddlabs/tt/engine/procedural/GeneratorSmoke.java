@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.procedural.Ring;
 import com.oddlabs.tt.procedural.Voronoi;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -48,7 +47,7 @@ public final class GeneratorSmoke extends TextureGenerator {
     }
 
     @Override
-    public @NonNull Texture @NonNull [] generate() {
+    public Texture[] generate() {
         Channel voronoi = new Voronoi(TEXTURE_SIZE, 4, 4, 1, 1f, seed).getDistance(-1f, 1f, 0f);
 
         // Ultra-Soft Alpha Profile (Radius 0.4, Gamma 3.0).

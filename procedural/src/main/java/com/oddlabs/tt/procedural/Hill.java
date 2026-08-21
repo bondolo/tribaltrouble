@@ -3,7 +3,6 @@ package com.oddlabs.tt.procedural;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
-import org.jspecify.annotations.NonNull;
 
 public final class Hill {
     public enum Shape {
@@ -15,7 +14,7 @@ public final class Hill {
     private Channel channel;
     private final int size;
 
-    public Hill(int size, @NonNull Shape shape) {
+    public Hill(int size, Shape shape) {
         this.size = size;
         switch (shape) {
             case CIRCLE -> circle();
@@ -74,7 +73,7 @@ public final class Hill {
         channel.quadJoin(quarter, quarter.copy().rotate(270), quarter.copy().rotate(90), quarter.copy().rotate(180));
     }
 
-    public @NonNull Layer toLayer() {
+    public Layer toLayer() {
         return new Layer(channel, channel.copy(), channel.copy());
     }
 

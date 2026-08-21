@@ -1,6 +1,5 @@
 package com.oddlabs.net;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
@@ -32,7 +31,7 @@ public final class HostSequenceID implements Serializable {
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return host_id + " " + seq_id;
     }
 

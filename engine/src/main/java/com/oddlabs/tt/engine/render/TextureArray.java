@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.util.GLUtils;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -47,7 +46,7 @@ public final class TextureArray extends Texture {
      * Builds the texture array from a map of slot indices to image mipmaps.
      * All layers for a given level are uploaded at once to avoid alignment issues with compressed formats.
      */
-    public void build(@NonNull Map<@NonNull Integer, @NonNull GLImage[]> sources, int internal_format) {
+    public void build(Map<Integer, GLImage[]> sources, int internal_format) {
         int numLevels = 1 + (int) Math.floor(Math.log(Math.max(getWidth(), getHeight())) / Math.log(2));
 
         GL11.glBindTexture(GL30.GL_TEXTURE_2D_ARRAY, getHandle());

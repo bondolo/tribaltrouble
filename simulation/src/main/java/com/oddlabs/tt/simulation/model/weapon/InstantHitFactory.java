@@ -6,7 +6,6 @@ import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
@@ -21,7 +20,7 @@ public final class InstantHitFactory extends WeaponFactory {
     }
 
     @Override
-    protected void doAttack(boolean hit, @NonNull Unit src, @NonNull Selectable<?> target) {
+    protected void doAttack(boolean hit, Unit src, Selectable<?> target) {
         int damage = 1;
         if (target instanceof Building && target.getTemplate().getAbilities().hasAbilities(Abilities.ATTACK))
             damage = 6;
@@ -41,7 +40,7 @@ public final class InstantHitFactory extends WeaponFactory {
     }
 
     @Override
-    public @NonNull Optional<Class<? extends ThrowingWeapon>> getType() {
+    public Optional<Class<? extends ThrowingWeapon>> getType() {
         return Optional.empty();
     }
 }

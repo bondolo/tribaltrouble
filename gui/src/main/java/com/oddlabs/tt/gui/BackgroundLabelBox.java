@@ -3,15 +3,14 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
-import org.jspecify.annotations.NonNull;
 
 public class BackgroundLabelBox extends LabelBox {
-    public BackgroundLabelBox(@NonNull CharSequence text, @NonNull Font font, int width) {
+    public BackgroundLabelBox(CharSequence text, Font font, int width) {
         super(text, font, width);
     }
 
     @Override
-    protected final void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected final void renderGeometry(GUIRenderer renderer) {
         Box background_box = Skin.getSkin().getBackgroundBox();
         background_box.render(renderer, 0f, 1f, getWidth(), getHeight() - 2, ModeIconQuads.Mode.NORMAL);
         super.renderGeometry(renderer);

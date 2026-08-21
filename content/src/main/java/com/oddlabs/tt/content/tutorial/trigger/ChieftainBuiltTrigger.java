@@ -4,7 +4,6 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class ChieftainBuiltTrigger extends TutorialTrigger {
 
@@ -13,7 +12,7 @@ public final class ChieftainBuiltTrigger extends TutorialTrigger {
     }
 
     @Override
-    public void run(@NonNull Tutorial tutorial) {
+    public void run(Tutorial tutorial) {
         for (var s : tutorial.getViewer().getLocalPlayer().getUnits().getSet()) {
             if (s instanceof Unit u && u.getAbilities().hasAbilities(Abilities.MAGIC)) {
                 tutorial.next(new MagicTrigger(u));

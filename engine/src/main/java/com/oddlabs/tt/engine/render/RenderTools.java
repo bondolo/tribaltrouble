@@ -4,7 +4,6 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.engine.util.DebugRender;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Utility class providing common rendering operations, including frustum culling,
@@ -22,7 +21,7 @@ public final class RenderTools {
      * Translates and rotates the matrix stack to position and orient a model.
      * The rotation is calculated from the direction vector (dir_x, dir_y).
      */
-    static void translateAndRotate(@NonNull Model model, @NonNull MatrixStack stack) {
+    static void translateAndRotate(Model model, MatrixStack stack) {
         translateAndRotate(model.getPositionX(), model.getPositionY(), model.getPositionZ(), model.getDirectionX(),
                 model.getDirectionY(), stack);
     }
@@ -31,12 +30,12 @@ public final class RenderTools {
      * Translates and rotates the matrix stack to position and orient a model.
      * The rotation is calculated from the direction vector (dir_x, dir_y).
      */
-    static void translateAndRotate(float x, float y, float z, float dir_x, float dir_y, @NonNull MatrixStack stack) {
+    static void translateAndRotate(float x, float y, float z, float dir_x, float dir_y, MatrixStack stack) {
         float angle = (float) Math.toDegrees(Math.atan2(dir_y, dir_x));
         stack.translate(x, y, z).rotate(angle, 0f, 0f, 1f);
     }
 
-    public static @NonNull FrustumIntersection inFrustum(@NonNull BoundingBox box, float[][] frustum) {
+    public static FrustumIntersection inFrustum(BoundingBox box, float[][] frustum) {
         boolean all_corners_in_all_planes = true;
 
         for (int f = 0; f < 6; f++) {
@@ -79,7 +78,7 @@ public final class RenderTools {
         return all_corners_in_all_planes ? FrustumIntersection.ALL_INSIDE : FrustumIntersection.INTERSECTING;
     }
 
-    public static float getEyeDistanceSquared(@NonNull BoundingBox box, float camera_x, float camera_y,
+    public static float getEyeDistanceSquared(BoundingBox box, float camera_x, float camera_y,
             float camera_z) {
         float distx = camera_x - box.getCX();
         float disty = camera_y - box.getCY();
@@ -87,26 +86,26 @@ public final class RenderTools {
         return distx * distx + disty * disty + distz * distz;
     }
 
-    public static float getCameraDistanceXYSquared(@NonNull BoundingBox box, float camera_x, float camera_y) {
+    public static float getCameraDistanceXYSquared(BoundingBox box, float camera_x, float camera_y) {
         float dx = camera_x - box.getCX();
         float dy = camera_y - box.getCY();
         return dx * dx + dy * dy;
     }
 
-    public static float getCameraDistanceSquared(@NonNull BoundingBox box, float camera_x, float camera_y,
+    public static float getCameraDistanceSquared(BoundingBox box, float camera_x, float camera_y,
             float camera_z) {
         return getEyeDistanceSquared(box, camera_x, camera_y, camera_z);
     }
 
-    public static void draw(@NonNull BoundingBox box) {
+    public static void draw(BoundingBox box) {
         draw(box, 1f, 1f, 1f);
     }
 
-    public static void draw(@NonNull BoundingBox box, float r, float g, float b) {
+    public static void draw(BoundingBox box, float r, float g, float b) {
         DebugRender.drawBox(box.bmin_x, box.bmax_x, box.bmin_y, box.bmax_y, box.bmin_z, box.bmax_z, r, g, b);
     }
 
-    public static void draw(@NonNull BoundingBox box, @NonNull BoundingMode bound_type, float r, float g, float b) {
+    public static void draw(BoundingBox box, BoundingMode bound_type, float r, float g, float b) {
         draw(box, r, g, b);
     }
 

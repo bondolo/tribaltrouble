@@ -2,13 +2,12 @@ package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import org.jspecify.annotations.NonNull;
 
 public final class HuntController extends Controller {
-    private final @NonNull Selectable<?> target;
-    private final @NonNull Unit unit;
+    private final Selectable<?> target;
+    private final Unit unit;
 
-    public HuntController(@NonNull Unit unit, @NonNull Selectable<?> target) {
+    public HuntController(Unit unit, Selectable<?> target) {
         super(1);
         this.unit = unit;
         this.target = target;

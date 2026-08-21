@@ -8,16 +8,15 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /** A non-focusable icon button that trains a chieftain. */
 public class ChieftainButton extends NonFocusIconButton {
-    private final @NonNull PlayerInterface player_interface;
+    private final PlayerInterface player_interface;
     private @Nullable Building current_building;
 
-    public ChieftainButton(@NonNull WorldViewer viewer, @NonNull PlayerInterface player_interface,
-            @NonNull ModeIconQuads icon) {
+    public ChieftainButton(WorldViewer viewer, PlayerInterface player_interface,
+            ModeIconQuads icon) {
         super(icon, GameAction.TRAIN_CHIEFTAIN, () -> ActionButtonPanel.i18n(
                 "train_chieftain_tip", viewer.getInputManager().getBindingString(
                         GameAction.TRAIN_CHIEFTAIN)));
@@ -25,18 +24,18 @@ public class ChieftainButton extends NonFocusIconButton {
         setCanFocus(true);
     }
 
-    public final void setBuilding(@NonNull Building current_building) {
+    public final void setBuilding(Building current_building) {
         this.current_building = current_building;
     }
 
     @Override
-    protected void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+    protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
         player_interface.trainChieftain(current_building, !current_building.getChieftainContainer()
                 .orElseThrow().isTraining());
     }
 
     @Override
-    protected final void postRender(@NonNull GUIRenderer renderer) {
+    protected final void postRender(GUIRenderer renderer) {
         if (current_building.isAlive() && current_building.getChieftainContainer()
                 .map(c -> c.isTraining()).orElse(false)) {
             var watchQuad = GUIIcons.getIcons().getWatch(getProgress());

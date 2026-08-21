@@ -17,7 +17,6 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
@@ -27,14 +26,14 @@ import java.util.Set;
  * such as cheat code handling and opening the in-game main menu.
  */
 public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C> {
-    private final @NonNull WorldViewer viewer;
+    private final WorldViewer viewer;
 
-    protected InGameDelegate(@NonNull WorldViewer viewer, @Nullable C camera) {
+    protected InGameDelegate(WorldViewer viewer, @Nullable C camera) {
         super(viewer.getGUIRoot(), camera);
         this.viewer = viewer;
     }
 
-    private boolean cheat(@NonNull Set<GameAction> actions) {
+    private boolean cheat(Set<GameAction> actions) {
         // cheats
         Cheat cheat = viewer.getCheat();
         if (!cheat.isEnabled())
@@ -167,7 +166,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
     }
 
     @Override
-    public void handleInput(@NonNull InputEvent event) {
+    public void handleInput(InputEvent event) {
         super.handleInput(event);
         if (event.isConsumed()) return;
 
@@ -185,7 +184,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         }
     }
 
-    public final @NonNull WorldViewer getViewer() {
+    public final WorldViewer getViewer() {
         return viewer;
     }
 }

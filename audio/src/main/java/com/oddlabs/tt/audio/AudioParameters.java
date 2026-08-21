@@ -1,8 +1,5 @@
 package com.oddlabs.tt.audio;
 
-import org.jspecify.annotations.NonNull;
-
-import java.util.Objects;
 
 /**
  * Parameters used to configure the creation and playback of audio.
@@ -20,7 +17,7 @@ import java.util.Objects;
  * @param relative True if coordinates are relative to the listener, false for absolute world coordinates.
  */
 public record AudioParameters(
-                              @NonNull AudioFile audio,
+                              AudioFile audio,
                               int rank,
                               float distance,
                               float gain,
@@ -36,29 +33,26 @@ public record AudioParameters(
     public static final int RANK_NOT_INITIALIZED = 0;
     public static final float DISTANCE_AMBIENT = Float.MAX_VALUE;
 
-    public AudioParameters {
-        Objects.requireNonNull(audio, "audio");
-    }
 
-    public AudioParameters(@NonNull AudioFile audio, int rank, float distance) {
+    public AudioParameters(AudioFile audio, int rank, float distance) {
         this(audio, rank, distance, 1f, .5f);
     }
 
-    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius) {
+    public AudioParameters(AudioFile audio, int rank, float distance, float gain, float radius) {
         this(audio, rank, distance, gain, radius, 1f);
     }
 
-    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius,
+    public AudioParameters(AudioFile audio, int rank, float distance, float gain, float radius,
             float pitch) {
         this(audio, rank, distance, gain, radius, pitch, false, false, false);
     }
 
-    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius, float pitch,
+    public AudioParameters(AudioFile audio, int rank, float distance, float gain, float radius, float pitch,
             boolean looping) {
         this(audio, rank, distance, gain, radius, pitch, looping, false, false);
     }
 
-    public AudioParameters(@NonNull AudioFile audio, int rank, float distance, float gain, float radius, float pitch,
+    public AudioParameters(AudioFile audio, int rank, float distance, float gain, float radius, float pitch,
             boolean looping, boolean relative) {
         this(audio, rank, distance, gain, radius, pitch, looping, relative, false);
     }

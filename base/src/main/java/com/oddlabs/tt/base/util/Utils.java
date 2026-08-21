@@ -1,6 +1,5 @@
 package com.oddlabs.tt.base.util;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.FileOutputStream;
@@ -31,26 +30,25 @@ public final class Utils {
     private static final Logger logger = Logger.getLogger(Utils.class.getName());
 
     @FunctionalInterface
-    public interface I18N extends BiFunction<@NonNull String, @NonNull Object @NonNull [], @NonNull String> {
+    public interface I18N extends BiFunction<String, Object[], String> {
         @Override
-        default @NonNull String apply(@NonNull String key, @NonNull Object @NonNull [] args) {
+        default String apply(String key, Object[] args) {
             return i18n(key, args);
         }
 
-        @NonNull
-        String i18n(@NonNull String key, @NonNull Object @NonNull... args);
+        String i18n(String key, Object... args);
     }
 
-    public static @NonNull String getBundleString(@NonNull ResourceBundle bundle, @NonNull String key,
+    public static String getBundleString(ResourceBundle bundle, String key,
             Object... object_array) {
         return MessageFormat.format(bundle.getString(key), object_array);
     }
 
-    public static @NonNull Path getInstallDir() {
+    public static Path getInstallDir() {
         return Path.of(System.getProperty("user.dir"));
     }
 
-    public static @NonNull ByteBuffer ioResourceToByteBuffer(@NonNull URL url) throws IOException {
+    public static ByteBuffer ioResourceToByteBuffer(URL url) throws IOException {
         try (InputStream is = url.openStream()) {
             byte[] bytes = is.readAllBytes();
             ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length).order(ByteOrder.nativeOrder());
@@ -61,7 +59,7 @@ public final class Utils {
     }
 
     /** {@return a stream of the remaining ints in the provided buffer} */
-    public static @NonNull IntStream toIntStream(@NonNull IntBuffer buffer) {
+    public static IntStream toIntStream(IntBuffer buffer) {
         var spliterator = new Spliterator.OfInt() {
             @Override
             public @Nullable OfInt trySplit() {
@@ -70,7 +68,7 @@ public final class Utils {
             }
 
             @Override
-            public boolean tryAdvance(@NonNull IntConsumer action) {
+            public boolean tryAdvance(IntConsumer action) {
                 if (buffer.hasRemaining()) {
                     action.accept(buffer.get());
                     return true;
@@ -91,7 +89,7 @@ public final class Utils {
         return StreamSupport.intStream(spliterator, false);
     }
 
-    public static void saveAsBMP(@NonNull String filename, @NonNull ByteBuffer pixel_data, int width, int height) {
+    public static void saveAsBMP(String filename, ByteBuffer pixel_data, int width, int height) {
         long before = System.nanoTime();
         int pad = 4 - (width * 3) % 4;
         if (pad == 4)
@@ -184,7 +182,7 @@ public final class Utils {
         IO.println("File " + filename + " saved in " + TimeUnit.NANOSECONDS.toMillis(after - before) + " milliseconds");
     }
 
-    public static void saveAsTGA(String filename, @NonNull ByteBuffer pixel_data, int width, int height) {
+    public static void saveAsTGA(String filename, ByteBuffer pixel_data, int width, int height) {
         long before = System.nanoTime();
         try (FileOutputStream fout = new FileOutputStream(filename + ".tga")) {
 

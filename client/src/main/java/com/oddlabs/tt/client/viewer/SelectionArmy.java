@@ -6,7 +6,6 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
@@ -14,13 +13,13 @@ import java.util.Optional;
 
 public final class SelectionArmy extends Army {
 
-    private final @NonNull Player local_player;
+    private final Player local_player;
     private int num_units;
     private int num_builders;
     private @Nullable Unit chieftain;
     private @Nullable Building building;
 
-    SelectionArmy(@NonNull Player local_player) {
+    SelectionArmy(Player local_player) {
         this.local_player = local_player;
     }
 
@@ -32,11 +31,11 @@ public final class SelectionArmy extends Army {
         return num_units;
     }
 
-    public @NonNull Optional<Unit> getChieftain() {
+    public Optional<Unit> getChieftain() {
         return Optional.ofNullable(chieftain);
     }
 
-    public @NonNull Optional<Building> getBuilding() {
+    public Optional<Building> getBuilding() {
         return Optional.ofNullable(building);
     }
 
@@ -68,19 +67,19 @@ public final class SelectionArmy extends Army {
     }
 
     @Override
-    public void remove(@NonNull Selectable<?> selectable) {
+    public void remove(Selectable<?> selectable) {
         super.remove(selectable);
         update();
     }
 
     @Override
-    public void add(@NonNull Selectable<?> selectable) {
+    public void add(Selectable<?> selectable) {
         super.add(selectable);
         update();
     }
 
     @Override
-    public void addAll(@NonNull Collection<? extends @NonNull Selectable<?>> selectable) {
+    public void addAll(Collection<? extends Selectable<?>> selectable) {
         super.addAll(selectable);
         update();
     }

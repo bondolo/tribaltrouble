@@ -1,8 +1,6 @@
 package com.oddlabs.tt.window;
 
 
-import org.jspecify.annotations.NonNull;
-
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
@@ -59,11 +57,11 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
      * capabilities
      */
     @Override
-    public int compareTo(@NonNull SerializableDisplayMode o) {
+    public int compareTo(SerializableDisplayMode o) {
         return COMPARATOR.compare(this, o);
     }
 
-    private static int getDistanceFromBestMode(@NonNull SerializableDisplayMode mode) {
+    private static int getDistanceFromBestMode(SerializableDisplayMode mode) {
         int dx = Math.abs(DEFAULT_MODE.getWidth() - mode.getWidth());
         int dy = Math.abs(DEFAULT_MODE.getHeight() - mode.getHeight());
         return dx + dy;
@@ -76,7 +74,7 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
      * @param mode mode to check
      * @return true if the mode is valid, false otherwise
      */
-    public static boolean isModeValid(@NonNull SerializableDisplayMode mode) {
+    public static boolean isModeValid(SerializableDisplayMode mode) {
         return (mode.getWidth() >= MIN_WIDTH || mode.getHeight() >= MIN_HEIGHT) &&
                 (mode.getWidth() * mode.getHeight()) >= MIN_PIXELS &&
                 mode.getBitsPerPixel() >= MIN_BPP &&
@@ -84,7 +82,7 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return width + "x" + height + " " + bpp + "bit " + freq + "Hz";
     }
 
@@ -111,7 +109,7 @@ public final class SerializableDisplayMode implements Serializable, Comparable<S
                 getBitsPerPixel() == other_mode.getBitsPerPixel();
     }
 
-    public boolean isEquivalent(@NonNull SerializableDisplayMode other_mode) {
+    public boolean isEquivalent(SerializableDisplayMode other_mode) {
         return getWidth() == other_mode.getWidth() && getHeight() == other_mode.getHeight();
     }
 

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.util.CryptUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -22,7 +21,7 @@ public class PasswordLine extends EditLine {
      * @return The blank text or stars to display
      */
     @Override
-    protected @NonNull CharSequence getDisplayText() {
+    protected CharSequence getDisplayText() {
         if (getText().isEmpty()) {
             return "";
         }

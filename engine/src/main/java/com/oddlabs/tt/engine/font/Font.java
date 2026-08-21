@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.FontInfo;
 import com.oddlabs.util.Quad;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -17,15 +16,15 @@ import java.util.Map;
  * Represents a pre-rendered font asset at runtime, providing glyph metadata and layout metrics.
  */
 public final class Font {
-    private final @NonNull Map<@NonNull String, @NonNull Quad> key_map;
-    private final @NonNull Texture texture;
+    private final Map<String, Quad> key_map;
+    private final Texture texture;
     private final int x_border;
     private final int y_border;
     private final int height;
     private final int max_ascension;
     private final int max_descension;
 
-    public Font(@NonNull FontInfo font_info) {
+    public Font(FontInfo font_info) {
         this.key_map = font_info.getKeyMap();
         TextureFile file = new TextureFile(font_info.getTextureName(),
                 GL11.GL_RGBA,
@@ -41,7 +40,7 @@ public final class Font {
         this.max_descension = font_info.getMaxDescension();
     }
 
-    public @Nullable Quad getQuad(@NonNull String grapheme) {
+    public @Nullable Quad getQuad(String grapheme) {
         return key_map.get(grapheme);
     }
 
@@ -69,11 +68,11 @@ public final class Font {
         return max_descension;
     }
 
-    public @NonNull Texture getTexture() {
+    public Texture getTexture() {
         return texture;
     }
 
-    public int getWidestCodepoint(@NonNull CharSequence text) {
+    public int getWidestCodepoint(CharSequence text) {
         assert !text.isEmpty() : "Empty CharSequence";
 
         return text.codePoints().reduce(Character.codePointAt(text, 0), (current, codePoint) -> {
@@ -84,7 +83,7 @@ public final class Font {
         });
     }
 
-    public int getWidth(@NonNull CharSequence text) {
+    public int getWidth(CharSequence text) {
         if (text.isEmpty())
             return 0;
 

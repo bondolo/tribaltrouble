@@ -5,13 +5,12 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.ReproduceUnitContainer;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
-import org.jspecify.annotations.NonNull;
 
 public final class WatchStatusIcon extends StatusIcon {
     private static final Color.Linear COLOR = Color.Linear.WHITE.alpha(0.75f);
     private Building building;
 
-    public WatchStatusIcon(int label_width, @NonNull IconQuad icon, @NonNull String tooltip) {
+    public WatchStatusIcon(int label_width, IconQuad icon, String tooltip) {
         super(label_width, icon, tooltip);
     }
 
@@ -20,7 +19,7 @@ public final class WatchStatusIcon extends StatusIcon {
     }
 
     @Override
-    protected void renderGeometry(@NonNull GUIRenderer renderer) {
+    protected void renderGeometry(GUIRenderer renderer) {
         super.renderGeometry(renderer);
         if (!building.isDead() && !building.getChieftainContainer().orElseThrow().isTraining() && building.getOwner()
                 .getUnitCountContainer().getNumSupplies() < building.getOwner().getWorld().getMaxUnitCount()) {

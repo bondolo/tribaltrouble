@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.resource;
 
 import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Configuration and resource details of a generated game world.
@@ -16,11 +15,11 @@ import org.jspecify.annotations.NonNull;
  * @param <T> the texture type
  */
 public record WorldInfo<T>(
-                           @NonNull LandscapeData landscapeData,
+                           LandscapeData landscapeData,
                            Maps<T> maps,
-                           @NonNull T detail,
-                           @NonNull T detailNormal,
-                           @NonNull FogInfo fog_info) {
+                           T detail,
+                           T detailNormal,
+                           FogInfo fog_info) {
 
     public record Maps<T>(T diffuse, T normal) {
     }

@@ -2,18 +2,17 @@ package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Selectable;
-import org.jspecify.annotations.NonNull;
 
 public final class NullController extends Controller {
-    private final @NonNull Selectable<?> selectable;
+    private final Selectable<?> selectable;
 
-    public NullController(@NonNull Selectable<?> s) {
+    public NullController(Selectable<?> s) {
         super(0);
         this.selectable = s;
     }
 
     @Override
-    public @NonNull String getKey() {
+    public String getKey() {
         return super.getKey() +
                 selectable.getAbilities().hasAbilities(Abilities.BUILD_ARMIES) +
                 selectable.getAbilities().hasAbilities(Abilities.REPRODUCE) +

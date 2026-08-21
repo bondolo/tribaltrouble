@@ -34,7 +34,6 @@ import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
@@ -55,19 +54,19 @@ public final class TutorialForm extends Form {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(TutorialForm.class.getName());
 
-    private static @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final @NonNull GUIRoot gui_root;
-    private final @NonNull NetworkSelector network;
-    private final @NonNull Menu main_menu;
+    private final GUIRoot gui_root;
+    private final NetworkSelector network;
+    private final Menu main_menu;
 
-    private static @NonNull String formatTutorial(int tutorial_number) {
+    private static String formatTutorial(int tutorial_number) {
         return i18n("tutorial", Integer.toString(tutorial_number));
     }
 
-    public TutorialForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu) {
+    public TutorialForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
         this.gui_root = gui_root;
         this.network = network;
         this.main_menu = main_menu;
@@ -147,9 +146,9 @@ public final class TutorialForm extends Form {
         TutorialTrigger create(WorldViewer viewer);
     }
 
-    private static void startNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
+    private static void startNewGame(NetworkSelector network, GUIRoot gui_root,
             TriggerFactory factory, int tutorial_num,
-            @NonNull AudioManager audioManager) {
+            AudioManager audioManager) {
         TutorialInGameInfo ingame_info = new TutorialInGameInfo();
         GameNetwork game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction(factory,
                 ingame_info), Player.INITIAL_UNIT_COUNT, tutorial_num, audioManager);
@@ -158,10 +157,10 @@ public final class TutorialForm extends Form {
         game_network.getClient().getServerInterface().startServer();
     }
 
-    private static @NonNull GameNetwork doStartNewGame(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            @NonNull TutorialInGameInfo ingame_info, final @Nullable WorldInitAction initial_action,
+    private static GameNetwork doStartNewGame(NetworkSelector network, GUIRoot gui_root,
+            TutorialInGameInfo ingame_info, final @Nullable WorldInitAction initial_action,
             int initial_unit_count, int tutorial_num,
-            @NonNull AudioManager audioManager) {
+            AudioManager audioManager) {
         int size = 256;
         float hills = 1f;
         float trees = 1f;
@@ -186,8 +185,8 @@ public final class TutorialForm extends Form {
         return true;
     }
 
-    public static void startTutorial(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, int tutorial_number,
-            @NonNull AudioManager audioManager) {
+    public static void startTutorial(NetworkSelector network, GUIRoot gui_root, int tutorial_number,
+            AudioManager audioManager) {
         final TutorialInGameInfo ingame_info;
         GameNetwork game_network;
         switch (tutorial_number) {
@@ -254,7 +253,7 @@ public final class TutorialForm extends Form {
         }
 
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             if (checkTutorial(gui_root, number)) {
                 startTutorial(network, gui_root, number, main_menu.getAudioManager());
                 TutorialForm.this.remove();

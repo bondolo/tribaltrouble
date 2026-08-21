@@ -14,7 +14,6 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -32,21 +31,21 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
     private static final int IDEAL_TEXELS_PER_DETAIL = 256;
     private static final float IDEAL_DETAIL_ALPHA = .15f;
 
-    private final @NonNull IslandConfig config;
+    private final IslandConfig config;
     private final int grid_units;
     private final int texels_per_grid_unit;
 
-    public IslandGenerator(@NonNull IslandConfig config, int texels_per_grid_unit) {
+    public IslandGenerator(IslandConfig config, int texels_per_grid_unit) {
         this.config = config;
         this.grid_units = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
         this.texels_per_grid_unit = texels_per_grid_unit;
     }
 
-    public @NonNull IslandConfig getConfig() {
+    public IslandConfig getConfig() {
         return config;
     }
 
-    private static @NonNull Texture createDetail(@NonNull GLImage detail_image, int base_level) {
+    private static Texture createDetail(GLImage detail_image, int base_level) {
         GLImage[] detail_mipmaps = detail_image.buildMipMaps(base_level,
                 LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_FACTOR, true,
                 false);
@@ -54,7 +53,7 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
                 GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
-    private static @NonNull Texture createDetailNormal(@NonNull GLImage detail_image) {
+    private static Texture createDetailNormal(GLImage detail_image) {
         GLImage[] detail_mipmaps = detail_image.buildMipMaps(10000, 1.0f, true, false);
         return new Texture(detail_mipmaps, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                 GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
@@ -66,7 +65,7 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
     }
 
     @Override
-    public @NonNull WorldInfo<Texture> generate(int num_players, int initial_unit_count, float random_start_pos) {
+    public WorldInfo<Texture> generate(int num_players, int initial_unit_count, float random_start_pos) {
         int colormap_size = grid_units * texels_per_grid_unit;
 
         // Build landscape

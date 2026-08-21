@@ -1,7 +1,6 @@
 package com.oddlabs.tt.audio;
 
 import org.joml.Vector3f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -19,7 +18,6 @@ public interface AudioSource {
     /**
      * {@return the current state of the source}
      */
-    @NonNull
     State getState();
 
     /**
@@ -27,7 +25,7 @@ public interface AudioSource {
      *
      * @param audio the audio to be played
      */
-    void setAudio(@NonNull Audio audio);
+    void setAudio(Audio audio);
 
     /**
      * Sets the pitch adjustment of the audio source.
@@ -136,7 +134,6 @@ public interface AudioSource {
      *
      * @return The position (x, y, z).
      */
-    @NonNull
     Vector3f getPosition();
 
     /**

@@ -5,7 +5,6 @@ import com.oddlabs.procedural.Layer;
 import com.oddlabs.util.FontInfo;
 import com.oddlabs.util.Quad;
 import com.oddlabs.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.awt.*;
 import java.awt.color.ColorSpace;
@@ -42,7 +41,7 @@ public final class FontRenderer {
     private static final float SPACE_SCALE = 0.66666f;
     private static final int CHANNEL_COUNT_RGBA = 4;
 
-    private static @NonNull BufferedImage createSrgbAbgrImage(int width, int height) {
+    private static BufferedImage createSrgbAbgrImage(int width, int height) {
         var colorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
         int[] bandOffsets = new int[]{3, 2, 1, 0};
         var sampleModel = new PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, width, height, CHANNEL_COUNT_RGBA,
@@ -54,7 +53,7 @@ public final class FontRenderer {
         return new BufferedImage(colorModel, raster, false, null);
     }
 
-    static void main(@NonNull String @NonNull... args) {
+    static void main(String... args) {
         if (args.length < 9) {
             IO.println(
                     "FontRenderer <font_name> <font_size> <max_image_width> <max_chars> <scale_factor> <font_info_dir> <font_tex_dir> <font_tex_classpath> <additional_codepoints_hex>");
@@ -83,7 +82,7 @@ public final class FontRenderer {
      * Parses a comma-separated list of hexadecimal Unicode codepoints (e.g. {@code "2026,221e"}),
      * combining them into a single string and segmenting them into grapheme clusters via BreakIterator.
      */
-    private static @NonNull List<String> parseHexGraphemes(@NonNull String csv) {
+    private static List<String> parseHexGraphemes(String csv) {
         if (csv.isEmpty()) {
             return List.of();
         }
@@ -107,11 +106,11 @@ public final class FontRenderer {
         return result;
     }
 
-    public FontRenderer(@NonNull Path font_file,
+    public FontRenderer(Path font_file,
             int logical_font_size, float scale_factor,
-            int max_image_size, @NonNull List<String> graphemes,
-            @NonNull Path font_info_dir, @NonNull Path font_tex_dir,
-            @NonNull String font_tex_classpath) throws Exception {
+            int max_image_size, List<String> graphemes,
+            Path font_info_dir, Path font_tex_dir,
+            String font_tex_classpath) throws Exception {
         String font_file_name = font_file.getFileName().toString();
         int extension = font_file_name.lastIndexOf('.');
         String src_font_name = extension != -1 ? font_file_name.substring(0, extension) : font_file_name;
@@ -196,9 +195,9 @@ public final class FontRenderer {
         font_image.saveAsPNG(font_tex_dir + File.separator + dest_font_name + "_" + logical_font_size);
     }
 
-    private int[] calculateImageHeight(@NonNull Font src_font,
+    private int[] calculateImageHeight(Font src_font,
             int image_width, int space_width,
-            @NonNull List<String> graphemes,
+            List<String> graphemes,
             int x_border, int y_border) {
         BufferedImage image = createSrgbAbgrImage(1, 1);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
@@ -257,12 +256,12 @@ public final class FontRenderer {
         return new int[]{image_height, max_glyph_height, max_baseline_height, max_under_baseline_height};
     }
 
-    private @NonNull Channel drawFont(@NonNull Font src_font, @NonNull String font_tex_classpath,
-            @NonNull Path font_info_dir, @NonNull String dest_font_name,
+    private Channel drawFont(Font src_font, String font_tex_classpath,
+            Path font_info_dir, String dest_font_name,
             int logical_font_size, float scale_factor,
             int max_glyph_height, int max_baseline_height, int max_under_baseline_height,
             int image_width, int image_height, int space_width,
-            @NonNull List<String> graphemes, boolean saveFontInfo,
+            List<String> graphemes, boolean saveFontInfo,
             int x_border, int y_border) {
         BufferedImage image = createSrgbAbgrImage(image_width, image_height);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
@@ -276,7 +275,7 @@ public final class FontRenderer {
         int current_x = 0;
         int current_y = 0;
         int valid_chars = 0;
-        Map<@NonNull String, @NonNull Quad> key_map = saveFontInfo ? new HashMap<>() : null;
+        Map<String, Quad> key_map = saveFontInfo ? new HashMap<>() : null;
 
         IO.println("Drawing chars for width*height = " + image_width + "*" + image_height);
         IO.print("Progress...");
@@ -345,7 +344,7 @@ public final class FontRenderer {
     }
 
     /** Gross, but there doesn't seem to be any other option for determining whether a glyph is color */
-    private static boolean isColorGrapheme(@NonNull Font font, @NonNull String grapheme) {
+    private static boolean isColorGrapheme(Font font, String grapheme) {
         int size = Math.max(64, font.getSize() * 2);
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = img.createGraphics();

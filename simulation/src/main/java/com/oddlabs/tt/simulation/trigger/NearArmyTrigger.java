@@ -3,15 +3,14 @@ package com.oddlabs.tt.simulation.trigger;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.NonNull;
 
 public final class NearArmyTrigger extends IntervalTrigger {
-    private final @NonNull Unit[] src;
+    private final Unit[] src;
     private final float r;
-    private final @NonNull Player player;
-    private final @NonNull Runnable runnable;
+    private final Player player;
+    private final Runnable runnable;
 
-    public NearArmyTrigger(Unit[] src, float r, @NonNull Player player, @NonNull Runnable runnable) {
+    public NearArmyTrigger(Unit[] src, float r, Player player, Runnable runnable) {
         super(player.getWorld(), .25f, 0f);
         this.src = src;
         this.r = r;

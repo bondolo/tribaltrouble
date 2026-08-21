@@ -14,7 +14,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
@@ -29,13 +28,13 @@ public final class NewProfileForm extends Form {
     private static final int EDITLINE_WIDTH = 240;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NewProfileForm.class.getName());
 
-    private @NonNull String i18n(@NonNull String key, @NonNull Object @NonNull... args) {
+    private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final Menu main_menu;
     private final ProfilesForm profiles_form;
-    private final @NonNull EditLine editline_nick;
+    private final EditLine editline_nick;
     private final GUIRoot gui_root;
 
     public NewProfileForm(GUIRoot gui_root, Menu main_menu, ProfilesForm profiles_form) {
@@ -80,7 +79,7 @@ public final class NewProfileForm extends Form {
     }
 
     @Override
-    public void setFocus(@NonNull FocusDirection direction) {
+    public void setFocus(FocusDirection direction) {
         if (direction == FocusDirection.BACKWARD) {
             super.setFocus(direction);
         } else {
@@ -108,12 +107,12 @@ public final class NewProfileForm extends Form {
 
     private final class CreateProfileListener implements MouseClickListener, EnterListener {
         @Override
-        public void mouseClicked(@NonNull MouseButton button, int x, int y, int clicks) {
+        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             createProfile();
         }
 
         @Override
-        public void enterPressed(@NonNull CharSequence text) {
+        public void enterPressed(CharSequence text) {
             createProfile();
         }
     }

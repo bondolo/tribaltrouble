@@ -10,7 +10,6 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -29,15 +28,15 @@ public final class AssetRegistry {
 
     private static final AssetRegistry INSTANCE = new AssetRegistry();
 
-    public static @NonNull AssetRegistry getInstance() {
+    public static AssetRegistry getInstance() {
         return INSTANCE;
     }
 
     public record BuildingVisuals(
-                                  @NonNull SpriteKey start,
-                                  @NonNull SpriteKey halfbuilt,
-                                  @NonNull SpriteKey built,
-                                  @NonNull ShadowListKey shadow
+                                  SpriteKey start,
+                                  SpriteKey halfbuilt,
+                                  SpriteKey built,
+                                  ShadowListKey shadow
     ) {
     }
 
@@ -45,9 +44,9 @@ public final class AssetRegistry {
      * Presentation audio configurations for a playable race.
      */
     public record RaceAudio(
-                            @NonNull AudioParameters attackNotification,
-                            @NonNull AudioParameters buildingNotification,
-                            @NonNull AudioParameters music
+                            AudioParameters attackNotification,
+                            AudioParameters buildingNotification,
+                            AudioParameters music
     ) {
     }
 
@@ -58,16 +57,16 @@ public final class AssetRegistry {
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
     private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
     private final EnumMap<Race, RaceAudio> raceAudio = new EnumMap<>(Race.class);
-    private @NonNull SpriteKey @Nullable [] chickenCluckSprites;
+    private SpriteKey @Nullable [] chickenCluckSprites;
     private @Nullable ShadowListKey defaultUnitShadow;
-    private @NonNull TextureKey @Nullable [] smokeTextures;
-    private @NonNull TextureKey @Nullable [] damageSmokeTextures;
-    private @NonNull TextureKey @Nullable [] poisonTextures;
+    private TextureKey @Nullable [] smokeTextures;
+    private TextureKey @Nullable [] damageSmokeTextures;
+    private TextureKey @Nullable [] poisonTextures;
     private @Nullable TextureKey lightningTexture;
-    private @NonNull TextureKey @Nullable [] noteTextures;
-    private @NonNull TextureKey @Nullable [] starTextures;
-    private @NonNull SpriteKey @Nullable [] woodFragments;
-    private @NonNull SpriteKey @Nullable [] treasures;
+    private TextureKey @Nullable [] noteTextures;
+    private TextureKey @Nullable [] starTextures;
+    private SpriteKey @Nullable [] woodFragments;
+    private SpriteKey @Nullable [] treasures;
 
     private AssetRegistry() {
         for (Race race : Race.values()) {
@@ -78,15 +77,15 @@ public final class AssetRegistry {
         }
     }
 
-    public void registerChickenCluckSprites(SpriteKey @NonNull [] sprites) {
+    public void registerChickenCluckSprites(SpriteKey[] sprites) {
         this.chickenCluckSprites = sprites.clone();
     }
 
-    public void registerWeapon(@NonNull Race race, @NonNull WeaponVisualType type, @NonNull SpriteKey sprite) {
+    public void registerWeapon(Race race, WeaponVisualType type, SpriteKey sprite) {
         weapons.get(race).put(type, sprite);
     }
 
-    public @NonNull SpriteKey getWeaponSprite(@NonNull Race race, @NonNull WeaponVisualType type) {
+    public SpriteKey getWeaponSprite(Race race, WeaponVisualType type) {
         SpriteKey sprite = weapons.get(race).get(type);
         if (sprite == null) {
             throw new IllegalStateException("Weapon sprite not registered for race " + race + " and type " + type);
@@ -94,11 +93,11 @@ public final class AssetRegistry {
         return sprite;
     }
 
-    public void registerRallyPoint(@NonNull Race race, @NonNull SpriteKey sprite) {
+    public void registerRallyPoint(Race race, SpriteKey sprite) {
         rallyPoints.put(race, sprite);
     }
 
-    public @NonNull SpriteKey getRallyPoint(@NonNull Race race) {
+    public SpriteKey getRallyPoint(Race race) {
         SpriteKey sprite = rallyPoints.get(race);
         if (sprite == null) {
             throw new IllegalStateException("Rally point sprite not registered for race " + race);
@@ -106,11 +105,11 @@ public final class AssetRegistry {
         return sprite;
     }
 
-    public void registerUnit(@NonNull Race race, @NonNull UnitVisualType type, @NonNull SpriteKey sprite) {
+    public void registerUnit(Race race, UnitVisualType type, SpriteKey sprite) {
         units.get(race).put(type, sprite);
     }
 
-    public @NonNull SpriteKey getUnitSprite(@NonNull Race race, @NonNull UnitVisualType type) {
+    public SpriteKey getUnitSprite(Race race, UnitVisualType type) {
         SpriteKey sprite = units.get(race).get(type);
         if (sprite == null) {
             throw new IllegalStateException("Unit sprite not registered for race " + race + " and type " + type);
@@ -118,12 +117,12 @@ public final class AssetRegistry {
         return sprite;
     }
 
-    public void registerBuilding(@NonNull Race race, @NonNull BuildingType type,
-            @NonNull BuildingVisuals visuals) {
+    public void registerBuilding(Race race, BuildingType type,
+            BuildingVisuals visuals) {
         buildings.get(race).put(type, visuals);
     }
 
-    public @NonNull BuildingVisuals getBuildingVisuals(@NonNull Race race, @NonNull BuildingType type) {
+    public BuildingVisuals getBuildingVisuals(Race race, BuildingType type) {
         BuildingVisuals visuals = buildings.get(race).get(type);
         if (visuals == null) {
             throw new IllegalStateException("Building visuals not registered for race " + race + " and type " + type);
@@ -131,11 +130,11 @@ public final class AssetRegistry {
         return visuals;
     }
 
-    public void registerEmoji(@NonNull EmojiType type, @NonNull SpriteKey sprite) {
+    public void registerEmoji(EmojiType type, SpriteKey sprite) {
         emojis.put(type, sprite);
     }
 
-    public @NonNull Optional<SpriteKey> getEmojiSprite(@NonNull EmojiType type) {
+    public Optional<SpriteKey> getEmojiSprite(EmojiType type) {
         if (type == EmojiType.CHICKEN_CLUCK && chickenCluckSprites != null && chickenCluckSprites.length > 0) {
             return Optional.of(chickenCluckSprites[ThreadLocalRandom.current().nextInt(
                     chickenCluckSprites.length)]);
@@ -144,22 +143,22 @@ public final class AssetRegistry {
         return Optional.ofNullable(emojis.get(type));
     }
 
-    public void registerDefaultUnitShadow(@NonNull ShadowListKey shadow) {
+    public void registerDefaultUnitShadow(ShadowListKey shadow) {
         this.defaultUnitShadow = shadow;
     }
 
-    public @NonNull ShadowListKey getDefaultUnitShadow() {
+    public ShadowListKey getDefaultUnitShadow() {
         if (defaultUnitShadow == null) {
             throw new IllegalStateException("Default unit shadow not registered");
         }
         return defaultUnitShadow;
     }
 
-    public void registerCarriedSupply(@NonNull Race race, @NonNull SupplyType type, @NonNull SpriteKey sprite) {
+    public void registerCarriedSupply(Race race, SupplyType type, SpriteKey sprite) {
         carriedSupplies.get(race).put(type, sprite);
     }
 
-    public @NonNull SpriteKey getCarriedSupplySprite(@NonNull Race race, @NonNull SupplyType type) {
+    public SpriteKey getCarriedSupplySprite(Race race, SupplyType type) {
         SpriteKey sprite = carriedSupplies.get(race).get(type);
         if (sprite == null) {
             throw new IllegalStateException("Carried supply sprite not registered for race " + race + " and type "
@@ -168,100 +167,100 @@ public final class AssetRegistry {
         return sprite;
     }
 
-    public void registerSmokeTextures(TextureKey @NonNull [] textures) {
+    public void registerSmokeTextures(TextureKey[] textures) {
         this.smokeTextures = textures.clone();
     }
 
-    public @NonNull TextureKey @NonNull [] getSmokeTextures() {
+    public TextureKey[] getSmokeTextures() {
         if (smokeTextures == null) {
             throw new IllegalStateException("Smoke textures not registered");
         }
         return smokeTextures;
     }
 
-    public void registerDamageSmokeTextures(TextureKey @NonNull [] textures) {
+    public void registerDamageSmokeTextures(TextureKey[] textures) {
         this.damageSmokeTextures = textures.clone();
     }
 
-    public @NonNull TextureKey @NonNull [] getDamageSmokeTextures() {
+    public TextureKey[] getDamageSmokeTextures() {
         if (damageSmokeTextures == null) {
             throw new IllegalStateException("Damage smoke textures not registered");
         }
         return damageSmokeTextures;
     }
 
-    public void registerPoisonTextures(TextureKey @NonNull [] textures) {
+    public void registerPoisonTextures(TextureKey[] textures) {
         this.poisonTextures = textures.clone();
     }
 
-    public @NonNull TextureKey @NonNull [] getPoisonTextures() {
+    public TextureKey[] getPoisonTextures() {
         if (poisonTextures == null) {
             throw new IllegalStateException("Poison textures not registered");
         }
         return poisonTextures;
     }
 
-    public void registerLightningTexture(@NonNull TextureKey texture) {
+    public void registerLightningTexture(TextureKey texture) {
         this.lightningTexture = texture;
     }
 
-    public @NonNull TextureKey getLightningTexture() {
+    public TextureKey getLightningTexture() {
         if (lightningTexture == null) {
             throw new IllegalStateException("Lightning texture not registered");
         }
         return lightningTexture;
     }
 
-    public void registerNoteTextures(TextureKey @NonNull [] textures) {
+    public void registerNoteTextures(TextureKey[] textures) {
         this.noteTextures = textures.clone();
     }
 
-    public @NonNull TextureKey @NonNull [] getNoteTextures() {
+    public TextureKey[] getNoteTextures() {
         if (noteTextures == null) {
             throw new IllegalStateException("Note textures not registered");
         }
         return noteTextures;
     }
 
-    public void registerStarTextures(TextureKey @NonNull [] textures) {
+    public void registerStarTextures(TextureKey[] textures) {
         this.starTextures = textures.clone();
     }
 
-    public @NonNull TextureKey @NonNull [] getStarTextures() {
+    public TextureKey[] getStarTextures() {
         if (starTextures == null) {
             throw new IllegalStateException("Star textures not registered");
         }
         return starTextures;
     }
 
-    public void registerWoodFragments(SpriteKey @NonNull [] sprites) {
+    public void registerWoodFragments(SpriteKey[] sprites) {
         this.woodFragments = sprites.clone();
     }
 
-    public @NonNull SpriteKey @NonNull [] getWoodFragments() {
+    public SpriteKey[] getWoodFragments() {
         if (woodFragments == null) {
             throw new IllegalStateException("Wood fragments not registered");
         }
         return woodFragments;
     }
 
-    public void registerTreasures(SpriteKey @NonNull [] sprites) {
+    public void registerTreasures(SpriteKey[] sprites) {
         this.treasures = sprites.clone();
     }
 
-    public @NonNull SpriteKey @NonNull [] getTreasures() {
+    public SpriteKey[] getTreasures() {
         if (treasures == null) {
             throw new IllegalStateException("Treasures not registered");
         }
         return treasures;
     }
 
-    public void registerRaceAudio(@NonNull Race race, @NonNull AudioParameters attackNotification,
-            @NonNull AudioParameters buildingNotification, @NonNull AudioParameters music) {
+    public void registerRaceAudio(Race race, AudioParameters attackNotification,
+            AudioParameters buildingNotification, AudioParameters music) {
         raceAudio.put(race, new RaceAudio(attackNotification, buildingNotification, music));
     }
 
-    public @NonNull RaceAudio getRaceAudio(@NonNull Race race) {
+    public RaceAudio getRaceAudio(Race race) {
         RaceAudio audio = raceAudio.get(race);
         if (audio == null) {
             throw new IllegalStateException("Race audio not registered for race " + race);
@@ -269,15 +268,15 @@ public final class AssetRegistry {
         return audio;
     }
 
-    public @NonNull AudioParameters getAttackNotificationAudio(@NonNull Race race) {
+    public AudioParameters getAttackNotificationAudio(Race race) {
         return getRaceAudio(race).attackNotification();
     }
 
-    public @NonNull AudioParameters getBuildingNotificationAudio(@NonNull Race race) {
+    public AudioParameters getBuildingNotificationAudio(Race race) {
         return getRaceAudio(race).buildingNotification();
     }
 
-    public @NonNull AudioParameters getMusic(@NonNull Race race) {
+    public AudioParameters getMusic(Race race) {
         return getRaceAudio(race).music();
     }
 }

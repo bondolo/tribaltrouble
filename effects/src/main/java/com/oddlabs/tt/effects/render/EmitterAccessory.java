@@ -2,7 +2,6 @@ package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
@@ -16,7 +15,7 @@ public interface EmitterAccessory extends AnimatedAccessory {
      *
      * @param dest The collection to append emitters to.
      */
-    default void addEmitters(@NonNull Collection<@NonNull Emitter<?>> dest) {
+    default void addEmitters(Collection<Emitter<?>> dest) {
         Emitter<?> emitter = getEmitter();
         if (emitter != null) {
             dest.add(emitter);
