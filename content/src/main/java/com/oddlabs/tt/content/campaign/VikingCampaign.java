@@ -2,6 +2,7 @@ package com.oddlabs.tt.content.campaign;
 
 
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -13,6 +14,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+/**
+ * Viking faction single-player campaign sequence.
+ */
 public final class VikingCampaign extends Campaign {
     public static final int MAX_UNITS = 46;
     private static final int[] INITIAL_STATES = new int[]{
@@ -56,13 +60,15 @@ public final class VikingCampaign extends Campaign {
             .map(c -> c.apply(this))
             .toArray(Island[]::new);
 
-    public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
-        this(network, gui_root, new CampaignState(INITIAL_STATES));
+    public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
+            @NonNull AudioManager audioManager) {
+        this(network, gui_root, new CampaignState(INITIAL_STATES), audioManager);
     }
 
     public VikingCampaign(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root,
-            @NonNull CampaignState campaign_state) {
-        super(campaign_state);
+            @NonNull CampaignState campaign_state,
+            @NonNull AudioManager audioManager) {
+        super(campaign_state, audioManager);
         if (getState().getCurrentIsland() == -1) {
             startIsland(network, gui_root, 0);
         }

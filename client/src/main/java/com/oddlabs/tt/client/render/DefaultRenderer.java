@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.delegate.Delegate;
 import com.oddlabs.tt.client.viewer.AmbientAudio;
 import com.oddlabs.tt.client.viewer.Cheat;
@@ -79,15 +80,16 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     public DefaultRenderer(@Nullable Cheat cheat, @NonNull Player local_player, @NonNull RenderQueues render_queues,
             @NonNull WorldInfo<Texture> world_info, @NonNull LandscapeRenderer landscape_renderer,
             @NonNull Picker picker,
-            @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack) {
+            @NonNull Selection selection, @NonNull MatrixStack modelViewStack, @NonNull MatrixStack projectionStack,
+            @NonNull AudioManager audioManager) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
-        this.ambient = new AmbientAudio(Renderer.getRenderer().getAudioManager());
+        this.ambient = new AmbientAudio(audioManager);
         this.render_queues = render_queues;
         this.picker = picker;
         this.selection = selection;
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
-                selection);
+                selection, audioManager);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
         this.landscape_renderer = landscape_renderer;
         this.sky = new Sky(landscape_renderer, world_info.landscapeData().terrain(), world_info.detail(), world_info

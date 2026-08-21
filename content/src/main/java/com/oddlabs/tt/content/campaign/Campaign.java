@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.gui.GUI;
@@ -13,6 +14,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.ResourceBundle;
 
+/**
+ * Base class managing campaign progression, state, and victory or defeat flow across islands.
+ */
 public abstract class Campaign {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(Campaign.class.getName());
 
@@ -21,14 +25,20 @@ public abstract class Campaign {
     }
 
     private final @NonNull CampaignState state;
+    private final @NonNull AudioManager audioManager;
     private CampaignState[] campaign_states; // for saving
 
-    public Campaign(@NonNull CampaignState state) {
+    public Campaign(@NonNull CampaignState state, @NonNull AudioManager audioManager) {
         this.state = state;
+        this.audioManager = audioManager;
     }
 
     public final @NonNull CampaignState getState() {
         return state;
+    }
+
+    public final @NonNull AudioManager getAudioManager() {
+        return audioManager;
     }
 
     public final void pushDelegate(@NonNull NetworkSelector network, @NonNull GUI gui) {

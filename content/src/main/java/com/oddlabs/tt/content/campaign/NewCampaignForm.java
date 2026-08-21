@@ -172,11 +172,11 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         Race chosenRace = race_pulldown.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS);
         switch (chosenRace) {
             case VIKINGS -> {
-                campaign = new VikingCampaign(network, gui_root);
+                campaign = new VikingCampaign(network, gui_root, main_menu.getAudioManager());
                 campaign.getState().setRace(Race.VIKINGS);
             }
             case NATIVES -> {
-                campaign = new NativeCampaign(network, gui_root);
+                campaign = new NativeCampaign(network, gui_root, main_menu.getAudioManager());
                 campaign.getState().setRace(Race.NATIVES);
             }
             default -> throw new IllegalArgumentException();

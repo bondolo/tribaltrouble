@@ -17,6 +17,9 @@ import org.jspecify.annotations.NonNull;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 
+/**
+ * In-game session handler and menu hook for campaign mode.
+ */
 final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     private final Campaign campaign;
 
@@ -71,11 +74,11 @@ final class CampaignInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public void close(@NonNull WorldViewer viewer) {
         if (campaign.getState().getIslandState(0) != CampaignState.ISLAND_COMPLETED) {
-            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
+            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI(),
+                    viewer.getAudioManager());
         } else {
             campaign.pushDelegate(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
         }
-
     }
 
     @Override

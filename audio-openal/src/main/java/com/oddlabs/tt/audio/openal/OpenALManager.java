@@ -4,8 +4,10 @@ import com.oddlabs.tt.audio.AbstractAudioManager;
 import com.oddlabs.tt.audio.Audio;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.audio.AudioSource;
 import com.oddlabs.tt.audio.ReverbType;
+import com.oddlabs.tt.base.animation.AnimationManager;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -65,11 +67,13 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     // Queue for OpenAL cleanup tasks to be executed when this manager's context is current
     private final Queue<@NonNull Runnable> alCleanupTasks = new ConcurrentLinkedQueue<>();
 
-    public OpenALManager(boolean headphoneMode) {
-        this(initAL(headphoneMode));
+    public OpenALManager(@NonNull AudioSettings audioSettings, @NonNull AnimationManager animationManager) {
+        this(audioSettings, animationManager, initAL(audioSettings.headphone_mode));
     }
 
-    private OpenALManager(@NonNull ALData data) {
+    private OpenALManager(@NonNull AudioSettings audioSettings, @NonNull AnimationManager animationManager,
+            @NonNull ALData data) {
+        super(audioSettings, animationManager);
         this.data = data;
         this.efxManager.init(data.device);
         this.sources = Stream.generate(() -> {

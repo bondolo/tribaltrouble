@@ -29,6 +29,9 @@ import java.util.logging.Logger;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
+/**
+ * Menu form for selecting, creating, or loading campaigns.
+ */
 public final class CampaignForm extends Form implements DeterministicSerializerLoopbackInterface<
         @NonNull CampaignState[]> {
     private static final Logger logger = Logger.getLogger(CampaignForm.class.getSimpleName());
@@ -45,10 +48,12 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
 
     private final @NonNull GUIRoot gui_root;
     private final @NonNull NetworkSelector network;
+    private final @NonNull Menu main_menu;
 
     public CampaignForm(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull Menu main_menu) {
         this.gui_root = gui_root;
         this.network = network;
+        this.main_menu = main_menu;
         Label headline = new Label(i18n("campaign"), Skin.getSkin().getHeadlineFont());
         addChild(headline);
 
@@ -119,8 +124,8 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
 
     public void load(@NonNull CampaignState campaign_state) {
         Campaign campaign = campaign_state.getRace() == Race.VIKINGS
-                ? new VikingCampaign(network, gui_root, campaign_state)
-                : new NativeCampaign(network, gui_root, campaign_state);
+                ? new VikingCampaign(network, gui_root, campaign_state, main_menu.getAudioManager())
+                : new NativeCampaign(network, gui_root, campaign_state, main_menu.getAudioManager());
         setDisabled(true);
         if (campaign_state.getIslandState(0) == CampaignState.ISLAND_COMPLETED) {
             campaign.pushDelegate(network, gui_root.getGUI());

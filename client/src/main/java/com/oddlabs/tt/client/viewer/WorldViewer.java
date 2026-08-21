@@ -2,8 +2,7 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
@@ -86,21 +85,21 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final @NonNull WorldParameters world_params;
     private final @NonNull AnimationManager animation_manager_local;
     private final @NonNull Cheat cheat;
+    private final @NonNull AudioManager audioManager;
 
     public WorldViewer(@NonNull NetworkSelector network, final @NonNull GUIRoot gui_root,
             @NonNull WorldParameters world_params, @NonNull InGameInfo ingame_info, @NonNull WorldGenerator generator,
             PlayerSlot @NonNull [] player_slots, UnitInfo @NonNull [] unit_infos, short player_slot,
-            SessionID session_id) {
+            SessionID session_id, @NonNull AudioManager audioManager) {
         this.world_params = world_params;
         this.ingame_info = ingame_info;
         this.network = network;
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
+        this.audioManager = audioManager;
         var renderer = Renderer.getRenderer();
         this.animation_manager_local = new AnimationManager();
         final CameraState camera_state = new CameraState();
-        AudioImplementation audio = (float x, float y, float z, @NonNull AudioParameters params) -> renderer
-                .getAudioManager().newAudio(x, y, z, params);
-        this.notification_manager = new NotificationManager(gui_root, audio);
+        this.notification_manager = new NotificationManager(gui_root, audioManager);
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         RenderQueues render_queues = new RenderQueues();
@@ -142,7 +141,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void treeFelled(AbstractTreeGroup.@NonNull TreeType treeType, float x, float y, float z) {
-                audio.newAudio(x, y, z, AudioAssets.TREE_FALL[treeType.ordinal() % 2]);
+                audioManager.newAudio(x, y, z, AudioAssets.TREE_FALL[treeType.ordinal() % 2]);
             }
 
             @Override
@@ -168,9 +167,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
-                selection);
+                selection, audioManager);
         this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker,
-                selection, modelViewStack, projectionStack);
+                selection, modelViewStack, projectionStack, audioManager);
         this.gui_root = gui_root;
         var useNetwork = Renderer.getRenderer().getNetwork();
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
@@ -186,6 +185,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
         initPlayers(world_info.landscapeData().startingLocations(), player_slots, world.getPlayers(), unit_infos,
                 world_params.initialGameSpeed());
         gui_root.getAnimationManager().registerAnimation(this);
+    }
+
+    public @NonNull AudioManager getAudioManager() {
+        return audioManager;
     }
 
     public @NonNull AnimationManager getAnimationManagerLocal() {

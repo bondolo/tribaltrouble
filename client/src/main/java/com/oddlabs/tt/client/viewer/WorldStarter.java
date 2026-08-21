@@ -4,6 +4,7 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.Participant;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.base.animation.AnimationManager;
@@ -33,11 +34,13 @@ public final class WorldStarter implements LoadCallback {
     private final WorldParameters world_params;
     private final @Nullable WorldInitAction initial_action;
     private final int session_id;
+    private final @NonNull AudioManager audioManager;
 
     public WorldStarter(NetworkSelector network, int session_id, @NonNull WorldGenerator generator,
             WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
-            @Nullable WorldInitAction initial_action) {
+            @Nullable WorldInitAction initial_action,
+            @NonNull AudioManager audioManager) {
         this.initial_action = initial_action;
         this.session_id = session_id;
         this.world_params = world_params;
@@ -47,6 +50,7 @@ public final class WorldStarter implements LoadCallback {
         this.player_slot = player_slot;
         this.ingame_info = ingame_info;
         this.network = network;
+        this.audioManager = audioManager;
     }
 
     @Override
@@ -67,7 +71,7 @@ public final class WorldStarter implements LoadCallback {
         PlayerSlot[] player_slots = player_slot_list.toArray(new PlayerSlot[0]);
         UnitInfo[] corrected_unit_infos = unit_info_list.toArray(new UnitInfo[0]);
         WorldViewer viewer = new WorldViewer(network, gui_root, world_params, ingame_info, generator, player_slots,
-                corrected_unit_infos, corrected_player_slot, new SessionID(session_id));
+                corrected_unit_infos, corrected_player_slot, new SessionID(session_id), audioManager);
         if (initial_action != null)
             initial_action.run(viewer);
         Participant[] participants = getParticipants(viewer, player_slots);

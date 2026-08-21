@@ -12,6 +12,9 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * In-game session handler and menu hook for tutorial mode.
+ */
 public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     private int next_tutorial = -1;
 
@@ -62,8 +65,10 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public void close(@NonNull WorldViewer viewer) {
         if (next_tutorial != -1)
-            TutorialForm.startTutorial(viewer.getNetwork(), viewer.getGUIRoot(), next_tutorial);
+            TutorialForm.startTutorial(viewer.getNetwork(), viewer.getGUIRoot(), next_tutorial,
+                    viewer.getAudioManager());
         else
-            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI());
+            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI(),
+                    viewer.getAudioManager());
     }
 }

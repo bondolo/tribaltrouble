@@ -1,7 +1,6 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
+import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.base.animation.AnimationManager;
@@ -124,7 +123,8 @@ public final class Picker implements Updatable<TimerAnimation> {
     private @Nullable Target old_set_target_target;
 
     public Picker(@NonNull AnimationManager manager, @NonNull Player local_player, @NonNull GUIRoot gui_root,
-            @NonNull RenderQueues render_queues, @NonNull LandscapeRenderer landscape_renderer, Selection selection) {
+            @NonNull RenderQueues render_queues, @NonNull LandscapeRenderer landscape_renderer, Selection selection,
+            @NonNull AudioImplementation audio) {
         this.manager = manager;
         this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
         this.local_player = local_player;
@@ -132,7 +132,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.render_queues = render_queues;
         this.respond_manager = new RespondManager(manager);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, sprite_sorter,
-                selection);
+                selection, audio);
         this.tree_renderer = new TreePicker(sprite_sorter, respond_manager);
         this.landscape_renderer = landscape_renderer;
     }

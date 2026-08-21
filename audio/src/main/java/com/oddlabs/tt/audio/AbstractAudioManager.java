@@ -1,5 +1,8 @@
 package com.oddlabs.tt.audio;
 
+import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.animation.TimerAnimation;
+import com.oddlabs.tt.base.animation.Updatable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
@@ -22,7 +25,10 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
     /** The interval (in seconds) between ambient sound proximity checks. */
     private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
+    private static final float DEFAULT_MUSIC_FADE_OUT = 1.2f;
 
+    private final @NonNull AudioSettings audioSettings;
+    private final @NonNull AnimationManager animationManager;
     private final Set<@NonNull AS> ambients = new CopyOnWriteArraySet<>();
     private final Set<@NonNull AmbientAudioSource> active_ambient = new CopyOnWriteArraySet<>();
     private final Set<@NonNull QueuedAudioPlayer<AM, AS>> queued_players = new CopyOnWriteArraySet<>();
@@ -36,13 +42,19 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     private float musicGain = 1f;
     private boolean sfxEnabled = true;
 
+    private @Nullable AudioParameters currentMusicAudio;
+    private @Nullable AudioPlayer currentMusicPlayer;
+    private @Nullable TimerAnimation musicTimer;
+
     private final Vector3f listenerPosition = new Vector3f();
     private final Vector3f listenerForward = new Vector3f(0, 0, -1);
     private final Vector3f listenerUp = new Vector3f(0, 1, 0);
 
     private final AtomicInteger sound_play_counter = new AtomicInteger(0);
 
-    protected AbstractAudioManager() {
+    protected AbstractAudioManager(@NonNull AudioSettings audioSettings, @NonNull AnimationManager animationManager) {
+        this.audioSettings = audioSettings;
+        this.animationManager = animationManager;
     }
 
     @SuppressWarnings("unchecked")
@@ -472,8 +484,92 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
             @NonNull AudioParameters params);
 
     @Override
+    public void toggleMusic() {
+        audioSettings.play_music = !audioSettings.play_music;
+        if (audioSettings.play_music) {
+            initMusicPlayer();
+        } else if (currentMusicPlayer != null) {
+            currentMusicPlayer.stop(DEFAULT_MUSIC_FADE_OUT);
+            currentMusicPlayer = null;
+        }
+    }
+
+    @Override
+    public void setMusicEnabled(boolean enabled) {
+        if (audioSettings.play_music != enabled) {
+            toggleMusic();
+        }
+    }
+
+    @Override
+    public boolean isMusicEnabled() {
+        return audioSettings.play_music;
+    }
+
+    @Override
+    public void setMusic(@NonNull AudioParameters musicAudio, float delay) {
+        this.currentMusicAudio = musicAudio;
+
+        if (currentMusicPlayer != null && audioSettings.play_music) {
+            currentMusicPlayer.stop(DEFAULT_MUSIC_FADE_OUT);
+            currentMusicPlayer = null;
+        }
+        if (audioSettings.play_music) {
+            if (musicTimer != null) {
+                musicTimer.stop();
+            }
+            if (delay > 0f) {
+                musicTimer = new TimerAnimation(animationManager, new MusicTimer(), delay);
+                musicTimer.start();
+            } else {
+                initMusicPlayer();
+            }
+        }
+    }
+
+    @Override
+    public @Nullable AudioPlayer getMusicPlayer() {
+        return currentMusicPlayer;
+    }
+
+    @Override
+    public void stopMusic(float decayRate) {
+        if (musicTimer != null) {
+            musicTimer.stop();
+            musicTimer = null;
+        }
+        if (currentMusicPlayer != null) {
+            currentMusicPlayer.stop(decayRate);
+            currentMusicPlayer = null;
+        }
+    }
+
+    private void initMusicPlayer() {
+        if (currentMusicAudio == null) {
+            return;
+        }
+        assert currentMusicAudio.audio().isStreaming() : "Inappropriate music file";
+        currentMusicPlayer = newAudio(0f, 0f, 0f, currentMusicAudio);
+    }
+
+    private final class MusicTimer implements Updatable<TimerAnimation> {
+        @Override
+        public void update(@NonNull TimerAnimation anim) {
+            if (musicTimer != null) {
+                musicTimer.stop();
+            }
+            musicTimer = null;
+            if (audioSettings.play_music) {
+                initMusicPlayer();
+            }
+        }
+    }
+
+    @Override
     public synchronized void close() {
         if (closed) return;
+        logger.info("AudioManager stopping music...");
+        stopMusic(DEFAULT_MUSIC_FADE_OUT);
         logger.info("AudioManager stopping queued players...");
         queued_players.forEach(QueuedAudioPlayer::stop);
         closed = true;

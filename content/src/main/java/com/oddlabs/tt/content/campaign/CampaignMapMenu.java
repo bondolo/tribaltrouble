@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
@@ -27,15 +28,17 @@ final class CampaignMapMenu extends Form {
     private static final Color.Linear DARK_GLASS = Color.Linear.BLACK.alpha(0.345f);
     private final @NonNull GUIRoot gui_root;
     private final @NonNull NetworkSelector network;
+    private final @NonNull AudioManager audio;
     private final @NonNull GUIImage overlay;
     private final @NonNull GUIImage logo;
     private final @NonNull MenuButton resumeButton;
 
     private @Nullable Form current_menu;
 
-    CampaignMapMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root) {
+    CampaignMapMenu(@NonNull NetworkSelector network, @NonNull GUIRoot gui_root, @NonNull AudioManager audio) {
         this.network = network;
         this.gui_root = gui_root;
+        this.audio = audio;
 
         int width = gui_root.getWidth();
         int height = gui_root.getHeight();
@@ -115,7 +118,9 @@ final class CampaignMapMenu extends Form {
     private void addOptionsButton() {
         MenuButton options = new MenuButton(Menu.i18n("options"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(options);
-        options.addMouseClickListener((_, _, _, _) -> setMenuCentered(new OptionsMenu(gui_root)));
+        options.addMouseClickListener((_, _, _, _) -> setMenuCentered(
+                new OptionsMenu(gui_root, audio))
+        );
     }
 
     private void addAbortButton() {
@@ -123,7 +128,9 @@ final class CampaignMapMenu extends Form {
         MenuButton abort = new MenuButton(abort_text, Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(abort);
         abort.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuestionForm(Menu.i18n("end_game_confirm"),
-                (_, _, _, _) -> CampaignMapForm.closeCampaign(network, gui_root.getGUI()))));
+                (_, _, _, _) ->
+                        CampaignMapForm.closeCampaign(network, gui_root.getGUI(), audio)))
+        );
     }
 
     private void addExitButton() {

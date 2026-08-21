@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.content.menu.Menu;
@@ -74,7 +75,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                                 i18n("native_campaign_opened"),
                                 null,
                                 Origin.AT_START,
-                                () -> closeCampaign(network, gui_root.getGUI()));
+                                () -> closeCampaign(network, gui_root.getGUI(), campaign.getAudioManager()));
                         gui_root.addModalForm(dialog);
                     };
                     CampaignDialogForm dialog = new CampaignDialogForm(i18n("viking_header"),
@@ -97,7 +98,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                             i18n("native_campaign_completed"),
                             campaign.getIcons().getFaces()[0],
                             Origin.AT_START,
-                            () -> closeCampaign(network, gui_root.getGUI()));
+                            () -> closeCampaign(network, gui_root.getGUI(), campaign.getAudioManager()));
                     gui_root.addModalForm(dialog);
                 }
             }
@@ -222,7 +223,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
 
         if (event.getPhase() == InputPhase.PRESSED) {
             if (event.consumeAction(GameAction.GLOBAL_MENU) || event.consumeAction(GameAction.UI_CANCEL)) {
-                getGUIRoot().addModalForm(new CampaignMapMenu(network, getGUIRoot()));
+                getGUIRoot().addModalForm(new CampaignMapMenu(network, getGUIRoot(), campaign.getAudioManager()));
                 event.consume();
                 return;
             }
@@ -272,8 +273,9 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         }
     }
 
-    public static void closeCampaign(@NonNull NetworkSelector network, @NonNull GUI gui) {
-        Menu.startMenu(network, gui);
+    public static void closeCampaign(@NonNull NetworkSelector network, @NonNull GUI gui,
+            @NonNull AudioManager audioManager) {
+        Menu.startMenu(network, gui, audioManager);
     }
 
     @Override

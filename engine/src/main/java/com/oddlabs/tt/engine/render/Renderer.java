@@ -3,12 +3,8 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.base.animation.TimerAnimation;
-import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.resource.NativeResource;
@@ -90,10 +86,6 @@ public final class Renderer implements AutoCloseable {
 
     // Currently only OpenAL is supported
     private @Nullable OpenALManager audioManager;
-
-    private AudioPlayer music;
-    private @Nullable AudioParameters music_audio;
-    private @Nullable TimerAnimation music_timer;
 
     private boolean movie_recording_started = false;
 
@@ -935,7 +927,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initNative(boolean crashed) throws Exception {
-        this.audioManager = new OpenALManager(getSettings().audio.headphone_mode)
+        this.audioManager = new OpenALManager(getSettings().audio, getEventQueue().getManager())
                 .setSfxGain(getSettings().audio.sound_gain)
                 .setMusicGain(getSettings().audio.music_gain)
                 .setSfxEnabled(getSettings().audio.play_sfx);
@@ -1031,50 +1023,6 @@ public final class Renderer implements AutoCloseable {
     public void toggleSound() {
         getSettings().audio.play_sfx = !getSettings().audio.play_sfx;
         getAudioManager().setSfxEnabled(getSettings().audio.play_sfx);
-    }
-
-    public void toggleMusic() {
-        getSettings().audio.play_music = !getSettings().audio.play_music;
-        if (getSettings().audio.play_music) {
-            initMusicPlayer();
-        } else if (music != null) {
-            music.stop(1.2f);
-        }
-    }
-
-    private void initMusicPlayer() {
-        assert null != music_audio && music_audio.audio().isStreaming() : "Inappropriate music file";
-        music = getAudioManager().newAudio(0f, 0f, 0f, music_audio);
-    }
-
-    public void setMusic(@NonNull AudioParameters music_audio, float delay) {
-        this.music_audio = music_audio;
-
-        if (music != null && getSettings().audio.play_music) {
-            music.stop(1.2f);
-        }
-        if (getSettings().audio.play_music) {
-            if (music_timer != null)
-                music_timer.stop();
-            music_timer = new TimerAnimation(getEventQueue().getManager(), new MusicTimer(), delay);
-            music_timer.start();
-        }
-    }
-
-    private final class MusicTimer implements Updatable<TimerAnimation> {
-        @Override
-        public void update(@NonNull TimerAnimation anim) {
-            if (music_timer != null)
-                music_timer.stop();
-            music_timer = null;
-            if (getSettings().audio.play_music) {
-                initMusicPlayer();
-            }
-        }
-    }
-
-    public AudioPlayer getMusicPlayer() {
-        return music;
     }
 
     private void initVisibleGL() {
