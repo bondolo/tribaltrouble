@@ -128,8 +128,7 @@ final class CampaignMapMenu extends Form {
         MenuButton abort = new MenuButton(abort_text, Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(abort);
         abort.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuestionForm(Menu.i18n("end_game_confirm"),
-                (_, _, _, _) ->
-                        CampaignMapForm.closeCampaign(network, gui_root.getGUI(), audio)))
+                (_, _, _, _) -> CampaignMapForm.closeCampaign(network, gui_root.getGUI(), audio)))
         );
     }
 

@@ -5,7 +5,6 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.registration.RegistrationKey;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.form.AbstractOptionsMenu;
@@ -735,12 +734,12 @@ public final class TerrainMenu extends Group {
                 + " | seed = " + seed * seed);
         String ai_string = i18n("ai");
         InGameInfo ingame_info = multiplayer
-                                 ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
-                                 : new DefaultInGameInfo();
+                ? new MultiplayerInGameInfo(game.getRandomStartPos(), game.isRated())
+                : new DefaultInGameInfo();
         WorldParameters parameters = multiplayer
-                                     ? multiplayer_setup.getWorldParameters() : skirmish_setup.getWorldParameters();
+                ? multiplayer_setup.getWorldParameters() : skirmish_setup.getWorldParameters();
         IslandConfig islandConfig = multiplayer
-                                    ? multiplayer_setup.getIslandConfig() : skirmish_setup.getIslandConfig();
+                ? multiplayer_setup.getIslandConfig() : skirmish_setup.getIslandConfig();
         GameNetwork game_network = Menu.startNewGame(network, gui_root,
                 menu,
                 parameters,
