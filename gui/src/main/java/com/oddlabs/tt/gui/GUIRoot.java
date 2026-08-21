@@ -13,6 +13,7 @@ import com.oddlabs.tt.gui.delegate.ModalDelegate;
 import com.oddlabs.tt.gui.delegate.NullDelegate;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.window.SerializableDisplayMode;
@@ -49,7 +50,7 @@ public final class GUIRoot extends GUIObject {
     private final @NonNull ToolTipBox tool_tip = new ToolTipBox();
     private final @NonNull InfoPrinter info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
     private final Status status = new Status();
-    private final InputState input_state = new InputState(this);
+    private final @NonNull InputState input_state;
     private boolean render_tool_tip = false;
     private @Nullable IconQuad cheatIcon;
 
@@ -64,6 +65,7 @@ public final class GUIRoot extends GUIObject {
 
     GUIRoot(@NonNull GUI gui) {
         this.gui = gui;
+        this.input_state = new InputState(this);
         setPos(0, 0);
         setCanFocus(true);
         setFocusCycle(true);
@@ -77,6 +79,10 @@ public final class GUIRoot extends GUIObject {
 
     public @NonNull LocalInput getLocalInput() {
         return gui.getLocalInput();
+    }
+
+    public @NonNull InputManager getInputManager() {
+        return gui.getLocalInput().getInputManager();
     }
 
     public int getMouseX() {

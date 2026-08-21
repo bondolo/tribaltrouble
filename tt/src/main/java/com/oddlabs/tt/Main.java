@@ -1,12 +1,13 @@
 package com.oddlabs.tt;
 
+import com.oddlabs.tt.client.render.ClientStateInitializer;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.gui.GUI;
-import com.oddlabs.tt.gui.LocalInput;
-import com.oddlabs.tt.client.render.ClientStateInitializer;
 import com.oddlabs.tt.engine.render.ClientStartup;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.gui.GUI;
+import com.oddlabs.tt.gui.LocalInput;
+import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.window.LWJGL3Window;
 import org.jspecify.annotations.NonNull;
@@ -82,11 +83,12 @@ public final class Main {
             logger.info("Starting game....");
             Renderer.getRenderer().run((network, firstProgress) -> {
                 ClientStateInitializer.init(Renderer.getRenderer()::getAudioManager);
-                LocalInput localInput = new LocalInput(Renderer.getRenderer().getWindow());
-                Menu.initNetwork(network);
-                localInput.init();
                 var gamePaths = Renderer.getRenderer().getGamePaths();
                 var settings = Renderer.getRenderer().getSettings();
+                InputManager inputManager = new InputManager(settings.inputBindings);
+                LocalInput localInput = new LocalInput(Renderer.getRenderer().getWindow(), inputManager);
+                Menu.initNetwork(network);
+                localInput.init();
                 settings.last_event_log_dir = gamePaths.logDir().toAbsolutePath();
                 settings.crashed = true;
                 settings.save();

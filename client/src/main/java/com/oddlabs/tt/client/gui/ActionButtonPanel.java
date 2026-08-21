@@ -18,9 +18,9 @@ import com.oddlabs.tt.client.delegate.RallyPointDelegate;
 import com.oddlabs.tt.client.delegate.TargetDelegate;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Building;
@@ -210,15 +210,17 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         peon_group.compileCanvas(GROUP_LEFT_OFFSET, GROUP_BOTTOM_OFFSET, GROUP_RIGHT_OFFSET, 0);
 
         PlayerInterface player_interface = viewer.getPeerHub().getPlayerInterface();
+        MagicType magic1Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(0);
         magic1_button = new RechargeButton(
-                player_interface, race_icons.magic1Icon(), GameAction.MAGIC_1, race_icons
-                        .magic1Desc(), viewer.getLocalPlayer().getRaceInfo().getMagicType(0)
+                player_interface, race_icons.magic1Icon(), GameAction.MAGIC_1,
+                () -> getMagicTooltip(magic1Type), magic1Type
         );
         chieftain_group.addChild(magic1_button);
 //		magic1_button.addMouseClickListener(new MagicListener(0));
+        MagicType magic2Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(1);
         magic2_button = new RechargeButton(
-                player_interface, race_icons.magic2Icon(), GameAction.MAGIC_2, race_icons
-                        .magic2Desc(), viewer.getLocalPlayer().getRaceInfo().getMagicType(1)
+                player_interface, race_icons.magic2Icon(), GameAction.MAGIC_2,
+                () -> getMagicTooltip(magic2Type), magic2Type
         );
         chieftain_group.addChild(magic2_button);
 //		magic2_button.addMouseClickListener(new MagicListener(1));
@@ -495,8 +497,17 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private static @NonNull String getBinding(@NonNull GameAction action) {
-        return InputManager.current().getBindingString(action);
+    private @NonNull String getBinding(@NonNull GameAction action) {
+        return viewer.getInputManager().getBindingString(action);
+    }
+
+    private @NonNull String getMagicTooltip(@NonNull MagicType magicType) {
+        return switch (magicType) {
+            case STUN -> i18n("terrifying_toot", getBinding(GameAction.MAGIC_1));
+            case SONIC_BLAST -> i18n("ravaging_roar", getBinding(GameAction.MAGIC_2));
+            case POISON_FOG -> i18n("stinking_stew", getBinding(GameAction.MAGIC_1));
+            case LIGHTNING_CLOUD -> i18n("crackling_cloud", getBinding(GameAction.MAGIC_2));
+        };
     }
 
     @Override

@@ -7,8 +7,6 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.simulation.model.Cost;
 import com.oddlabs.tt.simulation.model.SupplyType;
-import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
@@ -23,7 +21,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.IntStream;
 
@@ -82,17 +79,8 @@ public class GUIIcons {
         rubber_status_icon = Icons.getNamedIconQuad(root, "rubber_status_icon", texture);
         cheat_icon = Icons.getNamedIconQuad(root, "cheat_icon", texture);
 
-        Supplier<String> tt_caption = () -> i18n("terrifying_toot", InputManager.current()
-                .getBindingString(GameAction.MAGIC_1));
-        Supplier<String> rr_caption = () -> i18n("ravaging_roar", InputManager.current()
-                .getBindingString(GameAction.MAGIC_2));
-        Supplier<String> ss_caption = () -> i18n("stinking_stew", InputManager.current()
-                .getBindingString(GameAction.MAGIC_1));
-        Supplier<String> cc_caption = () -> i18n("crackling_cloud", InputManager.current()
-                .getBindingString(GameAction.MAGIC_2));
-
-        viking_icons = GUIIcons.parseRaceIcons(root, "vikings", tt_caption, rr_caption, texture);
-        native_icons = GUIIcons.parseRaceIcons(root, "natives", ss_caption, cc_caption, texture);
+        viking_icons = GUIIcons.parseRaceIcons(root, "vikings", texture);
+        native_icons = GUIIcons.parseRaceIcons(root, "natives", texture);
         watch = generateWatchIcons();
         infinite = Icons.getNamedIconQuad(root, "infinite", texture);
         notify_arrow_data = GUIIcons.parseNotifyArrowData(root, texture);
@@ -120,7 +108,6 @@ public class GUIIcons {
     }
 
     private static @NonNull RaceIcons parseRaceIcons(@NonNull Node n, @NonNull String head,
-            @NonNull Supplier<@NonNull String> magic1_desc, @NonNull Supplier<@NonNull String> magic2_desc,
             @NonNull Texture texture) {
         return new RaceIcons(Icons.getNamedIconQuad(n, head + "_unit_status_icon", texture),
                 Icons.getNamedIconQuad(n, head + "_weapon_rock_status_icon", texture),
@@ -146,9 +133,7 @@ public class GUIIcons {
                 Icons.getNamedIconQuads(n, head + "_tower_exit_icon", texture),
                 Icons.getNamedIconQuads(n, head + "_rally_point_icon", texture),
                 Icons.getNamedIconQuads(n, head + "_magic1_icon", texture),
-                magic1_desc,
-                Icons.getNamedIconQuads(n, head + "_magic2_icon", texture),
-                magic2_desc);
+                Icons.getNamedIconQuads(n, head + "_magic2_icon", texture));
     }
 
     private static @NonNull IconQuad @NonNull [] generateWatchIcons() {

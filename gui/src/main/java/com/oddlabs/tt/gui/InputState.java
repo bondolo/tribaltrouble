@@ -28,7 +28,8 @@ public final class InputState {
 
     private final @NonNull TimerAnimation double_click_timer;
     private final @NonNull TimerAnimation double_key_timer;
-    private final GUIRoot gui_root;
+    private final @NonNull GUIRoot gui_root;
+    private final @NonNull InputManager inputManager;
     private TimerAnimation mouse_timer;
 
     private int drag_x;
@@ -48,8 +49,9 @@ public final class InputState {
     // Keyboard handling
     private KeyboardEvent held_event;
 
-    public InputState(GUIRoot gui_root) {
+    public InputState(@NonNull GUIRoot gui_root) {
         this.gui_root = gui_root;
+        this.inputManager = gui_root.getInputManager();
         double_click_timer = new TimerAnimation(new DoubleClickTimer(), 0);
         double_key_timer = new TimerAnimation(new DoubleKeyTimer(), 0);
         press_obj = gui_root;
@@ -192,7 +194,7 @@ public final class InputState {
         if (Key.KEY_UNKNOWN != key || key_codepoint != 0) {
             GUIObject focused = gui_root.getGlobalFocus();
             KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, EnumSet.noneOf(Modifier.class), 1);
-            Set<GameAction> actions = InputManager.current().getActions(keyEvent);
+            Set<GameAction> actions = inputManager.getActions(keyEvent);
             InputEvent event = new InputEvent(keyEvent, actions, InputPhase.REPEAT);
             focused.handleInputAll(event);
         }
@@ -217,7 +219,6 @@ public final class InputState {
         KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, key_counter);
         key_event = keyEvent;
 
-        var inputManager = InputManager.current();
         Set<GameAction> actions = inputManager.getActions(keyEvent);
         inputManager.updateState(keyEvent, true); // Update polling state
 
@@ -236,7 +237,6 @@ public final class InputState {
         resetKeyTimer();
         KeyboardEvent keyEvent = new KeyboardEvent(key, key_codepoint, modifiers, 0);
 
-        var inputManager = InputManager.current();
         Set<GameAction> actions = inputManager.getActions(keyEvent);
         inputManager.updateState(keyEvent, false); // Update polling state
 

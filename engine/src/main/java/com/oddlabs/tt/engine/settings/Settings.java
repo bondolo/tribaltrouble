@@ -5,6 +5,7 @@ import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.PropertiesSerializer;
 import com.oddlabs.tt.input.ControlSettings;
+import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.net.AccountSettings;
 import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.util.Color;
@@ -53,6 +54,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
     public final @NonNull AccountSettings account;
     public final @NonNull AccessibilitySettings accessibility;
     public final @NonNull ControlSettings control;
+    public final @NonNull InputBindingSettings inputBindings;
 
     public transient @NonNull Path last_event_log_dir = Path.of("");
     public int last_revision = -1;
@@ -82,6 +84,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
         this.account = getOrCreate(AccountSettings.class, AccountSettings::new);
         this.accessibility = getOrCreate(AccessibilitySettings.class, AccessibilitySettings::new);
         this.control = getOrCreate(ControlSettings.class, ControlSettings::new);
+        this.inputBindings = getOrCreate(InputBindingSettings.class, InputBindingSettings::new);
     }
 
     private void initSerializers() {

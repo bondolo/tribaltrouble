@@ -2,6 +2,7 @@ package com.oddlabs.tt.input;
 
 import org.jspecify.annotations.NonNull;
 
+import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
@@ -11,7 +12,7 @@ import java.util.Set;
  */
 public record InputBinding(@NonNull Key key, int codepoint, @NonNull Set<@NonNull Modifier> modifiers,
                            @NonNull GameAction action)
-        implements Comparable<InputBinding> {
+        implements Comparable<InputBinding>, Serializable {
     private static final boolean IS_MACOS = System.getProperty("os.name", "").toLowerCase().contains("mac");
 
     public InputBinding(@NonNull Key key, @NonNull Set<@NonNull Modifier> modifiers, @NonNull GameAction action) {

@@ -36,9 +36,9 @@ public final class LocalInput implements AutoCloseable {
     private final Set<@NonNull Key> keys = EnumSet.noneOf(Key.class);
     private final Set<@NonNull Modifier> global_modifiers = EnumSet.noneOf(Modifier.class);
 
-    public LocalInput(@NonNull Window lwjglWindow) {
+    public LocalInput(@NonNull Window lwjglWindow, @NonNull InputManager inputManager) {
         this.window = lwjglWindow;
-        this.inputManager = InputManager.current();
+        this.inputManager = inputManager;
         if (lwjglWindow instanceof LWJGL3Window win) {
             LWJGL3InputProvider p = new LWJGL3InputProvider(win);
             this.inputProvider = p;

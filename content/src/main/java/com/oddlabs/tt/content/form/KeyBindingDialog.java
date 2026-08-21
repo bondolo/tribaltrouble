@@ -14,7 +14,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.input.InputEvent;
-import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
@@ -27,6 +26,9 @@ import java.util.function.Consumer;
 import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/**
+ * Modal dialog for capturing and assigning key bindings to game actions.
+ */
 public class KeyBindingDialog extends Form {
     private final @NonNull GameAction action;
     private final @NonNull Consumer<@NonNull Set<@NonNull InputBinding>> onBindingChosen;
@@ -60,7 +62,7 @@ public class KeyBindingDialog extends Form {
 
         HorizButton reset_button = new HorizButton(AbstractOptionsMenu.i18n("btn_reset"), 80);
         reset_button.addMouseClickListener((_, _, _, _) -> {
-            onBindingChosen.accept(InputManager.current().getDefaultBindings(action));
+            onBindingChosen.accept(guiRoot.getInputManager().getDefaultBindings(action));
             remove();
         });
         button_group.addChild(reset_button);

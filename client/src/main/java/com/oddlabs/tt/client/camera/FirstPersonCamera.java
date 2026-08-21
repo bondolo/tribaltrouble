@@ -2,12 +2,14 @@ package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.input.GameAction;
-import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * First-person perspective camera controller.
+ */
 public final class FirstPersonCamera extends Camera {
     private static final float SCALE_HORIZ = .002f;
     private static final float SCALE_VERT = .002f;
@@ -33,7 +35,7 @@ public final class FirstPersonCamera extends Camera {
 
         float scrolling_x = 0;
         float scrolling_y = 0;
-        var inputManager = InputManager.current();
+        var inputManager = viewer.getInputManager();
         if (inputManager.isActive(GameAction.CAMERA_PAN_LEFT) && !inputManager.isActive(GameAction.CAMERA_PAN_RIGHT))
             scrolling_x = -1f;
         else if (inputManager.isActive(GameAction.CAMERA_PAN_RIGHT) && !inputManager.isActive(
