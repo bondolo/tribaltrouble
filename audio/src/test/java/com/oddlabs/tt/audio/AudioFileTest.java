@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AudioFileTest {
@@ -131,22 +130,14 @@ class AudioFileTest {
     }
 
     @Test
-    void testGetThrowsWhenAudioManagerNotBound() {
-        AudioFile file = new AudioFile(URI.create("file:///sfx/test.ogg"));
-        assertThrows(IllegalStateException.class, file::get);
-    }
-
-    @Test
-    void testGetResolvesAudioWhenBound() {
+    void testGetResolvesAudioWithManager() {
         AudioFile file = new AudioFile(URI.create("file:///sfx/test.ogg"));
         MockAudioManager mockManager = new MockAudioManager();
 
-        ScopedValue.where(AudioManager.CURRENT, mockManager).run(() -> {
-            Audio audio1 = file.get();
-            Audio audio2 = file.get();
-            assertNotNull(audio1);
-            assertSame(audio1, audio2);
-            assertSame(mockManager.dummyAudio, audio1);
-        });
+        Audio audio1 = file.get(mockManager);
+        Audio audio2 = file.get(mockManager);
+        assertNotNull(audio1);
+        assertSame(audio1, audio2);
+        assertSame(mockManager.dummyAudio, audio1);
     }
 }

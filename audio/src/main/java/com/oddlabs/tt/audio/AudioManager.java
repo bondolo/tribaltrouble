@@ -13,24 +13,6 @@ import java.net.URL;
  */
 public interface AudioManager extends AudioImplementation {
 
-    /**
-     * Scoped value representing the active {@link AudioManager} in the execution context.
-     */
-    ScopedValue<AudioManager> CURRENT = ScopedValue.newInstance();
-
-    /**
-     * Retrieves the active {@link AudioManager} from the current scope.
-     *
-     * @return The active {@link AudioManager}.
-     * @throws IllegalStateException If no {@link AudioManager} is bound in the current scope.
-     */
-    static @NonNull AudioManager current() {
-        if (!CURRENT.isBound()) {
-            throw new IllegalStateException("AudioManager is not bound in the current scope");
-        }
-        return CURRENT.get();
-    }
-
     @NonNull
     Vector3fc getListenerPosition();
 
