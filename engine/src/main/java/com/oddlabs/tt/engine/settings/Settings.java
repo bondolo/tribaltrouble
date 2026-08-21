@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.settings;
 
 import com.oddlabs.tt.audio.AudioSettings;
-import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.PropertiesSerializer;
 import com.oddlabs.tt.input.ControlSettings;
@@ -137,7 +136,7 @@ public final class Settings implements Serializable, PropertiesSerializer {
     }
 
     public void save() {
-        if (LocalEventQueue.getQueue().getDeterministic().isPlayback())
+        if (com.oddlabs.tt.engine.render.Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback())
             return;
 
         Path settings_file = game_dir != null

@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderTools;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SceneRenderer;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
@@ -50,11 +49,10 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         Arrays.stream(getRenderLists()).forEach(shadowRenderer::addToShadowList);
     }
 
-    @Override
     public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack,
-            @NonNull MatrixStack projectionStack) {
+            @NonNull MatrixStack projectionStack, float currentTime) {
         if (!state.inNoDetailMode()) {
-            wave_animation.setTime(Renderer.getRenderer().getEventQueue().getTime());
+            wave_animation.setTime(currentTime);
         }
 
         if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
@@ -137,6 +135,12 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
                 }
             }
         }
+    }
+
+    @Override
+    public void render(@NonNull RenderContext context, @NonNull CameraState state, @NonNull MatrixStack modelViewStack,
+            @NonNull MatrixStack projectionStack) {
+        render(context, state, modelViewStack, projectionStack, 0f);
     }
 
     @Override

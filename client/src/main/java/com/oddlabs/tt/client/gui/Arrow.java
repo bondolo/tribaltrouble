@@ -3,7 +3,6 @@ package com.oddlabs.tt.client.gui;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.HeightQuery;
@@ -93,7 +92,7 @@ public final class Arrow extends GUIObject {
             renderer.getMatrixStack().push();
             renderer.getMatrixStack().translate(screen_width / 2f + dx * t, screen_height / 2f + dy * t, 0f);
             renderer.getMatrixStack().rotate(angle, 0f, 0f, 1f);
-            float val = (Renderer.getRenderer().getEventQueue().getTime() % SECONDS_PER_FLASH) / (SECONDS_PER_FLASH
+            float val = (gui_root.getTime() % SECONDS_PER_FLASH) / (SECONDS_PER_FLASH
                     * .5f);
             if (val > 1f)
                 val = 2f - val;

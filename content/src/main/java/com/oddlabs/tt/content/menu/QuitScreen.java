@@ -22,12 +22,13 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
     private static final String overlay_texture_name = "/textures/gui/quitscreen";
 
     private final @NonNull GUIImage overlay;
-    private final TimerAnimation delay_timer = new TimerAnimation(this, DELAY);
+    private final @NonNull TimerAnimation delay_timer;
     private boolean key_pressed = false;
     private boolean time_out = false;
 
     public QuitScreen(@NonNull GUIRoot gui_root, Camera camera) {
         super(gui_root, camera);
+        this.delay_timer = new TimerAnimation(gui_root.getAnimationManager(), this, DELAY);
         setCanFocus(true);
         setFocusCycle(true);
 

@@ -1,6 +1,6 @@
 package com.oddlabs.tt.base.util;
 
-import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.event.Deterministic;
 import org.jspecify.annotations.NonNull;
 
 import java.io.File;
@@ -9,13 +9,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Objects;
 
 public final class FileLoader implements FileLoaderInterface {
     private final FileLoaderListener listener;
     private final ReadableByteChannel file_channel;
     private final @NonNull ByteBuffer buffer;
+    private final @NonNull Deterministic deterministic;
 
-    public FileLoader(@NonNull File file, FileLoaderListener listener, int num_bytes) {
+    public FileLoader(@NonNull File file, FileLoaderListener listener, int num_bytes,
+            @NonNull Deterministic deterministic) {
+        this.deterministic = Objects.requireNonNull(deterministic);
         this.buffer = ByteBuffer.allocate(num_bytes);
         this.listener = listener;
         IOException exception;
@@ -28,10 +32,10 @@ public final class FileLoader implements FileLoaderInterface {
             exception = e;
         }
         this.file_channel = tmp_channel;
-        if (LocalEventQueue.getQueue().getDeterministic().log(exception != null))
-            error(LocalEventQueue.getQueue().getDeterministic().log(exception));
+        if (deterministic.log(exception != null))
+            error(deterministic.log(exception));
         else
-            newFile(file, LocalEventQueue.getQueue().getDeterministic().log(file.length()));
+            newFile(file, deterministic.log(file.length()));
     }
 
     @Override
@@ -40,7 +44,7 @@ public final class FileLoader implements FileLoaderInterface {
     }
 
     public void load() {
-        if (LocalEventQueue.getQueue().getDeterministic().log(file_channel == null || !file_channel
+        if (deterministic.log(file_channel == null || !file_channel
                 .isOpen()))
             return;
         buffer.clear();
@@ -59,12 +63,12 @@ public final class FileLoader implements FileLoaderInterface {
             exception = e;
             eof = true;
         }
-        if (LocalEventQueue.getQueue().getDeterministic().log(exception != null))
-            error(LocalEventQueue.getQueue().getDeterministic().log(exception));
+        if (deterministic.log(exception != null))
+            error(deterministic.log(exception));
         else
-            data(LocalEventQueue.getQueue().getDeterministic().log(buffer.array()),
-                    LocalEventQueue.getQueue().getDeterministic().log(buffer.position()),
-                    LocalEventQueue.getQueue().getDeterministic().log(eof));
+            data(deterministic.log(buffer.array()),
+                    deterministic.log(buffer.position()),
+                    deterministic.log(eof));
     }
 
     @Override

@@ -82,18 +82,22 @@ public final class Main {
         try {
             logger.info("Starting game....");
             Renderer.getRenderer().run((network, firstProgress) -> {
-                ClientStateInitializer.init(Renderer.getRenderer()::getAudioManager);
-                var gamePaths = Renderer.getRenderer().getGamePaths();
-                var settings = Renderer.getRenderer().getSettings();
-                InputManager inputManager = new InputManager(settings.inputBindings);
-                LocalInput localInput = new LocalInput(Renderer.getRenderer().getWindow(), inputManager);
+                var renderer = Renderer.getRenderer();
+                ClientStateInitializer.init(renderer::getAudioManager);
+                var gamePaths = renderer.getGamePaths();
+                var settings = renderer.getSettings();
+                var eventQueue = renderer.getEventQueue();
+                InputManager inputManager = new InputManager(settings.inputBindings, settings.control);
+                LocalInput localInput = new LocalInput(renderer.getWindow(), inputManager,
+                        eventQueue.getDeterministic(), () -> renderer.getSettings().inDeveloperMode(),
+                        Renderer::shutdown);
                 Menu.initNetwork(network);
                 localInput.init();
                 settings.last_event_log_dir = gamePaths.logDir().toAbsolutePath();
                 settings.crashed = true;
                 settings.save();
                 settings.crashed = false;
-                GUI gui = new GUI(localInput);
+                GUI gui = new GUI(localInput, eventQueue);
                 gui.setCloseHandler(() -> {
                     if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
                         Renderer.shutdown();

@@ -28,7 +28,7 @@ public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> imp
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final TimerAnimation delay_timer = new TimerAnimation(this, DELAY);
+    private final @NonNull TimerAnimation delay_timer;
     private final @NonNull Group group_buttons;
     private final @NonNull TutorialInGameInfo tutorial_info;
     private final @NonNull WorldViewer viewer;
@@ -37,6 +37,7 @@ public final class TutorialOverDelegate extends CameraDelegate<StaticCamera> imp
             @NonNull Camera old_camera, int tutorial_number) {
         super(viewer.getGUIRoot(), new StaticCamera(old_camera.getState()));
         this.viewer = viewer;
+        this.delay_timer = new TimerAnimation(viewer.getAnimationManager(), this, DELAY);
         this.tutorial_info = tutorial_info;
 
         setDim(getGUIRoot().getWidth(), getGUIRoot().getHeight());

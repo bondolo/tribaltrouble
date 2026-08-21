@@ -34,7 +34,7 @@ public final class JumpCamera extends Camera {
 
     public JumpCamera(@NonNull JumpDelegate delegate, @NonNull GameCamera old_camera, float x, float y,
             float meters_per_second, float max_seconds) {
-        super(old_camera.getLandscapeEnvironment(), old_camera.getState());
+        super(old_camera.getLandscapeEnvironment(), old_camera.getState(), old_camera.getAnimationManager());
         this.delegate = delegate;
         delegate.getViewer().getPicker().pickRotate(old_camera);
         Vector2fc target = old_camera.getRotationPoint();

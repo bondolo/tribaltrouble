@@ -1,10 +1,10 @@
 package com.oddlabs.tt.client.camera;
 
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.RenderConfig;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import org.joml.Matrix4f;
@@ -39,13 +39,20 @@ public abstract class Camera implements Animated {
     private final Vector3f hit_result = new Vector3f();
 
     private final @Nullable LandscapeEnvironment landscapeEnvironment;
+    private final @Nullable AnimationManager animation_manager;
 
     private final @NonNull CameraState state;
     private float smoothness_factor = SMOOTHNESS_FACTOR;
 
-    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, @NonNull CameraState state) {
+    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, @NonNull CameraState state,
+            @Nullable AnimationManager animation_manager) {
         this.landscapeEnvironment = landscapeEnvironment;
         this.state = state;
+        this.animation_manager = animation_manager;
+    }
+
+    public Camera(@Nullable LandscapeEnvironment landscapeEnvironment, @NonNull CameraState state) {
+        this(landscapeEnvironment, state, null);
     }
 
     protected final @Nullable LandscapeEnvironment getLandscapeEnvironment() {
@@ -145,12 +152,20 @@ public abstract class Camera implements Animated {
         return state;
     }
 
+    public final @Nullable AnimationManager getAnimationManager() {
+        return animation_manager;
+    }
+
     public final void disable() {
-        Renderer.getRenderer().getEventQueue().getHighPrecisionManager().removeAnimation(this);
+        if (animation_manager != null) {
+            animation_manager.removeAnimation(this);
+        }
     }
 
     public void enable() {
-        Renderer.getRenderer().getEventQueue().getHighPrecisionManager().registerAnimation(this);
+        if (animation_manager != null) {
+            animation_manager.registerAnimation(this);
+        }
     }
 
     public void handleInput(@NonNull InputEvent event) {

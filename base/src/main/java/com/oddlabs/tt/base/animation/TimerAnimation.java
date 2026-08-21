@@ -1,9 +1,9 @@
 package com.oddlabs.tt.base.animation;
 
-import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.event.StateChecksum;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
 
 public final class TimerAnimation implements Animated {
     private final @NonNull AnimationManager manager;
@@ -11,10 +11,6 @@ public final class TimerAnimation implements Animated {
     private float interval;
     private @Nullable Updatable<TimerAnimation> timer_owner;
     private boolean running = false;
-
-    public TimerAnimation(@NonNull Updatable<TimerAnimation> owner, float interval) {
-        this(LocalEventQueue.getQueue().getManager(), owner, interval);
-    }
 
     public TimerAnimation(@NonNull AnimationManager manager, @NonNull Updatable<TimerAnimation> owner, float interval) {
         this.manager = manager;

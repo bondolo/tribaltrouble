@@ -1,10 +1,9 @@
 package com.oddlabs.tt.client.camera;
 
+import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -19,7 +18,7 @@ public final class FirstPersonCamera extends Camera {
     private final @NonNull WorldViewer viewer;
 
     public FirstPersonCamera(@NonNull WorldViewer viewer, LandscapeEnvironment heightmap, @NonNull CameraState camera) {
-        super(heightmap, camera);
+        super(heightmap, camera, viewer.getAnimationManagerHighPrecision());
         this.viewer = viewer;
         var guiRoot = viewer.getGUIRoot();
         this.last_x = guiRoot.getMouseX();
@@ -66,7 +65,7 @@ public final class FirstPersonCamera extends Camera {
         int dx = guiRoot.getMouseX() - last_x;
         int dy = guiRoot.getMouseY() - last_y;
         getState().setTargetHorizAngle(getState().getTargetHorizAngle() - dx * SCALE_HORIZ);
-        if (Renderer.getRenderer().getSettings().control.invert_camera_pitch)
+        if (viewer.getInputManager().getControlSettings().invert_camera_pitch)
             getState().setTargetVertAngle(getState().getTargetVertAngle() - dy * SCALE_VERT);
         else
             getState().setTargetVertAngle(getState().getTargetVertAngle() + dy * SCALE_VERT);

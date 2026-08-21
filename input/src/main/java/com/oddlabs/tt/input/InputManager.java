@@ -15,15 +15,25 @@ import java.util.Set;
  */
 public final class InputManager {
     private final @NonNull InputBindingSettings settings;
+    private final @NonNull ControlSettings controlSettings;
     private final Set<@NonNull GameAction> activeActions = EnumSet.noneOf(GameAction.class);
     private final Map<@NonNull Key, @NonNull Set<@NonNull GameAction>> keyState = new EnumMap<>(Key.class);
 
+    public InputManager(@NonNull InputBindingSettings settings, @NonNull ControlSettings controlSettings) {
+        this.settings = settings;
+        this.controlSettings = controlSettings;
+    }
+
     public InputManager(@NonNull InputBindingSettings settings) {
-        this.settings = Objects.requireNonNull(settings);
+        this(settings, new ControlSettings());
     }
 
     public InputManager() {
-        this(new InputBindingSettings());
+        this(new InputBindingSettings(), new ControlSettings());
+    }
+
+    public @NonNull ControlSettings getControlSettings() {
+        return controlSettings;
     }
 
     public @NonNull InputBindingSettings getSettings() {

@@ -4,7 +4,6 @@ import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.RenderConfig;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -56,7 +55,7 @@ public final class GameCamera extends Camera {
     private boolean rotate_right;
 
     public GameCamera(@NonNull WorldViewer viewer, @NonNull CameraState camera) {
-        super(viewer.getWorld().getLandscapeEnvironment(), camera);
+        super(viewer.getWorld().getLandscapeEnvironment(), camera, viewer.getAnimationManagerHighPrecision());
         this.default_rotate_radius = viewer.getWorld().getLandscapeEnvironment().getMetersPerWorld() / 4f;
         this.viewer = viewer;
         checkPosition();
@@ -234,13 +233,12 @@ public final class GameCamera extends Camera {
 
     private void doPitch(float time_delta) {
         checkKeys();
-        if ((pitch_down && !Renderer.getRenderer().getSettings().control.invert_camera_pitch) ||
-                (pitch_up && Renderer.getRenderer().getSettings().control.invert_camera_pitch)) {
+        boolean invert = viewer.getInputManager().getControlSettings().invert_camera_pitch;
+        if ((pitch_down && !invert) || (pitch_up && invert)) {
             getState().setTargetVertAngle(getState().getTargetVertAngle() - time_delta * ANGLE_DELTA);
             checkPosition();
         }
-        if ((pitch_up && !Renderer.getRenderer().getSettings().control.invert_camera_pitch) ||
-                (pitch_down && Renderer.getRenderer().getSettings().control.invert_camera_pitch)) {
+        if ((pitch_up && !invert) || (pitch_down && invert)) {
             getState().setTargetVertAngle(getState().getTargetVertAngle() + time_delta * ANGLE_DELTA);
             checkPosition();
         }
