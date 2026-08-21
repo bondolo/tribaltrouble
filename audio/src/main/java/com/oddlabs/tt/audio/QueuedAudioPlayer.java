@@ -40,16 +40,6 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
         Thread.startVirtualThread(() -> refiller(params.audio().getURL()));
     }
 
-    /** {@return The audio associated with this player.} */
-    @Override
-    protected @NonNull Audio getAudio() {
-        Audio audio = this.audio;
-        if (null == audio) {
-            throw new IllegalStateException("Audio not initialized");
-        }
-        return audio;
-    }
-
     private void refiller(@NonNull URL source) {
         initThread();
         try (OGGStream stream = new OGGStream(source)) {

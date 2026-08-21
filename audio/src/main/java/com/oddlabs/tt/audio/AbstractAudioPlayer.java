@@ -71,11 +71,6 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
         return parameters;
     }
 
-    /** {@return The audio associated with this player} */
-    protected @NonNull Audio getAudio() {
-        return parameters.audio().get();
-    }
-
     /** {@return The number of buffers allocated for this player} */
     protected int getBufferCount() {
         return 0;

@@ -311,7 +311,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
             @NonNull AudioParameters params) {
         if (null != source && !params.audio().isStreaming()) {
             // Bind the audio to the source before creating the player.
-            source.setAudio(params.audio().get());
+            source.setAudio(params.audio().get(this));
         }
         return createPlayer(source, x, y, z, params);
     }
