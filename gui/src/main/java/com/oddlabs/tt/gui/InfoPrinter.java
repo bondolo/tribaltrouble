@@ -30,7 +30,7 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
         this.lines = lines;
         this.font = font;
         displayChangedNotify(gui_root.getWidth(), gui_root.getHeight());
-        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
+        gui_root.getAnimationManager().registerAnimation(this);
         time = 0;
     }
 
@@ -48,7 +48,7 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatListen
     protected void doRemove() {
         super.doRemove();
         Renderer.getRenderer().getNetwork().getChatHub().removeListener(this);
-        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
+        gui_root.getAnimationManager().removeAnimation(this);
     }
 
     @Override

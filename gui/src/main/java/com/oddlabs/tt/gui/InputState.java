@@ -52,8 +52,8 @@ public final class InputState {
     public InputState(@NonNull GUIRoot gui_root) {
         this.gui_root = gui_root;
         this.inputManager = gui_root.getInputManager();
-        double_click_timer = new TimerAnimation(new DoubleClickTimer(), 0);
-        double_key_timer = new TimerAnimation(new DoubleKeyTimer(), 0);
+        double_click_timer = new TimerAnimation(gui_root.getAnimationManager(), new DoubleClickTimer(), 0);
+        double_key_timer = new TimerAnimation(gui_root.getAnimationManager(), new DoubleKeyTimer(), 0);
         press_obj = gui_root;
     }
 
@@ -109,7 +109,7 @@ public final class InputState {
         press_obj.mousePressedAll(button, local_x, local_y);
         if (mouse_timer != null)
             mouse_timer.stop();
-        mouse_timer = new TimerAnimation(timer -> {
+        mouse_timer = new TimerAnimation(gui_root.getAnimationManager(), timer -> {
             timer.setTimerInterval(MOUSE_REPEAT_RATE);
             timer.resetTime();
             if (press_obj == gui_root.getCurrentGUIObject()) {

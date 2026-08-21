@@ -1,7 +1,6 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
@@ -12,7 +11,9 @@ import com.oddlabs.tt.window.Window;
 import org.jspecify.annotations.NonNull;
 
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Logger;
 
 /**
@@ -30,15 +31,23 @@ public final class LocalInput implements AutoCloseable {
     private final @NonNull Window window;
     private final @NonNull InputProvider<?> inputProvider;
     private final @NonNull InputManager inputManager;
+    private final @NonNull Deterministic deterministic;
+    private final @NonNull BooleanSupplier developerModeSupplier;
+    private final @NonNull Runnable shutdownAction;
     private final KeyboardInput keyboardInput = new KeyboardInput();
     private final @NonNull PointerInput pointerInput;
 
     private final Set<@NonNull Key> keys = EnumSet.noneOf(Key.class);
     private final Set<@NonNull Modifier> global_modifiers = EnumSet.noneOf(Modifier.class);
 
-    public LocalInput(@NonNull Window lwjglWindow, @NonNull InputManager inputManager) {
+    public LocalInput(@NonNull Window lwjglWindow, @NonNull InputManager inputManager,
+            @NonNull Deterministic deterministic, @NonNull BooleanSupplier developerModeSupplier,
+            @NonNull Runnable shutdownAction) {
         this.window = lwjglWindow;
         this.inputManager = inputManager;
+        this.deterministic = deterministic;
+        this.developerModeSupplier = Objects.requireNonNull(developerModeSupplier);
+        this.shutdownAction = Objects.requireNonNull(shutdownAction);
         if (lwjglWindow instanceof LWJGL3Window win) {
             LWJGL3InputProvider p = new LWJGL3InputProvider(win);
             this.inputProvider = p;
@@ -49,13 +58,35 @@ public final class LocalInput implements AutoCloseable {
         }
     }
 
+    public LocalInput(@NonNull Window lwjglWindow, @NonNull InputManager inputManager,
+            @NonNull Deterministic deterministic) {
+        this(lwjglWindow, inputManager, deterministic, () -> false, () -> {
+        });
+    }
+
+    public boolean inDeveloperMode() {
+        return developerModeSupplier.getAsBoolean();
+    }
+
+    public void shutdown() {
+        shutdownAction.run();
+    }
+
+    public @NonNull Window getWindow() {
+        return window;
+    }
+
+    public @NonNull Deterministic getDeterministic() {
+        return deterministic;
+    }
+
     public void poll(@NonNull GUIRoot root) {
         pointerInput.poll(root);
         keyboardInput.poll(inputProvider, this, root);
     }
 
     public void checkMagicKeys() {
-        keyboardInput.checkMagicKeys(inputProvider);
+        keyboardInput.checkMagicKeys(inputProvider, deterministic);
     }
 
     public void setKeys(@NonNull Key key, boolean state, @NonNull Set<@NonNull Modifier> modifiers) {
@@ -139,7 +170,6 @@ public final class LocalInput implements AutoCloseable {
             lwjgl3InputProvider.initCallbacks();
         }
         pointerInput.loadCursors(window.getPixelDensity());
-        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
         mouse_x = deterministic.log(inputProvider.getMouseX());
         mouse_y = deterministic.log(inputProvider.getMouseY());
     }

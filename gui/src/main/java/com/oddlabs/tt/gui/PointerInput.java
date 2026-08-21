@@ -3,7 +3,6 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.engine.cursor.Cursor;
 import com.oddlabs.tt.engine.cursor.CursorFile;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.InputProvider;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -48,13 +47,13 @@ public final class PointerInput {
     }
 
     public void loadCursors(float scale) {
-        float density = Renderer.getRenderer().getWindow().getPixelDensity();
+        float density = localInput.getWindow().getPixelDensity();
         loadCursors(scale, density);
     }
 
     public void loadCursors(float scale, float pixelDensity) {
-        int w = Renderer.getRenderer().getWindow().getWidth();
-        int h = Renderer.getRenderer().getWindow().getHeight();
+        int w = localInput.getWindow().getWidth();
+        int h = localInput.getWindow().getHeight();
         if (current_scale == scale && current_pixel_density == pixelDensity && lastWidth == w && lastHeight == h) {
             return;
         }
@@ -128,7 +127,7 @@ public final class PointerInput {
     }
 
     public void setCursorPosition(int x, int y) {
-        if (!Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback())
+        if (!localInput.getDeterministic().isPlayback())
             inputProvider.setCursorPosition(x, y);
     }
 
@@ -144,7 +143,7 @@ public final class PointerInput {
         //noinspection unchecked
         InputProvider<Long> provider = (InputProvider<Long>) inputProvider;
 
-        var useCursor = Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback()
+        var useCursor = localInput.getDeterministic().isPlayback()
                 ? debug_cursor : cursor;
         provider.setNativeCursor(useCursor.getCursor());
     }
@@ -166,7 +165,7 @@ public final class PointerInput {
     }
 
     public void poll(@NonNull GUIRoot gui_root) {
-        Deterministic deterministic = Renderer.getRenderer().getEventQueue().getDeterministic();
+        Deterministic deterministic = localInput.getDeterministic();
         inputProvider.pollMouse();
         int accum_x = last_x;
         int accum_y = last_y;
