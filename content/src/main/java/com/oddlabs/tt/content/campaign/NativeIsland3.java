@@ -115,7 +115,7 @@ public final class NativeIsland3 extends Island {
         getViewer().getLocalPlayer().enableBuilding(BuildingType.TOWER, false);
 
         // Insert native men
-        ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
+        ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));

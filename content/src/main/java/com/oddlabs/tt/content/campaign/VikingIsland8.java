@@ -103,7 +103,7 @@ public final class VikingIsland8 extends Island {
         });
 
         // Insert viking men
-        ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
+        ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
         local_player.setActiveChieftain(new Unit(local_player, 170 * 2, 160 * 2, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
         local_player.getChieftain().ifPresent(chieftain -> chieftain.getOwner().getRaceInfo().getMagics().forEach(

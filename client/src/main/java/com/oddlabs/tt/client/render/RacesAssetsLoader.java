@@ -70,10 +70,18 @@ import java.util.logging.Logger;
  */
 public final class RacesAssetsLoader {
     private static final Logger logger = Logger.getLogger(RacesAssetsLoader.class.getSimpleName());
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(
+            "com.oddlabs.tt.content.RacesResources");
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
+    }
+
+    public static String getRaceName(Race race) {
+        return switch (race) {
+            case NATIVES -> i18n("natives");
+            case VIKINGS -> i18n("vikings");
+        };
     }
 
     private static final int MAX_UNIT_RESOURCES = 1;

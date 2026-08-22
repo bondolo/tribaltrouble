@@ -117,7 +117,7 @@ public final class NativeIsland2 extends Island {
         // Place natives
         int start_x = 100 * 2;
         int start_y = 73 * 2;
-        ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
+        ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));

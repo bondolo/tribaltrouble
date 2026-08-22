@@ -115,7 +115,7 @@ public final class NativeIsland1 extends Island {
         new GameStartedTrigger(getViewer().getWorld(), dialog0);
 
         // insert local_player
-        ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
+        ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
         local_player.setActiveChieftain(new Unit(local_player, start_x, start_y, null, local_player.getRaceInfo()
                 .getUnitTemplate(UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "native_chieftain_name"),
                 false));

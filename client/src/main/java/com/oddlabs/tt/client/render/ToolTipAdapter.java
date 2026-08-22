@@ -75,7 +75,9 @@ public final class ToolTipAdapter implements ToolTip {
     }
 
     private void visitSupply(ToolTipBox tool_tip, Supply supply) {
-        tool_tip.append(supply.getName());
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com.oddlabs.tt.content." + supply
+                .getClass().getSimpleName());
+        tool_tip.append(com.oddlabs.tt.base.util.Utils.getBundleString(bundle, "name"));
         tool_tip.append(GUIIcons.getIcons().getToolTipIcon(supply.getSupplyType()));
     }
 

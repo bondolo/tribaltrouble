@@ -1,10 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.base.util.Utils;
-
 import java.util.EnumMap;
-import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
 /**
@@ -12,13 +8,6 @@ import java.util.stream.IntStream;
  * Completely decoupled from graphics/rendering systems.
  */
 public final class RacesResources {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(RacesResources.class.getName(),
-            ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES));
-
-    private static String i18n(String key, Object... args) {
-        return Utils.getBundleString(bundle, key, args);
-    }
-
     public static final int QUARTERS_SIZE = 5;
     public static final int ARMORY_SIZE = 5;
     public static final int TOWER_SIZE = 3;
@@ -33,10 +22,6 @@ public final class RacesResources {
     public static final float THROW_RANGE = 6f;
     public static final float BUILDING_RING_PHYSICAL_THICKNESS = 0.2f;
 
-    private static final EnumMap<Race, String> race_names = new EnumMap<>(
-            Map.of(Race.NATIVES, i18n("natives"),
-                    Race.VIKINGS, i18n("vikings")));
-
     private final EnumMap<Race, RaceInfo> raceInfos = new EnumMap<>(Race.class);
 
     public static boolean isValidRace(int race) {
@@ -49,9 +34,5 @@ public final class RacesResources {
 
     public RaceInfo getRaceInfo(Race race) {
         return raceInfos.get(race);
-    }
-
-    public static String getRaceName(Race race) {
-        return race_names.get(race);
     }
 }
