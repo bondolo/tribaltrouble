@@ -8,7 +8,7 @@ import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.simulation.SimulationConfig;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
-import com.oddlabs.tt.simulation.model.RacesResources;
+import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
@@ -678,7 +678,7 @@ public final class Landscape {
             }
         }
         byte[][] byte_grid = new byte[build_grid.length][build_grid[0].length];
-        byte max = (byte) RacesResources.MAX_BUILDING_SIZE;
+        byte max = (byte) RaceData.MAX_BUILDING_SIZE;
         for (byte i = 0; i < max; i++) {
             for (int y = 1; y < build_grid.length - 1; y++) {
                 for (int x = 1; x < build_grid[y].length - 1; x++) {
@@ -1122,7 +1122,7 @@ public final class Landscape {
         Channel buildmap_debug = new Channel(access.width, access.height);
         for (int y = 0; y < access.height; y++) {
             for (int x = 0; x < access.width; x++) {
-                if (build[y][x] == RacesResources.QUARTERS_SIZE) {
+                if (build[y][x] == RaceData.QUARTERS_SIZE) {
                     buildmap.putPixel(x, y, 1f);
                 }
                 if (DEBUG) buildmap_debug.putPixel(x, y, .2f * build[y][x]);
@@ -1145,17 +1145,19 @@ public final class Landscape {
             int y = (int) (radius * (float) Math.sin(angle) + (unit_grids_per_world >> 1) + 0.5f);
             angle += angle_step;
             location_quarters = buildmap.findNoWrap((unit_grids_per_world >> 1), x, y, 1f);
-            for (int k = -(RacesResources.QUARTERS_SIZE/* - 1*/); k <= (RacesResources.QUARTERS_SIZE/* - 1*/); k++) {
-                for (int l = -(RacesResources.QUARTERS_SIZE/* - 1*/); l
-                        <= (RacesResources.QUARTERS_SIZE/* - 1*/); l++) {
+            for (int k = -(RaceData.QUARTERS_SIZE/* - 1*/); k
+                    <= (RaceData.QUARTERS_SIZE/* - 1*/); k++) {
+                for (int l = -(RaceData.QUARTERS_SIZE/* - 1*/); l
+                        <= (RaceData.QUARTERS_SIZE/* - 1*/); l++) {
                     access.putPixelWrap(location_quarters[0] + k, location_quarters[1] + l, 0f);
                     buildmap.putPixelWrap(location_quarters[0] + k, location_quarters[1] + l, 0f);
                 }
             }
             location_armory = buildmap.find((unit_grids_per_world >> 1), location_quarters[0], location_quarters[1],
                     1f);
-            for (int k = -(RacesResources.ARMORY_SIZE/* - 1*/); k <= (RacesResources.ARMORY_SIZE/* - 1*/); k++) {
-                for (int l = -(RacesResources.ARMORY_SIZE/* - 1*/); l <= (RacesResources.ARMORY_SIZE/* - 1*/); l++) {
+            for (int k = -(RaceData.ARMORY_SIZE/* - 1*/); k <= (RaceData.ARMORY_SIZE/* - 1*/); k++) {
+                for (int l = -(RaceData.ARMORY_SIZE/* - 1*/); l
+                        <= (RaceData.ARMORY_SIZE/* - 1*/); l++) {
                     access.putPixelWrap(location_armory[0] + k, location_armory[1] + l, 0f);
                     buildmap.putPixelWrap(location_armory[0] + k, location_armory[1] + l, 0f);
                 }

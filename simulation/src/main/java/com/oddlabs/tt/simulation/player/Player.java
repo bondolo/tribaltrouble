@@ -335,7 +335,8 @@ public final class Player implements PlayerInterface {
     }
 
     public RaceInfo getRaceInfo() {
-        return getWorld().getRacesResources().getRaceInfo(player_info.getRace());
+        var res = getWorld().getRaceData();
+        return res != null ? res.getRaceInfo(player_info.getRace()) : null;
     }
 
     public SupplyContainer getUnitCountContainer() {
