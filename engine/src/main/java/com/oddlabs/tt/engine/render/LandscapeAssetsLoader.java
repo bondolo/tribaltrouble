@@ -11,10 +11,10 @@ import java.util.EnumMap;
 import java.util.stream.IntStream;
 
 /**
- * Client-side resource manager that loads landscape-associated sprites (rocks, iron, plants, chickens)
+ * Client-side asset loader that loads landscape-associated sprites (rocks, iron, plants, chickens)
  * and exposes their physical bounds to the simulation via {@link LandscapeBoundsProvider}.
  */
-public final class LandscapeResources implements LandscapeBoundsProvider {
+public final class LandscapeAssetsLoader implements LandscapeBoundsProvider {
     public static final int SUPPLY_FRAGMENT_COUNT = 5;
 
     private final SpriteKey[] rock_fragment_sprites;
@@ -22,7 +22,7 @@ public final class LandscapeResources implements LandscapeBoundsProvider {
     private final EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(Terrain.class);
     private final SpriteKey chicken;
 
-    public LandscapeResources(RenderQueues queues) {
+    public LandscapeAssetsLoader(RenderQueues queues) {
         int num_progress = 13;
         ProgressListener.progress(10f / num_progress);
 

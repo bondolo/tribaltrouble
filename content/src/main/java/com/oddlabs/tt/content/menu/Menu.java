@@ -23,7 +23,7 @@ import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
-import com.oddlabs.tt.engine.render.LandscapeResources;
+import com.oddlabs.tt.engine.render.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
@@ -380,7 +380,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(players
                 .size(), world_params.initialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
-        LandscapeResources landscape_resources = new LandscapeResources(render_queues);
+        LandscapeAssetsLoader landscape_resources = new LandscapeAssetsLoader(render_queues);
         ProgressForm.progress();
         World world = World.newWorld(landscape_resources, null,
                 new NotificationListener() {
