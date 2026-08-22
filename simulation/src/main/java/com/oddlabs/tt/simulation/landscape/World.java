@@ -5,7 +5,7 @@ import com.oddlabs.tt.base.animation.SimulationClock;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
 import com.oddlabs.tt.simulation.model.Plants;
-import com.oddlabs.tt.simulation.model.RacesResources;
+import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.SupplyManager;
 import com.oddlabs.tt.simulation.model.SupplyManagers;
 import com.oddlabs.tt.simulation.model.SupplyType;
@@ -54,7 +54,7 @@ public final class World implements SimulationClock {
     private final PatchGroup patch_root;
     private final AbstractTreeGroup tree_root;
     private final AbstractElementNode<?> element_root;
-    private final @Nullable RacesResources races_resources;
+    private final @Nullable RaceData races_resources;
     private final LandscapeBoundsProvider landscape_resources;
     private final Terrain terrain;
     private final float[][] plantCoordinates;
@@ -64,7 +64,7 @@ public final class World implements SimulationClock {
     private int gamespeed;
 
     public static World newWorld(
-            LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
+            LandscapeBoundsProvider landscape_resources, @Nullable RaceData races_resources,
             NotificationListener notification_listener, WorldParameters world_params,
             LandscapeData landscapeData, List<PlayerInfo> player_infos,
             Color.Linear[] teamColors, boolean insertPlants) {
@@ -73,7 +73,7 @@ public final class World implements SimulationClock {
     }
 
     public static World newWorld(
-            LandscapeBoundsProvider landscape_resources, @Nullable RacesResources races_resources,
+            LandscapeBoundsProvider landscape_resources, @Nullable RaceData races_resources,
             NotificationListener notification_listener, WorldParameters world_params,
             LandscapeData landscapeData, List<PlayerInfo> player_infos,
             Color.Linear[] teamColors, boolean insertPlants,
@@ -96,7 +96,7 @@ public final class World implements SimulationClock {
         return landscape_resources;
     }
 
-    public @Nullable RacesResources getRacesResources() {
+    public @Nullable RaceData getRaceData() {
         return races_resources;
     }
 
@@ -153,7 +153,7 @@ public final class World implements SimulationClock {
     }
 
     private World(LandscapeBoundsProvider landscape_resources,
-            @Nullable RacesResources races_resources, NotificationListener notification_listener,
+            @Nullable RaceData races_resources, NotificationListener notification_listener,
             WorldParameters world_params, LandscapeData landscapeData,
             List<PlayerInfo> player_infos, Color.Linear[] teamColors,
             boolean insertPlants, ProgressListener progress_listener) {

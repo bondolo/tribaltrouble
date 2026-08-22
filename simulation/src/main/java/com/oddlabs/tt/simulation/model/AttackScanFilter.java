@@ -22,7 +22,8 @@ public final class AttackScanFilter implements ScanFilter {
     }
 
     public static final int UNIT_RANGE = 8;
-    public static final int TOWER_RANGE = (int) (RacesResources.THROW_RANGE + MountUnitContainer.ATTACK_RANGE_INCREASE);
+    public static final int TOWER_RANGE = (int) (RaceData.THROW_RANGE
+            + MountUnitContainer.ATTACK_RANGE_INCREASE);
 
     private final int max_range;
 

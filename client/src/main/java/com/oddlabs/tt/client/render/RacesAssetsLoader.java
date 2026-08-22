@@ -30,7 +30,7 @@ import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.MountUnitContainerFactory;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RaceInfo;
-import com.oddlabs.tt.simulation.model.RacesResources;
+import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.ReproduceUnitContainerFactory;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitContainerFactory;
@@ -71,7 +71,7 @@ import java.util.logging.Logger;
 public final class RacesAssetsLoader {
     private static final Logger logger = Logger.getLogger(RacesAssetsLoader.class.getSimpleName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle(
-            "com.oddlabs.tt.content.RacesResources");
+            "com.oddlabs.tt.content.RaceData");
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
@@ -121,7 +121,7 @@ public final class RacesAssetsLoader {
 
         final float ring_mid = 0.445f;
         final float fadeout = 0.002f;
-        final float ring_thickness = RacesResources.BUILDING_RING_PHYSICAL_THICKNESS / shadow_diameter;
+        final float ring_thickness = RaceData.BUILDING_RING_PHYSICAL_THICKNESS / shadow_diameter;
         Supplier<Texture[]> building_shadow_desc = new GeneratorHalos(DecalRenderer.HALO_LUT_RESOLUTION,
                 new float[][]{{0.15f, 0.5f}, {0.5f, 0f}},
                 new float[][]{{ring_mid - ring_thickness / 2 - fadeout, 0f}, {ring_mid - ring_thickness / 2, 1f}, {
@@ -171,7 +171,7 @@ public final class RacesAssetsLoader {
                 name);
     }
 
-    public static RacesResources load(RenderQueues queues) {
+    public static RaceData load(RenderQueues queues) {
         int num_progress = 23;
         SpriteFile native_rock_sprite = new SpriteFile("/geometry/natives/rock_resource.binsprite",
                 RenderConfig.NO_MIPMAP_CUTOFF,
@@ -256,7 +256,7 @@ public final class RacesAssetsLoader {
                 3.5f, 6f,
                 "/geometry/vikings/quarters_start.binsprite",
                 5f, 1f,
-                22f, RacesResources.QUARTERS_SIZE, 6f, 9f, 30, RacesResources.QUARTERS_HIT_POINTS,
+                22f, RaceData.QUARTERS_SIZE, 6f, 9f, 30, RaceData.QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
                 new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
@@ -274,7 +274,7 @@ public final class RacesAssetsLoader {
                 3.5f, 6f,
                 "/geometry/vikings/armory_start.binsprite",
                 5f, 1f,
-                22f, RacesResources.ARMORY_SIZE, 6f, 9f, 30, RacesResources.ARMORY_HIT_POINTS,
+                22f, RaceData.ARMORY_SIZE, 6f, 9f, 30, RaceData.ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
                 new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO
                         | Abilities.TARGET),
@@ -293,7 +293,7 @@ public final class RacesAssetsLoader {
                 2f, 7f,
                 "/geometry/vikings/tower_start.binsprite",
                 2.5f, 1f,
-                10f, RacesResources.TOWER_SIZE, 3f, 12f, 20, RacesResources.TOWER_HIT_POINTS,
+                10f, RaceData.TOWER_SIZE, 3f, 12f, 20, RaceData.TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
                 new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 2f, 7.5f}, 9.55f, 2.5f,
@@ -311,7 +311,7 @@ public final class RacesAssetsLoader {
                 4f, 6f,
                 "/geometry/natives/quarters_start.binsprite",
                 5f, 1f,
-                16f, RacesResources.QUARTERS_SIZE, 6f, 9f, 30, RacesResources.QUARTERS_HIT_POINTS,
+                16f, RaceData.QUARTERS_SIZE, 6f, 9f, 30, RaceData.QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
                 new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 1f, 3f}, 0f, 6f,
@@ -329,7 +329,7 @@ public final class RacesAssetsLoader {
                 4f, 6f,
                 "/geometry/natives/armory_start.binsprite",
                 5f, 1f,
-                16f, RacesResources.ARMORY_SIZE, 6f, 9f, 30, RacesResources.ARMORY_HIT_POINTS,
+                16f, RaceData.ARMORY_SIZE, 6f, 9f, 30, RaceData.ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
                 new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO
                         | Abilities.TARGET),
@@ -348,7 +348,7 @@ public final class RacesAssetsLoader {
                 1f, 14f,
                 "/geometry/natives/tower_start.binsprite",
                 1.5f, 2f,
-                5f, RacesResources.TOWER_SIZE, 3f, 12f, 20, RacesResources.TOWER_HIT_POINTS,
+                5f, RaceData.TOWER_SIZE, 3f, 12f, 20, RaceData.TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
                 new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
                 new float[]{0f, 11.5f, 11.5f}, 13f, 2.5f,
@@ -395,33 +395,33 @@ public final class RacesAssetsLoader {
         ProgressListener.progress(1f / num_progress);
 
         WeaponFactory viking_warrior_rock_weapon = new ThrowingFactory<>(RockAxeWeapon.class, RockAxeWeapon::new, 0.5f,
-                RacesResources.THROW_RANGE, 29f / 58f);
+                RaceData.THROW_RANGE, 29f / 58f);
         AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.ROCK,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_ROCK.getValue()));
 
         WeaponFactory viking_warrior_iron_weapon = new ThrowingFactory<>(IronAxeWeapon.class, IronAxeWeapon::new, 0.75f,
-                RacesResources.THROW_RANGE, 29f / 58f);
+                RaceData.THROW_RANGE, 29f / 58f);
         AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.IRON,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_IRON.getValue()));
 
         WeaponFactory viking_warrior_rubber_weapon = new ThrowingFactory<>(RubberAxeWeapon.class, RubberAxeWeapon::new,
-                0.95f, RacesResources.THROW_RANGE, 29f / 58f);
+                0.95f, RaceData.THROW_RANGE, 29f / 58f);
         AssetRegistry.getInstance().registerWeapon(Race.VIKINGS, WeaponVisualType.RUBBER,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_RUBBER.getValue()));
 
         WeaponFactory native_warrior_rock_weapon = new ThrowingFactory<>(RockSpearWeapon.class, RockSpearWeapon::new,
-                0.5f, RacesResources.THROW_RANGE, 46f / 100f);
+                0.5f, RaceData.THROW_RANGE, 46f / 100f);
         AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.ROCK,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_ROCK.getValue()));
 
         WeaponFactory native_warrior_iron_weapon = new ThrowingFactory<>(IronSpearWeapon.class, IronSpearWeapon::new,
-                0.75f, RacesResources.THROW_RANGE, 46f / 100f);
+                0.75f, RaceData.THROW_RANGE, 46f / 100f);
         AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.IRON,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_IRON.getValue()));
 
         WeaponFactory native_warrior_rubber_weapon = new ThrowingFactory<>(RubberSpearWeapon.class,
                 RubberSpearWeapon::new,
-                0.95f, RacesResources.THROW_RANGE, 46f / 100f);
+                0.95f, RaceData.THROW_RANGE, 46f / 100f);
         AssetRegistry.getInstance().registerWeapon(Race.NATIVES, WeaponVisualType.RUBBER,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue()));
 
@@ -613,7 +613,7 @@ public final class RacesAssetsLoader {
                 1f,
                 0.5f,
                 i18n("chieftain"),
-                RacesResources.VIKING_CHIEFTAIN_HIT_POINTS,
+                RaceData.VIKING_CHIEFTAIN_HIT_POINTS,
                 -.07f, .312f, 2.7f,
                 40);
         AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.CHIEFTAIN, vChieftainSprite);
@@ -634,7 +634,7 @@ public final class RacesAssetsLoader {
                 1f,
                 0.5f,
                 i18n("chieftain"),
-                RacesResources.NATIVE_CHIEFTAIN_HIT_POINTS,
+                RaceData.NATIVE_CHIEFTAIN_HIT_POINTS,
                 .878f, .151f, 2.8f,
                 40);
         AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.CHIEFTAIN, nChieftainSprite);
@@ -754,7 +754,7 @@ public final class RacesAssetsLoader {
                 true, true, true, false));
         AssetRegistry.getInstance().registerTreasures(treasure_sprites);
 
-        logger.info("RacesResources: beginning emoji sprite registration");
+        logger.info("RaceData: beginning emoji sprite registration");
         SpriteKey gravestone_emoji_sprite = queues.registerDynamicSprite(
                 SpriteList.getQuadInstance(),
                 queues.registerTexture(new ColorGraphemeGenerator("🪦"), 0)
@@ -792,7 +792,7 @@ public final class RacesAssetsLoader {
         ProgressListener.progress(1f / num_progress);
         ProgressListener.progress(1f / num_progress);
 
-        return new RacesResources(raceInfos);
+        return new RaceData(raceInfos);
     }
 
     private static SpriteKey registerIconSprite(RenderQueues queues,

@@ -5,9 +5,8 @@ import java.util.stream.IntStream;
 
 /**
  * Central model-side registry for game race statistics and template configs.
- * Completely decoupled from graphics/rendering systems.
  */
-public final class RacesResources {
+public final class RaceData {
     public static final int QUARTERS_SIZE = 5;
     public static final int ARMORY_SIZE = 5;
     public static final int TOWER_SIZE = 3;
@@ -28,7 +27,7 @@ public final class RacesResources {
         return race >= 0 && race < Race.values().length;
     }
 
-    public RacesResources(EnumMap<Race, RaceInfo> raceInfos) {
+    public RaceData(EnumMap<Race, RaceInfo> raceInfos) {
         this.raceInfos.putAll(raceInfos);
     }
 
