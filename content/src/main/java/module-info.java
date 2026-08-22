@@ -19,9 +19,17 @@ module com.oddlabs.tt.content {
     requires org.lwjgl.opengl;
     requires org.lwjgl.stb;
 
+    exports com.oddlabs.tt.content;
     exports com.oddlabs.tt.content.campaign;
     exports com.oddlabs.tt.content.form;
     exports com.oddlabs.tt.content.menu;
     exports com.oddlabs.tt.content.skirmish;
     exports com.oddlabs.tt.content.tutorial;
+
+    opens com.oddlabs.tt.content;
+    opens com.oddlabs.tt.content.campaign;
+    opens com.oddlabs.tt.content.form;
+    opens com.oddlabs.tt.content.menu;
+    opens com.oddlabs.tt.content.skirmish;
+    opens com.oddlabs.tt.content.tutorial;
 }

@@ -292,7 +292,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     private void initPlayers(float[][] starting_locations, PlayerSlot[] slots, List<Player> players,
             UnitInfo[] unit_infos, int initial_gamespeed) {
-        ResourceBundle bundle = ResourceBundle.getBundle(Player.class.getName());
+        ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
         for (int i = 0; i < slots.length; i++) {
             initPlayer(bundle, starting_locations[i], slots[i], players.get(i), unit_infos[i], initial_gamespeed);
         }

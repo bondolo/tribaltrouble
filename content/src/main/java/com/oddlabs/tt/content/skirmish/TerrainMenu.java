@@ -38,7 +38,6 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Gamespeed;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.simulation.model.RacesResources;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -346,7 +345,8 @@ public final class TerrainMenu extends Group {
             group_race_team.addChild(difficulty_pulldown_buttons[i]);
 
             for (Race race : Race.values()) {
-                PulldownItem<Race> pulldown_item_race = new PulldownItem<>(RacesResources.getRaceName(race), race);
+                PulldownItem<Race> pulldown_item_race = new PulldownItem<>(
+                        com.oddlabs.tt.client.render.RacesAssetsLoader.getRaceName(race), race);
                 race_pulldown_menus[i].addItem(pulldown_item_race);
             }
 

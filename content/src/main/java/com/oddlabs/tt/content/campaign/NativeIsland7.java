@@ -111,7 +111,7 @@ public final class NativeIsland7 extends Island {
         new VictoryTrigger(getViewer(), runnable);
 
         // Insert vikings
-        ResourceBundle player_bundle = ResourceBundle.getBundle(Player.class.getName());
+        ResourceBundle player_bundle = ResourceBundle.getBundle("com.oddlabs.tt.content.Player");
         enemy.setActiveChieftain(new Unit(enemy, 97 * 2, 60 * 2, null, enemy.getRaceInfo().getUnitTemplate(
                 UnitType.CHIEFTAIN), Utils.getBundleString(player_bundle, "chieftain_name"), false));
         enemy.buildBuilding(BuildingType.QUARTERS, 105, 56);
