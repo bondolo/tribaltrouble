@@ -3,10 +3,9 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.audio.openal.OpenALManager;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
-import com.oddlabs.tt.base.global.AppConfig;
+import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.base.util.StatCounter;
 import com.oddlabs.tt.base.util.Utils;
@@ -28,7 +27,6 @@ import org.lwjgl.opengl.GL30;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -62,7 +60,7 @@ public final class Renderer implements AutoCloseable {
 
     private static final int INSTRUMENTATION_FRAME_COUNT = Integer.MAX_VALUE;
 
-    private static final Renderer renderer_instance = new Renderer();
+    private static @Nullable Renderer renderer_instance;
 
     private static final StatCounter fps = new StatCounter(10);
     private static int num_triangles_rendered;
@@ -72,18 +70,16 @@ public final class Renderer implements AutoCloseable {
 
     private final GamePaths gamePaths;
     private final Settings settings;
-    private final Locale locale = default_locale;
 
     private final GLRenderContext renderContext = new GLRenderContext();
-    private final Window window = new LWJGL3Window();
-    private final Network network = new Network();
-    private final LocalEventQueue event_queue = new LocalEventQueue();
+    private final Window window;
+    private final Network network;
+    private final AudioManager audioManager;
+    private final LocalEventQueue event_queue;
 
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
 
-    // Currently only OpenAL is supported
-    private @Nullable OpenALManager audioManager;
 
     private boolean movie_recording_started = false;
 
@@ -96,16 +92,22 @@ public final class Renderer implements AutoCloseable {
     private long totalGLFinishTime;
     private long totalLoopTime;
 
-    private Renderer() {
-        logger.info("CWD: " + System.getProperty("user.dir"));
-        // This will be configured by setupLogging, but we need to log before that.
-        try {
-            gamePaths = setupPaths();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        settings = new Settings(gamePaths.dataDir());
+    public Renderer(
+            GamePaths gamePaths,
+            Settings settings,
+            Window window,
+            LocalEventQueue eventQueue,
+            Network network,
+            AudioManager audioManager
+    ) {
+        this.gamePaths = gamePaths;
+        this.settings = settings;
+        this.window = window;
+        this.event_queue = eventQueue;
+        this.network = network;
+        this.audioManager = audioManager;
         window.setSettings(settings.window);
+        renderer_instance = this;
     }
 
     public static float getFPS() {
@@ -118,7 +120,10 @@ public final class Renderer implements AutoCloseable {
 
     public static void makeCurrent() {
         try {
-            getRenderer().getWindow().makeCurrent();
+            Renderer renderer = getRenderer();
+            if (renderer != null) {
+                renderer.getWindow().makeCurrent();
+            }
         } catch (Exception e) {
             throw new IllegalStateException("Failed to make OpenGL context current", e);
         }
@@ -126,20 +131,14 @@ public final class Renderer implements AutoCloseable {
 
     @Override
     public void close() {
-        logger.info("Closing AudioManager...");
-        if (audioManager != null) {
-            audioManager.close();
-            audioManager = null;
-        }
-        logger.info("Closing Window...");
-        window.close();
+        cleanup();
     }
 
     public Window getWindow() {
         return window;
     }
 
-    public static Renderer getRenderer() {
+    public static @Nullable Renderer getRenderer() {
         return renderer_instance;
     }
 
@@ -148,11 +147,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     public AudioManager getAudioManager() {
-        AudioManager manager = audioManager;
-        if (null == manager) {
-            throw new IllegalStateException("AudioManager not initialized");
-        }
-        return manager;
+        return audioManager;
     }
 
     /** global sound enable */
@@ -191,8 +186,7 @@ public final class Renderer implements AutoCloseable {
         long time_diff = current_time - last_frame_time;
         AnimationManager.setLastFrameTime(current_time);
         Deterministic deterministic = getEventQueue().getDeterministic();
-        if (time_diff > AnimationManager.MAX_STEP_MILLIS && !java.util.Objects.requireNonNull(deterministic)
-                .isPlayback()) {
+        if (time_diff > AnimationManager.MAX_STEP_MILLIS && !deterministic.isPlayback()) {
             java.util.logging.Logger.getLogger(Renderer.class.getName()).warning("Skipping large time diff: "
                     + time_diff + " ms.");
             time_diff = 0;
@@ -313,265 +307,6 @@ public final class Renderer implements AutoCloseable {
             }
     }
 
-    /**
-     * Returns a directory path for the specified system property value or, if
-     * the property or path is unavailable, the path of a temp directory.
-     *
-     * @param property name of the system property
-     * @return Path to a directory or null if filesystem operations don't
-     *         generally seem to work.
-     */
-    public static @Nullable Path getPropertyPath(String property) {
-        String propertyValue;
-        try {
-            propertyValue = System.getProperty(property);
-        } catch (SecurityException disallowed) {
-            // We are probably sandboxed.
-            propertyValue = null;
-        }
-        Path result = null;
-        if (null != propertyValue) {
-            try {
-                result = Path.of(propertyValue);
-                if (Files.notExists(result))
-                    result = Files.createDirectories(result);
-                if (!Files.isDirectory(result) || !Files.isReadable(result)) {
-                    // Path is not something we can use, fall back to temp
-                    result = null;
-                }
-            } catch (IOException badnews) {
-                result = null;
-            }
-        }
-
-        if (null == result) {
-            // whelp, let's use a temp directory if we can.
-            try {
-                result = Files.createTempDirectory(property);
-            } catch (IOException | SecurityException totalFailure) {
-                logger.log(Level.WARNING, "Failed to create temp directory for " + property, totalFailure);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Returns the user's home directory or if that is unavailable a temp
-     * directory.
-     *
-     * @return Path to a directory or null if filesystem operations don't
-     *         generally seem to work.
-     */
-    public static @Nullable Path getUserHomePath() {
-        return getPropertyPath("user.home");
-    }
-
-    private static boolean isUsable(@Nullable Path path) {
-        if (path == null) return false;
-        try {
-            if (!Files.exists(path) || !Files.isDirectory(path) || !Files.isWritable(path)) {
-                return false;
-            }
-            // Try creating a temporary file to be absolutely sure we can actually write.
-            // Some sandboxes (like macOS Seatbelt) might allow isWritable to return true
-            // but block the actual creation of new files.
-            try {
-                Path testFile = Files.createTempFile(path, ".tt_write_test", null);
-                Files.delete(testFile);
-                return true;
-            } catch (IOException | SecurityException e) {
-                return false;
-            }
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-
-    public record GamePaths(Path dataDir, Path logDir) {
-    }
-
-    private static GamePaths setupPaths() throws IOException {
-        Path dataDir = null;
-        Path logDir = null;
-        boolean portable = false;
-
-        // 1. Check for Portable Mode (CWD)
-        // If a game directory exists in the current working directory, use it.
-        Path localDir = Path.of(AppConfig.GAME_NAME);
-        if (isUsable(localDir)) {
-            dataDir = localDir;
-            portable = true;
-        }
-
-        // 2. Check for Portable Mode (App/JAR Directory)
-        // If the JAR is launched from a different CWD, check next to the JAR.
-        if (!portable) {
-            try {
-                java.security.CodeSource codeSource = Renderer.class.getProtectionDomain().getCodeSource();
-                if (codeSource != null) {
-                    Path jarPath = Path.of(codeSource.getLocation().toURI());
-                    Path appDir = jarPath.getParent();
-                    if (appDir != null) {
-                        Path appGameDir = appDir.resolve(AppConfig.GAME_NAME);
-                        // Avoid checking the same path twice if CWD == AppDir
-                        if (!appGameDir.equals(localDir.toAbsolutePath()) && isUsable(appGameDir)) {
-                            dataDir = appGameDir;
-                            portable = true;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                // Ignore errors determining app directory
-            }
-        }
-
-        String os_name;
-        try {
-            os_name = System.getProperty("os.name").toLowerCase();
-        } catch (SecurityException e) {
-            os_name = "unknown";
-        }
-
-        Path userHome = getUserHomePath();
-
-        // 3. Resolve Data Directory (if not portable)
-        if (!portable) {
-            String xdgConfigHome = null;
-            String appData = null;
-            try {
-                xdgConfigHome = System.getenv("XDG_CONFIG_HOME");
-                appData = System.getenv("APPDATA");
-            } catch (SecurityException _) {
-                /* ignore */
-            }
-
-            Path preferred = null;
-            Path fallback = null;
-            Path existing = null;
-
-            if (os_name.contains("mac")) {
-                if (userHome != null) {
-                    Path appSupport = userHome.resolve("Library/Application Support/" + AppConfig.GAME_NAME);
-                    Path config = userHome.resolve(".config/tribaltrouble");
-
-                    if (isUsable(appSupport)) existing = appSupport;
-                    else if (isUsable(config)) existing = config;
-
-                    preferred = appSupport;
-                    fallback = config;
-                }
-            } else if (os_name.contains("linux") || os_name.contains("unix")) {
-                Path legacyDot = userHome != null ? userHome.resolve(".tribaltrouble") : null;
-                Path currentDot = Path.of(".tribaltrouble");
-
-                Path xdg;
-                if (xdgConfigHome != null && !xdgConfigHome.isEmpty()) {
-                    xdg = Path.of(xdgConfigHome).resolve("tribaltrouble");
-                } else if (userHome != null) {
-                    xdg = userHome.resolve(".config/tribaltrouble");
-                } else {
-                    xdg = null;
-                }
-
-                if (isUsable(legacyDot)) existing = legacyDot;
-                else if (isUsable(currentDot)) existing = currentDot;
-                else if (isUsable(xdg)) existing = xdg;
-
-                preferred = xdg;
-                fallback = legacyDot;
-            } else {
-                Path roaming = appData != null ? Path.of(appData).resolve(AppConfig.GAME_NAME) : null;
-                Path homeGame = userHome != null ? userHome.resolve(AppConfig.GAME_NAME) : null;
-
-                if (isUsable(roaming)) existing = roaming;
-                else if (isUsable(homeGame)) existing = homeGame;
-
-                preferred = roaming;
-                fallback = homeGame;
-            }
-
-            if (existing != null) {
-                dataDir = existing;
-            } else if (preferred != null) {
-                try {
-                    Files.createDirectories(preferred);
-                    if (isUsable(preferred)) dataDir = preferred;
-                } catch (IOException | SecurityException e) {
-                    // Ignore
-                }
-            }
-
-            if (dataDir == null && fallback != null) {
-                try {
-                    Files.createDirectories(fallback);
-                    if (isUsable(fallback)) dataDir = fallback;
-                } catch (IOException | SecurityException e) {
-                    // Ignore
-                }
-            }
-
-            if (dataDir == null) {
-                dataDir = Files.createTempDirectory(AppConfig.GAME_NAME);
-            }
-        }
-
-        // 4. Resolve Log Directory
-        if (portable) {
-            logDir = dataDir.resolve("logs");
-        } else {
-            // Try standard OS log locations first
-            Path preferredLog = null;
-            if (os_name.contains("mac")) {
-                if (userHome != null) {
-                    preferredLog = userHome.resolve("Library/Logs/TribalTrouble");
-                }
-            } else if (os_name.contains("linux") || os_name.contains("unix")) {
-                String xdgStateHome = null;
-                try {
-                    xdgStateHome = System.getenv("XDG_STATE_HOME");
-                } catch (SecurityException _) {
-                    /* ignore */
-                }
-
-                if (xdgStateHome != null && !xdgStateHome.isEmpty()) {
-                    preferredLog = Path.of(xdgStateHome).resolve("tribaltrouble/logs");
-                } else if (userHome != null) {
-                    preferredLog = userHome.resolve(".local/state/tribaltrouble/logs");
-                }
-            } else {
-                // Windows
-                String localAppData = null;
-                try {
-                    localAppData = System.getenv("LOCALAPPDATA");
-                } catch (SecurityException _) {
-                    /* ignore */
-                }
-
-                if (localAppData != null) {
-                    preferredLog = Path.of(localAppData).resolve("TribalTrouble\\logs");
-                }
-            }
-
-            if (preferredLog != null) {
-                try {
-                    Files.createDirectories(preferredLog);
-                    if (isUsable(preferredLog)) {
-                        logDir = preferredLog;
-                    }
-                } catch (IOException | SecurityException e) {
-                    // Ignore
-                }
-            }
-
-            // Fallback to dataDir/logs if standard location fails
-            if (logDir == null) {
-                logDir = dataDir.resolve("logs");
-            }
-        }
-
-        return new GamePaths(dataDir, logDir);
-    }
 
     public GamePaths getGamePaths() {
         return gamePaths;
@@ -624,14 +359,11 @@ public final class Renderer implements AutoCloseable {
             getEventQueue().setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
         }
         Deterministic deterministic = getEventQueue().getDeterministic();
-        var game_dir = deterministic.log(gamePaths.dataDir);
+        var game_dir = deterministic.log(gamePaths.dataDir());
         event_log_dir = deterministic.log(event_log_dir);
         deterministic.log(settings);
         Locale language = "default".equals(settings.control.language)
                 ? deterministic.log(Renderer.default_locale) : Locale.forLanguageTag(settings.control.language);
-        if (language == null) {
-            language = Locale.of("en");
-        }
         IO.println("Using language " + language);
         Locale.setDefault(language);
 
@@ -695,9 +427,7 @@ public final class Renderer implements AutoCloseable {
                     totalRunGameLoopTime += (t3 - t2);
 
                     long t4 = System.nanoTime();
-                    if (audioManager != null) {
-                        audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-                    }
+                    audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
                     long t5 = System.nanoTime();
                     totalAudioUpdateTime += (t5 - t4);
 
@@ -826,8 +556,6 @@ public final class Renderer implements AutoCloseable {
 
     public void cleanup() {
         logger.info("Cleaning up...");
-        logger.info("Disposing LocalEventQueue...");
-        getEventQueue().close();
         destroyNative();
         logger.fine("Native resources still registered: " + NativeResource.getCount());
         logger.info("Cleanup complete. Exiting");
@@ -893,12 +621,6 @@ public final class Renderer implements AutoCloseable {
         logger.info("Clearing Resources...");
         Resources.clearResources();
 
-        logger.info("Closing AudioManager...");
-        var audioManager = getRenderer().audioManager;
-        if (null != audioManager) {
-            audioManager.close();
-        }
-
         logger.info("Renderer Closed.");
     }
 
@@ -925,10 +647,6 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initNative(boolean crashed) throws Exception {
-        this.audioManager = new OpenALManager(getSettings().audio, getEventQueue().getManager())
-                .setSfxGain(getSettings().audio.sound_gain)
-                .setMusicGain(getSettings().audio.music_gain)
-                .setSfxEnabled(getSettings().audio.play_sfx);
 
         try {
             int bpp = 32;
@@ -984,10 +702,6 @@ public final class Renderer implements AutoCloseable {
 //if (System.currentTimeMillis() > 0)
 //throw new LWJGLException("It failed because you asked it to.");
         } catch (Exception e) {
-            if (null != audioManager) {
-                audioManager.close();
-                audioManager = null;
-            }
             failedOpenGL(e);
             throw e;
         }
@@ -1024,19 +738,22 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initVisibleGL() {
-        if (window != null) window.update();
+        window.update();
     }
 
     public static void initGL() {
-        RenderContext context = getRenderer().renderContext;
-        VBO.releaseAll(context);
-        context.applyDefaults();
-        // Sync viewport with actual window dimensions
-        Window window = getRenderer().window;
-        int w = window.getWidth();
-        int h = window.getHeight();
-        logger.info("[Renderer] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
-        context.setViewport(0, 0, w, h);
+        Renderer renderer = getRenderer();
+        if (renderer != null) {
+            RenderContext context = renderer.renderContext;
+            VBO.releaseAll(context);
+            context.applyDefaults();
+            // Sync viewport with actual window dimensions
+            Window window = renderer.window;
+            int w = window.getWidth();
+            int h = window.getHeight();
+            logger.info("[Renderer] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
+            context.setViewport(0, 0, w, h);
+        }
     }
 
     public static void clearScreen() {
