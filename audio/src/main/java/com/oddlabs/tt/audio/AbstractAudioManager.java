@@ -217,6 +217,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         }
     }
 
+    @Override
     public final synchronized void update(float t) {
         processCleanupTasks();
         if (closed || t == 0f) {
@@ -327,6 +328,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return createPlayer(source, x, y, z, params);
     }
 
+    @Override
     public AM startSources() {
         if (sound_play_counter.getAndIncrement() == 0) {
             if (sfxEnabled) {
@@ -342,6 +344,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         return self();
     }
 
+    @Override
     public AM stopSources() {
         if (sound_play_counter.decrementAndGet() == 0) {
             for (AS source : getSources()) {

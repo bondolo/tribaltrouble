@@ -7,7 +7,6 @@ module com.oddlabs.tt.engine {
     requires transitive com.oddlabs.tt.window;
     requires transitive com.oddlabs.tt.input;
     requires transitive com.oddlabs.tt.audio;
-    requires com.oddlabs.tt.audio.openal;
     requires transitive org.joml;
     requires static org.jspecify;
     requires java.desktop;

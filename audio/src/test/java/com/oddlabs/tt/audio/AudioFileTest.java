@@ -21,6 +21,24 @@ class AudioFileTest {
         };
 
         @Override
+        public void update(float dt) {
+        }
+
+        @Override
+        public AudioManager startSources() {
+            return this;
+        }
+
+        @Override
+        public AudioManager stopSources() {
+            return this;
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
         public Audio createAudio(URL file) {
             return dummyAudio;
         }

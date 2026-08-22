@@ -13,6 +13,15 @@ import java.net.URL;
  */
 public interface AudioManager extends AudioImplementation {
 
+    @Override
+    AudioPlayer newAudio(float x, float y, float z, AudioParameters params);
+
+    void update(float dt);
+
+    AudioManager startSources();
+
+    AudioManager stopSources();
+
     Vector3fc getListenerPosition();
 
     float getMasterGain();
@@ -44,9 +53,6 @@ public interface AudioManager extends AudioImplementation {
     boolean startPlaying();
 
     Audio createAudio(URL file) throws IOException;
-
-    @Override
-    AudioPlayer newAudio(float x, float y, float z, AudioParameters params);
 
     /**
      * Toggles music playback on or off based on current settings.
