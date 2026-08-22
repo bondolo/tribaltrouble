@@ -17,6 +17,7 @@ import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.simulation.player.AI;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
@@ -171,6 +172,12 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         if (event.isConsumed()) return;
 
         if (event.getPhase() == InputPhase.PRESSED) {
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_AI)) {
+                AI.setRunAI(!AI.isRunAI());
+                event.consume();
+                return;
+            }
+
             if (event.consumeAction(GameAction.GLOBAL_MENU)) {
                 viewer.getInGameInfo().openInGameMenu(viewer, getCamera());
                 event.consume();

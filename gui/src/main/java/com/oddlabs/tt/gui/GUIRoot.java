@@ -17,7 +17,6 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
@@ -460,11 +459,6 @@ public final class GUIRoot extends GUIObject {
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {
                         DebugFlags.draw_water = !DebugFlags.draw_water;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_AI)) {
-                        AI.setRunAI(!AI.isRunAI());
-                        logger.info("AI.run_ai = " + AI.isRunAI());
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
