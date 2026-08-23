@@ -1,6 +1,11 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
-
+import com.oddlabs.tt.engine.render.AlphaAccessory;
+import com.oddlabs.tt.engine.render.AnimatedAccessory;
+import com.oddlabs.tt.engine.render.BillboardAccessory;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;
 import org.joml.Matrix4f;
@@ -10,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * An accessory representing a temporary visual alert for in-game sounds.
  */
-public final class VisualSoundAccessory implements AnimatedAccessory {
+public final class VisualSoundAccessory implements AnimatedAccessory, BillboardAccessory, AlphaAccessory {
 
     private static final float DRIFT_HEIGHT = 0.8f;
     private static final float BASE_Z_OFFSET = 3.5f;
@@ -107,6 +112,7 @@ public final class VisualSoundAccessory implements AnimatedAccessory {
         return emojiSprite;
     }
 
+    @Override
     public float getAlpha() {
         if (duration - age < FADEOUT_DURATION) {
             float t = (duration - age) / FADEOUT_DURATION;
