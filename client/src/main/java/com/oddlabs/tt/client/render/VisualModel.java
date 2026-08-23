@@ -1,8 +1,12 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.engine.render.Accessory;
+import com.oddlabs.tt.engine.render.AnimatedAccessory;
+import com.oddlabs.tt.engine.render.LightningAccessory;
+import com.oddlabs.tt.engine.render.SonicBlastAccessory;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.simulation.model.EmojiType;

@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
-import com.oddlabs.tt.engine.render.VisualModel;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.simulation.landscape.HeightMap;

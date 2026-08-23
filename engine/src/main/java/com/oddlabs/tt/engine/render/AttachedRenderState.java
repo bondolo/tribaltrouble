@@ -29,7 +29,7 @@ public final class AttachedRenderState implements ModelState<Model> {
         parentState.getTransform(dest);
         accessory.getRelativeTransform(dest, parentState.model);
 
-        if (accessory instanceof VisualSoundAccessory) {
+        if (accessory instanceof BillboardAccessory) {
             CameraState camera = parentState.sceneContext.getCamera();
             if (camera != null) {
                 float tx = dest.m30();
@@ -78,8 +78,8 @@ public final class AttachedRenderState implements ModelState<Model> {
     public Color getColor() {
         assert parentState != null;
         Color.Linear parentColor = parentState.getColor();
-        if (accessory instanceof VisualSoundAccessory visualSoundAccessory) {
-            float alpha = visualSoundAccessory.getAlpha();
+        if (accessory instanceof AlphaAccessory alphaAccessory) {
+            float alpha = alphaAccessory.getAlpha();
             if (alpha < 1.0f) {
                 return parentColor.alpha(parentColor.a() * alpha);
             }

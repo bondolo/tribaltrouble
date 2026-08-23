@@ -29,7 +29,6 @@ import com.oddlabs.tt.engine.render.SceneContext;
 import com.oddlabs.tt.engine.render.ShadowListKey;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.StaticAccessory;
-import com.oddlabs.tt.engine.render.VisualModel;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.behaviour.StunController;
