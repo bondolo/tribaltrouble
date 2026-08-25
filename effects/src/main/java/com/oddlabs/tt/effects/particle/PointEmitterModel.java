@@ -2,8 +2,8 @@ package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.tt.simulation.model.Model;
 import org.jspecify.annotations.Nullable;
 

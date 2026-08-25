@@ -12,8 +12,8 @@ import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.joml.Vector3f;
 
 import java.util.logging.Logger;

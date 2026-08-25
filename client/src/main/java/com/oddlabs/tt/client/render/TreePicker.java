@@ -9,11 +9,11 @@ import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.Tree;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
-import com.oddlabs.tt.simulation.model.BoundingBox;
 
 import java.util.ArrayList;
 import java.util.Collections;

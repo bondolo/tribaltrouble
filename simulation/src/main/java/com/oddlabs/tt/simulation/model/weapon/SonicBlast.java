@@ -1,12 +1,12 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
-import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.jspecify.annotations.Nullable;
 
 /**

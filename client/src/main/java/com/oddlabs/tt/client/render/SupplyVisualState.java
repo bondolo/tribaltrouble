@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.simulation.model.BoundsProvider;
+import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;

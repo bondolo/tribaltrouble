@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.util.LinkedList;
 import com.oddlabs.util.ListElement;
 import org.jspecify.annotations.Nullable;

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import org.joml.Vector3fc;
 
 /**
