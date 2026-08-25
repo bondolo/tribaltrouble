@@ -180,6 +180,11 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     }
 
     @Override
+    public BoundingBox getBounds() {
+        return bounds;
+    }
+
+    @Override
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {

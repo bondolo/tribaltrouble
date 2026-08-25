@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
@@ -67,6 +66,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
         // stats
         src.getOwner().weaponThrown();
+        src.getOwner().getWorld().getNotificationListener().onWeaponThrow(x, y, current_z);
     }
 
     public final Unit getSrc() {
@@ -173,11 +173,10 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     }
 
     protected final void damageTarget(Selectable<?> target) {
-        if (target instanceof Unit unit) {
-            float pitchRange = unit.getTemplate().getDeathPitch();
-            getClientState(ModelClient.class).ifPresent(client -> {
-                client.onMeleeHit(target.getPositionX(), target.getPositionY(), target.getPositionZ(), pitchRange);
-            });
+        if (target instanceof Unit unitTarget) {
+            getSrc().getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getVisualType(),
+                    unitTarget.getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(),
+                    target.getPositionZ());
         }
         target.hit(getDamage(), dir_x, dir_y, getSrc().getOwner());
     }

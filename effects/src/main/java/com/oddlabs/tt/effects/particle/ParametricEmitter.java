@@ -137,6 +137,11 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     }
 
     @Override
+    public BoundingBox getBounds() {
+        return bounds;
+    }
+
+    @Override
     protected int initParticles(int count) {
         int initiated = 0;
         for (int i = 0; i < count; i++) {

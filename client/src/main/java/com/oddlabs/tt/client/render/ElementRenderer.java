@@ -33,8 +33,12 @@ final class ElementRenderer<T extends Element<T>> {
     }
 
     void setup(CameraState camera_state) {
+        setup(camera_state, -1f);
+    }
+
+    void setup(CameraState camera_state, float currentTime) {
         this.camera = camera_state;
-        render_state.setup(picking, camera);
+        render_state.setup(picking, camera, currentTime);
     }
 
     public void visit(AbstractElementNode<T> node) {

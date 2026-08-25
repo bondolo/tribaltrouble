@@ -1,9 +1,7 @@
 package com.oddlabs.tt.simulation.landscape;
 
 import org.joml.Vector3f;
-import org.jspecify.annotations.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Manages spatial terrain elevation, surface interpolation, accessibility, and building grid queries.
@@ -26,9 +24,6 @@ public final class HeightMap implements LandscapeEnvironment {
 
     private final LandscapeLeaf[][] landscape_leaves;
 
-    private @Nullable ClientState clientState;
-    private static @Nullable ClientStateFactory clientStateFactory;
-
     public HeightMap(World world_instance, LandscapeData landscapeData) {
         this.world_instance = world_instance;
         this.landscapeData = landscapeData;
@@ -41,33 +36,6 @@ public final class HeightMap implements LandscapeEnvironment {
         landscape_leaves = new LandscapeLeaf[patches_per_world][patches_per_world];
     }
 
-    /**
-     * Client-side visual state for HeightMap.
-     */
-    public interface ClientState {
-        void editHeight(int x, int y, float height);
-    }
-
-    /**
-     * Factory for creating the client-side visual state of HeightMap.
-     */
-    public interface ClientStateFactory {
-        @Nullable
-        ClientState createClientState(HeightMap heightMap);
-    }
-
-    public static void setClientStateFactory(@Nullable ClientStateFactory factory) {
-        clientStateFactory = factory;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <C> Optional<C> getClientState(Class<C> type) {
-        if (clientState == null && clientStateFactory != null) {
-            clientState = clientStateFactory.createClientState(this);
-        }
-        return Optional.ofNullable(type.isInstance(clientState) ? (C) clientState : null);
-    }
 
     public float[] getHeightData() {
         return landscapeData.heightmap();
@@ -77,7 +45,6 @@ public final class HeightMap implements LandscapeEnvironment {
         return landscapeData;
     }
 
-    @Override
     public World getWorld() {
         return world_instance;
     }
@@ -270,8 +237,6 @@ public final class HeightMap implements LandscapeEnvironment {
         final int wrappedX = wrapGridCoord(grid_x);
         final int wrappedY = wrapGridCoord(grid_y);
         landscapeData.heightmap()[wrappedY * grid_units_per_world + wrappedX] = height;
-
-        getClientState(ClientState.class).ifPresent(cs -> cs.editHeight(wrappedX, wrappedY, height));
 
         int patch_x1 = wrappedX / GRID_UNITS_PER_PATCH;
 

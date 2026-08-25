@@ -51,8 +51,8 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
 
     @Override
     public void animate(float t) {
-        if (ironSupply.isSpawning()) {
-            float progress = ironSupply.getSpawnProgress();
+        if (SupplyVisualState.isSpawning(ironSupply)) {
+            float progress = SupplyVisualState.getSpawnProgress(ironSupply);
             if (progress < FALL_DURATION_RATIO) {
                 // falling
                 float fallProgress = progress / FALL_DURATION_RATIO;

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.viewer;
 
+import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioPlayer;
@@ -144,7 +145,7 @@ public final class AmbientAudio implements AutoCloseable {
                 float heightAboveGround = camZ - hCurrent;
 
                 // Check for forest density
-                World world = landscapeEnvironment.getWorld() instanceof World w ? w : null;
+                World world = landscapeEnvironment instanceof HeightMap hm ? hm.getWorld() : null;
                 int treeCount = world != null ? countTrees(world.getTreeRoot(), camX, camY, 25f * 25f,
                         TREES_FOREST_THRESHOLD, 0) : 0;
 

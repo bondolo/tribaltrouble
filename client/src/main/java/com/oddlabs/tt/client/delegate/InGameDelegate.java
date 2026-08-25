@@ -10,7 +10,6 @@ import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.RockSupply;
-import com.oddlabs.tt.simulation.model.SupplySpawnAnimation;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.engine.render.Renderer;
@@ -123,8 +122,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
                 int gy = UnitGrid.toGridCoordinate(loc.y());
                 var world = viewer.getWorld();
                 if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
-                    RockSupply rock = new RockSupply(world, gx, gy, loc.x(), loc.y(), false);
-                    new SupplySpawnAnimation(rock, rock.getSpawnTime());
+                    new RockSupply(world, gx, gy, loc.x(), loc.y(), false);
                     return true;
                 }
             }
@@ -137,8 +135,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
                 int gy = UnitGrid.toGridCoordinate(loc.y());
                 var world = viewer.getWorld();
                 if (!world.getUnitGrid().isGridOccupied(gx, gy)) {
-                    IronSupply iron = new IronSupply(world, gx, gy, loc.x(), loc.y(), false);
-                    new SupplySpawnAnimation(iron, iron.getSpawnTime());
+                    new IronSupply(world, gx, gy, loc.x(), loc.y(), false);
                     return true;
                 }
             }

@@ -1,7 +1,11 @@
 package com.oddlabs.tt.simulation.landscape;
 
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.model.UnitVisualType;
 
 /**
  * Listener interface for observing simulation events such as combat notifications,
@@ -30,5 +34,41 @@ public interface NotificationListener {
     }
 
     default void treeFelled(AbstractTreeGroup.TreeType treeType, float x, float y, float z) {
+    }
+
+    default void onHarvest(SupplyType supplyType, float x, float y, float z) {
+    }
+
+    default void onRepair(float x, float y, float z) {
+    }
+
+    default void onBuildingHit(float x, float y, float z) {
+    }
+
+    default void onUnitDeath(UnitVisualType unitType, Race race, float x, float y, float z) {
+    }
+
+    default void onUnitAttack(UnitVisualType unitType, Race race, float x, float y, float z) {
+    }
+
+    default void onChickenCluck(float x, float y, float z) {
+    }
+
+    default void onChickenPeck(float x, float y, float z) {
+    }
+
+    default void onChickenDeath(float x, float y, float z) {
+    }
+
+    default void onLightningStrike(float x, float y, float z) {
+    }
+
+    default void onSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration) {
+    }
+
+    default void onWeaponThrow(float x, float y, float z) {
+    }
+
+    default void onModelRemoved(Model model) {
     }
 }

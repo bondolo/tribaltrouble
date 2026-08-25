@@ -100,7 +100,6 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
             case DONE -> decide();
         }
         doAnimate(t);
-        animateClientState(t);
         owner.getWorld().updateGlobalChecksum(grid_x + grid_y);
     }
 

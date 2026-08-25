@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.behaviour;
 
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.Unit;
 
@@ -32,7 +31,8 @@ public final class HarvestBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getClientState(ModelClient.class).ifPresent(client -> client.onHarvest(supply.getSupplyType()));
+            unit.getWorld().getNotificationListener().onHarvest(supply.getSupplyType(), unit.getPositionX(), unit
+                    .getPositionY(), unit.getPositionZ());
 
             if (supply.hit()) {
                 unit.getSupplyContainer().increaseSupply(1, supply.getSupplyType());

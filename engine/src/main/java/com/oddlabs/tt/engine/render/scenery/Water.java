@@ -85,6 +85,7 @@ public final class Water implements AutoCloseable {
     private final Sky sky;
     private final MatrixStack modelViewStack;
     private final HeightMap heightMap;
+    private final HeightMapVisual heightMapVisual;
 
     private final Texture[] ocean;
 
@@ -116,8 +117,10 @@ public final class Water implements AutoCloseable {
     private final float[] waveLengths;
     private final float waveSpeed;
 
-    public Water(HeightMap heightmap, Terrain terrain, Sky sky,
+    public Water(HeightMapVisual heightMapVisual, HeightMap heightmap, Terrain terrain, Sky sky,
             MatrixStack modelViewStack) {
+        this.heightMapVisual = heightMapVisual;
+        this.heightMap = heightmap;
         this.terrain = terrain;
         waveAmplitudes = switch (terrain) {
             case VIKING -> new float[]{
@@ -152,7 +155,6 @@ public final class Water implements AutoCloseable {
             case NATIVE -> NATIVE_WAVE_SPEED;
         };
         ocean = Resources.findResource(new GeneratorOcean(terrain));
-        this.heightMap = heightmap;
 
         this.sky = sky;
         this.modelViewStack = modelViewStack;
@@ -251,8 +253,7 @@ public final class Water implements AutoCloseable {
                 waterShader.setUniform(WaterShader.Uniforms.ENABLE_DETAIL, false);
             }
 
-            context.setTexture(2, heightMap.getClientState(HeightMapVisual.class)
-                    .map(HeightMapVisual::getHeightTexture).orElseThrow());
+            context.setTexture(2, heightMapVisual.getHeightTexture());
             waterShader.setUniform(WaterShader.Uniforms.HEIGHT_MAP, 2);
             waterShader.setUniform(WaterShader.Uniforms.WORLD_SIZE, (float) heightMap.getMetersPerWorld());
 

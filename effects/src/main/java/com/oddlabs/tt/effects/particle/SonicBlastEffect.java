@@ -72,7 +72,7 @@ public final class SonicBlastEffect extends Element<SonicBlastEffect> implements
     private void updateBounds() {
         setBounds(position.x - maxRadius, position.x + maxRadius,
                 position.y - maxRadius, position.y + maxRadius,
-                position.z - 1, position.z + 1);
+                position.z - 5f, position.z + 20f);
     }
 
     public World getWorld() {

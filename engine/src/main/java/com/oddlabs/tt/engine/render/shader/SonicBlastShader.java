@@ -67,7 +67,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
             GLOBAL_STATE_BLOCK +
             """
                     layout(location = 0) in vec3 in_Position;
-                    layout(location = 2) in vec2 in_TexCoord;
+                    layout(location = 1) in vec2 in_TexCoord;
 
                     uniform mat4 u_modelViewMatrix;
 

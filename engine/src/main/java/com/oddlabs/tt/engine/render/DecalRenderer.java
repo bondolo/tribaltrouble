@@ -156,8 +156,7 @@ public final class DecalRenderer implements AutoCloseable {
             shader.setUniform(DecalShader.Uniforms.WORLD_SIZE, (float) landscape.getHeightMap().getMetersPerWorld());
             shader.setUniform(DecalShader.Uniforms.DEPTH_BIAS, 0.05f);
 
-            context.setTexture(1, landscape.getHeightMap().getClientState(HeightMapVisual.class).map(
-                    HeightMapVisual::getHeightTexture).orElseThrow());
+            context.setTexture(1, landscape.getHeightMapVisual().getHeightTexture());
             shader.setUniform(DecalShader.Uniforms.HEIGHT_MAP, 1);
 
             int[] textureUnits = new int[14];

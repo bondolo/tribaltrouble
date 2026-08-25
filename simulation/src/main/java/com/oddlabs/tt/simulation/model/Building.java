@@ -137,7 +137,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     @Override
     public void remove() {
         super.remove();
-        getClientState(ModelClient.class).ifPresent(ModelClient::close);
+        getWorld().getNotificationListener().onModelRemoved(this);
     }
 
     public Optional<UnitContainer> getUnitContainer() {
@@ -665,7 +665,7 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         super.hit(damage, dir_x, dir_y, owner);
         if (!isDead()) {
             adjustHitPoints(-damage);
-            getClientState(ModelClient.class).ifPresent(ModelClient::onBuildingHit);
+            getWorld().getNotificationListener().onBuildingHit(getPositionX(), getPositionY(), getPositionZ());
             if (hit_points <= 0) {
                 // stats
                 getOwner().buildingLost();

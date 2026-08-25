@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -74,7 +73,7 @@ public final class LightningCloud extends Model implements Magic {
     public void remove() {
         super.remove();
         owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        getClientState(ModelClient.class).ifPresent(ModelClient::close);
+        owner.getWorld().getNotificationListener().onModelRemoved(this);
     }
 
     @Override
@@ -82,7 +81,7 @@ public final class LightningCloud extends Model implements Magic {
         float x = getPositionX();
         float y = getPositionY();
         float z = getPositionZ();
-        setBounds(x, x, y, y, z, z);
+        setBounds(x - 10f, x + 10f, y - 10f, y + 10f, z - 10f, z + 20f);
     }
 
     @Override
@@ -108,7 +107,6 @@ public final class LightningCloud extends Model implements Magic {
                     target = owner.findNearestEnemy(UnitGrid.toGridCoordinate(getPositionX()), UnitGrid
                             .toGridCoordinate(getPositionY()), null).orElse(null);
                     if (target == null) {
-                        animateClientState(t);
                         return;
                     }
                 }
@@ -142,7 +140,6 @@ public final class LightningCloud extends Model implements Magic {
                     strike(prev_target);
                     strike_counter++;
                 }
-        animateClientState(t);
     }
 
     private void strike(Target target) {
@@ -150,7 +147,7 @@ public final class LightningCloud extends Model implements Magic {
         float y = target.getPositionY();
         float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
 
-        getClientState(ModelClient.class).ifPresent(client -> client.addLightningStrike(x, y, z));
+        owner.getWorld().getNotificationListener().onLightningStrike(x, y, z);
     }
 
     @Override

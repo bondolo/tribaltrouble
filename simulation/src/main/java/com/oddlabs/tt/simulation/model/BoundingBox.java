@@ -26,6 +26,10 @@ public class BoundingBox {
                 + bmax_z;
     }
 
+    public final boolean isValid() {
+        return bmin_x <= bmax_x && bmin_y <= bmax_y && bmin_z <= bmax_z;
+    }
+
     protected final boolean collides(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z,
             float bmax_z) {
         return (bmin_x <= this.bmax_x && bmax_x > this.bmin_x &&

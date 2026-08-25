@@ -367,4 +367,11 @@ public abstract class Emitter<P extends Particle> implements Animated {
      */
     public void debugRender() {
     }
+
+    /**
+     * Returns the bounding box containing all active particles of this emitter.
+     *
+     * @return the bounding box of active particles
+     */
+    public abstract com.oddlabs.tt.simulation.model.BoundingBox getBounds();
 }

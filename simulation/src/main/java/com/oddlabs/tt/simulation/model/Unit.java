@@ -35,6 +35,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     private static final float IDLE_SPEED = 1f / 2.5f;
     private static final float TRANSPORT_SPEED_SCALE = 4f / 5f;
+    public static final int SPEAR_RELEASE_FRAME = 29;
 
     private static final int PENALTY_INCREMENT = 3;
     private static final int INITIAL_PATH_PENALTY = 5;
@@ -54,25 +55,22 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         THOR
     }
 
-    public static final int SPEAR_RELEASE_FRAME = 29;
 
     private final @Nullable UnitSupplyContainer supply_container;
     private final @Nullable String name;
     private final PathTracker path_tracker;
     private final EnumMap<MagicType, Float> magic_energy = new EnumMap<>(MagicType.class);
-    private @Nullable MagicType last_magic_type = null;
+    private @Nullable MagicType last_magic_type;
 
     private int hit_points;
     private Animation animation = Animation.IDLING;
     private float anim_speed;
     private float anim_time;
     private int path_penalty;
-    /**
-     * unit is in a tower
-     */
-    private boolean mounted;
+
+    /** unit is mounted in a tower */
+    private @Nullable Building mounted_building;
     private float mount_offset = 0;
-    private Building mounted_building;
     private float range_bonus;
 
     public Unit(Player owner, float x, float y, @Nullable Target rally_point,
@@ -153,7 +151,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     @Override
     public String toString() {
         if (!isDead())
-            return "Unit: " + hashCode() + " | getOwner() = " + getOwner() + " | mounted = " + mounted
+            return "Unit: " + hashCode() + " | getOwner() = " + getOwner() + " | mounted = " + isMounted()
                     + " | getGridX() = " + getGridX() + " | getGridY() = " + getGridY();
         else
             return super.toString();
@@ -181,9 +179,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     @Override
     public int getStatusValue() {
-        int tower_factor = 1;
-        if (mounted)
-            tower_factor = 3;
+        int tower_factor = isMounted() ? 3 : 1;
         return getTemplate().getStatusValue() * tower_factor;
     }
 
@@ -212,31 +208,31 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         assert !isDead();
         clearControllerStack();
         swapController(new IdleController(this, new AttackScanFilter(getOwner(), AttackScanFilter.UNIT_RANGE), true));
-        mounted = false;
         mount_offset = 0;
+        mounted_building = null;
         enable();
         findInitialPosition(getPositionX(), getPositionY(), true);
     }
 
     public void mount(Building building) {
         assert !isDead();
+        assert null == mounted_building : "Unit is already in mounted in building " + mounted_building;
         mounted_building = building;
         mount_offset = building.getTemplate().getMountOffset();
         disable();
         free();
         setPosition(building.getPositionX(), building.getPositionY());
-        mounted = true;
         clearControllerStack();
         swapController(new IdleController(this, new AttackScanFilter(getOwner(), AttackScanFilter.TOWER_RANGE), false));
     }
 
     public boolean isMounted() {
-        return mounted;
+        return mounted_building != null;
     }
 
     @Override
     public boolean isEnabled() {
-        return !isDead() && !mounted;
+        return !isDead() && !isMounted();
     }
 
     public float getMetersPerSecond() {
@@ -286,7 +282,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     @Override
     public void doAnimate(float t) {
         anim_time += anim_speed * t;
-        if (isDead() || mounted)
+        if (isDead() || isMounted())
             reinsert();
         getOwner().getWorld().updateGlobalChecksum(animation.ordinal());
 
@@ -380,7 +376,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     @Override
     public void hit(int damage, float direction_x, float direction_y, Player owner) {
         super.hit(damage, direction_x, direction_y, owner);
-        if (mounted) {
+        if (isMounted()) {
             mounted_building.hit(damage, direction_x, direction_y, owner);
         } else if (!isDead()) {
             hit_points = Math.clamp(hit_points - damage, 0, getTemplate().getMaxHitPoints());
@@ -389,11 +385,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 owner.unitKilled();
                 getOwner().unitLost();
 
-                getClientState(ModelClient.class).ifPresent(client -> {
-                    client.onUnitDeath(getOwner().getRaceInfo().getRaceType(), getTemplate().getVisualType(),
-                            getTemplate()
-                                    .getDeathPitch());
-                });
+                getWorld().getNotificationListener().onUnitDeath(getTemplate().getVisualType(), getOwner().getRaceInfo()
+                        .getRaceType(), getPositionX(), getPositionY(), getPositionZ());
 
                 pushController(new DieController(this));
                 forceDecide();
@@ -458,7 +451,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
         if (target == this)
             return;
         assert !target.isDead() : "Setting dead target";
-        assert !mounted;
+        assert !isMounted() : "Unit is mounted in building " + mounted_building;
         switch (action) {
             case DEFAULT -> {
                 if (canBuild(target)) {
@@ -570,7 +563,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
 
     @Override
     public float getOffsetZ() {
-        if (mounted)
+        if (isMounted())
             return mounted_building.getOffsetZ() + mount_offset;
         else {
             if (isDead()) {

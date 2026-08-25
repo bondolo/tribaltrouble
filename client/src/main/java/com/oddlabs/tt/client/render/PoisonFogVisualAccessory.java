@@ -38,7 +38,6 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
 
     private float time = 0f;
     private int bursts = 0;
-    private boolean firstRun = true;
     private int nextSound = 1;
 
     public PoisonFogVisualAccessory(PoisonFog poisonFog, AudioImplementation audio) {
@@ -52,11 +51,6 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
 
     @Override
     public void animate(float t) {
-        if (firstRun) {
-            bubblingSound.stop(15.0f);
-            firstRun = false;
-        }
-
         time += t;
         World world = poisonFog.getWorld();
         Random random = world.getRandom();

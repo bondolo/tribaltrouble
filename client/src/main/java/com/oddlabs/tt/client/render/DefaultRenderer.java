@@ -95,7 +95,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
                 .detailNormal());
         this.modelViewStack = modelViewStack;
         this.projectionStack = projectionStack;
-        this.water = new Water(world.getHeightMap(), world_info.landscapeData().terrain(), sky, modelViewStack);
+        this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscapeData()
+                .terrain(), sky, modelViewStack);
         this.landscape_renderer.setWater(this.water);
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
@@ -114,6 +115,10 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     @Override
     public boolean isCheater() {
         return cheat != null && cheat.isEnabled();
+    }
+
+    public RenderState getRenderState() {
+        return element_renderer.getRenderState();
     }
 
     public void setSelectedBuilding(@Nullable Building building) {
@@ -273,7 +278,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             tree_renderer.visit(world.getTreeRoot());
         }
         if (DebugFlags.process_misc) {
-            element_renderer.setup(frustum_state);
+            element_renderer.setup(frustum_state, currentTime);
             element_renderer.visit(world.getElementRoot());
         }
 

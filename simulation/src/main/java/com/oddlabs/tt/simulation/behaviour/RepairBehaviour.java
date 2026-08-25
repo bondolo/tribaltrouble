@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 
@@ -38,7 +37,8 @@ public final class RepairBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getClientState(ModelClient.class).ifPresent(ModelClient::onRepair);
+            unit.getWorld().getNotificationListener().onRepair(unit.getPositionX(), unit.getPositionY(), unit
+                    .getPositionZ());
         }
 
         if (anim_time > SECONDS_PER_ANIMATION_CYCLE) {

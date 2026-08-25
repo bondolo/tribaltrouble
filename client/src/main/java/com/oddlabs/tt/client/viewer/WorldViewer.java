@@ -2,7 +2,11 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
+import com.oddlabs.tt.client.gui.GUIIcons;
+import com.oddlabs.tt.simulation.model.Model;
+
 import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
@@ -36,9 +40,11 @@ import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
+import com.oddlabs.tt.client.render.SupplySpawnAnimation;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitType;
@@ -106,6 +112,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         ProgressListener.progress();
         RaceData races_resources = RacesAssetsLoader.load(render_queues);
         this.distributable_table = new DistributableTable();
+        boolean[] initialized = new boolean[]{false};
         NotificationListener listener = new NotificationListener() {
             @Override
             public void gamespeedChanged(int speed) {
@@ -146,6 +153,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
             @Override
             public void registerTarget(Target target) {
                 distributable_table.register(target);
+                if (initialized[0] && target instanceof SupplyModel supplyModel) {
+                    new SupplySpawnAnimation(supplyModel);
+                }
             }
 
             @Override
@@ -153,6 +163,29 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 distributable_table.unregister(target);
                 if (target instanceof Selectable<?> selectable)
                     getSelection().removeFromArmies(selectable);
+            }
+
+            @Override
+            public void onLightningStrike(float x, float y, float z) {
+                WorldViewer.this.renderer.getRenderState().onLightningStrike(x, y, z);
+            }
+
+            @Override
+            public void onSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration) {
+                WorldViewer.this.renderer.getRenderState().onSonicBlast(targetX, targetY, targetZ, radius, duration);
+            }
+
+            @Override
+            public void onWeaponThrow(float x, float y, float z) {
+                var params = new AudioParameters(AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
+                        AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
+                        AudioAssets.AUDIO_RADIUS_WEAPON_ATTACK);
+                audioManager.newAudio(x, y, z, params);
+            }
+
+            @Override
+            public void onModelRemoved(Model model) {
+                WorldViewer.this.renderer.getRenderState().onModelRemoved(model);
             }
         };
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
@@ -162,6 +195,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
                 world_info.landscapeData(), player_infos, renderer.getSettings().accessibility.linear_team_colours,
                 RenderConfig.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressListener::progress);
+        initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
@@ -170,6 +204,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker,
                 selection, modelViewStack, projectionStack, audioManager);
         this.gui_root = gui_root;
+        this.gui_root.setCheatIcon(GUIIcons.getIcons().getCheatIcon());
         var useNetwork = Renderer.getRenderer().getNetwork();
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
                 local_player, player_slots, network, notification_manager,
