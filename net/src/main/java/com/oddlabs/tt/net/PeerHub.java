@@ -15,6 +15,7 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.base.event.StateChecksum;
+import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -388,9 +389,9 @@ public final class PeerHub implements Animated, RouterHandler {
     public void receiveChat(String name, String text, boolean team) {
         if (chat_hub != null) {
             if (team)
-                chat_hub.chat(new ChatMessage(name, text, ChatMessage.Type.TEAM));
+                chat_hub.chat(new ChatMessage(name, text, ChatConsumer.Type.TEAM));
             else
-                chat_hub.chat(new ChatMessage(name, text, ChatMessage.Type.NORMAL));
+                chat_hub.chat(new ChatMessage(name, text, ChatConsumer.Type.NORMAL));
         }
     }
 

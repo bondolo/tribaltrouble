@@ -14,6 +14,7 @@ import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.ChatRoomInfo;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -151,9 +152,9 @@ public class ChatPanel extends Panel implements ChatListener {
 
     @Override
     public final void chat(ChatMessage message) {
-        if (message.type() != ChatMessage.Type.PRIVATE && message.type() != ChatMessage.Type.CHATROOM)
+        if (message.type() != ChatConsumer.Type.PRIVATE && message.type() != ChatConsumer.Type.CHATROOM)
             return;
-        if (message.type() != ChatMessage.Type.PRIVATE) {
+        if (message.type() != ChatConsumer.Type.PRIVATE) {
             getTab().updateNotify();
         }
         refreshMessages();

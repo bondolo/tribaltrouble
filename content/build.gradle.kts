@@ -23,9 +23,9 @@ dependencies {
     implementation(project(":window"))
     implementation(project(":input"))
     implementation(project(":audio"))
-    api(project(":engine"))
-    api(project(":gui"))
-    api(project(":client"))
+    implementation(project(":engine"))
+    implementation(project(":gui"))
+    implementation(project(":client"))
     api(libs.joml)
     compileOnlyApi(libs.jspecify)
 

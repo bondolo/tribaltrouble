@@ -1,6 +1,6 @@
 module com.oddlabs.tt.client {
     requires com.oddlabs.common;
-    requires transitive com.oddlabs.tt.base;
+    requires com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
     requires com.oddlabs.tt.net;
     requires com.oddlabs.tt.window;
@@ -8,7 +8,7 @@ module com.oddlabs.tt.client {
     requires com.oddlabs.tt.audio;
     requires transitive com.oddlabs.tt.engine;
     requires com.oddlabs.tt.effects;
-    requires transitive com.oddlabs.tt.gui;
+    requires com.oddlabs.tt.gui;
     requires transitive org.joml;
     requires static org.jspecify;
     requires java.desktop;

@@ -29,6 +29,7 @@ import com.oddlabs.tt.gui.TextBox;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
@@ -511,7 +512,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     @Override
     public void chat(ChatMessage message) {
-        if (message.type() != ChatMessage.Type.GAME_MENU)
+        if (message.type() != ChatConsumer.Type.GAME_MENU)
             return;
         if (!chat_box.isEmpty())
             chat_box.append("\n");

@@ -6,10 +6,10 @@ module com.oddlabs.tt.content {
     requires com.oddlabs.tt.window;
     requires com.oddlabs.tt.input;
     requires com.oddlabs.tt.audio;
-    requires transitive com.oddlabs.tt.engine;
-    requires transitive com.oddlabs.tt.gui;
-    requires transitive com.oddlabs.tt.client;
-    requires transitive org.joml;
+    requires com.oddlabs.tt.engine;
+    requires com.oddlabs.tt.gui;
+    requires com.oddlabs.tt.client;
+    requires org.joml;
     requires static org.jspecify;
     requires java.desktop;
     requires java.xml;
