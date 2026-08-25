@@ -44,7 +44,7 @@ public final class StunVisualAccessory implements EmitterAccessory {
                 -1, 35f,
                 new Vector3f(0f, 0f, 6f), new Vector3f(0f, 0f, -2f),
                 new Color.Linear(1f, 1f, 1f, alpha), new Color.LinearDelta(0f, 0f, 0f, -alpha / energy),
-                new Vector3f(.3f, .3f, .3f), new Vector3f(.025f, .025f, .025f), energy, 1f,
+                new Vector3f(.4f, .4f, .4f), new Vector3f(.025f, .025f, .025f), energy, 1f,
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 AssetRegistry.getInstance().getNoteTextures());
 

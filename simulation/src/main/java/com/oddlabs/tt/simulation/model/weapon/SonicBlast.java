@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
@@ -55,15 +54,22 @@ public final class SonicBlast extends Model implements Magic {
         blast_targets = filter.getResult();
 
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
-        getClientState(ModelClient.class).ifPresent(client -> client.addSonicBlast(start_x, start_y, start_z,
-                hit_radius, seconds));
+        owner.getWorld().getNotificationListener().onSonicBlast(start_x, start_y, start_z, hit_radius, seconds);
     }
 
     @Override
     public void remove() {
         super.remove();
         owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        getClientState(ModelClient.class).ifPresent(ModelClient::close);
+        owner.getWorld().getNotificationListener().onModelRemoved(this);
+    }
+
+    @Override
+    protected void onReinsert() {
+        float x = getPositionX();
+        float y = getPositionY();
+        float z = getPositionZ();
+        setBounds(x - hit_radius, x + hit_radius, y - hit_radius, y + hit_radius, z - 5f, z + 20f);
     }
 
     @Override
@@ -73,7 +79,6 @@ public final class SonicBlast extends Model implements Magic {
             remove();
             return;
         }
-        animateClientState(t);
 
         float current_radius = hit_radius * time / seconds;
         float squared_radius = current_radius * current_radius;

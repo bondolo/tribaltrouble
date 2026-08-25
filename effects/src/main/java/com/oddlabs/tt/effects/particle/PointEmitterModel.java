@@ -54,17 +54,25 @@ public class PointEmitterModel extends Model implements Animated {
 
     @Override
     protected void onReinsert() {
-        float x = getPositionX();
-        float y = getPositionY();
-        float z = getPositionZ();
-        setBounds(x, x, y, y, z, z);
+        BoundingBox bounds = emitter.getBounds();
+        if (bounds.isValid()) {
+            setBounds(bounds.bmin_x, bounds.bmax_x, bounds.bmin_y, bounds.bmax_y, bounds.bmin_z, bounds.bmax_z);
+        } else {
+            float x = getPositionX();
+            float y = getPositionY();
+            float z = getPositionZ();
+            setBounds(x, x, y, y, z, z);
+        }
     }
 
     @Override
     public void animate(float t) {
         emitter.getPosition().set(getPositionX(), getPositionY(), getPositionZ());
         emitter.animate(t);
-        animateClientState(t);
+        reinsert();
+        if (emitter.isFinished()) {
+            remove();
+        }
     }
 
     @Override

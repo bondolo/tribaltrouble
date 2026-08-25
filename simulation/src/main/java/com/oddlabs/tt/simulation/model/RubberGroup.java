@@ -13,8 +13,6 @@ public final class RubberGroup {
     private static final int MIN_CHICKENS_PER_GROUP = 3;
     private static final int MAX_CHICKENS_PER_GROUP = 7;
 
-    private static final float SPAWN_TIME = 2f;
-
     private final World world;
     private final List<Supply> supplies = new ArrayList<>();
 
@@ -37,7 +35,6 @@ public final class RubberGroup {
                 float y = UnitGrid.coordinateFromGrid(grid_y);
                 RubberSupply supply = new RubberSupply(world, grid_x, grid_y, x, y, this, spawn_x, spawn_y);
                 supplies.add(supply);
-                new SupplySpawnAnimation(supply, supply.getSpawnTime());
             }
             ((RubberSupplyManager) world.getSupplyManager(SupplyType.RUBBER)).newGroup();
         }

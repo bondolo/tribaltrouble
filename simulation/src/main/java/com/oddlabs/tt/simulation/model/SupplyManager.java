@@ -68,8 +68,7 @@ public class SupplyManager implements Animated {
         boolean occupied = world.getUnitGrid().isGridOccupied(supply.getGridX(), supply.getGridY());
         if (!occupied) {
             empty_supplies.remove(supply);
-            Supply new_supply = supply.respawn();
-            new SupplySpawnAnimation(new_supply, new_supply.getSpawnTime());
+            supply.respawn();
         }
     }
 }

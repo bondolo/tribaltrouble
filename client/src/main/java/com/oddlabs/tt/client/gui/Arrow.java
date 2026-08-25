@@ -5,7 +5,7 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.simulation.landscape.HeightQuery;
+import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.util.Color;
 import org.joml.Vector4f;
 
@@ -24,12 +24,12 @@ public final class Arrow extends GUIObject {
     private final boolean show_always;
     private final GUIRoot gui_root;
 
-    public Arrow(HeightQuery heightQuery, GUIRoot gui_root, float target_x, float target_y,
+    public Arrow(LandscapeEnvironment landscape, GUIRoot gui_root, float target_x, float target_y,
             Color color, boolean show_always) {
         this.gui_root = gui_root;
         this.target_x = target_x;
         this.target_y = target_y;
-        this.target_z = heightQuery.getHeight(target_x, target_y);
+        this.target_z = landscape.getHeight(target_x, target_y);
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         this.show_always = show_always;
         displayChangedNotify(gui_root.getWidth(), gui_root.getHeight());

@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL30;
  * Client-side visual representation of the height map.
  * Manages the OpenGL Texture state and propagates updates to the GPU.
  */
-public final class HeightMapVisual implements HeightMap.ClientState {
+public final class HeightMapVisual {
     private final Texture heightTexture;
 
     /**
@@ -32,7 +32,6 @@ public final class HeightMapVisual implements HeightMap.ClientState {
         return heightTexture;
     }
 
-    @Override
     public void editHeight(int x, int y, float height) {
         heightTexture.update(x, y, 1, 1, height);
     }

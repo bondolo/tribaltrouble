@@ -95,13 +95,11 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         return this;
     }
 
-    @Override
     public void animateSpawn(float t, float progress) {
         float inv = 1f - progress;
         scale = 1f - inv * inv * inv * inv * inv * inv;
     }
 
-    @Override
     public void spawnComplete() {
         scale = 1f;
         animation_time = 0f;

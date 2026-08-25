@@ -11,18 +11,11 @@ public sealed interface Supply extends Occupant, ModelToolTip permits TreeSupply
 
     boolean isEmpty();
 
+    /** {@return true if the supply was harvested} */
     boolean hit();
 
     /** Create a new supply at the same location */
     Supply respawn();
-
-    void animateSpawn(float t, float progress);
-
-    void spawnComplete();
-
-    default float getSpawnTime() {
-        return 3.0f;
-    }
 
     World getWorld();
 }

@@ -4,8 +4,6 @@ import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
-import com.oddlabs.util.Color;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Abstract base class for non-tree harvestable resources in the world such as rocks and iron.
@@ -15,17 +13,6 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     /** This is also known to be a SpriteKey */
     private final BoundsProvider boundsProvider;
 
-    private final float size;
-    private final float rotation;
-
-    /** if true, then the shadow is visible */
-    private boolean showShadow;
-
-    /** z-position relative to the ground height at (x,y) */
-    protected final float spawn_offset_z;
-    private float spawnProgress = 0f;
-    private boolean spawning = true;
-
     private int grid_x;
     private int grid_y;
 
@@ -33,33 +20,15 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     private int num_supplies;
     private int hit_counter = 0;
 
-    /**
-     * Constructs a SupplyModel instance, which represents a supply object in the game world.
-     *
-     * @param world world instance where this supply model exists; must not be null
-     * @param size size of the supply model
-     * @param grid_x x-coordinate of the grid position
-     * @param grid_y y-coordinate of the grid position
-     * @param x x-coordinate of the initial position
-     * @param y y-coordinate of the initial position
-     * @param offset_z z-axis offset for the supply model's position
-     * @param rotation rotation of the supply model in radians
-     * @param num_supplies initial number of supplies in this model
-     * @param increase_count a flag indicating whether to notify the supply manager to increment the supply count
-     * @param boundsProvider a provider for bounds of the supply model; must not be null. Also, sneakily the SpriteKey
-     */
-    public SupplyModel(World world, float size, int grid_x, int grid_y,
-            float x, float y, float offset_z, float rotation, int num_supplies, boolean increase_count,
+    public SupplyModel(World world, int grid_x, int grid_y,
+            float x, float y, int num_supplies, boolean increase_count,
             BoundsProvider boundsProvider) {
         super(world);
         this.boundsProvider = boundsProvider;
-        this.size = size;
         this.grid_x = grid_x;
         this.grid_y = grid_y;
-        this.rotation = rotation;
         this.num_supplies = num_supplies;
         this.max_supplies = num_supplies;
-        this.spawn_offset_z = offset_z;
         super.setPosition(x, y); // Set raw coordinates without triggering height lookup yet
         world.getNotificationListener().registerTarget(this);
         UnitGrid unit_grid = world.getUnitGrid();
@@ -72,57 +41,8 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
             world.getSupplyManager(getSupplyType()).newSupply();
     }
 
-
-    /** {@return radians to rotate the model about the z-axis} */
-    public final float getRotation() {
-        return rotation;
-    }
-
     @Override
     public abstract SupplyType getSupplyType();
-
-    @Override
-    public void animateSpawn(float t, float progress) {
-        this.spawnProgress = progress;
-        reinsert();
-        animateClientState(t);
-    }
-
-    @Override
-    public void spawnComplete() {
-        this.spawning = false;
-        this.spawnProgress = 1.0f;
-        setShowShadow(true);
-        animateClientState(0f);
-    }
-
-    public final float getSpawnProgress() {
-        return spawnProgress;
-    }
-
-    public final boolean isSpawning() {
-        return spawning;
-    }
-
-    public Color.@Nullable Linear getSpawnColorTint() {
-        return null;
-    }
-
-    public Color.@Nullable Linear getCrackDecalColor() {
-        return null;
-    }
-
-    public float getCrackDecalOpacity() {
-        return 0.0f;
-    }
-
-    public float getCrackDecalDiameter() {
-        return getSize();
-    }
-
-    public float getCrackDecalPattern() {
-        return 0.0f;
-    }
 
     @Override
     public final boolean isEmpty() {
@@ -163,7 +83,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     @Override
     protected void updateBounds() {
         super.updateBounds();
-        float r = getShadowDiameter() * 0.5f;
+        float r = 3.5f * getSupplyRatio();
         // Expand bounds by shadow radius to prevent culling of the shadow
         bmin_x -= r;
         bmin_y -= r;
@@ -171,27 +91,8 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         bmax_y += r;
     }
 
-    @Override
-    public float getShadowDiameter() {
-        return 7.0f * getSupplyRatio();
-    }
-
-    protected final void setShowShadow(boolean showShadow) {
-        this.showShadow = showShadow;
-    }
-
-    @Override
-    public float getShadowOpacity() {
-        return !showShadow ? 0.0f : 0.5f * getSupplyRatio();
-    }
-
-    private float getSupplyRatio() {
+    public final float getSupplyRatio() {
         return max_supplies > 0 ? (float) num_supplies / max_supplies : 0.0f;
-    }
-
-    @Override
-    public float getShadowVerticalCenter() {
-        return 0.3f;
     }
 
     @Override
@@ -201,7 +102,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
 
     @Override
     public final float getSize() {
-        return size;
+        return 2.0f;
     }
 
     @Override

@@ -38,8 +38,8 @@ public final class RockSupplyVisualAccessory implements EmitterAccessory {
 
     @Override
     public void animate(float t) {
-        if (rockSupply.isSpawning()) {
-            float progress = rockSupply.getSpawnProgress();
+        if (SupplyVisualState.isSpawning(rockSupply)) {
+            float progress = SupplyVisualState.getSpawnProgress(rockSupply);
             if (progress < 0.3f) {
                 ensureSmokeEmitter().setTransition(0.0f, 1.8f, 0.2f, 0.3f);
                 if (!soundPlayed) {

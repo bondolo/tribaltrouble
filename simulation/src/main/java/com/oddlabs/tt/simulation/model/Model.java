@@ -3,14 +3,12 @@ package com.oddlabs.tt.simulation.model;
 import com.oddlabs.tt.simulation.landscape.World;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Optional;
 
 /**
  * Represents a world entity with visual representation and world association.
  */
 public abstract class Model extends Element<Model> implements Shadowable {
     private final World world;
-    private @Nullable ClientState clientState;
     /** ground height if {@link #groundBased} */
     private float baseZ;
     /** if true then the Model is positioned relative to the terrain at (x, y) */
@@ -29,6 +27,11 @@ public abstract class Model extends Element<Model> implements Shadowable {
     @Override
     protected Model self() {
         return this;
+    }
+
+    @Override
+    public boolean isDead() {
+        return !isRegistered();
     }
 
     @Override
@@ -168,43 +171,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
         onReinsert();
         if (isRegistered()) {
             reregister();
-        }
-    }
-
-    public interface ClientStateFactory {
-        @Nullable
-        ClientState createClientState(Model model);
-    }
-
-    private static @Nullable ClientStateFactory clientStateFactory;
-
-    public static void setClientStateFactory(@Nullable ClientStateFactory factory) {
-        clientStateFactory = factory;
-    }
-
-    /** {@return the client state of the specified class type, or empty if not set or of a different type} */
-    public final <C extends ClientState> Optional<C> getClientState(Class<? extends C> type) {
-        if (clientState == null && clientStateFactory != null) {
-            clientState = clientStateFactory.createClientState(this);
-        }
-        return Optional.ofNullable(type.isInstance(clientState) ? type.cast(clientState) : null);
-    }
-
-    /**
-     * Sets the client state associated with this model.
-     *
-     * @param clientState The new client state.
-     */
-    public final void setClientState(@Nullable ClientState clientState) {
-        this.clientState = clientState;
-    }
-
-    protected final void animateClientState(float t) {
-        if (clientState == null && clientStateFactory != null) {
-            clientState = clientStateFactory.createClientState(this);
-        }
-        if (clientState != null) {
-            clientState.update(t);
         }
     }
 }

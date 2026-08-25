@@ -11,7 +11,6 @@ import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -24,7 +23,12 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Manages the client-side visual state (accessories) and audio dispatch for a simulation model.
  */
-public final class VisualModel implements ModelClient {
+public final class VisualModel implements AutoCloseable {
+    public static final float DURATION_CHICKEN_CLUCK = 0.8f;
+    public static final float DURATION_UNIT_DEATH = 1.5f;
+    public static final float DURATION_HARVEST = 1.0f;
+    public static final float DURATION_REPAIR = 1.0f;
+
     private final Model model;
     private final AudioImplementation audio;
     private final List<Accessory> accessories = new ArrayList<>();
@@ -38,7 +42,6 @@ public final class VisualModel implements ModelClient {
         return accessories;
     }
 
-    @Override
     public void update(float t) {
         boolean hasExpired = false;
         for (Accessory acc : accessories) {
@@ -67,31 +70,27 @@ public final class VisualModel implements ModelClient {
         accessories.clear();
     }
 
-    @Override
     public void onHarvest(SupplyType supplyType) {
         var params = AudioAssets.getHarvestSound(supplyType);
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), params);
-        addVisualSound(EmojiType.fromSupply(supplyType), ModelClient.DURATION_HARVEST,
+        addVisualSound(EmojiType.fromSupply(supplyType), DURATION_HARVEST,
                 AudioAssets.AUDIO_DISTANCE_HARVEST);
     }
 
-    @Override
     public void onRepair() {
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                 AudioAssets.getHarvestSound(SupplyType.WOOD));
         var selectedEmoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-        addVisualSound(selectedEmoji, ModelClient.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_HARVEST);
+        addVisualSound(selectedEmoji, DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_HARVEST);
     }
 
-    @Override
     public void onBuildingHit() {
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                 AudioAssets.BUILDING_HITS[ThreadLocalRandom.current().nextInt(AudioAssets.BUILDING_HITS.length)]);
     }
 
-    @Override
     public void onUnitDeath(Race race, UnitVisualType unitType, float pitchRange) {
-        addVisualSound(EmojiType.GRAVESTONE, ModelClient.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
+        addVisualSound(EmojiType.GRAVESTONE, DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
         AudioFile deathSound = switch (unitType) {
             case PEON -> AudioAssets.SFX_DEATH_PEON;
             case WARRIOR_ROCK -> (race == Race.VIKINGS)
@@ -108,7 +107,6 @@ public final class VisualModel implements ModelClient {
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), params);
     }
 
-    @Override
     public void onMeleeHit(float targetX, float targetY, float targetZ, float pitchRange) {
         AudioFile sound;
         if (model instanceof Unit unit && unit.getTemplate().getVisualType() == UnitVisualType.CHIEFTAIN) {
@@ -128,31 +126,26 @@ public final class VisualModel implements ModelClient {
         audio.newAudio(targetX, targetY, targetZ, params);
     }
 
-    @Override
     public void onChickenCluck() {
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                 AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(AudioAssets.CHICKEN_IDLES.length)]);
-        addVisualSound(EmojiType.CHICKEN_CLUCK, ModelClient.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
+        addVisualSound(EmojiType.CHICKEN_CLUCK, DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_CHICKEN);
     }
 
-    @Override
     public void onChickenPeck() {
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), AudioAssets.CHICKEN_PECK);
     }
 
-    @Override
     public void onChickenDeath() {
         audio.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), AudioAssets.CHICKEN_DEATH);
     }
 
-    @Override
     public void addVisualSound(EmojiType emoji, float duration, float audioDistance) {
         AssetRegistry.getInstance().getEmojiSprite(emoji)
                 .map(sprite -> new VisualSoundAccessory(sprite, duration, audioDistance))
                 .ifPresent(accessories::add);
     }
 
-    @Override
     public void addLightningStrike(float targetX, float targetY, float targetZ) {
         for (Accessory acc : accessories) {
             if (acc instanceof LightningAccessory cloudAcc) {
@@ -161,7 +154,6 @@ public final class VisualModel implements ModelClient {
         }
     }
 
-    @Override
     public void addSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration) {
         for (Accessory acc : accessories) {
             if (acc instanceof SonicBlastAccessory blastAcc) {

@@ -2,10 +2,8 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.UnitTemplate;
 
 import java.util.Optional;
 
@@ -22,6 +20,7 @@ public final class InstantHitFactory extends WeaponFactory {
     @Override
     protected void doAttack(boolean hit, Unit src, Selectable<?> target) {
         int damage = 1;
+
         if (target instanceof Building && target.getTemplate().getAbilities().hasAbilities(Abilities.ATTACK))
             damage = 6;
         else if (!hit)
@@ -30,11 +29,10 @@ public final class InstantHitFactory extends WeaponFactory {
         float dx = target.getPositionX() - src.getPositionX();
         float dy = target.getPositionY() - src.getPositionY();
         float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
-        if (target instanceof Unit) {
-            float pitchRange = ((UnitTemplate) target.getTemplate()).getDeathPitch();
-            src.getClientState(ModelClient.class).ifPresent(client -> {
-                client.onMeleeHit(target.getPositionX(), target.getPositionY(), target.getPositionZ(), pitchRange);
-            });
+        if (target instanceof Unit unitTarget) {
+            src.getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getVisualType(), unitTarget
+                    .getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(), target
+                            .getPositionZ());
         }
         target.hit(damage, dx * dir_len_inv, dy * dir_len_inv, src.getOwner());
     }

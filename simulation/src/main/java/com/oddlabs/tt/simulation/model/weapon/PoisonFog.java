@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.ModelClient;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -67,7 +66,7 @@ public final class PoisonFog extends Model implements Magic {
     public void remove() {
         super.remove();
         owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-        getClientState(ModelClient.class).ifPresent(ModelClient::close);
+        owner.getWorld().getNotificationListener().onModelRemoved(this);
     }
 
     @Override
@@ -75,7 +74,7 @@ public final class PoisonFog extends Model implements Magic {
         float x = getPositionX();
         float y = getPositionY();
         float z = getPositionZ();
-        setBounds(x, x, y, y, z, z);
+        setBounds(x - hit_radius, x + hit_radius, y - hit_radius, y + hit_radius, z - 5f, z + 20f);
     }
 
     @Override
@@ -87,7 +86,8 @@ public final class PoisonFog extends Model implements Magic {
     public void animate(float t) {
         time += t;
         if (time >= total_time) {
-            owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
+            remove();
+            return;
         }
 
         if (bursts * SECONDS_BETWEEN_BURSTS < time) {
@@ -98,7 +98,6 @@ public final class PoisonFog extends Model implements Magic {
             hitUnits(hit_radius);
             num_hits++;
         }
-        animateClientState(t);
     }
 
     private void hitUnits(float radius) {

@@ -34,6 +34,8 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
                 AudioAssets.SONIC_BLAST_LUR[world.getRandom().nextInt(AudioAssets.SONIC_BLAST_LUR.length)]);
         this.rumble = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
                 AudioAssets.SONIC_BLAST_RUMBLE);
+        triggerBlast(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(), blast.getHitRadius(), blast
+                .getSeconds());
     }
 
     /**

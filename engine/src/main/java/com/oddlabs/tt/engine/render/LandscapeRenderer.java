@@ -45,9 +45,14 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     private final Texture detailNormalMap;
     private final PatchMesh patchMesh = new PatchMesh();
     private final LandscapeShader shader = new LandscapeShader();
+    private final HeightMapVisual heightMapVisual;
     private @Nullable Water water;
     private FloatVBO instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 3);
     private FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 3);
+
+    public HeightMapVisual getHeightMapVisual() {
+        return heightMapVisual;
+    }
 
     public LandscapeShader getShader() {
         return shader;
@@ -60,6 +65,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     public LandscapeRenderer(World world, WorldInfo<Texture> world_info,
             AnimationManager manager) {
         this.world = world;
+        this.heightMapVisual = new HeightMapVisual(world.getHeightMap());
         this.diffuseMap = world_info.maps().diffuse();
         this.normalMap = world_info.maps().normal();
         this.detailMap = world_info.detail();
@@ -135,9 +141,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             context.setTexture(2, detailMap);
             shader.setUniform(LandscapeShader.Uniforms.DETAIL_MAP, 2);
 
-            context.setTexture(3, world.getHeightMap()
-                    .getClientState(HeightMapVisual.class)
-                    .map(HeightMapVisual::getHeightTexture).orElseThrow());
+            context.setTexture(3, heightMapVisual.getHeightTexture());
             shader.setUniform(LandscapeShader.Uniforms.HEIGHT_MAP, 3);
 
             context.setTexture(4, detailNormalMap);

@@ -41,7 +41,6 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     private final LightningCloud cloud;
     private final ParametricEmitter emitter;
     private final AudioImplementation audio;
-    private final AudioPlayer bubblingSound;
     private @Nullable AudioPlayer cloudSound;
 
     private float lightningTimer = 0f;
@@ -74,10 +73,6 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
 
         float maxLocalZ = CLOUD_RADIUS_Z * CloudFunction.TOP_PUFFINESS_PEAK;
         this.emitter.setHeightLighting(LIGHTING_INTENSITY, maxLocalZ);
-
-        this.bubblingSound = audio.newAudio(cloud.getPositionX(), cloud.getPositionY(),
-                world.getHeightMap().getNearestHeight(cloud.getPositionX(), cloud.getPositionY()),
-                AudioAssets.BUBBLING);
     }
 
     @Override
@@ -112,7 +107,6 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
                     .getPositionZ(),
                     AudioAssets.LIGHTNING_CLOUD);
             firstRun = false;
-            bubblingSound.stop(15.0f);
         }
         if (cloudSound != null) {
             cloudSound.setPosition(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
@@ -168,9 +162,6 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
 
     @Override
     public void close() {
-        if (bubblingSound != null) {
-            bubblingSound.stop(15.0f);
-        }
         if (cloudSound != null) {
             cloudSound.stop(15.0f);
             cloudSound = null;
