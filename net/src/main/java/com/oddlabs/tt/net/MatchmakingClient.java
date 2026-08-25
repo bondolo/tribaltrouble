@@ -18,6 +18,7 @@ import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
 import com.oddlabs.tt.base.global.AppConfig;
+import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -46,7 +47,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private final ChatHistory chat_room_history = new ChatHistory() {
         @Override
         public void chat(ChatMessage message) {
-            if (message.type() == ChatMessage.Type.PRIVATE || message.type() == ChatMessage.Type.CHATROOM) {
+            if (message.type() == ChatConsumer.Type.PRIVATE || message.type() == ChatConsumer.Type.CHATROOM) {
                 addMessage(message.formatLong());
             }
         }
@@ -54,8 +55,8 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private final ChatHistory in_game_chat_history = new ChatHistory() {
         @Override
         public void chat(ChatMessage message) {
-            if (message.type() == ChatMessage.Type.PRIVATE || message.type() == ChatMessage.Type.NORMAL || message
-                    .type() == ChatMessage.Type.TEAM) {
+            if (message.type() == ChatConsumer.Type.PRIVATE || message.type() == ChatConsumer.Type.NORMAL || message
+                    .type() == ChatConsumer.Type.TEAM) {
                 addMessage(message.formatLong());
             }
         }
@@ -254,7 +255,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void receiveChatRoomMessage(String owner, String msg) {
-        network.getChatHub().chat(new ChatMessage(owner, msg, ChatMessage.Type.CHATROOM));
+        network.getChatHub().chat(new ChatMessage(owner, msg, ChatConsumer.Type.CHATROOM));
     }
 
     public void setUiListener(@Nullable MatchmakingUiListener ui_listener) {
@@ -263,7 +264,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void receivePrivateMessage(String nick, String msg) {
-        network.getChatHub().chat(new ChatMessage(nick, msg, ChatMessage.Type.PRIVATE));
+        network.getChatHub().chat(new ChatMessage(nick, msg, ChatConsumer.Type.PRIVATE));
     }
 
     public void sendPrivateMessage(String nick, String message) {

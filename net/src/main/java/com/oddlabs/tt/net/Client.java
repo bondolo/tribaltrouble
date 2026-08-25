@@ -10,6 +10,7 @@ import com.oddlabs.net.Connection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -88,7 +89,7 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     public void chat(int player_slot, @Nullable String chat) {
         if (chat != null && player_slot >= 0 && player_slot < player_slots.length && chat_hub != null) {
             String name = slot_handler.getPlayerName(player_slots[player_slot]);
-            chat_hub.chat(new ChatMessage(name, chat, ChatMessage.Type.GAME_MENU));
+            chat_hub.chat(new ChatMessage(name, chat, ChatConsumer.Type.GAME_MENU));
         }
     }
 

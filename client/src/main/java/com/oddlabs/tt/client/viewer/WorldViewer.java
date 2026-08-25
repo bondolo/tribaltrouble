@@ -206,6 +206,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.gui_root = gui_root;
         this.gui_root.setCheatIcon(GUIIcons.getIcons().getCheatIcon());
         var useNetwork = Renderer.getRenderer().getNetwork();
+        useNetwork.getChatHub().addConsumer(gui_root.getInfoPrinter());
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
                 local_player, player_slots, network, notification_manager,
                 useNetwork.getMatchmakingClient(), useNetwork.getChatHub(),
@@ -236,6 +237,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     @Override
     public void close() {
+        Renderer.getRenderer().getNetwork().getChatHub().removeConsumer(gui_root.getInfoPrinter());
         gui_root.getAnimationManager().removeAnimation(this);
         peerhub.close();
         ingame_info.close(this);
