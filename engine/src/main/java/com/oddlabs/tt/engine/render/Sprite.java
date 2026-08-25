@@ -3,10 +3,10 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SpriteInfo;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.engine.procedural.GeneratorRespond;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
-import com.oddlabs.tt.simulation.model.BoundingBox;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;

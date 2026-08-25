@@ -1,6 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.simulation.model.BoundsProvider;
+import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
 
 /**

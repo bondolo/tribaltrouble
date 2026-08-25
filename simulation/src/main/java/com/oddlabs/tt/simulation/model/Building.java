@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.behaviour.AttackController;
 import com.oddlabs.tt.simulation.behaviour.GatherController;

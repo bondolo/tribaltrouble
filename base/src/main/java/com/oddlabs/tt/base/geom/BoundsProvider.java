@@ -1,4 +1,4 @@
-package com.oddlabs.tt.simulation.model;
+package com.oddlabs.tt.base.geom;
 
 
 /**

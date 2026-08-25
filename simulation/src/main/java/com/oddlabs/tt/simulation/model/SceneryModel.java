@@ -1,6 +1,8 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;

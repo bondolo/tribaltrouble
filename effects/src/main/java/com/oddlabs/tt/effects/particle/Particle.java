@@ -1,8 +1,8 @@
 package com.oddlabs.tt.effects.particle;
 
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.BoundingBox;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.geometry.AnimationInfo;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.weapon.WeaponFactory;
 import org.jspecify.annotations.Nullable;
 

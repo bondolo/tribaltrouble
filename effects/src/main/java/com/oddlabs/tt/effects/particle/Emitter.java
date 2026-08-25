@@ -1,6 +1,7 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.TextureKey;
@@ -373,5 +374,5 @@ public abstract class Emitter<P extends Particle> implements Animated {
      *
      * @return the bounding box of active particles
      */
-    public abstract com.oddlabs.tt.simulation.model.BoundingBox getBounds();
+    public abstract BoundingBox getBounds();
 }

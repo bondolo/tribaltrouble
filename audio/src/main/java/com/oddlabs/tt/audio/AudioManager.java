@@ -11,7 +11,11 @@ import java.net.URL;
  * Responsible for initializing the audio backend, allocating sources, and controlling global audio properties like
  * listener orientation and master gain.
  */
-public interface AudioManager extends AudioImplementation {
+public interface AudioManager extends AudioImplementation, AutoCloseable {
+
+    @Override
+    default void close() {
+    }
 
     @Override
     AudioPlayer newAudio(float x, float y, float z, AudioParameters params);
