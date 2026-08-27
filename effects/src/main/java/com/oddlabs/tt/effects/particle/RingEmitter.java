@@ -72,7 +72,7 @@ public final class RingEmitter extends LinearEmitter {
             Vector3fc particle_radius, Vector3fc growth_rate, float energy) {
         float baseAngle = 2 * (float) Math.PI / num_particles;
         for (int i = 0; i < num_particles; i++) {
-            LinearParticle particle = new LinearParticle(getWorld());
+            LinearParticle particle = new LinearParticle();
             Vector3f pos = position;
             particle.setPos(pos.x(), pos.y(), pos.z());
 

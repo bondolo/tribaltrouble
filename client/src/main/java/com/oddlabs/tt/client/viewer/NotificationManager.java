@@ -10,15 +10,16 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
 
 /**
  * Manages the creation and lifecycle of all in-game notifications, such as attack warnings and beacon alerts.
  */
 public final class NotificationManager implements BeaconListener {
-    private final List<AttackNotification> attack_notifies = new ArrayList<>();
-    private final List<Notification> notifies = new ArrayList<>();
+    private final Deque<AttackNotification> attack_notifies = new ArrayDeque<>();
+    private final Deque<Notification> notifies = new ArrayDeque<>();
     private final GUIRoot gui_root;
     private final AudioImplementation audio;
     private @Nullable Notification latest_notification = null;
@@ -61,7 +62,7 @@ public final class NotificationManager implements BeaconListener {
         addNotification(notification, notifies);
     }
 
-    private <N extends Notification> void addNotification(N notification, List<N> list) {
+    private <N extends Notification> void addNotification(N notification, Collection<N> list) {
         list.add(notification);
         latest_notification = notification;
     }

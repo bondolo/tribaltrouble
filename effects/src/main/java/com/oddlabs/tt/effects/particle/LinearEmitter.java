@@ -10,8 +10,6 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -120,6 +118,14 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         this.delta_color = delta_color;
     }
 
+    private float minEnergy = 0f;
+    private float maxEnergy = 0f;
+
+    public final void setEnergyRange(float minEnergy, float maxEnergy) {
+        this.minEnergy = minEnergy;
+        this.maxEnergy = maxEnergy;
+    }
+
     public final void setEnergy(float energy) {
         this.energy = energy;
     }
@@ -136,15 +142,8 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         float z_min = Float.POSITIVE_INFINITY;
         float z_max = Float.NEGATIVE_INFINITY;
 
-        for (List<LinearParticle> particles : getParticles()) {
-            Iterator<LinearParticle> iterator = particles.iterator();
-            while (iterator.hasNext()) {
-                LinearParticle particle = iterator.next();
-                if (particle.getEnergy() <= 0f) {
-                    iterator.remove();
-                    continue;
-                }
-
+        for (var particles : getParticles()) {
+            for (LinearParticle particle : particles) {
                 particle.update(t);
 
                 float x = particle.getPosX();
@@ -170,6 +169,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
                 z_min = Math.min(z_min, z - radius_z);
                 z_max = Math.max(z_max, z + radius_z);
             }
+            particles.removeIf(LinearParticle::isDead);
         }
         bounds.setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
     }
@@ -189,11 +189,14 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
         int initiated = 0;
         for (int i = 0; i < count; i++) {
             Color.Linear particleColor = nextParticleColor(color);
-            float baseFadeRate = energy > 0f ? -particleColor.a() / energy : 0f;
+            float particleEnergy = minEnergy > 0f && maxEnergy >= minEnergy
+                    ? ThreadLocalRandom.current().nextFloat(minEnergy, maxEnergy)
+                    : energy;
+            float baseFadeRate = particleEnergy > 0f ? -particleColor.a() / particleEnergy : 0f;
             float multiplier = ThreadLocalRandom.current().nextFloat(0.85f, 1.15f);
             Color.LinearDelta particleDeltaColor = delta_color.alpha(baseFadeRate * multiplier);
             initiated += initParticle(getPosition(), velocity, acceleration, particleColor, particleDeltaColor,
-                    particle_radius, growth_rate, energy);
+                    particle_radius, growth_rate, particleEnergy);
         }
         return initiated;
     }

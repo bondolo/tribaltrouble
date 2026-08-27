@@ -8,8 +8,7 @@ import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.Deque;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -99,15 +98,8 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         float z_min = Float.POSITIVE_INFINITY;
         float z_max = Float.NEGATIVE_INFINITY;
 
-        for (List<ParametricParticle> list : getParticles()) {
-            Iterator<ParametricParticle> particles = list.iterator();
-            while (particles.hasNext()) {
-                ParametricParticle particle = particles.next();
-                if (particle.getEnergy() <= 0f) {
-                    particles.remove();
-                    continue;
-                }
-
+        for (Deque<ParametricParticle> list : getParticles()) {
+            for (ParametricParticle particle : list) {
                 particle.update(t, getScaleX(), getScaleY(), getScaleZ());
                 float x = particle.getPosX();
                 float y = particle.getPosY();
@@ -127,6 +119,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
                 z_min = Math.min(z_min, z - radius_z);
                 z_max = Math.max(z_max, z + radius_z);
             }
+            list.removeIf(ParametricParticle::isDead);
         }
         bounds.setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
     }
@@ -161,7 +154,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
         Vector3f offset = randomOffset(area_xy, area_xy, area_z);
         Random random = ThreadLocalRandom.current();
         float twoPi = (float) Math.PI * 2f;
-        ParametricParticle particle = new ParametricParticle(getWorld(), function,
+        ParametricParticle particle = new ParametricParticle(function,
                 random.nextFloat(0f, twoPi), random.nextFloat(0f, twoPi),
                 offset.x(), offset.y(), offset.z());
         offset = randomOffset(velocity_random_margin, velocity_random_margin, 0f);

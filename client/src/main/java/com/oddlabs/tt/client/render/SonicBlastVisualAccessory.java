@@ -55,16 +55,15 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
         World world = blast.getWorld();
         this.effect = new SonicBlastEffect(world, new Vector3f(x, y, z), radius, duration);
         audio.newAudio(x, y, z, AudioAssets.SONIC_BLAST);
-        if (lur != null) {
-            lur.stop(10.0f);
-        }
-        if (rumble != null) {
-            rumble.stop(15.0f);
-        }
+        lur.stop(10.0f);
+        rumble.stop(15.0f);
     }
 
     @Override
     public void animate(float t) {
+        if (effect != null && effect.isDead()) {
+            effect = null;
+        }
     }
 
     public @Nullable SonicBlastEffect getEffect() {
@@ -73,12 +72,12 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
 
     @Override
     public boolean isExpired() {
-        return blast.isDead();
+        return blast.isDead() && effect == null;
     }
 
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
-        return !blast.isDead();
+        return !blast.isDead() || effect != null;
     }
 
     @Override
@@ -95,11 +94,7 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
         if (effect != null) {
             effect.abort();
         }
-        if (lur != null) {
-            lur.stop(15.0f);
-        }
-        if (rumble != null) {
-            rumble.stop(15.0f);
-        }
+        lur.stop(15.0f);
+        rumble.stop(15.0f);
     }
 }

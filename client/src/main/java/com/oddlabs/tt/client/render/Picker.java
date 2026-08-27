@@ -31,9 +31,11 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -103,6 +105,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final RespondManager respond_manager;
     private final Player local_player;
     private final GUIRoot gui_root;
+    private final Deque<LandscapeTargetRespond> target_responds = new ArrayDeque<>();
 
     private @Nullable Target current_hovered;
     private @Nullable ToolTip current_tooltip;
@@ -185,13 +188,17 @@ public final class Picker implements Updatable<TimerAnimation> {
                 if (isNewSetTarget(selection, supply, action, aggressive))
                     player_interface.setTarget(selection, supply, action, aggressive);
             } else if (nearestLandscape(Math.round(x * scale), Math.round(y * scale), viewport)) {
-                new LandscapeTargetRespond(local_player.getWorld(), manager, patch_hit_x, patch_hit_y);
+                target_responds.add(new LandscapeTargetRespond(manager, patch_hit_x, patch_hit_y));
                 int grid_x = UnitGrid.toGridCoordinate(patch_hit_x);
                 int grid_y = UnitGrid.toGridCoordinate(patch_hit_y);
                 if (isNewLandscapeTarget(selection, grid_x, grid_y, action, aggressive))
                     player_interface.setLandscapeTarget(selection, grid_x, grid_y, action, aggressive);
             }
         }
+    }
+
+    public Deque<LandscapeTargetRespond> getTargetResponds() {
+        return target_responds;
     }
 
     private boolean isNewSetTarget(Selectable<?>[] selection, Target target, Action action,

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.render;
 
+import java.util.Deque;
 import java.util.IdentityHashMap;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.Animated;
@@ -8,7 +9,6 @@ import com.oddlabs.tt.client.viewer.Selection;
 import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Lightning;
-import com.oddlabs.tt.effects.particle.PointEmitterModel;
 import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.effects.render.CrackDecalRenderer;
@@ -86,6 +86,7 @@ public final class RenderState implements SceneContext {
     private final MatrixStack model_view_stack = new MatrixStack();
     private final AudioImplementation audio;
     private final IdentityHashMap<Model, VisualModel> visualModels = new IdentityHashMap<>();
+    private final Deque<VisualModel> detachedVisualModels = new ArrayDeque<>();
 
     private boolean picking;
     private boolean visible_override;
@@ -102,14 +103,16 @@ public final class RenderState implements SceneContext {
         this.audio = audio;
         var respondDesc = new GeneratorRing(DecalRenderer.HALO_LUT_RESOLUTION,
                 new float[][]{{0.40f, 0f}, {0.41f, 1f}, {0.48f, 1f}, {0.49f, 0f}});
-        this.target_respond_renderer = new TargetRespondRenderer(respondDesc);
-        render_queues.registerShadowRenderer(respondDesc, target_respond_renderer);
+        var respondKey = render_queues.registerShadowRenderer(respondDesc, new TargetRespondRenderer(respondDesc));
+        this.target_respond_renderer = (TargetRespondRenderer) render_queues.getShadowRenderer(respondKey);
 
-        this.default_shadow_renderer = new SelectableShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC);
-        render_queues.registerShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC, default_shadow_renderer);
+        var defaultShadowKey = render_queues.registerShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC,
+                new SelectableShadowRenderer(AssetRegistry.DEFAULT_SHADOW_DESC));
+        this.default_shadow_renderer = (SelectableShadowRenderer) render_queues.getShadowRenderer(defaultShadowKey);
 
-        this.crack_shadow_renderer = new CrackDecalRenderer(AssetRegistry.CRACK_DECAL_DESC);
-        render_queues.registerShadowRenderer(AssetRegistry.CRACK_DECAL_DESC, crack_shadow_renderer);
+        var crackKey = render_queues.registerShadowRenderer(AssetRegistry.CRACK_DECAL_DESC,
+                new CrackDecalRenderer(AssetRegistry.CRACK_DECAL_DESC));
+        this.crack_shadow_renderer = (CrackDecalRenderer) render_queues.getShadowRenderer(crackKey);
         this.render_state_cache = new RenderStateCache<>(() -> new ElementSceneContext<>(RenderState.this));
         this.attached_state_cache = new RenderStateCache<>(AttachedRenderState::new);
     }
@@ -121,19 +124,13 @@ public final class RenderState implements SceneContext {
                 local_player.getWorld().getAnimationManagerGameTime().removeAnimation(animated);
             }
             if (element instanceof Model model) {
-                VisualModel vm = visualModels.remove(model);
-                if (vm != null) {
-                    vm.close();
-                }
+                detachOrCloseVisualModel(model);
             }
             return;
         }
         switch (element) {
             case Unit unit -> visitUnit(unit);
             case Building building -> visitBuilding(building);
-            case Lightning lightning -> visitLightning(lightning);
-            case SonicBlastEffect effect -> visitSonicBlastEffect(effect);
-            case LandscapeTargetRespond respond -> visitRespond(respond);
             case RubberSupply model -> visitRubberSupply(model);
             case SupplyModel model -> visitSupplyModel(model);
             case Plants plants -> visitPlants(plants);
@@ -144,7 +141,6 @@ public final class RenderState implements SceneContext {
             case RotatingThrowingWeapon weapon -> {
                 if (!picking) addToRenderList(getCachedState(rotating_weapon_model_visitor, weapon));
             }
-            case PointEmitterModel emitterModel -> visitPointEmitterModel(emitterModel);
             case SonicBlast blast -> visitSonicBlast(blast);
             case LightningCloud cloud -> visitLightningCloud(cloud);
             case PoisonFog fog -> visitPoisonFog(fog);
@@ -175,15 +171,6 @@ public final class RenderState implements SceneContext {
         ElementSceneContext<Stun> state = (ElementSceneContext<Stun>) getCachedState(
                 WhiteModelVisitor.getInstance(), stun, z_offset);
         visitAccessories(stun, state);
-    }
-
-    private void visitPointEmitterModel(final PointEmitterModel emitterModel) {
-        if (picking) return;
-        emitter_queue.add(emitterModel.getEmitter());
-        float z_offset = getVisuallyCorrectHeight(emitterModel.getPositionX(), emitterModel.getPositionY());
-        ElementSceneContext<PointEmitterModel> state = (ElementSceneContext<PointEmitterModel>) getCachedState(
-                WhiteModelVisitor.getInstance(), emitterModel, z_offset);
-        visitAccessories(emitterModel, state);
     }
 
     private void visitSonicBlast(final SonicBlast blast) {
@@ -245,9 +232,54 @@ public final class RenderState implements SceneContext {
             for (VisualModel vm : visualModels.values()) {
                 vm.update(gameDt);
             }
+            for (VisualModel vm : detachedVisualModels) {
+                vm.update(gameDt);
+            }
+            detachedVisualModels.removeIf(vm -> {
+                if (vm.isExpired()) {
+                    vm.close();
+                    return true;
+                }
+                return false;
+            });
         }
         if (!picking && currentTime >= 0f) {
             lastFrameTime = currentTime;
+        }
+        prepareTargetResponds();
+        prepareDetachedVisualEffects();
+    }
+
+    private void prepareDetachedVisualEffects() {
+        if (picking) return;
+        for (VisualModel vm : detachedVisualModels) {
+            for (Accessory accessory : vm.getAccessories()) {
+                if (accessory != null && !accessory.isExpired()) {
+                    if (accessory instanceof LightningCloudVisualAccessory lca) {
+                        lightning_queue.addAll(lca.getActiveLightnings());
+                    } else if (accessory instanceof SonicBlastVisualAccessory sba) {
+                        SonicBlastEffect effect = sba.getEffect();
+                        if (effect != null && !effect.isDead()) {
+                            sonic_blast_queue.add(effect);
+                        }
+                    }
+                    if (accessory instanceof EmitterAccessory ea) {
+                        ea.addEmitters(emitter_queue);
+                    }
+                }
+            }
+        }
+    }
+
+    private void prepareTargetResponds() {
+        if (picking) return;
+        var responds = picker.getTargetResponds();
+        responds.removeIf(LandscapeTargetRespond::isFinished);
+        for (LandscapeTargetRespond respond : responds) {
+            if (visible_override || camera.inNoDetailMode() || RenderTools.inFrustum(respond.getBounds(), camera
+                    .getFrustum()) != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                target_respond_renderer.addToTargetList(respond);
+            }
         }
     }
 
@@ -394,6 +426,15 @@ public final class RenderState implements SceneContext {
             ElementSceneContext<M> parentState) {
         if (picking) return;
 
+        if (accessory instanceof LightningCloudVisualAccessory lca) {
+            lightning_queue.addAll(lca.getActiveLightnings());
+        } else if (accessory instanceof SonicBlastVisualAccessory sba) {
+            SonicBlastEffect effect = sba.getEffect();
+            if (effect != null && !effect.isDead()) {
+                sonic_blast_queue.add(effect);
+            }
+        }
+
         switch (accessory) {
             case EmitterAccessory ea -> {
                 Emitter<?> emitter = ea.getEmitter();
@@ -461,26 +502,6 @@ public final class RenderState implements SceneContext {
 
     SpriteSorter.DetailMode addToRenderList(LODObject model, boolean point_on_map) {
         return sprite_sorter.add(model, camera, point_on_map);
-    }
-
-    private void visitEmitter(final Emitter<?> emitter) {
-        if (!picking)
-            emitter_queue.add(emitter);
-    }
-
-    private void visitLightning(Lightning lightning) {
-        if (!picking)
-            lightning_queue.add(lightning);
-    }
-
-    private void visitSonicBlastEffect(SonicBlastEffect effect) {
-        if (!picking)
-            sonic_blast_queue.add(effect);
-    }
-
-    private void visitRespond(final LandscapeTargetRespond respond) {
-        if (!picking)
-            target_respond_renderer.addToTargetList(respond);
     }
 
     private static final ModelVisitor<SupplyModel> supply_model_visitor = new SupplyModelVisitor<>() {
@@ -754,9 +775,17 @@ public final class RenderState implements SceneContext {
     }
 
     public void onModelRemoved(Model model) {
+        detachOrCloseVisualModel(model);
+    }
+
+    private void detachOrCloseVisualModel(Model model) {
         VisualModel vm = visualModels.remove(model);
         if (vm != null) {
-            vm.close();
+            if (!vm.isExpired()) {
+                detachedVisualModels.add(vm);
+            } else {
+                vm.close();
+            }
         }
     }
 }

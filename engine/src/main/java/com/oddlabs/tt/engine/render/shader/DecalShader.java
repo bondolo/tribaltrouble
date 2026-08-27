@@ -105,10 +105,10 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         vs_out.ShadowOpacity = in_InstanceShadowOpacity;
 
                         // Shadow offset in local decal space (±0.5 = quad edge = one radius).
-                        // The shadow sample is shifted by this amount; the ring sample is not.
+                        // Cast shadow away from the sun direction.
                         if ((vs_out.Flags & 1) != 0) { // Radial flag
                             const vec3 lightDir = vec3(-0.70710678, 0.0, 0.70710678);
-                            vs_out.ShadowOffset = lightDir.xy * 0.225 * in_InstanceOffsetScale;
+                            vs_out.ShadowOffset = -lightDir.xy * 0.225 * in_InstanceOffsetScale;
                         } else {
                             vs_out.ShadowOffset = vec2(0.0);
                         }
@@ -136,7 +136,23 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     layout(location = 1) out vec4 out_MaskColor;
 
                     vec4 sampleDecal(vec2 uv) {
-                        return texture(u_textures[fs_in.TexSlot], uv);
+                        switch (fs_in.TexSlot) {
+                            case 0: return texture(u_textures[0], uv);
+                            case 1: return texture(u_textures[1], uv);
+                            case 2: return texture(u_textures[2], uv);
+                            case 3: return texture(u_textures[3], uv);
+                            case 4: return texture(u_textures[4], uv);
+                            case 5: return texture(u_textures[5], uv);
+                            case 6: return texture(u_textures[6], uv);
+                            case 7: return texture(u_textures[7], uv);
+                            case 8: return texture(u_textures[8], uv);
+                            case 9: return texture(u_textures[9], uv);
+                            case 10: return texture(u_textures[10], uv);
+                            case 11: return texture(u_textures[11], uv);
+                            case 12: return texture(u_textures[12], uv);
+                            case 13: return texture(u_textures[13], uv);
+                            default: return texture(u_textures[0], uv);
+                        }
                     }
 
                     void main() {
@@ -203,14 +219,14 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                             // RGB comes only from the ring (tinted). Shadow is black (adds 0 to RGB).
                             baseColor = vec4(fs_in.Color.rgb * a_r, finalAlpha);
                         } else {
-                            // Standard 2D sampling (Square Building Sites)
+                            // Standard 2D sampling (Square Building Sites and Impact Cracks)
                             baseColor = sampleDecal(fs_in.TexCoord + 0.5) * fs_in.Color;
                             if (fs_in.Pattern > 9.5) {
                                 float dist = length(fs_in.TexCoord);
                                 float maskRadius = fs_in.Pattern - 10.0;
                                 float edgeWidth = 0.05;
                                 float alphaScale = 1.0 - smoothstep(maskRadius - edgeWidth, maskRadius, dist);
-                                baseColor.a *= alphaScale;
+                                baseColor.a *= alphaScale * fs_in.ShadowOpacity;
                                 if (maskRadius > 0.0) {
                                     float t = clamp(dist / maskRadius, 0.0, 1.0);
                                     vec3 glowColor = vec3(2.0, 0.4, 0.0) * (1.0 - t) * (1.0 - t);

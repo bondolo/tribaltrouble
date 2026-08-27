@@ -19,9 +19,9 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.List;
+import java.util.Deque;
 
 /**
  * Client-side visual accessory for iron supply meteors.
@@ -42,7 +42,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
     private boolean airBurstPlayed = false;
     private @Nullable RandomVelocityEmitter trailEmitter = null;
     private @Nullable RandomVelocityEmitter coolingEmitter = null;
-    private final List<Emitter<?>> oneShotEmitters = new ArrayList<>();
+    private final Deque<Emitter<?>> oneShotEmitters = new ArrayDeque<>();
 
     public IronSupplyVisualAccessory(IronSupply ironSupply, AudioImplementation audio) {
         this.ironSupply = ironSupply;
@@ -85,13 +85,13 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
                             ));
                 }
 
-                emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply
-                        .getPositionZ()
-                        + TRAIL_OFFSET_Z);
+                float visualZ = ironSupply.getPositionZ() + SupplyVisualState.getOffsetZ(ironSupply);
+                emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
                 emitter.animate(t);
             } else {
                 if (trailEmitter != null) {
                     trailEmitter.done();
+                    oneShotEmitters.add(trailEmitter);
                     trailEmitter = null;
                 }
 
@@ -185,7 +185,9 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
             cleanupEmitters();
         }
 
-        oneShotEmitters.forEach(e -> e.animate(t));
+        for (var e : oneShotEmitters) {
+            e.animate(t);
+        }
         oneShotEmitters.removeIf(Emitter::isFinished);
     }
 
@@ -207,17 +209,17 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
     private RandomVelocityEmitter ensureTrailEmitter() {
         if (trailEmitter == null) {
             World world = ironSupply.getWorld();
-            Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply.getPositionZ()
-                    + TRAIL_OFFSET_Z);
+            float visualZ = ironSupply.getPositionZ() + SupplyVisualState.getOffsetZ(ironSupply);
+            Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
             trailEmitter = new RandomVelocityEmitter(
                     world, pos, 0.0f, 0.0f,
                     0.02f, 5.0f,
                     0.1f, 0.02f,
                     -1, 800f,
                     new Vector3f(0f, 0f, 10.0f), new Vector3f(0f, 0f, 5.0f),
-                    new Color.Linear(0.08f, 0.6f), new Color.LinearDelta(0f, -0.6f),
+                    new Color.Linear(0.08f, 0.6f), new Color.LinearDelta(0f, -0.24f),
                     new Vector3f(1.6f, 2.0f, 1.6f), new Vector3f(2.4f, 3.0f, 2.4f),
-                    1.2f, 0.1f,
+                    2.5f, 0.1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                     AssetRegistry.getInstance().getSmokeTextures(),
                     null, AssetRegistry.getInstance().getSmokeTextures().length,
@@ -226,6 +228,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
             trailEmitter.setColorSpectrum((spectrum, baseColor) -> baseColor.lerp(Color.Linear.BLACK, spectrum));
             trailEmitter.setSpectrumRange(0.2f, 0.2f);
             trailEmitter.setJitterIntensity(0.5f);
+            trailEmitter.setEnergyRange(1.2f, 2.5f);
         }
         return trailEmitter;
     }

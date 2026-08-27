@@ -1,7 +1,5 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.simulation.landscape.World;
-
 public final class StretchParticle extends Particle {
     private float src_x = 0f;
     private float src_y = 0f;
@@ -12,8 +10,7 @@ public final class StretchParticle extends Particle {
     private float src_width = 0f;
     private float dst_width = 0f;
 
-    public StretchParticle(World world) {
-        super(world);
+    public StretchParticle() {
     }
 
     @Override

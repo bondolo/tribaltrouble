@@ -1,15 +1,14 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.base.geom.BoundingBox;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.jspecify.annotations.Nullable;
 
-public class Particle extends Model {
+/**
+ * Base data representation for an individual visual particle.
+ */
+public class Particle {
     private final float u1;
     private final float v1;
     private final float u2;
@@ -30,12 +29,11 @@ public class Particle extends Model {
     private int type;
     private float energy;
 
-    public Particle(World world) {
-        this(world, 0f);
+    public Particle() {
+        this(0f);
     }
 
-    public Particle(World world, float angle) {
-        super(world);
+    public Particle(float angle) {
         this.angle = angle;
         Matrix4f rotMatrix = new Matrix4f();
         Vector3f axis = new Vector3f(0f, 0f, 1f);
@@ -171,6 +169,10 @@ public class Particle extends Model {
         return energy;
     }
 
+    public final boolean isDead() {
+        return energy <= 0f;
+    }
+
     public final void setType(int type) {
         this.type = type;
     }
@@ -209,11 +211,5 @@ public class Particle extends Model {
 
     public final float getRadiusZ() {
         return radius.z();
-    }
-
-
-    @Override
-    protected BoundingBox @Nullable [] getLocalBounds() {
-        return null;
     }
 }

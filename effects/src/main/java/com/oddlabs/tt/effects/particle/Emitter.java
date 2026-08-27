@@ -10,9 +10,10 @@ import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
+import java.util.Deque;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
  * Handles the spawning logic and lifecycle (Budgeted or Infinite).
  */
 public abstract class Emitter<P extends Particle> implements Animated {
-    private final List<P>[] particles;
+    private final Deque<P>[] particles;
     private final TextureKey @Nullable [] textures;
     private final SpriteKey @Nullable [] sprite_renderers;
     private final int src_blend_func;
@@ -90,7 +91,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         this.types = types;
         this.remaining_particles = remaining_particles;
         this.particles_per_second = particles_per_second;
-        particles = Stream.generate(ArrayList::new).limit(types).toArray(List[]::new);
+        particles = Stream.generate(ArrayDeque::new).limit(types).toArray(Deque[]::new);
     }
 
     public final void setColorSpectrum(ColorSpectrum spectrum) {
@@ -201,7 +202,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return sprite_renderers;
     }
 
-    public final List<P>[] getParticles() {
+    public final Deque<P>[] getParticles() {
         return particles;
     }
 
@@ -274,7 +275,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
 
     public final void adjustColor(Color.LinearDelta delta) {
         Arrays.stream(particles)
-                .flatMap(List::stream)
+                .flatMap(Collection::stream)
                 .forEach(p -> p.setColor(p.getColor().add(delta)));
     }
 

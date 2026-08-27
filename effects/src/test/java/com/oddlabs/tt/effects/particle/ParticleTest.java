@@ -62,7 +62,7 @@ class ParticleTest {
 
     @Test
     void testParticleUVCoordinates() {
-        Particle particle = new Particle(world, 0f);
+        Particle particle = new Particle(0f);
 
         assertEquals(0.0f, particle.getU1(), 1e-4f);
         assertEquals(1.0f, particle.getV1(), 1e-4f);
@@ -76,7 +76,7 @@ class ParticleTest {
 
     @Test
     void testLinearParticleKinematics() {
-        LinearParticle particle = new LinearParticle(world, 0f);
+        LinearParticle particle = new LinearParticle(0f);
         particle.setPos(10f, 20f, 30f);
         particle.setVelocity(1f, 2f, 3f);
         particle.setAcceleration(0.5f, -0.5f, 0f);

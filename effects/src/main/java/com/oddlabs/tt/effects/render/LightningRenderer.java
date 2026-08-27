@@ -183,7 +183,7 @@ public final class LightningRenderer implements AutoCloseable {
     public void debugRender(Queue<Lightning> emitter_queue) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             for (Lightning emitter : emitter_queue) {
-                RenderTools.draw(emitter, 1f, 1f, 1f);
+                RenderTools.draw(emitter.getBounds(), 1f, 1f, 1f);
             }
         }
     }

@@ -117,7 +117,7 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
             Vector3fc particle_radius, Vector3fc growth_rate, float energy) {
         randomizeAcceleration();
 
-        LinearParticle particle = new LinearParticle(getWorld());
+        LinearParticle particle = new LinearParticle();
         Vector3f pos = randomPosition();
         particle.setPos(pos.x(), pos.y(), pos.z());
         Random random = ThreadLocalRandom.current();
