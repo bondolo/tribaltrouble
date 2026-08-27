@@ -5,6 +5,7 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
 
 /**
@@ -36,28 +37,28 @@ public interface NotificationListener {
     default void treeFelled(AbstractTreeGroup.TreeType treeType, float x, float y, float z) {
     }
 
-    default void onHarvest(SupplyType supplyType, float x, float y, float z) {
+    default void onHarvest(Model model, SupplyType supplyType) {
     }
 
-    default void onRepair(float x, float y, float z) {
+    default void onRepair(Model model) {
     }
 
     default void onBuildingHit(float x, float y, float z) {
     }
 
-    default void onUnitDeath(UnitVisualType unitType, Race race, float x, float y, float z) {
+    default void onUnitDeath(Unit unit, UnitVisualType unitType, Race race) {
     }
 
     default void onUnitAttack(UnitVisualType unitType, Race race, float x, float y, float z) {
     }
 
-    default void onChickenCluck(float x, float y, float z) {
+    default void onChickenCluck(Model model) {
     }
 
     default void onChickenPeck(float x, float y, float z) {
     }
 
-    default void onChickenDeath(float x, float y, float z) {
+    default void onChickenDeath(Model model) {
     }
 
     default void onLightningStrike(float x, float y, float z) {

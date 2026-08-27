@@ -59,6 +59,8 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 
 import com.oddlabs.tt.audio.AudioFile;
+import com.oddlabs.tt.client.render.VisualModel;
+import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
@@ -156,13 +158,20 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onHarvest(SupplyType supplyType, float x, float y, float z) {
-                audioManager.newAudio(x, y, z, AudioAssets.getHarvestSound(supplyType));
+            public void onHarvest(Model model, SupplyType supplyType) {
+                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
+                        AudioAssets.getHarvestSound(supplyType));
+                WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.fromSupply(supplyType),
+                        VisualModel.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
-            public void onRepair(float x, float y, float z) {
-                audioManager.newAudio(x, y, z, AudioAssets.getHarvestSound(SupplyType.WOOD));
+            public void onRepair(Model model) {
+                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
+                        AudioAssets.getHarvestSound(SupplyType.WOOD));
+                var emoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
+                WorldViewer.this.renderer.getRenderState().addVisualSound(model, emoji,
+                        VisualModel.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -172,7 +181,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onUnitDeath(UnitVisualType unitType, Race race, float x, float y, float z) {
+            public void onUnitDeath(Unit unit, UnitVisualType unitType, Race race) {
                 AudioFile deathSound = switch (unitType) {
                     case PEON -> AudioAssets.SFX_DEATH_PEON;
                     case WARRIOR_ROCK -> (race == Race.VIKINGS)
@@ -184,7 +193,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 };
                 var params = new AudioParameters(deathSound, AudioAssets.AUDIO_RANK_DEATH,
                         AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH);
-                audioManager.newAudio(x, y, z, params);
+                audioManager.newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
+                WorldViewer.this.renderer.getRenderState().addVisualSound(unit, EmojiType.GRAVESTONE,
+                        VisualModel.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -206,9 +217,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onChickenCluck(float x, float y, float z) {
-                audioManager.newAudio(x, y, z,
+            public void onChickenCluck(Model model) {
+                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(AudioAssets.CHICKEN_IDLES.length)]);
+                WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.CHICKEN_CLUCK,
+                        VisualModel.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -217,8 +230,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onChickenDeath(float x, float y, float z) {
-                audioManager.newAudio(x, y, z, AudioAssets.CHICKEN_DEATH);
+            public void onChickenDeath(Model model) {
+                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
+                        AudioAssets.CHICKEN_DEATH);
+                WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.HARVEST_RUBBER,
+                        VisualModel.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override

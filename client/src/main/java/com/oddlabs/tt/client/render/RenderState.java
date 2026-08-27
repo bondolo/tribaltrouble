@@ -38,6 +38,7 @@ import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
+import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.Race;
@@ -253,6 +254,9 @@ public final class RenderState implements SceneContext {
     private void prepareDetachedVisualEffects() {
         if (picking) return;
         for (VisualModel vm : detachedVisualModels) {
+            Model model = vm.getModel();
+            ElementSceneContext<Model> parentState = (ElementSceneContext<Model>) getCachedState(
+                    WhiteModelVisitor.getInstance(), model);
             for (Accessory accessory : vm.getAccessories()) {
                 if (accessory != null && !accessory.isExpired()) {
                     if (accessory instanceof LightningCloudVisualAccessory lca) {
@@ -265,6 +269,9 @@ public final class RenderState implements SceneContext {
                     }
                     if (accessory instanceof EmitterAccessory ea) {
                         ea.addEmitters(emitter_queue);
+                    }
+                    if (accessory.isVisible(model, camera)) {
+                        visitAccessory(accessory, parentState);
                     }
                 }
             }
@@ -772,6 +779,11 @@ public final class RenderState implements SceneContext {
         for (VisualModel vm : visualModels.values()) {
             vm.addSonicBlast(x, y, z, radius, duration);
         }
+    }
+
+    public void addVisualSound(Model model, EmojiType emoji, float duration, float audioDistance) {
+        VisualModel vm = getOrCreateVisualModel(model);
+        vm.addVisualSound(emoji, duration, audioDistance);
     }
 
     public void onModelRemoved(Model model) {

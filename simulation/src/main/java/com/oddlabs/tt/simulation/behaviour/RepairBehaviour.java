@@ -37,8 +37,7 @@ public final class RepairBehaviour implements Behaviour {
         anim_time += t;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
-            unit.getWorld().getNotificationListener().onRepair(unit.getPositionX(), unit.getPositionY(), unit
-                    .getPositionZ());
+            unit.getWorld().getNotificationListener().onRepair(unit);
         }
 
         if (anim_time > SECONDS_PER_ANIMATION_CYCLE) {

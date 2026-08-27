@@ -118,7 +118,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
             if (random < .75) {
                 setNewAnimation(Animation.IDLING);
                 if (random < .05) {
-                    getWorld().getNotificationListener().onChickenCluck(getPositionX(), getPositionY(), getPositionZ());
+                    getWorld().getNotificationListener().onChickenCluck(this);
                 }
             } else if (random < .85) {
                 // move
@@ -180,7 +180,7 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
         if (!is_hit) {
             is_hit = true;
             setNewAnimation(Animation.DYING);
-            getWorld().getNotificationListener().onChickenDeath(getPositionX(), getPositionY(), getPositionZ());
+            getWorld().getNotificationListener().onChickenDeath(this);
             group.remove(this);
         }
         return super.hit();
