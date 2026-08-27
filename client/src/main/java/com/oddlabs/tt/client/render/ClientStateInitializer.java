@@ -31,7 +31,7 @@ public final class ClientStateInitializer {
      * @return decorated VisualModel instance
      */
     public static VisualModel createVisualModel(Model model, AudioImplementation audio) {
-        VisualModel visualModel = new VisualModel(model, audio);
+        VisualModel visualModel = new VisualModel(model);
         switch (model) {
             case Unit unit -> {
                 if (unit.getAbilities().hasAbilities(Abilities.BUILD)) {
