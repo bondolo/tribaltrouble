@@ -386,8 +386,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 owner.unitKilled();
                 getOwner().unitLost();
 
-                getWorld().getNotificationListener().onUnitDeath(getTemplate().getVisualType(), getOwner().getRaceInfo()
-                        .getRaceType(), getPositionX(), getPositionY(), getPositionZ());
+                getWorld().getNotificationListener().onUnitDeath(this, getTemplate().getVisualType(),
+                        getOwner().getRaceInfo().getRaceType());
 
                 pushController(new DieController(this));
                 forceDecide();
