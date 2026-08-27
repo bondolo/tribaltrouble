@@ -58,9 +58,14 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 
+import com.oddlabs.tt.audio.AudioFile;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.SupplyType;
+import com.oddlabs.tt.simulation.model.UnitVisualType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -148,6 +153,72 @@ public final class WorldViewer implements Animated, AutoCloseable {
             @Override
             public void treeFelled(AbstractTreeGroup.TreeType treeType, float x, float y, float z) {
                 audioManager.newAudio(x, y, z, AudioAssets.TREE_FALL[treeType.ordinal() % 2]);
+            }
+
+            @Override
+            public void onHarvest(SupplyType supplyType, float x, float y, float z) {
+                audioManager.newAudio(x, y, z, AudioAssets.getHarvestSound(supplyType));
+            }
+
+            @Override
+            public void onRepair(float x, float y, float z) {
+                audioManager.newAudio(x, y, z, AudioAssets.getHarvestSound(SupplyType.WOOD));
+            }
+
+            @Override
+            public void onBuildingHit(float x, float y, float z) {
+                audioManager.newAudio(x, y, z,
+                        AudioAssets.BUILDING_HITS[ThreadLocalRandom.current().nextInt(AudioAssets.BUILDING_HITS.length)]);
+            }
+
+            @Override
+            public void onUnitDeath(UnitVisualType unitType, Race race, float x, float y, float z) {
+                AudioFile deathSound = switch (unitType) {
+                    case PEON -> AudioAssets.SFX_DEATH_PEON;
+                    case WARRIOR_ROCK -> (race == Race.VIKINGS)
+                            ? AudioAssets.SFX_DEATH_VIKING_WARRIORS[0]
+                            : AudioAssets.SFX_DEATH_NATIVE_WARRIORS[0];
+                    case WARRIOR_IRON, WARRIOR_RUBBER, CHIEFTAIN -> (race == Race.VIKINGS)
+                            ? AudioAssets.SFX_DEATH_VIKING_WARRIORS[1]
+                            : AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1];
+                };
+                var params = new AudioParameters(deathSound, AudioAssets.AUDIO_RANK_DEATH,
+                        AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH);
+                audioManager.newAudio(x, y, z, params);
+            }
+
+            @Override
+            public void onUnitAttack(UnitVisualType unitType, Race race, float x, float y, float z) {
+                AudioFile sound;
+                if (unitType == UnitVisualType.CHIEFTAIN) {
+                    AudioFile[] hits = (race == Race.VIKINGS)
+                            ? AudioAssets.SFX_VIKING_CHIEFTAIN_HITS
+                            : AudioAssets.SFX_NATIVE_CHIEFTAIN_HITS;
+                    sound = hits[ThreadLocalRandom.current().nextInt(hits.length)];
+                } else {
+                    sound = AudioAssets.SFX_IMPACT_MEATS[ThreadLocalRandom.current().nextInt(
+                            AudioAssets.SFX_IMPACT_MEATS.length)];
+                }
+                var params = new AudioParameters(sound, AudioAssets.AUDIO_RANK_WEAPON_HIT,
+                        AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
+                        AudioAssets.AUDIO_RADIUS_WEAPON_HIT);
+                audioManager.newAudio(x, y, z, params);
+            }
+
+            @Override
+            public void onChickenCluck(float x, float y, float z) {
+                audioManager.newAudio(x, y, z,
+                        AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(AudioAssets.CHICKEN_IDLES.length)]);
+            }
+
+            @Override
+            public void onChickenPeck(float x, float y, float z) {
+                audioManager.newAudio(x, y, z, AudioAssets.CHICKEN_PECK);
+            }
+
+            @Override
+            public void onChickenDeath(float x, float y, float z) {
+                audioManager.newAudio(x, y, z, AudioAssets.CHICKEN_DEATH);
             }
 
             @Override
