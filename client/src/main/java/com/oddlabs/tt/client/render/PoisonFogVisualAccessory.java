@@ -2,9 +2,9 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.effects.particle.PointEmitterModel;
+import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.engine.render.AnimatedAccessory;
+import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
@@ -18,6 +18,8 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -25,7 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Client-side visual accessory for the poison fog magical effect.
  * Periodically spawns poison gas puffs inside the fog region on the client.
  */
-public final class PoisonFogVisualAccessory implements AnimatedAccessory {
+public final class PoisonFogVisualAccessory implements EmitterAccessory {
     private static final int PARTICLES_PER_BURST = 4;
     private static final float SECONDS_BETWEEN_BURSTS = .15f;
     private static final float BURST_RADIUS = 2f;
@@ -35,6 +37,7 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
     private final PoisonFog poisonFog;
     private final AudioImplementation audio;
     private final AudioPlayer bubblingSound;
+    private final Deque<Emitter<?>> burstEmitters = new ArrayDeque<>();
 
     private float time = 0f;
     private int bursts = 0;
@@ -76,7 +79,7 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
                     new Vector3f(0f, 0f, .25f), new Vector3f(3.5f, 3.5f, 0f), energy, 1f,
                     GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                     AssetRegistry.getInstance().getPoisonTextures());
-            new PointEmitterModel(world, emitter);
+            burstEmitters.add(emitter);
 
             if (bursts % nextSound == 0) {
                 nextSound = MIN_BURSTS_PER_SOUND + ThreadLocalRandom.current().nextInt(5);
@@ -84,16 +87,31 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
             }
             bursts++;
         }
+
+        for (var e : burstEmitters) {
+            e.animate(t);
+        }
+        burstEmitters.removeIf(Emitter::isFinished);
+    }
+
+    @Override
+    public @Nullable Emitter<?> getEmitter() {
+        return null;
+    }
+
+    @Override
+    public void addEmitters(java.util.Collection<Emitter<?>> queue) {
+        queue.addAll(burstEmitters);
     }
 
     @Override
     public boolean isExpired() {
-        return poisonFog.isDead();
+        return poisonFog.isDead() && burstEmitters.isEmpty();
     }
 
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
-        return !poisonFog.isDead();
+        return !poisonFog.isDead() || !burstEmitters.isEmpty();
     }
 
     @Override
@@ -107,8 +125,6 @@ public final class PoisonFogVisualAccessory implements AnimatedAccessory {
 
     @Override
     public void close() {
-        if (bubblingSound != null) {
-            bubblingSound.stop(15.0f);
-        }
+        bubblingSound.stop(15.0f);
     }
 }

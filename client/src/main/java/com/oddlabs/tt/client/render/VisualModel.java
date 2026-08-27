@@ -42,6 +42,22 @@ public final class VisualModel implements AutoCloseable {
         return accessories;
     }
 
+    public Model getModel() {
+        return model;
+    }
+
+    public boolean isExpired() {
+        if (accessories.isEmpty()) {
+            return true;
+        }
+        for (Accessory acc : accessories) {
+            if (!acc.isExpired()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void update(float t) {
         boolean hasExpired = false;
         for (Accessory acc : accessories) {

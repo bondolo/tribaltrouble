@@ -3,13 +3,15 @@ package com.oddlabs.tt.effects.render;
 
 import com.oddlabs.tt.engine.render.*;
 
+import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.jspecify.annotations.Nullable;
 
-public final class ParticleModelState implements ModelState<Particle> {
+public final class ParticleModelState implements ModelState<Model> {
     private static final Color NO_SELECTION = Color.Linear.TRANSPARENT;
     private final Particle particle;
     private final Matrix4fc viewMatrix;
@@ -20,8 +22,8 @@ public final class ParticleModelState implements ModelState<Particle> {
     }
 
     @Override
-    public Particle getModel() {
-        return particle;
+    public @Nullable Model getModel() {
+        return null;
     }
 
     @Override

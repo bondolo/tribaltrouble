@@ -9,8 +9,8 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.effects.particle.ColorSpectrum;
+import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
-import com.oddlabs.tt.effects.particle.PointEmitterModel;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
@@ -19,6 +19,9 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -48,6 +51,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     private final LinearEmitter emitter;
     private final float hitOffsetZ;
     private final AudioImplementation audio;
+    private final Deque<Emitter<?>> transientEmitters = new ArrayDeque<>();
     private boolean hasCollapsed = false;
 
     public BuildingDamagedAccessory(Building building, float hitOffsetZ, AudioImplementation audio) {
@@ -82,6 +86,11 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
 
     @Override
     public void animate(float t) {
+        if (building.isDead() && !hasCollapsed) {
+            hasCollapsed = true;
+            triggerCollapseEffects();
+        }
+
         Building.BuildStage stage = building.getBuildStage();
         boolean isCompleteOrHalfBuilt = stage == Building.BuildStage.HALFBUILT || stage == Building.BuildStage.BUILT;
 
@@ -115,10 +124,10 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
             emitter.animate(t);
         }
 
-        if (building.isDead() && !hasCollapsed) {
-            hasCollapsed = true;
-            triggerCollapseEffects();
+        for (var e : transientEmitters) {
+            e.animate(t);
         }
+        transientEmitters.removeIf(Emitter::isFinished);
     }
 
     private void triggerCollapseEffects() {
@@ -158,18 +167,8 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
                 GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                 AssetRegistry.getInstance().getSmokeTextures());
         collapse_emitter.setColorSpectrum(spectrumCallback);
-
-        new PointEmitterModel(building.getOwner().getWorld(), collapse_emitter, building.getOwner().getWorld()
-                .getAnimationManagerRealTime()) {
-            private float elapsed = 0.0f;
-
-            @Override
-            public void animate(float t) {
-                elapsed += t;
-                emitter.setSpectrum(Math.min(1.0f, elapsed / 1.5f));
-                super.animate(t);
-            }
-        };
+        collapse_emitter.setTransition(0f, 1.5f, 1.0f, 1.0f);
+        transientEmitters.add(collapse_emitter);
 
         {
             float energy = 3f;
@@ -186,27 +185,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
                     new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
                     AssetRegistry.getInstance().getWoodFragments(),
                     true, true);
-            new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter, building.getOwner().getWorld()
-                    .getAnimationManagerRealTime());
-        }
-
-        {
-            float energy = 3f;
-            float fade_speed = 2.5f;
-
-            RandomVelocityEmitter fragments_emitter = new RandomVelocityEmitter(building.getOwner().getWorld(),
-                    new Vector3f(
-                            building.getPositionX(), building.getPositionY(), building.getPositionZ()), 0f,
-                    building.getTemplate().getSmokeRadius(), building.getTemplate().getSmokeHeight(), 0.5f,
-                    (float) Math.PI,
-                    building.getTemplate().getNumFragments(), building.getTemplate().getNumFragments(),
-                    new Vector3f(0f, 0f, 5f), new Vector3f(0f, 0f, -25f),
-                    new Color.Linear(1f, 1f, 1f, energy * fade_speed), new Color.LinearDelta(0f, 0f, 0f,
-                            -fade_speed),
-                    new Vector3f(1f, 1f, 1f), new Vector3f(0f, 0f, 0f), energy, .75f,
-                    AssetRegistry.getInstance().getWoodFragments(),
-                    true, true);
-            new PointEmitterModel(building.getOwner().getWorld(), fragments_emitter);
+            transientEmitters.add(fragments_emitter);
         }
     }
 
@@ -220,9 +199,14 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
             float damageThreshold = b.getBuildPoints() / 2.0f;
             boolean isDamaged = b.isAlive() && isCompleteOrHalfBuilt && hp < damageThreshold;
 
-            return isDamaged || emitter.hasActiveParticles();
+            return isDamaged || emitter.hasActiveParticles() || !transientEmitters.isEmpty();
         }
-        return false;
+        return !transientEmitters.isEmpty();
+    }
+
+    @Override
+    public boolean isExpired() {
+        return !building.isAlive() && hasCollapsed && !emitter.hasActiveParticles() && transientEmitters.isEmpty();
     }
 
     @Override
@@ -239,5 +223,13 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     @Override
     public LinearEmitter getEmitter() {
         return emitter;
+    }
+
+    @Override
+    public void addEmitters(Collection<Emitter<?>> queue) {
+        if (emitter.hasActiveParticles()) {
+            queue.add(emitter);
+        }
+        queue.addAll(transientEmitters);
     }
 }

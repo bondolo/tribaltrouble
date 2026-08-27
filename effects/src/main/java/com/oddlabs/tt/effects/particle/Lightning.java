@@ -1,26 +1,23 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Element;
+import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.util.Color;
 import org.joml.Vector3fc;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Visual effect representing a lightning strike.
  */
-public final class Lightning extends Element<Lightning> implements Animated {
+public final class Lightning implements Animated, BoundsProvider {
     private static final float SQRT_2 = (float) Math.sqrt(2f);
 
-    private final AnimationManager manager;
     private final Deque<StretchParticle> particles = new ArrayDeque<>();
     private final Vector3fc src;
     private final Vector3fc dst;
@@ -29,16 +26,13 @@ public final class Lightning extends Element<Lightning> implements Animated {
     private final Color.Linear color;
     private final Color.LinearDelta delta_color;
     private final TextureKey texture;
-    private final World world;
-
     private final float energy;
+    private final BoundingBox bounds = new BoundingBox();
+    private final BoundingBox[] boundsArray = new BoundingBox[]{bounds};
 
-    public Lightning(World world, Vector3fc src, Vector3fc dst, float width,
+    public Lightning(Vector3fc src, Vector3fc dst, float width,
             int num_particles, Color.Linear color, Color.LinearDelta delta_color,
-            TextureKey texture, float energy,
-            AnimationManager manager) {
-        super(world.getElementRoot());
-        this.world = world;
+            TextureKey texture, float energy) {
         this.src = src;
         this.dst = dst;
         this.width = width;
@@ -47,14 +41,16 @@ public final class Lightning extends Element<Lightning> implements Animated {
         this.delta_color = delta_color;
         this.texture = texture;
         this.energy = energy;
-        this.manager = manager;
         initParticles();
-        register();
     }
 
     @Override
-    protected Lightning self() {
-        return this;
+    public BoundingBox[] bounds() {
+        return boundsArray;
+    }
+
+    public BoundingBox getBounds() {
+        return bounds;
     }
 
     public Deque<StretchParticle> getParticles() {
@@ -80,7 +76,7 @@ public final class Lightning extends Element<Lightning> implements Animated {
             float halfLimit = 0.5f * random_limit;
             float dx = base_dx + (halfLimit > 0f ? random.nextFloat(-halfLimit, halfLimit) : 0f);
             float dy = base_dy + (halfLimit > 0f ? random.nextFloat(-halfLimit, halfLimit) : 0f);
-            StretchParticle particle = new StretchParticle(world);
+            StretchParticle particle = new StretchParticle();
             particle.setSrc(x, y, z);
 
             if (i == num_particles - 1) {
@@ -118,49 +114,26 @@ public final class Lightning extends Element<Lightning> implements Animated {
         float z_min = Float.POSITIVE_INFINITY;
         float z_max = Float.NEGATIVE_INFINITY;
 
-        Iterator<StretchParticle> each = particles.iterator();
-        while (each.hasNext()) {
-            StretchParticle particle = each.next();
-            if (particle.getEnergy() > 0f) {
-                particle.update(t);
-                float x = particle.getSrcX();
-                float y = particle.getSrcY();
-                float z = particle.getSrcZ();
-                float radius_x = particle.getRadiusX() * SQRT_2;
-                float radius_y = particle.getRadiusY() * SQRT_2;
-                float radius_z = particle.getRadiusZ() * SQRT_2;
-                x_min = Math.min(x_min, x - radius_x);
-                x_max = Math.max(x_max, x + radius_x);
-                y_min = Math.min(y_min, y - radius_y);
-                y_max = Math.max(y_max, y + radius_y);
-                z_min = Math.min(z_min, z - radius_z);
-                z_max = Math.max(z_max, z + radius_z);
-            } else {
-                each.remove();
-            }
+        for (StretchParticle particle : particles) {
+            particle.update(t);
+            float x = particle.getSrcX();
+            float y = particle.getSrcY();
+            float z = particle.getSrcZ();
+            float radius_x = particle.getRadiusX() * SQRT_2;
+            float radius_y = particle.getRadiusY() * SQRT_2;
+            float radius_z = particle.getRadiusZ() * SQRT_2;
+            x_min = Math.min(x_min, x - radius_x);
+            x_max = Math.max(x_max, x + radius_x);
+            y_min = Math.min(y_min, y - radius_y);
+            y_max = Math.max(y_max, y + radius_y);
+            z_min = Math.min(z_min, z - radius_z);
+            z_max = Math.max(z_max, z + radius_z);
         }
-        setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
-        reregister();
-        if (particles.isEmpty()) {
-            remove();
-        }
+        particles.removeIf(StretchParticle::isDead);
+        bounds.setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
     }
 
-    @Override
-    public void register() {
-        super.register();
-        manager.registerAnimation(this);
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        manager.removeAnimation(this);
-    }
-
-    @Override
     public boolean isFinished() {
         return particles.isEmpty();
     }
-
 }

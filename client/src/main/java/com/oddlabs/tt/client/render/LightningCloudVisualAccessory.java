@@ -22,6 +22,9 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /**
  * Client-side visual accessory for the lightning cloud magical effect.
  * Manages the persistent cloud puffiness and handles lightning strike visual/sound effects.
@@ -42,6 +45,8 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     private final ParametricEmitter emitter;
     private final AudioImplementation audio;
     private @Nullable AudioPlayer cloudSound;
+
+    private final Deque<Lightning> activeLightnings = new ArrayDeque<>();
 
     private float lightningTimer = 0f;
     private boolean lighted = false;
@@ -93,15 +98,18 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
         }
 
         Vector3f cloudPos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
-        Lightning lightning = new Lightning(cloud.getWorld(), cloudPos, new Vector3f(tx, ty, tz), .5f,
+        Lightning lightning = new Lightning(cloudPos, new Vector3f(tx, ty, tz), .5f,
                 15, Color.Linear.WHITE, DELTA_COLOR,
-                AssetRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME,
-                cloud.getWorld().getAnimationManagerGameTime());
-        lightning.register();
+                AssetRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME);
+        activeLightnings.add(lightning);
     }
 
     @Override
     public void animate(float t) {
+        for (var lightning : activeLightnings) {
+            lightning.animate(t);
+        }
+        activeLightnings.removeIf(Lightning::isFinished);
         if (firstRun) {
             cloudSound = audio.newAudio(cloud.getPositionX(), cloud.getPositionY(), cloud
                     .getPositionZ(),
@@ -136,6 +144,10 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
         emitter.animate(t);
     }
 
+    public Deque<Lightning> getActiveLightnings() {
+        return activeLightnings;
+    }
+
     @Override
     public Emitter<?> getEmitter() {
         return emitter;
@@ -143,12 +155,12 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
 
     @Override
     public boolean isExpired() {
-        return cloud.isDead();
+        return cloud.isDead() && activeLightnings.isEmpty();
     }
 
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
-        return !cloud.isDead();
+        return !cloud.isDead() || !activeLightnings.isEmpty();
     }
 
     @Override

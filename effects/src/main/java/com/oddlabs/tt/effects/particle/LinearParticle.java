@@ -1,7 +1,5 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.simulation.landscape.World;
-
 final class LinearParticle extends Particle {
     private float velocity_x = 0f;
     private float velocity_y = 0f;
@@ -10,12 +8,12 @@ final class LinearParticle extends Particle {
     private float acceleration_y = 0f;
     private float acceleration_z = 0f;
 
-    public LinearParticle(World world) {
-        this(world, 0f);
+    public LinearParticle() {
+        this(0f);
     }
 
-    public LinearParticle(World world, float angle) {
-        super(world, angle);
+    public LinearParticle(float angle) {
+        super(angle);
     }
 
     @Override

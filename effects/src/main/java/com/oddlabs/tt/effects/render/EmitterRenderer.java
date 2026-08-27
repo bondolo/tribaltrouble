@@ -60,7 +60,7 @@ public final class EmitterRenderer implements AutoCloseable {
     private record BatchKey(int srcBlend, int dstBlend, boolean fogEnabled) {
     }
 
-    private record BatchEntry<P extends Particle>(Emitter<P> emitter, List<P> particles,
+    private record BatchEntry<P extends Particle>(Emitter<P> emitter, java.util.Deque<P> particles,
                                                   Texture texture) {
     }
 
@@ -155,7 +155,7 @@ public final class EmitterRenderer implements AutoCloseable {
     private <P extends Particle> void collectParticles(RenderQueues render_queues, Emitter<P> emitter,
             CameraState state, MatrixStack modelViewStack) {
         TextureKey[] textures = emitter.getTextures();
-        List<P>[] particles = emitter.getParticles();
+        java.util.Deque<P>[] particles = emitter.getParticles();
         SpriteKey[] sprite_renderers = emitter.getSpriteRenderers();
 
         if (textures != null) {
@@ -207,13 +207,14 @@ public final class EmitterRenderer implements AutoCloseable {
         var emitter = batch.emitter();
 
         // Iterate backwards as per original logic
-        for (int i = particles.size() - 1; i >= 0; i--) {
+        for (var it = particles.descendingIterator(); it.hasNext();) {
+            P particle = it.next();
             if (particleCount >= MAX_PARTICLES || particle_buffer.remaining() < floatsPerParticle) {
                 flush(particleCount);
                 particle_buffer.clear();
                 particleCount = 0;
             }
-            renderParticle(particles.get(i), emitter, layer);
+            renderParticle(particle, emitter, layer);
             particleCount++;
         }
         return particleCount;

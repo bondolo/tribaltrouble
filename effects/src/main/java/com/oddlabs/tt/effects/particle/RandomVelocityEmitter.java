@@ -235,7 +235,7 @@ public final class RandomVelocityEmitter extends LinearEmitter {
         randomizeVelocity();
 
         float angle = randomizeRotation ? (float) ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI) : uv_angle;
-        LinearParticle particle = new LinearParticle(getWorld(), angle);
+        LinearParticle particle = new LinearParticle(angle);
         if (randomizeRotation) {
             particle.setAngularVelocity(ThreadLocalRandom.current().nextFloat(-10f, 10f));
         }
