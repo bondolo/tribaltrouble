@@ -8,6 +8,7 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.RockSupply;
+import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
 import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
@@ -38,6 +39,7 @@ public final class ClientStateInitializer {
             case Unit unit -> new UnitVisualModel(unit);
             case IronSupply ironSupply -> new IronSupplyVisualModel(ironSupply, audio);
             case RockSupply rockSupply -> new RockSupplyVisualModel(rockSupply, audio);
+            case SupplyModel supplyModel -> new GenericSupplyVisualModel(supplyModel);
             case PoisonFog fog -> new PoisonFogVisualModel(fog, audio);
             case Stun stun -> new StunVisualModel(stun, audio);
             case ThrowingWeapon throwingWeapon -> new ThrowingWeaponVisualModel(throwingWeapon, audio);

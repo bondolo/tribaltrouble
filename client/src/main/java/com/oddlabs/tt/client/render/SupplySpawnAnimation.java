@@ -7,29 +7,29 @@ import com.oddlabs.tt.simulation.model.SupplyModel;
  * Client-side animation driver for supply spawn visual progress.
  */
 public final class SupplySpawnAnimation implements Animated {
-    private final SupplyModel supply;
+    private final SupplyVisualModel visualModel;
     private final float limit;
 
     private float time = 0;
 
-    public SupplySpawnAnimation(SupplyModel supply) {
-        this(supply, SupplyVisualState.getSpawnDuration(supply));
+    public SupplySpawnAnimation(SupplyVisualModel visualModel) {
+        this(visualModel, visualModel.getSpawnDuration());
     }
 
-    public SupplySpawnAnimation(SupplyModel supply, float limit) {
-        this.supply = supply;
+    public SupplySpawnAnimation(SupplyVisualModel visualModel, float limit) {
+        this.visualModel = visualModel;
         this.limit = limit;
-        supply.getWorld().getAnimationManagerGameTime().registerAnimation(this);
-        SupplyVisualState.registerSpawn(supply, limit);
+        visualModel.getModel().getWorld().getAnimationManagerGameTime().registerAnimation(this);
+        visualModel.setSpawnProgress(0.0f);
     }
 
     @Override
     public void animate(float t) {
         time = Math.min(time + t, limit);
-        SupplyVisualState.updateSpawn(supply, time / limit);
+        visualModel.setSpawnProgress(time / limit);
         if (time >= limit) {
-            supply.getWorld().getAnimationManagerGameTime().removeAnimation(this);
-            SupplyVisualState.completeSpawn(supply);
+            visualModel.getModel().getWorld().getAnimationManagerGameTime().removeAnimation(this);
+            visualModel.completeSpawn();
         }
     }
 }

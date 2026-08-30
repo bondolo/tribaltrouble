@@ -6,6 +6,7 @@ import com.oddlabs.tt.engine.render.BillboardAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;
 import org.joml.Matrix4f;

@@ -479,24 +479,30 @@ public final class RenderState implements SceneContext {
         return sprite_sorter.add(model, camera, point_on_map);
     }
 
-    private static final ModelVisitor<SupplyModel> supply_model_visitor = new SupplyModelVisitor<>() {
+    private final ModelVisitor<SupplyModel> supply_model_visitor = new SupplyModelVisitor<>() {
         @Override
         public Optional<SpriteKey> getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
-            return Optional.ofNullable(SupplyVisualState.getBoundsProvider(render_state
-                    .getModel()) instanceof SpriteKey spriteKey
-                            ? spriteKey : null);
+            SupplyModel model = render_state.getModel();
+            if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
+                return Optional.ofNullable(svm.getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null);
+            }
+            return Optional.ofNullable(model.getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null);
         }
 
         @Override
         public void getTransform(ElementSceneContext<SupplyModel> render_state, Matrix4f dest) {
             SupplyModel model = render_state.getModel();
-            float offsetZ = SupplyVisualState.getOffsetZ(model);
-            dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ() + offsetZ)
-                    .rotate(SupplyVisualState.getRotation(model), 0f, 0f, 1f);
+            if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
+                float offsetZ = svm.getOffsetZ();
+                dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ() + offsetZ)
+                        .rotate(svm.getRotation(), 0f, 0f, 1f);
 
-            Color.Linear tint = SupplyVisualState.getSpawnColorTint(model);
-            if (tint != null) {
-                render_state.setColor(tint);
+                Color.Linear tint = svm.getSpawnColorTint();
+                if (tint != null) {
+                    render_state.setColor(tint);
+                }
+            } else {
+                dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ());
             }
         }
     };
@@ -509,8 +515,8 @@ public final class RenderState implements SceneContext {
         ElementSceneContext<SupplyModel> state = (ElementSceneContext<SupplyModel>) getCachedState(
                 supply_model_visitor, model);
         addToRenderList(state);
-        if (!picking) {
-            var shadow = SupplyVisualState.getShadowProperties(model);
+        if (!picking && getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
+            var shadow = svm.getShadowProperties();
             if (shadow.opacity() > 0f && shadow.diameter() > 0f) {
                 default_shadow_renderer.addToShadowList(java.util.List.of(new Shadowable() {
                     @Override
@@ -539,7 +545,7 @@ public final class RenderState implements SceneContext {
                     }
                 }));
             }
-            var decal = SupplyVisualState.getDecalProperties(model);
+            var decal = svm.getDecalProperties();
             if (decal.opacity() > 0.0f) {
                 crack_shadow_renderer.addToCrackList(new Shadowable() {
                     @Override
@@ -566,11 +572,6 @@ public final class RenderState implements SceneContext {
                     public Color.Linear getShadowColor() {
                         Color.Linear color = decal.color();
                         return color != null ? color : Color.Linear.BLACK;
-                    }
-
-                    @Override
-                    public float getShadowVerticalCenter() {
-                        return 0.6f;
                     }
 
                     @Override
@@ -752,6 +753,17 @@ public final class RenderState implements SceneContext {
     public void addVisualSound(Model model, EmojiType emoji, float duration, float audioDistance) {
         VisualModel vm = getOrCreateVisualModel(model);
         vm.addVisualSound(emoji, duration, audioDistance);
+    }
+
+    public void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
+        VisualModel vm = getOrCreateVisualModel(model);
+        vm.addVisualSound(emoji, audioDistance);
+    }
+
+    public void onSupplySpawn(SupplyModel supplyModel) {
+        if (getOrCreateVisualModel(supplyModel) instanceof SupplyVisualModel svm) {
+            new SupplySpawnAnimation(svm);
+        }
     }
 
     public void onModelRemoved(Model model) {
