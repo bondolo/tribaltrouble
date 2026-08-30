@@ -1,18 +1,17 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
-import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.engine.resource.AudioAssets;
-import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.effects.render.EmitterAccessory;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -22,16 +21,16 @@ import org.lwjgl.opengl.GL11;
 import java.util.Collection;
 
 /**
- * Client-side visual accessory for rock supply eruptions.
- * Manages the rising eruption smoke entirely on the client.
+ * {@link VisualModel} implementation for rock supplies managing eruption smoke particles and rumble audio.
  */
-public final class RockSupplyVisualAccessory implements EmitterAccessory {
+public final class RockSupplyVisualModel extends AbstractVisualModel implements EmitterAccessory {
     private final RockSupply rockSupply;
     private final AudioImplementation audio;
     private @Nullable RandomVelocityEmitter smokeEmitter = null;
     private boolean soundPlayed = false;
 
-    public RockSupplyVisualAccessory(RockSupply rockSupply, AudioImplementation audio) {
+    public RockSupplyVisualModel(RockSupply rockSupply, AudioImplementation audio) {
+        super(rockSupply);
         this.rockSupply = rockSupply;
         this.audio = audio;
     }
@@ -106,7 +105,7 @@ public final class RockSupplyVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isExpired() {
+    protected boolean isSelfExpired() {
         return rockSupply.isDead();
     }
 
@@ -126,6 +125,7 @@ public final class RockSupplyVisualAccessory implements EmitterAccessory {
 
     @Override
     public void close() {
+        super.close();
         cleanupEmitters();
     }
 }

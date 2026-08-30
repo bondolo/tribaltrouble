@@ -5,6 +5,7 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.registration.RegistrationKey;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.form.AbstractOptionsMenu;
@@ -111,6 +112,7 @@ public final class TerrainMenu extends Group {
         return Utils.getBundleString(bundle, key, args);
     }
 
+    private final AudioManager audioManager;
     private final @Nullable Menu main_menu;
     private final @Nullable TerrainMenuListener owner;
 
@@ -154,13 +156,14 @@ public final class TerrainMenu extends Group {
     }
 
     @SuppressWarnings("unchecked")
-    public TerrainMenu(NetworkSelector network, GUIRoot gui_root, @Nullable Menu main_menu,
-            boolean multiplayer, @Nullable TerrainMenuListener owner) {
+    public TerrainMenu(NetworkSelector network, GUIRoot gui_root, AudioManager audioManager,
+            @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
         this.network = network;
+        this.gui_root = gui_root;
+        this.audioManager = audioManager;
         this.main_menu = main_menu;
         this.multiplayer = multiplayer;
         this.owner = owner;
-        this.gui_root = gui_root;
 
         // headline
         Label label_headline = new Label(i18n(multiplayer ? "new_game" : "skirmish"), Skin.getSkin().getHeadlineFont());
@@ -753,7 +756,7 @@ public final class TerrainMenu extends Group {
                         ai_string + "4",
                         ai_string + "5"
                 },
-                main_menu.getAudioManager());
+                audioManager);
         if (!multiplayer) {
             skirmish_setup.startSkirmishServer(game_network);
             IO.println("Start server");

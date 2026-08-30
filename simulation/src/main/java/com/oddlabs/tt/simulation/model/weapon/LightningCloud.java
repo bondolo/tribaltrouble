@@ -147,7 +147,7 @@ public final class LightningCloud extends Model implements Magic {
         float y = target.getPositionY();
         float z = owner.getWorld().getHeightMap().getNearestHeight(x, y);
 
-        owner.getWorld().getNotificationListener().onLightningStrike(x, y, z);
+        owner.getWorld().getNotificationListener().onLightningStrike(this, x, y, z);
     }
 
     @Override

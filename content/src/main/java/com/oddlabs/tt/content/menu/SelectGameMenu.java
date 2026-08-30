@@ -511,7 +511,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             if (Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile() != null) {
                 Panel panel = new Panel(i18n("game"));
-                Group g = new TerrainMenu(network, gui_root, main_menu, true, SelectGameMenu.this);
+                Group g = new TerrainMenu(network, gui_root, main_menu.getAudioManager(), main_menu, true, SelectGameMenu.this);
                 panel.addChild(g);
                 g.place();
                 panel.compileCanvas();

@@ -2,28 +2,28 @@ package com.oddlabs.tt.client.render;
 
 import java.util.Deque;
 import java.util.IdentityHashMap;
+import java.util.SequencedCollection;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.client.viewer.Selection;
-import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.SonicBlastEffect;
-import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.effects.render.CrackDecalRenderer;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
-import com.oddlabs.tt.effects.render.EmitterAttachedAccessory;
 import com.oddlabs.tt.engine.procedural.GeneratorRing;
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.engine.render.AttachedRenderState;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DecalRenderer;
 import com.oddlabs.tt.engine.render.ElementSceneContext;
+import com.oddlabs.tt.engine.render.LightningAccessory;
 import com.oddlabs.tt.engine.render.LODObject;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.ModelState;
 import com.oddlabs.tt.engine.render.ModelVisitor;
+import com.oddlabs.tt.engine.render.SonicBlastAccessory;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.RenderTools;
@@ -34,7 +34,6 @@ import com.oddlabs.tt.engine.render.StaticAccessory;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
@@ -259,9 +258,9 @@ public final class RenderState implements SceneContext {
                     WhiteModelVisitor.getInstance(), model);
             for (Accessory accessory : vm.getAccessories()) {
                 if (accessory != null && !accessory.isExpired()) {
-                    if (accessory instanceof LightningCloudVisualAccessory lca) {
+                    if (accessory instanceof LightningCloudVisualModel lca) {
                         lightning_queue.addAll(lca.getActiveLightnings());
-                    } else if (accessory instanceof SonicBlastVisualAccessory sba) {
+                    } else if (accessory instanceof SonicBlastVisualModel sba) {
                         SonicBlastEffect effect = sba.getEffect();
                         if (effect != null && !effect.isDead()) {
                             sonic_blast_queue.add(effect);
@@ -386,42 +385,11 @@ public final class RenderState implements SceneContext {
     private <M extends Model> void visitAccessories(M model, ElementSceneContext<M> parentState) {
         VisualModel visualModel = getOrCreateVisualModel(model);
 
-        // Dynamically add/remove stun star accessory for units
-        if (model instanceof Unit unit) {
-            if (unit.getCurrentController() instanceof StunController stunController) {
-                boolean hasStunStar = false;
-                for (Accessory acc : visualModel.getAccessories()) {
-                    if (acc instanceof EmitterAttachedAccessory) {
-                        hasStunStar = true;
-                        break;
-                    }
-                }
-                if (!hasStunStar) {
-                    float timeLeft = stunController.getTime();
-                    float velocity = (float) Math.PI / 2;
-                    BalancedParametricEmitter emitter = new BalancedParametricEmitter(
-                            local_player.getWorld(),
-                            new StunFunction(.4f, .15f), new Vector3f(0f, 0f, 0f),
-                            velocity, 5f, (float) Math.PI * 2, (float) Math.PI * 2,
-                            5, 0f, 2f,
-                            Color.Linear.WHITE, Color.LinearDelta.ZERO,
-                            new Vector3f(.3f, .3f, .3f), new Vector3f(0f, 0f, 0f), timeLeft,
-                            GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
-                            AssetRegistry.getInstance().getNoteTextures());
-
-                    float mountOffset = unit.getMountOffset();
-                    var offset = new Vector3f(
-                            unit.getTemplate().getStunX(),
-                            unit.getTemplate().getStunY(),
-                            unit.getTemplate().getStunZ() + mountOffset);
-                    visualModel.getAccessories().add(new EmitterAttachedAccessory(emitter, offset));
-                }
-            } else {
-                visualModel.getAccessories().removeIf(acc -> acc instanceof EmitterAttachedAccessory);
-            }
+        if (visualModel instanceof UnitVisualModel unitVisualModel) {
+            unitVisualModel.updateStunStars(local_player.getWorld());
         }
 
-        List<Accessory> accessories = visualModel.getAccessories();
+        SequencedCollection<Accessory> accessories = visualModel.getAccessories();
         for (Accessory accessory : accessories) {
             if (accessory != null && accessory.isVisible(model, camera)) {
                 visitAccessory(accessory, parentState);
@@ -433,9 +401,9 @@ public final class RenderState implements SceneContext {
             ElementSceneContext<M> parentState) {
         if (picking) return;
 
-        if (accessory instanceof LightningCloudVisualAccessory lca) {
+        if (accessory instanceof LightningCloudVisualModel lca) {
             lightning_queue.addAll(lca.getActiveLightnings());
-        } else if (accessory instanceof SonicBlastVisualAccessory sba) {
+        } else if (accessory instanceof SonicBlastVisualModel sba) {
             SonicBlastEffect effect = sba.getEffect();
             if (effect != null && !effect.isDead()) {
                 sonic_blast_queue.add(effect);
@@ -769,15 +737,15 @@ public final class RenderState implements SceneContext {
         return sonic_blast_queue;
     }
 
-    public void onLightningStrike(float x, float y, float z) {
-        for (VisualModel vm : visualModels.values()) {
-            vm.addLightningStrike(x, y, z);
+    public void onLightningStrike(Model model, float x, float y, float z) {
+        if (getOrCreateVisualModel(model) instanceof LightningAccessory la) {
+            la.triggerStrike(x, y, z);
         }
     }
 
-    public void onSonicBlast(float x, float y, float z, float radius, float duration) {
-        for (VisualModel vm : visualModels.values()) {
-            vm.addSonicBlast(x, y, z, radius, duration);
+    public void onSonicBlast(Model model, float x, float y, float z, float radius, float duration) {
+        if (getOrCreateVisualModel(model) instanceof SonicBlastAccessory sba) {
+            sba.triggerBlast(x, y, z, radius, duration);
         }
     }
 

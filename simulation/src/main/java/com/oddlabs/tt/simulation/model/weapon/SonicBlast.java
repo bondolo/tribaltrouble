@@ -54,7 +54,7 @@ public final class SonicBlast extends Model implements Magic {
         blast_targets = filter.getResult();
 
         owner.getWorld().getAnimationManagerGameTime().registerAnimation(this);
-        owner.getWorld().getNotificationListener().onSonicBlast(start_x, start_y, start_z, hit_radius, seconds);
+        owner.getWorld().getNotificationListener().onSonicBlast(this, start_x, start_y, start_z, hit_radius, seconds);
     }
 
     @Override

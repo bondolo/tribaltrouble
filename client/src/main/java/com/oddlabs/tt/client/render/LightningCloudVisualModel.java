@@ -1,21 +1,21 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.effects.render.EmitterAccessory;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.audio.AudioPlayer;
-import com.oddlabs.tt.engine.render.*;
-import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
 import com.oddlabs.tt.effects.particle.CloudFunction;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.ParametricEmitter;
+import com.oddlabs.tt.effects.render.EmitterAccessory;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.LightningAccessory;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.model.Model;
+import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -26,10 +26,9 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * Client-side visual accessory for the lightning cloud magical effect.
- * Manages the persistent cloud puffiness and handles lightning strike visual/sound effects.
+ * {@link VisualModel} implementation for lightning clouds managing cloud particle emitters and lightning strikes.
  */
-public final class LightningCloudVisualAccessory implements EmitterAccessory, LightningAccessory {
+public final class LightningCloudVisualModel extends AbstractVisualModel implements EmitterAccessory, LightningAccessory {
     private static final float BRIGHTNESS = Color.toLinear(.2f);
     private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, 0);
     private static final float LIGHTNING_TIME = .1f;
@@ -53,7 +52,8 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     private boolean firstRun = true;
     private float strikeAudioCooldown = 0f;
 
-    public LightningCloudVisualAccessory(LightningCloud cloud, AudioImplementation audio) {
+    public LightningCloudVisualModel(LightningCloud cloud, AudioImplementation audio) {
+        super(cloud);
         this.cloud = cloud;
         this.audio = audio;
         World world = cloud.getWorld();
@@ -154,7 +154,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
     }
 
     @Override
-    public boolean isExpired() {
+    protected boolean isSelfExpired() {
         return cloud.isDead() && activeLightnings.isEmpty();
     }
 
@@ -174,6 +174,7 @@ public final class LightningCloudVisualAccessory implements EmitterAccessory, Li
 
     @Override
     public void close() {
+        super.close();
         if (cloudSound != null) {
             cloudSound.stop(15.0f);
             cloudSound = null;
