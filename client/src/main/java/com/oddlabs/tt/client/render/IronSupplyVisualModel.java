@@ -2,6 +2,7 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
+import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.particle.RingEmitter;
@@ -26,10 +27,16 @@ import java.util.Deque;
 /**
  * {@link VisualModel} implementation for iron supply meteors managing trail, impact explosion, and cooling smoke emitters.
  */
-public final class IronSupplyVisualModel extends AbstractVisualModel implements EmitterAccessory {
+public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronSupply> implements EmitterAccessory {
     private static final float FALL_DURATION_RATIO = 0.12f;
     private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f;
     private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f);
+
+    private static final Color.Linear IRON_COLOR_FALLING = new Color.Linear(2.0f, 0.5f, 0.05f, 1.0f);
+    private static final Color.Linear IRON_COLOR_LANDING = new Color.Linear(2.0f, 1.0f, 0.2f, 1.0f);
+    private static final Color.Linear IRON_COLOR_HOT = new Color.Linear(2.0f, 0.2f, 0.1f, 1.0f);
+    private static final Color.Linear IRON_COLOR_COOLING = new Color.Standard(0xFF_6B_6B_7A).linear();
+    private static final Color.Linear IRON_COLOR_DECAL_COOLED = Color.Linear.BLACK;
 
     private final IronSupply ironSupply;
     private final AudioImplementation audio;
@@ -48,9 +55,88 @@ public final class IronSupplyVisualModel extends AbstractVisualModel implements 
     }
 
     @Override
+    public float getOffsetZ() {
+        if (!isSpawning()) {
+            return 0.0f;
+        }
+        float progress = getSpawnProgress();
+        float fallProgress = Math.min(1.0f, progress / FALL_DURATION_RATIO);
+        return (1.0f - fallProgress) * 200.0f;
+    }
+
+    @Override
+    public Color.@Nullable Linear getSpawnColorTint() {
+        if (!isSpawning()) {
+            return null;
+        }
+        float progress = getSpawnProgress();
+        if (progress < FALL_DURATION_RATIO) {
+            return IRON_COLOR_FALLING;
+        }
+        float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
+        if (coolProgress < 0.3f) {
+            float factor = coolProgress / 0.3f;
+            return IRON_COLOR_FALLING.lerp(IRON_COLOR_LANDING, factor);
+        } else if (coolProgress < 0.6f) {
+            float factor = (coolProgress - 0.3f) / 0.3f;
+            return IRON_COLOR_LANDING.lerp(IRON_COLOR_HOT, factor);
+        } else if (coolProgress < 0.8f) {
+            float factor = (coolProgress - 0.6f) / 0.2f;
+            return IRON_COLOR_HOT.lerp(IRON_COLOR_COOLING, factor);
+        } else if (coolProgress < 0.9f) {
+            float factor = (coolProgress - 0.8f) / 0.1f;
+            return IRON_COLOR_COOLING.lerp(IRON_COLOR_COOLING.mul(0.35f), factor);
+        } else if (coolProgress < 1.0f) {
+            float factor = (coolProgress - 0.9f) / 0.1f;
+            Color.Linear ironStartTint = IRON_COLOR_COOLING.mul(0.9f);
+            return ironStartTint.lerp(Color.Linear.WHITE, factor);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public ShadowProperties getShadowProperties() {
+        float ratio = ironSupply.getSupplyRatio();
+        float diameter = 7.0f * ratio;
+        float opacity = isSpawning() ? 0.0f : 0.5f * ratio;
+        return new ShadowProperties(diameter, opacity, 0.3f);
+    }
+
+    @Override
+    public DecalProperties getDecalProperties() {
+        if (!isSpawning()) {
+            return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+        }
+        float progress = getSpawnProgress();
+        float crackDuration = 0.6f;
+        if (progress >= FALL_DURATION_RATIO && progress < FALL_DURATION_RATIO + crackDuration) {
+            float crackProgress = (progress - FALL_DURATION_RATIO) / crackDuration;
+            float opacity = 1.0f - crackProgress;
+            float diameter = ironSupply.getSize() * 2.5f;
+            float pattern = 10.5f;
+            Color.Linear color = Color.Linear.WHITE.lerp(IRON_COLOR_DECAL_COOLED, crackProgress);
+            return new DecalProperties(color, opacity, diameter, pattern);
+        }
+        return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+    }
+
+    @Override
+    public BoundsProvider getBoundsProvider() {
+        if (isSpawning()) {
+            float progress = getSpawnProgress();
+            float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
+            if (coolProgress < 0.9f) {
+                return ironSupply.getWorld().getLandscapeResources().getRockBounds(ironSupply.getFragmentIndex());
+            }
+        }
+        return ironSupply.getBoundsProvider();
+    }
+
+    @Override
     public void animate(float t) {
-        if (SupplyVisualState.isSpawning(ironSupply)) {
-            float progress = SupplyVisualState.getSpawnProgress(ironSupply);
+        if (isSpawning()) {
+            float progress = getSpawnProgress();
             if (progress < FALL_DURATION_RATIO) {
                 // falling
                 float fallProgress = progress / FALL_DURATION_RATIO;
@@ -77,7 +163,7 @@ public final class IronSupplyVisualModel extends AbstractVisualModel implements 
                             ));
                 }
 
-                float visualZ = ironSupply.getPositionZ() + SupplyVisualState.getOffsetZ(ironSupply);
+                float visualZ = ironSupply.getPositionZ() + getOffsetZ();
                 emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
                 emitter.animate(t);
             } else {
@@ -198,7 +284,7 @@ public final class IronSupplyVisualModel extends AbstractVisualModel implements 
     private RandomVelocityEmitter ensureTrailEmitter() {
         if (trailEmitter == null) {
             World world = ironSupply.getWorld();
-            float visualZ = ironSupply.getPositionZ() + SupplyVisualState.getOffsetZ(ironSupply);
+            float visualZ = ironSupply.getPositionZ() + getOffsetZ();
             Vector3f pos = new Vector3f(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
             trailEmitter = new RandomVelocityEmitter(
                     world, pos, 0.0f, 0.0f,

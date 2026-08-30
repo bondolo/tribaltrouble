@@ -40,7 +40,6 @@ import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.client.render.SupplySpawnAnimation;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Selectable;
@@ -162,7 +161,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.getHarvestSound(supplyType));
                 WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.fromSupply(supplyType),
-                        VisualModel.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -171,7 +170,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                         AudioAssets.getHarvestSound(SupplyType.WOOD));
                 var emoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
                 WorldViewer.this.renderer.getRenderState().addVisualSound(model, emoji,
-                        VisualModel.DURATION_REPAIR, AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -195,7 +194,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                         AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH);
                 audioManager.newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
                 WorldViewer.this.renderer.getRenderState().addVisualSound(unit, EmojiType.GRAVESTONE,
-                        VisualModel.DURATION_UNIT_DEATH, AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -221,7 +220,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(AudioAssets.CHICKEN_IDLES.length)]);
                 WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.CHICKEN_CLUCK,
-                        VisualModel.DURATION_CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -234,14 +233,14 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.CHICKEN_DEATH);
                 WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.HARVEST_RUBBER,
-                        VisualModel.DURATION_HARVEST, AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
             public void registerTarget(Target target) {
                 distributable_table.register(target);
                 if (initialized[0] && target instanceof SupplyModel supplyModel) {
-                    new SupplySpawnAnimation(supplyModel);
+                    WorldViewer.this.renderer.getRenderState().onSupplySpawn(supplyModel);
                 }
             }
 

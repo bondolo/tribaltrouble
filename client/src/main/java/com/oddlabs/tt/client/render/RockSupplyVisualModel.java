@@ -23,7 +23,11 @@ import java.util.Collection;
 /**
  * {@link VisualModel} implementation for rock supplies managing eruption smoke particles and rumble audio.
  */
-public final class RockSupplyVisualModel extends AbstractVisualModel implements EmitterAccessory {
+public final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockSupply> implements EmitterAccessory {
+    private static final Color.Linear ROCK_COLOR_ERUPTION = new Color.Standard(0xFF_FF_CC_00).linear();
+    private static final Color.Linear ROCK_COLOR_COOLING = new Color.Standard(0xFF_FF_BE_94).linear();
+    private static final Color.Linear ROCK_COLOR_DECAL_COOLED = new Color.Standard(0.3f, 0.3f).linear();
+
     private final RockSupply rockSupply;
     private final AudioImplementation audio;
     private @Nullable RandomVelocityEmitter smokeEmitter = null;
@@ -36,9 +40,83 @@ public final class RockSupplyVisualModel extends AbstractVisualModel implements 
     }
 
     @Override
+    public float getOffsetZ() {
+        if (!isSpawning()) {
+            return 0.0f;
+        }
+        float progress = getSpawnProgress();
+        if (progress < 0.3f) {
+            return -2.0f;
+        }
+        if (progress < 0.7f) {
+            float riseProgress = (progress - 0.3f) / 0.4f;
+            return (1.0f - riseProgress) * -2.0f;
+        }
+        return 0.0f;
+    }
+
+    @Override
+    public Color.@Nullable Linear getSpawnColorTint() {
+        if (!isSpawning()) {
+            return null;
+        }
+        float progress = getSpawnProgress();
+        if (progress < 0.3f) {
+            return null;
+        } else if (progress < 0.7f) {
+            return ROCK_COLOR_ERUPTION;
+        } else {
+            float coolProgress = (progress - 0.7f) / 0.3f;
+            if (coolProgress < 0.5f) {
+                float factor = coolProgress / 0.5f;
+                return ROCK_COLOR_ERUPTION.lerp(ROCK_COLOR_COOLING, factor);
+            } else {
+                float factor = (coolProgress - 0.5f) / 0.5f;
+                return ROCK_COLOR_COOLING.lerp(Color.Linear.WHITE, factor);
+            }
+        }
+    }
+
+    @Override
+    public ShadowProperties getShadowProperties() {
+        float ratio = rockSupply.getSupplyRatio();
+        float diameter = 7.0f * ratio;
+        float opacity = 0.5f * ratio;
+        if (isSpawning()) {
+            float progress = getSpawnProgress();
+            if (progress < 0.7f) {
+                opacity = 0.0f;
+            } else {
+                float coolProgress = (progress - 0.7f) / 0.3f;
+                opacity = 0.5f * ratio * coolProgress;
+            }
+        }
+        return new ShadowProperties(diameter, opacity, 0.3f);
+    }
+
+    @Override
+    public DecalProperties getDecalProperties() {
+        if (!isSpawning()) {
+            return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+        }
+        float progress = getSpawnProgress();
+        if (progress < 0.3f) {
+            float progressRatio = progress / 0.3f;
+            return new DecalProperties(Color.Linear.WHITE, progressRatio, rockSupply.getSize() * 2.0f,
+                    10.0f + 0.5f * progressRatio);
+        } else if (progress < 0.7f) {
+            return new DecalProperties(Color.Linear.WHITE, 1.0f, rockSupply.getSize() * 2.0f, 10.5f);
+        } else {
+            float coolProgress = (progress - 0.7f) / 0.3f;
+            Color.Linear color = Color.Linear.WHITE.lerp(ROCK_COLOR_DECAL_COOLED, coolProgress);
+            return new DecalProperties(color, 1.0f - coolProgress, rockSupply.getSize() * 2.0f, 10.5f);
+        }
+    }
+
+    @Override
     public void animate(float t) {
-        if (SupplyVisualState.isSpawning(rockSupply)) {
-            float progress = SupplyVisualState.getSpawnProgress(rockSupply);
+        if (isSpawning()) {
+            float progress = getSpawnProgress();
             if (progress < 0.3f) {
                 ensureSmokeEmitter().setTransition(0.0f, 1.8f, 0.2f, 0.3f);
                 if (!soundPlayed) {
