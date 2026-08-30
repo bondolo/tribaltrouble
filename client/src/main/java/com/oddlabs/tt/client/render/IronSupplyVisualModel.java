@@ -1,18 +1,18 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
-import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.simulation.landscape.World;
-import com.oddlabs.tt.simulation.model.IronSupply;
-import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.particle.RingEmitter;
+import com.oddlabs.tt.effects.render.EmitterAccessory;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.model.IronSupply;
+import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -24,14 +24,11 @@ import java.util.Collection;
 import java.util.Deque;
 
 /**
- * Client-side visual accessory for iron supply meteors.
- * Manages the falling trail, impact effects, and cooling smoke entirely on the client.
+ * {@link VisualModel} implementation for iron supply meteors managing trail, impact explosion, and cooling smoke emitters.
  */
-public final class IronSupplyVisualAccessory implements EmitterAccessory {
+public final class IronSupplyVisualModel extends AbstractVisualModel implements EmitterAccessory {
     private static final float FALL_DURATION_RATIO = 0.12f;
-    private static final float TRAIL_OFFSET_Z = 10.0f;
     private static final float SMOKE_PARTICLES_PER_SECOND = 30.0f;
-
     private static final Color.Linear COLOR_WHITE_HOT = new Color.Linear(2.0f, 2.0f, 2.0f, 1.0f);
 
     private final IronSupply ironSupply;
@@ -44,7 +41,8 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
     private @Nullable RandomVelocityEmitter coolingEmitter = null;
     private final Deque<Emitter<?>> oneShotEmitters = new ArrayDeque<>();
 
-    public IronSupplyVisualAccessory(IronSupply ironSupply, AudioImplementation audio) {
+    public IronSupplyVisualModel(IronSupply ironSupply, AudioImplementation audio) {
+        super(ironSupply);
         this.ironSupply = ironSupply;
         this.audio = audio;
     }
@@ -58,19 +56,13 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
                 float fallProgress = progress / FALL_DURATION_RATIO;
                 var emitter = ensureTrailEmitter();
 
-                // Dynamic Parameters:
-                // PPS: Scaling 800 to 2400 (Tripled at landing)
                 float pps = 800f + 1600f * fallProgress;
                 emitter.setParticlesPerSecond(pps);
 
-                // Size/Stretch:
-                // Start: 1.6 X/Z, 2.0 Y (Double size and moderate stretch)
-                // Landing: 0.8 X/Z, 0.75 Y (Baseline size, halved stretch)
                 float radiusXZ = 1.6f - 0.8f * fallProgress;
                 float radiusY = 2.0f - 1.25f * fallProgress;
                 emitter.setParticleRadius(radiusXZ, radiusY, radiusXZ);
 
-                // Growth scales proportionally
                 float growthXZ = 2.4f - 1.2f * fallProgress;
                 float growthY = 3.0f - 2.25f * fallProgress;
                 emitter.setGrowthRate(growthXZ, growthY, growthXZ);
@@ -102,14 +94,13 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
                             .getPositionZ() + 0.15f);
                     World world = ironSupply.getWorld();
 
-                    // Bright impact flash (additive)
                     RingEmitter flash = new RingEmitter(
                             world, landingPos, 0.0f,
                             0.0f, 0.0f,
                             1, 1000f,
-                            new Vector3f(0f, 0f, 0.0f),
-                            new Vector3f(0f, 0f, 0.0f),
-                            COLOR_WHITE_HOT, Color.LinearDelta.ZERO.alpha(-10.0f), // Very fast fade
+                            new Vector3f(0f, 0f, 0f),
+                            new Vector3f(0f, 0f, 0f),
+                            COLOR_WHITE_HOT, Color.LinearDelta.ZERO.alpha(-10.0f),
                             new Vector3f(10.0f, 10.0f, 10.0f),
                             new Vector3f(0.0f, 0.0f, 0.0f),
                             0.1f, 0.0f,
@@ -118,17 +109,16 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
                     );
                     oneShotEmitters.add(flash);
 
-                    // Primary energetic dust puff (high speed, explosive)
                     RingEmitter puff = new RingEmitter(
                             world, landingPos, 0.0f,
-                            0.5f, 0.0f, // Lowered emitter height
+                            0.5f, 0.0f,
                             48, 10f,
-                            new Vector3f(0f, 0f, 40.0f), // Balanced expansion
-                            new Vector3f(0f, 0f, 0.0f), // No lift
+                            new Vector3f(0f, 0f, 40.0f),
+                            new Vector3f(0f, 0f, 0.0f),
                             Color.Linear.WHITE.alpha(0.30f), Color.LinearDelta.ZERO,
-                            new Vector3f(1.0f, 1.0f, 0.0f), // Flat (radius.z)
-                            new Vector3f(15.0f, 15.0f, 0.0f), // Flat (growth.z)
-                            0.6f, 0.1f, // Shorter energy
+                            new Vector3f(1.0f, 1.0f, 0.0f),
+                            new Vector3f(15.0f, 15.0f, 0.0f),
+                            0.6f, 0.1f,
                             GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                             AssetRegistry.getInstance().getSmokeTextures()
                     );
@@ -141,17 +131,16 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
 
                     oneShotEmitters.add(puff);
 
-                    // Secondary lingering debris cloud (ground sweeping)
                     RingEmitter debris = new RingEmitter(
                             world, landingPos, 0.0f,
-                            0.5f, 0.0f, // Halved emitter radius
+                            0.5f, 0.0f,
                             64, 10f,
-                            new Vector3f(0f, 0f, 6.0f), // Halved radial expansion speed
-                            new Vector3f(0f, 0f, 0f), // No lift
+                            new Vector3f(0f, 0f, 6.0f),
+                            new Vector3f(0f, 0f, 0f),
                             Color.Linear.WHITE.alpha(0.15f), Color.LinearDelta.ZERO,
-                            new Vector3f(1.0f, 0.2f, 0.0f), // Halved particle radius
-                            new Vector3f(4.0f, 0.25f, 0.0f), // Halved growth rate
-                            1.0f, 0.45f, // Halved lifetime/energy (adjusts fadeout)
+                            new Vector3f(1.0f, 0.2f, 0.0f),
+                            new Vector3f(4.0f, 0.25f, 0.0f),
+                            1.0f, 0.45f,
                             GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA,
                             AssetRegistry.getInstance().getSmokeTextures()
                     );
@@ -269,7 +258,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isExpired() {
+    protected boolean isSelfExpired() {
         return ironSupply.isDead();
     }
 
@@ -289,6 +278,7 @@ public final class IronSupplyVisualAccessory implements EmitterAccessory {
 
     @Override
     public void close() {
+        super.close();
         cleanupEmitters();
     }
 }

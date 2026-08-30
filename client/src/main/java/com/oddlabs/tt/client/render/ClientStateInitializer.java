@@ -31,36 +31,18 @@ public final class ClientStateInitializer {
      * @return decorated VisualModel instance
      */
     public static VisualModel createVisualModel(Model model, AudioImplementation audio) {
-        VisualModel visualModel = new VisualModel(model);
-        switch (model) {
-            case Unit unit -> {
-                if (unit.getAbilities().hasAbilities(Abilities.BUILD)) {
-                    visualModel.getAccessories().add(new CarriedResourceAccessory(unit));
-                }
-            }
-            case Building building -> {
-                float hitOffsetZ = building.getHitOffsetZ();
-                visualModel.getAccessories().add(new BuildingDamagedAccessory(building, hitOffsetZ, audio));
-                visualModel.getAccessories().add(new BuildingProductionAccessory(building, audio));
-            }
-            case IronSupply ironSupply ->
-                visualModel.getAccessories().add(new IronSupplyVisualAccessory(ironSupply, audio));
-            case RockSupply rockSupply ->
-                visualModel.getAccessories().add(new RockSupplyVisualAccessory(rockSupply, audio));
-            case LightningCloud cloud ->
-                visualModel.getAccessories().add(new LightningCloudVisualAccessory(cloud, audio));
-            case PoisonFog fog ->
-                visualModel.getAccessories().add(new PoisonFogVisualAccessory(fog, audio));
-            case Stun stun ->
-                visualModel.getAccessories().add(new StunVisualAccessory(stun, audio));
-            case SonicBlast blast ->
-                visualModel.getAccessories().add(new SonicBlastVisualAccessory(blast, audio));
-            case ThrowingWeapon throwingWeapon ->
-                visualModel.getAccessories().add(new ThrowingWeaponVisualAccessory(throwingWeapon, audio));
-            default -> {
-            }
-        }
-        return visualModel;
+        return switch (model) {
+            case Building building -> new BuildingVisualModel(building, audio);
+            case LightningCloud cloud -> new LightningCloudVisualModel(cloud, audio);
+            case SonicBlast blast -> new SonicBlastVisualModel(blast, audio);
+            case Unit unit -> new UnitVisualModel(unit);
+            case IronSupply ironSupply -> new IronSupplyVisualModel(ironSupply, audio);
+            case RockSupply rockSupply -> new RockSupplyVisualModel(rockSupply, audio);
+            case PoisonFog fog -> new PoisonFogVisualModel(fog, audio);
+            case Stun stun -> new StunVisualModel(stun, audio);
+            case ThrowingWeapon throwingWeapon -> new ThrowingWeaponVisualModel(throwingWeapon, audio);
+            default -> new DynamicVisualModel(model);
+        };
     }
 
     /**

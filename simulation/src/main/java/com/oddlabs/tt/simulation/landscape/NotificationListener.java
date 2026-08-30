@@ -61,10 +61,10 @@ public interface NotificationListener {
     default void onChickenDeath(Model model) {
     }
 
-    default void onLightningStrike(float x, float y, float z) {
+    default void onLightningStrike(Model model, float x, float y, float z) {
     }
 
-    default void onSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration) {
+    default void onSonicBlast(Model model, float targetX, float targetY, float targetZ, float radius, float duration) {
     }
 
     default void onWeaponThrow(float x, float y, float z) {

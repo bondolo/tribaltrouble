@@ -16,17 +16,17 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Client-side visual accessory for the sonic blast spell.
- * Manages the expanding ring visual effect and cast audio entirely on the client.
+ * {@link VisualModel} implementation for sonic blasts managing expanding shockwaves and sound effects.
  */
-public final class SonicBlastVisualAccessory implements AnimatedAccessory, SonicBlastAccessory {
+public final class SonicBlastVisualModel extends AbstractVisualModel implements AnimatedAccessory, SonicBlastAccessory {
     private final SonicBlast blast;
     private final AudioImplementation audio;
     private @Nullable SonicBlastEffect effect;
     private final AudioPlayer lur;
     private final AudioPlayer rumble;
 
-    public SonicBlastVisualAccessory(SonicBlast blast, AudioImplementation audio) {
+    public SonicBlastVisualModel(SonicBlast blast, AudioImplementation audio) {
+        super(blast);
         this.blast = blast;
         this.audio = audio;
         World world = blast.getWorld();
@@ -38,15 +38,6 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
                 .getSeconds());
     }
 
-    /**
-     * Triggers the expanding shockwave visual effect and impact audio.
-     *
-     * @param x Center X coordinate
-     * @param y Center Y coordinate
-     * @param z Center Z coordinate
-     * @param radius Shockwave maximum radius
-     * @param duration Duration in seconds
-     */
     @Override
     public void triggerBlast(float x, float y, float z, float radius, float duration) {
         if (effect != null) {
@@ -71,7 +62,7 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
     }
 
     @Override
-    public boolean isExpired() {
+    protected boolean isSelfExpired() {
         return blast.isDead() && effect == null;
     }
 
@@ -91,6 +82,7 @@ public final class SonicBlastVisualAccessory implements AnimatedAccessory, Sonic
 
     @Override
     public void close() {
+        super.close();
         if (effect != null) {
             effect.abort();
         }

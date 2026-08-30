@@ -253,13 +253,13 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onLightningStrike(float x, float y, float z) {
-                WorldViewer.this.renderer.getRenderState().onLightningStrike(x, y, z);
+            public void onLightningStrike(Model model, float x, float y, float z) {
+                WorldViewer.this.renderer.getRenderState().onLightningStrike(model, x, y, z);
             }
 
             @Override
-            public void onSonicBlast(float targetX, float targetY, float targetZ, float radius, float duration) {
-                WorldViewer.this.renderer.getRenderState().onSonicBlast(targetX, targetY, targetZ, radius, duration);
+            public void onSonicBlast(Model model, float targetX, float targetY, float targetZ, float radius, float duration) {
+                WorldViewer.this.renderer.getRenderState().onSonicBlast(model, targetX, targetY, targetZ, radius, duration);
             }
 
             @Override

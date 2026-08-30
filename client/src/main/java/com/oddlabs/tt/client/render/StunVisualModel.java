@@ -1,18 +1,17 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.effects.render.EmitterAccessory;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.audio.AudioPlayer;
+import com.oddlabs.tt.effects.particle.Emitter;
+import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
+import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
-import com.oddlabs.tt.effects.particle.Emitter;
-import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -22,17 +21,17 @@ import org.lwjgl.opengl.GL11;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Client-side visual accessory for the stun spell.
- * Spawns musical note particles entirely on the client.
+ * {@link VisualModel} implementation for the stun spell managing musical note particle emitters and audio.
  */
-public final class StunVisualAccessory implements EmitterAccessory {
+public final class StunVisualModel extends AbstractVisualModel implements EmitterAccessory {
     private final Stun stun;
     private final RandomVelocityEmitter emitter;
     private final AudioPlayer sound;
 
     private float age = 0f;
 
-    public StunVisualAccessory(Stun stun, AudioImplementation audio) {
+    public StunVisualModel(Stun stun, AudioImplementation audio) {
+        super(stun);
         this.stun = stun;
         World world = stun.getWorld();
         Vector3f pos = new Vector3f(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ());
@@ -70,7 +69,7 @@ public final class StunVisualAccessory implements EmitterAccessory {
     }
 
     @Override
-    public boolean isExpired() {
+    protected boolean isSelfExpired() {
         return stun.isDead();
     }
 
@@ -90,8 +89,7 @@ public final class StunVisualAccessory implements EmitterAccessory {
 
     @Override
     public void close() {
-        if (sound != null) {
-            sound.stop(10.0f);
-        }
+        super.close();
+        sound.stop(10.0f);
     }
 }

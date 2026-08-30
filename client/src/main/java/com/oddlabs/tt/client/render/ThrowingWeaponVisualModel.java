@@ -16,13 +16,14 @@ import org.jspecify.annotations.Nullable;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Presentation accessory that manages flight audio for throwing weapons.
+ * {@link VisualModel} implementation for throwing weapons managing spatial flight audio.
  */
-public final class ThrowingWeaponVisualAccessory implements AnimatedAccessory {
+public final class ThrowingWeaponVisualModel extends AbstractVisualModel implements AnimatedAccessory {
     private final ThrowingWeapon weapon;
     private final @Nullable AudioPlayer audioPlayer;
 
-    public ThrowingWeaponVisualAccessory(ThrowingWeapon weapon, AudioImplementation audio) {
+    public ThrowingWeaponVisualModel(ThrowingWeapon weapon, AudioImplementation audio) {
+        super(weapon);
         this.weapon = weapon;
         var sound = weapon instanceof DirectedThrowingWeapon
                 ? AudioAssets.SFX_WEAPON_SPEAR
@@ -42,7 +43,7 @@ public final class ThrowingWeaponVisualAccessory implements AnimatedAccessory {
     }
 
     @Override
-    public boolean isExpired() {
+    protected boolean isSelfExpired() {
         return weapon.isDead();
     }
 
@@ -62,6 +63,7 @@ public final class ThrowingWeaponVisualAccessory implements AnimatedAccessory {
 
     @Override
     public void close() {
+        super.close();
         if (audioPlayer != null) {
             audioPlayer.stop();
         }

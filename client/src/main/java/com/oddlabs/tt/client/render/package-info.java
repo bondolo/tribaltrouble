@@ -5,7 +5,3 @@
 package com.oddlabs.tt.client.render;
 
 import org.jspecify.annotations.NullMarked;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
