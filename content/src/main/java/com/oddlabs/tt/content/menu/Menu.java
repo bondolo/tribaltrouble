@@ -372,7 +372,10 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private static UIRenderer finishMainMenu(NetworkSelector network, GUIRoot gui_root,
             boolean first_progress, WorldGenerator generator,
             AudioManager audioManager) {
-        AnimationManager.freezeTime();
+        var engineRenderer = Renderer.getRenderer();
+        if (engineRenderer != null) {
+            engineRenderer.getFramePacer().freezeTime();
+        }
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);

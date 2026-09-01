@@ -76,6 +76,7 @@ public final class Renderer implements AutoCloseable {
     private final Network network;
     private final AudioManager audioManager;
     private final LocalEventQueue event_queue;
+    private final FramePacer framePacer = new FramePacer();
 
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
@@ -172,19 +173,23 @@ public final class Renderer implements AutoCloseable {
         return renderContext;
     }
 
+    public FramePacer getFramePacer() {
+        return framePacer;
+    }
+
     private void runGameLoop(NetworkSelector network, FrameDriver driver) {
-        if (AnimationManager.isTimeFrozen() && !AnimationManager.isTimeStopped())
-            AnimationManager.unfreezeTime();
+        if (framePacer.isTimeFrozen() && !framePacer.isTimeStopped())
+            framePacer.unfreezeTime();
         long current_time;
         if (grab_frames) {
-            AnimationManager.warpTime(settings.frame_grab_milliseconds_per_frame);
-            current_time = AnimationManager.getSystemTime();
+            framePacer.warpTime(settings.frame_grab_milliseconds_per_frame);
+            current_time = framePacer.getSystemTime();
         } else {
-            current_time = AnimationManager.getSystemTime();
+            current_time = framePacer.getSystemTime();
         }
-        long last_frame_time = AnimationManager.getLastFrameTime();
+        long last_frame_time = framePacer.getLastFrameTime();
         long time_diff = current_time - last_frame_time;
-        AnimationManager.setLastFrameTime(current_time);
+        framePacer.setLastFrameTime(current_time);
         Deterministic deterministic = getEventQueue().getDeterministic();
         if (time_diff > AnimationManager.MAX_STEP_MILLIS && !deterministic.isPlayback()) {
             java.util.logging.Logger.getLogger(Renderer.class.getName()).warning("Skipping large time diff: "
@@ -192,16 +197,16 @@ public final class Renderer implements AutoCloseable {
             time_diff = 0;
         }
 
-        AnimationManager.getFrameTimeCounter().updateAbsolute(time_diff);
-        AnimationManager.addExecutionTimePrecision(AnimationManager.getFrameTimeCounter().getAveragePerUpdate());
+        framePacer.getFrameTimeCounter().updateAbsolute(time_diff);
+        framePacer.addExecutionTimePrecision(framePacer.getFrameTimeCounter().getAveragePerUpdate());
         deterministic.setEnabled(true);
-        while (AnimationManager.getExecutionTimePrecision()
+        while (framePacer.getExecutionTimePrecision()
                 >= AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK && !isFinished()) {
-            AnimationManager.addExecutionTimePrecision(
+            framePacer.addExecutionTimePrecision(
                     (float) -AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
-            AnimationManager.addExecutionTime(AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
+            framePacer.addExecutionTime(AnimationManager.ANIMATION_MILLISECONDS_PER_PRECISION_TICK);
             getEventQueue().tickHighPrecision(AnimationManager.ANIMATION_SECONDS_PER_PRECISION_TICK);
-            while (AnimationManager.getExecutionTime() >= AnimationManager.ANIMATION_MILLISECONDS_PER_TICK
+            while (framePacer.getExecutionTime() >= AnimationManager.ANIMATION_MILLISECONDS_PER_TICK
                     && !isFinished()) {
                 network.tick();
 
@@ -210,24 +215,24 @@ public final class Renderer implements AutoCloseable {
                     getWindow().setCloseRequested(false);
                     driver.onCloseRequested();
                 }
-                AnimationManager.pathfindsPerTick.updateAbsolute(
+                framePacer.pathfindsPerTick.updateAbsolute(
                         com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame);
                 com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame = 0;
                 getEventQueue().tickLowPrecision(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-                AnimationManager.addExecutionTime(-AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
-                AnimationManager.addChecksumMillisecondCounter(AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
-                if (AnimationManager.getChecksumMillisecondCounter()
+                framePacer.addExecutionTime(-AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
+                framePacer.addChecksumMillisecondCounter(AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
+                if (framePacer.getChecksumMillisecondCounter()
                         >= AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM) {
-                    AnimationManager.addChecksumMillisecondCounter(
+                    framePacer.addChecksumMillisecondCounter(
                             -AnimationManager.ANIMATION_MILLISECONDS_PER_CHECKSUM);
                     int checksum = getEventQueue().computeChecksum();
                     int logged_checksum = deterministic.log(checksum);
-                    if (checksum != logged_checksum && AnimationManager.shouldComplainChecksum()) {
+                    if (checksum != logged_checksum && framePacer.shouldComplainChecksum()) {
                         java.util.logging.Logger.getLogger(Renderer.class.getName()).severe(
                                 "********** ERROR: Checksum mismatch at tick " + getEventQueue()
                                         .getHighPrecisionManager().getTick() + " | checksum = " + checksum
                                         + " | logged_checksum = " + logged_checksum + " **********");
-                        AnimationManager.setChecksumComplain(false);
+                        framePacer.setChecksumComplain(false);
                     }
                 }
                 if (!DebugFlags.frustum_freeze) {
