@@ -2,6 +2,7 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.net.DefaultARMIArgumentWriter;
 import com.oddlabs.tt.simulation.model.Distributable;
+import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.util.ByteBufferOutputStream;
 
 import java.io.IOException;

@@ -4,11 +4,14 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.SimulationClock;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.simulation.model.AbstractElementNode;
+import com.oddlabs.tt.simulation.model.Distributable;
+import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.SupplyManager;
 import com.oddlabs.tt.simulation.model.SupplyManagers;
 import com.oddlabs.tt.simulation.model.SupplyType;
+import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
@@ -59,6 +62,7 @@ public final class World implements SimulationClock {
     private final Terrain terrain;
     private final float[][] plantCoordinates;
     private final List<Plants> activePlants = new ArrayList<>();
+    private final DistributableTable distributable_table = new DistributableTable();
 
     private int global_checksum;
     private int gamespeed;
@@ -280,6 +284,25 @@ public final class World implements SimulationClock {
             } else {
                 activeWorlds.remove(ref);
             }
+        }
+    }
+
+    public DistributableTable getDistributableTable() {
+        return distributable_table;
+    }
+
+    public int registerTarget(Distributable target) {
+        int id = distributable_table.register(target);
+        if (target instanceof Target t) {
+            notification_listener.registerTarget(t);
+        }
+        return id;
+    }
+
+    public void unregisterTarget(Distributable target) {
+        distributable_table.unregister(target);
+        if (target instanceof Target t) {
+            notification_listener.unregisterTarget(t);
         }
     }
 }

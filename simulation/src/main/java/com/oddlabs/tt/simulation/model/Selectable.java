@@ -309,14 +309,13 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     }
 
     protected final void disable() {
-        owner.getWorld().getNotificationListener().unregisterTarget(this);
+        owner.getWorld().unregisterTarget(this);
         owner.getUnits().remove(this);
     }
 
     protected final void enable() {
-        owner.getWorld().getNotificationListener().registerTarget(this);
+        owner.getWorld().registerTarget(this);
         owner.getUnits().add(this);
-//(new Throwable()).printStackTrace();
     }
 
     protected void removeDying() {

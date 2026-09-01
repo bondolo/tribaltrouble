@@ -85,7 +85,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     protected void doRegister() {
         register();
         reinsert();
-        getWorld().getNotificationListener().registerTarget(this);
+        getWorld().registerTarget(this);
         registeredTarget = true;
         if (animation > -1)
             getWorld().getAnimationManagerGameTime().registerAnimation(this);
@@ -98,7 +98,7 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
         }
         super.remove();
         if (registeredTarget) {
-            getWorld().getNotificationListener().unregisterTarget(this);
+            getWorld().unregisterTarget(this);
             registeredTarget = false;
         }
         if (animation > -1)

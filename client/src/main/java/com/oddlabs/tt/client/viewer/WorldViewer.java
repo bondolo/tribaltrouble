@@ -32,12 +32,12 @@ import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
 import com.oddlabs.tt.input.InputManager;
-import com.oddlabs.tt.net.DistributableTable;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
+import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Difficulty;
@@ -80,7 +80,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final GameCamera camera;
     private final ActionButtonPanel panel;
     private final SelectionDelegate delegate;
-    private final DistributableTable distributable_table;
     private final PeerHub peerhub;
     private final GUIRoot gui_root;
     private final NotificationManager notification_manager;
@@ -116,7 +115,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
         LandscapeAssetsLoader landscape_resources = new LandscapeAssetsLoader(render_queues);
         ProgressListener.progress();
         RaceData races_resources = RacesAssetsLoader.load(render_queues);
-        this.distributable_table = new DistributableTable();
         boolean[] initialized = new boolean[]{false};
         NotificationListener listener = new NotificationListener() {
             @Override
@@ -239,7 +237,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void registerTarget(Target target) {
-                distributable_table.register(target);
                 if (initialized[0] && target instanceof SupplyModel supplyModel) {
                     WorldViewer.this.renderer.getRenderState().onSupplySpawn(supplyModel);
                 }
@@ -247,7 +244,6 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void unregisterTarget(Target target) {
-                distributable_table.unregister(target);
                 if (target instanceof Selectable<?> selectable)
                     getSelection().removeFromArmies(selectable);
             }
@@ -299,7 +295,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
                 local_player, player_slots, network, notification_manager,
                 useNetwork.getMatchmakingClient(), useNetwork.getChatHub(),
-                distributable_table, session_id,
+                world.getDistributableTable(), session_id,
                 new ViewerStallHandler(this));
         this.peerhub.setIgnoreFilter(ChatCommand::isIgnoring);
         this.camera = new GameCamera(this, camera_state);
@@ -453,7 +449,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     }
 
     public DistributableTable getDistributableTable() {
-        return distributable_table;
+        return world.getDistributableTable();
     }
 
     public GUIRoot getGUIRoot() {
