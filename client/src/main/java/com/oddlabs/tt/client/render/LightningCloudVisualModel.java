@@ -28,7 +28,8 @@ import java.util.Deque;
 /**
  * {@link VisualModel} implementation for lightning clouds managing cloud particle emitters and lightning strikes.
  */
-public final class LightningCloudVisualModel extends AbstractVisualModel implements EmitterAccessory, LightningAccessory {
+public final class LightningCloudVisualModel extends AbstractVisualModel implements EmitterAccessory,
+        LightningAccessory {
     private static final float BRIGHTNESS = Color.toLinear(.2f);
     private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, 0);
     private static final float LIGHTNING_TIME = .1f;

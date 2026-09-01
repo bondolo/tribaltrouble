@@ -57,12 +57,9 @@ import com.oddlabs.tt.simulation.model.weapon.Stun;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
-import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 

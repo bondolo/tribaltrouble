@@ -28,7 +28,8 @@ public abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends A
     protected AbstractSupplyVisualModel(S supplyModel) {
         super(supplyModel);
         this.supplyModel = supplyModel;
-        int hash = (supplyModel.getGridX() * ROTATION_HASH_X + supplyModel.getGridY() * ROTATION_HASH_Y) & ROTATION_MASK;
+        int hash = (supplyModel.getGridX() * ROTATION_HASH_X + supplyModel.getGridY() * ROTATION_HASH_Y)
+                & ROTATION_MASK;
         this.rotation = (float) ((hash % 360) * DEGREES_TO_RADIANS);
     }
 

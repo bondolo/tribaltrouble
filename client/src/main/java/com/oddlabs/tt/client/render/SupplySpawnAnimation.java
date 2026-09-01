@@ -1,7 +1,6 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.simulation.model.SupplyModel;
 
 /**
  * Client-side animation driver for supply spawn visual progress.

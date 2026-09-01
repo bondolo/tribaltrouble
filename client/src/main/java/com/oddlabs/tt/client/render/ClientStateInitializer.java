@@ -3,7 +3,6 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.gui.EditLine;
-import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;

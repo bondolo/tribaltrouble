@@ -14,7 +14,8 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 /**
- * {@link VisualModel} implementation for units managing carried resources, stun particle effects, and dynamic status accessories.
+ * {@link VisualModel} implementation for units managing carried resources, stun particle effects, and dynamic status
+ * accessories.
  */
 public final class UnitVisualModel extends AbstractVisualModel {
     private final Unit unit;
