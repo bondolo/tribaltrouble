@@ -13,6 +13,7 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 
@@ -106,7 +107,7 @@ public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
                     .alpha(0.8f);
             Label name = new Label(player_info.getName(), Skin.getSkin().getHeadlineFont())
                     .setColor(display_color);
-            String race_str = com.oddlabs.tt.client.render.RacesAssetsLoader.getRaceName(player_info.getRace());
+            String race_str = RaceData.getRaceName(player_info.getRace());
             Label race = new Label(race_str, Skin.getSkin().getHeadlineFont())
                     .setColor(display_color);
             String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.getTeam()
@@ -153,7 +154,8 @@ public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public final void close(WorldViewer viewer) {
         if (replay_island_flag) {
-            TerrainMenu menu = new TerrainMenu(viewer.getNetwork(), viewer.getGUIRoot(), viewer.getAudioManager(), null, false, null);
+            TerrainMenu menu = new TerrainMenu(viewer.getNetwork(), viewer.getGUIRoot(), viewer.getAudioManager(), null,
+                    false, null);
             menu.parseMapcode(viewer.getParameters().mapCode());
             menu.startGame();
         } else

@@ -25,7 +25,8 @@ import java.util.Collection;
 import java.util.Deque;
 
 /**
- * {@link VisualModel} implementation for iron supply meteors managing trail, impact explosion, and cooling smoke emitters.
+ * {@link VisualModel} implementation for iron supply meteors managing trail, impact explosion, and cooling smoke
+ * emitters.
  */
 public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronSupply> implements EmitterAccessory {
     private static final float FALL_DURATION_RATIO = 0.12f;

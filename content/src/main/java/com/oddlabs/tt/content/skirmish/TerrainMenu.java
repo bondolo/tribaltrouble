@@ -39,6 +39,7 @@ import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Gamespeed;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -108,7 +109,7 @@ public final class TerrainMenu extends Group {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(TerrainMenu.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -349,7 +350,7 @@ public final class TerrainMenu extends Group {
 
             for (Race race : Race.values()) {
                 PulldownItem<Race> pulldown_item_race = new PulldownItem<>(
-                        com.oddlabs.tt.client.render.RacesAssetsLoader.getRaceName(race), race);
+                        RaceData.getRaceName(race), race);
                 race_pulldown_menus[i].addItem(pulldown_item_race);
             }
 

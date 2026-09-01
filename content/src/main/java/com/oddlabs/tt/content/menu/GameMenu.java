@@ -39,6 +39,7 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.client.viewer.ChatCommand;
 import com.oddlabs.tt.client.viewer.LoadCallback;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.base.util.Utils;
@@ -426,8 +427,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
         PulldownMenu<Race> race_pulldown_menu = new PulldownMenu<>();
         for (Race race : Race.values()) {
-            PulldownItem<Race> race_item = new PulldownItem<>(com.oddlabs.tt.client.render.RacesAssetsLoader
-                    .getRaceName(race), race);
+            PulldownItem<Race> race_item = new PulldownItem<>(
+                    RaceData.getRaceName(race), race);
             race_pulldown_menu.addItem(race_item);
         }
         PulldownMenu<Integer> team_pulldown_menu = new PulldownMenu<>();

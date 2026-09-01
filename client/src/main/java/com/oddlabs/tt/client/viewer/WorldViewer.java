@@ -58,7 +58,6 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 
 import com.oddlabs.tt.audio.AudioFile;
-import com.oddlabs.tt.client.render.VisualModel;
 import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
@@ -176,7 +175,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
             @Override
             public void onBuildingHit(float x, float y, float z) {
                 audioManager.newAudio(x, y, z,
-                        AudioAssets.BUILDING_HITS[ThreadLocalRandom.current().nextInt(AudioAssets.BUILDING_HITS.length)]);
+                        AudioAssets.BUILDING_HITS[ThreadLocalRandom.current().nextInt(
+                                AudioAssets.BUILDING_HITS.length)]);
             }
 
             @Override
@@ -218,7 +218,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
             @Override
             public void onChickenCluck(Model model) {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(AudioAssets.CHICKEN_IDLES.length)]);
+                        AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
+                                AudioAssets.CHICKEN_IDLES.length)]);
                 WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.CHICKEN_CLUCK,
                         AudioAssets.AUDIO_DISTANCE_DEATH);
             }
@@ -257,8 +258,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onSonicBlast(Model model, float targetX, float targetY, float targetZ, float radius, float duration) {
-                WorldViewer.this.renderer.getRenderState().onSonicBlast(model, targetX, targetY, targetZ, radius, duration);
+            public void onSonicBlast(Model model, float targetX, float targetY, float targetZ, float radius,
+                    float duration) {
+                WorldViewer.this.renderer.getRenderState().onSonicBlast(model, targetX, targetY, targetZ, radius,
+                        duration);
             }
 
             @Override
