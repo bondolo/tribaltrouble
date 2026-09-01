@@ -12,7 +12,6 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
  */
 public abstract sealed class SupplyModel extends Model implements Supply, Target permits IronSupply,
         RubberSupply, RockSupply {
-    /** This is also known to be a SpriteKey */
     private final BoundsProvider boundsProvider;
 
     private int grid_x;

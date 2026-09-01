@@ -1,6 +1,10 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.base.geom.BoundsProvider;
+import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.simulation.model.IronSupply;
+import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.util.Color;
@@ -64,6 +68,18 @@ public abstract class AbstractSupplyVisualModel<S extends SupplyModel> extends A
     @Override
     public DecalProperties getDecalProperties() {
         return new DecalProperties(null, 0.0f, 0.0f, 0.0f);
+    }
+
+    @Override
+    public SpriteKey getSpriteKey() {
+        return switch (supplyModel.getSupplyType()) {
+            case ROCK -> AssetRegistry.getInstance().getRockFragmentSprite(
+                    supplyModel instanceof RockSupply rock ? rock.getFragmentIndex() : 0);
+            case IRON -> AssetRegistry.getInstance().getIronFragmentSprite(
+                    supplyModel instanceof IronSupply iron ? iron.getFragmentIndex() : 0);
+            case RUBBER -> AssetRegistry.getInstance().getChickenSprite();
+            case WOOD -> throw new UnsupportedOperationException("Tree supply visuals handled separately");
+        };
     }
 
     @Override

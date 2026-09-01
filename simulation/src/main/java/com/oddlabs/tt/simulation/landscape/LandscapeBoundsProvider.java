@@ -4,10 +4,8 @@ import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
 
 /**
- * Provides access to visual bounds of landscape elements (rocks, iron, plants, chickens)
+ * Provides access to physical bounds of landscape elements (rocks, iron, plants, chickens)
  * for collision and bounding box calculations in the simulation.
- * <p/>
- * For now, this interface is also used to smuggle a SpriteKey and downcasted.
  */
 public interface LandscapeBoundsProvider {
     /** Iron/Rock supply fragment variations */

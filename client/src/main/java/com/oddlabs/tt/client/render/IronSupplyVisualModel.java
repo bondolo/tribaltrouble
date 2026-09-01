@@ -123,6 +123,18 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
     }
 
     @Override
+    public SpriteKey getSpriteKey() {
+        if (isSpawning()) {
+            float progress = getSpawnProgress();
+            float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
+            if (coolProgress < 0.9f) {
+                return AssetRegistry.getInstance().getRockFragmentSprite(ironSupply.getFragmentIndex());
+            }
+        }
+        return AssetRegistry.getInstance().getIronFragmentSprite(ironSupply.getFragmentIndex());
+    }
+
+    @Override
     public BoundsProvider getBoundsProvider() {
         if (isSpawning()) {
             float progress = getSpawnProgress();

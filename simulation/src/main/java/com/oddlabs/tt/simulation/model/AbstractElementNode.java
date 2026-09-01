@@ -125,7 +125,7 @@ public abstract sealed class AbstractElementNode<T extends Element<T>> extends B
                     dir_y *= inv_len;
                 }
                 new Plants(world, plants[t][2 * p], plants[t][2 * p + 1], dir_x, dir_y,
-                        world.getLandscapeResources().getPlantBounds(terrain, t));
+                        terrain, t);
             }
         }
         IO.println("num_plants = " + num_plants);

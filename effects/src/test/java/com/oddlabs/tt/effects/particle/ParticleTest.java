@@ -3,13 +3,11 @@ package com.oddlabs.tt.effects.particle;
 import com.oddlabs.tt.procedural.GeneratedLandscapeData;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
+import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
-import com.oddlabs.tt.base.geom.BoundingBox;
-import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,35 +26,11 @@ class ParticleTest {
 
     @BeforeAll
     static void setUpWorld() {
-        LandscapeBoundsProvider boundsProvider = new LandscapeBoundsProvider() {
-            private final BoundsProvider stub = () -> new BoundingBox[]{new BoundingBox()};
-
-            @Override
-            public BoundsProvider getRockBounds(int index) {
-                return stub;
-            }
-
-            @Override
-            public BoundsProvider getIronBounds(int index) {
-                return stub;
-            }
-
-            @Override
-            public BoundsProvider getPlantBounds(Terrain terrain, int index) {
-                return stub;
-            }
-
-            @Override
-            public BoundsProvider getChickenBounds() {
-                return stub;
-            }
-        };
-
         IslandConfig config = new IslandConfig(Terrain.NATIVE, 256, 0.5f, 0.5f, 0.5f, 42);
         Landscape landscape = new Landscape(2, config, 0.5f, 5, 0.5f);
         LandscapeData data = new GeneratedLandscapeData(config, landscape);
         WorldParameters params = new WorldParameters(0, "test", 0, 10);
-        world = World.newWorld(boundsProvider, null, new NotificationListener() {
+        world = World.newWorld(new LandscapeGeometry(), null, new NotificationListener() {
         }, params, data, List.of(), new Color.Linear[0], false);
     }
 
