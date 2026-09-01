@@ -1,6 +1,7 @@
 package com.oddlabs.net;
 
 import com.oddlabs.event.Deterministic;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -17,23 +18,23 @@ public final class NetworkSelector {
     private static final long PING_TIMEOUT = TimeUnit.MINUTES.toMillis(4);
     private static final long PING_DELAY = PING_TIMEOUT / 2;
 
-    private final MonotoneTimeManager time_manager;
+    private final TimeManager time_manager;
     private int current_handler_id;
     private final Map<Object, Handler> handler_map = new HashMap<>();
-    private TaskThread task_thread;
-    private Selector selector;
+    private @Nullable TaskThread task_thread;
+    private @Nullable Selector selector;
     private final Deque<TimedConnection> ping_connections = new ArrayDeque<>();
     private final Deque<TimedConnection> ping_timeouts = new ArrayDeque<>();
 
     private final Deterministic deterministic;
 
     public NetworkSelector(final Deterministic deterministic) {
-        this(deterministic, () -> deterministic.log(TimeUnit.NANOSECONDS.toMillis(System.nanoTime())));
+        this(deterministic, TimeManager.DEFAULT);
     }
 
     public NetworkSelector(Deterministic deterministic, TimeManager time_manager) {
         this.deterministic = deterministic;
-        this.time_manager = new MonotoneTimeManager(time_manager);
+        this.time_manager = time_manager;
     }
 
     public Deterministic getDeterministic() {
@@ -153,7 +154,7 @@ public final class NetworkSelector {
         }
     }
 
-    public MonotoneTimeManager getTimeManager() {
+    public TimeManager getTimeManager() {
         return time_manager;
     }
 

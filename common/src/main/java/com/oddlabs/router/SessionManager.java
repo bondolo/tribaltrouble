@@ -1,6 +1,6 @@
 package com.oddlabs.router;
 
-import com.oddlabs.net.MonotoneTimeManager;
+import com.oddlabs.net.TimeManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,12 +12,12 @@ import java.util.logging.Logger;
 final class SessionManager {
     private final Map<SessionID, Session> id_to_session = new HashMap<>();
     private final SortedMap<Timeout, RouterClient> timeouts = new TreeMap<>();
-    private final MonotoneTimeManager time_manager;
+    private final TimeManager time_manager;
     private final Logger logger;
 
     private int internal_session_id;
 
-    SessionManager(MonotoneTimeManager time_manager, Logger logger) {
+    SessionManager(TimeManager time_manager, Logger logger) {
         this.logger = logger;
         this.time_manager = time_manager;
     }

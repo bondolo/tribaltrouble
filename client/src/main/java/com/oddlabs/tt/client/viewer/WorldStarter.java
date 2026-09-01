@@ -7,7 +7,6 @@ import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.render.UIRenderer;
-import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
@@ -54,7 +53,10 @@ public final class WorldStarter implements LoadCallback {
 
     @Override
     public UIRenderer load(GUIRoot gui_root) {
-        AnimationManager.freezeTime();
+        var renderer = Renderer.getRenderer();
+        if (renderer != null) {
+            renderer.getFramePacer().freezeTime();
+        }
         List<PlayerSlot> player_slot_list = new ArrayList<>();
         List<UnitInfo> unit_info_list = new ArrayList<>();
         short corrected_player_slot = -1;

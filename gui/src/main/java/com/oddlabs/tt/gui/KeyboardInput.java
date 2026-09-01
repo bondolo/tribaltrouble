@@ -1,7 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
@@ -67,15 +67,24 @@ public final class KeyboardInput {
             // check for special events that shouldn't generate events
             switch (event_key) {
                 case RIGHT -> {
-                    AnimationManager.warpTime(LITTLE_WARP);
+                    var renderer = Renderer.getRenderer();
+                    if (renderer != null) {
+                        renderer.getFramePacer().warpTime(LITTLE_WARP);
+                    }
                     return true;
                 }
                 case UP -> {
-                    AnimationManager.warpTime(MEDIUM_WARP);
+                    var renderer = Renderer.getRenderer();
+                    if (renderer != null) {
+                        renderer.getFramePacer().warpTime(MEDIUM_WARP);
+                    }
                     return true;
                 }
                 case PAGE_UP -> {
-                    AnimationManager.warpTime(LARGE_WARP);
+                    var renderer = Renderer.getRenderer();
+                    if (renderer != null) {
+                        renderer.getFramePacer().warpTime(LARGE_WARP);
+                    }
                     return true;
                 }
                 case Q -> {
@@ -83,12 +92,18 @@ public final class KeyboardInput {
                     return true;
                 }
                 case SPACE -> {
-                    AnimationManager.toggleTimeStop();
+                    var renderer = Renderer.getRenderer();
+                    if (renderer != null) {
+                        renderer.getFramePacer().toggleTimeStop();
+                    }
                     return true;
                 }
                 case END -> {
                     logger.info("WARP UNTIL END OF EVENT LOG");
-                    AnimationManager.warpTime(GOTO_END_OF_LOG_WARP);
+                    var renderer = Renderer.getRenderer();
+                    if (renderer != null) {
+                        renderer.getFramePacer().warpTime(GOTO_END_OF_LOG_WARP);
+                    }
                     return true;
                 }
                 default -> {
