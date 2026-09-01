@@ -38,9 +38,11 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.EmojiType;
+import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Selectable;
@@ -60,7 +62,6 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
-import java.util.Optional;
 import java.util.Queue;
 
 /**
@@ -478,12 +479,16 @@ public final class RenderState implements SceneContext {
 
     private final ModelVisitor<SupplyModel> supply_model_visitor = new SupplyModelVisitor<>() {
         @Override
-        public Optional<SpriteKey> getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
+        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<SupplyModel> render_state) {
             SupplyModel model = render_state.getModel();
             if (getOrCreateVisualModel(model) instanceof SupplyVisualModel svm) {
-                return Optional.ofNullable(svm.getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null);
+                return svm.getSpriteKey();
             }
-            return Optional.ofNullable(model.getBoundsProvider() instanceof SpriteKey spriteKey ? spriteKey : null);
+            return switch (model) {
+                case RockSupply rock -> AssetRegistry.getInstance().getRockFragmentSprite(rock.getFragmentIndex());
+                case IronSupply iron -> AssetRegistry.getInstance().getIronFragmentSprite(iron.getFragmentIndex());
+                default -> null;
+            };
         }
 
         @Override
@@ -583,9 +588,8 @@ public final class RenderState implements SceneContext {
 
     private static final ModelVisitor<RubberSupply> rubber_model_visitor = new SupplyModelVisitor<>() {
         @Override
-        public Optional<SpriteKey> getSpriteKey(ElementSceneContext<RubberSupply> render_state) {
-            return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
-                    ? spriteKey : null);
+        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<RubberSupply> render_state) {
+            return AssetRegistry.getInstance().getChickenSprite();
         }
 
         @Override
@@ -613,9 +617,9 @@ public final class RenderState implements SceneContext {
 
     private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {
         @Override
-        public Optional<SpriteKey> getSpriteKey(ElementSceneContext<SceneryModel> render_state) {
-            return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
-                    ? spriteKey : null);
+        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<SceneryModel> render_state) {
+            return render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
+                    ? spriteKey : null;
         }
     };
 
@@ -637,9 +641,9 @@ public final class RenderState implements SceneContext {
         private static final float START_FADE_DIST = 100;
 
         @Override
-        public Optional<SpriteKey> getSpriteKey(ElementSceneContext<Plants> render_state) {
-            return Optional.ofNullable(render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
-                    ? spriteKey : null);
+        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<Plants> render_state) {
+            Plants plants = render_state.getModel();
+            return AssetRegistry.getInstance().getPlantSprite(plants.getTerrain(), plants.getIndex());
         }
 
         @Override
@@ -670,12 +674,12 @@ public final class RenderState implements SceneContext {
     private static final ModelVisitor<DirectedThrowingWeapon> directed_weapon_model_visitor
             = new WhiteModelVisitor<>() {
                 @Override
-                public Optional<SpriteKey> getSpriteKey(ElementSceneContext<
+                public @Nullable SpriteKey getSpriteKey(ElementSceneContext<
                         DirectedThrowingWeapon> render_state) {
                     DirectedThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
-                    return Optional.of(AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getWeaponVisualType()));
+                    return AssetRegistry.getInstance().getWeaponSprite(race, model
+                            .getWeaponVisualType());
                 }
 
                 @Override
@@ -698,12 +702,12 @@ public final class RenderState implements SceneContext {
     private static final ModelVisitor<RotatingThrowingWeapon> rotating_weapon_model_visitor
             = new WhiteModelVisitor<>() {
                 @Override
-                public Optional<SpriteKey> getSpriteKey(ElementSceneContext<
+                public @Nullable SpriteKey getSpriteKey(ElementSceneContext<
                         RotatingThrowingWeapon> render_state) {
                     RotatingThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
-                    return Optional.of(AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getWeaponVisualType()));
+                    return AssetRegistry.getInstance().getWeaponSprite(race, model
+                            .getWeaponVisualType());
                 }
 
                 @Override

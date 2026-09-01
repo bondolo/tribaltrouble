@@ -2,6 +2,7 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.base.util.ProgressListener;
+import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
@@ -58,6 +59,14 @@ public final class LandscapeAssetsLoader implements LandscapeBoundsProvider {
                 RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
         chicken = queues.register(sprite_list_chicken);
+
+        AssetRegistry ar = AssetRegistry.getInstance();
+        ar.registerRockFragments(rock_fragment_sprites);
+        ar.registerIronFragments(iron_fragment_sprites);
+        for (var entry : plant_sprites.entrySet()) {
+            ar.registerPlants(entry.getKey(), entry.getValue());
+        }
+        ar.registerChicken(chicken);
 
         ProgressListener.progress(1f / num_progress);
     }

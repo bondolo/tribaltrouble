@@ -14,7 +14,7 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 
-import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 /**
  * ModelVisitor implementation that resolves visual properties and sprite keys for selectable entities
@@ -23,23 +23,23 @@ import java.util.Optional;
 class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
 
     @Override
-    public Optional<SpriteKey> getSpriteKey(ElementSceneContext<S> render_state) {
+    public @Nullable SpriteKey getSpriteKey(ElementSceneContext<S> render_state) {
         Selectable<?> selectable = render_state.getModel();
         Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
         if (selectable instanceof Unit unit) {
-            return Optional.of(AssetRegistry.getInstance().getUnitSprite(race, unit.getTemplate()
-                    .getVisualType()));
+            return AssetRegistry.getInstance().getUnitSprite(race, unit.getTemplate()
+                    .getVisualType());
         } else if (selectable instanceof Building building) {
             BuildingType bvt = building.getTemplate().getBuildingType();
             var visuals = AssetRegistry.getInstance().getBuildingVisuals(race, bvt);
-            return Optional.ofNullable(switch (building.getBuildStage()) {
+            return switch (building.getBuildStage()) {
                 case UNPLACED -> null;
                 case START -> visuals.start();
                 case HALFBUILT -> visuals.halfbuilt();
                 case BUILT -> visuals.built();
-            });
+            };
         }
-        return Optional.empty();
+        return null;
     }
 
     @Override

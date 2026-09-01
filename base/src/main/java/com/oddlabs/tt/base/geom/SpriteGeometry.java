@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 public record SpriteGeometry(
                              BoundingBox[] bounds,
                              AnimationInfo.AnimationType[] animTypes
-) {
+) implements BoundsProvider {
     public static SpriteGeometry load(String location) {
         URL url = Objects.requireNonNull(
                 SpriteGeometry.class.getResource(location),

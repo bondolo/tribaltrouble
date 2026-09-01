@@ -1,6 +1,7 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.base.geom.BoundsProvider;
+import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.NullMarked;
@@ -11,6 +12,11 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public interface SupplyVisualModel extends VisualModel {
+    /**
+     * {@return the graphics sprite key for rendering}
+     */
+    SpriteKey getSpriteKey();
+
     /**
      * Properties defining the drop shadow for a supply model.
      *

@@ -8,6 +8,7 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import org.jspecify.annotations.Nullable;
@@ -57,6 +58,10 @@ public final class AssetRegistry {
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
     private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
     private final EnumMap<Race, RaceAudio> raceAudio = new EnumMap<>(Race.class);
+    private final EnumMap<Terrain, SpriteKey[]> plantSprites = new EnumMap<>(Terrain.class);
+    private SpriteKey @Nullable [] rockFragments;
+    private SpriteKey @Nullable [] ironFragments;
+    private @Nullable SpriteKey chickenSprite;
     private SpriteKey @Nullable [] chickenCluckSprites;
     private @Nullable ShadowListKey defaultUnitShadow;
     private TextureKey @Nullable [] smokeTextures;
@@ -278,5 +283,50 @@ public final class AssetRegistry {
 
     public AudioParameters getMusic(Race race) {
         return getRaceAudio(race).music();
+    }
+
+    public void registerRockFragments(SpriteKey[] sprites) {
+        this.rockFragments = sprites.clone();
+    }
+
+    public SpriteKey getRockFragmentSprite(int index) {
+        if (rockFragments == null) {
+            throw new IllegalStateException("Rock fragments not registered");
+        }
+        return rockFragments[index % rockFragments.length];
+    }
+
+    public void registerIronFragments(SpriteKey[] sprites) {
+        this.ironFragments = sprites.clone();
+    }
+
+    public SpriteKey getIronFragmentSprite(int index) {
+        if (ironFragments == null) {
+            throw new IllegalStateException("Iron fragments not registered");
+        }
+        return ironFragments[index % ironFragments.length];
+    }
+
+    public void registerPlants(Terrain terrain, SpriteKey[] sprites) {
+        plantSprites.put(terrain, sprites.clone());
+    }
+
+    public SpriteKey getPlantSprite(Terrain terrain, int index) {
+        SpriteKey[] sprites = plantSprites.get(terrain);
+        if (sprites == null) {
+            throw new IllegalStateException("Plant sprites not registered for terrain " + terrain);
+        }
+        return sprites[index % sprites.length];
+    }
+
+    public void registerChicken(SpriteKey sprite) {
+        this.chickenSprite = sprite;
+    }
+
+    public SpriteKey getChickenSprite() {
+        if (chickenSprite == null) {
+            throw new IllegalStateException("Chicken sprite not registered");
+        }
+        return chickenSprite;
     }
 }
