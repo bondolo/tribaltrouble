@@ -1,18 +1,19 @@
-package com.oddlabs.tt.net;
+package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.simulation.model.Distributable;
-import com.oddlabs.util.HashTable;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
  * Maps distributable simulation objects to integer identifiers for ARMI serialization.
  */
+@NullMarked
 public final class DistributableTable {
-    private final HashTable<Distributable> distributables = new HashTable<>();
-    private final Map<Distributable, Integer> names = new HashMap<>();
+    private final Map<Integer, Distributable> distributables = new HashMap<>();
+    private final IdentityHashMap<Distributable, Integer> names = new IdentityHashMap<>();
     private int current_name = 1;
 
     public int register(Distributable distributable) {
@@ -34,7 +35,7 @@ public final class DistributableTable {
 
     public int getName(Distributable distributable) {
         Integer val = names.get(distributable);
-        assert val != null : distributable + " is not registrered.";
+        assert val != null : distributable + " is not registered.";
         return val;
     }
 

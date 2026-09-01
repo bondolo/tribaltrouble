@@ -31,7 +31,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         this.num_supplies = num_supplies;
         this.max_supplies = num_supplies;
         super.setPosition(x, y); // Set raw coordinates without triggering height lookup yet
-        world.getNotificationListener().registerTarget(this);
+        world.registerTarget(this);
         UnitGrid unit_grid = world.getUnitGrid();
         unit_grid.occupyGrid(grid_x, grid_y, this);
         Region region = unit_grid.getRegion(grid_x, grid_y);
@@ -72,7 +72,7 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         if (isEmpty()) {
             UnitGrid unit_grid = getWorld().getUnitGrid();
             unit_grid.freeGrid(grid_x, grid_y, this);
-            getWorld().getNotificationListener().unregisterTarget(this);
+            getWorld().unregisterTarget(this);
             Region region = unit_grid.getRegion(grid_x, grid_y);
             @SuppressWarnings("unchecked") var supplyClass = (Class<Supply>) getSupplyType().getSupplyClass();
             region.unregisterObject(supplyClass, this);

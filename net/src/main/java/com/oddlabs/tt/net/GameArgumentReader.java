@@ -3,6 +3,7 @@ package com.oddlabs.tt.net;
 import com.oddlabs.net.ByteBufferInputStream;
 import com.oddlabs.net.DefaultARMIArgumentReader;
 import com.oddlabs.tt.simulation.model.Distributable;
+import com.oddlabs.tt.simulation.model.DistributableTable;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;

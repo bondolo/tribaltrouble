@@ -113,7 +113,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     @SuppressWarnings("unchecked")
     private void occupyTree() {
         UnitGrid grid = world.getUnitGrid();
-        world.getNotificationListener().registerTarget(this);
+        world.registerTarget(this);
         Region region = grid.getRegion(getGridX(), getGridY());
         region.registerObject(TreeSupply.class, this);
         for (int y = 0; y < grid_size; y++) {
@@ -131,7 +131,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     @SuppressWarnings("unchecked")
     private void unoccupyTree() {
         UnitGrid grid = world.getUnitGrid();
-        world.getNotificationListener().unregisterTarget(this);
+        world.unregisterTarget(this);
         Region region = grid.getRegion(grid_x, grid_y);
         region.unregisterObject(TreeSupply.class, this);
         grid.freeGrid(grid_x, grid_y, this);
