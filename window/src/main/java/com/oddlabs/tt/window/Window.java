@@ -3,7 +3,9 @@ package com.oddlabs.tt.window;
 import org.joml.Vector2f;
 import org.jspecify.annotations.Nullable;
 
+import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Main interface for window management, display mode handling, and fullscreen controls.
@@ -161,4 +163,24 @@ public interface Window extends AutoCloseable {
      * @param playing true if the game simulation is active (not in a menu)
      */
     void updateSystemUI(boolean playing);
+
+    /**
+     * Displays a native open-file dialog.
+     *
+     * @param filterName name of the filter description
+     * @param filterPattern filter pattern (e.g. "json")
+     * @param callback consumer to receive the selected Path, or null if cancelled
+     */
+    void showOpenFileDialog(String filterName, String filterPattern, Consumer<@Nullable Path> callback);
+
+    /**
+     * Displays a native save-file dialog.
+     *
+     * @param filterName name of the filter description
+     * @param filterPattern filter pattern (e.g. "json")
+     * @param defaultLocation default file name or initial path
+     * @param callback consumer to receive the selected Path, or null if cancelled
+     */
+    void showSaveFileDialog(String filterName, String filterPattern, @Nullable String defaultLocation,
+            Consumer<@Nullable Path> callback);
 }
