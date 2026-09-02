@@ -18,7 +18,6 @@ import com.oddlabs.tt.gui.PasswordLine;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -47,10 +46,11 @@ public final class LoginForm extends Form {
     public LoginForm(Menu main_menu) {
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
-        boolean remember = Renderer.getRenderer().getSettings().account.remember_login;
+        var settings = gui_root.getGUI().getEngine().getSettings();
+        boolean remember = settings.account.remember_login;
         if (!remember) {
-            Renderer.getRenderer().getSettings().account.username = "";
-            Renderer.getRenderer().getSettings().account.pw_digest = "";
+            settings.account.username = "";
+            settings.account.pw_digest = "";
         }
 
         // headline
@@ -63,13 +63,13 @@ public final class LoginForm extends Form {
         Label label_username = new Label(i18n("username"), Skin.getSkin().getEditFont());
         editline_username = new EditLine(EDITLINE_WIDTH, 255);
         editline_username.addEnterListener(login_listener);
-        editline_username.append(Renderer.getRenderer().getSettings().account.username);
+        editline_username.append(settings.account.username);
         Label label_password = new Label(i18n("password"), Skin.getSkin().getEditFont());
         editline_password = new PasswordLine(EDITLINE_WIDTH, 255);
         editline_password.addEnterListener(login_listener);
         if (remember) {
             editline_password.append("*************");
-            editline_password.setPasswordDigest(Renderer.getRenderer().getSettings().account.pw_digest);
+            editline_password.setPasswordDigest(settings.account.pw_digest);
         }
         remember_checkbox = new CheckBox(remember, i18n("remember_login"));
 
@@ -89,7 +89,6 @@ public final class LoginForm extends Form {
         addChild(login_group);
         // buttons
         Group group_buttons = new Group();
-
 
         ButtonObject button_newuser = new HorizButton(i18n("new_account"), BUTTON_WIDTH);
         button_newuser.addMouseClickListener(new NewUserListener());
@@ -119,13 +118,7 @@ public final class LoginForm extends Form {
 
         compileCanvas();
 
-        if (Renderer.isRegistered()) {
-            main_menu.setMenu(this);
-        } else {
-            Form form = new MatchmakingConnectingForm(null, main_menu, null, null);
-            main_menu.setMenu(form);
-            form.centerPos();
-        }
+        main_menu.setMenu(this);
     }
 
     @Override
@@ -148,11 +141,12 @@ public final class LoginForm extends Form {
     }
 
     private void doLogin(String username, String password, Login login, boolean remember_login) {
+        var settings = gui_root.getGUI().getEngine().getSettings();
         if (remember_login) {
-            Renderer.getRenderer().getSettings().account.username = username;
-            Renderer.getRenderer().getSettings().account.pw_digest = password;
+            settings.account.username = username;
+            settings.account.pw_digest = password;
         }
-        Renderer.getRenderer().getSettings().account.remember_login = remember_login;
+        settings.account.remember_login = remember_login;
         Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, null);
         gui_root.addModalForm(connecting_form);
     }

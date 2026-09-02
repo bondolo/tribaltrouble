@@ -9,6 +9,7 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.gui.delegate.InputDelegate;
 import com.oddlabs.util.Color;
 
@@ -55,7 +56,7 @@ public abstract class Delegate extends GUIObject implements InputDelegate {
         }
     }
 
-    public void render3D(LandscapeRenderer renderer, RenderQueues render_queues,
+    public void render3D(RenderContext context, LandscapeRenderer renderer, RenderQueues render_queues,
             CameraState state, MatrixStack modelViewStack, MatrixStack projectionStack) {
     }
 

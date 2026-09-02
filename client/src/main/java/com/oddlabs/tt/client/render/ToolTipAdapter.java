@@ -36,24 +36,11 @@ public final class ToolTipAdapter implements ToolTip {
     private void visitPlayer(ToolTipBox tool_tip, Player player) {
         tool_tip.append(player.getPlayerInfo().getName());
         tool_tip.append(" - ");
-        //      tool_tip.append(team_tip);
-        //      tool_tip.append(" ");
-        //      if (Renderer.getRenderer().getSettings().inDeveloperMode()) {
-        //          tool_tip.append("total_units=");
-        //          tool_tip.append(unit_count.getNumSupplies());
-        //          tool_tip.append(" ");
-        //      }
     }
 
     private void visitSelectable(ToolTipBox tool_tip, Selectable<?> selectable) {
         assert !selectable.isDead();
         visitPlayer(tool_tip, selectable.getOwner());
-        /*      if (Renderer.getRenderer().getSettings().developer_mode) {
-        		if (getCurrentBehaviour() instanceof WalkBehaviour)
-        		((WalkBehaviour)getCurrentBehaviour()).appendToolTip(tool_tip);
-        		else*/
-        //tool_tip.append(getPrimaryController().getClass().getName());
-        //}
     }
 
     @Override
@@ -87,11 +74,6 @@ public final class ToolTipAdapter implements ToolTip {
         var health = (float) building.getHitPoints() / building.getTemplate().getMaxHitPoints();
         var watch = List.of(GUIIcons.getIcons().getWatch(health));
         tool_tip.append(watch);
-        //      if (getUnitContainer() != null && Renderer.getRenderer().getSettings().developer_mode) {
-        //          tool_tip.append(" units_in_building ");
-        //          tool_tip.append(getUnitContainer().getNumSupplies());
-        //      }
-
     }
 
     private void visitUnit(ToolTipBox tool_tip, Unit unit) {

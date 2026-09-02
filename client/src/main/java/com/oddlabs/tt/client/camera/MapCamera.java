@@ -8,7 +8,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.engine.render.state.RadialFogInfo;
 import com.oddlabs.tt.base.util.Utils;
@@ -78,7 +77,8 @@ public final class MapCamera extends Camera {
 
     @Override
     public void doAnimate(float t) {
-        float factor = t * 1000f / Math.max(t * 1000f, Renderer.getRenderer().getSettings().control.mapmode_delay
+        float factor = t * 1000f / Math.max(t * 1000f, delegate.getGUIRoot().getGUI().getEngine()
+                .getSettings().control.mapmode_delay
                 * MAP_TIME_FACTOR);
         float dx;
         float dy;

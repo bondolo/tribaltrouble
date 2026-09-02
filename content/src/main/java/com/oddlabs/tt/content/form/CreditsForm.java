@@ -4,7 +4,6 @@ import com.oddlabs.tt.gui.*;
 import com.oddlabs.tt.gui.event.*;
 import com.oddlabs.tt.client.gui.*;
 
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
@@ -27,13 +26,14 @@ public final class CreditsForm extends Form {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public CreditsForm() {
+    public CreditsForm(int last_revision) {
         Label head_label = new Label(i18n("about"), Skin.getSkin().getHeadlineFont());
         addChild(head_label);
         head_label.place();
 
-        PanelGroup panel_group = new PanelGroup(createAboutPanel(bundle), createCreditsPanel(bundle), createThanksPanel(
-                bundle));
+        PanelGroup panel_group = new PanelGroup(createAboutPanel(bundle, last_revision), createCreditsPanel(bundle),
+                createThanksPanel(
+                        bundle));
         addChild(panel_group);
         panel_group.place(head_label, BOTTOM_LEFT);
 
@@ -45,11 +45,11 @@ public final class CreditsForm extends Form {
         centerPos();
     }
 
-    private static Panel createAboutPanel(ResourceBundle bundle) {
+    private static Panel createAboutPanel(ResourceBundle bundle, int last_revision) {
         Panel about = new Panel(i18n("about"));
         TextBox about_box = new TextBox(400, 300, Skin.getSkin().getEditFont(), 100000);
         about.addChild(about_box);
-        String about_text = i18n("about_text", Integer.toString(Renderer.getRenderer().getSettings().last_revision));
+        String about_text = i18n("about_text", Integer.toString(last_revision));
         about_box.append(about_text);
 
         about_box.place();

@@ -7,7 +7,6 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.NullCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.NullDelegate;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.Fadable;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIImage;
@@ -142,7 +141,7 @@ public final class ProgressForm {
         }
 
         // Force an initial render to show the progress screen immediately
-        Renderer.getRenderer().updateProgress(gui);
+        gui.updateProgress();
     }
 
     private static void callback(GUI gui, LoadCallback<GUIRoot, UIRenderer> callback, boolean first_progress) {
@@ -164,14 +163,14 @@ public final class ProgressForm {
     public static void progress() {
         if (null != current_progress) {
             current_progress.progress_bar.progress();
-            Renderer.getRenderer().updateProgress(current_progress.gui);
+            current_progress.gui.updateProgress();
         }
     }
 
     public static void progress(float step) {
         if (null != current_progress) {
             current_progress.progress_bar.progress(step);
-            Renderer.getRenderer().updateProgress(current_progress.gui);
+            current_progress.gui.updateProgress();
         }
     }
 }

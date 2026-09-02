@@ -7,7 +7,6 @@ import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.NativeCampaignIcons;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 
 import java.util.function.Function;
@@ -68,14 +67,12 @@ public final class NativeCampaign extends Campaign {
 
     @Override
     public void islandChosen(GUIRoot gui_root, int number) {
-        if (Renderer.isRegistered()) {
-            Form dialog = new CampaignDialogForm(islands[number].getHeader(),
-                    islands[number].getDescription(),
-                    null,
-                    Origin.AT_START,
-                    () -> startIsland(gui_root, number), true);
-            gui_root.addModalForm(dialog);
-        }
+        Form dialog = new CampaignDialogForm(islands[number].getHeader(),
+                islands[number].getDescription(),
+                null,
+                Origin.AT_START,
+                () -> startIsland(gui_root, number), true);
+        gui_root.addModalForm(dialog);
     }
 
     @Override

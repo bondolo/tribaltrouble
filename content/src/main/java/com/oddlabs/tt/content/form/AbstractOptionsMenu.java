@@ -53,7 +53,8 @@ public abstract class AbstractOptionsMenu extends Form {
         addChild(button_close);
 
         HorizButton button_about = new HorizButton(i18n("about"), BUTTON_WIDTH);
-        button_about.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new CreditsForm()));
+        button_about.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new CreditsForm(
+                gui_root.getGUI().getEngine().getSettings().last_revision)));
         addChild(button_about);
 
         // Place objects

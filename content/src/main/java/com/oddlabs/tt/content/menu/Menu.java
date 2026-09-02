@@ -404,7 +404,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
                         landscape_renderer, selection, engine.getAudioManager()), selection, modelViewStack,
                 projectionStack,
-                engine.getAudioManager());
+                engine.getAudioManager(), engine.getSettings().graphic_detail,
+                gui_root.getWidth(), gui_root.getHeight());
         engine.getAudioManager().setMusic(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(gui_root,
                 new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager));

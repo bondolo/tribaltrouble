@@ -5,8 +5,10 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.LODObject;
 import com.oddlabs.tt.engine.render.PolyDetail;
 import com.oddlabs.tt.engine.render.RenderConfig;
-import com.oddlabs.tt.engine.render.Renderer;
 
+/**
+ * Distance-based LOD polygon and point sprite sorting manager.
+ */
 final class SpriteSorter {
     public enum DetailMode {
         POINT,
@@ -20,12 +22,8 @@ final class SpriteSorter {
 
     private int used_polys = 0;
 
-    public SpriteSorter() {
-        this(RenderConfig.UNIT_HIGH_POLY_COUNT[Renderer.getRenderer().getSettings().graphic_detail]);
-    }
-
-    private SpriteSorter(int polycount_limit) {
-        this.polycount_limit = polycount_limit;
+    public SpriteSorter(int graphic_detail) {
+        this.polycount_limit = RenderConfig.UNIT_HIGH_POLY_COUNT[graphic_detail];
     }
 
     public DetailMode add(LODObject model, CameraState camera, boolean point) {

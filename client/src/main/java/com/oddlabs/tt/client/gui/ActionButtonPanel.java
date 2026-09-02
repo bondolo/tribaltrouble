@@ -284,9 +284,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         );
         quarters_group.addChild(quarters_peon_button);
         quarters_chieftain_button = new ChieftainButton(viewer, player_interface, race_icons.chieftainIcon());
-//		if (Renderer.getRenderer().getSettings().developer_mode) {
         quarters_group.addChild(quarters_chieftain_button);
-//		}
         var quarters_rally_point_button = new NonFocusIconButton(
                 race_icons.rallyPointIcon(),
                 GameAction.UNIT_SET_RALLY, () -> i18n("rally_point_tip", getBinding(GameAction.UNIT_SET_RALLY))
@@ -294,12 +292,8 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         quarters_group.addChild(quarters_rally_point_button);
         quarters_rally_point_button.addMouseClickListener(this::setRallyPoint);
         quarters_peon_button.place();
-//		if (Renderer.getRenderer().getSettings().developer_mode) {
         quarters_chieftain_button.place(quarters_peon_button, Placement.BOTTOM_MID);
         quarters_rally_point_button.place(quarters_chieftain_button, Placement.BOTTOM_MID);
-//		} else {
-//			quarters_rally_point_button.place(quarters_peon_button, Placement.Placement.BOTTOM_MID);
-//		}
         quarters_group.compileCanvas(GROUP_LEFT_OFFSET, GROUP_BOTTOM_OFFSET, GROUP_RIGHT_OFFSET, GROUP_TOP_OFFSET);
 
         harvest_button = new NonFocusIconButton(

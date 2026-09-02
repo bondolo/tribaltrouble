@@ -12,7 +12,6 @@ import com.oddlabs.tt.content.form.AbstractOptionsMenu;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
 import com.oddlabs.tt.engine.ClientEngine;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.EditLine;
@@ -178,7 +177,6 @@ public final class TerrainMenu extends Group {
 
         // game name
         Label label_name = new Label(i18n("game_name"), Skin.getSkin().getEditFont());
-        Label label_default_name = null;
         editline_name = new EditLine(180, Game.MAX_LENGTH);
         if (multiplayer) {
             standard.addChild(label_name);
@@ -186,12 +184,8 @@ public final class TerrainMenu extends Group {
             var profile = matchmakingClient.getProfile();
             String nick = profile != null ? profile.getNick() : "Player";
             String default_name = i18n("default_name", nick);
-            label_default_name = new Label(default_name, Skin.getSkin().getEditFont());
             editline_name.append(default_name);
-            if (Renderer.isRegistered())
-                standard.addChild(editline_name);
-            else
-                standard.addChild(label_default_name);
+            standard.addChild(editline_name);
         }
         String rated_tip = i18n("rated_game_tip", GameSession.MIN_WINS_FOR_RANKING);
         cb_rated = new CheckBox(false, i18n("rated_game"), rated_tip);
@@ -371,7 +365,7 @@ public final class TerrainMenu extends Group {
             if (i == 0) {
                 String player_str = i18n("player", Integer.toString(1));
                 labels_players[0] = new Label(player_str, Skin.getSkin().getEditFont())
-                        .setColor(Renderer.getRenderer().getSettings().accessibility.team_colours[0]);
+                        .setColor(engine.getSettings().accessibility.team_colours[0]);
                 group_race_team.addChild(labels_players[0]);
                 labels_players[0].place();
                 difficulty_pulldown_buttons[0].place(labels_players[0], RIGHT_MID);
@@ -380,7 +374,7 @@ public final class TerrainMenu extends Group {
             } else {
                 String player_str = i18n("player", Integer.toString(i + 1));
                 labels_players[i] = new Label(player_str, Skin.getSkin().getEditFont())
-                        .setColor(Renderer.getRenderer().getSettings().accessibility.team_colours[i]);
+                        .setColor(engine.getSettings().accessibility.team_colours[i]);
                 group_race_team.addChild(labels_players[i]);
                 labels_players[i].place(labels_players[i - 1], BOTTOM_RIGHT);
                 difficulty_pulldown_buttons[i].place(labels_players[i], RIGHT_MID);
@@ -445,10 +439,7 @@ public final class TerrainMenu extends Group {
         // standard
         if (multiplayer) {
             label_name.place();
-            if (Renderer.isRegistered())
-                editline_name.place(label_name, RIGHT_MID);
-            else
-                label_default_name.place(label_name, RIGHT_MID);
+            editline_name.place(label_name, RIGHT_MID);
             cb_rated.place(label_name, BOTTOM_LEFT, Skin.getSkin().getFormData().sectionSpacing());
             group_map_options.place(cb_rated, BOTTOM_LEFT);
         } else {
@@ -499,8 +490,6 @@ public final class TerrainMenu extends Group {
             }
         }
         pulldown_size.chooseItem(1);
-        if (!Renderer.isRegistered())
-            pm_terrain.chooseItem(0);
     }
 
     private void setMapcode() {
