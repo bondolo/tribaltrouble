@@ -22,10 +22,10 @@ public final class DebugFlags {
     public static boolean draw_plants = true;
     public static boolean draw_debug_maps = false;
 
-    public static boolean process_misc = RenderConfig.DEFAULT_PROCESS_MISC;
-    public static boolean process_landscape = RenderConfig.DEFAULT_PROCESS_LANDSCAPE;
-    public static boolean process_trees = RenderConfig.DEFAULT_PROCESS_TREES;
-    public static boolean process_shadows = RenderConfig.DEFAULT_PROCESS_SHADOWS;
+    public static boolean process_misc = true;
+    public static boolean process_landscape = true;
+    public static boolean process_trees = true;
+    public static boolean process_shadows = true;
 
     public static boolean line_mode = false;
     public static boolean clear_frame_buffer = false;
