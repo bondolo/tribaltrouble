@@ -7,7 +7,6 @@ import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
-import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.vbo.QuadVBO;
 import com.oddlabs.tt.procedural.BlendInfo;
@@ -149,14 +148,12 @@ public final class LandscapeBaker {
         }
     }
 
-    private final RenderContext renderContext;
     private final int colormapSize;
     private final float textureScale;
     private @Nullable Texture heightMap;
     private float worldSize;
 
-    public LandscapeBaker(RenderContext renderContext, int colormapSize, float textureScale) {
-        this.renderContext = renderContext;
+    public LandscapeBaker(int colormapSize, float textureScale) {
         this.colormapSize = colormapSize;
         this.textureScale = textureScale;
     }
@@ -203,7 +200,7 @@ public final class LandscapeBaker {
                 GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
-    public static WorldInfo<Texture> bakeWorld(RenderContext renderContext, GeneratedLandscapeData landscapeData) {
+    public static WorldInfo<Texture> bakeWorld(GeneratedLandscapeData landscapeData) {
         Landscape landscape = landscapeData.landscape();
         IslandConfig config = landscapeData.config();
 
@@ -217,7 +214,7 @@ public final class LandscapeBaker {
         int colormap_size = grid_units * texels_per_grid_unit;
 
         float textureScale = config.metersPerWorld() * LandscapeConfig.LANDSCAPE_TEXTURE_SCALE;
-        LandscapeBaker baker = new LandscapeBaker(renderContext, colormap_size, textureScale);
+        LandscapeBaker baker = new LandscapeBaker(colormap_size, textureScale);
 
         int grid_width = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
         WorldInfo.Maps<Texture> maps;
@@ -271,10 +268,8 @@ public final class LandscapeBaker {
             int savedFBO = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
             int savedDrawBuffer = GL11.glGetInteger(GL30.GL_DRAW_BUFFER0);
 
-            try (FBO fbo = new FBO(renderContext, colormapSize, colormapSize); BlendShader shader
-                    = new BlendShader(); QuadVBO quad
-                            = new QuadVBO()) {
-
+            try (FBO fbo = new FBO(colormapSize, colormapSize); BlendShader shader
+                    = new BlendShader(); QuadVBO quad = new QuadVBO()) {
                 checkGLError("After resource creation");
 
                 int current = 0;

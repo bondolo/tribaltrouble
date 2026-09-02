@@ -11,13 +11,10 @@ import org.lwjgl.opengl.GL11;
  */
 public final class DebugShaderRenderer extends ShaderRenderer {
 
-    private final RenderContext renderContext;
     private float pointSize = 1.0f;
 
-    public DebugShaderRenderer(ShaderProgram shader, MatrixStack modelViewStack, MatrixStack projectionStack,
-            RenderContext renderContext) {
+    public DebugShaderRenderer(ShaderProgram shader, MatrixStack modelViewStack, MatrixStack projectionStack) {
         super(shader, modelViewStack, projectionStack);
-        this.renderContext = renderContext;
     }
 
     public void setPointSize(float size) {
@@ -63,7 +60,8 @@ public final class DebugShaderRenderer extends ShaderRenderer {
      */
     @Override
     public void end() {
-        try (var _ = renderContext.withDepthMode(DepthMode.NONE); var _ = renderContext.withBlendMode(
+        var context = RenderContext.current();
+        try (var _ = context.withDepthMode(DepthMode.NONE); var _ = context.withBlendMode(
                 BlendMode.ALPHA)) {
             flush(pointSize);
         }

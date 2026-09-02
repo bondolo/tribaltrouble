@@ -4,7 +4,19 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.vbo.VBO;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Manages low-level OpenGL rendering state and hardware pipeline bindings.
+ */
 public interface RenderContext {
+    ScopedValue<RenderContext> CURRENT = ScopedValue.newInstance();
+
+    static RenderContext current() {
+        if (!CURRENT.isBound()) {
+            throw new IllegalStateException("RenderContext is not bound on this thread");
+        }
+        return CURRENT.get();
+    }
+
     // State Management
     void setBlendMode(BlendMode mode);
 

@@ -37,7 +37,8 @@ public final class PostProcessor implements AutoCloseable {
     private int currentWidth;
     private int currentHeight;
 
-    public PostProcessor(RenderContext context, AccessibilitySettings accessibility, int width, int height) {
+    public PostProcessor(AccessibilitySettings accessibility, int width, int height) {
+        var context = RenderContext.current();
         this.accessibility = accessibility;
         this.currentWidth = width;
         this.currentHeight = height;
@@ -45,9 +46,10 @@ public final class PostProcessor implements AutoCloseable {
         this.sceneFBO = FBO.createSceneFBO(context, width, height);
 
         // Depth Copy FBO (for Soft Particles)
-        this.depthCopyFBO = new FBO(context, width, height);
+        this.depthCopyFBO = new FBO(width, height);
         this.depthCopyFBO.bind(context);
-        Texture depthCopy = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST, GL11.GL_NEAREST,
+        Texture depthCopy = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST,
+                GL11.GL_NEAREST,
                 GL12.GL_CLAMP_TO_EDGE);
         this.depthCopyFBO.attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthCopy);
         // This FBO has no color attachment

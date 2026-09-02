@@ -76,7 +76,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private @Nullable Building selected_building;
 
-    public DefaultRenderer(RenderContext renderContext, @Nullable Cheat cheat, Player local_player,
+    public DefaultRenderer(@Nullable Cheat cheat, Player local_player,
             RenderQueues render_queues,
             WorldInfo<Texture> world_info, LandscapeRenderer landscape_renderer,
             Picker picker,
@@ -103,9 +103,9 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
         this.emitterRenderer = new EmitterRenderer();
-        this.postProcessor = new PostProcessor(renderContext, settings.accessibility, width, height);
+        this.postProcessor = new PostProcessor(settings.accessibility, width, height);
         DebugRender.setShaderRenderer(new DebugShaderRenderer(
-                new DebugMeshShader(), modelViewStack, projectionStack, renderContext
+                new DebugMeshShader(), modelViewStack, projectionStack
         ));
     }
 

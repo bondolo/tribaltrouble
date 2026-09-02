@@ -387,8 +387,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
         GeneratedLandscapeData landscapeData = generator.generate(players.size(), world_params.initialUnitCount(), 0f);
-        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(engine.getRenderer().getRenderContext(),
-                landscapeData);
+        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(landscapeData);
         RenderQueues render_queues = new RenderQueues();
         LandscapeAssetsLoader landscape_resources = new LandscapeAssetsLoader(render_queues);
         ProgressForm.progress();
@@ -402,7 +401,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
         Selection selection = new Selection(local_player);
-        UIRenderer renderer = new DefaultRenderer(engine.getRenderer().getRenderContext(), null, local_player,
+        UIRenderer renderer = new DefaultRenderer(null, local_player,
                 render_queues, world_info,
                 landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
                         landscape_renderer, selection, engine.getAudioManager()), selection, modelViewStack,

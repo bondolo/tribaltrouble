@@ -10,6 +10,7 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.net.Network;
@@ -345,133 +346,140 @@ public final class ClientEngine implements AutoCloseable {
 
         startSound();
 
-        ClientStartup.Session session = startup.init(this, true);
-        FrameDriver driver = session.driver();
-        driver.run(() -> {
-            Runnable load_task = session.loadTask();
-            boolean first_frame = true;
-            boolean wasActive = window.isActive();
+        ScopedValue.where(RenderContext.CURRENT, renderer.getRenderContext()).run(() -> {
             try {
-                while (!finished) {
-                    long frameStart = System.nanoTime();
-
-                    boolean isActive = window.isActive();
-                    long t0 = System.nanoTime();
-                    if (isActive) {
-                        window.pollEvents();
-                    } else {
-                        ((LWJGL3Window) window).pollEvents(100);
-                    }
-                    long t1 = System.nanoTime();
-                    totalPollEventsTime += (t1 - t0);
-
-                    if (isActive && !wasActive) {
-                        logger.info("[ClientEngine] Focus Gained (isActive=true, wasActive=" + wasActive + ")");
-                        if (window.isIconified()) {
-                            window.restore();
-                        }
-                        if (!window.isVisible()) {
-                            window.show();
-                        }
-                        window.focus();
-                    } else if (!isActive && wasActive) {
-                        logger.info("[ClientEngine] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
-                        if (settings.window.fullscreen) {
-                            window.minimize();
-                        }
-                    }
-                    wasActive = isActive;
-
-                    long t2 = System.nanoTime();
-                    runGameLoop(driver);
-                    long t3 = System.nanoTime();
-                    totalRunGameLoopTime += (t3 - t2);
-
-                    long t4 = System.nanoTime();
-                    audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
-                    long t5 = System.nanoTime();
-                    totalAudioUpdateTime += (t5 - t4);
-
-                    audioManager.setMasterGain(isActive ? 1f : 0f);
-                    long t6 = System.nanoTime();
-                    if (!first_frame && window.isVisible()) {
-                        window.update();
-                    }
-                    long t7 = System.nanoTime();
-                    totalWindowUpdateTime += (t7 - t6);
-
-                    long t8 = System.nanoTime();
-                    renderer.display(driver);
-                    long t9 = System.nanoTime();
-                    totalDisplayTime += (t9 - t8);
-
-                    if (PROFILE) {
-                        long tf0 = System.nanoTime();
-                        GL11.glFinish();
-                        long tf1 = System.nanoTime();
-                        totalGLFinishTime += (tf1 - tf0);
-                    }
-
-                    if (first_frame) {
-                        Duration startup_time = Duration.between(start_time, Instant.now());
-                        logger.info("First frame rendered after " + startup_time);
-                        first_frame = false;
-                        if (load_task != null) {
-                            window.update();
-                            event_queue.getDeterministic().setEnabled(true);
-                            try {
-                                load_task.run();
-                            } finally {
-                                event_queue.getDeterministic().setEnabled(false);
-                                renderer.getRenderContext().reset();
-                            }
-                            load_task = null;
-                        }
-                    }
-                    if (grab_frames && movie_recording_started) {
-                        GLUtils.takeScreenshot("");
-                    }
-
-                    long frameEnd = System.nanoTime();
-                    totalLoopTime += (frameEnd - frameStart);
-
-                    instrumentationFrameCounter++;
-                    if (DEBUG && (finished || instrumentationFrameCounter >= INSTRUMENTATION_FRAME_COUNT)) {
-                        logger.info(String.format(Locale.ROOT,
-                                "[Instrumentation] Averages over %d frames: "
-                                        + "Total frame: %.2f ms | "
-                                        + "pollEvents: %.2f ms | "
-                                        + "runGameLoop: %.2f ms | "
-                                        + "audioUpdate: %.2f ms | "
-                                        + "windowUpdate: %.2f ms | "
-                                        + "display: %.2f ms | "
-                                        + "glFinish: %.2f ms",
-                                instrumentationFrameCounter,
-                                (totalLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                                (totalPollEventsTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                                (totalRunGameLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                                (totalAudioUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                                (totalWindowUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                                (totalDisplayTime / (float) instrumentationFrameCounter) / 1_000_000f,
-                                (totalGLFinishTime / (float) instrumentationFrameCounter) / 1_000_000f));
-
-                        instrumentationFrameCounter = 0;
-                        totalPollEventsTime = 0;
-                        totalRunGameLoopTime = 0;
-                        totalAudioUpdateTime = 0;
-                        totalWindowUpdateTime = 0;
-                        totalDisplayTime = 0;
-                        totalGLFinishTime = 0;
-                        totalLoopTime = 0;
-                    }
-                }
-
-                event_queue.getDeterministic().setEnabled(true);
-                settings.save();
+                runSession(startup, start_time);
             } finally {
                 cleanup();
             }
         });
+    }
+
+    private void runSession(ClientStartup startup, Instant startTime) {
+        ClientStartup.Session session = startup.init(this, true);
+        session.driver().run(() -> runMainLoop(session, startTime));
+    }
+
+    private void runMainLoop(ClientStartup.Session session, Instant startTime) {
+        FrameDriver driver = session.driver();
+        Runnable load_task = session.loadTask();
+        boolean first_frame = true;
+        boolean wasActive = window.isActive();
+        while (!finished) {
+            long frameStart = System.nanoTime();
+
+            boolean isActive = window.isActive();
+            long t0 = System.nanoTime();
+            if (isActive) {
+                window.pollEvents();
+            } else {
+                ((LWJGL3Window) window).pollEvents(100);
+            }
+            long t1 = System.nanoTime();
+            totalPollEventsTime += (t1 - t0);
+
+            if (isActive && !wasActive) {
+                logger.info("[ClientEngine] Focus Gained (isActive=true, wasActive=" + wasActive + ")");
+                if (window.isIconified()) {
+                    window.restore();
+                }
+                if (!window.isVisible()) {
+                    window.show();
+                }
+                window.focus();
+            } else if (!isActive && wasActive) {
+                logger.info("[ClientEngine] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
+                if (settings.window.fullscreen) {
+                    window.minimize();
+                }
+            }
+            wasActive = isActive;
+
+            long t2 = System.nanoTime();
+            runGameLoop(driver);
+            long t3 = System.nanoTime();
+            totalRunGameLoopTime += (t3 - t2);
+
+            long t4 = System.nanoTime();
+            audioManager.update(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+            long t5 = System.nanoTime();
+            totalAudioUpdateTime += (t5 - t4);
+
+            audioManager.setMasterGain(isActive ? 1f : 0f);
+            long t6 = System.nanoTime();
+            if (!first_frame && window.isVisible()) {
+                window.update();
+            }
+            long t7 = System.nanoTime();
+            totalWindowUpdateTime += (t7 - t6);
+
+            long t8 = System.nanoTime();
+            renderer.display(driver);
+            long t9 = System.nanoTime();
+            totalDisplayTime += (t9 - t8);
+
+            if (PROFILE) {
+                long tf0 = System.nanoTime();
+                GL11.glFinish();
+                long tf1 = System.nanoTime();
+                totalGLFinishTime += (tf1 - tf0);
+            }
+
+            if (first_frame) {
+                Duration startup_time = Duration.between(startTime, Instant.now());
+                logger.info("First frame rendered after " + startup_time);
+                first_frame = false;
+                if (load_task != null) {
+                    window.update();
+                    event_queue.getDeterministic().setEnabled(true);
+                    try {
+                        load_task.run();
+                    } finally {
+                        event_queue.getDeterministic().setEnabled(false);
+                        renderer.getRenderContext().reset();
+                    }
+                    load_task = null;
+                }
+            }
+            if (grab_frames && movie_recording_started) {
+                GLUtils.takeScreenshot("");
+            }
+
+            long frameEnd = System.nanoTime();
+            totalLoopTime += (frameEnd - frameStart);
+
+            instrumentationFrameCounter++;
+            if (DEBUG && (finished || instrumentationFrameCounter >= INSTRUMENTATION_FRAME_COUNT)) {
+                logger.info(String.format(Locale.ROOT,
+                        "[Instrumentation] Averages over %d frames: "
+                                + "Total frame: %.2f ms | "
+                                + "pollEvents: %.2f ms | "
+                                + "runGameLoop: %.2f ms | "
+                                + "audioUpdate: %.2f ms | "
+                                + "windowUpdate: %.2f ms | "
+                                + "display: %.2f ms | "
+                                + "glFinish: %.2f ms",
+                        instrumentationFrameCounter,
+                        (totalLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                        (totalPollEventsTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                        (totalRunGameLoopTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                        (totalAudioUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                        (totalWindowUpdateTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                        (totalDisplayTime / (float) instrumentationFrameCounter) / 1_000_000f,
+                        (totalGLFinishTime / (float) instrumentationFrameCounter) / 1_000_000f));
+                instrumentationFrameCounter = 0;
+                totalPollEventsTime = 0;
+                totalRunGameLoopTime = 0;
+                totalAudioUpdateTime = 0;
+                totalWindowUpdateTime = 0;
+                totalDisplayTime = 0;
+                totalGLFinishTime = 0;
+                totalLoopTime = 0;
+            }
+        }
+
+        event_queue.getDeterministic().setEnabled(true);
+        settings.save();
     }
 
     private void setupLogging(Path event_log_dir, boolean silent) throws IOException {
