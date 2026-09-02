@@ -1,27 +1,24 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.gui.render.TextLineRenderer;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.base.resource.NativeResource;
+import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.engine.render.GUIRenderer;
+import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
 public final class Status {
-    private final Settings settings;
+    private final ClientEngine engine;
     private final StringBuilder buf = new StringBuilder();
 
-    public Status(Settings settings) {
-        this.settings = settings;
+    public Status(ClientEngine engine) {
+        this.engine = engine;
     }
 
     public void render(GUIRenderer renderer) {
         long free_mem = Runtime.getRuntime().freeMemory();
         buf.delete(0, buf.length());
-        if (settings.inDeveloperMode()) {
-            buf.append("TPF ")
-                    .append(Renderer.getTrianglesRendered())
-                    .append(" JHeap ")
+        if (engine.getSettings().inDeveloperMode()) {
+            buf.append("JHeap ")
                     .append(free_mem)
                     .append("(");
             int total_jheap = (int) (Runtime.getRuntime().totalMemory() / (1024 * 1024));
@@ -40,9 +37,9 @@ public final class Status {
             			}*/
         }
         buf.append(" FPS ")
-                .append(Math.round(1000f / Renderer.getFPS()))
+                .append(Math.round(1000f / engine.getFPS()))
                 .append(" (")
-                .append(Math.round(Renderer.getFPS()))
+                .append(Math.round(engine.getFPS()))
                 .append(" ms/frame)");
 
         TextLineRenderer.render(renderer, Skin.getSkin().getEditFont(), buf, 0, 0, Float.NEGATIVE_INFINITY,
