@@ -167,8 +167,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             public void onHarvest(Model model, SupplyType supplyType) {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.getHarvestSound(supplyType));
-                WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.fromSupply(supplyType),
-                        AudioAssets.AUDIO_DISTANCE_DEATH);
+                addVisualSound(model, EmojiType.fromSupply(supplyType), AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -176,8 +175,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.getHarvestSound(SupplyType.WOOD));
                 var emoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-                WorldViewer.this.renderer.getRenderState().addVisualSound(model, emoji,
-                        AudioAssets.AUDIO_DISTANCE_DEATH);
+                addVisualSound(model, emoji, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -201,8 +199,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 var params = new AudioParameters(deathSound, AudioAssets.AUDIO_RANK_DEATH,
                         AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH);
                 audioManager.newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
-                WorldViewer.this.renderer.getRenderState().addVisualSound(unit, EmojiType.GRAVESTONE,
-                        AudioAssets.AUDIO_DISTANCE_DEATH);
+                addVisualSound(unit, EmojiType.GRAVESTONE, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -228,8 +225,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
                                 AudioAssets.CHICKEN_IDLES.length)]);
-                WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.CHICKEN_CLUCK,
-                        AudioAssets.AUDIO_DISTANCE_DEATH);
+                addVisualSound(model, EmojiType.CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -241,8 +237,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             public void onChickenDeath(Model model) {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
                         AudioAssets.CHICKEN_DEATH);
-                WorldViewer.this.renderer.getRenderState().addVisualSound(model, EmojiType.HARVEST_RUBBER,
-                        AudioAssets.AUDIO_DISTANCE_DEATH);
+                addVisualSound(model, EmojiType.HARVEST_RUBBER, AudioAssets.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -297,7 +292,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
                 selection, audioManager);
         this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker,
-                selection, modelViewStack, projectionStack, audioManager);
+                selection, modelViewStack, projectionStack, audioManager, engine.getSettings().graphic_detail,
+                gui_root.getWidth(), gui_root.getHeight());
         this.gui_root = gui_root;
         this.gui_root.setCheatIcon(GUIIcons.getIcons().getCheatIcon());
         this.chat_listener = message -> {
@@ -543,5 +539,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public float getTime() {
         return gui_root.getTime();
+    }
+
+    private void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
+        if (engine.getSettings().accessibility.sound_emojis) {
+            renderer.getRenderState().addVisualSound(model, emoji, audioDistance);
+        }
     }
 }

@@ -4,7 +4,6 @@ import com.oddlabs.tt.engine.render.AlphaAccessory;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.BillboardAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -47,9 +46,6 @@ public final class VisualSoundAccessory implements AnimatedAccessory, BillboardA
 
     @Override
     public boolean isVisible(Model parent, CameraState camera) {
-        if (!Renderer.getRenderer().getSettings().accessibility.sound_emojis) {
-            return false;
-        }
         if (age >= duration) {
             return false;
         }

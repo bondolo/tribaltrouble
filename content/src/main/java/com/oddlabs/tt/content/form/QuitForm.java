@@ -6,7 +6,6 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.net.PeerHub;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -25,10 +24,6 @@ public final class QuitForm extends QuestionForm {
         super(i18n(PeerHub.isWaitingForAck() ? "confirm_quit_waiting_for_ack" : "confirm_quit"),
                 (_, _, _, _) -> shutdownAction.run());
         this.shutdownAction = shutdownAction;
-    }
-
-    public QuitForm() {
-        this(Renderer::shutdown);
     }
 
     @Override

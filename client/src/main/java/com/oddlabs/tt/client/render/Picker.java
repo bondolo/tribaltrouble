@@ -95,7 +95,7 @@ public final class Picker implements Updatable<TimerAnimation> {
 
     private final CameraState tmp_camera = new CameraState();
     private final SortedSet<LandscapeLeaf> patch_pick_set = new TreeSet<>(new LandscapeLeafComparator());
-    private final SpriteSorter sprite_sorter = new SpriteSorter();
+    private final SpriteSorter sprite_sorter;
     private final AnimationManager manager;
     private final TimerAnimation tool_tip_timer;
     private final LandscapeRenderer landscape_renderer;
@@ -131,6 +131,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
         this.local_player = local_player;
         this.gui_root = gui_root;
+        this.sprite_sorter = new SpriteSorter(gui_root.getGUI().getEngine().getSettings().graphic_detail);
         this.render_queues = render_queues;
         this.respond_manager = new RespondManager(manager);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, sprite_sorter,

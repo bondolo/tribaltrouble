@@ -9,7 +9,6 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
-import com.oddlabs.tt.engine.render.Renderer;
 
 public final class QuitScreen extends CameraDelegate<Camera> implements Updatable<TimerAnimation> {
     private static final float DELAY = 5f;
@@ -58,7 +57,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
 
     private void quit() {
         if (key_pressed && time_out)
-            Renderer.shutdown();
+            getGUIRoot().getGUI().getEngine().shutdown();
     }
 
     @Override

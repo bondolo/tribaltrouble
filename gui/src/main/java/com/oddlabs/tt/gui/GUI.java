@@ -95,9 +95,13 @@ public final class GUI implements Animated, FrameDriver {
             if (closeHandler != null) {
                 closeHandler.run();
             } else {
-                Renderer.shutdown();
+                engine.shutdown();
             }
         });
+    }
+
+    public void updateProgress() {
+        engine.getRenderer().updateProgress(this);
     }
 
     public GUIRoot newFade() {

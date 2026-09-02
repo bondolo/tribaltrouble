@@ -16,7 +16,6 @@ import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PostProcessor;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
 import com.oddlabs.tt.engine.render.Texture;
@@ -59,7 +58,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     private final World world;
     private final ElementRenderer<?> element_renderer;
     private final TreeRenderer tree_renderer;
-    private final SpriteSorter sprite_sorter = new SpriteSorter();
+    private final SpriteSorter sprite_sorter;
     private final RenderQueues render_queues;
     private final MatrixStack modelViewStack;
     private final MatrixStack projectionStack;
@@ -80,13 +79,14 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             WorldInfo<Texture> world_info, LandscapeRenderer landscape_renderer,
             Picker picker,
             Selection selection, MatrixStack modelViewStack, MatrixStack projectionStack,
-            AudioManager audioManager) {
+            AudioManager audioManager, int graphic_detail, int width, int height) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
         this.ambient = new AmbientAudio(audioManager);
         this.render_queues = render_queues;
         this.picker = picker;
         this.selection = selection;
+        this.sprite_sorter = new SpriteSorter(graphic_detail);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
                 selection, audioManager);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
@@ -101,8 +101,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
         this.emitterRenderer = new EmitterRenderer();
-        var context = Renderer.getRenderer().getRenderContext();
-        this.postProcessor = new PostProcessor(context.getViewportWidth(), context.getViewportHeight());
+        this.postProcessor = new PostProcessor(width, height);
         DebugRender.setShaderRenderer(new DebugShaderRenderer(new DebugMeshShader(), modelViewStack, projectionStack));
     }
 
@@ -315,7 +314,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
 
         if (gui_root.getDelegate() instanceof Delegate delegate) {
-            delegate.render3D(landscape_renderer, render_queues, frustum_state, modelViewStack,
+            delegate.render3D(context, landscape_renderer, render_queues, frustum_state, modelViewStack,
                     projectionStack);
         }
 

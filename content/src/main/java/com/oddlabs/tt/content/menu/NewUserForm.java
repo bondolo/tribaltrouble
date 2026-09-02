@@ -18,7 +18,6 @@ import com.oddlabs.tt.gui.PasswordLine;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -161,8 +160,9 @@ public final class NewUserForm extends Form {
 
     private void doCreateUser(String username, LoginDetails login_details, String password,
             Login login) {
-        Renderer.getRenderer().getSettings().account.username = username;
-        Renderer.getRenderer().getSettings().account.pw_digest = password;
+        var settings = main_menu.getGUIRoot().getGUI().getEngine().getSettings();
+        settings.account.username = username;
+        settings.account.pw_digest = password;
         Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, login_details);
         gui_root.addModalForm(connecting_form);
     }

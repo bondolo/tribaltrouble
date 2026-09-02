@@ -19,7 +19,6 @@ import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.client.render.PlacingRenderer;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
@@ -112,7 +111,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
     }
 
     @Override
-    public void render3D(LandscapeRenderer renderer, RenderQueues queues, CameraState state,
+    public void render3D(RenderContext context, LandscapeRenderer renderer, RenderQueues queues, CameraState state,
             MatrixStack modelViewStack, MatrixStack projectionStack) {
         var hit = getViewer().getPicker().pickLocation(getCamera().getState());
         if (hit.isEmpty()) {
@@ -132,7 +131,6 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
         unit_grid.scan(filter, placing_center_grid_x, placing_center_grid_y);
         List<LandscapeTarget> target_list = filter.getResult();
 
-        RenderContext context = Renderer.getRenderer().getRenderContext();
         site_renderer.renderSites(context, queues, renderer, modelViewStack, projectionStack, target_list, center_x,
                 center_y, 2 * GRID_RADIUS);
 

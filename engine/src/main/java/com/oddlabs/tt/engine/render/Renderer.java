@@ -51,10 +51,6 @@ public final class Renderer implements AutoCloseable {
         return fps.getAveragePerUpdate();
     }
 
-    public static boolean isRegistered() {
-        return true;
-    }
-
     public static void makeCurrent() {
         try {
             Renderer renderer = getRenderer();

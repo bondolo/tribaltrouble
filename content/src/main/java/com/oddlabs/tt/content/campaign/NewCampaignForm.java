@@ -20,7 +20,6 @@ import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
@@ -81,7 +80,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         race_pulldown.addItem(new PulldownItem<>(i18n("natives"), Race.NATIVES));
         race_pulldown.addItemChosenListener((PulldownMenu<Race> menu, int item_index) -> {
             if (menu.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS) == Race.NATIVES
-                    && (!Renderer.getRenderer().getSettings().has_native_campaign)) {
+                    && (!gui_root.getGUI().getEngine().getSettings().has_native_campaign)) {
                 menu.chooseItem(INDEX_VIKINGS);
                 gui_root.addModalForm(new MessageForm(i18n("native_unavailable")));
             }
