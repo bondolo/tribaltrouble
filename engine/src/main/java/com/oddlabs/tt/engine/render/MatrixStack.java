@@ -85,7 +85,7 @@ public final class MatrixStack {
         return this;
     }
 
-    public MatrixStack multiply(Matrix4f matrix) {
+    public MatrixStack multiply(Matrix4fc matrix) {
         current().mul(matrix);
         return this;
     }
