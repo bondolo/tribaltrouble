@@ -22,12 +22,12 @@ import com.oddlabs.tt.content.form.MultiplayerLobby;
 import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.AudioAssets;
@@ -48,6 +48,7 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.GameNetwork;
+import com.oddlabs.tt.net.LoadCallbackFactory;
 import com.oddlabs.tt.net.Server;
 import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
@@ -94,8 +95,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final NetworkSelector network;
-    protected final AudioManager audioManager;
+    protected final ClientEngine engine;
 
     private @Nullable Form current_menu;
     private boolean current_menu_centered;
@@ -103,21 +103,23 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private @Nullable GUIImage overlay;
     private @Nullable GUIImage logo;
 
-    protected Menu(NetworkSelector network, GUIRoot gui_root, Camera camera,
-            AudioManager audioManager) {
+    protected Menu(GUIRoot gui_root, Camera camera) {
         super(gui_root, camera);
-        this.network = network;
-        this.audioManager = audioManager;
+        this.engine = gui_root.getGUI().getEngine();
         setCanFocus(true);
         setFocusCycle(true);
     }
 
+    public final ClientEngine getEngine() {
+        return engine;
+    }
+
     protected final NetworkSelector getNetwork() {
-        return network;
+        return engine.getNetwork().getSelector();
     }
 
     public final AudioManager getAudioManager() {
-        return audioManager;
+        return engine.getAudioManager();
     }
 
     private void init() {
@@ -141,7 +143,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     protected final void addDefaultOptionsButton() {
-        addOptionsButton(() -> new OptionsMenu(getGUIRoot(), audioManager));
+        addOptionsButton(() -> new OptionsMenu(getGUIRoot()));
     }
 
     final void addOptionsButton(FormFactory<?> factory) {
@@ -152,7 +154,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
 
     protected final void addExitButton() {
         MenuButton exit = new MenuButton(i18n("quit"), COLOR_NORMAL, COLOR_ACTIVE);
-        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(getGUIRoot())));
+        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(engine::shutdown)));
         addChild(exit);
     }
 
@@ -197,22 +199,53 @@ public abstract class Menu extends CameraDelegate<Camera> {
         super.handleInput(event);
     }
 
+    public final void setMenu(Form form) {
+        setMenu(form, false);
+    }
+
+    public final void setMenuCentered(Form form) {
+        setMenu(form, true);
+    }
+
+    private void setMenu(Form form, boolean centered) {
+        if (current_menu != null) {
+            current_menu.remove();
+        }
+        current_menu = form;
+        current_menu_centered = centered;
+        getGUIRoot().addChild(form);
+        positionMenu();
+        form.setFocus();
+    }
+
+    private void positionMenu() {
+        if (current_menu != null) {
+            if (current_menu_centered) {
+                current_menu.centerPos();
+            } else {
+                current_menu.setPos(MENU_X, (getGUIRoot().getHeight() - current_menu.getHeight()) / 2);
+            }
+        }
+    }
+
     @Override
     public void displayChangedNotify(int width, int height) {
+        super.displayChangedNotify(width, height);
         setDim(width, height);
 
         int y = height - (int) (190f * height / OVERLAY_IMAGE_HEIGHT);
         int x = 15;
 
-        overlay.setDim(width, height);
-
-        // Maintain aspect ratio based on height
-        float heightScale = height / 600f;
-        int logoHeight = (int) (206f * heightScale);
-        int logoWidth = (int) (347f * heightScale);
-
-        logo.setDim(logoWidth, logoHeight);
-        logo.setPos(0, height - logoHeight);
+        if (overlay != null) {
+            overlay.setDim(width, height);
+        }
+        if (logo != null) {
+            float heightScale = height / 600f;
+            int logoHeight = (int) (206f * heightScale);
+            int logoWidth = (int) (347f * heightScale);
+            logo.setDim(logoWidth, logoHeight);
+            logo.setPos(0, height - logoHeight);
+        }
         GUIObject child = getLastChild();
         while (child != null) {
             if (child instanceof MenuButton) {
@@ -221,22 +254,13 @@ public abstract class Menu extends CameraDelegate<Camera> {
             }
             child = child.getPrior();
         }
-        if (current_menu != null) {
-            if (current_menu_centered) {
-                current_menu.centerPos();
-            } else {
-                positionMenu();
-            }
-        }
+        positionMenu();
     }
 
-    private void disableButtons(boolean disabled) {
-        GUIObject child = getLastChild();
-        while (child != null) {
-            if (child instanceof MenuButton button) {
-                button.setDisabled(disabled);
-            }
-            child = child.getPrior();
+    public final void removeMenu() {
+        if (current_menu != null) {
+            current_menu.remove();
+            current_menu = null;
         }
     }
 
@@ -262,31 +286,6 @@ public abstract class Menu extends CameraDelegate<Camera> {
     public void mouseScrolled(int amount) {
     }
 
-    public final void setMenuCentered(Form menu) {
-        setMenu(menu);
-        menu.centerPos();
-        current_menu_centered = true;
-    }
-
-    public final void setMenu(Form menu) {
-        if (current_menu != null)
-            current_menu.remove();
-        disableButtons(true);
-        menu.addCloseListener(() -> {
-            disableButtons(false);
-            current_menu = null;
-        });
-        current_menu = menu;
-        addChild(current_menu);
-        current_menu.setFocus();
-        positionMenu();
-        current_menu_centered = false;
-    }
-
-    private void positionMenu() {
-        current_menu.setPos(MENU_X, (getGUIRoot().getHeight() - current_menu.getHeight()) * 2 / 3);
-    }
-
     protected final void addResumeButton() {
         MenuButton resume = new MenuButton(i18n("resume"), COLOR_NORMAL, COLOR_ACTIVE);
         addChild(resume);
@@ -307,89 +306,95 @@ public abstract class Menu extends CameraDelegate<Camera> {
         }
     }
 
-    public final GameNetwork joinGame(NetworkSelector network, GUI gui, int host_id,
+    public final GameNetwork<GUIRoot, UIRenderer> joinGame(GUI gui, int host_id,
             int gamespeed, String map_code, MultiplayerLobby owner, InGameInfo ingame_info,
             int max_unit_count) {
         GUIRoot gui_root = getGUIRoot();
         WorldParameters world_params = new WorldParameters(gamespeed, map_code, Player.INITIAL_UNIT_COUNT,
                 max_unit_count);
-        Client client = new Client(null, network, Renderer.getRenderer().getNetwork().getMatchmakingClient(), Renderer
-                .getRenderer().getNetwork().getChatHub(), host_id,
-                (session_id, generator, player_slots, unit_infos, player_slot) -> new WorldStarter(network, session_id,
-                        generator, world_params, player_slots, unit_infos, player_slot, ingame_info,
-                        new DefaultWorldInitAction(), audioManager),
+        var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+        var chatHub = engine.getNetwork().getChatHub();
+        var networkSelector = engine.getNetwork().getSelector();
+        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, UIRenderer> starterFactory = (session_id, generator,
+                player_slots,
+                unit_infos, player_slot) -> new WorldStarter(session_id,
+                        (WorldGenerator<WorldInfo<Texture>>) generator, world_params, player_slots, unit_infos,
+                        player_slot, ingame_info,
+                        new DefaultWorldInitAction());
+        Client<GUIRoot, UIRenderer> client = new Client<>(null, networkSelector, matchmakingClient, chatHub, host_id,
+                starterFactory,
                 new DefaultPlayerSlotHandler());
-        GameNetwork game_network = new GameNetwork(null, client);
+        GameNetwork<GUIRoot, UIRenderer> game_network = new GameNetwork<>(null, client);
         ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, true);
         client.setConfigurationListener(connecting_form);
         gui_root.addModalForm(connecting_form);
         return game_network;
     }
 
-    public static GameNetwork startNewGame(NetworkSelector network, GUIRoot gui_root,
+    public static GameNetwork<GUIRoot, UIRenderer> startNewGame(GUIRoot gui_root,
             MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
-            WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names,
-            AudioManager audioManager) {
+            WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names) {
+        var engine = gui_root.getGUI().getEngine();
         boolean multiplayer = ingame_info.isMultiplayer();
-        WorldGenerator generator = new IslandGenerator(islandConfig,
-                Renderer.getRenderer().getSettings().getTexelsPerGridUnit());
+        WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(islandConfig,
+                engine.getSettings().getTexelsPerGridUnit());
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
-        final Server server = new Server(network, Renderer.getRenderer().getNetwork().getMatchmakingClient(), game,
+        var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+        var chatHub = engine.getNetwork().getChatHub();
+        var networkSelector = engine.getNetwork().getSelector();
+        final Server server = new Server(networkSelector, matchmakingClient, game,
                 address, generator, multiplayer, ai_names,
                 (team, race_val, name) -> new PlayerInfo(team, Race.fromValue(race_val), name),
                 new DefaultPlayerSlotHandler());
-        Client client = new Client(server::close, network, Renderer.getRenderer().getNetwork().getMatchmakingClient(),
-                Renderer.getRenderer().getNetwork().getChatHub(), -1,
-                (session_id, gen, player_slots, unit_infos, player_slot) -> new WorldStarter(network, session_id, gen,
-                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action,
-                        audioManager),
-                new DefaultPlayerSlotHandler());
-        GameNetwork game_network = new GameNetwork(server, client);
+        @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, UIRenderer> starterFactory = (session_id, gen,
+                player_slots, unit_infos,
+                player_slot) -> new WorldStarter(
+                        session_id, (WorldGenerator<WorldInfo<Texture>>) gen,
+                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action);
+        Client<GUIRoot, UIRenderer> client = new Client<>(server::close, networkSelector, matchmakingClient,
+                chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
+        GameNetwork<GUIRoot, UIRenderer> game_network = new GameNetwork<>(server, client);
         ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, multiplayer);
         client.setConfigurationListener(connecting_form);
         gui_root.addModalForm(connecting_form);
         return game_network;
     }
 
-    public static void startMenu(NetworkSelector network, GUI gui,
-            AudioManager audioManager) {
-        setupMainMenu(network, gui, audioManager, false);
+    public static void startMenu(GUI gui) {
+        setupMainMenu(gui, false);
     }
 
-    public static @Nullable Runnable setupMainMenu(final NetworkSelector network, GUI gui,
-            AudioManager audioManager,
+    public static @Nullable Runnable setupMainMenu(GUI gui,
             final boolean first_progress) {
+        var engine = gui.getEngine();
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
                 LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
                 LandscapeConfig.LANDSCAPE_SEED);
-        final WorldGenerator generator = new IslandGenerator(
-                islandConfig, Renderer.getRenderer().getSettings().getTexelsPerGridUnit());
-        return ProgressForm.setProgressForm(network, gui, (GUIRoot gui_root) -> finishMainMenu(network, gui_root,
-                first_progress, generator, audioManager), first_progress);
+        final WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(
+                islandConfig, engine.getSettings().getTexelsPerGridUnit());
+        return ProgressForm.setProgressForm(engine.getNetwork().getSelector(), gui, (
+                GUIRoot gui_root) -> finishMainMenu(gui_root,
+                        first_progress, generator), first_progress);
     }
 
-    private static UIRenderer finishMainMenu(NetworkSelector network, GUIRoot gui_root,
-            boolean first_progress, WorldGenerator generator,
-            AudioManager audioManager) {
-        var engineRenderer = Renderer.getRenderer();
-        if (engineRenderer != null) {
-            engineRenderer.getFramePacer().freezeTime();
-        }
+    private static UIRenderer finishMainMenu(GUIRoot gui_root,
+            boolean first_progress, WorldGenerator<WorldInfo<Texture>> generator) {
+        var engine = gui_root.getGUI().getEngine();
+        engine.getFramePacer().freezeTime();
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
-        @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(players
-                .size(), world_params.initialUnitCount(), 0f);
+        WorldInfo<Texture> world_info = generator.generate(players.size(), world_params.initialUnitCount(), 0f);
         RenderQueues render_queues = new RenderQueues();
         LandscapeAssetsLoader landscape_resources = new LandscapeAssetsLoader(render_queues);
         ProgressForm.progress();
         World world = World.newWorld(landscape_resources, null,
                 new NotificationListener() {
                 }, world_params, world_info.landscapeData(), players,
-                Renderer.getRenderer().getSettings().accessibility.linear_team_colours,
-                RenderConfig.INSERT_PLANTS[Renderer.getRenderer().getSettings().graphic_detail],
+                engine.getSettings().accessibility.linear_team_colours,
+                RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail],
                 ProgressForm::progress);
         AnimationManager menuAnimationManager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
@@ -397,37 +402,37 @@ public abstract class Menu extends CameraDelegate<Camera> {
         Selection selection = new Selection(local_player);
         UIRenderer renderer = new DefaultRenderer(null, local_player, render_queues, world_info,
                 landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
-                        landscape_renderer, selection, audioManager), selection, modelViewStack, projectionStack,
-                audioManager);
-        audioManager.setMusic(AudioAssets.MUSIC_MENU, 0f);
-        MainMenu main_menu = new MainMenu(network, gui_root,
-                new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager),
-                audioManager);
+                        landscape_renderer, selection, engine.getAudioManager()), selection, modelViewStack,
+                projectionStack,
+                engine.getAudioManager());
+        engine.getAudioManager().setMusic(AudioAssets.MUSIC_MENU, 0f);
+        MainMenu main_menu = new MainMenu(gui_root,
+                new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager));
         gui_root.pushDelegate(main_menu);
-        if (first_progress && Renderer.getRenderer().getSettings().audio.warning_no_sound && !Renderer.getRenderer()
-                .getEventQueue().getDeterministic().log(audioManager != null)) {
+        if (first_progress && engine.getSettings().audio.warning_no_sound
+                && !engine.getEventQueue().getDeterministic().log(engine.getAudioManager() != null)) {
             gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
                     "sound_not_available_message"),
-                    doNotShowAgain -> Renderer.getRenderer().getSettings().audio.warning_no_sound = !doNotShowAgain));
+                    doNotShowAgain -> engine.getSettings().audio.warning_no_sound = !doNotShowAgain));
         }
-        if (!initNetwork(network)) {
+        if (!initNetwork(engine)) {
             gui_root.addModalForm(new MessageForm(i18n("network_not_available_caption"),
                     i18n("network_not_available_message"),
-                    i18n("quit"), (_, _, _, _) -> Renderer.shutdown()));
+                    i18n("quit"), (_, _, _, _) -> engine.shutdown()));
         }
         return renderer;
     }
 
-    public static boolean initNetwork(NetworkSelector network) {
+    public static boolean initNetwork(ClientEngine engine) {
         boolean is_network_created;
         try {
-            network.initSelector();
+            engine.getNetwork().getSelector().initSelector();
             tryGetLoopbackAddress();
             is_network_created = true;
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to initialize network", e);
             is_network_created = false;
         }
-        return Renderer.getRenderer().getEventQueue().getDeterministic().log(is_network_created);
+        return engine.getEventQueue().getDeterministic().log(is_network_created);
     }
 }

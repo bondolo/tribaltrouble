@@ -6,10 +6,10 @@ import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 
 /** Listener interface receiving game lobby configuration events. */
-public interface ConfigurationListener extends ErrorListener {
-    void connected(Client client, Game game, WorldGenerator generator, int player_slot);
+public interface ConfigurationListener<C, R> extends ErrorListener {
+    void connected(Client<C, R> client, Game game, WorldGenerator<?> generator, int player_slot);
 
     void setPlayers(PlayerSlot[] players);
 
-    void gameStarted(LoadCallback<?, ?> loadCallback);
+    void gameStarted(LoadCallback<C, R> loadCallback);
 }

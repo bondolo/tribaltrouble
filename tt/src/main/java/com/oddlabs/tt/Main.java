@@ -7,8 +7,8 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.render.ClientStateInitializer;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.ClientStartup;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.LocalInput;
@@ -16,7 +16,6 @@ import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.window.LWJGL3Window;
 import org.lwjgl.sdl.SDLMessageBox;
-
 
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -52,24 +51,12 @@ public final class Main {
                 error_msg = "Error: " + t;
             }
             logger.log(Level.SEVERE, error + ": " + error_msg);
-            long window = org.lwjgl.system.MemoryUtil.NULL;
-            try {
-                Renderer renderer = Renderer.getRenderer();
-                if (renderer != null) {
-                    window = ((LWJGL3Window) renderer.getWindow()).getHandle();
-                }
-            } catch (Exception e) {
-                // Window might not be created yet, ignore
-            }
-            SDLMessageBox.SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, error, error_msg, window);
+            SDLMessageBox.SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, error, error_msg,
+                    org.lwjgl.system.MemoryUtil.NULL);
         }
     }
 
     public static void shutdown(int status) {
-        Renderer renderer = Renderer.getRenderer();
-        if (renderer != null) {
-            renderer.close();
-        }
         logger.info("Exiting");
         System.exit(status);
     }
@@ -94,39 +81,42 @@ public final class Main {
             logger.info("Starting game....");
             GamePaths gamePaths = new GamePaths();
             Settings settings = new Settings(gamePaths.dataDir());
-            Network network = new Network();
             try (var window = new LWJGL3Window(); var eventQueue = new LocalEventQueue(); var audioManager
                     = new OpenALManager(settings.audio, eventQueue.getManager())) {
                 audioManager.setSfxGain(settings.audio.sound_gain)
                         .setMusicGain(settings.audio.music_gain)
                         .setSfxEnabled(settings.audio.play_sfx);
 
-                Renderer renderer = new Renderer(gamePaths, settings, window, eventQueue, network, audioManager);
-                renderer.run(
-                        (net, firstProgress) -> {
+                Network network = new Network(new com.oddlabs.net.NetworkSelector(eventQueue.getDeterministic(),
+                        eventQueue::getMillis));
+                ClientEngine engine = new ClientEngine(gamePaths, settings, window, eventQueue, network, audioManager);
+                engine.run(
+                        (clientEngine, firstProgress) -> {
                             ClientStateInitializer.init(audioManager);
                             InputManager inputManager = new InputManager(settings.inputBindings, settings.control);
                             LocalInput localInput = new LocalInput(
-                                    renderer.getWindow(), inputManager,
-                                    eventQueue.getDeterministic(), () -> renderer.getSettings().inDeveloperMode(),
-                                    Renderer::shutdown
+                                    clientEngine.getWindow(), inputManager,
+                                    eventQueue.getDeterministic(), () -> clientEngine.getSettings().inDeveloperMode(),
+                                    clientEngine::shutdown,
+                                    clientEngine.getFramePacer()
                             );
-                            Menu.initNetwork(net);
+                            Menu.initNetwork(clientEngine);
                             localInput.init();
                             settings.last_event_log_dir = gamePaths.logDir().toAbsolutePath();
                             settings.crashed = true;
                             settings.save();
                             settings.crashed = false;
-                            GUI gui = new GUI(localInput, eventQueue);
+                            GUI gui = new GUI(localInput, clientEngine);
                             gui.setCloseHandler(() -> {
                                 if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
-                                    Renderer.shutdown();
+                                    clientEngine.shutdown();
                                 } else {
-                                    gui.getGUIRoot().addModalForm(new QuitForm(gui.getGUIRoot()));
+                                    gui.getGUIRoot().addModalForm(new QuitForm(
+                                            clientEngine::shutdown));
                                 }
                             });
                             Runnable loadTask = gui.callWithSkin(() -> Menu.setupMainMenu(
-                                    net, gui, audioManager,
+                                    gui,
                                     firstProgress
                             ));
                             return new ClientStartup.Session(gui, loadTask);

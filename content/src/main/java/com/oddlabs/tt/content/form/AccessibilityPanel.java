@@ -1,10 +1,6 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
-import com.oddlabs.tt.simulation.model.CVDMode;
+import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIObject;
@@ -18,15 +14,14 @@ import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.TitledBorderGroup;
-import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.simulation.model.CVDMode;
 import com.oddlabs.util.Color;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
 /**
- * A UI panel allowing players to configure various accessibility options, such as
+ * Settings panel for accessibility features including UI scaling, cursor sizing,
  * high contrast modes, color vision deficiency (CVD) filters, and custom team colors.
  */
 public final class AccessibilityPanel extends Panel {
@@ -35,8 +30,7 @@ public final class AccessibilityPanel extends Panel {
 
     public AccessibilityPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("accessibility_caption"));
-
-        AccessibilitySettings accessibility = Renderer.getRenderer().getSettings().accessibility;
+        AccessibilitySettings accessibility = gui_root.getGUI().getEngine().getSettings().accessibility;
 
         final int SLIDER_PADDING = Skin.getSkin().getGroupData().group().getLeftOffset() + Skin.getSkin().getGroupData()
                 .group().getRightOffset();

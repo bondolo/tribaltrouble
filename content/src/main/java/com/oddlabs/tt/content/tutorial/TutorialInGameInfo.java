@@ -64,10 +64,8 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     @Override
     public void close(WorldViewer viewer) {
         if (next_tutorial != -1)
-            TutorialForm.startTutorial(viewer.getNetwork(), viewer.getGUIRoot(), next_tutorial,
-                    viewer.getAudioManager());
+            TutorialForm.startTutorial(viewer.getGUIRoot(), next_tutorial);
         else
-            Menu.startMenu(viewer.getNetwork(), viewer.getGUIRoot().getGUI(),
-                    viewer.getAudioManager());
+            Menu.startMenu(viewer.getGUIRoot().getGUI());
     }
 }

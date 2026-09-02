@@ -1,6 +1,5 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.client.gui.CampaignIcons;
@@ -40,9 +39,9 @@ public abstract class Campaign {
         return audioManager;
     }
 
-    public final void pushDelegate(NetworkSelector network, GUI gui) {
+    public final void pushDelegate(GUI gui) {
         final GUIRoot gui_root = gui.newFade(null, gui.getRenderer());
-        gui_root.pushDelegate(new CampaignMapForm(network, gui_root, Campaign.this));
+        gui_root.pushDelegate(new CampaignMapForm(gui_root, Campaign.this));
     }
 
     public void defeated(WorldViewer viewer, String game_over_message) {
@@ -56,7 +55,7 @@ public abstract class Campaign {
 
     public final void victory(final WorldViewer viewer) {
         new GameOverDelayTrigger(viewer, viewer.getDelegate().getCamera(), i18n("island_complete"));
-        LoadCampaignBox.loadSavegames(
+        LoadCampaignBox.loadSavegames(viewer.getEngine(),
                 new DeterministicSerializerLoopbackInterface<CampaignState[]>() {
                     @Override
                     public void loadSucceeded(CampaignState[] campaign_states) {
@@ -77,7 +76,7 @@ public abstract class Campaign {
                 campaign_states[i] = getState();
             }
         }
-        LoadCampaignBox.saveSavegames(campaign_states,
+        LoadCampaignBox.saveSavegames(viewer.getEngine(), campaign_states,
                 (DeterministicSerializerLoopbackInterface<CampaignState[]>) e -> doFailed(e, viewer));
     }
 
@@ -88,9 +87,9 @@ public abstract class Campaign {
 
     public abstract CampaignIcons getIcons();
 
-    public abstract void islandChosen(NetworkSelector network, GUIRoot gui_root, int number);
+    public abstract void islandChosen(GUIRoot gui_root, int number);
 
     public abstract CharSequence getCurrentObjective();
 
-    public abstract void startIsland(NetworkSelector network, GUIRoot gui_root, int number);
+    public abstract void startIsland(GUIRoot gui_root, int number);
 }

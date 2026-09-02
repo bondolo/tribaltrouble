@@ -1,6 +1,5 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.CancelListener;
 import com.oddlabs.tt.gui.Form;
@@ -31,7 +30,7 @@ public abstract class AbstractOptionsMenu extends Form {
     private final GeneralPanel generalPanel;
     private final GraphicsPanel graphicsPanel;
 
-    AbstractOptionsMenu(GUIRoot gui_root, AudioManager audioManager) {
+    AbstractOptionsMenu(GUIRoot gui_root) {
         Label label_headline = new Label(i18n("options_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
@@ -43,7 +42,7 @@ public abstract class AbstractOptionsMenu extends Form {
                 graphicsPanel,
                 new KeyBindingPanel(gui_root),
                 new AccessibilityPanel(gui_root),
-                new SoundPanel(gui_root, audioManager),
+                new SoundPanel(gui_root),
                 new LanguagePanel(gui_root)
         );
         addChild(panel_group);

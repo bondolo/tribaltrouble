@@ -134,9 +134,20 @@ public final class Settings implements Serializable, PropertiesSerializer {
                 AppConfig.DEFAULT_TEXTURE_MIP_SHIFT[graphic_detail]);
     }
 
+    private boolean playback;
+
+    public void setPlayback(boolean playback) {
+        this.playback = playback;
+    }
+
+    public boolean isPlayback() {
+        return playback;
+    }
+
     public void save() {
-        if (com.oddlabs.tt.engine.render.Renderer.getRenderer().getEventQueue().getDeterministic().isPlayback())
+        if (playback) {
             return;
+        }
 
         Path settings_file = game_dir != null
                 ? game_dir.resolve(AppConfig.SETTINGS_FILE_NAME) : AppConfig.SETTINGS_FILE_NAME;

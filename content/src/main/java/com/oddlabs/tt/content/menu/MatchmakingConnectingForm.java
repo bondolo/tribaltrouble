@@ -14,8 +14,8 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.MatchmakingListener;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
 
@@ -31,14 +31,13 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
     }
 
     private final GUIRoot gui_root;
-    private final NetworkSelector network;
 
-    public MatchmakingConnectingForm(NetworkSelector network, GUIRoot gui_root, Form parent_form,
-            Menu main_menu, Login login, LoginDetails login_details) {
+    public MatchmakingConnectingForm(@Nullable Form parent_form, Menu main_menu, @Nullable Login login,
+            @Nullable LoginDetails login_details) {
         this.parent_form = parent_form;
         this.main_menu = main_menu;
-        this.gui_root = gui_root;
-        this.network = network;
+        this.gui_root = main_menu.getGUIRoot();
+        NetworkSelector network = main_menu.getEngine().getNetwork().getSelector();
         Label info_label = new Label(i18n("connecting"), Skin.getSkin().getHeadlineFont());
         addChild(info_label);
         HorizButton cancel_button = new CancelButton(120);
@@ -52,8 +51,8 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
         // headline
         compileCanvas();
         centerPos();
-        Renderer.getRenderer().getNetwork().setMatchmakingListener(this);
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().login(network, login, login_details);
+        main_menu.getEngine().getNetwork().setMatchmakingListener(this);
+        main_menu.getEngine().getNetwork().getMatchmakingClient().login(network, login, login_details);
     }
 
     @Override
@@ -84,7 +83,7 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
     @Override
     public void doRemove() {
         super.doRemove();
-        Renderer.getRenderer().getNetwork().setMatchmakingListener(null);
+        main_menu.getEngine().getNetwork().setMatchmakingListener(null);
     }
 
     @Override
@@ -116,11 +115,11 @@ public final class MatchmakingConnectingForm extends Form implements Matchmaking
         remove();
         if (parent_form != null)
             parent_form.remove();
-        new SelectGameMenu(network, gui_root, main_menu);
+        new SelectGameMenu(main_menu);
     }
 
     @Override
     protected void doCancel() {
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().close();
+        main_menu.getEngine().getNetwork().getMatchmakingClient().close();
     }
 }

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Login;
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
@@ -36,7 +35,6 @@ public final class LoginForm extends Form {
 
     private final Menu main_menu;
     private final GUIRoot gui_root;
-    private final NetworkSelector network;
     private final EditLine editline_username;
     private final PasswordLine editline_password;
     private final CheckBox remember_checkbox;
@@ -46,10 +44,9 @@ public final class LoginForm extends Form {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public LoginForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
+    public LoginForm(Menu main_menu) {
         this.main_menu = main_menu;
-        this.gui_root = gui_root;
-        this.network = network;
+        this.gui_root = main_menu.getGUIRoot();
         boolean remember = Renderer.getRenderer().getSettings().account.remember_login;
         if (!remember) {
             Renderer.getRenderer().getSettings().account.username = "";
@@ -125,7 +122,7 @@ public final class LoginForm extends Form {
         if (Renderer.isRegistered()) {
             main_menu.setMenu(this);
         } else {
-            Form form = new MatchmakingConnectingForm(network, gui_root, null, main_menu, null, null);
+            Form form = new MatchmakingConnectingForm(null, main_menu, null, null);
             main_menu.setMenu(form);
             form.centerPos();
         }
@@ -156,7 +153,7 @@ public final class LoginForm extends Form {
             Renderer.getRenderer().getSettings().account.pw_digest = password;
         }
         Renderer.getRenderer().getSettings().account.remember_login = remember_login;
-        Form connecting_form = new MatchmakingConnectingForm(network, gui_root, this, main_menu, login, null);
+        Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, null);
         gui_root.addModalForm(connecting_form);
     }
 
@@ -164,7 +161,7 @@ public final class LoginForm extends Form {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             remove();
-            main_menu.setMenu(new NewUserForm(network, gui_root, main_menu));
+            main_menu.setMenu(new NewUserForm(main_menu));
         }
     }
 

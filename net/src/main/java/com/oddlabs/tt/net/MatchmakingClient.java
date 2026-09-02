@@ -18,7 +18,6 @@ import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
 import com.oddlabs.tt.base.global.AppConfig;
-import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -47,16 +46,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     private final ChatHistory chat_room_history = new ChatHistory() {
         @Override
         public void chat(ChatMessage message) {
-            if (message.type() == ChatConsumer.Type.PRIVATE || message.type() == ChatConsumer.Type.CHATROOM) {
-                addMessage(message.formatLong());
-            }
-        }
-    };
-    private final ChatHistory in_game_chat_history = new ChatHistory() {
-        @Override
-        public void chat(ChatMessage message) {
-            if (message.type() == ChatConsumer.Type.PRIVATE || message.type() == ChatConsumer.Type.NORMAL || message
-                    .type() == ChatConsumer.Type.TEAM) {
+            if (message.type() == ChatMessage.Type.PRIVATE || message.type() == ChatMessage.Type.CHATROOM) {
                 addMessage(message.formatLong());
             }
         }
@@ -85,19 +75,10 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
     public MatchmakingClient(Network network) {
         this.network = network;
         network.getChatHub().addListener(chat_room_history);
-        network.getChatHub().addListener(in_game_chat_history);
     }
 
     public SequencedCollection<String> getChatRoomHistory() {
         return chat_room_history.getMessages();
-    }
-
-    public SequencedCollection<String> getInGameChatHistory() {
-        return in_game_chat_history.getMessages();
-    }
-
-    public void clearInGameChatHistory() {
-        in_game_chat_history.clear();
     }
 
     @Override
@@ -255,7 +236,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void receiveChatRoomMessage(String owner, String msg) {
-        network.getChatHub().chat(new ChatMessage(owner, msg, ChatConsumer.Type.CHATROOM));
+        network.getChatHub().chat(new ChatMessage(owner, msg, ChatMessage.Type.CHATROOM));
     }
 
     public void setUiListener(@Nullable MatchmakingUiListener ui_listener) {
@@ -264,7 +245,7 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void receivePrivateMessage(String nick, String msg) {
-        network.getChatHub().chat(new ChatMessage(nick, msg, ChatConsumer.Type.PRIVATE));
+        network.getChatHub().chat(new ChatMessage(nick, msg, ChatMessage.Type.PRIVATE));
     }
 
     public void sendPrivateMessage(String nick, String message) {

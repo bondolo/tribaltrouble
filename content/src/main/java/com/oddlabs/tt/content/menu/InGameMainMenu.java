@@ -22,7 +22,7 @@ public final class InGameMainMenu extends Menu {
     private Group game_infos;
 
     public InGameMainMenu(WorldViewer viewer, Camera camera) {
-        super(viewer.getNetwork(), viewer.getGUIRoot(), camera, viewer.getAudioManager());
+        super(viewer.getGUIRoot(), camera);
         this.viewer = viewer;
         reload();
     }
@@ -49,7 +49,7 @@ public final class InGameMainMenu extends Menu {
     protected void addButtons() {
         addResumeButton();
 
-        addOptionsButton(() -> new InGameOptionsMenu(getGUIRoot(), viewer));
+        addOptionsButton(() -> new InGameOptionsMenu(viewer));
 
         game_infos = new Group(false);
         if (viewer.getInGameInfo() instanceof InGameMenuHook hook) {

@@ -1,16 +1,17 @@
 package com.oddlabs.tt.content.skirmish;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.FocusDirection;
-import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.Form;
 
+/**
+ * Form wrapper embedding the skirmish terrain configuration menu.
+ */
 public final class TerrainMenuForm extends Form implements TerrainMenuListener {
     private final TerrainMenu terrain;
 
-    public TerrainMenuForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
-        terrain = new TerrainMenu(network, gui_root, main_menu.getAudioManager(), main_menu, false, this);
+    public TerrainMenuForm(Menu main_menu) {
+        terrain = new TerrainMenu(main_menu.getGUIRoot(), main_menu, false, this);
         addChild(terrain);
         terrain.place();
         compileCanvas();

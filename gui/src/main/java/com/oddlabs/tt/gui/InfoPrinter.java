@@ -1,17 +1,16 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.util.Color;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class InfoPrinter extends GUIObject implements Animated, ChatConsumer {
+public final class InfoPrinter extends GUIObject implements Animated, com.oddlabs.tt.base.util.InfoPrinter {
+    public static final Color.Linear PRIVATE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
+    public static final Color.Linear TEAM_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
     private static final float SECONDS_PER_TIMEOUT = 8f;
-    private static final Color.Linear PRIVATE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
-    private static final Color.Linear TEAM_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
 
     private final Font font;
     private final List<LabelBox> history = new ArrayList<>();
@@ -43,17 +42,6 @@ public final class InfoPrinter extends GUIObject implements Animated, ChatConsum
     @Override
     protected void displayChangedNotify(int width, int height) {
         setDim(width, height);
-    }
-
-    @Override
-    public void chat(String text, ChatConsumer.Type type) {
-        switch (type) {
-            case NORMAL -> print(text);
-            case TEAM -> print(text, TEAM_COLOR);
-            case PRIVATE -> print(text, PRIVATE_COLOR);
-            default -> {
-            }
-        }
     }
 
     @Override

@@ -1,10 +1,11 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
 import com.oddlabs.tt.input.Modifier;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 import java.util.logging.Logger;
@@ -19,6 +20,8 @@ public final class KeyboardInput {
     public static final int LARGE_WARP = 100000;
     private static final int GOTO_END_OF_LOG_WARP = Integer.MAX_VALUE / 2;
 
+    private final @Nullable FramePacer framePacer;
+
     private boolean left_shift_down;
     private boolean right_shift_down;
     private boolean left_control_down;
@@ -27,6 +30,14 @@ public final class KeyboardInput {
     private boolean right_alt_down;
     private boolean left_meta_down;
     private boolean right_meta_down;
+
+    public KeyboardInput(@Nullable FramePacer framePacer) {
+        this.framePacer = framePacer;
+    }
+
+    public KeyboardInput() {
+        this(null);
+    }
 
     public void reset(InputProvider<?> input) {
         while (input != null && input.nextKeyboardEvent())
@@ -67,23 +78,20 @@ public final class KeyboardInput {
             // check for special events that shouldn't generate events
             switch (event_key) {
                 case RIGHT -> {
-                    var renderer = Renderer.getRenderer();
-                    if (renderer != null) {
-                        renderer.getFramePacer().warpTime(LITTLE_WARP);
+                    if (framePacer != null) {
+                        framePacer.warpTime(LITTLE_WARP);
                     }
                     return true;
                 }
                 case UP -> {
-                    var renderer = Renderer.getRenderer();
-                    if (renderer != null) {
-                        renderer.getFramePacer().warpTime(MEDIUM_WARP);
+                    if (framePacer != null) {
+                        framePacer.warpTime(MEDIUM_WARP);
                     }
                     return true;
                 }
                 case PAGE_UP -> {
-                    var renderer = Renderer.getRenderer();
-                    if (renderer != null) {
-                        renderer.getFramePacer().warpTime(LARGE_WARP);
+                    if (framePacer != null) {
+                        framePacer.warpTime(LARGE_WARP);
                     }
                     return true;
                 }
@@ -92,17 +100,15 @@ public final class KeyboardInput {
                     return true;
                 }
                 case SPACE -> {
-                    var renderer = Renderer.getRenderer();
-                    if (renderer != null) {
-                        renderer.getFramePacer().toggleTimeStop();
+                    if (framePacer != null) {
+                        framePacer.toggleTimeStop();
                     }
                     return true;
                 }
                 case END -> {
                     logger.info("WARP UNTIL END OF EVENT LOG");
-                    var renderer = Renderer.getRenderer();
-                    if (renderer != null) {
-                        renderer.getFramePacer().warpTime(GOTO_END_OF_LOG_WARP);
+                    if (framePacer != null) {
+                        framePacer.warpTime(GOTO_END_OF_LOG_WARP);
                     }
                     return true;
                 }

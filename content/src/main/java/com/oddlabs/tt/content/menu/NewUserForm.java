@@ -2,7 +2,6 @@ package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Login;
 import com.oddlabs.matchmaking.LoginDetails;
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
@@ -48,12 +47,10 @@ public final class NewUserForm extends Form {
     }
 
     private final GUIRoot gui_root;
-    private final NetworkSelector network;
 
-    public NewUserForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
+    public NewUserForm(Menu main_menu) {
         this.main_menu = main_menu;
-        this.gui_root = gui_root;
-        this.network = network;
+        this.gui_root = main_menu.getGUIRoot();
 
         CreateUserListener create_listener = new CreateUserListener();
         // headline
@@ -166,7 +163,7 @@ public final class NewUserForm extends Form {
             Login login) {
         Renderer.getRenderer().getSettings().account.username = username;
         Renderer.getRenderer().getSettings().account.pw_digest = password;
-        Form connecting_form = new MatchmakingConnectingForm(network, gui_root, this, main_menu, login, login_details);
+        Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, login_details);
         gui_root.addModalForm(connecting_form);
     }
 

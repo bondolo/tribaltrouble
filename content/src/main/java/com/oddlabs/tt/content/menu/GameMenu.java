@@ -29,16 +29,16 @@ import com.oddlabs.tt.gui.TextBox;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.simulation.model.Race;
-import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.GameNetwork;
+import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.client.viewer.ChatCommand;
-import com.oddlabs.tt.client.viewer.LoadCallback;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -63,7 +63,7 @@ import static com.oddlabs.tt.gui.Placement.TOP_RIGHT;
 /**
  * UI panel representing the multiplayer lobby game setup and slots configuration menu.
  */
-public final class GameMenu extends Panel implements ConfigurationListener, ChatListener {
+public final class GameMenu extends Panel implements ConfigurationListener<GUIRoot, UIRenderer>, ChatListener {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(GameMenu.class.getName());
 
     private static String i18n(String key, Object... args) {
@@ -114,21 +114,27 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     private final SelectGameMenu owner;
     private final GUIRoot gui_root;
     private final int local_player_slot;
-    private final boolean rated;
+    private final WorldGenerator<?> generator;
+    private final ClientEngine engine;
+    private final GameNetwork<GUIRoot, UIRenderer> game_network;
     private final Game game;
-    private final GameNetwork game_network;
+    private final boolean rated;
     private SortedSet<String> human_names = new TreeSet<>();
 
     private boolean updating;
     private boolean ready;
 
     @SuppressWarnings("unchecked")
-    public GameMenu(GameNetwork game_network, GUIRoot gui_root, SelectGameMenu owner, Game game,
-            WorldGenerator generator, int player_slot, int compare_width, int compare_height, int button_width) {
-        super(i18n("game_caption"));
-        this.game_network = game_network;
+    public GameMenu(GameNetwork<GUIRoot, UIRenderer> game_network,
+            SelectGameMenu owner,
+            Game game, WorldGenerator<?> generator, int player_slot, int compare_width, int compare_height,
+            int button_width) {
+        super(i18n("game"));
         this.owner = owner;
-        this.gui_root = gui_root;
+        this.gui_root = owner.getGUIRoot();
+        this.engine = owner.getMainMenu().getEngine();
+        this.generator = generator;
+        this.game_network = game_network;
         this.local_player_slot = player_slot;
         this.rated = game.isRated();
         this.game = game;
@@ -264,7 +270,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void connected(Client client, Game game, WorldGenerator generator,
+    public void connected(Client<GUIRoot, UIRenderer> client, Game game, WorldGenerator<?> generator,
             int player_slot) {
         assert false;
     }
@@ -472,8 +478,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             ratings[index].place(ready_mark, RIGHT_MID);
         }
         String player_str = i18n("player", Integer.toString(index + 1));
-        Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(Renderer.getRenderer()
-                .getSettings().accessibility.team_colours[index]);
+        var color = engine.getSettings().accessibility.team_colours[index];
+        Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(color);
         group.addChild(label);
         label.place(pulldown_button, LEFT_MID);
 
@@ -483,13 +489,13 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     @Override
     protected void doAdd() {
         super.doAdd();
-        Renderer.getRenderer().getNetwork().getChatHub().addListener(this);
+        engine.getNetwork().getChatHub().addListener(this);
     }
 
     @Override
     protected void doRemove() {
         super.doRemove();
-        Renderer.getRenderer().getNetwork().getChatHub().removeListener(this);
+        engine.getNetwork().getChatHub().removeListener(this);
     }
 
     @Override
@@ -500,10 +506,9 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.base.util.LoadCallback<?, ?> loadCallback) {
+    public void gameStarted(LoadCallback<GUIRoot, UIRenderer> loadCallback) {
         setDisabled(true);
-        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
-                (LoadCallback) loadCallback);
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), loadCallback);
     }
 
     private void finishChatAppend() {
@@ -513,7 +518,7 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
 
     @Override
     public void chat(ChatMessage message) {
-        if (message.type() != ChatConsumer.Type.GAME_MENU)
+        if (message.type() != ChatMessage.Type.GAME_MENU)
             return;
         if (!chat_box.isEmpty())
             chat_box.append("\n");
@@ -618,8 +623,8 @@ public final class GameMenu extends Panel implements ConfigurationListener, Chat
             String chat = text.toString();
             if (!chat.isEmpty()) {
                 chat_line.clear();
-                if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), Renderer.getRenderer().getNetwork()
-                        .getMatchmakingClient(), chat))
+                var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+                if (!ChatCommand.filterCommand(gui_root.getInfoPrinter(), matchmakingClient, chat))
                     game_network.getClient().getServerInterface().chat(chat);
             }
         }

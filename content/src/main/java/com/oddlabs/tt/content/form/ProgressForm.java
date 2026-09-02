@@ -1,14 +1,13 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.base.util.ProgressListener;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.NullCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.NullDelegate;
-import com.oddlabs.tt.client.viewer.LoadCallback;
+import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.Fadable;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIImage;
@@ -17,10 +16,7 @@ import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.ProgressBar;
 import com.oddlabs.tt.gui.ProgressBarInfo;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.render.UIRenderer;
-import com.oddlabs.tt.base.util.ProgressListener;
-import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
@@ -62,12 +58,12 @@ public final class ProgressForm {
     private final GUI gui;
 
     public static void setProgressForm(NetworkSelector network, GUI gui,
-            LoadCallback callback) {
+            LoadCallback<GUIRoot, UIRenderer> callback) {
         setProgressForm(network, gui, callback, false);
     }
 
     public static @Nullable Runnable setProgressForm(NetworkSelector network, final GUI gui,
-            final LoadCallback callback, final boolean first_progress) {
+            final LoadCallback<GUIRoot, UIRenderer> callback, final boolean first_progress) {
         String texture;
         int texture_width;
         int texture_height;
@@ -115,7 +111,7 @@ public final class ProgressForm {
             int progress_x, int progress_y, int progress_width,
             boolean show_tip) {
         this.gui = gui;
-        Renderer.getRenderer().stopSound();
+        gui.getEngine().stopSound();
         var gui_root = first_progress ? gui.getGUIRoot() : gui.newFade(load_fadable, null);
         CameraDelegate<NullCamera> delegate = new NullDelegate(gui_root, false);
         gui_root.pushDelegate(delegate);
@@ -140,7 +136,6 @@ public final class ProgressForm {
             CharSequence tip_string = LOADING_TIPS[random.nextInt(LOADING_TIPS.length)];
             int tip_width = Math.min(gui_root.getWidth() - 10, Skin.getSkin().getEditFont().getWidth(tip_string));
             LabelBox tip = new LabelBox(tip_string, Skin.getSkin().getEditFont(), tip_width);
-//			Label tip = new Label(LOADING_TIPS[random.nextInt(LOADING_TIPS.length)], Skin.getSkin().getEditFont());
             tip.setPos(progress_bar.getX() + progress_bar.getWidth() / 2 - tip.getWidth() / 2, progress_bar.getY() - tip
                     .getHeight() - PROGRESSBAR_LOADINGTIP_SPACING);
             delegate.addChild(tip);
@@ -150,8 +145,8 @@ public final class ProgressForm {
         Renderer.getRenderer().updateProgress(gui);
     }
 
-    private static void callback(GUI gui, LoadCallback callback, boolean first_progress) {
-        Fadable start_sources_fadable = () -> Renderer.getRenderer().startSound();
+    private static void callback(GUI gui, LoadCallback<GUIRoot, UIRenderer> callback, boolean first_progress) {
+        Fadable start_sources_fadable = () -> gui.getEngine().startSound();
 
         GUIRoot client_root = gui.createRoot();
         ProgressListener listener = step -> {

@@ -17,7 +17,6 @@ import java.util.List;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.gui.event.RowListener;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -44,10 +43,10 @@ public final class ProfilesForm extends Form {
     private NewProfileForm new_profile_form;
     private QuestionForm confirm_delete_form;
 
-    public ProfilesForm(GUIRoot gui_root, Menu main_menu, SelectGameMenu game_menu) {
-        this.gui_root = gui_root;
-        this.main_menu = main_menu;
+    public ProfilesForm(SelectGameMenu game_menu) {
         this.game_menu = game_menu;
+        this.main_menu = game_menu.getMainMenu();
+        this.gui_root = game_menu.getGUIRoot();
         Label label_headline = new Label(i18n("profiles_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
@@ -68,7 +67,7 @@ public final class ProfilesForm extends Form {
 
         HorizButton create_profile_button = new HorizButton(i18n("create_new_profile"), 150);
         create_profile_button.addMouseClickListener((_, _, _, _) -> {
-            new_profile_form = new NewProfileForm(gui_root, main_menu, ProfilesForm.this);
+            new_profile_form = new NewProfileForm(main_menu, ProfilesForm.this);
             main_menu.setMenu(new_profile_form);
         });
         addChild(create_profile_button);
@@ -113,7 +112,7 @@ public final class ProfilesForm extends Form {
 
     @Override
     protected void doCancel() {
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().close();
+        main_menu.getEngine().getNetwork().getMatchmakingClient().close();
     }
 
     public void receivedProfiles(Profile[] profiles, String last_nick) {
@@ -135,7 +134,7 @@ public final class ProfilesForm extends Form {
     }
 
     private void join(String nick) {
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().setProfile(nick);
+        main_menu.getEngine().getNetwork().getMatchmakingClient().setProfile(nick);
         main_menu.setMenuCentered(game_menu);
     }
 
@@ -148,8 +147,8 @@ public final class ProfilesForm extends Form {
             } else {
                 String confirm_str = i18n("confirm_delete", nick);
                 confirm_delete_form = new QuestionForm(confirm_str, (_, _, _, _) -> {
-                    Renderer.getRenderer().getNetwork().getMatchmakingClient().deleteProfile(nick);
-                    Renderer.getRenderer().getNetwork().getMatchmakingClient().requestProfiles();
+                    main_menu.getEngine().getNetwork().getMatchmakingClient().deleteProfile(nick);
+                    main_menu.getEngine().getNetwork().getMatchmakingClient().requestProfiles();
                 });
                 gui_root.addModalForm(confirm_delete_form);
             }

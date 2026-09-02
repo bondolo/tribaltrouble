@@ -1,7 +1,6 @@
 package com.oddlabs.tt.content.campaign;
 
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.gui.Form;
@@ -59,17 +58,17 @@ public final class VikingCampaign extends Campaign {
             .map(c -> c.apply(this))
             .toArray(Island[]::new);
 
-    public VikingCampaign(NetworkSelector network, GUIRoot gui_root,
+    public VikingCampaign(GUIRoot gui_root,
             AudioManager audioManager) {
-        this(network, gui_root, new CampaignState(INITIAL_STATES), audioManager);
+        this(gui_root, new CampaignState(INITIAL_STATES), audioManager);
     }
 
-    public VikingCampaign(NetworkSelector network, GUIRoot gui_root,
+    public VikingCampaign(GUIRoot gui_root,
             CampaignState campaign_state,
             AudioManager audioManager) {
         super(campaign_state, audioManager);
         if (getState().getCurrentIsland() == -1) {
-            startIsland(network, gui_root, 0);
+            startIsland(gui_root, 0);
         }
     }
 
@@ -79,12 +78,12 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public void islandChosen(NetworkSelector network, GUIRoot gui_root, int number) {
+    public void islandChosen(GUIRoot gui_root, int number) {
         Form dialog = new CampaignDialogForm(islands[number].getHeader(),
                 islands[number].getDescription(),
                 null,
                 Origin.AT_START,
-                () -> startIsland(network, gui_root, number), true);
+                () -> startIsland(gui_root, number), true);
         gui_root.addModalForm(dialog);
     }
 
@@ -104,8 +103,8 @@ public final class VikingCampaign extends Campaign {
     }
 
     @Override
-    public void startIsland(NetworkSelector network, GUIRoot gui_root, int number) {
+    public void startIsland(GUIRoot gui_root, int number) {
         getState().setCurrentIsland(number);
-        islands[number].chosen(network, gui_root);
+        islands[number].chosen(gui_root);
     }
 }

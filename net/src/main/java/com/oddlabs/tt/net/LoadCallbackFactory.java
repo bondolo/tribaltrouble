@@ -8,8 +8,8 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 
 /** Factory interface for creating game loading callbacks. */
 @FunctionalInterface
-public interface LoadCallbackFactory {
-    LoadCallback<?, ?> createCallback(int session_id, WorldGenerator generator,
+public interface LoadCallbackFactory<C, R> {
+    LoadCallback<C, R> createCallback(int session_id, WorldGenerator<?> generator,
             PlayerSlot[] player_slots,
             UnitInfo[] unit_infos, short player_slot);
 }

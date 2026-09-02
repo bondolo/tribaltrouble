@@ -1,7 +1,6 @@
 package com.oddlabs.tt.content.form;
 
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.simulation.landscape.World;
 
 /**
@@ -10,8 +9,8 @@ import com.oddlabs.tt.simulation.landscape.World;
 public final class InGameOptionsMenu extends AbstractOptionsMenu {
     private final WorldViewer viewer;
 
-    public InGameOptionsMenu(GUIRoot gui_root, WorldViewer viewer) {
-        super(gui_root, viewer.getAudioManager());
+    public InGameOptionsMenu(WorldViewer viewer) {
+        super(viewer.getGUIRoot());
         this.viewer = viewer;
         chooseGamespeed(getGamespeed());
     }

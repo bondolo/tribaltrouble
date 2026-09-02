@@ -34,7 +34,7 @@ public final class Server implements ConnectionListenerInterface {
 
     private final PlayerSlot[] players;
     private final String[] ai_names;
-    private final WorldGenerator generator;
+    private final WorldGenerator<?> generator;
     private final Game game;
     private final AbstractConnectionListener local_listener;
     private final Map<AbstractConnection, ClientConnection> connection_to_client = new LinkedHashMap<>();
@@ -49,13 +49,13 @@ public final class Server implements ConnectionListenerInterface {
     private final PlayerSlotHandler slot_handler;
 
     public Server(NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
-            InetAddress ip, WorldGenerator generator,
+            InetAddress ip, WorldGenerator<?> generator,
             boolean register_server, String[] ai_names, PlayerSlotHandler slot_handler) {
         this(network, matchmaking_client, game, ip, generator, register_server, ai_names, null, slot_handler);
     }
 
     public Server(NetworkSelector network, @Nullable MatchmakingClient matchmaking_client, Game game,
-            InetAddress ip, WorldGenerator generator,
+            InetAddress ip, WorldGenerator<?> generator,
             boolean register_server, String[] ai_names, @Nullable PlayerInfoFactory player_info_factory,
             PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;

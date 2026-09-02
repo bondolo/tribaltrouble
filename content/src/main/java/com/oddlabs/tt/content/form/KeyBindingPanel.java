@@ -20,8 +20,8 @@ import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.util.Color;
 import org.lwjgl.sdl.SDLDialog;
@@ -48,10 +48,12 @@ public class KeyBindingPanel extends Panel {
 
     private final MultiColumnComboBox<GameAction> list_box;
     private final GUIRoot gui_root;
+    private final ClientEngine engine;
 
     public KeyBindingPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("key_bindings_title"));
         this.gui_root = gui_root;
+        this.engine = gui_root.getGUI().getEngine();
 
         ColumnInfo[] infos = new ColumnInfo[]{
                 new ColumnInfo(AbstractOptionsMenu.i18n("column_action"), COL_ACTION_WIDTH),
@@ -110,10 +112,10 @@ public class KeyBindingPanel extends Panel {
         Row<GameAction, ?> rowToSelect = null;
 
         for (GameAction action : GameAction.values()) {
-            if (action.name().startsWith("DEBUG_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
+            if (action.name().startsWith("DEBUG_") && !engine.getSettings().inDeveloperMode()) {
                 continue;
             }
-            if (action.name().startsWith("CHEAT_") && !Renderer.getRenderer().getSettings().inDeveloperMode()) {
+            if (action.name().startsWith("CHEAT_") && !engine.getSettings().inDeveloperMode()) {
                 continue;
             }
             String name;
@@ -152,12 +154,12 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void saveMappings() {
-        boolean wasFullscreen = Renderer.getRenderer().getSettings().window.fullscreen;
+        boolean wasFullscreen = engine.getSettings().window.fullscreen;
         if (wasFullscreen) {
-            Renderer.getRenderer().toggleFullscreen();
+            engine.toggleFullscreen();
         }
 
-        long window = ((LWJGL3Window) Renderer.getRenderer().getWindow()).getHandle();
+        long window = ((LWJGL3Window) engine.getWindow()).getHandle();
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
@@ -195,7 +197,7 @@ public class KeyBindingPanel extends Panel {
 
             // Wait for the async dialog to finish before toggling fullscreen back
             while (!dialogClosed.get()) {
-                Renderer.getRenderer().getWindow().pollEvents();
+                engine.getWindow().pollEvents();
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -204,21 +206,21 @@ public class KeyBindingPanel extends Panel {
                 }
             }
             updateList();
-            Renderer.getRenderer().getWindow().focus();
+            engine.getWindow().focus();
         }
 
         if (wasFullscreen) {
-            Renderer.getRenderer().toggleFullscreen();
+            engine.toggleFullscreen();
         }
     }
 
     private void loadMappings() {
-        boolean wasFullscreen = Renderer.getRenderer().getSettings().window.fullscreen;
+        boolean wasFullscreen = engine.getSettings().window.fullscreen;
         if (wasFullscreen) {
-            Renderer.getRenderer().toggleFullscreen();
+            engine.toggleFullscreen();
         }
 
-        long window = ((LWJGL3Window) Renderer.getRenderer().getWindow()).getHandle();
+        long window = ((LWJGL3Window) engine.getWindow()).getHandle();
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
@@ -233,6 +235,7 @@ public class KeyBindingPanel extends Panel {
                         if (ptr != MemoryUtil.NULL) {
                             String path = MemoryUtil.memUTF8(ptr);
                             if (path != null) {
+                                java.util.Objects.requireNonNull(path);
                                 try {
                                     String json = Files.readString(Path.of(path));
                                     gui_root.getInputManager().importBindings(json);
@@ -256,7 +259,7 @@ public class KeyBindingPanel extends Panel {
 
             // Wait for the async dialog to finish
             while (!dialogClosed.get()) {
-                Renderer.getRenderer().getWindow().pollEvents();
+                engine.getWindow().pollEvents();
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -265,11 +268,11 @@ public class KeyBindingPanel extends Panel {
                 }
             }
             updateList();
-            Renderer.getRenderer().getWindow().focus();
+            engine.getWindow().focus();
         }
 
         if (wasFullscreen) {
-            Renderer.getRenderer().toggleFullscreen();
+            engine.toggleFullscreen();
         }
     }
 

@@ -10,7 +10,6 @@ import com.oddlabs.net.Connection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -25,7 +24,7 @@ import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 
 /** Network client endpoint managing connection negotiation and game startup. */
-public final class Client implements ARMIEventBroker, GameClientInterface, ConnectionInterface {
+public final class Client<C, R> implements ARMIEventBroker, GameClientInterface, ConnectionInterface {
     private static final int CONNECTING = 1;
     private static final int NEGOTIATING = 2;
     private static final int CLOSED = 5;
@@ -35,22 +34,22 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(GameClientInterface.class);
     private final GameServerInterface gameserver_interface;
     private final UnitInfo[] unit_infos;
-    private final @Nullable LoadCallbackFactory starter_factory;
+    private final @Nullable LoadCallbackFactory<C, R> starter_factory;
     private final PlayerSlotHandler slot_handler;
     private final @Nullable ChatHub chat_hub;
     private final NetworkSelector network;
     private final Runnable cleanup_action;
     private int state = CONNECTING;
 
-    private @Nullable WorldGenerator generator = null;
+    private @Nullable WorldGenerator<?> generator = null;
 
     private PlayerSlot[] player_slots;
     private short player_slot = -1;
-    private ConfigurationListener configuration_listener;
+    private ConfigurationListener<C, R> configuration_listener;
 
     public Client(Runnable cleanup_action, NetworkSelector network,
             @Nullable MatchmakingClient matchmaking_client, @Nullable ChatHub chat_hub, int host_id,
-            @Nullable LoadCallbackFactory starter_factory, PlayerSlotHandler slot_handler) {
+            @Nullable LoadCallbackFactory<C, R> starter_factory, PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.cleanup_action = cleanup_action;
         this.network = network;
@@ -69,11 +68,11 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
         }
     }
 
-    private ConfigurationListener getConfigurationListener() {
+    private ConfigurationListener<C, R> getConfigurationListener() {
         return configuration_listener;
     }
 
-    public void setConfigurationListener(ConfigurationListener listener) {
+    public void setConfigurationListener(ConfigurationListener<C, R> listener) {
         configuration_listener = listener;
     }
 
@@ -89,12 +88,12 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
     public void chat(int player_slot, @Nullable String chat) {
         if (chat != null && player_slot >= 0 && player_slot < player_slots.length && chat_hub != null) {
             String name = slot_handler.getPlayerName(player_slots[player_slot]);
-            chat_hub.chat(new ChatMessage(name, chat, ChatConsumer.Type.GAME_MENU));
+            chat_hub.chat(new ChatMessage(name, chat, ChatMessage.Type.GAME_MENU));
         }
     }
 
     @Override
-    public void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator generator,
+    public void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator<?> generator,
             short player_slot) {
         if (state != CONNECTING)
             return;
@@ -128,7 +127,7 @@ public final class Client implements ARMIEventBroker, GameClientInterface, Conne
         if (state != NEGOTIATING)
             return;
         close();
-        LoadCallback<?, ?> starter = starter_factory != null
+        LoadCallback<C, R> starter = starter_factory != null
                 ? starter_factory.createCallback(session_id, generator, player_slots, unit_infos, player_slot)
                 : null;
         if (starter != null)

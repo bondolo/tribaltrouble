@@ -4,6 +4,7 @@ import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
@@ -14,6 +15,7 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -22,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 public final class GUI implements Animated, FrameDriver {
     private final Skin skin;
     private final LocalInput localInput;
-    private final LocalEventQueue eventQueue;
+    private final ClientEngine engine;
     private final GUIRenderer guiRenderer = new GUIRenderer();
     private GUIRoot current_root;
     private @Nullable Fade fade;
@@ -30,31 +32,31 @@ public final class GUI implements Animated, FrameDriver {
     private final CameraState frustum_state = new CameraState();
     private @Nullable Runnable closeHandler;
 
-    public GUI(LocalInput localInput, LocalEventQueue eventQueue, Skin skin) {
+    public GUI(LocalInput localInput, Skin skin, ClientEngine engine) {
         this.localInput = localInput;
-        this.eventQueue = eventQueue;
         this.skin = skin;
+        this.engine = engine;
         this.current_root = createRoot();
     }
 
-    public GUI(LocalInput localInput, LocalEventQueue eventQueue) {
-        this(localInput, eventQueue, new Skin("/gui/gui_skin.xml"));
+    public GUI(LocalInput localInput, ClientEngine engine) {
+        this(localInput, new Skin("/gui/gui_skin.xml"), engine);
     }
 
-    public GUI(LocalInput localInput) {
-        this(localInput, Renderer.getRenderer().getEventQueue());
+    public @NonNull ClientEngine getEngine() {
+        return engine;
     }
 
     public LocalEventQueue getEventQueue() {
-        return eventQueue;
+        return engine.getEventQueue();
     }
 
     public AnimationManager getAnimationManager() {
-        return eventQueue.getManager();
+        return engine.getEventQueue().getManager();
     }
 
     public float getTime() {
-        return eventQueue.getTime();
+        return engine.getEventQueue().getTime();
     }
 
     public Skin getSkin() {
@@ -111,7 +113,7 @@ public final class GUI implements Animated, FrameDriver {
     public GUIRoot newFade(@Nullable Fadable fadable, GUIRoot gui_root,
             @Nullable UIRenderer renderer) {
         fade = new Fade(fadable, gui_root, renderer);
-        eventQueue.getManager().registerAnimation(this);
+        engine.getEventQueue().getManager().registerAnimation(this);
         return gui_root;
     }
 
@@ -133,7 +135,7 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     void stopFade() {
-        eventQueue.getManager().removeAnimation(this);
+        engine.getEventQueue().getManager().removeAnimation(this);
         fade = null;
     }
 
