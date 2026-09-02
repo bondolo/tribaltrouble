@@ -8,8 +8,6 @@ import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.Color;
 import com.oddlabs.util.Utils;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -50,13 +48,7 @@ public final class Icons {
     }
 
     public static Texture loadTexture(String tex_file) {
-        TextureFile file = new TextureFile(tex_file,
-                GL11.GL_RGBA,
-                GL11.GL_LINEAR,
-                GL11.GL_LINEAR,
-                GL12.GL_CLAMP_TO_EDGE,
-                GL12.GL_CLAMP_TO_EDGE);
-        return Resources.findResource(file);
+        return Resources.findResource(TextureFile.forUI(tex_file));
     }
 
     public static Node getNodeByName(String name, Node n) {

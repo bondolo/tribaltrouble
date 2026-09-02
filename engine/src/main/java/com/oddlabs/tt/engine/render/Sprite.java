@@ -10,8 +10,6 @@ import com.oddlabs.tt.engine.resource.TextureFile;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.FloatBuffer;
@@ -249,18 +247,14 @@ public final class Sprite {
                 throw new IllegalStateException("Failed to instantiate texture generator: " + generator_class_name, e);
             }
         } else {
-            int wrapMode = GL11.GL_REPEAT;
             String lowerName = texture_name.toLowerCase();
-            if (lowerName.contains("leaf") || lowerName.contains("plant") || lowerName.contains("crown") || lowerName
-                    .contains("branch") || lowerName.contains("foliage") || lowerName.contains("bush")) {
-                wrapMode = GL12.GL_CLAMP_TO_EDGE;
-            }
+            boolean clampEdges = lowerName.contains("leaf") || lowerName.contains("plant") || lowerName.contains(
+                    "crown")
+                    || lowerName.contains("branch") || lowerName.contains("foliage") || lowerName.contains("bush");
             boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica")
                     || lowerName.contains("team");
-            boolean isSrgb = !isData;
-            return new Texture[]{Resources.findResource(new TextureFile("/textures/models/" + texture_name,
-                    color_format, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, wrapMode, wrapMode, mipmap_cutoff,
-                    100000, 0.1f, max_alpha, isData, isSrgb))};
+            return new Texture[]{Resources.findResource(TextureFile.forModel("/textures/models/" + texture_name,
+                    color_format, clampEdges, mipmap_cutoff, max_alpha, isData))};
         }
     }
 
