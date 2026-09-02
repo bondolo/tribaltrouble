@@ -28,6 +28,7 @@ import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
+import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.ToolTip;
@@ -75,18 +76,19 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     private @Nullable Building selected_building;
 
-    public DefaultRenderer(@Nullable Cheat cheat, Player local_player, RenderQueues render_queues,
+    public DefaultRenderer(RenderContext renderContext, @Nullable Cheat cheat, Player local_player,
+            RenderQueues render_queues,
             WorldInfo<Texture> world_info, LandscapeRenderer landscape_renderer,
             Picker picker,
             Selection selection, MatrixStack modelViewStack, MatrixStack projectionStack,
-            AudioManager audioManager, int graphic_detail, int width, int height) {
+            AudioManager audioManager, Settings settings, int width, int height) {
         this.world = local_player.getWorld();
         this.cheat = cheat;
         this.ambient = new AmbientAudio(audioManager);
         this.render_queues = render_queues;
         this.picker = picker;
         this.selection = selection;
-        this.sprite_sorter = new SpriteSorter(graphic_detail);
+        this.sprite_sorter = new SpriteSorter(settings.graphic_detail);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
                 selection, audioManager);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
@@ -101,8 +103,10 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
         this.emitterRenderer = new EmitterRenderer();
-        this.postProcessor = new PostProcessor(width, height);
-        DebugRender.setShaderRenderer(new DebugShaderRenderer(new DebugMeshShader(), modelViewStack, projectionStack));
+        this.postProcessor = new PostProcessor(renderContext, settings.accessibility, width, height);
+        DebugRender.setShaderRenderer(new DebugShaderRenderer(
+                new DebugMeshShader(), modelViewStack, projectionStack, renderContext
+        ));
     }
 
     private void drawAxes() {
@@ -228,7 +232,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
 
-        postProcessor.resize(frustum_state.getWidth(), frustum_state.getHeight());
+        postProcessor.resize(context, frustum_state.getWidth(), frustum_state.getHeight());
         postProcessor.bindSceneFBO(context);
         context.setDrawBuffers(true); // Ensure both Color and Mask are cleared
         context.setColorMask(true, true, true, true);
@@ -336,7 +340,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDrawBuffers(false);
 
         // Copy depth buffer for Soft Particles (smoke/effects)
-        postProcessor.copyDepthBuffer();
+        postProcessor.copyDepthBuffer(context);
 
         // Render transient effects (smoke, lightning) AFTER all other scene objects.
         // This ensures they are depth-tested against the complete scene (including water and blended units).

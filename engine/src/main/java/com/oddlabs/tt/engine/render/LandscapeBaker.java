@@ -1,16 +1,26 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.engine.render.shader.ShaderProgram;
-import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.engine.vbo.QuadVBO;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.engine.image.GLByteImage;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
+import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
+import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.resource.WorldInfo;
+import com.oddlabs.tt.engine.vbo.QuadVBO;
 import com.oddlabs.tt.procedural.BlendInfo;
 import com.oddlabs.tt.procedural.BlendLighting;
 import com.oddlabs.tt.procedural.BlendOcclusion;
+import com.oddlabs.tt.procedural.GeneratedLandscapeData;
+import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.StructureBlend;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL21;
@@ -18,8 +28,11 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static com.oddlabs.tt.engine.util.GLUtils.checkGLError;
 
@@ -27,6 +40,7 @@ import static com.oddlabs.tt.engine.util.GLUtils.checkGLError;
  * Generates combined diffuse and normal maps for the landscape by baking layers.
  */
 public final class LandscapeBaker {
+    private static final Logger logger = Logger.getLogger(LandscapeBaker.class.getSimpleName());
 
     private static final String VERTEX_SHADER = """
             #version 410 core
@@ -135,12 +149,14 @@ public final class LandscapeBaker {
         }
     }
 
+    private final RenderContext renderContext;
     private final int colormapSize;
     private final float textureScale;
-    private Texture heightMap;
+    private @Nullable Texture heightMap;
     private float worldSize;
 
-    public LandscapeBaker(int colormapSize, float textureScale) {
+    public LandscapeBaker(RenderContext renderContext, int colormapSize, float textureScale) {
+        this.renderContext = renderContext;
         this.colormapSize = colormapSize;
         this.textureScale = textureScale;
     }
@@ -148,6 +164,73 @@ public final class LandscapeBaker {
     public void setHeightMap(Texture heightMap, float worldSize) {
         this.heightMap = heightMap;
         this.worldSize = worldSize;
+    }
+
+    private static int getMaxTextureSize() {
+        try {
+            if (GL.getCapabilities() != null) {
+                int max = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
+                if (max > 0) {
+                    return max;
+                }
+            }
+        } catch (Throwable _) {
+            // No OpenGL context is current
+        }
+        return 8192;
+    }
+
+    private static int clampTexelsPerGridUnit(int gridUnits, int requestedTexelsPerUnit) {
+        int maxTextureSize = getMaxTextureSize();
+        int texels = requestedTexelsPerUnit;
+        while (gridUnits * texels > maxTextureSize && texels > 1) {
+            texels >>= 1;
+        }
+        return texels;
+    }
+
+    private static Texture createDetail(GLImage detail_image, int base_level) {
+        GLImage[] detail_mipmaps = detail_image.buildMipMaps(base_level,
+                LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_FACTOR, true,
+                false);
+        return new Texture(detail_mipmaps, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+    }
+
+    private static Texture createDetailNormal(GLImage detail_image) {
+        GLImage[] detail_mipmaps = detail_image.buildMipMaps(10000, 1.0f, true, false);
+        return new Texture(detail_mipmaps, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+    }
+
+    public static WorldInfo<Texture> bakeWorld(RenderContext renderContext, GeneratedLandscapeData landscapeData) {
+        Landscape landscape = landscapeData.landscape();
+        IslandConfig config = landscapeData.config();
+
+        Instant time_before = Instant.now();
+        BlendInfo[] blend_infos = landscape.getBlendInfos();
+        Texture detail = createDetail(new GLIntImage(landscape.getDetail()), 1);
+        Texture detailNormal = createDetailNormal(new GLIntImage(landscape.getDetailNormal()));
+
+        int grid_units = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
+        int texels_per_grid_unit = clampTexelsPerGridUnit(grid_units, AppConfig.DEFAULT_TEXELS_PER_GRID_UNIT);
+        int colormap_size = grid_units * texels_per_grid_unit;
+
+        float textureScale = config.metersPerWorld() * LandscapeConfig.LANDSCAPE_TEXTURE_SCALE;
+        LandscapeBaker baker = new LandscapeBaker(renderContext, colormap_size, textureScale);
+
+        int grid_width = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
+        WorldInfo.Maps<Texture> maps;
+        try (Texture heightMapTexture = new Texture(landscape.getHeight(), grid_width, grid_width,
+                GL30.GL_R32F, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT)) {
+            baker.setHeightMap(heightMapTexture, config.metersPerWorld());
+            maps = baker.bake(blend_infos);
+        }
+        Instant time_after = Instant.now();
+        logger.fine(() -> "Landscape baked in " + Duration.between(time_before, time_after));
+
+        return new WorldInfo<>(landscapeData, maps, detail, detailNormal,
+                DistanceFogInfo.forTerrain(config.terrain(), config.metersPerWorld()));
     }
 
     private static Texture createAlphaMap(GLByteImage alpha_image) {
@@ -188,8 +271,9 @@ public final class LandscapeBaker {
             int savedFBO = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
             int savedDrawBuffer = GL11.glGetInteger(GL30.GL_DRAW_BUFFER0);
 
-            try (FBO fbo = new FBO(colormapSize, colormapSize); BlendShader shader = new BlendShader(); QuadVBO quad
-                    = new QuadVBO()) {
+            try (FBO fbo = new FBO(renderContext, colormapSize, colormapSize); BlendShader shader
+                    = new BlendShader(); QuadVBO quad
+                            = new QuadVBO()) {
 
                 checkGLError("After resource creation");
 

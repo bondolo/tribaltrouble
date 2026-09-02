@@ -198,7 +198,8 @@ public class GraphicsPanel extends Panel {
 
     public void updateScaleLabel() {
         var window = engine.getWindow();
-        float scale = GUIRoot.calculateEffectiveScale(window.getLogicalWidth(), window.getLogicalHeight());
+        float scale = GUIRoot.calculateEffectiveScale(window.getLogicalWidth(), window.getLogicalHeight(),
+                engine.getSettings().control.ui_scale);
         label_pct.setText(String.format("%d%%", (int) (scale * 100)));
     }
 }

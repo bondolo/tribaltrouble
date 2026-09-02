@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.ScopedState;
@@ -125,7 +124,7 @@ public final class GUI implements Animated, FrameDriver {
         return ScopedValue.where(Skin.CURRENT, skin).call(() -> {
             GUIRoot gui_root = new GUIRoot(this);
             // This happens early before the viewport is fully initialized
-            var window = Renderer.getRenderer().getWindow();
+            var window = engine.getRenderer().getWindow();
             gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
             return gui_root;
         });
@@ -167,7 +166,7 @@ public final class GUI implements Animated, FrameDriver {
         Matrix4f proj = new Matrix4f();
         var guiRoot = getGUIRoot();
 
-        RenderContext context = Renderer.getRenderer().getRenderContext();
+        RenderContext context = engine.getRenderer().getRenderContext();
 
         CameraState camera = guiRoot.getDelegate().getCameraState();
         if (camera != null) {

@@ -7,7 +7,6 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.gui.delegate.InputDelegate;
@@ -49,7 +48,7 @@ public final class GUIRoot extends GUIObject {
     private final GUI gui;
     private final ToolTipBox tool_tip = new ToolTipBox();
     private final InfoPrinter info_printer;
-    private final Status status = new Status();
+    private final Status status;
     private final InputState input_state;
     private boolean render_tool_tip = false;
     private @Nullable IconQuad cheatIcon;
@@ -66,6 +65,7 @@ public final class GUIRoot extends GUIObject {
     GUIRoot(GUI gui) {
         this.gui = gui;
         this.info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
+        this.status = new Status(gui.getEngine().getSettings());
         this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
         this.input_state = new InputState(this);
         setPos(0, 0);
@@ -182,7 +182,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     public void setToolTipTimer() {
-        tool_tip_timer.setTimerInterval(Renderer.getRenderer().getSettings().control.tooltip_delay
+        tool_tip_timer.setTimerInterval(gui.getEngine().getSettings().control.tooltip_delay
                 * ToolTipBox.MAX_DELAY_SECONDS);
     }
 
@@ -311,6 +311,7 @@ public final class GUIRoot extends GUIObject {
         delegate.addChild(form);
         form.addCloseListener(() -> popModalDelegate(delegate));
         pushModalDelegate(delegate);
+        form.centerPos();
         form.setFocus();
     }
 
@@ -333,13 +334,17 @@ public final class GUIRoot extends GUIObject {
         return Math.max(1.0f, autoScale);
     }
 
-    public static float calculateEffectiveScale(int width, int height) {
+    public float calculateEffectiveScale(int width, int height) {
+        return calculateEffectiveScale(width, height, gui.getEngine().getSettings().control.ui_scale);
+    }
+
+    public static float calculateEffectiveScale(int width, int height, float uiScale) {
         if (width <= 0 || height <= 0) return 1.0f;
 
         float minScale = calculateMinScale(width, height);
         float maxAllowedScale = Math.max(minScale, calculateMaxScale(width, height));
 
-        float current = Math.clamp(Renderer.getRenderer().getSettings().control.ui_scale, 0f, 1f);
+        float current = Math.clamp(uiScale, 0f, 1f);
 
         // Interpolate
         float rawTarget = minScale + (current * (maxAllowedScale - minScale));
@@ -355,7 +360,7 @@ public final class GUIRoot extends GUIObject {
         if (width <= 0 || height <= 0) return;
 
         effective_scale = calculateEffectiveScale(width, height);
-        float density = Renderer.getRenderer().getWindow().getPixelDensity();
+        float density = gui.getEngine().getWindow().getPixelDensity();
         physical_scale = effective_scale * density;
 
         var pointerInput = gui.getLocalInput().getPointerInput();
@@ -379,9 +384,9 @@ public final class GUIRoot extends GUIObject {
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
-                    Renderer.getRenderer().getSettings().control.aggressive_units = !Renderer.getRenderer()
-                            .getSettings().control.aggressive_units;
-                    info_printer.print(i18n(Renderer.getRenderer().getSettings().control.aggressive_units
+                    var control = gui.getEngine().getSettings().control;
+                    control.aggressive_units = !control.aggressive_units;
+                    info_printer.print(i18n(control.aggressive_units
                             ? "aggressive_unites_on" : "aggressive_unites_off"));
                     consumed = true;
                 }

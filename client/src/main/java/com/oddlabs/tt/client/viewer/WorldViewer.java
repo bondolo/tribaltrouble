@@ -21,12 +21,14 @@ import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.client.render.RacesAssetsLoader;
 import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.procedural.GeneratedLandscapeData;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -107,7 +109,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final InGameChatHistory in_game_chat_history;
 
     public WorldViewer(final GUIRoot gui_root,
-            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<WorldInfo<Texture>> generator,
+            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<GeneratedLandscapeData> generator,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
             SessionID session_id) {
         this.engine = gui_root.getGUI().getEngine();
@@ -279,8 +281,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
         };
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
-        WorldInfo<Texture> world_info = generator.generate(
+        GeneratedLandscapeData landscapeData = generator.generate(
                 player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition());
+        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(
+                engine.getRenderer().getRenderContext(), landscapeData);
         camera_state.setFog(world_info.fog_info());
         this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
                 world_info.landscapeData(), player_infos, engine.getSettings().accessibility.linear_team_colours,
@@ -291,8 +295,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
                 selection, audioManager);
-        this.renderer = new DefaultRenderer(cheat, local_player, render_queues, world_info, landscape_renderer, picker,
-                selection, modelViewStack, projectionStack, audioManager, engine.getSettings().graphic_detail,
+        this.renderer = new DefaultRenderer(engine.getRenderer().getRenderContext(), cheat, local_player, render_queues,
+                world_info, landscape_renderer, picker,
+                selection, modelViewStack, projectionStack, audioManager, engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
         this.gui_root = gui_root;
         this.gui_root.setCheatIcon(GUIIcons.getIcons().getCheatIcon());
