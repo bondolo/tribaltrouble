@@ -82,11 +82,7 @@ public final class PulldownButton<T> extends GUIObject {
     private void activateMenu() {
         menu_active = true;
         menu.setPos((int) (getRootX() + getWidth() - menu.getWidth()), (int) (getRootY() - menu.getHeight()));
-        if (gui_root.getDelegate() instanceof GUIObject obj) {
-            obj.addChild(menu);
-        } else {
-            gui_root.addChild(menu);
-        }
+        gui_root.addChild(menu);
     }
 
     private void deactivateMenu() {

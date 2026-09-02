@@ -345,6 +345,9 @@ public final class TerrainMenu extends Group {
             }
 
             difficulty_pulldown_buttons[i] = new PulldownButton<>(gui_root, difficulty_pulldown_menus[i], 0, 115);
+            if (i == 0) {
+                difficulty_pulldown_buttons[0].setDisabled(true);
+            }
             group_race_team.addChild(difficulty_pulldown_buttons[i]);
 
             for (Race race : Race.values()) {
