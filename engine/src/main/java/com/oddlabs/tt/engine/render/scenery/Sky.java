@@ -266,7 +266,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
             skyVAO.unbind();
         } finally {
-            VBO.releaseIndexVBO(context);
+            VBO.releaseIndexVBO();
         }
     }
 
@@ -351,7 +351,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
             context.setActiveTexture(0);
         } finally {
-            VBO.releaseIndexVBO(context);
+            VBO.releaseIndexVBO();
         }
     }
 

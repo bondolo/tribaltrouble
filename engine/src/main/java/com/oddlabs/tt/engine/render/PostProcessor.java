@@ -38,16 +38,15 @@ public final class PostProcessor implements AutoCloseable {
     private int currentHeight;
 
     public PostProcessor(AccessibilitySettings accessibility, int width, int height) {
-        var context = RenderContext.current();
         this.accessibility = accessibility;
         this.currentWidth = width;
         this.currentHeight = height;
         this.shader = new PostProcessShader();
-        this.sceneFBO = FBO.createSceneFBO(context, width, height);
+        this.sceneFBO = FBO.createSceneFBO(width, height);
 
         // Depth Copy FBO (for Soft Particles)
         this.depthCopyFBO = new FBO(width, height);
-        this.depthCopyFBO.bind(context);
+        this.depthCopyFBO.bind();
         Texture depthCopy = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST,
                 GL11.GL_NEAREST,
                 GL12.GL_CLAMP_TO_EDGE);
@@ -56,7 +55,7 @@ public final class PostProcessor implements AutoCloseable {
         GL11.glDrawBuffer(GL11.GL_NONE);
         GL11.glReadBuffer(GL11.GL_NONE);
         this.depthCopyFBO.checkStatus();
-        this.depthCopyFBO.unbind(context);
+        this.depthCopyFBO.unbind();
 
         // Setup Full-Screen Quad
         this.vao = new VertexArray();
@@ -80,55 +79,58 @@ public final class PostProcessor implements AutoCloseable {
         this.vao.unbind();
     }
 
-    public boolean resize(RenderContext context, int width, int height) {
+    public boolean resize(int width, int height) {
         if (this.currentWidth == width && this.currentHeight == height) return false;
         this.currentWidth = width;
         this.currentHeight = height;
-        sceneFBO.resize(context, width, height);
+        sceneFBO.resize(width, height);
 
-        depthCopyFBO.resize(context, width, height);
-        depthCopyFBO.bind(context);
+        depthCopyFBO.resize(width, height);
+        depthCopyFBO.bind();
         // Since resize() in FBO.java doesn't handle custom depth-only FBOs cleanly yet,
         // we'll manually ensure it's still color-less.
         GL11.glDrawBuffer(GL11.GL_NONE);
         GL11.glReadBuffer(GL11.GL_NONE);
-        depthCopyFBO.unbind(context);
+        depthCopyFBO.unbind();
 
         return true;
     }
 
-    public void copyDepthBuffer(RenderContext context) {
-        sceneFBO.blitDepthTo(context, depthCopyFBO);
+    public void copyDepthBuffer() {
+        sceneFBO.blitDepthTo(depthCopyFBO);
     }
 
     public Texture getDepthCopyTexture() {
         return depthCopyFBO.getDepthTexture();
     }
 
-    public void bindSceneFBO(RenderContext context) {
-        sceneFBO.bind(context);
+    public void bindSceneFBO() {
+        sceneFBO.bind();
     }
 
-    public void unbindSceneFBO(RenderContext context) {
-        sceneFBO.unbind(context);
+    public void unbindSceneFBO() {
+        sceneFBO.unbind();
     }
 
     public void renderComposite(RenderContext context, Consumer<
             RenderContext> guiRenderCallback) {
         // 1. Render GUI into the Scene FBO (on top of the 3D scene)
-        bindSceneFBO(context);
+        bindSceneFBO();
 
         // Ensure blending is enabled for the GUI pass.
         // Buffer 0 (Color): GL_ONE, GL_ONE_MINUS_SRC_ALPHA (Premultiplied Linear)
         // Buffer 1 (Mask): Wipes unit color proportionally and uses MAX for the marker alpha.
         try (var _ = context.withBlendMode(BlendMode.CUSTOM)) {
             context.setBlend(true);
-            GL40.glBlendFunci(0, GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
+            context.setBlendFunc(GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
             // Mask RGB: Wipe background unit color as GUI becomes opaque
             // Mask Alpha: Use MAX to prevent marker (0.5) from accumulating to 1.0
             GL40.glBlendEquationSeparatei(1, GL14.GL_FUNC_ADD, GL14.GL_MAX);
             GL40.glBlendFunci(1, GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+            try (var stack = MemoryStack.stackPush()) {
+                GL20.glDrawBuffers(stack.ints(GL30.GL_COLOR_ATTACHMENT0, GL30.GL_COLOR_ATTACHMENT1));
+            }
 
             guiRenderCallback.accept(context);
 
@@ -139,7 +141,7 @@ public final class PostProcessor implements AutoCloseable {
             }
         }
 
-        unbindSceneFBO(context);
+        unbindSceneFBO();
 
         // 2. Composite the FBO to the screen with Post-Processing (CVD, High Contrast, Team Stencil)
         // Render to the default framebuffer (screen)

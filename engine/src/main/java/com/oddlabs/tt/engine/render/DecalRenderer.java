@@ -220,7 +220,7 @@ public final class DecalRenderer implements AutoCloseable {
         textureBatcher.bindTextures(context, 2);
 
         vao.bind();
-        instanceVBO.bind(context);
+        instanceVBO.bind();
         instanceBuffer.flip();
         instanceVBO.put(instanceBuffer);
 

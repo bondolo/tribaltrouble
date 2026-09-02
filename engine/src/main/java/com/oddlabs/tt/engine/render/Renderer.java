@@ -196,7 +196,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     private void initGL() {
-        VBO.releaseAll(renderContext);
+        VBO.releaseAll();
         boolean enableMultisample = settings.window.view_samples > 0 && window.getPixelDensity() <= 1.0f;
         renderContext.applyDefaults(enableMultisample);
         int w = window.getWidth();

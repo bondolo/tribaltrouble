@@ -103,6 +103,7 @@ public final class GLRenderContext implements RenderContext {
 
 
     // Resets shadow state, forcing next set* call to talk to GL
+    @Override
     public void reset() {
         fboCache.clear();
         currentBlend = BlendMode.NONE;

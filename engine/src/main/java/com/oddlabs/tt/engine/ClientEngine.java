@@ -335,11 +335,6 @@ public final class ClientEngine implements AutoCloseable {
 
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
-        try {
-            renderer.initNative(crashed);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed initializing natives", e);
-        }
 
         if (!settings.inDeveloperMode() && !deterministic.isPlayback()) {
             deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());
@@ -352,6 +347,12 @@ public final class ClientEngine implements AutoCloseable {
 
         ScopedValue.where(RenderContext.CURRENT, renderer.getRenderContext()).run(() -> {
             try {
+                try {
+                    renderer.initNative(crashed);
+                } catch (Throwable e) {
+                    throw new IllegalStateException("Failed initializing natives", e);
+                }
+
                 runSession(startup, start_time);
             } finally {
                 cleanup();
@@ -440,7 +441,7 @@ public final class ClientEngine implements AutoCloseable {
                         load_task.run();
                     } finally {
                         event_queue.getDeterministic().setEnabled(false);
-                        renderer.getRenderContext().reset();
+                        RenderContext.current().reset();
                     }
                     load_task = null;
                 }
