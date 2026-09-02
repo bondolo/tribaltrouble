@@ -11,8 +11,8 @@ import org.lwjgl.opengl.EXTTextureCompressionS3TC;
 import org.lwjgl.opengl.EXTTextureSRGB;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL21;
+import org.lwjgl.opengl.GL30;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -28,11 +28,30 @@ import java.util.logging.Logger;
  */
 public final class TextureFile extends File<Texture> {
     private static final Logger logger = Logger.getLogger(TextureFile.class.getSimpleName());
+
+    /**
+     * Logical pixel format for texture assets.
+     */
+    public enum Format {
+        /**
+         * 3-component red, green, blue color format.
+         */
+        RGB,
+        /**
+         * 4-component red, green, blue, alpha color format.
+         */
+        RGBA,
+        /**
+         * Single-component red channel format.
+         */
+        RED
+    }
+
     private static final String[] EXTENSIONS = {".dds", ".image", ".png", ".jpg", ".jpeg"};
     /**
-     * The internal format of the texture, e.g., GL_RGBA or a compressed format.
+     * The logical pixel format of the texture.
      */
-    private final int internal_format;
+    private final Format format;
     /**
      * The minification filter, used when the texture is scaled down.
      */
@@ -90,7 +109,7 @@ public final class TextureFile extends File<Texture> {
      * @return configured {@code TextureFile}
      */
     public static TextureFile forUI(String location) {
-        return new TextureFile(location, GL11.GL_RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE,
+        return new TextureFile(location, Format.RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE,
                 GL12.GL_CLAMP_TO_EDGE, RenderConfig.NO_MIPMAP_CUTOFF, 10000, 1.0f, false, false, true);
     }
 
@@ -104,7 +123,8 @@ public final class TextureFile extends File<Texture> {
      * @return configured {@code TextureFile}
      */
     public static TextureFile forUIImage(String location, boolean isSrgb) {
-        return new TextureFile(location, GL11.GL_RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT,
+        return new TextureFile(location, Format.RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT,
+                GL11.GL_REPEAT,
                 RenderConfig.NO_MIPMAP_CUTOFF, 10000, 1.0f, false, false, isSrgb);
     }
 
@@ -117,7 +137,7 @@ public final class TextureFile extends File<Texture> {
      * @return configured {@code TextureFile}
      */
     public static TextureFile forEffect(String location) {
-        return new TextureFile(location, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
+        return new TextureFile(location, Format.RGBA, GL11.GL_LINEAR_MIPMAP_LINEAR,
                 GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, RenderConfig.NO_MIPMAP_CUTOFF,
                 10000, 1.0f, false, false, true);
     }
@@ -129,8 +149,7 @@ public final class TextureFile extends File<Texture> {
      * sRGB color-space conversion based on whether the asset represents non-color data (e.g. normal maps).
      *
      * @param location path to the texture asset without file extension
-     * @param colorFormat OpenGL internal color format (e.g. {@link RenderConfig#COMPRESSED_RGBA_FORMAT} or
-     *            {@link RenderConfig#COMPRESSED_RGB_FORMAT})
+     * @param format logical pixel format (e.g. {@link Format#RGBA} or {@link Format#RGB})
      * @param clampEdges if true, clamps texture coordinates to edges (e.g. foliage) to avoid border artifacts;
      *            otherwise repeats texture coordinates (GL_REPEAT)
      * @param mipmapCutoff maximum mipmap level cutoff
@@ -139,19 +158,36 @@ public final class TextureFile extends File<Texture> {
      *            and should not be hardware sRGB decoded; false for standard sRGB color textures
      * @return configured {@code TextureFile}
      */
-    public static TextureFile forModel(String location, int colorFormat, boolean clampEdges,
+    public static TextureFile forModel(String location, Format format, boolean clampEdges,
             int mipmapCutoff, boolean maxAlpha, boolean isData) {
         int wrapMode = clampEdges ? GL12.GL_CLAMP_TO_EDGE : GL11.GL_REPEAT;
         boolean isSrgb = !isData;
-        return new TextureFile(location, colorFormat, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+        return new TextureFile(location, format, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                 wrapMode, wrapMode, mipmapCutoff, 100000, 0.1f, maxAlpha, isData, isSrgb);
+    }
+
+    /**
+     * Creates a texture file for 3D models with format determined by alpha channel presence.
+     *
+     * @param location path to the texture asset without file extension
+     * @param hasAlpha true for RGBA format; false for RGB format
+     * @param clampEdges if true, clamps texture coordinates to edges
+     * @param mipmapCutoff maximum mipmap level cutoff
+     * @param maxAlpha if true, maximizes alpha values during image processing
+     * @param isData true if this texture contains non-color data
+     * @return configured {@code TextureFile}
+     */
+    public static TextureFile forModel(String location, boolean hasAlpha, boolean clampEdges,
+            int mipmapCutoff, boolean maxAlpha, boolean isData) {
+        return forModel(location, hasAlpha ? Format.RGBA : Format.RGB, clampEdges,
+                mipmapCutoff, maxAlpha, isData);
     }
 
     /**
      * Canonical escape-hatch constructor providing direct control over all texture loading and filtering parameters.
      *
      * @param location path to the texture asset without file extension
-     * @param internal_format OpenGL internal format (e.g. GL_RGBA, GL_COMPRESSED_RGBA, etc.)
+     * @param format logical pixel format (e.g. {@link Format#RGBA})
      * @param min_filter OpenGL minification filter (e.g. GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR)
      * @param mag_filter OpenGL magnification filter (e.g. GL_LINEAR, GL_NEAREST)
      * @param wrap_s OpenGL wrap mode for horizontal texture coordinate S
@@ -163,12 +199,12 @@ public final class TextureFile extends File<Texture> {
      * @param is_data if true, texture contains non-color data (e.g. normal maps) and will not be sRGB-decoded
      * @param is_srgb if true, texture contains sRGB color data decoded to linear space on hardware fetch
      */
-    public TextureFile(String location, int internal_format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
+    public TextureFile(String location, Format format, int min_filter, int mag_filter, int wrap_s, int wrap_t,
             int max_mipmap_level, int base_fadeout_level, float fadeout_factor, boolean max_alpha, boolean is_data,
             boolean is_srgb) {
         super(locateTexture(location));
         this.is_dxt = getURL().toString().endsWith(".dds");
-        this.internal_format = internal_format;
+        this.format = format;
         this.min_filter = min_filter;
         this.mag_filter = mag_filter;
         this.wrap_s = wrap_s;
@@ -231,7 +267,7 @@ public final class TextureFile extends File<Texture> {
     @Override
     public boolean equals(@Nullable Object o) {
         return o instanceof TextureFile other &&
-                internal_format == other.internal_format &&
+                format == other.format &&
                 min_filter == other.min_filter && mag_filter == other.mag_filter &&
                 max_mipmap_level == other.max_mipmap_level &&
                 wrap_s == other.wrap_s && wrap_t == other.wrap_t &&
@@ -241,7 +277,6 @@ public final class TextureFile extends File<Texture> {
                 is_data == other.is_data &&
                 super.equals(o);
     }
-
 
     public int getInternalFormat() {
         if (is_dxt) {
@@ -260,14 +295,16 @@ public final class TextureFile extends File<Texture> {
             };
         }
 
-        if (is_srgb && !is_data) {
-            if (internal_format == GL11.GL_RGB || internal_format == GL11.GL_RGB8) return GL21.GL_SRGB8;
-            if (internal_format == GL11.GL_RGBA || internal_format == GL11.GL_RGBA8) return GL21.GL_SRGB8_ALPHA8;
-            if (internal_format == GL13.GL_COMPRESSED_RGB) return EXTTextureSRGB.GL_COMPRESSED_SRGB_EXT;
-            if (internal_format == GL13.GL_COMPRESSED_RGBA) return EXTTextureSRGB.GL_COMPRESSED_SRGB_ALPHA_EXT;
-        }
+        boolean srgb = is_srgb && !is_data;
+        return switch (format) {
+            case RGB -> srgb ? GL21.GL_SRGB8 : GL11.GL_RGB8;
+            case RGBA -> srgb ? GL21.GL_SRGB8_ALPHA8 : GL11.GL_RGBA8;
+            case RED -> GL30.GL_R8;
+        };
+    }
 
-        return internal_format;
+    public Format getFormat() {
+        return format;
     }
 
     public boolean isData() {

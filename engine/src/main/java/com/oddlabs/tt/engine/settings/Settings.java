@@ -129,11 +129,6 @@ public final class Settings implements Serializable, PropertiesSerializer {
         return developer_mode;
     }
 
-    public int getTexelsPerGridUnit() {
-        return AppConfig.DEFAULT_TEXELS_PER_GRID_UNIT / (int) Math.pow(2,
-                AppConfig.DEFAULT_TEXTURE_MIP_SHIFT[graphic_detail]);
-    }
-
     private boolean playback;
 
     public void setPlayback(boolean playback) {

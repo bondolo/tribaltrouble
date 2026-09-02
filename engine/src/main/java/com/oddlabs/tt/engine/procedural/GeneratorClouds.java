@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.engine.image.GLByteImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Landscape;
@@ -11,11 +10,15 @@ import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.procedural.Midpoint;
 import com.oddlabs.tt.simulation.model.Terrain;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
+/**
+ * Procedural texture generator for cloud layer textures.
+ */
 public final class GeneratorClouds extends TextureGenerator {
     private static final int TEXTURE_SIZE = 512;
 
@@ -50,7 +53,7 @@ public final class GeneratorClouds extends TextureGenerator {
                 })
                 .map(Channel::toLinear)
                 .map(cloud -> new GLByteImage(cloud, GL11.GL_RED))
-                .map(image -> new Texture(image, RenderConfig.COMPRESSED_LUMINANCE_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                .map(image -> new Texture(image, GL30.GL_R8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                         GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT))
                 .toArray(Texture[]::new);
     }

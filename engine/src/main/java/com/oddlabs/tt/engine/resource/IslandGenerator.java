@@ -1,5 +1,6 @@
 package com.oddlabs.tt.engine.resource;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
@@ -14,6 +15,7 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -35,10 +37,37 @@ public final class IslandGenerator implements WorldGenerator<WorldInfo<Texture>>
     private final int grid_units;
     private final int texels_per_grid_unit;
 
+    public IslandGenerator(IslandConfig config) {
+        this(config, AppConfig.DEFAULT_TEXELS_PER_GRID_UNIT);
+    }
+
     public IslandGenerator(IslandConfig config, int texels_per_grid_unit) {
         this.config = config;
         this.grid_units = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
-        this.texels_per_grid_unit = texels_per_grid_unit;
+        this.texels_per_grid_unit = clampTexelsPerGridUnit(grid_units, texels_per_grid_unit);
+    }
+
+    private static int getMaxTextureSize() {
+        try {
+            if (GL.getCapabilities() != null) {
+                int max = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
+                if (max > 0) {
+                    return max;
+                }
+            }
+        } catch (Throwable _) {
+            // No OpenGL context is current
+        }
+        return 8192;
+    }
+
+    private static int clampTexelsPerGridUnit(int gridUnits, int requestedTexelsPerUnit) {
+        int maxTextureSize = getMaxTextureSize();
+        int texels = requestedTexelsPerUnit;
+        while (gridUnits * texels > maxTextureSize && texels > 1) {
+            texels >>= 1;
+        }
+        return texels;
     }
 
     public IslandConfig getConfig() {

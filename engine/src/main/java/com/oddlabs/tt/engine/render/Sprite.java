@@ -103,7 +103,7 @@ public final class Sprite {
             }
         }
 
-        int color_format = alpha ? RenderConfig.COMPRESSED_RGBA_FORMAT : RenderConfig.COMPRESSED_RGB_FORMAT;
+        TextureFile.Format color_format = alpha ? TextureFile.Format.RGBA : TextureFile.Format.RGB;
 
         String[][] texture_names = sprite_info.getTextures();
         textures = new Texture[texture_names.length][3];
@@ -115,7 +115,7 @@ public final class Sprite {
             }
 
             textures[i][TEXTURE_TEAM] = texture_names[i][TEXTURE_TEAM] != null
-                    ? getTextureForName(texture_names[i][1], RenderConfig.COMPRESSED_RGB_FORMAT, mipmap_cutoff,
+                    ? getTextureForName(texture_names[i][1], TextureFile.Format.RGB, mipmap_cutoff,
                             max_alpha)[0]
                     : null;
         }
@@ -222,7 +222,7 @@ public final class Sprite {
         }
     }
 
-    private static Texture[] getTextureForName(String texture_name, int color_format,
+    private static Texture[] getTextureForName(String texture_name, TextureFile.Format color_format,
             int mipmap_cutoff, boolean max_alpha) {
         if (texture_name.startsWith(GENERATOR_STRING)) {
             String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
