@@ -11,4 +11,7 @@ module com.oddlabs.tt.audio.openal {
     requires org.lwjgl.stb;
 
     exports com.oddlabs.tt.audio.openal;
+
+    provides com.oddlabs.tt.audio.AudioProvider with
+            com.oddlabs.tt.audio.openal.OpenALAudioProvider;
 }

@@ -1,6 +1,6 @@
 package com.oddlabs.tt;
 
-import com.oddlabs.tt.audio.openal.OpenALManager;
+import com.oddlabs.tt.audio.AudioProvider;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.base.util.Utils;
@@ -82,7 +82,7 @@ public final class Main {
             GamePaths gamePaths = new GamePaths();
             Settings settings = new Settings(gamePaths.dataDir());
             try (var window = new LWJGL3Window(); var eventQueue = new LocalEventQueue(); var audioManager
-                    = new OpenALManager(settings.audio, eventQueue.getManager())) {
+                    = AudioProvider.load(settings.audio, eventQueue.getManager())) {
                 audioManager.setSfxGain(settings.audio.sound_gain)
                         .setMusicGain(settings.audio.music_gain)
                         .setSfxEnabled(settings.audio.play_sfx);
