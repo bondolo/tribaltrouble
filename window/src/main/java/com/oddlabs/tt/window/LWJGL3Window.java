@@ -5,6 +5,8 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.sdl.SDLDialog;
+import org.lwjgl.sdl.SDL_DialogFileFilter;
 import org.lwjgl.sdl.SDL_DisplayMode;
 import org.lwjgl.sdl.SDL_Event;
 import org.lwjgl.sdl.SDL_KeyboardEvent;
@@ -25,6 +27,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -892,6 +895,49 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public void updateSystemUI(boolean playing) {
+    }
+
+    @Override
+    public void showOpenFileDialog(String filterName, String filterPattern, Consumer<@Nullable Path> callback) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+            filters.get(0).name(stack.UTF8(filterName)).pattern(stack.UTF8(filterPattern));
+            SDLDialog.SDL_ShowOpenFileDialog((userdata, filelist, filter) -> {
+                if (filelist != MemoryUtil.NULL) {
+                    long ptr = MemoryUtil.memGetAddress(filelist);
+                    if (ptr != MemoryUtil.NULL) {
+                        String path = MemoryUtil.memUTF8(ptr);
+                        if (path != null) {
+                            callback.accept(Path.of(path));
+                            return;
+                        }
+                    }
+                }
+                callback.accept(null);
+            }, MemoryUtil.NULL, windowHandle, filters, (CharSequence) null, false);
+        }
+    }
+
+    @Override
+    public void showSaveFileDialog(String filterName, String filterPattern, @Nullable String defaultLocation,
+            Consumer<@Nullable Path> callback) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
+            filters.get(0).name(stack.UTF8(filterName)).pattern(stack.UTF8(filterPattern));
+            SDLDialog.SDL_ShowSaveFileDialog((userdata, filelist, filter) -> {
+                if (filelist != MemoryUtil.NULL) {
+                    long ptr = MemoryUtil.memGetAddress(filelist);
+                    if (ptr != MemoryUtil.NULL) {
+                        String path = MemoryUtil.memUTF8(ptr);
+                        if (path != null) {
+                            callback.accept(Path.of(path));
+                            return;
+                        }
+                    }
+                }
+                callback.accept(null);
+            }, MemoryUtil.NULL, windowHandle, filters, defaultLocation);
+        }
     }
 
     private Vector2f getLogicalSize(int physW, int physH) {

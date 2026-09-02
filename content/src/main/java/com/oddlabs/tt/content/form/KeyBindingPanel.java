@@ -22,18 +22,11 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
 import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.util.Color;
-import org.lwjgl.sdl.SDLDialog;
-import org.lwjgl.sdl.SDL_DialogFileFilter;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
@@ -154,126 +147,41 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void saveMappings() {
-        boolean wasFullscreen = engine.getSettings().window.fullscreen;
-        if (wasFullscreen) {
-            engine.toggleFullscreen();
-        }
-
-        long window = ((LWJGL3Window) engine.getWindow()).getHandle();
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
-            filters.get(0).name(stack.UTF8(AbstractOptionsMenu.i18n("json_files"))).pattern(stack.UTF8("json"));
-
-            AtomicBoolean dialogClosed = new AtomicBoolean(false);
-
-            SDLDialog.SDL_ShowSaveFileDialog(
-                    (userdata, filelist, filter) -> {
+        engine.getWindow().showSaveFileDialog(
+                AbstractOptionsMenu.i18n("json_files"),
+                "json",
+                "keybindings.json",
+                path -> {
+                    if (path != null) {
+                        String json = gui_root.getInputManager().exportBindings();
                         try {
-                            if (filelist != MemoryUtil.NULL) {
-                                long ptr = MemoryUtil.memGetAddress(filelist);
-                                if (ptr != MemoryUtil.NULL) {
-                                    String path = MemoryUtil.memUTF8(ptr);
-                                    if (path != null) {
-                                        String json = gui_root.getInputManager().exportBindings();
-                                        try {
-                                            Files.writeString(Path.of(path), json);
-                                        } catch (IOException e) {
-                                            gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n(
-                                                    "error_save_failed", e.getMessage())));
-                                        }
-                                    }
-                                }
-                            }
-                        } finally {
-                            dialogClosed.set(true);
+                            Files.writeString(path, json);
+                        } catch (IOException e) {
+                            gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n(
+                                    "error_save_failed", e.getMessage())));
                         }
-                    },
-                    MemoryUtil.NULL,
-                    window,
-                    filters,
-                    "keybindings.json"
-            );
-
-            // Wait for the async dialog to finish before toggling fullscreen back
-            while (!dialogClosed.get()) {
-                engine.getWindow().pollEvents();
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
+                    }
                 }
-            }
-            updateList();
-            engine.getWindow().focus();
-        }
-
-        if (wasFullscreen) {
-            engine.toggleFullscreen();
-        }
+        );
     }
 
     private void loadMappings() {
-        boolean wasFullscreen = engine.getSettings().window.fullscreen;
-        if (wasFullscreen) {
-            engine.toggleFullscreen();
-        }
-
-        long window = ((LWJGL3Window) engine.getWindow()).getHandle();
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            SDL_DialogFileFilter.Buffer filters = SDL_DialogFileFilter.malloc(1, stack);
-            filters.get(0).name(stack.UTF8(AbstractOptionsMenu.i18n("json_files"))).pattern(stack.UTF8("json"));
-
-            AtomicBoolean dialogClosed = new AtomicBoolean(false);
-
-            SDLDialog.SDL_ShowOpenFileDialog((userdata, filelist, filter) -> {
-                try {
-                    if (filelist != MemoryUtil.NULL) {
-                        long ptr = MemoryUtil.memGetAddress(filelist);
-                        if (ptr != MemoryUtil.NULL) {
-                            String path = MemoryUtil.memUTF8(ptr);
-                            if (path != null) {
-                                java.util.Objects.requireNonNull(path);
-                                try {
-                                    String json = Files.readString(Path.of(path));
-                                    gui_root.getInputManager().importBindings(json);
-                                } catch (IOException e) {
-                                    gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("error_load_failed",
-                                            e.getMessage())));
-                                }
-                            }
+        engine.getWindow().showOpenFileDialog(
+                AbstractOptionsMenu.i18n("json_files"),
+                "json",
+                path -> {
+                    if (path != null) {
+                        try {
+                            String json = Files.readString(path);
+                            gui_root.getInputManager().importBindings(json);
+                            updateList();
+                        } catch (IOException e) {
+                            gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n(
+                                    "error_load_failed", e.getMessage())));
                         }
                     }
-                } finally {
-                    dialogClosed.set(true);
                 }
-            },
-                    MemoryUtil.NULL,
-                    window,
-                    filters,
-                    (CharSequence) null,
-                    false
-            );
-
-            // Wait for the async dialog to finish
-            while (!dialogClosed.get()) {
-                engine.getWindow().pollEvents();
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-            updateList();
-            engine.getWindow().focus();
-        }
-
-        if (wasFullscreen) {
-            engine.toggleFullscreen();
-        }
+        );
     }
 
     private static final class InvertedLabel extends Label {
