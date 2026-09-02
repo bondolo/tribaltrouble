@@ -19,7 +19,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -175,18 +174,12 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
 
     @Override
     public int getAttributeLocation(String name) {
-        return state.attributeLocations.computeIfAbsent(name, n -> {
-            int loc = GL20.glGetAttribLocation(state.programId, n);
-            return loc;
-        });
+        return state.attributeLocations.computeIfAbsent(name, n -> GL20.glGetAttribLocation(state.programId, n));
     }
 
     @Override
     public int getUniformLocation(String name) {
-        return state.uniformLocations.computeIfAbsent(name, n -> {
-            int loc = GL20.glGetUniformLocation(state.programId, n);
-            return loc;
-        });
+        return state.uniformLocations.computeIfAbsent(name, n -> GL20.glGetUniformLocation(state.programId, n));
     }
 
     @Override
@@ -289,16 +282,27 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         int loc = getUniformLocation(name);
         if (loc == -1) return;
 
-        float[] currentValue = new float[16];
+        float[] cached = state.mat4Uniforms.get(loc);
         int pos = matrix.position();
-        matrix.get(currentValue);
-        matrix.position(pos); // Restore position
+        if (cached == null) {
+            cached = new float[16];
+            state.mat4Uniforms.put(loc, cached);
+        } else {
+            boolean matches = true;
+            for (int i = 0; i < 16; i++) {
+                if (cached[i] != matrix.get(pos + i)) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) return;
+        }
 
-        float[] lastValue = state.mat4Uniforms.get(loc);
-        if (lastValue != null && Arrays.equals(lastValue, currentValue)) return;
+        for (int i = 0; i < 16; i++) {
+            cached[i] = matrix.get(pos + i);
+        }
 
         GL20.glUniformMatrix4fv(loc, transpose, matrix);
-        state.mat4Uniforms.put(loc, currentValue);
     }
 
     /**
