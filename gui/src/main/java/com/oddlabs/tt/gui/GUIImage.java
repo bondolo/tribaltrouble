@@ -1,11 +1,9 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
-import org.lwjgl.opengl.GL11;
 
 /**
  * Displays a texture or a region of a texture.
@@ -30,9 +28,7 @@ public final class GUIImage extends GUIIcon {
     public GUIImage(int width, int height, float u1, float v1, float u2, float v2, String texture_name,
             boolean isSrgb) {
         this(width, height, u1, v1, u2, v2,
-                Resources.findResource(new TextureFile(texture_name, GL11.GL_RGBA, GL11.GL_LINEAR, GL11.GL_LINEAR,
-                        GL11.GL_REPEAT, GL11.GL_REPEAT,
-                        RenderConfig.NO_MIPMAP_CUTOFF, 10000, 1.0f, false, false, isSrgb)));
+                Resources.findResource(TextureFile.forUIImage(texture_name, isSrgb)));
     }
 
     /**

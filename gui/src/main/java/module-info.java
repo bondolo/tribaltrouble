@@ -6,8 +6,6 @@ module com.oddlabs.tt.gui {
     requires com.oddlabs.common;
     requires org.joml;
     requires static org.jspecify;
-    requires org.lwjgl;
-    requires org.lwjgl.opengl;
     requires java.desktop;
     requires java.xml;
     requires java.logging;

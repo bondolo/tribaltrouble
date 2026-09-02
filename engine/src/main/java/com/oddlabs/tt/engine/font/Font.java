@@ -6,8 +6,6 @@ import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.util.FontInfo;
 import com.oddlabs.util.Quad;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import java.text.BreakIterator;
 import java.util.Map;
@@ -26,12 +24,7 @@ public final class Font {
 
     public Font(FontInfo font_info) {
         this.key_map = font_info.getKeyMap();
-        TextureFile file = new TextureFile(font_info.getTextureName(),
-                GL11.GL_RGBA,
-                GL11.GL_LINEAR,
-                GL11.GL_LINEAR,
-                GL12.GL_CLAMP_TO_EDGE,
-                GL12.GL_CLAMP_TO_EDGE);
+        TextureFile file = TextureFile.forUI(font_info.getTextureName());
         this.texture = Resources.findResource(file);
         this.x_border = font_info.getBorderX();
         this.y_border = font_info.getBorderY();

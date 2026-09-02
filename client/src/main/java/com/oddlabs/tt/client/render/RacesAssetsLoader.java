@@ -29,8 +29,6 @@ import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
 import com.oddlabs.tt.simulation.model.WeaponVisualType;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
@@ -146,17 +144,13 @@ public final class RacesAssetsLoader {
         TextureKey[] note_textures = new TextureKey[8];
         for (int i = 0; i < note_textures.length; i++) {
             note_textures[i] = queues.registerEffectTexture(
-                    new TextureFile("/textures/effects/note" + (i + 1),
-                            RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
-                            GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 4 + i);
+                    TextureFile.forEffect("/textures/effects/note" + (i + 1)), 4 + i);
         }
         AssetRegistry.getInstance().registerNoteTextures(note_textures);
 
         TextureKey[] star_textures = new TextureKey[1];
         star_textures[0] = queues.registerEffectTexture(
-                new TextureFile("/textures/effects/star",
-                        RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
-                        GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE), 12);
+                TextureFile.forEffect("/textures/effects/star"), 12);
         AssetRegistry.getInstance().registerStarTextures(star_textures);
 
         queues.ensureTextureArray();
