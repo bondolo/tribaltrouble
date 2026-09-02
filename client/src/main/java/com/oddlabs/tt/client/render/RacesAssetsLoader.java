@@ -138,19 +138,19 @@ public final class RacesAssetsLoader {
         poison_textures[0] = queues.registerEffectTexture(new GeneratorPoison(), 0, 2);
         AssetRegistry.getInstance().registerPoisonTextures(poison_textures);
 
-        TextureKey lightning_texture = queues.registerEffectTexture(new GeneratorLightning(), 0, 3);
+        TextureKey lightning_texture = queues.registerTexture(new GeneratorLightning(), 0);
         AssetRegistry.getInstance().registerLightningTexture(lightning_texture);
 
         TextureKey[] note_textures = new TextureKey[8];
         for (int i = 0; i < note_textures.length; i++) {
             note_textures[i] = queues.registerEffectTexture(
-                    TextureFile.forEffect("/textures/effects/note" + (i + 1)), 4 + i);
+                    TextureFile.forEffect("/textures/effects/note" + (i + 1)), 3 + i);
         }
         AssetRegistry.getInstance().registerNoteTextures(note_textures);
 
         TextureKey[] star_textures = new TextureKey[1];
         star_textures[0] = queues.registerEffectTexture(
-                TextureFile.forEffect("/textures/effects/star"), 12);
+                TextureFile.forEffect("/textures/effects/star"), 11);
         AssetRegistry.getInstance().registerStarTextures(star_textures);
 
         queues.ensureTextureArray();
