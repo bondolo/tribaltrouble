@@ -120,7 +120,7 @@ public interface RenderContext {
     // Lifecycle & Debug
     void init();
 
-    void applyDefaults();
+    void applyDefaults(boolean enableMultisample);
 
     /**
      * Verifies that the tracked state matches the actual OpenGL state.

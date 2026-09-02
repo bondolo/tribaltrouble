@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.render.state;
 
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import org.jspecify.annotations.Nullable;
@@ -156,7 +155,7 @@ public final class GLRenderContext implements RenderContext {
     }
 
     @Override
-    public void applyDefaults() {
+    public void applyDefaults(boolean enableMultisample) {
         reset();
 
         GL11.glFrontFace(GL11.GL_CCW);
@@ -184,9 +183,8 @@ public final class GLRenderContext implements RenderContext {
         setDepthMode(DepthMode.READ_WRITE); // Enable Test + Mask True
         setDepthFunc(GL11.GL_LEQUAL);
 
-        // Multisample: Disable if desktop scale factor > 1.0f (which replaces MSAA with supersampling)
-        float density = Renderer.getRenderer().getWindow().getPixelDensity();
-        if (Renderer.getRenderer().getSettings().window.view_samples > 0 && density <= 1.0f) {
+        // Multisample
+        if (enableMultisample) {
             GL13.glEnable(GL13.GL_MULTISAMPLE);
         } else {
             GL13.glDisable(GL13.GL_MULTISAMPLE);
