@@ -20,7 +20,6 @@ module com.oddlabs.tt {
     requires java.logging;
     requires org.lwjgl;
     requires org.lwjgl.sdl;
-    requires org.lwjgl.openal;
     requires org.lwjgl.opengl;
     requires org.lwjgl.stb;
     requires kotlin.stdlib;

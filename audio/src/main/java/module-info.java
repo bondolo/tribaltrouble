@@ -9,6 +9,8 @@ module com.oddlabs.tt.audio {
 
     exports com.oddlabs.tt.audio;
 
+    uses com.oddlabs.tt.audio.AudioProvider;
+
     provides com.oddlabs.tt.base.global.PropertiesSerializer with
             com.oddlabs.tt.audio.AudioSettings;
 }
