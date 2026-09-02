@@ -104,7 +104,7 @@ public final class RenderQueues implements AutoCloseable {
         assert pending_array_uploads.size() == depth : "Gaps found in effect texture layers";
 
         effect_texture_array = new TextureArray(slotWidth, slotHeight, depth,
-                RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
+                GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                 GL12.GL_CLAMP_TO_EDGE);
 
         // Pre-scale all sources to match array dimensions
@@ -116,7 +116,7 @@ public final class RenderQueues implements AutoCloseable {
             }
         }
 
-        effect_texture_array.build(pending_array_uploads, RenderConfig.COMPRESSED_RGBA_FORMAT);
+        effect_texture_array.build(pending_array_uploads, GL11.GL_RGBA8);
         pending_array_uploads.clear();
 
         return effect_texture_array;

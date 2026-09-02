@@ -98,7 +98,8 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
             }
         }
 
-        Vector3f cloudPos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
+        Vector3f cloudPos = new Vector3f(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ()
+                + cloud.getCloudOffsetZ());
         Lightning lightning = new Lightning(cloudPos, new Vector3f(tx, ty, tz), .5f,
                 15, Color.Linear.WHITE, DELTA_COLOR,
                 AssetRegistry.getInstance().getLightningTexture(), LIGHTNING_TIME);

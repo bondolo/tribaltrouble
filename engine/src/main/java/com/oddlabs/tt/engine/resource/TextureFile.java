@@ -117,7 +117,7 @@ public final class TextureFile extends File<Texture> {
      * @return configured {@code TextureFile}
      */
     public static TextureFile forEffect(String location) {
-        return new TextureFile(location, RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR,
+        return new TextureFile(location, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                 GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE, RenderConfig.NO_MIPMAP_CUTOFF,
                 10000, 1.0f, false, false, true);
     }

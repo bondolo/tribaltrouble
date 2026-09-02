@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.procedural;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.procedural.Hill;
@@ -13,6 +12,9 @@ import com.oddlabs.tt.procedural.Midpoint;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+/**
+ * Procedural texture generator for poison magic bubble effects.
+ */
 public final class GeneratorPoison extends TextureGenerator {
     private static final int TEXTURE_SIZE = 128;
 
@@ -38,7 +40,7 @@ public final class GeneratorPoison extends TextureGenerator {
         GLIntImage poison_img = new GLIntImage(poison);
         if (Landscape.DEBUG) poison_img.saveAsPNG("generator_poison");
         return new Texture[]{
-                new Texture(poison_img, RenderConfig.COMPRESSED_RGBA_FORMAT, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                new Texture(poison_img, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                         GL11.GL_LINEAR,
                         GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE)
         };
