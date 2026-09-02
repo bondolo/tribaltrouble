@@ -89,7 +89,6 @@ public final class ClientEngine implements AutoCloseable {
 
     public void shutdown() {
         finished = true;
-        Renderer.shutdown();
     }
 
     public boolean isFinished() {

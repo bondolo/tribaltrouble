@@ -3,14 +3,12 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.base.util.StatCounter;
 import com.oddlabs.tt.engine.render.state.GLRenderContext;
-import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
-import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -32,7 +30,6 @@ public final class Renderer implements AutoCloseable {
 
     private static final StatCounter fps = new StatCounter(10);
     private static int num_triangles_rendered;
-    private static volatile boolean finished = false;
 
     private final Window window;
     private final Settings settings;
@@ -49,17 +46,6 @@ public final class Renderer implements AutoCloseable {
 
     public static float getFPS() {
         return fps.getAveragePerUpdate();
-    }
-
-    public static void makeCurrent() {
-        try {
-            Renderer renderer = getRenderer();
-            if (renderer != null) {
-                renderer.getWindow().makeCurrent();
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to make OpenGL context current", e);
-        }
     }
 
     @Override
@@ -121,14 +107,6 @@ public final class Renderer implements AutoCloseable {
         window.pollEvents();
     }
 
-    public static void shutdown() {
-        finished = true;
-    }
-
-    public static boolean isFinished() {
-        return finished;
-    }
-
     public void cleanup() {
         logger.info("Cleaning up Renderer...");
         destroyNative();
@@ -142,7 +120,7 @@ public final class Renderer implements AutoCloseable {
         logger.info("Renderer Closed.");
     }
 
-    public static void dumpWindowInfo() {
+    private void dumpWindowInfo() {
         try {
             GLUtils.checkGLError("Pre-dumpWindowInfo");
             int r = GL30.glGetFramebufferAttachmentParameteri(GL30.GL_FRAMEBUFFER, GL11.GL_BACK_LEFT,
@@ -240,30 +218,16 @@ public final class Renderer implements AutoCloseable {
         }
         NativeResource.setErrorChecker(GLUtils::checkGLError);
         initGL();
-        initVisibleGL();
-    }
-
-    private void initVisibleGL() {
         window.update();
     }
 
-    public static void initGL() {
-        Renderer renderer = getRenderer();
-        if (renderer != null) {
-            RenderContext context = renderer.renderContext;
-            VBO.releaseAll(context);
-            context.applyDefaults();
-            Window window = renderer.window;
-            int w = window.getWidth();
-            int h = window.getHeight();
-            logger.info("[Renderer] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
-            context.setViewport(0, 0, w, h);
-        }
-    }
-
-    public static void clearScreen() {
-        GL11.glClearColor(Color.Linear.BLACK.r(), Color.Linear.BLACK.g(), Color.Linear.BLACK.b(), Color.Linear.BLACK
-                .a());
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+    private void initGL() {
+        VBO.releaseAll(renderContext);
+        boolean enableMultisample = settings.window.view_samples > 0 && window.getPixelDensity() <= 1.0f;
+        renderContext.applyDefaults(enableMultisample);
+        int w = window.getWidth();
+        int h = window.getHeight();
+        logger.info("[Renderer] initGL: window.getWidth()=" + w + ", window.getHeight()=" + h);
+        renderContext.setViewport(0, 0, w, h);
     }
 }
