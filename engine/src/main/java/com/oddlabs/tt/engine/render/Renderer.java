@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
-import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -26,10 +25,7 @@ import java.util.logging.Logger;
 public final class Renderer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Renderer.class.getSimpleName());
 
-    private static @Nullable Renderer renderer_instance;
-
-    private static final StatCounter fps = new StatCounter(10);
-    private static int num_triangles_rendered;
+    private final StatCounter fps = new StatCounter(10);
 
     private final Window window;
     private final Settings settings;
@@ -41,10 +37,9 @@ public final class Renderer implements AutoCloseable {
     public Renderer(Window window, Settings settings) {
         this.window = window;
         this.settings = settings;
-        renderer_instance = this;
     }
 
-    public static float getFPS() {
+    public float getFPS() {
         return fps.getAveragePerUpdate();
     }
 
@@ -53,32 +48,11 @@ public final class Renderer implements AutoCloseable {
         cleanup();
     }
 
-    public Window getWindow() {
-        return window;
-    }
-
-    public static @Nullable Renderer getRenderer() {
-        return renderer_instance;
-    }
-
-    public Settings getSettings() {
-        return settings;
-    }
-
     public GLRenderContext getRenderContext() {
         return renderContext;
     }
 
-    public static void registerTrianglesRendered(int count) {
-        num_triangles_rendered += count;
-    }
-
-    public static int getTrianglesRendered() {
-        return num_triangles_rendered;
-    }
-
     public void display(FrameDriver driver) {
-        num_triangles_rendered = 0;
         fps.updateDelta(System.currentTimeMillis());
         NativeResource.processCleanupTasks();
         GLUtils.checkGLError("After Cleanup");

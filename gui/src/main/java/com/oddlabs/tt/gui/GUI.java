@@ -100,7 +100,7 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     public void updateProgress() {
-        engine.getRenderer().updateProgress(this);
+        engine.updateProgress(this);
     }
 
     public GUIRoot newFade() {
@@ -124,7 +124,7 @@ public final class GUI implements Animated, FrameDriver {
         return ScopedValue.where(Skin.CURRENT, skin).call(() -> {
             GUIRoot gui_root = new GUIRoot(this);
             // This happens early before the viewport is fully initialized
-            var window = engine.getRenderer().getWindow();
+            var window = engine.getWindow();
             gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
             return gui_root;
         });
@@ -166,7 +166,7 @@ public final class GUI implements Animated, FrameDriver {
         Matrix4f proj = new Matrix4f();
         var guiRoot = getGUIRoot();
 
-        RenderContext context = engine.getRenderer().getRenderContext();
+        RenderContext context = RenderContext.current();
 
         CameraState camera = guiRoot.getDelegate().getCameraState();
         if (camera != null) {

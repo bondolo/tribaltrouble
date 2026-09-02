@@ -65,7 +65,7 @@ public final class GUIRoot extends GUIObject {
     GUIRoot(GUI gui) {
         this.gui = gui;
         this.info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
-        this.status = new Status(gui.getEngine().getSettings());
+        this.status = new Status(gui.getEngine());
         this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
         this.input_state = new InputState(this);
         setPos(0, 0);

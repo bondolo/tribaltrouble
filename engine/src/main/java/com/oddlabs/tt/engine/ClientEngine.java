@@ -124,8 +124,12 @@ public final class ClientEngine implements AutoCloseable {
         return framePacer;
     }
 
-    public Renderer getRenderer() {
-        return renderer;
+    public void updateProgress(FrameDriver driver) {
+        renderer.updateProgress(driver);
+    }
+
+    public float getFPS() {
+        return renderer.getFPS();
     }
 
     public Locale getDefaultLocale() {
