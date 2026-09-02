@@ -25,7 +25,7 @@ public final class QuadVBO implements AutoCloseable {
     public QuadVBO() {
         try (var stack = MemoryStack.stackPush()) {
             var vertices = stack.floats(QUAD_VERTICES);
-            vbo = new FloatVBO(GL15.GL_STATIC_DRAW, vertices);
+            this.vbo = new FloatVBO(GL15.GL_STATIC_DRAW, vertices);
 
             vao.bind();
             vbo.bind();

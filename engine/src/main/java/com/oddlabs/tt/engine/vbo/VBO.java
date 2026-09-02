@@ -1,8 +1,7 @@
 package com.oddlabs.tt.engine.vbo;
 
-import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.base.resource.NativeResource;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 
@@ -17,16 +16,16 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
         private final int handle;
 
         Buffer(int target, int usage, int size) {
-            handle = createBuffer(target, usage, size);
+            this.handle = createBuffer(target, usage, size);
         }
 
-        private int createBuffer(int target, int usage, int size) {
+        private static int createBuffer(int target, int usage, int size) {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 IntBuffer handle_buffer = stack.mallocInt(1);
                 GL15.glGenBuffers(handle_buffer);
                 int handle = handle_buffer.get(0);
                 assert handle != 0;
-                Renderer.getRenderer().getRenderContext().bindBuffer(target, handle);
+                RenderContext.current().bindBuffer(target, handle);
                 GL15.glBufferData(target, size, usage);
                 return handle;
             }
@@ -34,7 +33,7 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
 
         @Override
         public void close() {
-            Renderer.getRenderer().getRenderContext().invalidateBuffer(handle);
+            RenderContext.current().invalidateBuffer(handle);
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 IntBuffer handle_buffer = stack.mallocInt(1);
                 handle_buffer.put(0, handle);
@@ -62,7 +61,7 @@ public abstract class VBO extends NativeResource<VBO.Buffer> {
     }
 
     public final void bind() {
-        bind(Renderer.getRenderer().getRenderContext());
+        bind(RenderContext.current());
     }
 
     public final void bind(RenderContext context) {

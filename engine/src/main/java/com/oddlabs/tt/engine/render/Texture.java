@@ -4,6 +4,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.util.OpenGLException;
@@ -52,10 +53,7 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         public void close() {
             global_size.addAndGet(-size);
             if (texture_handle != 0) {
-                Renderer renderer = Renderer.getRenderer();
-                if (renderer != null) {
-                    renderer.getRenderContext().invalidateTexture(texture_handle);
-                }
+                RenderContext.current().invalidateTexture(texture_handle);
                 try (MemoryStack stack = MemoryStack.stackPush()) {
                     IntBuffer handle_buffer = stack.mallocInt(1);
                     handle_buffer.put(0, texture_handle);
@@ -203,7 +201,8 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
         this(width, height, internal_format, GL11.GL_LINEAR, GL11.GL_LINEAR, org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE);
     }
 
-    public Texture(int width, int height, int internal_format, int min_filter, int mag_filter, int wrap) {
+    public Texture(int width, int height, int internal_format, int min_filter,
+            int mag_filter, int wrap) {
         this(width, height, min_filter, mag_filter, wrap, wrap, 1000);
         int type = GL11.GL_UNSIGNED_BYTE;
         int format = switch (internal_format) {
@@ -229,7 +228,8 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
 
     public Texture(int width, int height, int min_filter, int mag_filter, int wrap_s, int wrap_t, int max_mipmap_level)
             throws IllegalArgumentException {
-        this(GL11.GL_TEXTURE_2D, width, height, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level);
+        this(GL11.GL_TEXTURE_2D, width, height, min_filter, mag_filter, wrap_s, wrap_t,
+                max_mipmap_level);
     }
 
     protected Texture(int width, int height) throws IllegalArgumentException {
@@ -244,7 +244,8 @@ public class Texture extends NativeResource<Texture.NativeTexture> {
 
     public Texture(int target, int width, int height, int min_filter, int mag_filter, int wrap_s, int wrap_t,
             int max_mipmap_level) throws IllegalArgumentException {
-        super(new NativeTexture(initTexture(target, min_filter, mag_filter, wrap_s, wrap_t, max_mipmap_level)));
+        super(new NativeTexture(initTexture(target, min_filter, mag_filter, wrap_s, wrap_t,
+                max_mipmap_level)));
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("Width and height must be positive.");
         }

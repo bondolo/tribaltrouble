@@ -283,8 +283,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
         GeneratedLandscapeData landscapeData = generator.generate(
                 player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition());
-        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(
-                engine.getRenderer().getRenderContext(), landscapeData);
+        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(landscapeData);
         camera_state.setFog(world_info.fog_info());
         this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
                 world_info.landscapeData(), player_infos, engine.getSettings().accessibility.linear_team_colours,
@@ -295,7 +294,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
                 selection, audioManager);
-        this.renderer = new DefaultRenderer(engine.getRenderer().getRenderContext(), cheat, local_player, render_queues,
+        this.renderer = new DefaultRenderer(cheat, local_player, render_queues,
                 world_info, landscape_renderer, picker,
                 selection, modelViewStack, projectionStack, audioManager, engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.vbo;
 
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import org.lwjgl.opengl.GL30;
 
@@ -15,7 +14,7 @@ public final class VertexArray implements AutoCloseable {
     }
 
     public void bind() {
-        Renderer.getRenderer().getRenderContext().bindVertexArray(id);
+        RenderContext.current().bindVertexArray(id);
     }
 
     public void bind(RenderContext context) {
@@ -23,7 +22,7 @@ public final class VertexArray implements AutoCloseable {
     }
 
     public void unbind() {
-        Renderer.getRenderer().getRenderContext().bindVertexArray(0);
+        RenderContext.current().bindVertexArray(0);
     }
 
     public void unbind(RenderContext context) {
@@ -33,7 +32,7 @@ public final class VertexArray implements AutoCloseable {
     @Override
     public void close() {
         if (id != 0) {
-            Renderer.getRenderer().getRenderContext().invalidateVertexArray(id);
+            RenderContext.current().invalidateVertexArray(id);
             GL30.glDeleteVertexArrays(id);
         }
     }

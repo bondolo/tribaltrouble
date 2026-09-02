@@ -15,17 +15,15 @@ public final class FBO extends NativeResource<FBO.Buffer> {
 
     static final class Buffer extends NativeResource.NativeState {
 
-        private final RenderContext renderContext;
         private final int handle;
 
-        Buffer(RenderContext renderContext) {
-            this.renderContext = renderContext;
+        Buffer() {
             this.handle = GL30.glGenFramebuffers();
         }
 
         @Override
         public void close() {
-            renderContext.invalidateFramebuffer(handle);
+            RenderContext.current().invalidateFramebuffer(handle);
             GL30.glDeleteFramebuffers(handle);
         }
     }
@@ -36,14 +34,14 @@ public final class FBO extends NativeResource<FBO.Buffer> {
     private @Nullable Texture maskTexture;
     private @Nullable Texture depthTexture;
 
-    public FBO(RenderContext context, int width, int height) {
-        super(new Buffer(context));
+    public FBO(int width, int height) {
+        super(new Buffer());
         this.width = width;
         this.height = height;
     }
 
     public static FBO createSceneFBO(RenderContext context, int width, int height) {
-        FBO fbo = new FBO(context, width, height);
+        FBO fbo = new FBO(width, height);
         fbo.bind(context);
 
         // HDR Color Texture (Float16 for high dynamic range)
