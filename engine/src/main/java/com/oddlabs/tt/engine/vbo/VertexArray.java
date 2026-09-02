@@ -17,16 +17,8 @@ public final class VertexArray implements AutoCloseable {
         RenderContext.current().bindVertexArray(id);
     }
 
-    public void bind(RenderContext context) {
-        context.bindVertexArray(id);
-    }
-
     public void unbind() {
         RenderContext.current().bindVertexArray(0);
-    }
-
-    public void unbind(RenderContext context) {
-        context.bindVertexArray(0);
     }
 
     @Override

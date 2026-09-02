@@ -132,6 +132,11 @@ public interface RenderContext {
     // Lifecycle & Debug
     void init();
 
+    /**
+     * Resets shadowed pipeline state, forcing subsequent state transitions to communicate with OpenGL.
+     */
+    void reset();
+
     void applyDefaults(boolean enableMultisample);
 
     /**

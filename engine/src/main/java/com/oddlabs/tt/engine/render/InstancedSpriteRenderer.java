@@ -246,14 +246,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
 
             void upload(RenderContext context) {
-                vbo.bind(context);
+                vbo.bind();
                 vbo.orphan();
                 buffer.limit(count * FLOATS_PER_INSTANCE).position(0);
                 GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
             }
 
             void draw(RenderContext context) {
-                vao.bind(context);
+                vao.bind();
                 Sprite sprite = spriteList.getSprite(spriteIndex);
                 context.setCullMode(sprite.culled ? CullMode.BACK : CullMode.NONE);
                 GL31.glDrawElementsInstanced(GL11.GL_TRIANGLES, sprite.getTriangleCount() * 3, GL11.GL_UNSIGNED_SHORT,

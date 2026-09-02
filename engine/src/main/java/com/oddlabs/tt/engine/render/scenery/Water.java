@@ -411,7 +411,7 @@ public final class Water implements AutoCloseable {
             vbo = new FloatVBO(GL15.GL_STREAM_DRAW, Math.max(vbo.capacity() * 2, requiredBytes));
         }
 
-        vbo.bind(context);
+        vbo.bind();
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
 
         patchMesh.bind();

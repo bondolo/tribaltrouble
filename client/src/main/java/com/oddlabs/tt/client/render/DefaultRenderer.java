@@ -217,7 +217,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
 
     @Override
     public void startFrame(RenderContext context) {
-        postProcessor.bindSceneFBO(context);
+        postProcessor.bindSceneFBO();
         context.clear(true, true);
     }
 
@@ -227,13 +227,12 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     }
 
     @Override
-    public void render(RenderContext context,
-            CameraState frustum_state, GUIRoot gui_root) {
+    public void render(RenderContext context, CameraState frustum_state, GUIRoot gui_root) {
         treeSpriteRenderer.clear();
         render_queues.getInstancedRenderer().clear();
 
-        postProcessor.resize(context, frustum_state.getWidth(), frustum_state.getHeight());
-        postProcessor.bindSceneFBO(context);
+        postProcessor.resize(frustum_state.getWidth(), frustum_state.getHeight());
+        postProcessor.bindSceneFBO();
         context.setDrawBuffers(true); // Ensure both Color and Mask are cleared
         context.setColorMask(true, true, true, true);
         context.setDepthMask(true);
@@ -340,7 +339,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         context.setDrawBuffers(false);
 
         // Copy depth buffer for Soft Particles (smoke/effects)
-        postProcessor.copyDepthBuffer(context);
+        postProcessor.copyDepthBuffer();
 
         // Render transient effects (smoke, lightning) AFTER all other scene objects.
         // This ensures they are depth-tested against the complete scene (including water and blended units).
