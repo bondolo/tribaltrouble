@@ -8,10 +8,10 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
+import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.model.Action;
@@ -52,15 +52,15 @@ public abstract class Island {
         return campaign;
     }
 
-    public final void chosen(NetworkSelector network, GUIRoot gui_root) {
-        init(network, gui_root);
+    public final void chosen(GUIRoot gui_root) {
+        init(gui_root);
     }
 
     protected final void addModalForm(Form form) {
         world_viewer.getGUIRoot().addModalForm(form);
     }
 
-    protected final GameNetwork startNewGame(NetworkSelector network, GUIRoot gui_root,
+    protected final GameNetwork<GUIRoot, UIRenderer> startNewGame(GUIRoot gui_root,
             int meters_per_world, Terrain terrain, float hills, float vegetation_amount,
             float supplies_amount, int seed, int campaign_num, int initial_units, String[] ai_names) {
         InGameInfo ingame_info = new CampaignInGameInfo(campaign);
@@ -102,20 +102,20 @@ public abstract class Island {
         };
         IslandConfig islandConfig = new IslandConfig(terrain, meters_per_world, hills, vegetation_amount,
                 supplies_amount, seed);
-        return Menu.startNewGame(network, gui_root, null, new WorldParameters(Game.GAMESPEED_NORMAL,
+        return Menu.startNewGame(gui_root, null, new WorldParameters(
+                Game.GAMESPEED_NORMAL,
                 "Campaign" + campaign_num, initial_units,
                 Player.DEFAULT_MAX_UNIT_COUNT),
                 ingame_info,
                 init_action,
-                null, islandConfig, ai_names,
-                campaign.getAudioManager());
+                null, islandConfig, ai_names);
     }
 
     protected final @Nullable WorldViewer getViewer() {
         return world_viewer;
     }
 
-    protected abstract void init(NetworkSelector network, GUIRoot gui_root);
+    protected abstract void init(GUIRoot gui_root);
 
     protected abstract void start();
 

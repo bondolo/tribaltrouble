@@ -1,10 +1,7 @@
 package com.oddlabs.tt.content.tutorial;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.content.menu.MainMenu;
-import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -59,17 +56,13 @@ public final class TutorialForm extends Form {
     }
 
     private final GUIRoot gui_root;
-    private final NetworkSelector network;
-    private final Menu main_menu;
 
     private static String formatTutorial(int tutorial_number) {
         return i18n("tutorial", Integer.toString(tutorial_number));
     }
 
-    public TutorialForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
+    public TutorialForm(GUIRoot gui_root) {
         this.gui_root = gui_root;
-        this.network = network;
-        this.main_menu = main_menu;
         Label headline = new Label(i18n("tutorial_caption"), Skin.getSkin().getHeadlineFont());
         addChild(headline);
 
@@ -146,21 +139,19 @@ public final class TutorialForm extends Form {
         TutorialTrigger create(WorldViewer viewer);
     }
 
-    private static void startNewGame(NetworkSelector network, GUIRoot gui_root,
-            TriggerFactory factory, int tutorial_num,
-            AudioManager audioManager) {
+    private static void startNewGame(GUIRoot gui_root,
+            TriggerFactory factory, int tutorial_num) {
         TutorialInGameInfo ingame_info = new TutorialInGameInfo();
-        GameNetwork game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction(factory,
-                ingame_info), Player.INITIAL_UNIT_COUNT, tutorial_num, audioManager);
+        GameNetwork game_network = doStartNewGame(gui_root, ingame_info, new TutorialAction(factory,
+                ingame_info), Player.INITIAL_UNIT_COUNT, tutorial_num);
         game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN, Race.NATIVES.getValue(), 0,
                 true, PlayerSlot.AI_NONE);
         game_network.getClient().getServerInterface().startServer();
     }
 
-    private static GameNetwork doStartNewGame(NetworkSelector network, GUIRoot gui_root,
+    private static GameNetwork doStartNewGame(GUIRoot gui_root,
             TutorialInGameInfo ingame_info, final @Nullable WorldInitAction initial_action,
-            int initial_unit_count, int tutorial_num,
-            AudioManager audioManager) {
+            int initial_unit_count, int tutorial_num) {
         int size = 256;
         float hills = 1f;
         float trees = 1f;
@@ -175,30 +166,27 @@ public final class TutorialForm extends Form {
         var islandConfig = new IslandConfig(Terrain.NATIVE, size, hills, trees, 0f, seed);
         var worldParameters = new WorldParameters(Game.GAMESPEED_NORMAL, "Tutorial"
                 + tutorial_num, initial_unit_count, Player.DEFAULT_MAX_UNIT_COUNT);
-        return MainMenu.startNewGame(network, gui_root, null, worldParameters, ingame_info, compound_action, null,
+        return MainMenu.startNewGame(gui_root, null, worldParameters, ingame_info, compound_action, null,
                 islandConfig, new String[]{ai_string + "0", ai_string
-                        + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"},
-                audioManager);
+                        + "1", ai_string + "2", ai_string + "3", ai_string + "4", ai_string + "5"});
     }
 
     public static boolean checkTutorial(GUIRoot gui_root, int tutorial_number) {
         return true;
     }
 
-    public static void startTutorial(NetworkSelector network, GUIRoot gui_root, int tutorial_number,
-            AudioManager audioManager) {
+    public static void startTutorial(GUIRoot gui_root, int tutorial_number) {
         final TutorialInGameInfo ingame_info;
         GameNetwork game_network;
         switch (tutorial_number) {
             case TUTORIAL_CAMERA ->
-                startNewGame(network, gui_root, (WorldViewer viewer) -> new ScrollTrigger(viewer.getLocalPlayer()), 1,
-                        audioManager);
+                startNewGame(gui_root, (WorldViewer viewer) -> new ScrollTrigger(viewer.getLocalPlayer()), 1);
             case TUTORIAL_QUARTERS ->
-                startNewGame(network, gui_root, (WorldViewer viewer) -> new PlacingDelegateTrigger(viewer
-                        .getLocalPlayer()), 2, audioManager);
+                startNewGame(gui_root, (WorldViewer viewer) -> new PlacingDelegateTrigger(viewer
+                        .getLocalPlayer()), 2);
             case TUTORIAL_ARMORY ->
-                startNewGame(network, gui_root, (WorldViewer viewer) -> new SelectArmoryTrigger(viewer
-                        .getLocalPlayer()), 3, audioManager);
+                startNewGame(gui_root, (WorldViewer viewer) -> new SelectArmoryTrigger(viewer
+                        .getLocalPlayer()), 3);
             case TUTORIAL_TOWER -> {
                 ingame_info = new TutorialInGameInfo();
                 WorldInitAction action = (WorldViewer viewer) -> {
@@ -207,8 +195,7 @@ public final class TutorialForm extends Form {
                             UnitType.WARRIOR_ROCK));
                     new Tutorial(viewer, ingame_info, new SelectTowerTrigger(viewer.getLocalPlayer()));
                 };
-                game_network = doStartNewGame(network, gui_root, ingame_info, action, 10, 4,
-                        audioManager);
+                game_network = doStartNewGame(gui_root, ingame_info, action, 10, 4);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
                         Race.NATIVES.getValue(), 0, true, PlayerSlot.AI_TOWER_TUTORIAL);
                 game_network.getClient().setUnitInfo(0, new UnitInfo(false, false, 0, false, 10, 0, 0, 0));
@@ -219,9 +206,9 @@ public final class TutorialForm extends Form {
             }
             case TUTORIAL_CHIEFTAIN -> {
                 ingame_info = new TutorialInGameInfo();
-                game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction((
+                game_network = doStartNewGame(gui_root, ingame_info, new TutorialAction((
                         WorldViewer viewer) -> new BuildingChieftainTrigger(viewer.getLocalPlayer()), ingame_info),
-                        Player.INITIAL_UNIT_COUNT, 5, audioManager);
+                        Player.INITIAL_UNIT_COUNT, 5);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
                         Race.NATIVES.getValue(), 0, true, PlayerSlot.AI_NONE);
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI,
@@ -231,9 +218,8 @@ public final class TutorialForm extends Form {
             }
             case TUTORIAL_BATTLE -> {
                 ingame_info = new TutorialInGameInfo();
-                game_network = doStartNewGame(network, gui_root, ingame_info, new TutorialAction((
-                        WorldViewer _) -> new TutorialOverTrigger(), ingame_info), Player.INITIAL_UNIT_COUNT, 6,
-                        audioManager);
+                game_network = doStartNewGame(gui_root, ingame_info, new TutorialAction((
+                        WorldViewer _) -> new TutorialOverTrigger(), ingame_info), Player.INITIAL_UNIT_COUNT, 6);
                 game_network.getClient().getServerInterface().setPlayerSlot(0, PlayerSlot.HUMAN,
                         Race.NATIVES.getValue(), 0, true, PlayerSlot.AI_NONE);
                 game_network.getClient().getServerInterface().setPlayerSlot(1, PlayerSlot.AI,
@@ -255,7 +241,7 @@ public final class TutorialForm extends Form {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             if (checkTutorial(gui_root, number)) {
-                startTutorial(network, gui_root, number, main_menu.getAudioManager());
+                startTutorial(gui_root, number);
                 TutorialForm.this.remove();
             }
         }

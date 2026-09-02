@@ -392,12 +392,12 @@ public final class GUIRoot extends GUIObject {
                 // GLOBAL_MENU removed because it requires viewer which GUIRoot doesn't have.
 
                 if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
-                    Renderer.getRenderer().toggleFullscreen();
+                    gui.getEngine().toggleFullscreen();
                     consumed = true;
                 }
 
                 // Debug Actions (Only those that don't need Viewer)
-                if (Renderer.getRenderer().getSettings().inDeveloperMode()) {
+                if (gui.getLocalInput().inDeveloperMode()) {
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
                         DebugFlags.draw_light = !DebugFlags.draw_light;
                         consumed = true;
@@ -454,7 +454,7 @@ public final class GUIRoot extends GUIObject {
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_START_RECORDING)) {
-                        Renderer.getRenderer().startMovieRecording();
+                        gui.getEngine().startMovieRecording();
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {

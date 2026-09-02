@@ -1,11 +1,8 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.client.viewer.LoadCallback;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -13,13 +10,13 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
@@ -29,19 +26,20 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 /**
  * UI form shown while establishing a multiplayer connection or initializing a local game.
  */
-public final class ConnectingForm extends Form implements ConfigurationListener {
+public final class ConnectingForm extends Form implements ConfigurationListener<GUIRoot, UIRenderer> {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ConnectingForm.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final MultiplayerLobby owner;
     private final boolean multiplayer;
     private final GUIRoot gui_root;
-    private final GameNetwork game_network;
+    private final GameNetwork<GUIRoot, UIRenderer> game_network;
 
-    public ConnectingForm(GameNetwork game_network, GUIRoot gui_root, MultiplayerLobby owner, boolean multiplayer) {
+    public ConnectingForm(GameNetwork<GUIRoot, UIRenderer> game_network, GUIRoot gui_root, MultiplayerLobby owner,
+            boolean multiplayer) {
         this.game_network = game_network;
         this.gui_root = gui_root;
         this.owner = owner;
@@ -63,7 +61,7 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     }
 
     @Override
-    public void connected(Client client, Game game, WorldGenerator generator,
+    public void connected(Client<GUIRoot, UIRenderer> client, Game game, WorldGenerator<?> generator,
             int player_slot) {
         if (multiplayer) {
             Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
@@ -74,9 +72,6 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
                     PlayerSlot.AI_NONE);
             remove();
             owner.createGameMenu(game_network, game, generator, player_slot);
-//			GameMenu panel = new GameMenu(owner, game, generator, player_slot);
-//			owner.setGameMenu(panel);
-//			Network.setConfigurationListener(panel);
         } else {
             assert player_slot == 0 : "player_slot must be 0";
         }
@@ -97,10 +92,9 @@ public final class ConnectingForm extends Form implements ConfigurationListener 
     }
 
     @Override
-    public void gameStarted(com.oddlabs.tt.base.util.LoadCallback loadCallback) {
+    public void gameStarted(LoadCallback<GUIRoot, UIRenderer> loadCallback) {
         remove();
-        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(),
-                (LoadCallback) loadCallback);
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), loadCallback);
         assert !multiplayer;
     }
 

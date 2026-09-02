@@ -13,7 +13,7 @@ import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializer;
@@ -42,6 +42,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
 
     private final MultiColumnComboBox<CampaignState> list_box;
     private final GUIRoot gui_root;
+    private final ClientEngine engine;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
 
     private String i18n(String key, Object... args) {
@@ -49,6 +50,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     }
 
     public LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener) {
+        this.engine = gui_root.getGUI().getEngine();
         this.gui_root = gui_root;
         ColumnInfo[] infos = {
                 new ColumnInfo(i18n("name"), WIDTH_NAME),
@@ -64,23 +66,23 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         refresh();
     }
 
-    public static <T> void saveSavegames(CampaignState[] states,
+    public static <T> void saveSavegames(ClientEngine engine, CampaignState[] states,
             DeterministicSerializerLoopbackInterface<T> callback) {
-        DeterministicSerializer.save(Renderer.getRenderer().getEventQueue().getDeterministic(), states,
-                getSaveSavegamesFile(), callback);
+        DeterministicSerializer.save(engine.getEventQueue().getDeterministic(), states,
+                getSaveSavegamesFile(engine), callback);
     }
 
-    private static Path getSaveSavegamesFile() {
-        return Renderer.getRenderer().getGamePaths().dataDir().resolve(SAVEGAMES_FILE_NAME);
+    private static Path getSaveSavegamesFile(ClientEngine engine) {
+        return engine.getGamePaths().dataDir().resolve(SAVEGAMES_FILE_NAME);
     }
 
-    public static <T> void loadSavegames(DeterministicSerializerLoopbackInterface<T> callback) {
-        DeterministicSerializer.load(Renderer.getRenderer().getEventQueue().getDeterministic(), getLoadSavegamesFile(),
+    public static <T> void loadSavegames(ClientEngine engine, DeterministicSerializerLoopbackInterface<T> callback) {
+        DeterministicSerializer.load(engine.getEventQueue().getDeterministic(), getLoadSavegamesFile(engine),
                 callback);
     }
 
-    private static Path getLoadSavegamesFile() {
-        Path file = getSaveSavegamesFile();
+    private static Path getLoadSavegamesFile(ClientEngine engine) {
+        Path file = getSaveSavegamesFile(engine);
         return !Files.isReadable(file) ? Utils.getInstallDir().resolve(SAVEGAMES_FILE_NAME) : file;
     }
 
@@ -95,7 +97,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
 
     public void refresh() {
         list_box.clear();
-        LoadCampaignBox.loadSavegames(this);
+        LoadCampaignBox.loadSavegames(engine, this);
     }
 
     private void fillSlots(CampaignState[] campaign_states) {

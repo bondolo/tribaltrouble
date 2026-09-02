@@ -16,7 +16,6 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.base.event.StateChecksum;
-import com.oddlabs.tt.base.util.ChatConsumer;
 import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
@@ -36,7 +35,7 @@ import java.util.logging.Logger;
  * Manages networking connections, peers, message routing, and synchronization
  * between players in a multiplayer session.
  */
-public final class PeerHub implements Animated, RouterHandler {
+public final class PeerHub implements Animated, RouterHandler, ChatSender {
     private static final String ROUTER_ADDRESS = "127.0.0.1";
     public static final ResourceBundle bundle = ResourceBundle.getBundle(PeerHub.class.getName());
 
@@ -365,6 +364,11 @@ public final class PeerHub implements Animated, RouterHandler {
             matchmaking_client.getInterface().gameQuitNotify(peer.getPlayerInfo().getName());
     }
 
+    @Override
+    public void sendChat(String text, ChatMessage.Type type) {
+        sendChat(text, type == ChatMessage.Type.TEAM);
+    }
+
     public void sendChat(String text, boolean team_only) {
         Iterator<Peer> it = getPeerIterator();
         int local_team = local_player.getPlayerInfo().getTeam();
@@ -389,10 +393,7 @@ public final class PeerHub implements Animated, RouterHandler {
 
     public void receiveChat(String name, String text, boolean team) {
         if (chat_hub != null) {
-            if (team)
-                chat_hub.chat(new ChatMessage(name, text, ChatConsumer.Type.TEAM));
-            else
-                chat_hub.chat(new ChatMessage(name, text, ChatConsumer.Type.NORMAL));
+            chat_hub.chat(new ChatMessage(name, text, team ? ChatMessage.Type.TEAM : ChatMessage.Type.NORMAL));
         }
     }
 

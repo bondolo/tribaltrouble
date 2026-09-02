@@ -1,6 +1,5 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;
@@ -52,7 +51,6 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final NetworkSelector network;
     private final GUIRoot gui_root;
     private final Menu main_menu;
     private final CampaignForm campaign_form;
@@ -61,11 +59,10 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     private final PulldownMenu<Difficulty> difficulty_pulldown = new PulldownMenu<>();
     private CampaignState @Nullable [] campaign_states;
 
-    public NewCampaignForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu,
+    public NewCampaignForm(Menu main_menu,
             CampaignForm campaign_form) {
-        this.network = network;
-        this.gui_root = gui_root;
         this.main_menu = main_menu;
+        this.gui_root = main_menu.getGUIRoot();
         this.campaign_form = campaign_form;
         // headline
         Label label_headline = new Label(i18n("caption"), Skin.getSkin().getHeadlineFont());
@@ -130,7 +127,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
 
         compileCanvas();
         centerPos();
-        LoadCampaignBox.loadSavegames(this);
+        LoadCampaignBox.loadSavegames(main_menu.getEngine(), this);
     }
 
     @Override
@@ -171,11 +168,11 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         Race chosenRace = race_pulldown.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS);
         switch (chosenRace) {
             case VIKINGS -> {
-                campaign = new VikingCampaign(network, gui_root, main_menu.getAudioManager());
+                campaign = new VikingCampaign(gui_root, main_menu.getAudioManager());
                 campaign.getState().setRace(Race.VIKINGS);
             }
             case NATIVES -> {
-                campaign = new NativeCampaign(network, gui_root, main_menu.getAudioManager());
+                campaign = new NativeCampaign(gui_root, main_menu.getAudioManager());
                 campaign.getState().setRace(Race.NATIVES);
             }
             default -> throw new IllegalArgumentException();
@@ -187,7 +184,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
                 Difficulty.NORMAL);
         campaign.getState().setDifficulty(difficulty);
         new_states[new_states.length - 1] = campaign.getState();
-        LoadCampaignBox.saveSavegames(new_states, this);
+        LoadCampaignBox.saveSavegames(main_menu.getEngine(), new_states, this);
         remove();
     }
 

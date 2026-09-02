@@ -1,7 +1,7 @@
 package com.oddlabs.tt.content.form;
 
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.RenderConfig;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.DisplayChangeForm;
@@ -32,9 +32,11 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
 public class GraphicsPanel extends Panel {
     private final Label label_pct;
+    private final ClientEngine engine;
 
     public GraphicsPanel(GUIRoot gui_root, Form options) {
         super(AbstractOptionsMenu.i18n("graphics_caption"));
+        this.engine = gui_root.getGUI().getEngine();
         var labelFont = Skin.getSkin().getEditFont();
 
         // Display mode
@@ -51,16 +53,16 @@ public class GraphicsPanel extends Panel {
         // Fullscreen
         Group group_fullscreen = new Group();
         addChild(group_fullscreen);
-        CheckBox cb_fullscreen = new CheckBox(Renderer.getRenderer().getSettings().window.fullscreen,
+        CheckBox cb_fullscreen = new CheckBox(engine.getSettings().window.fullscreen,
                 AbstractOptionsMenu.i18n(
                         "fullscreen"), AbstractOptionsMenu.i18n("fullscreen_tip"));
         cb_fullscreen.addCheckBoxListener(marked -> {
             DisplayChangeForm display_change_form = new DisplayChangeForm(
                     switch_now -> {
                         if (switch_now) {
-                            Renderer.getRenderer().toggleFullscreen();
+                            engine.toggleFullscreen();
                         } else {
-                            Renderer.getRenderer().getSettings().window.fullscreen = marked;
+                            engine.getSettings().window.fullscreen = marked;
                         }
 
                         // Force refresh of available modes for the list box
@@ -83,21 +85,20 @@ public class GraphicsPanel extends Panel {
         updateScaleLabel();
         group_ui_scale.addChild(label_pct);
 
-        int initialValue = Math.clamp((long) (Renderer.getRenderer().getSettings().control.ui_scale * 1000), 0, 1000);
+        int initialValue = Math.clamp((long) (engine.getSettings().control.ui_scale * 1000), 0, 1000);
 
         Slider slider_ui_scale = new Slider(150, 0, 1000, initialValue);
         group_ui_scale.addChild(slider_ui_scale);
 
         slider_ui_scale.addValueListener(value -> {
-            Renderer.getRenderer().getSettings().control.ui_scale = value / 1000f;
+            engine.getSettings().control.ui_scale = value / 1000f;
             updateScaleLabel();
         });
 
         slider_ui_scale.addReleaseListener(() -> {
-            var window = Renderer.getRenderer().getWindow();
+            var window = engine.getWindow();
             gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
-        }
-        );
+        });
 
         label_ui_scale.place();
         label_pct.place(label_ui_scale, RIGHT_MID);
@@ -111,7 +112,7 @@ public class GraphicsPanel extends Panel {
         Label label_detail = new Label(AbstractOptionsMenu.i18n("graphical_detail"), labelFont);
         group_detail.addChild(label_detail);
 
-        int initial_detail_value = Renderer.getRenderer().getSettings().graphic_detail;
+        int initial_detail_value = engine.getSettings().graphic_detail;
         PulldownMenu<Integer> pm_detail = new PulldownMenu<>();
         pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("low"), 0));
         pm_detail.addItem(new PulldownItem<>(AbstractOptionsMenu.i18n("medium"), 1));
@@ -122,7 +123,7 @@ public class GraphicsPanel extends Panel {
         options.addCloseListener(() -> {
             int slider_value = pm_detail.getChosenItem().map(PulldownItem::getAttachment).orElse(initial_detail_value);
             if (initial_detail_value != slider_value) {
-                Renderer.getRenderer().getSettings().graphic_detail = slider_value;
+                engine.getSettings().graphic_detail = slider_value;
                 World.updatePlantsDetail(RenderConfig.INSERT_PLANTS[slider_value]);
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("change_next_run")));
             }
@@ -131,25 +132,25 @@ public class GraphicsPanel extends Panel {
         pb_detail.place(label_detail, BOTTOM_LEFT);
         group_detail.compileCanvas();
 
-        refreshResolutionList(Renderer.getRenderer().getSettings().window.fullscreen, mode_list_box);
+        refreshResolutionList(engine.getSettings().window.fullscreen, mode_list_box);
 
         mode_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(SerializableDisplayMode mode) {
-                Window window = Renderer.getRenderer().getWindow();
+                Window window = engine.getWindow();
                 boolean currentIsExclusive = window.isExclusiveFullscreen();
-                boolean targetFullscreen = Renderer.getRenderer().getSettings().window.fullscreen;
+                boolean targetFullscreen = engine.getSettings().window.fullscreen;
                 boolean targetIsExclusive = targetFullscreen && window.isExclusiveFullscreenMode(mode);
 
                 if (currentIsExclusive || targetIsExclusive) {
                     gui_root.addModalForm(new DisplayChangeForm(switch_now -> {
-                        Renderer.getRenderer().switchMode(mode, switch_now);
+                        engine.switchMode(mode, switch_now);
                         if (switch_now) {
                             gui_root.displayChanged(mode.getWidth(), mode.getHeight());
                         }
                     }));
                 } else {
-                    Renderer.getRenderer().switchMode(mode, true);
+                    engine.switchMode(mode, true);
                     gui_root.displayChanged(mode.getWidth(), mode.getHeight());
                 }
             }
@@ -170,8 +171,8 @@ public class GraphicsPanel extends Panel {
 
     private void refreshResolutionList(boolean fullscreen, MultiColumnComboBox<
             SerializableDisplayMode> list_box) {
-        var window = Renderer.getRenderer().getWindow();
-        var currentMode = Renderer.getRenderer().getCurrentDisplayMode();
+        var window = engine.getWindow();
+        var currentMode = engine.getCurrentDisplayMode();
         List<SerializableDisplayMode> modes = fullscreen ? window.getFullscreenDisplayModes() : window
                 .getWindowedDisplayModes();
 
@@ -196,7 +197,7 @@ public class GraphicsPanel extends Panel {
     }
 
     public void updateScaleLabel() {
-        var window = Renderer.getRenderer().getWindow();
+        var window = engine.getWindow();
         float scale = GUIRoot.calculateEffectiveScale(window.getLogicalWidth(), window.getLogicalHeight());
         label_pct.setText(String.format("%d%%", (int) (scale * 100)));
     }

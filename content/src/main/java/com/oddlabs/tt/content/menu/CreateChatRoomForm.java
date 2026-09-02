@@ -6,7 +6,6 @@ import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.OKButton;
@@ -14,7 +13,7 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.net.MatchmakingClient;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -24,7 +23,7 @@ import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 
 public final class CreateChatRoomForm extends Form {
     private static final int BUTTON_WIDTH = 100;
-    private static final int EDITLINE_WIDTH = 240;
+    private static final int EDITLINE_WIDTH = 200;
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CreateChatRoomForm.class.getName());
 
@@ -32,16 +31,11 @@ public final class CreateChatRoomForm extends Form {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final SelectGameMenu menu;
-    private final GUIRoot gui_root;
-    private final Menu main_menu;
-
+    private final MatchmakingClient client;
     private final EditLine editline_room_name;
 
-    public CreateChatRoomForm(GUIRoot gui_root, Menu main_menu, SelectGameMenu menu) {
-        this.menu = menu;
-        this.gui_root = gui_root;
-        this.main_menu = main_menu;
+    public CreateChatRoomForm(SelectGameMenu menu) {
+        this.client = menu.getMainMenu().getEngine().getNetwork().getMatchmakingClient();
 
         // headline
         Label label_headline = new Label(i18n("caption"), Skin.getSkin().getHeadlineFont());
@@ -88,7 +82,7 @@ public final class CreateChatRoomForm extends Form {
         String name = editline_room_name.getContents().trim();
         if (name.length() >= MatchmakingServerInterface.MIN_ROOM_NAME_LENGTH) {
             remove();
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().joinRoom(name);
+            client.joinRoom(name);
         }
     }
 

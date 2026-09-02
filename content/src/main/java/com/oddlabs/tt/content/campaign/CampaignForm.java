@@ -1,6 +1,5 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.CancelButton;
@@ -46,13 +45,11 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     }
 
     private final GUIRoot gui_root;
-    private final NetworkSelector network;
     private final Menu main_menu;
 
-    public CampaignForm(NetworkSelector network, GUIRoot gui_root, Menu main_menu) {
-        this.gui_root = gui_root;
-        this.network = network;
+    public CampaignForm(Menu main_menu) {
         this.main_menu = main_menu;
+        this.gui_root = main_menu.getGUIRoot();
         Label headline = new Label(i18n("campaign"), Skin.getSkin().getHeadlineFont());
         addChild(headline);
 
@@ -61,7 +58,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         button_delete.setDisabled(true);
 
         button_vikings = new HorizButton(i18n("new"), 120);
-        button_vikings.addMouseClickListener((_, _, _, _) -> main_menu.setMenu(new NewCampaignForm(network, gui_root,
+        button_vikings.addMouseClickListener((_, _, _, _) -> main_menu.setMenu(new NewCampaignForm(
                 main_menu, CampaignForm.this)));
 
         button_load = new HorizButton(i18n("load"), 120);
@@ -123,13 +120,13 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
 
     public void load(CampaignState campaign_state) {
         Campaign campaign = campaign_state.getRace() == Race.VIKINGS
-                ? new VikingCampaign(network, gui_root, campaign_state, main_menu.getAudioManager())
-                : new NativeCampaign(network, gui_root, campaign_state, main_menu.getAudioManager());
+                ? new VikingCampaign(gui_root, campaign_state, main_menu.getAudioManager())
+                : new NativeCampaign(gui_root, campaign_state, main_menu.getAudioManager());
         setDisabled(true);
         if (campaign_state.getIslandState(0) == CampaignState.ISLAND_COMPLETED) {
-            campaign.pushDelegate(network, gui_root.getGUI());
+            campaign.pushDelegate(gui_root.getGUI());
         } else
-            campaign.startIsland(network, gui_root, 0);
+            campaign.startIsland(gui_root, 0);
     }
 
     @Override
@@ -150,7 +147,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
                     new_states[i - offset] = campaign_states[i];
                 }
             }
-            LoadCampaignBox.saveSavegames(new_states, this);
+            LoadCampaignBox.saveSavegames(main_menu.getEngine(), new_states, this);
         }
     }
 
@@ -170,7 +167,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
         if (state != null) {
             String confirm_str = i18n("confirm_delete", state.getName());
             gui_root.addModalForm(new QuestionForm(confirm_str, (_, _, _, _) -> LoadCampaignBox.loadSavegames(
-                    CampaignForm.this)));
+                    main_menu.getEngine(), CampaignForm.this)));
         }
     }
 }

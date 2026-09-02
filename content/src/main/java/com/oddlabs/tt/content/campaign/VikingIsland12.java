@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitType;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.net.GameNetwork;
@@ -35,12 +34,12 @@ public final class VikingIsland12 extends Island {
     }
 
     @Override
-    public void init(NetworkSelector network, GUIRoot gui_root) {
+    public void init(GUIRoot gui_root) {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(network, gui_root, 256, Terrain.NATIVE, .5f, 1f, .57f,
+        GameNetwork game_network = startNewGame(gui_root, 256, Terrain.NATIVE, .5f, 1f, .57f,
                 67625656, 12, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,

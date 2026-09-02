@@ -2,16 +2,16 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.Participant;
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.render.UIRenderer;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import org.jspecify.annotations.Nullable;
 
@@ -22,23 +22,20 @@ import java.util.List;
  * Triggers world loading, initializes players and matchmaking session information,
  * and sets up the active gameplay session once loading is complete.
  */
-public final class WorldStarter implements LoadCallback {
+public final class WorldStarter implements LoadCallback<GUIRoot, UIRenderer> {
     private final UnitInfo[] unit_infos;
     private final PlayerSlot[] player_slots;
     private final short player_slot;
     private final InGameInfo ingame_info;
-    private final NetworkSelector network;
-    private final WorldGenerator generator;
+    private final WorldGenerator<WorldInfo<Texture>> generator;
     private final WorldParameters world_params;
     private final @Nullable WorldInitAction initial_action;
     private final int session_id;
-    private final AudioManager audioManager;
 
-    public WorldStarter(NetworkSelector network, int session_id, WorldGenerator generator,
+    public WorldStarter(int session_id, WorldGenerator<WorldInfo<Texture>> generator,
             WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
-            @Nullable WorldInitAction initial_action,
-            AudioManager audioManager) {
+            @Nullable WorldInitAction initial_action) {
         this.initial_action = initial_action;
         this.session_id = session_id;
         this.world_params = world_params;
@@ -47,16 +44,12 @@ public final class WorldStarter implements LoadCallback {
         this.player_slots = player_slots;
         this.player_slot = player_slot;
         this.ingame_info = ingame_info;
-        this.network = network;
-        this.audioManager = audioManager;
     }
 
     @Override
     public UIRenderer load(GUIRoot gui_root) {
-        var renderer = Renderer.getRenderer();
-        if (renderer != null) {
-            renderer.getFramePacer().freezeTime();
-        }
+        var engine = gui_root.getGUI().getEngine();
+        engine.getFramePacer().freezeTime();
         List<PlayerSlot> player_slot_list = new ArrayList<>();
         List<UnitInfo> unit_info_list = new ArrayList<>();
         short corrected_player_slot = -1;
@@ -71,14 +64,14 @@ public final class WorldStarter implements LoadCallback {
         assert corrected_player_slot != -1;
         PlayerSlot[] player_slots = player_slot_list.toArray(new PlayerSlot[0]);
         UnitInfo[] corrected_unit_infos = unit_info_list.toArray(new UnitInfo[0]);
-        WorldViewer viewer = new WorldViewer(network, gui_root, world_params, ingame_info, generator, player_slots,
-                corrected_unit_infos, corrected_player_slot, new SessionID(session_id), audioManager);
+        WorldViewer viewer = new WorldViewer(gui_root, world_params, ingame_info, generator, player_slots,
+                corrected_unit_infos, corrected_player_slot, new SessionID(session_id));
         if (initial_action != null)
             initial_action.run(viewer);
         Participant[] participants = getParticipants(viewer, player_slots);
-        if (Renderer.getRenderer().getNetwork().getMatchmakingClient().isConnected()) {
+        if (engine.getNetwork().getMatchmakingClient().isConnected()) {
             GameSession game_session = new GameSession(session_id, participants, ingame_info.isRated());
-            Renderer.getRenderer().getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
+            engine.getNetwork().getMatchmakingClient().getInterface().gameStartedNotify(game_session);
         }
         System.out.println("PeerHub created (session_id = " + session_id + ") Player list:");
         return viewer.getRenderer();

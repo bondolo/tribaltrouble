@@ -11,6 +11,7 @@ import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.form.AbstractOptionsMenu;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.CheckBox;
@@ -113,6 +114,7 @@ public final class TerrainMenu extends Group {
         return Utils.getBundleString(bundle, key, args);
     }
 
+    private final ClientEngine engine;
     private final AudioManager audioManager;
     private final @Nullable Menu main_menu;
     private final @Nullable TerrainMenuListener owner;
@@ -157,11 +159,12 @@ public final class TerrainMenu extends Group {
     }
 
     @SuppressWarnings("unchecked")
-    public TerrainMenu(NetworkSelector network, GUIRoot gui_root, AudioManager audioManager,
+    public TerrainMenu(GUIRoot gui_root,
             @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
-        this.network = network;
+        this.engine = gui_root.getGUI().getEngine();
+        this.network = engine.getNetwork().getSelector();
         this.gui_root = gui_root;
-        this.audioManager = audioManager;
+        this.audioManager = engine.getAudioManager();
         this.main_menu = main_menu;
         this.multiplayer = multiplayer;
         this.owner = owner;
@@ -179,8 +182,10 @@ public final class TerrainMenu extends Group {
         editline_name = new EditLine(180, Game.MAX_LENGTH);
         if (multiplayer) {
             standard.addChild(label_name);
-            String default_name = i18n("default_name", Renderer.getRenderer().getNetwork().getMatchmakingClient()
-                    .getProfile().getNick());
+            var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+            var profile = matchmakingClient.getProfile();
+            String nick = profile != null ? profile.getNick() : "Player";
+            String default_name = i18n("default_name", nick);
             label_default_name = new Label(default_name, Skin.getSkin().getEditFont());
             editline_name.append(default_name);
             if (Renderer.isRegistered())
@@ -192,9 +197,9 @@ public final class TerrainMenu extends Group {
         cb_rated = new CheckBox(false, i18n("rated_game"), rated_tip);
         if (multiplayer) {
             standard.addChild(cb_rated);
-            cb_rated.setDisabled(Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile() == null
-                    || Renderer.getRenderer().getNetwork().getMatchmakingClient().getProfile().getWins()
-                            < GameSession.MIN_WINS_FOR_RANKING);
+            var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+            var profile = matchmakingClient.getProfile();
+            cb_rated.setDisabled(profile == null || profile.getWins() < GameSession.MIN_WINS_FOR_RANKING);
         }
 
         // gamespeed
@@ -639,7 +644,7 @@ public final class TerrainMenu extends Group {
     void doCancel() {
         if (multiplayer) {
             assert main_menu != null;
-            new SelectGameMenu(network, gui_root, main_menu);
+            new SelectGameMenu(main_menu);
         }
     }
 
@@ -682,7 +687,7 @@ public final class TerrainMenu extends Group {
             gui_root.addModalForm(new MessageForm(min_name));
             return null;
         }
-        float random_start_pos = Renderer.getRenderer().getEventQueue().getTime() % 1f;
+        float random_start_pos = engine.getEventQueue().getTime() % 1f;
         int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
         byte gamespeed = pm_gamespeed.getChosenItem().map(PulldownItem::getAttachment).map(Gamespeed::getValue)
                 .map(Integer::byteValue).orElse((byte) Game.GAMESPEED_NORMAL);
@@ -743,7 +748,7 @@ public final class TerrainMenu extends Group {
                 ? multiplayer_setup.getWorldParameters() : skirmish_setup.getWorldParameters();
         IslandConfig islandConfig = multiplayer
                 ? multiplayer_setup.getIslandConfig() : skirmish_setup.getIslandConfig();
-        GameNetwork game_network = Menu.startNewGame(network, gui_root,
+        GameNetwork game_network = Menu.startNewGame(gui_root,
                 menu,
                 parameters,
                 ingame_info,
@@ -756,8 +761,7 @@ public final class TerrainMenu extends Group {
                         ai_string + "3",
                         ai_string + "4",
                         ai_string + "5"
-                },
-                audioManager);
+                });
         if (!multiplayer) {
             skirmish_setup.startSkirmishServer(game_network);
             IO.println("Start server");

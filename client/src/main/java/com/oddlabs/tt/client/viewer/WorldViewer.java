@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.viewer;
 
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.SessionID;
-import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.simulation.model.Model;
 
 import com.oddlabs.tt.audio.AudioManager;
@@ -16,22 +15,28 @@ import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.delegate.SelectionDelegate;
 import com.oddlabs.tt.client.gui.ActionButtonPanel;
+import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.client.render.DefaultRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.client.render.RacesAssetsLoader;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
+import com.oddlabs.tt.gui.InfoPrinter;
 import com.oddlabs.tt.input.InputManager;
+import com.oddlabs.tt.net.ChatListener;
+import com.oddlabs.tt.net.ChatMethod;
+import com.oddlabs.tt.net.ChatSender;
+import com.oddlabs.tt.net.InGameChatHistory;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
@@ -64,6 +69,7 @@ import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -77,6 +83,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     private static final String[] GAMESPEED_STRINGS = new String[]{"paused", "slow", "normal", "fast", "ludicrous"};
 
+    private final ClientEngine engine;
     private final GameCamera camera;
     private final ActionButtonPanel panel;
     private final SelectionDelegate delegate;
@@ -95,17 +102,20 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final AnimationManager animation_manager_local;
     private final Cheat cheat;
     private final AudioManager audioManager;
+    private final ChatListener chat_listener;
+    private final ChatSender chat_sender;
+    private final InGameChatHistory in_game_chat_history;
 
-    public WorldViewer(NetworkSelector network, final GUIRoot gui_root,
-            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator generator,
+    public WorldViewer(final GUIRoot gui_root,
+            WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<WorldInfo<Texture>> generator,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
-            SessionID session_id, AudioManager audioManager) {
+            SessionID session_id) {
+        this.engine = gui_root.getGUI().getEngine();
         this.world_params = world_params;
         this.ingame_info = ingame_info;
-        this.network = network;
+        this.network = engine.getNetwork().getSelector();
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
-        this.audioManager = audioManager;
-        var renderer = Renderer.getRenderer();
+        this.audioManager = engine.getAudioManager();
         this.animation_manager_local = new AnimationManager();
         final CameraState camera_state = new CameraState();
         this.notification_manager = new NotificationManager(gui_root, audioManager);
@@ -274,12 +284,12 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
         };
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
-        @SuppressWarnings("unchecked") WorldInfo<Texture> world_info = (WorldInfo<Texture>) generator.generate(
+        WorldInfo<Texture> world_info = generator.generate(
                 player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition());
         camera_state.setFog(world_info.fog_info());
         this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
-                world_info.landscapeData(), player_infos, renderer.getSettings().accessibility.linear_team_colours,
-                RenderConfig.INSERT_PLANTS[renderer.getSettings().graphic_detail], ProgressListener::progress);
+                world_info.landscapeData(), player_infos, engine.getSettings().accessibility.linear_team_colours,
+                RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail], ProgressListener::progress);
         initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
@@ -290,14 +300,28 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 selection, modelViewStack, projectionStack, audioManager);
         this.gui_root = gui_root;
         this.gui_root.setCheatIcon(GUIIcons.getIcons().getCheatIcon());
-        var useNetwork = Renderer.getRenderer().getNetwork();
-        useNetwork.getChatHub().addConsumer(gui_root.getInfoPrinter());
+        this.chat_listener = message -> {
+            var infoPrinter = gui_root.getInfoPrinter();
+            switch (message.type()) {
+                case NORMAL -> infoPrinter.print(message.formatShort());
+                case TEAM -> infoPrinter.print(message.formatShort(), InfoPrinter.TEAM_COLOR);
+                case PRIVATE -> infoPrinter.print(message.formatShort(), InfoPrinter.PRIVATE_COLOR);
+                default -> {
+                }
+            }
+        };
+        engine.getNetwork().getChatHub().addListener(chat_listener);
         this.peerhub = new PeerHub(animation_manager_local, ingame_info.isMultiplayer(), ingame_info.isRated(),
                 local_player, player_slots, network, notification_manager,
-                useNetwork.getMatchmakingClient(), useNetwork.getChatHub(),
+                engine.getNetwork().getMatchmakingClient(), engine.getNetwork().getChatHub(),
                 world.getDistributableTable(), session_id,
                 new ViewerStallHandler(this));
         this.peerhub.setIgnoreFilter(ChatCommand::isIgnoring);
+        this.in_game_chat_history = new InGameChatHistory();
+        engine.getNetwork().getChatHub().addListener(in_game_chat_history);
+        var matchmakingClient = engine.getNetwork().getMatchmakingClient();
+        Map<String, ChatMethod> commands = Map.of("iamacheater", (_, _, _) -> cheat.enable());
+        this.chat_sender = new InGameChatSender(gui_root.getInfoPrinter(), matchmakingClient, commands, peerhub);
         this.camera = new GameCamera(this, camera_state);
         this.panel = new ActionButtonPanel(this, camera);
         this.delegate = new SelectionDelegate(this, camera);
@@ -305,6 +329,18 @@ public final class WorldViewer implements Animated, AutoCloseable {
         initPlayers(world_info.landscapeData().startingLocations(), player_slots, world.getPlayers(), unit_infos,
                 world_params.initialGameSpeed());
         gui_root.getAnimationManager().registerAnimation(this);
+    }
+
+    public ChatSender getChatSender() {
+        return chat_sender;
+    }
+
+    public InGameChatHistory getInGameChatHistory() {
+        return in_game_chat_history;
+    }
+
+    public ClientEngine getEngine() {
+        return engine;
     }
 
     public AudioManager getAudioManager() {
@@ -322,7 +358,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     @Override
     public void close() {
-        Renderer.getRenderer().getNetwork().getChatHub().removeConsumer(gui_root.getInfoPrinter());
+        engine.getNetwork().getChatHub().removeListener(in_game_chat_history);
+        engine.getNetwork().getChatHub().removeListener(chat_listener);
         gui_root.getAnimationManager().removeAnimation(this);
         peerhub.close();
         ingame_info.close(this);

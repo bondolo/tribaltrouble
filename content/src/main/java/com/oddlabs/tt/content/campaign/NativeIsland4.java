@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitType;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.gui.CounterLabel;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
@@ -47,11 +46,11 @@ public final class NativeIsland4 extends Island {
     }
 
     @Override
-    public void init(NetworkSelector network, GUIRoot gui_root) {
+    public void init(GUIRoot gui_root) {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
-        GameNetwork game_network = startNewGame(network, gui_root, 512, Terrain.VIKING, .8f, .8f, .8f, 19
+        GameNetwork game_network = startNewGame(gui_root, 512, Terrain.VIKING, .8f, .8f, .8f, 19
                 * 19, 4, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,

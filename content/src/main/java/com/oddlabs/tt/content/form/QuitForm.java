@@ -1,10 +1,7 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
+import com.oddlabs.tt.gui.QuestionForm;
 
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -22,16 +19,23 @@ public final class QuitForm extends QuestionForm {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public QuitForm(final GUIRoot gui_root) {
+    private final Runnable shutdownAction;
+
+    public QuitForm(Runnable shutdownAction) {
         super(i18n(PeerHub.isWaitingForAck() ? "confirm_quit_waiting_for_ack" : "confirm_quit"),
-                (_, _, _, _) -> Renderer.shutdown());
+                (_, _, _, _) -> shutdownAction.run());
+        this.shutdownAction = shutdownAction;
+    }
+
+    public QuitForm() {
+        this(Renderer::shutdown);
     }
 
     @Override
     public void handleInput(InputEvent event) {
         if (event.getPhase() == InputPhase.PRESSED) {
             if (event.consumeAction(GameAction.GLOBAL_QUIT)) {
-                Renderer.shutdown();
+                shutdownAction.run();
                 event.consume();
                 return;
             }

@@ -6,7 +6,7 @@ import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 
 /** ARMI RPC interface for client-bound game setup commands. */
 public interface GameClientInterface {
-    void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator generator,
+    void setWorldGeneratorAndPlayerSlot(Game game, WorldGenerator<?> generator,
             short player_slot);
 
     void setPlayers(PlayerSlot[] players);

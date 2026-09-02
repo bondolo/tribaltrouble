@@ -4,17 +4,16 @@ import com.oddlabs.tt.gui.*;
 import com.oddlabs.tt.gui.event.*;
 import com.oddlabs.tt.client.gui.*;
 
+import com.oddlabs.tt.net.MatchmakingClient;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.gui.OKButton;
 import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -35,10 +34,10 @@ public final class PrivateMessageForm extends Form {
 
     private final EditLine editline_name;
     private final String nick;
-    private final GUIRoot gui_root;
+    private final MatchmakingClient client;
 
     public PrivateMessageForm(GUIRoot gui_root, String nick) {
-        this.gui_root = gui_root;
+        this.client = gui_root.getGUI().getEngine().getNetwork().getMatchmakingClient();
         this.nick = nick;
         // headline
         Label label_headline = new Label(i18n("private_message_caption"), Skin.getSkin().getHeadlineFont());
@@ -81,7 +80,7 @@ public final class PrivateMessageForm extends Form {
 
     private void send() {
         String message = editline_name.getContents();
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().sendPrivateMessage(nick, message);
+        client.sendPrivateMessage(nick, message);
         remove();
     }
 }

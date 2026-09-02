@@ -1,7 +1,5 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.content.menu.Menu;
@@ -21,7 +19,6 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.Color;
 
@@ -46,17 +43,15 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     private final float scale_y;
 
     private final Campaign campaign;
-    private final NetworkSelector network;
     private final List<MapIslandButton> islandButtons = new ArrayList<>();
     private boolean initialFocusSet = false;
 
     private float flicker_time;
     private Color.Linear mapColor = Color.Linear.WHITE;
 
-    public CampaignMapForm(NetworkSelector network, GUIRoot gui_root, Campaign campaign) {
+    public CampaignMapForm(GUIRoot gui_root, Campaign campaign) {
         super(gui_root, new StaticCamera(new CameraState()));
         this.campaign = campaign;
-        this.network = network;
 
         this.scale_x = gui_root.getWidth() / BASE_WIDTH;
         this.scale_y = gui_root.getHeight() / BASE_HEIGHT;
@@ -74,7 +69,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                                 i18n("native_campaign_opened"),
                                 null,
                                 Origin.AT_START,
-                                () -> closeCampaign(network, gui_root.getGUI(), campaign.getAudioManager()));
+                                () -> closeCampaign(gui_root.getGUI()));
                         gui_root.addModalForm(dialog);
                     };
                     CampaignDialogForm dialog = new CampaignDialogForm(i18n("viking_header"),
@@ -83,7 +78,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                             Origin.AT_START,
                             runnable_next);
                     gui_root.addModalForm(dialog);
-                    Renderer.getRenderer().getSettings().has_native_campaign = true;
+                    gui_root.getGUI().getEngine().getSettings().has_native_campaign = true;
                 }
             }
 
@@ -97,7 +92,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                             i18n("native_campaign_completed"),
                             campaign.getIcons().getFaces()[0],
                             Origin.AT_START,
-                            () -> closeCampaign(network, gui_root.getGUI(), campaign.getAudioManager()));
+                            () -> closeCampaign(gui_root.getGUI()));
                     gui_root.addModalForm(dialog);
                 }
             }
@@ -111,7 +106,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                 case CampaignState.ISLAND_AVAILABLE -> {
                     final int index = i;
                     MapIslandButton button = new MapIslandButton(data.button(), index);
-                    button.addMouseClickListener((_, _, _, _) -> campaign.islandChosen(network, getGUIRoot(), index));
+                    button.addMouseClickListener((_, _, _, _) -> campaign.islandChosen(getGUIRoot(), index));
                     addChild(button);
                     islandButtons.add(button);
                     if (campaign.getState().getCurrentIsland() == i) {
@@ -207,7 +202,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                 return;
             } else if (event.consumeAction(GameAction.UI_ACTIVATE)) {
                 if (getFocusedChild() instanceof MapIslandButton button) {
-                    campaign.islandChosen(network, getGUIRoot(), button.getIslandIndex());
+                    campaign.islandChosen(getGUIRoot(), button.getIslandIndex());
                     event.consume();
                     return;
                 }
@@ -222,7 +217,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
 
         if (event.getPhase() == InputPhase.PRESSED) {
             if (event.consumeAction(GameAction.GLOBAL_MENU) || event.consumeAction(GameAction.UI_CANCEL)) {
-                getGUIRoot().addModalForm(new CampaignMapMenu(network, getGUIRoot(), campaign.getAudioManager()));
+                getGUIRoot().addModalForm(new CampaignMapMenu(getGUIRoot()));
                 event.consume();
                 return;
             }
@@ -272,9 +267,8 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         }
     }
 
-    public static void closeCampaign(NetworkSelector network, GUI gui,
-            AudioManager audioManager) {
-        Menu.startMenu(network, gui, audioManager);
+    public static void closeCampaign(GUI gui) {
+        Menu.startMenu(gui);
     }
 
     @Override
@@ -285,13 +279,13 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     @Override
     protected void doAdd() {
         super.doAdd();
-        Renderer.getRenderer().getEventQueue().getManager().registerAnimation(this);
+        getGUIRoot().getGUI().getEngine().getEventQueue().getManager().registerAnimation(this);
     }
 
     @Override
     protected void doRemove() {
         super.doRemove();
-        Renderer.getRenderer().getEventQueue().getManager().removeAnimation(this);
+        getGUIRoot().getGUI().getEngine().getEventQueue().getManager().removeAnimation(this);
     }
 
     @Override

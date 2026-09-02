@@ -9,7 +9,6 @@ import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.net.ProfileListener;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -27,10 +26,10 @@ public final class CreatingProfileForm extends Form implements ProfileListener {
     private final Menu main_menu;
     private final GUIRoot gui_root;
 
-    public CreatingProfileForm(GUIRoot gui_root, Form profiles_form, Menu main_menu, String nick) {
-        this.gui_root = gui_root;
-        this.profiles_form = profiles_form;
+    public CreatingProfileForm(Form profiles_form, Menu main_menu, String nick) {
         this.main_menu = main_menu;
+        this.gui_root = main_menu.getGUIRoot();
+        this.profiles_form = profiles_form;
         Label info_label = new Label(i18n("creating"), Skin.getSkin().getHeadlineFont());
         addChild(info_label);
         HorizButton cancel_button = new CancelButton(120);
@@ -45,15 +44,15 @@ public final class CreatingProfileForm extends Form implements ProfileListener {
         compileCanvas();
         centerPos();
 
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().setCreatingProfileListener(this);
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().createProfile(nick);
+        main_menu.getEngine().getNetwork().getMatchmakingClient().setCreatingProfileListener(this);
+        main_menu.getEngine().getNetwork().getMatchmakingClient().createProfile(nick);
     }
 
     @Override
     public void success() {
         remove();
         main_menu.setMenuCentered(profiles_form);
-        Renderer.getRenderer().getNetwork().getMatchmakingClient().requestProfiles();
+        main_menu.getEngine().getNetwork().getMatchmakingClient().requestProfiles();
     }
 
     @Override

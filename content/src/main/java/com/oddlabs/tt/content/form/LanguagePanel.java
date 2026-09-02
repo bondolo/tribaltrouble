@@ -1,9 +1,7 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
+import com.oddlabs.tt.content.Languages;
+import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.gui.ColumnInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -15,8 +13,6 @@ import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
-import com.oddlabs.tt.content.Languages;
-import com.oddlabs.tt.engine.render.Renderer;
 
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +25,8 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 public class LanguagePanel extends Panel {
     public LanguagePanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("language_caption"));
+        Settings settings = gui_root.getGUI().getEngine().getSettings();
+        Locale defaultLocale = gui_root.getGUI().getEngine().getDefaultLocale();
 
         // language
         Group language_group = new Group();
@@ -40,9 +38,9 @@ public class LanguagePanel extends Panel {
         var language_list_box = new MultiColumnComboBox<Locale>(gui_root, language_infos, 200, false);
 
         // Check language logic
-        String currentLanguage = Renderer.getRenderer().getSettings().control.language;
+        String currentLanguage = settings.control.language;
         if (!currentLanguage.equals("default") && !Languages.hasLanguage(Locale.forLanguageTag(currentLanguage))) {
-            Renderer.getRenderer().getSettings().control.language = "default";
+            settings.control.language = "default";
         }
 
         // Supported Language list
@@ -54,7 +52,7 @@ public class LanguagePanel extends Panel {
             var iconLabel = new IconLabel(flag, label);
             Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), langauge);
             language_list_box.addRow(row);
-            if (langauge.getLanguage().equals(Renderer.getRenderer().getSettings().control.language)) {
+            if (langauge.getLanguage().equals(settings.control.language)) {
                 selectedLanguage = row;
             }
         }
@@ -63,9 +61,9 @@ public class LanguagePanel extends Panel {
         var label = new Label(AbstractOptionsMenu.i18n("system_default"), Skin.getSkin().getMultiColumnComboBoxData()
                 .font());
         var iconLabel = new IconLabel(Skin.getSkin().getFlagDefault(), label);
-        Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), Renderer.getRenderer().getDefaultLocale());
+        Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), defaultLocale);
         language_list_box.addRow(row);
-        if (null == selectedLanguage || Renderer.getRenderer().getSettings().control.language.equals("default")) {
+        if (null == selectedLanguage || settings.control.language.equals("default")) {
             selectedLanguage = row;
         }
 
@@ -73,9 +71,9 @@ public class LanguagePanel extends Panel {
         language_list_box.addRowListener(new RowListener<>() {
             @Override
             public void rowDoubleClicked(Locale locale) {
-                Renderer.getRenderer().getSettings().control.language = locale.getVariant().equals("default")
+                settings.control.language = locale.getVariant().equals("default")
                         ? "default" : locale.toLanguageTag();
-                IO.println("set language:" + Renderer.getRenderer().getSettings().control.language);
+                IO.println("set language:" + settings.control.language);
                 gui_root.addModalForm(new MessageForm(AbstractOptionsMenu.i18n("language_change_next_run")));
             }
         });

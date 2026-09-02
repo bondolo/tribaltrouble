@@ -16,6 +16,7 @@ module com.oddlabs.tt.engine {
     requires org.lwjgl.sdl;
     requires org.lwjgl.stb;
 
+    exports com.oddlabs.tt.engine;
     exports com.oddlabs.tt.engine.cursor;
     exports com.oddlabs.tt.engine.font;
     exports com.oddlabs.tt.engine.image;

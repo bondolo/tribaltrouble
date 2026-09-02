@@ -1,12 +1,6 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
-import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.HorizButton;
 import com.oddlabs.tt.gui.Label;
 import com.oddlabs.tt.gui.LabelBox;
@@ -27,7 +21,7 @@ public final class WelcomeForm extends Form {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public WelcomeForm(GUIRoot gui_root, Menu main_menu) {
+    public WelcomeForm() {
         Label label_headline = new Label(i18n("welcome_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
@@ -35,8 +29,8 @@ public final class WelcomeForm extends Form {
         addChild(box);
 
         HorizButton ok_button = new OKButton(100);
-        addChild(ok_button);
         ok_button.addMouseClickListener(new OKListener(this));
+        addChild(ok_button);
 
         // Place objects
         label_headline.place();

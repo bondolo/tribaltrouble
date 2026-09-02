@@ -37,9 +37,9 @@ public final class NewProfileForm extends Form {
     private final EditLine editline_nick;
     private final GUIRoot gui_root;
 
-    public NewProfileForm(GUIRoot gui_root, Menu main_menu, ProfilesForm profiles_form) {
-        this.gui_root = gui_root;
+    public NewProfileForm(Menu main_menu, ProfilesForm profiles_form) {
         this.main_menu = main_menu;
+        this.gui_root = main_menu.getGUIRoot();
         this.profiles_form = profiles_form;
 
 
@@ -98,7 +98,7 @@ public final class NewProfileForm extends Form {
 
     private void createProfile() {
         String nick = editline_nick.getContents();
-        gui_root.addModalForm(new CreatingProfileForm(gui_root, profiles_form, main_menu, nick));
+        gui_root.addModalForm(new CreatingProfileForm(profiles_form, main_menu, nick));
     }
 
     public void connectionLost() {

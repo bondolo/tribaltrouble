@@ -1,9 +1,9 @@
 package com.oddlabs.tt.content.form;
 
+import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -26,12 +26,20 @@ public class SoundPanel extends Panel {
     private static final int MAX_VALUE = 20;
     private static final boolean TEMPORARILY_DISABLE_MUSIC_CONTROLS = false;
 
+    public SoundPanel(GUIRoot gui_root) {
+        this(gui_root, gui_root.getGUI().getEngine().getSettings().audio,
+                gui_root.getGUI().getEngine().getSettings().accessibility,
+                gui_root.getGUI().getEngine().getAudioManager(),
+                gui_root.getGUI().getEngine().getEventQueue().getDeterministic());
+    }
+
     public SoundPanel(GUIRoot gui_root, AudioSettings audioSettings,
-            AccessibilitySettings accessibilitySettings, AudioManager audioManager
+            AccessibilitySettings accessibilitySettings, AudioManager audioManager,
+            Deterministic deterministic
     ) {
         super(AbstractOptionsMenu.i18n("sound_caption"));
 
-        boolean audioCreated = Renderer.getRenderer().getEventQueue().getDeterministic().log(audioManager != null);
+        boolean audioCreated = deterministic.log(audioManager != null);
 
         // Sound
         Group group_music = new Group();
@@ -150,11 +158,5 @@ public class SoundPanel extends Panel {
         group_sound.place(group_music, BOTTOM_LEFT);
         group_output.place(group_sound, BOTTOM_LEFT);
         compileCanvas();
-    }
-
-    public SoundPanel(GUIRoot gui_root, AudioManager audioManager) {
-        this(gui_root, Renderer.getRenderer().getSettings().audio, Renderer.getRenderer().getSettings().accessibility,
-                audioManager
-        );
     }
 }

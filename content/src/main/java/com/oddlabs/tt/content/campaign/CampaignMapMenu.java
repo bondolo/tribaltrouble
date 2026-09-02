@@ -1,7 +1,5 @@
 package com.oddlabs.tt.content.campaign;
 
-import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
@@ -26,18 +24,14 @@ import org.jspecify.annotations.Nullable;
 final class CampaignMapMenu extends Form {
     private static final Color.Linear DARK_GLASS = Color.Linear.BLACK.alpha(0.345f);
     private final GUIRoot gui_root;
-    private final NetworkSelector network;
-    private final AudioManager audio;
     private final GUIImage overlay;
     private final GUIImage logo;
     private final MenuButton resumeButton;
 
     private @Nullable Form current_menu;
 
-    CampaignMapMenu(NetworkSelector network, GUIRoot gui_root, AudioManager audio) {
-        this.network = network;
+    CampaignMapMenu(GUIRoot gui_root) {
         this.gui_root = gui_root;
-        this.audio = audio;
 
         int width = gui_root.getWidth();
         int height = gui_root.getHeight();
@@ -118,7 +112,7 @@ final class CampaignMapMenu extends Form {
         MenuButton options = new MenuButton(Menu.i18n("options"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(options);
         options.addMouseClickListener((_, _, _, _) -> setMenuCentered(
-                new OptionsMenu(gui_root, audio))
+                new OptionsMenu(gui_root))
         );
     }
 
@@ -127,14 +121,15 @@ final class CampaignMapMenu extends Form {
         MenuButton abort = new MenuButton(abort_text, Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(abort);
         abort.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuestionForm(Menu.i18n("end_game_confirm"),
-                (_, _, _, _) -> CampaignMapForm.closeCampaign(network, gui_root.getGUI(), audio)))
+                (_, _, _, _) -> CampaignMapForm.closeCampaign(gui_root.getGUI())))
         );
     }
 
     private void addExitButton() {
         MenuButton exit = new MenuButton(Menu.i18n("quit"), Menu.COLOR_NORMAL, Menu.COLOR_ACTIVE);
         addChild(exit);
-        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(gui_root)));
+        exit.addMouseClickListener((_, _, _, _) -> setMenuCentered(new QuitForm(gui_root.getGUI()
+                .getEngine()::shutdown)));
     }
 
     private void layoutButtons() {

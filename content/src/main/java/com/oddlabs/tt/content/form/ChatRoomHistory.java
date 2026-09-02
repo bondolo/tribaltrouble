@@ -1,14 +1,9 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.gui.*;
-import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
-
 import com.oddlabs.matchmaking.ChatRoomUser;
+import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.net.ChatHistory;
 import com.oddlabs.tt.net.ChatMessage;
-import com.oddlabs.tt.base.util.ChatConsumer;
-import com.oddlabs.tt.base.util.Utils;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -22,11 +17,11 @@ import java.util.Set;
 public final class ChatRoomHistory extends ChatHistory {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ChatRoomHistory.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private @Nullable ChatRoomUser[] old_users;
+    private @Nullable ChatRoomUser[] old_users = null;
 
     public void update(ChatRoomUser[] new_users) {
         if (old_users == null) {
@@ -50,7 +45,7 @@ public final class ChatRoomHistory extends ChatHistory {
 
     @Override
     public void chat(ChatMessage message) {
-        if (message.type() != ChatConsumer.Type.PRIVATE && message.type() != ChatConsumer.Type.CHATROOM)
+        if (message.type() != ChatMessage.Type.PRIVATE && message.type() != ChatMessage.Type.CHATROOM)
             return;
         addMessage(message.formatLong());
     }

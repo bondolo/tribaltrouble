@@ -22,7 +22,6 @@ import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.model.UnitTemplate;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.Notification;
 import com.oddlabs.tt.client.viewer.WorldViewer;
@@ -87,7 +86,9 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
         this.game_camera = (GameCamera) getCamera();
         displayChangedNotify(getGUIRoot().getWidth(), getGUIRoot().getHeight());
         addChild(getViewer().getPanel());
-        chat_form = new InGameChatForm(getViewer().getGUIRoot().getInfoPrinter(), getViewer());
+        var network = viewer.getEngine().getNetwork();
+        this.chat_form = new InGameChatForm(network.getChatHub(), viewer.getInGameChatHistory(), viewer
+                .getChatSender());
         chat_form.addCloseListener(() -> {
             if (getViewer().getInputManager().isActive(GameAction.GLOBAL_CHAT)) {
                 close_chat_override = true;
@@ -571,7 +572,7 @@ public final class SelectionDelegate extends ControllableCameraDelegate<Camera> 
             float w = maxX - minX;
             float h = maxY - minY;
 
-            float thickness = Renderer.getRenderer().getSettings().accessibility.high_contrast ? 3.0f : 1.0f;
+            float thickness = getViewer().getEngine().getSettings().accessibility.high_contrast ? 3.0f : 1.0f;
 
             // Ensure thickness doesn't exceed half dimensions
             if (thickness > w / 2) thickness = w / 2;

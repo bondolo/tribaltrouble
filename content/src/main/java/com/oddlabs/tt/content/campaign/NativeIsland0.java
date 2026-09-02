@@ -9,7 +9,6 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.model.UnitType;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.FirstPersonCamera;
 import com.oddlabs.tt.client.camera.GameCamera;
@@ -53,11 +52,11 @@ public final class NativeIsland0 extends Island {
     }
 
     @Override
-    public void init(NetworkSelector network, GUIRoot gui_root) {
+    public void init(GUIRoot gui_root) {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
-        GameNetwork game_network = startNewGame(network, gui_root, 1024, Terrain.NATIVE, .75f, .65f, .85f,
+        GameNetwork game_network = startNewGame(gui_root, 1024, Terrain.NATIVE, .75f, .65f, .85f,
                 25, 0, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
