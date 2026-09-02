@@ -336,8 +336,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
             WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names) {
         var engine = gui_root.getGUI().getEngine();
         boolean multiplayer = ingame_info.isMultiplayer();
-        WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(islandConfig,
-                engine.getSettings().getTexelsPerGridUnit());
+        WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(islandConfig);
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
         var matchmakingClient = engine.getNetwork().getMatchmakingClient();
         var chatHub = engine.getNetwork().getChatHub();
@@ -371,8 +370,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
                 LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
                 LandscapeConfig.LANDSCAPE_SEED);
-        final WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(
-                islandConfig, engine.getSettings().getTexelsPerGridUnit());
+        final WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(islandConfig);
         return ProgressForm.setProgressForm(engine.getNetwork().getSelector(), gui, (
                 GUIRoot gui_root) -> finishMainMenu(gui_root,
                         first_progress, generator), first_progress);
