@@ -2,11 +2,11 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.gui.event.ItemChosenListener;
-import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,11 +50,14 @@ public final class PulldownMenu<T> extends Group {
     public void addItem(PulldownItem<T> item) {
         items.add(item);
         addChild(item);
-        item.addMouseClickListener(new ItemListener(items.size() - 1));
+        item.setMenu(this);
         setDim(getWidth(), getHeight());
     }
 
     public void clear() {
+        for (PulldownItem<T> item : items) {
+            item.setMenu(null);
+        }
         items.clear();
         clearChildren();
         chosen_item_index = -1;
@@ -102,6 +105,15 @@ public final class PulldownMenu<T> extends Group {
         itemChosenAll();
     }
 
+    /**
+     * Chooses an item by its instance.
+     *
+     * @param item the item to choose, or null to clear the chosen item
+     */
+    public void chooseItem(@Nullable PulldownItem<T> item) {
+        chooseItem(item != null ? items.indexOf(item) : -1);
+    }
+
     @Override
     protected void focusNotify(boolean focus) {
         if (!focus) {
@@ -146,18 +158,5 @@ public final class PulldownMenu<T> extends Group {
 
     public void removeItemChosenListener(ItemChosenListener<T> listener) {
         chosen_listeners.remove(listener);
-    }
-
-    public final class ItemListener implements MouseClickListener {
-        private final int index;
-
-        public ItemListener(int index) {
-            this.index = index;
-        }
-
-        @Override
-        public void mouseClicked(MouseButton button, int x, int y, int clicks) {
-            chooseItem(index);
-        }
     }
 }

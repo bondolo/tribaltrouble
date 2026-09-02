@@ -5,9 +5,13 @@ import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Selectable item element in a {@link PulldownMenu}.
+ */
 public class PulldownItem<T> extends ButtonObject {
     private final Label label;
     private final @Nullable T attachment;
+    private @Nullable PulldownMenu<T> menu;
 
     public PulldownItem(String label_str) {
         this(label_str, null);
@@ -70,9 +74,14 @@ public class PulldownItem<T> extends ButtonObject {
         label.setColor(color);
     }
 
+    void setMenu(@Nullable PulldownMenu<T> menu) {
+        this.menu = menu;
+    }
+
     @Override
     protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
-        // Prevent super.mouseClicked from being called to avoid infinite loop.
-
+        if (menu != null) {
+            menu.chooseItem(this);
+        }
     }
 }
