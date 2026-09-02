@@ -4,10 +4,9 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.Participant;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.util.LoadCallback;
-import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.procedural.GeneratedLandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;
@@ -27,12 +26,12 @@ public final class WorldStarter implements LoadCallback<GUIRoot, UIRenderer> {
     private final PlayerSlot[] player_slots;
     private final short player_slot;
     private final InGameInfo ingame_info;
-    private final WorldGenerator<WorldInfo<Texture>> generator;
+    private final WorldGenerator<GeneratedLandscapeData> generator;
     private final WorldParameters world_params;
     private final @Nullable WorldInitAction initial_action;
     private final int session_id;
 
-    public WorldStarter(int session_id, WorldGenerator<WorldInfo<Texture>> generator,
+    public WorldStarter(int session_id, WorldGenerator<GeneratedLandscapeData> generator,
             WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
             @Nullable WorldInitAction initial_action) {

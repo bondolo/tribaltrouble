@@ -8,7 +8,6 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.engine.render.GUIRenderer;
-import com.oddlabs.tt.engine.render.Renderer;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
@@ -66,19 +65,9 @@ public class Form extends Group {
 
     public final void centerPos() {
         GUIRoot root = getParentGUIRoot();
-        int w, h;
         if (root != null) {
-            w = root.getWidth();
-            h = root.getHeight();
-        } else {
-            var window = Renderer.getRenderer().getWindow();
-            int logW = window.getLogicalWidth();
-            int logH = window.getLogicalHeight();
-            float scale = GUIRoot.calculateEffectiveScale(logW, logH);
-            w = (int) (logW / scale);
-            h = (int) (logH / scale);
+            setPos((root.getWidth() - getWidth()) / 2, (root.getHeight() - getHeight()) / 2);
         }
-        setPos((w - getWidth()) / 2, (h - getHeight()) / 2);
     }
 
     @Override

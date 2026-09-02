@@ -3,16 +3,22 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.Renderer;
+import com.oddlabs.tt.engine.settings.Settings;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.util.Color;
 
 public final class Status {
+    private final Settings settings;
     private final StringBuilder buf = new StringBuilder();
+
+    public Status(Settings settings) {
+        this.settings = settings;
+    }
 
     public void render(GUIRenderer renderer) {
         long free_mem = Runtime.getRuntime().freeMemory();
         buf.delete(0, buf.length());
-        if (Renderer.getRenderer().getSettings().inDeveloperMode()) {
+        if (settings.inDeveloperMode()) {
             buf.append("TPF ")
                     .append(Renderer.getTrianglesRendered())
                     .append(" JHeap ")

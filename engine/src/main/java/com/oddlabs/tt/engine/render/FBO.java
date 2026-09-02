@@ -15,15 +15,17 @@ public final class FBO extends NativeResource<FBO.Buffer> {
 
     static final class Buffer extends NativeResource.NativeState {
 
+        private final RenderContext renderContext;
         private final int handle;
 
-        Buffer() {
-            handle = GL30.glGenFramebuffers();
+        Buffer(RenderContext renderContext) {
+            this.renderContext = renderContext;
+            this.handle = GL30.glGenFramebuffers();
         }
 
         @Override
         public void close() {
-            Renderer.getRenderer().getRenderContext().invalidateFramebuffer(handle);
+            renderContext.invalidateFramebuffer(handle);
             GL30.glDeleteFramebuffers(handle);
         }
     }
@@ -34,15 +36,15 @@ public final class FBO extends NativeResource<FBO.Buffer> {
     private @Nullable Texture maskTexture;
     private @Nullable Texture depthTexture;
 
-    public FBO(int width, int height) {
-        super(new Buffer());
+    public FBO(RenderContext context, int width, int height) {
+        super(new Buffer(context));
         this.width = width;
         this.height = height;
     }
 
-    public static FBO createSceneFBO(int width, int height) {
-        FBO fbo = new FBO(width, height);
-        fbo.bind();
+    public static FBO createSceneFBO(RenderContext context, int width, int height) {
+        FBO fbo = new FBO(context, width, height);
+        fbo.bind(context);
 
         // HDR Color Texture (Float16 for high dynamic range)
         Texture color = new Texture(width, height, GL30.GL_RGBA16F, GL11.GL_LINEAR, GL11.GL_LINEAR,
@@ -63,15 +65,15 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         fbo.depthTexture = depth;
 
         // Explicitly declare draw buffers
-        Renderer.getRenderer().getRenderContext().setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0,
+        context.setDrawBuffers(new int[]{GL30.GL_COLOR_ATTACHMENT0,
                 GL30.GL_COLOR_ATTACHMENT1});
 
         fbo.checkStatus();
-        fbo.unbind();
+        fbo.unbind(context);
         return fbo;
     }
 
-    public void resize(int width, int height) {
+    public void resize(RenderContext context, int width, int height) {
         if (this.width == width && this.height == height) return;
         this.width = width;
         this.height = height;
@@ -94,8 +96,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
                     GL12.GL_CLAMP_TO_EDGE);
         }
 
-        bind();
-        var context = Renderer.getRenderer().getRenderContext();
+        bind(context);
         if (colorTexture != null) attachTexture(GL30.GL_COLOR_ATTACHMENT0, colorTexture);
         if (maskTexture != null) attachTexture(GL30.GL_COLOR_ATTACHMENT1, maskTexture);
         if (depthTexture != null) attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthTexture);
@@ -109,7 +110,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         }
 
         checkStatus();
-        unbind();
+        unbind(context);
     }
 
     public void bind(RenderContext context) {
@@ -117,27 +118,18 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         context.setViewport(0, 0, width, height);
     }
 
-    public void bind() {
-        bind(Renderer.getRenderer().getRenderContext());
-    }
-
-    public void unbind() {
-        unbind(Renderer.getRenderer().getRenderContext());
-    }
-
     public void unbind(RenderContext context) {
         context.bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
     public void detachAll() {
-        bind();
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, getHandle());
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, 0, 0);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL11.GL_TEXTURE_2D, 0, 0);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, 0, 0);
         colorTexture = null;
         maskTexture = null;
         depthTexture = null;
-        unbind();
     }
 
     public @Nullable Texture getColorTexture() {
@@ -152,8 +144,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
         return depthTexture;
     }
 
-    public void blitDepthTo(FBO target) {
-        var context = Renderer.getRenderer().getRenderContext();
+    public void blitDepthTo(RenderContext context, FBO target) {
         context.bindFramebuffer(GL30.GL_READ_FRAMEBUFFER, getHandle());
         context.bindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, target.getHandle());
         GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, target.width, target.height,

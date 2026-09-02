@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render.shader;
 
 import com.oddlabs.tt.engine.render.MatrixStack;
-import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
@@ -12,16 +11,13 @@ import org.lwjgl.opengl.GL11;
  */
 public final class DebugShaderRenderer extends ShaderRenderer {
 
+    private final RenderContext renderContext;
     private float pointSize = 1.0f;
 
-    /**
-     * Creates a new DebugShaderRenderer.
-     *
-     * @param shader The shader program to use for rendering.
-     */
-    public DebugShaderRenderer(ShaderProgram shader, MatrixStack modelViewStack,
-            MatrixStack projectionStack) {
+    public DebugShaderRenderer(ShaderProgram shader, MatrixStack modelViewStack, MatrixStack projectionStack,
+            RenderContext renderContext) {
         super(shader, modelViewStack, projectionStack);
+        this.renderContext = renderContext;
     }
 
     public void setPointSize(float size) {
@@ -67,16 +63,9 @@ public final class DebugShaderRenderer extends ShaderRenderer {
      */
     @Override
     public void end() {
-        RenderContext context = Renderer.getRenderer().getRenderContext();
-
-        try (var _ = context.withDepthMode(DepthMode.NONE); var _ = context.withBlendMode(BlendMode.ALPHA)) {
-
-            GL11.glDepthMask(false);
-            try {
-                flush(pointSize);
-            } finally {
-                GL11.glDepthMask(true); // Restore default
-            }
+        try (var _ = renderContext.withDepthMode(DepthMode.NONE); var _ = renderContext.withBlendMode(
+                BlendMode.ALPHA)) {
+            flush(pointSize);
         }
     }
 

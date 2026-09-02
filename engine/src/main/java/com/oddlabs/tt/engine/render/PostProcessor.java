@@ -33,18 +33,20 @@ public final class PostProcessor implements AutoCloseable {
     private final FloatVBO quadVBO;
     private final FBO sceneFBO;
     private final FBO depthCopyFBO;
+    private final AccessibilitySettings accessibility;
     private int currentWidth;
     private int currentHeight;
 
-    public PostProcessor(int width, int height) {
+    public PostProcessor(RenderContext context, AccessibilitySettings accessibility, int width, int height) {
+        this.accessibility = accessibility;
         this.currentWidth = width;
         this.currentHeight = height;
         this.shader = new PostProcessShader();
-        this.sceneFBO = FBO.createSceneFBO(width, height);
+        this.sceneFBO = FBO.createSceneFBO(context, width, height);
 
         // Depth Copy FBO (for Soft Particles)
-        this.depthCopyFBO = new FBO(width, height);
-        this.depthCopyFBO.bind();
+        this.depthCopyFBO = new FBO(context, width, height);
+        this.depthCopyFBO.bind(context);
         Texture depthCopy = new Texture(width, height, GL30.GL_DEPTH_COMPONENT24, GL11.GL_NEAREST, GL11.GL_NEAREST,
                 GL12.GL_CLAMP_TO_EDGE);
         this.depthCopyFBO.attachTexture(GL30.GL_DEPTH_ATTACHMENT, depthCopy);
@@ -52,7 +54,7 @@ public final class PostProcessor implements AutoCloseable {
         GL11.glDrawBuffer(GL11.GL_NONE);
         GL11.glReadBuffer(GL11.GL_NONE);
         this.depthCopyFBO.checkStatus();
-        this.depthCopyFBO.unbind();
+        this.depthCopyFBO.unbind(context);
 
         // Setup Full-Screen Quad
         this.vao = new VertexArray();
@@ -76,25 +78,25 @@ public final class PostProcessor implements AutoCloseable {
         this.vao.unbind();
     }
 
-    public boolean resize(int width, int height) {
+    public boolean resize(RenderContext context, int width, int height) {
         if (this.currentWidth == width && this.currentHeight == height) return false;
         this.currentWidth = width;
         this.currentHeight = height;
-        sceneFBO.resize(width, height);
+        sceneFBO.resize(context, width, height);
 
-        depthCopyFBO.resize(width, height);
-        depthCopyFBO.bind();
+        depthCopyFBO.resize(context, width, height);
+        depthCopyFBO.bind(context);
         // Since resize() in FBO.java doesn't handle custom depth-only FBOs cleanly yet,
         // we'll manually ensure it's still color-less.
         GL11.glDrawBuffer(GL11.GL_NONE);
         GL11.glReadBuffer(GL11.GL_NONE);
-        depthCopyFBO.unbind();
+        depthCopyFBO.unbind(context);
 
         return true;
     }
 
-    public void copyDepthBuffer() {
-        sceneFBO.blitDepthTo(depthCopyFBO);
+    public void copyDepthBuffer(RenderContext context) {
+        sceneFBO.blitDepthTo(context, depthCopyFBO);
     }
 
     public Texture getDepthCopyTexture() {
@@ -147,7 +149,6 @@ public final class PostProcessor implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
 
-            AccessibilitySettings accessibility = Renderer.getRenderer().getSettings().accessibility;
             shader.setSubroutines(accessibility.cvd_mode, accessibility.high_contrast);
 
             shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, accessibility.cvd_intensity);

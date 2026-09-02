@@ -23,6 +23,7 @@ import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
@@ -50,6 +51,7 @@ import com.oddlabs.tt.net.Client;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.LoadCallbackFactory;
 import com.oddlabs.tt.net.Server;
+import com.oddlabs.tt.procedural.GeneratedLandscapeData;
 import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
@@ -318,7 +320,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, UIRenderer> starterFactory = (session_id, generator,
                 player_slots,
                 unit_infos, player_slot) -> new WorldStarter(session_id,
-                        (WorldGenerator<WorldInfo<Texture>>) generator, world_params, player_slots, unit_infos,
+                        (WorldGenerator<GeneratedLandscapeData>) generator, world_params, player_slots, unit_infos,
                         player_slot, ingame_info,
                         new DefaultWorldInitAction());
         Client<GUIRoot, UIRenderer> client = new Client<>(null, networkSelector, matchmakingClient, chatHub, host_id,
@@ -336,7 +338,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
             WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names) {
         var engine = gui_root.getGUI().getEngine();
         boolean multiplayer = ingame_info.isMultiplayer();
-        WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(islandConfig);
+        WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
         var matchmakingClient = engine.getNetwork().getMatchmakingClient();
         var chatHub = engine.getNetwork().getChatHub();
@@ -348,7 +350,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         @SuppressWarnings("unchecked") LoadCallbackFactory<GUIRoot, UIRenderer> starterFactory = (session_id, gen,
                 player_slots, unit_infos,
                 player_slot) -> new WorldStarter(
-                        session_id, (WorldGenerator<WorldInfo<Texture>>) gen,
+                        session_id, (WorldGenerator<GeneratedLandscapeData>) gen,
                         world_params, player_slots, unit_infos, player_slot, ingame_info, init_action);
         Client<GUIRoot, UIRenderer> client = new Client<>(server::close, networkSelector, matchmakingClient,
                 chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
@@ -370,21 +372,23 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
                 LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
                 LandscapeConfig.LANDSCAPE_SEED);
-        final WorldGenerator<WorldInfo<Texture>> generator = new IslandGenerator(islandConfig);
+        final WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
         return ProgressForm.setProgressForm(engine.getNetwork().getSelector(), gui, (
                 GUIRoot gui_root) -> finishMainMenu(gui_root,
                         first_progress, generator), first_progress);
     }
 
     private static UIRenderer finishMainMenu(GUIRoot gui_root,
-            boolean first_progress, WorldGenerator<WorldInfo<Texture>> generator) {
+            boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator) {
         var engine = gui_root.getGUI().getEngine();
         engine.getFramePacer().freezeTime();
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
-        WorldInfo<Texture> world_info = generator.generate(players.size(), world_params.initialUnitCount(), 0f);
+        GeneratedLandscapeData landscapeData = generator.generate(players.size(), world_params.initialUnitCount(), 0f);
+        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(engine.getRenderer().getRenderContext(),
+                landscapeData);
         RenderQueues render_queues = new RenderQueues();
         LandscapeAssetsLoader landscape_resources = new LandscapeAssetsLoader(render_queues);
         ProgressForm.progress();
@@ -398,11 +402,12 @@ public abstract class Menu extends CameraDelegate<Camera> {
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
         Selection selection = new Selection(local_player);
-        UIRenderer renderer = new DefaultRenderer(null, local_player, render_queues, world_info,
+        UIRenderer renderer = new DefaultRenderer(engine.getRenderer().getRenderContext(), null, local_player,
+                render_queues, world_info,
                 landscape_renderer, new Picker(menuAnimationManager, local_player, gui_root, render_queues,
                         landscape_renderer, selection, engine.getAudioManager()), selection, modelViewStack,
                 projectionStack,
-                engine.getAudioManager(), engine.getSettings().graphic_detail,
+                engine.getAudioManager(), engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
         engine.getAudioManager().setMusic(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(gui_root,
