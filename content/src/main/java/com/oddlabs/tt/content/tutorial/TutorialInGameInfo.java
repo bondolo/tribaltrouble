@@ -41,6 +41,11 @@ public final class TutorialInGameInfo implements InGameInfo, InGameMenuHook {
     }
 
     @Override
+    public boolean showLoadingHints() {
+        return false;
+    }
+
+    @Override
     public float getRandomStartPosition() {
         return 0f;
     }

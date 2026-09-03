@@ -124,9 +124,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         RenderQueues render_queues = new RenderQueues();
-        LandscapeAssetsLoader landscape_resources = new LandscapeAssetsLoader(render_queues);
-        ProgressListener.progress();
-        RaceData races_resources = RacesAssetsLoader.load(render_queues);
+        LandscapeAssetsLoader landscape_resources = ProgressListener.subTask(0.15f,
+                () -> new LandscapeAssetsLoader(render_queues));
+        RaceData races_resources = ProgressListener.subTask(0.35f,
+                () -> RacesAssetsLoader.load(render_queues));
         boolean[] initialized = new boolean[]{false};
         NotificationListener listener = new NotificationListener() {
             @Override
@@ -281,13 +282,16 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
         };
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
-        GeneratedLandscapeData landscapeData = generator.generate(
-                player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition());
-        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(landscapeData);
+        GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.25f,
+                () -> generator.generate(
+                        player_infos.size(), world_params.initialUnitCount(), ingame_info.getRandomStartPosition()));
+        WorldInfo<Texture> world_info = ProgressListener.subTask(0.15f,
+                () -> LandscapeBaker.bakeWorld(landscapeData));
         camera_state.setFog(world_info.fog_info());
-        this.world = World.newWorld(landscape_resources, races_resources, listener, world_params,
-                world_info.landscapeData(), player_infos, engine.getSettings().accessibility.linear_team_colours,
-                RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail], ProgressListener::progress);
+        this.world = ProgressListener.subTask(0.10f,
+                () -> World.newWorld(landscape_resources, races_resources, listener, world_params,
+                        world_info.landscapeData(), player_infos, engine.getSettings().accessibility.linear_team_colours,
+                        RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail]));
         initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);

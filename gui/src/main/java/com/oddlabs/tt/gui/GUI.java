@@ -1,6 +1,5 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
@@ -84,7 +83,7 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     @Override
-    public void tick(NetworkSelector network) {
+    public void tick() {
         ScopedValue.where(Skin.CURRENT, skin).run(() -> localInput.poll(getGUIRoot()));
     }
 

@@ -13,7 +13,6 @@ import com.oddlabs.tt.gui.GUIImage;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.LabelBox;
 import com.oddlabs.tt.gui.ProgressBar;
-import com.oddlabs.tt.gui.ProgressBarInfo;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import org.jspecify.annotations.Nullable;
@@ -40,29 +39,36 @@ public final class ProgressForm {
             .mapToObj(idx -> i18n(TIP_PREFIX + idx))
             .toArray(String[]::new);
 
-    private static final ProgressBarInfo[] PROGRESS_BAR_INFO = new ProgressBarInfo[]{
-            new ProgressBarInfo(""/*"Loading landscape resources"*/, 10),
-            new ProgressBarInfo(""/*"Loading races resources"*/, 30),
-            new ProgressBarInfo(""/*"Generating textures"*/, 5),
-            new ProgressBarInfo(""/*"Generating terrain"*/, 5),
-            new ProgressBarInfo(""/*"Generating alpha maps"*/, 5),
-            new ProgressBarInfo(""/*"Blending textures"*/, 2f),
-            new ProgressBarInfo(""/*"Generating pathfinding grids"*/, 5),
-            new ProgressBarInfo(""/*"Generating quadtrees"*/, 6)
-    };
+    /**
+     * Visual display mode for progress screens.
+     */
+    public enum Mode {
+        /** Initial game launch: Oddlabs logo, progress bar, no tips. */
+        STARTUP,
+        /** Loading an in-game match: Startup artwork, progress bar, loading tips. */
+        GAME_LOAD,
+        /** Loading a tutorial: Startup artwork, progress bar, no tips. */
+        TUTORIAL,
+        /** Returning to the main menu: Startup artwork, no progress bar, no tips. */
+        MENU_RETURN
+    }
 
-    private static @Nullable ProgressForm current_progress = null;
+    private static final long THROTTLE_INTERVAL_NANOS = 16_000_000L;
 
-    private final ProgressBar progress_bar;
+    private final NetworkSelector network;
+    private final @Nullable ProgressBar progress_bar;
     private final GUI gui;
+    private final Fadable load_fadable;
+    private long lastUpdateTime;
+    private float currentProgress;
 
     public static void setProgressForm(NetworkSelector network, GUI gui,
             LoadCallback<GUIRoot, UIRenderer> callback) {
-        setProgressForm(network, gui, callback, false);
+        setProgressForm(network, gui, callback, Mode.GAME_LOAD);
     }
 
     public static @Nullable Runnable setProgressForm(NetworkSelector network, final GUI gui,
-            final LoadCallback<GUIRoot, UIRenderer> callback, final boolean first_progress) {
+            final LoadCallback<GUIRoot, UIRenderer> callback, final Mode mode) {
         String texture;
         int texture_width;
         int texture_height;
@@ -71,9 +77,11 @@ public final class ProgressForm {
         int progress_x;
         int progress_y;
         int progress_width;
-        boolean show_tip;
+        boolean show_tip = (mode == Mode.GAME_LOAD);
+        boolean show_progress_bar = (mode != Mode.MENU_RETURN);
+        boolean first_progress = (mode == Mode.STARTUP);
 
-        if (first_progress) {
+        if (mode == Mode.STARTUP) {
             texture = "/textures/gui/oddlabs";
             texture_width = 1024;
             texture_height = 1024;
@@ -82,7 +90,6 @@ public final class ProgressForm {
             progress_x = 320;
             progress_y = 145;
             progress_width = 200;
-            show_tip = false;
         } else {
             texture = "/textures/gui/startup";
             texture_width = 1024;
@@ -92,26 +99,25 @@ public final class ProgressForm {
             progress_x = 250;
             progress_y = 145;
             progress_width = 300;
-            show_tip = true;
         }
 
-        Fadable load_fadable = () -> gui.runWithSkin(() -> callback(gui, callback, first_progress));
-        current_progress = gui.callWithSkin(() -> new ProgressForm(network, gui, load_fadable, first_progress,
-                PROGRESS_BAR_INFO,
+        ProgressForm form = gui.callWithSkin(() -> new ProgressForm(network, gui, callback, mode,
                 texture, texture_width, texture_height, image_width, image_height, progress_x, progress_y,
-                progress_width, show_tip));
+                progress_width, show_progress_bar, show_tip));
 
-        return first_progress ? load_fadable::fadingDone : null;
+        return first_progress ? form.getLoadTask() : null;
     }
 
-    private ProgressForm(NetworkSelector network, final GUI gui, final Fadable load_fadable,
-            boolean first_progress, ProgressBarInfo[] info,
+    private ProgressForm(NetworkSelector network, final GUI gui, final LoadCallback<GUIRoot, UIRenderer> callback,
+            Mode mode,
             String texture_name, int texture_width, int texture_height, int image_width, int image_height,
             int progress_x, int progress_y, int progress_width,
-            boolean show_tip) {
+            boolean show_progress_bar, boolean show_tip) {
+        this.network = network;
         this.gui = gui;
+        this.load_fadable = () -> gui.runWithSkin(() -> executeCallback(callback));
         gui.getEngine().stopSound();
-        var gui_root = first_progress ? gui.getGUIRoot() : gui.newFade(load_fadable, null);
+        var gui_root = (mode == Mode.STARTUP) ? gui.getGUIRoot() : gui.newFade(load_fadable, null);
         CameraDelegate<NullCamera> delegate = new NullDelegate(gui_root, false);
         gui_root.pushDelegate(delegate);
 
@@ -124,13 +130,19 @@ public final class ProgressForm {
         GUIImage image = new GUIImage(screen_width, screen_height, 0f, 0f, (float) image_width / texture_width,
                 (float) image_height / texture_height, texture_name);
         image.setPos(0, 0);
-
-        progress_bar = new ProgressBar(network, progress_width, info, false);
-        progress_y -= progress_bar.getHeight();
-        progress_bar.setPos(progress_x, progress_y);
         delegate.addChild(image);
-        delegate.addChild(progress_bar);
-        if (show_tip) {
+
+        if (show_progress_bar) {
+            ProgressBar bar = new ProgressBar(progress_width, false);
+            progress_y -= bar.getHeight();
+            bar.setPos(progress_x, progress_y);
+            delegate.addChild(bar);
+            this.progress_bar = bar;
+        } else {
+            this.progress_bar = null;
+        }
+
+        if (show_tip && progress_bar != null) {
             var random = ThreadLocalRandom.current();
             CharSequence tip_string = LOADING_TIPS[random.nextInt(LOADING_TIPS.length)];
             int tip_width = Math.min(gui_root.getWidth() - 10, Skin.getSkin().getEditFont().getWidth(tip_string));
@@ -141,36 +153,48 @@ public final class ProgressForm {
         }
 
         // Force an initial render to show the progress screen immediately
+        this.lastUpdateTime = System.nanoTime();
         gui.updateProgress();
     }
 
-    private static void callback(GUI gui, LoadCallback<GUIRoot, UIRenderer> callback, boolean first_progress) {
+    private Runnable getLoadTask() {
+        return load_fadable::fadingDone;
+    }
+
+    private void executeCallback(LoadCallback<GUIRoot, UIRenderer> callback) {
         Fadable start_sources_fadable = () -> gui.getEngine().startSound();
 
         GUIRoot client_root = gui.createRoot();
-        ProgressListener listener = step -> {
-            if (step > 0f) {
-                progress(step);
-            } else {
-                progress();
-            }
-        };
+        ProgressListener listener = new FormProgressListener();
         UIRenderer renderer = ProgressListener.supply(listener,
                 () -> gui.callWithSkin(() -> callback.load(client_root)));
+        if (progress_bar != null) {
+            progress_bar.setProgress(1f);
+        }
+        gui.updateProgress();
         gui.newFade(start_sources_fadable, client_root, renderer);
     }
 
-    public static void progress() {
-        if (null != current_progress) {
-            current_progress.progress_bar.progress();
-            current_progress.gui.updateProgress();
+    private final class FormProgressListener implements ProgressListener {
+        @Override
+        public void onProgress(float fraction) {
+            currentProgress = Math.clamp(fraction, 0f, 1f);
+            if (progress_bar != null) {
+                progress_bar.setProgress(currentProgress);
+            }
+            network.tick();
+            long now = System.nanoTime();
+            if (now - lastUpdateTime >= THROTTLE_INTERVAL_NANOS) {
+                lastUpdateTime = now;
+                gui.updateProgress();
+            }
         }
-    }
 
-    public static void progress(float step) {
-        if (null != current_progress) {
-            current_progress.progress_bar.progress(step);
-            current_progress.gui.updateProgress();
+        @Override
+        public void onAdvance(float delta) {
+            if (delta > 0f) {
+                onProgress(currentProgress + delta);
+            }
         }
     }
 }

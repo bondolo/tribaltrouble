@@ -16,11 +16,6 @@ public final class RegionBuilder {
     private static final Occupant unreachable_obj = new StaticOccupant();
 
     public static void buildRegions(UnitGrid unit_grid, float start_x_f, float start_y_f) {
-        buildRegions(unit_grid, start_x_f, start_y_f, ProgressListener.NONE);
-    }
-
-    public static void buildRegions(UnitGrid unit_grid, float start_x_f, float start_y_f,
-            ProgressListener progress_listener) {
         boolean[][] access_grid = unit_grid.getHeightMap().getAccessGrid();
         int grid_size = access_grid.length;
         int start_x = UnitGrid.toGridCoordinate(start_x_f);
@@ -58,7 +53,7 @@ public final class RegionBuilder {
                     updateRegionNeighbours(unit_grid, x, y, region);
             }
         }
-        progress_listener.onProgress(1f);
+        ProgressListener.progress(1f);
         IO.println("actual_num_regions = " + actual_num_regions);
     }
 
