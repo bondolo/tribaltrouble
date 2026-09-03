@@ -23,4 +23,13 @@ public interface InGameInfo {
     boolean isRated();
 
     float getRandomStartPosition();
+
+    /**
+     * Whether loading hints should be shown on the progress form for this game mode.
+     *
+     * @return true if hints should be displayed, false otherwise
+     */
+    default boolean showLoadingHints() {
+        return true;
+    }
 }

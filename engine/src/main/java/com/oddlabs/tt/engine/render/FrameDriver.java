@@ -1,17 +1,13 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.net.NetworkSelector;
-
 /**
  * Interface for driving input, game ticks, and rendering for a display frame.
  */
 public interface FrameDriver {
     /**
      * Polls input and advances the local game tick.
-     *
-     * @param network the active network selector
      */
-    void tick(NetworkSelector network);
+    void tick();
 
     /**
      * Renders the 3D scene and 2D overlay for the current frame.

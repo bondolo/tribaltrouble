@@ -72,22 +72,12 @@ public final class World implements SimulationClock {
             NotificationListener notification_listener, WorldParameters world_params,
             LandscapeData landscapeData, List<PlayerInfo> player_infos,
             Color.Linear[] teamColors, boolean insertPlants) {
-        return newWorld(landscape_resources, races_resources, notification_listener, world_params,
-                landscapeData, player_infos, teamColors, insertPlants, ProgressListener.NONE);
-    }
-
-    public static World newWorld(
-            LandscapeBoundsProvider landscape_resources, @Nullable RaceData races_resources,
-            NotificationListener notification_listener, WorldParameters world_params,
-            LandscapeData landscapeData, List<PlayerInfo> player_infos,
-            Color.Linear[] teamColors, boolean insertPlants,
-            ProgressListener progress_listener) {
-        progress_listener.onProgress();
+        ProgressListener.progress();
         World world = new World(landscape_resources, races_resources, notification_listener,
-                world_params, landscapeData, player_infos, teamColors, insertPlants, progress_listener);
-        progress_listener.onProgress();
-        progress_listener.onProgress(1 / 5f);
-        progress_listener.onProgress();
+                world_params, landscapeData, player_infos, teamColors, insertPlants);
+        ProgressListener.progress();
+        ProgressListener.progress(1 / 5f);
+        ProgressListener.progress();
 
         return world;
     }
@@ -160,7 +150,7 @@ public final class World implements SimulationClock {
             @Nullable RaceData races_resources, NotificationListener notification_listener,
             WorldParameters world_params, LandscapeData landscapeData,
             List<PlayerInfo> player_infos, Color.Linear[] teamColors,
-            boolean insertPlants, ProgressListener progress_listener) {
+            boolean insertPlants) {
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscapeData.terrain();
         this.plantCoordinates = landscapeData.plants();
@@ -187,7 +177,7 @@ public final class World implements SimulationClock {
         this.supply_managers = new SupplyManagers(this);
         this.unit_grid = new UnitGrid(world);
         RegionBuilder.buildRegions(unit_grid, landscapeData.startingLocations()[0][0],
-                landscapeData.startingLocations()[0][1], progress_listener);
+                landscapeData.startingLocations()[0][1]);
         this.patch_root = new PatchGroup(this);
         this.tree_root = AbstractTreeGroup.newRoot(this, landscapeData.trees(), landscapeData.palmTrees(), terrain);
         this.element_root = AbstractElementNode.newRoot(world);

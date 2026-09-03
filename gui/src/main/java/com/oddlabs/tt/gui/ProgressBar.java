@@ -1,16 +1,17 @@
 package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.tt.gui.render.TextLineRenderer;
-import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.engine.render.GUIRenderer;
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
+import com.oddlabs.tt.gui.render.TextLineRenderer;
 import com.oddlabs.util.Color;
 
-import java.util.Arrays;
 import java.util.ResourceBundle;
 
+/**
+ * UI progress bar component rendering normalized progress from 0.0 to 1.0.
+ */
 public final class ProgressBar extends GUIObject {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
 
@@ -18,24 +19,12 @@ public final class ProgressBar extends GUIObject {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private record Waypoint(int point, float weight) {
-    }
-
-    private final ProgressBarInfo[] info;
-    private final Waypoint[] waypoints;
     private final boolean text_only;
-
-    private final NetworkSelector network;
     private int left_margin;
     private int right_margin;
+    private float progress;
 
-    private int index;
-    private float step;
-
-    public ProgressBar(NetworkSelector network, int width, ProgressBarInfo[] info,
-            boolean text_only) {
-        this.info = info;
-        this.network = network;
+    public ProgressBar(int width, boolean text_only) {
         this.text_only = text_only;
         if (text_only) {
             setDim(width, Skin.getSkin().getHeadlineFont().getHeight());
@@ -47,35 +36,19 @@ public final class ProgressBar extends GUIObject {
             assert width > left_margin + right_margin : "Progress bar too small.";
             setDim(width, data.progressBar().getHeight());
         }
-        this.waypoints = pixelize(info, width);
         setCanFocus(false);
     }
 
-    public void progress() {
-        assert index < info.length : "Too much progress";
-        index++;
-        step = 0;
-        update();
+    public void setProgress(float fraction) {
+        this.progress = Math.clamp(fraction, 0f, 1f);
     }
 
-    public void progress(float fraction) {
-        int current = 0;
-        if (index > 0)
-            current = waypoints[index - 1].point();
-
-        step += fraction * (waypoints[index].point() - current);
-        if (step > waypoints[index].point() - current) {
-            step = waypoints[index].point() - current;
-        }
-
-        update();
+    public float getProgress() {
+        return progress;
     }
 
     private void renderText(GUIRenderer renderer) {
-        int offset = index > 0 ? waypoints[index - 1].point() : 0;
-        float done = (offset + step) / getWidth();
-        ResourceBundle bundle = ResourceBundle.getBundle(ProgressBar.class.getName());
-        int percentage = (int) (done * 100);
+        int percentage = (int) (progress * 100);
         String string = i18n("loading", percentage);
         TextLineRenderer.render(renderer, Skin.getSkin().getHeadlineFont(), string, 0, 0, Float.NEGATIVE_INFINITY,
                 Float.POSITIVE_INFINITY, Color.Linear.WHITE);
@@ -83,27 +56,13 @@ public final class ProgressBar extends GUIObject {
 
     @Override
     protected void renderGeometry(GUIRenderer renderer) {
-        if (text_only)
+        if (text_only) {
             renderText(renderer);
-        else {
+        } else {
             Skin.getSkin().getProgressBarData().progressBar()
                     .render(renderer, 0, 0, getWidth(), ModeIconQuads.Mode.NORMAL);
             renderFill(renderer, 0);
         }
-    }
-
-    private Waypoint[] pixelize(ProgressBarInfo[] info, int width) {
-        float sum = (float) Arrays.stream(info).mapToDouble(ProgressBarInfo::getWeight).sum();
-
-        Waypoint[] waypoints = new Waypoint[info.length];
-        int currentWaypoint = 0;
-        for (int i = 0; i < info.length; i++) {
-            currentWaypoint += (int) ((info[i].getWeight() / sum) * width);
-            int point = Math.clamp(currentWaypoint, left_margin, width - right_margin);
-            waypoints[i] = new Waypoint(point, info[i].getWaypoint());
-        }
-        waypoints[info.length - 1] = new Waypoint(width - right_margin, waypoints[info.length - 1].weight());
-        return waypoints;
     }
 
     private void renderFill(GUIRenderer renderer, int y) {
@@ -114,19 +73,15 @@ public final class ProgressBar extends GUIObject {
 
         renderer.drawModeIcon(left, ModeIconQuads.Mode.NORMAL, 0, y);
 
-        int offset = index > 0 ? waypoints[index - 1].point() : 0;
-        int current_pos = offset + (int) step;
-        int width = current_pos - left_margin;
+        int available = getWidth() - left_margin - right_margin;
+        int width = (int) (progress * available);
 
         if (width > 0) {
+            int current_pos = left_margin + width;
             IconQuad c = center.quad(ModeIconQuads.Mode.NORMAL);
             renderer.drawTexture(c.getTexture(), left_margin, y, width, c.getHeight(), c.getU1(), c.getV1(), c.getU2(),
                     c.getV2(), Color.Standard.WHITE);
             renderer.drawModeIcon(right, ModeIconQuads.Mode.NORMAL, current_pos, y);
         }
-    }
-
-    private void update() {
-        network.tick();
     }
 }

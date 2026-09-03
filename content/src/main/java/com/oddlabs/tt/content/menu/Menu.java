@@ -4,6 +4,8 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.base.util.LoadCallback;
+import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.camera.MenuCamera;
@@ -48,6 +50,7 @@ import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
 import com.oddlabs.tt.net.Client;
+import com.oddlabs.tt.net.ConfigurationListener;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.LoadCallbackFactory;
 import com.oddlabs.tt.net.Server;
@@ -63,6 +66,7 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.DefaultPlayerSlotHandler;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
@@ -327,7 +331,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 starterFactory,
                 new DefaultPlayerSlotHandler());
         GameNetwork<GUIRoot, UIRenderer> game_network = new GameNetwork<>(null, client);
-        ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, true);
+        ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner);
         client.setConfigurationListener(connecting_form);
         gui_root.addModalForm(connecting_form);
         return game_network;
@@ -355,9 +359,37 @@ public abstract class Menu extends CameraDelegate<Camera> {
         Client<GUIRoot, UIRenderer> client = new Client<>(server::close, networkSelector, matchmakingClient,
                 chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
         GameNetwork<GUIRoot, UIRenderer> game_network = new GameNetwork<>(server, client);
-        ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, multiplayer);
-        client.setConfigurationListener(connecting_form);
-        gui_root.addModalForm(connecting_form);
+        if (multiplayer) {
+            ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner);
+            client.setConfigurationListener(connecting_form);
+            gui_root.addModalForm(connecting_form);
+        } else {
+            client.setConfigurationListener(new ConfigurationListener<>() {
+                @Override
+                public void connected(Client<GUIRoot, UIRenderer> client, Game game, WorldGenerator<?> generator,
+                        int player_slot) {
+                    assert player_slot == 0 : "player_slot must be 0";
+                }
+
+                @Override
+                public void setPlayers(PlayerSlot[] players) {
+                }
+
+                @Override
+                public void connectionLost() {
+                    gui_root.addModalForm(new MessageForm(ConnectingForm.i18n("connection_lost")));
+                }
+
+                @Override
+                public void gameStarted(LoadCallback<GUIRoot, UIRenderer> loadCallback) {
+                    ProgressForm.Mode mode = ingame_info.showLoadingHints()
+                            ? ProgressForm.Mode.GAME_LOAD
+                            : ProgressForm.Mode.TUTORIAL;
+                    ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), loadCallback,
+                            mode);
+                }
+            });
+        }
         return game_network;
     }
 
@@ -373,9 +405,10 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
                 LandscapeConfig.LANDSCAPE_SEED);
         final WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
+        ProgressForm.Mode mode = first_progress ? ProgressForm.Mode.STARTUP : ProgressForm.Mode.MENU_RETURN;
         return ProgressForm.setProgressForm(engine.getNetwork().getSelector(), gui, (
                 GUIRoot gui_root) -> finishMainMenu(gui_root,
-                        first_progress, generator), first_progress);
+                        first_progress, generator), mode);
     }
 
     private static UIRenderer finishMainMenu(GUIRoot gui_root,
@@ -386,17 +419,19 @@ public abstract class Menu extends CameraDelegate<Camera> {
         MatrixStack projectionStack = new MatrixStack();
         WorldParameters world_params = new WorldParameters(Game.GAMESPEED_NORMAL, "", 2, Player.DEFAULT_MAX_UNIT_COUNT);
         var players = List.of(new PlayerInfo(0, Race.NATIVES, ""));
-        GeneratedLandscapeData landscapeData = generator.generate(players.size(), world_params.initialUnitCount(), 0f);
-        WorldInfo<Texture> world_info = LandscapeBaker.bakeWorld(landscapeData);
+        GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.40f,
+                () -> generator.generate(players.size(), world_params.initialUnitCount(), 0f));
+        WorldInfo<Texture> world_info = ProgressListener.subTask(0.30f,
+                () -> LandscapeBaker.bakeWorld(landscapeData));
         RenderQueues render_queues = new RenderQueues();
-        LandscapeAssetsLoader landscape_resources = new LandscapeAssetsLoader(render_queues);
-        ProgressForm.progress();
-        World world = World.newWorld(landscape_resources, null,
-                new NotificationListener() {
-                }, world_params, world_info.landscapeData(), players,
-                engine.getSettings().accessibility.linear_team_colours,
-                RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail],
-                ProgressForm::progress);
+        LandscapeAssetsLoader landscape_resources = ProgressListener.subTask(0.15f,
+                () -> new LandscapeAssetsLoader(render_queues));
+        World world = ProgressListener.subTask(0.15f,
+                () -> World.newWorld(landscape_resources, null,
+                        new NotificationListener() {
+                        }, world_params, world_info.landscapeData(), players,
+                        engine.getSettings().accessibility.linear_team_colours,
+                        RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail]));
         AnimationManager menuAnimationManager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();

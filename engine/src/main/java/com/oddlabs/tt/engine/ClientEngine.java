@@ -247,7 +247,7 @@ public final class ClientEngine implements AutoCloseable {
                     && !isFinished()) {
                 selector.tick();
 
-                driver.tick(selector);
+                driver.tick();
                 if (deterministic.log(window.isOpen() && window.isCloseRequested())) {
                     window.setCloseRequested(false);
                     driver.onCloseRequested();

@@ -29,23 +29,20 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_MID;
 public final class ConnectingForm extends Form implements ConfigurationListener<GUIRoot, UIRenderer> {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ConnectingForm.class.getName());
 
-    private static String i18n(String key, Object... args) {
+    public static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
     private final MultiplayerLobby owner;
-    private final boolean multiplayer;
     private final GUIRoot gui_root;
     private final GameNetwork<GUIRoot, UIRenderer> game_network;
 
-    public ConnectingForm(GameNetwork<GUIRoot, UIRenderer> game_network, GUIRoot gui_root, MultiplayerLobby owner,
-            boolean multiplayer) {
+    public ConnectingForm(GameNetwork<GUIRoot, UIRenderer> game_network, GUIRoot gui_root, MultiplayerLobby owner) {
         this.game_network = game_network;
         this.gui_root = gui_root;
         this.owner = owner;
-        this.multiplayer = multiplayer;
 
-        Label info_label = new Label(i18n(multiplayer ? "connecting" : "starting"), Skin.getSkin().getHeadlineFont());
+        Label info_label = new Label(i18n("connecting"), Skin.getSkin().getHeadlineFont());
         addChild(info_label);
         HorizButton cancel_button = new CancelButton(120);
         addChild(cancel_button);
@@ -63,18 +60,14 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     @Override
     public void connected(Client<GUIRoot, UIRenderer> client, Game game, WorldGenerator<?> generator,
             int player_slot) {
-        if (multiplayer) {
-            Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
-            int team = player_slot;
-            if (game.isRated())
-                team = player_slot % 2;
-            client.getServerInterface().setPlayerSlot(player_slot, PlayerSlot.HUMAN, race.getValue(), team, false,
-                    PlayerSlot.AI_NONE);
-            remove();
-            owner.createGameMenu(game_network, game, generator, player_slot);
-        } else {
-            assert player_slot == 0 : "player_slot must be 0";
-        }
+        Race race = Race.values()[ThreadLocalRandom.current().nextInt(Race.values().length)];
+        int team = player_slot;
+        if (game.isRated())
+            team = player_slot % 2;
+        client.getServerInterface().setPlayerSlot(player_slot, PlayerSlot.HUMAN, race.getValue(), team, false,
+                PlayerSlot.AI_NONE);
+        remove();
+        owner.createGameMenu(game_network, game, generator, player_slot);
     }
 
     public void chat(int player_slot, String chat) {
@@ -82,7 +75,6 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
 
     @Override
     public void setPlayers(PlayerSlot[] players) {
-        assert !multiplayer;
     }
 
     @Override
@@ -95,7 +87,6 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     public void gameStarted(LoadCallback<GUIRoot, UIRenderer> loadCallback) {
         remove();
         ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), loadCallback);
-        assert !multiplayer;
     }
 
     @Override
