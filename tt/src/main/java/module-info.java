@@ -15,14 +15,11 @@ module com.oddlabs.tt {
     requires com.oddlabs.tt.content;
     requires org.joml;
     requires static org.jspecify;
-    requires java.desktop;
-    requires java.xml;
     requires java.logging;
     requires org.lwjgl;
     requires org.lwjgl.sdl;
     requires org.lwjgl.opengl;
     requires org.lwjgl.stb;
-    requires kotlin.stdlib;
 
     uses com.oddlabs.tt.base.global.PropertiesSerializer;
 }

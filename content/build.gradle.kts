@@ -9,9 +9,7 @@ lwjgl {
     version = libs.versions.lwjgl.get()
     implementation(
         Module.CORE,
-        Module.OPENGL,
-        Module.SDL,
-        Module.STB
+        Module.OPENGL
     )
 }
 
@@ -26,7 +24,6 @@ dependencies {
     implementation(project(":engine"))
     implementation(project(":gui"))
     implementation(project(":client"))
-    api(libs.joml)
     compileOnlyApi(libs.jspecify)
 
     testImplementation(platform(libs.junit.bom))

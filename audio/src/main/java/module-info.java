@@ -1,6 +1,5 @@
 module com.oddlabs.tt.audio {
     requires transitive com.oddlabs.tt.base;
-    requires transitive com.oddlabs.common;
     requires transitive org.joml;
     requires static org.jspecify;
     requires java.logging;

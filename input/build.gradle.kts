@@ -17,7 +17,6 @@ dependencies {
     api(project(":window"))
     implementation(project(":base"))
     implementation(project(":common"))
-    api(libs.joml)
     compileOnlyApi(libs.jspecify)
 
     testImplementation(platform(libs.junit.bom))
