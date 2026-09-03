@@ -153,7 +153,7 @@ public final class PostProcessor implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.NONE); var _ = context.withCullMode(CullMode.NONE)) {
 
-            shader.setSubroutines(accessibility.cvd_mode, accessibility.high_contrast);
+            shader.setAccessibilityModes(accessibility.cvd_mode, accessibility.high_contrast);
 
             shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, accessibility.cvd_intensity);
             shader.setUniform(PostProcessShader.Uniforms.CONTRAST_INTENSITY, accessibility.contrast_intensity);

@@ -9,7 +9,9 @@ public final class PostProcessShader extends ShaderProgram {
     public interface Uniforms {
         String SCENE_TEXTURE = "u_sceneTexture";
         String MASK_TEXTURE = "u_maskTexture";
+        String CVD_MODE = "u_cvdMode";
         String CVD_INTENSITY = "u_cvdIntensity";
+        String HIGH_CONTRAST = "u_highContrast";
         String CONTRAST_INTENSITY = "u_contrastIntensity";
         String INVERT_COLORS = "u_invertColors";
         String CONTRAST_BRIGHTNESS = "u_contrastBrightness";
@@ -51,13 +53,6 @@ public final class PostProcessShader extends ShaderProgram {
                     in vec2 v_texCoord;
                     layout(location = 0) out vec4 out_FragColor;
 
-                    // --- Subroutine Definitions ---
-                    subroutine vec3 CvdFilter(vec3 color);
-                    subroutine uniform CvdFilter u_cvdFilter;
-
-                    subroutine vec3 ContrastFilter(vec3 color, float maskAlpha);
-                    subroutine uniform ContrastFilter u_contrastFilter;
-
                     // --- CVD Logic ---
                     // Matrices must be defined in column-major order for GLSL
 
@@ -94,46 +89,42 @@ public final class PostProcessShader extends ShaderProgram {
                         -0.395913, 0.801109, 0.0      // Column 3
                     );
 
-                    subroutine(CvdFilter) vec3 cvdNone(vec3 color) {
-                        return color;
-                    }
-
-                    subroutine(CvdFilter) vec3 cvdProtanopia(vec3 color) {
+                    vec3 applyCvdFilter(vec3 color) {
+                        if (u_cvdMode == 0) {
+                            return color;
+                        }
                         vec3 lms = RGB_to_LMS * color;
-                        vec3 simulatedLMS = Protanopia_Sim * lms;
-                        vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
-                        vec3 error = color - simulatedRGB;
-                        // Protanopia (Red weak): Shift red error to green and blue
-                        vec3 correction = vec3(0.0, error.r * 0.7, error.r * 0.7);
-                        return color + correction * u_cvdIntensity;
-                    }
-
-                    subroutine(CvdFilter) vec3 cvdDeuteranopia(vec3 color) {
-                        vec3 lms = RGB_to_LMS * color;
-                        vec3 simulatedLMS = Deuteranopia_Sim * lms;
-                        vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
-                        vec3 error = color - simulatedRGB;
-                        // Deuteranopia (Green weak): Shift green error to red and blue
-                        vec3 correction = vec3(error.g * 0.7, 0.0, error.g * 0.7);
-                        return color + correction * u_cvdIntensity;
-                    }
-
-                    subroutine(CvdFilter) vec3 cvdTritanopia(vec3 color) {
-                        vec3 lms = RGB_to_LMS * color;
-                        vec3 simulatedLMS = Tritanopia_Sim * lms;
-                        vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
-                        vec3 error = color - simulatedRGB;
-                        // Tritanopia: Shift B error to Red/Green channels
-                        vec3 correction = vec3(error.b * 0.7, error.b * 0.7, 0.0);
+                        vec3 error;
+                        vec3 correction;
+                        if (u_cvdMode == 1) {
+                            // Protanopia (Red weak): Shift red error to green and blue
+                            vec3 simulatedLMS = Protanopia_Sim * lms;
+                            vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
+                            error = color - simulatedRGB;
+                            correction = vec3(0.0, error.r * 0.7, error.r * 0.7);
+                        } else if (u_cvdMode == 2) {
+                            // Deuteranopia (Green weak): Shift green error to red and blue
+                            vec3 simulatedLMS = Deuteranopia_Sim * lms;
+                            vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
+                            error = color - simulatedRGB;
+                            correction = vec3(error.g * 0.7, 0.0, error.g * 0.7);
+                        } else if (u_cvdMode == 3) {
+                            // Tritanopia (Blue weak): Shift B error to Red/Green channels
+                            vec3 simulatedLMS = Tritanopia_Sim * lms;
+                            vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
+                            error = color - simulatedRGB;
+                            correction = vec3(error.b * 0.7, error.b * 0.7, 0.0);
+                        } else {
+                            return color;
+                        }
                         return color + correction * u_cvdIntensity;
                     }
 
                     // --- High Contrast & Accessibility Logic ---
-                    subroutine(ContrastFilter) vec3 contrastNone(vec3 color, float maskAlpha) {
-                        return color;
-                    }
-
-                    subroutine(ContrastFilter) vec3 contrastApply(vec3 color, float maskAlpha) {
+                    vec3 applyContrastFilter(vec3 color, float maskAlpha) {
+                        if (!u_highContrast) {
+                            return color;
+                        }
                         vec3 result = color;
 
                         // 1. Edge Clarity (Unsharp Mask)
@@ -187,7 +178,7 @@ public final class PostProcessShader extends ShaderProgram {
 
                         // Apply Accessibility Filters
                         float maskAlpha = u_teamStencil ? mask.a : 0.0;
-                        finalColor = u_contrastFilter(finalColor, maskAlpha);
+                        finalColor = applyContrastFilter(finalColor, maskAlpha);
 
                         // Team Stencil Overlay (Linear Space)
                         if (u_teamStencil) {
@@ -239,7 +230,7 @@ public final class PostProcessShader extends ShaderProgram {
                         }
 
                         // 4. Apply CVD correction
-                        finalColor = u_cvdFilter(finalColor);
+                        finalColor = applyCvdFilter(finalColor);
 
                         // 5. Final Output (Opaque)
                         // GL_FRAMEBUFFER_SRGB handles the conversion to sRGB for the backbuffer.
@@ -252,19 +243,8 @@ public final class PostProcessShader extends ShaderProgram {
         link();
     }
 
-    public void setSubroutines(int cvdMode, boolean highContrast) {
-        String cvdName = switch (cvdMode) {
-            case 1 -> "cvdProtanopia";
-            case 2 -> "cvdDeuteranopia";
-            case 3 -> "cvdTritanopia";
-            default -> "cvdNone";
-        };
-
-        String contrastName = highContrast ? "contrastApply" : "contrastNone";
-
-        setFragmentSubroutines(java.util.Map.of(
-                "u_cvdFilter", cvdName,
-                "u_contrastFilter", contrastName
-        ));
+    public void setAccessibilityModes(int cvdMode, boolean highContrast) {
+        setUniform(Uniforms.CVD_MODE, cvdMode);
+        setUniform(Uniforms.HIGH_CONTRAST, highContrast);
     }
 }
