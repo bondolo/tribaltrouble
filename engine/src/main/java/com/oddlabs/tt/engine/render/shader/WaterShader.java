@@ -175,7 +175,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         float finalAlpha = mix(u_minAlpha, u_maxAlpha, depthFade);
 
                         vec3 normal = normalize(fs_in.normal);
-                        vec3 lightDir = normalize(u_lightDirection);
+                        vec3 lightDir = normalize(u_lightDirection.xyz);
                         vec3 viewDir = normalize(u_cameraPos - fs_in.worldPos);
                         vec3 halfDir = normalize(lightDir + viewDir);
 

@@ -112,7 +112,7 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                     void main() {
                         vec3 viewDir = normalize(-fs_in.viewPosition);
-                        vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
+                        vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection.xyz, 0.0)).xyz);
 
                         vec4 diffuseColor = texture(u_DiffuseMap, fs_in.texCoordColormap);
                         vec4 normalMapVal = texture(u_NormalMap, fs_in.texCoordColormap);
@@ -279,11 +279,11 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         float rim = 1.0 - max(dot(viewDir, normal), 0.0);
                         rim = smoothstep(0.8, 1.0, rim);
-                        vec3 rimLight = rim * u_globalAmbient * 0.05;
+                        vec3 rimLight = rim * u_globalAmbient.rgb * 0.05;
 
                         // Hemispheric Ambient (mix based on normal Z in World Space)
                         float skyWeight = clamp(worldNormal.z * 0.5 + 0.5, 0.0, 1.0);
-                        vec3 ambient = mix(u_groundAmbient, u_globalAmbient, skyWeight);
+                        vec3 ambient = mix(u_groundAmbient.rgb, u_globalAmbient.rgb, skyWeight);
 
                         // Wrap Lighting (Half-Lambert)
                         float diff = dot(normal, lightDir) * 0.5 + 0.5;

@@ -4,11 +4,7 @@ package com.oddlabs.tt.engine.render.shader;
  * Interface for shaders that support a common, simple lighting model.
  */
 public interface LitShader extends Shader {
-    String LIGHTING_CONSTANTS = """
-            const vec3 u_lightDirection = vec3(-0.70710678, 0.0, 0.70710678);
-            const vec3 u_globalAmbient = vec3(0.132866, 0.132866, 0.170656); // Linearized (0.4, 0.4, 0.45)
-            const vec3 u_groundAmbient = vec3(0.019472, 0.012726, 0.008518); // Linearized (0.15, 0.12, 0.1)
-            """;
+    String LIGHTING_CONSTANTS = "";
 
     interface Uniforms {
     }
@@ -53,7 +49,7 @@ public interface LitShader extends Shader {
                 // Transform normal to view space
                 vec3 transformedNormal = normalize((modelViewMatrix * vec4(normal, 0.0)).xyz);
                 vec3 worldNormal = normalize((transpose(u_viewMatrix) * vec4(transformedNormal, 0.0)).xyz);
-                vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);
+                vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection.xyz, 0.0)).xyz);
 
                 // Wrap Lighting (Half-Lambert)
                 float diff = dot(transformedNormal, lightDir) * 0.5 + 0.5;
@@ -61,13 +57,13 @@ public interface LitShader extends Shader {
 
                 // Hemispheric Ambient (mix based on normal Z in World Space)
                 float skyWeight = clamp(worldNormal.z * 0.5 + 0.5, 0.0, 1.0);
-                vec3 ambient = mix(u_groundAmbient, u_globalAmbient, skyWeight);
+                vec3 ambient = mix(u_groundAmbient.rgb, u_globalAmbient.rgb, skyWeight);
 
                 // Rim Lighting
                 vec3 viewDir = normalize(-(modelViewMatrix * vec4(normal, 1.0)).xyz); // Approximate
                 float rim = 1.0 - max(dot(viewDir, transformedNormal), 0.0);
                 rim = smoothstep(0.8, 1.0, rim);
-                vec3 rimLight = rim * u_globalAmbient * 0.25;
+                vec3 rimLight = rim * u_globalAmbient.rgb * 0.25;
 
                 // Combine and apply exposure
                 float exposure = 1.1;
@@ -81,7 +77,7 @@ public interface LitShader extends Shader {
     /**
      * Advanced fragment-based lighting with specular support.
      */
-    String FRAGMENT_LIGHT_DIR = "vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection, 0.0)).xyz);";
+    String FRAGMENT_LIGHT_DIR = "vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection.xyz, 0.0)).xyz);";
 
     String FRAGMENT_LIGHTING_FUNCTION = """
             vec3 calculateLighting(vec3 normal, vec3 worldNormal, vec3 viewPos, float specularStrength) {
@@ -93,7 +89,7 @@ public interface LitShader extends Shader {
 
                 // Hemispheric Ambient (mix based on normal Z in World Space)
                 float skyWeight = clamp(worldNormal.z * 0.5 + 0.5, 0.0, 1.0);
-                vec3 ambient = mix(u_groundAmbient, u_globalAmbient, skyWeight);
+                vec3 ambient = mix(u_groundAmbient.rgb, u_globalAmbient.rgb, skyWeight);
 
                 // Specular (Blinn-Phong)
                 vec3 viewDir = normalize(-viewPos);
@@ -105,7 +101,7 @@ public interface LitShader extends Shader {
                 // Adds a subtle glow to edges to detach objects from the background.
                 float rim = 1.0 - max(dot(viewDir, normal), 0.0);
                 rim = smoothstep(0.8, 1.0, rim);
-                vec3 rimLight = rim * u_globalAmbient * 0.25;
+                vec3 rimLight = rim * u_globalAmbient.rgb * 0.25;
 
                 // Overall light intensity scaler to prevent scenes from being too dark
                 float exposure = 1.1;
