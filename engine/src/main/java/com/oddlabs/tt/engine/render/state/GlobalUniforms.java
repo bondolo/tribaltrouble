@@ -72,13 +72,39 @@ public final class GlobalUniforms {
         buffer.putFloat(time);
         buffer.putInt(mode);
 
-        buffer.position(176); // Ensure position before water params
+        buffer.position(176); // Ensure position before lighting params
+
+        // 176: vec4 u_lightDirection (16)
+        buffer.putFloat(-0.70710677f);
+        buffer.putFloat(0.0f);
+        buffer.putFloat(0.70710677f);
+        buffer.putFloat(1.0f);
+
+        // 192: vec4 u_globalAmbient (16) - Linearized (0.4, 0.4, 0.45)
+        buffer.putFloat(0.132866f);
+        buffer.putFloat(0.132866f);
+        buffer.putFloat(0.170656f);
+        buffer.putFloat(1.0f);
+
+        // 208: vec4 u_groundAmbient (16) - Linearized (0.15, 0.12, 0.1)
+        buffer.putFloat(0.019472f);
+        buffer.putFloat(0.012726f);
+        buffer.putFloat(0.008518f);
+        buffer.putFloat(1.0f);
+
+        // 224: vec4 u_sunColor (16)
+        buffer.putFloat(1.0f);
+        buffer.putFloat(1.0f);
+        buffer.putFloat(1.0f);
+        buffer.putFloat(1.0f);
+
+        buffer.position(240); // Ensure position before water params
 
         if (water != null) {
             water.putGlobalUniforms(buffer, !camera.inNoDetailMode());
         } else {
             // Pad 128 bytes (Water params size) if not present
-            buffer.position(176 + 128);
+            buffer.position(240 + 128);
         }
     }
 }

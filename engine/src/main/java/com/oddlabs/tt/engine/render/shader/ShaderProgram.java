@@ -4,9 +4,7 @@ import com.oddlabs.tt.engine.render.state.ScopedState;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4fc;
-import org.joml.Vector2f;
 import org.joml.Vector2fc;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
@@ -42,11 +40,6 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         private final int geometryShaderId;
         private final Map<String, Integer> uniformLocations = new HashMap<>();
         private final Map<String, Integer> attributeLocations = new HashMap<>();
-        private final Map<Integer, Integer> intUniforms = new HashMap<>();
-        private final Map<Integer, Float> floatUniforms = new HashMap<>();
-        private final Map<Integer, Vector2fc> vec2Uniforms = new HashMap<>();
-        private final Map<Integer, Vector3fc> vec3Uniforms = new HashMap<>();
-        private final Map<Integer, Color> colorUniforms = new HashMap<>();
         private final Map<Integer, float[]> mat4Uniforms = new HashMap<>();
 
         Program(int vertexShaderId, int fragmentShaderId, int geometryShaderId) {
@@ -66,7 +59,6 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
          * complete linking after (optionally) setting up shader layouts
          */
         void link() {
-            bindStandardAttributes();
             GL20.glLinkProgram(programId);
             if (GL20.glGetProgrami(programId, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
                 throw new IllegalArgumentException("Shader link failed: " + GL20.glGetProgramInfoLog(programId, 1024));
@@ -79,13 +71,6 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
             if (blockIndex != -1) {
                 GL31.glUniformBlockBinding(programId, blockIndex, 0);
             }
-        }
-
-        private void bindStandardAttributes() {
-            GL20.glBindAttribLocation(programId, POSITION_LOC, POSITION);
-            GL20.glBindAttribLocation(programId, NORMAL_LOC, NORMAL);
-            GL20.glBindAttribLocation(programId, TEX_COORD_LOC, TEX_COORD);
-            GL20.glBindAttribLocation(programId, COLOR_LOC, COLOR);
         }
 
         @Override
@@ -141,6 +126,10 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
 
     private boolean closed = false;
 
+    public boolean isClosed() {
+        return closed;
+    }
+
     @Override
     public void close() {
         if (!closed) {
@@ -184,104 +173,133 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
 
     @Override
     public void setUniform(String name, int[] values) {
-        int loc = getUniformLocation(name);
+        setUniform(getUniformLocation(name), values);
+    }
+
+    @Override
+    public void setUniform(int loc, int[] values) {
         if (loc == -1) return;
         GL20.glUniform1iv(loc, values);
     }
 
     @Override
     public void setUniform(String name, int value) {
-        int loc = getUniformLocation(name);
+        setUniform(getUniformLocation(name), value);
+    }
+
+    @Override
+    public void setUniform(int loc, int value) {
         if (loc == -1) return;
-        Integer lastValue = state.intUniforms.get(loc);
-        if (lastValue != null && lastValue == value) return;
         GL20.glUniform1i(loc, value);
-        state.intUniforms.put(loc, value);
     }
 
     @Override
     public void setUniform(String name, float value) {
-        int loc = getUniformLocation(name);
+        setUniform(getUniformLocation(name), value);
+    }
+
+    @Override
+    public void setUniform(int loc, float value) {
         if (loc == -1) return;
-        Float lastValue = state.floatUniforms.get(loc);
-        if (lastValue != null && lastValue == value) return;
         GL20.glUniform1f(loc, value);
-        state.floatUniforms.put(loc, value);
     }
 
     @Override
     public void setUniform(String name, boolean value) {
-        setUniform(name, value ? 1 : 0);
+        setUniform(getUniformLocation(name), value);
+    }
+
+    @Override
+    public void setUniform(int loc, boolean value) {
+        setUniform(loc, value ? 1 : 0);
     }
 
     @Override
     public void setUniform(String name, float x, float y) {
-        setUniform(name, new Vector2f(x, y));
+        setUniform(getUniformLocation(name), x, y);
+    }
+
+    @Override
+    public void setUniform(int loc, float x, float y) {
+        if (loc == -1) return;
+        GL20.glUniform2f(loc, x, y);
     }
 
     public void setUniform(String name, Vector2fc value) {
-        int loc = getUniformLocation(name);
+        setUniform(getUniformLocation(name), value);
+    }
+
+    public void setUniform(int loc, Vector2fc value) {
         if (loc == -1) return;
-        Vector2fc lastValue = state.vec2Uniforms.get(loc);
-        if (lastValue != null && lastValue.equals(value)) return;
         GL20.glUniform2f(loc, value.x(), value.y());
-        state.vec2Uniforms.put(loc, new Vector2f(value));
     }
 
     @Override
     public void setUniform(String name, float x, float y, float z) {
-        setUniform(name, new Vector3f(x, y, z));
+        setUniform(getUniformLocation(name), x, y, z);
+    }
+
+    @Override
+    public void setUniform(int loc, float x, float y, float z) {
+        if (loc == -1) return;
+        GL20.glUniform3f(loc, x, y, z);
     }
 
     public void setUniform(String name, Vector3fc value) {
-        int loc = getUniformLocation(name);
+        setUniform(getUniformLocation(name), value);
+    }
+
+    public void setUniform(int loc, Vector3fc value) {
         if (loc == -1) return;
-        Vector3fc lastValue = state.vec3Uniforms.get(loc);
-        if (lastValue != null && lastValue.equals(value)) return;
         GL20.glUniform3f(loc, value.x(), value.y(), value.z());
-        state.vec3Uniforms.put(loc, new Vector3f(value));
     }
 
     @Override
     public void setUniform(String name, Color value) {
-        int loc = getUniformLocation(name);
+        setUniform(getUniformLocation(name), value);
+    }
+
+    @Override
+    public void setUniform(int loc, Color value) {
         if (loc == -1) return;
-        Color lastValue = state.colorUniforms.get(loc);
         var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
-        if (lastValue != null && lastValue.equals(linearColor)) return;
         GL20.glUniform4f(loc, linearColor.r(), linearColor.g(), linearColor.b(), linearColor.a());
-        state.colorUniforms.put(loc, linearColor);
     }
 
     public void setUniformColor3(String name, Color value) {
-        int loc = getUniformLocation(name);
+        setUniformColor3(getUniformLocation(name), value);
+    }
+
+    public void setUniformColor3(int loc, Color value) {
         if (loc == -1) return;
-
-        // We reuse the colorUniforms cache but only upload 3 components
-        Color lastValue = state.colorUniforms.get(loc);
-        if (lastValue != null && lastValue.equals(value)) return;
-
         var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
         GL20.glUniform3f(loc, linearColor.r(), linearColor.g(), linearColor.b());
-        state.colorUniforms.put(loc, linearColor);
     }
 
     @Override
     public void setUniform(String name, Matrix4fc matrix) {
-        setUniform(name, false, matrix);
+        setUniform(getUniformLocation(name), false, matrix);
+    }
+
+    @Override
+    public void setUniform(int loc, Matrix4fc matrix) {
+        setUniform(loc, false, matrix);
     }
 
     @Override
     public void setUniform(String name, boolean transpose, Matrix4fc matrix) {
+        setUniform(getUniformLocation(name), transpose, matrix);
+    }
+
+    @Override
+    public void setUniform(int loc, boolean transpose, Matrix4fc matrix) {
+        if (loc == -1) return;
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            setUniformMatrix4(name, transpose, matrix.get(stack.mallocFloat(16)));
+            setUniformMatrix4(loc, transpose, matrix.get(stack.mallocFloat(16)));
         }
     }
 
-    private void setUniformMatrix4(String name, boolean transpose, FloatBuffer matrix) {
-        int loc = getUniformLocation(name);
-        if (loc == -1) return;
-
+    private void setUniformMatrix4(int loc, boolean transpose, FloatBuffer matrix) {
         float[] cached = state.mat4Uniforms.get(loc);
         int pos = matrix.position();
         if (cached == null) {

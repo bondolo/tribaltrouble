@@ -42,6 +42,12 @@ public interface Shader {
                 float u_globalTime;
                 int u_fogMode;
 
+                // --- Lighting Params ---
+                vec4 u_lightDirection;         // xyz = world direction, w = sun intensity
+                vec4 u_globalAmbient;          // rgb = sky ambient color, a = unused
+                vec4 u_groundAmbient;          // rgb = ground ambient color, a = unused
+                vec4 u_sunColor;               // rgb = sun color, a = unused
+
                 // --- Water Params ---
                 vec4 u_waveDirLength[3];       // xy = dir, z = length
                 vec4 u_waveAmpSteep[3];        // x = amp, y = steepness
@@ -76,15 +82,27 @@ public interface Shader {
 
     void setUniform(String name, int[] values);
 
+    void setUniform(int location, int[] values);
+
     void setUniform(String name, int value);
+
+    void setUniform(int location, int value);
 
     void setUniform(String name, float value);
 
+    void setUniform(int location, float value);
+
     void setUniform(String name, boolean value);
+
+    void setUniform(int location, boolean value);
 
     void setUniform(String name, float x, float y);
 
+    void setUniform(int location, float x, float y);
+
     void setUniform(String name, float x, float y, float z);
+
+    void setUniform(int location, float x, float y, float z);
 
     /**
      * set the named uniform to the specified color.
@@ -93,7 +111,13 @@ public interface Shader {
      */
     void setUniform(String name, Color color);
 
+    void setUniform(int location, Color color);
+
     void setUniform(String name, Matrix4fc matrix);
 
+    void setUniform(int location, Matrix4fc matrix);
+
     void setUniform(String name, boolean transpose, Matrix4fc matrix);
+
+    void setUniform(int location, boolean transpose, Matrix4fc matrix);
 }
