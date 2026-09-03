@@ -1,7 +1,6 @@
 module com.oddlabs.common {
     requires transitive org.joml;
     requires static org.jspecify;
-    requires java.desktop;
     requires java.logging;
 
     exports com.oddlabs.event;
