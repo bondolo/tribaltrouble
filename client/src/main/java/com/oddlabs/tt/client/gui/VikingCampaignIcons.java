@@ -2,13 +2,13 @@ package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.gui.GUIErrorHandler;
 import com.oddlabs.tt.gui.GUIIcon;
-import com.oddlabs.tt.gui.Icons;
-
+import com.oddlabs.tt.gui.IconAtlas;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
-import com.oddlabs.tt.engine.render.Texture;
-import org.w3c.dom.Node;
 
+/**
+ * Loads and provides icon resources for the Viking campaign map.
+ */
 public final class VikingCampaignIcons implements CampaignIcons {
     private static final int NUM_ISLANDS = 15;
 
@@ -30,61 +30,60 @@ public final class VikingCampaignIcons implements CampaignIcons {
     }
 
     private VikingCampaignIcons(String xml_file) {
-        Node root = Icons.loadFile(xml_file, new GUIErrorHandler());
-        Texture atlas = Icons.loadTexture(root);
+        IconAtlas atlas = IconAtlas.load(xml_file, new GUIErrorHandler());
 
-        flags[0] = Icons.getNamedIconQuad(root, "flag0", atlas);
-        flags[1] = Icons.getNamedIconQuad(root, "flag1", atlas);
-        flags[2] = Icons.getNamedIconQuad(root, "flag2", atlas);
-        flags[3] = Icons.getNamedIconQuad(root, "flag3", atlas);
-        flags[4] = Icons.getNamedIconQuad(root, "flag4", atlas);
-        boats[0] = Icons.getNamedIconQuad(root, "boat0", atlas);
-        boats[1] = Icons.getNamedIconQuad(root, "boat1", atlas);
-        boats[2] = Icons.getNamedIconQuad(root, "boat2", atlas);
-        boats[3] = Icons.getNamedIconQuad(root, "boat3", atlas);
-        boats[4] = Icons.getNamedIconQuad(root, "boat4", atlas);
-        hidden[0] = getNamedGUIIcon(root, "hidden0", atlas);
-        hidden[1] = getNamedGUIIcon(root, "hidden1", atlas);
-        faces[0] = Icons.getNamedIconQuad(root, "face0", atlas);
-        faces[1] = Icons.getNamedIconQuad(root, "face1", atlas);
-        faces[2] = Icons.getNamedIconQuad(root, "face2", atlas);
-        faces[3] = Icons.getNamedIconQuad(root, "face3", atlas);
-        faces[4] = Icons.getNamedIconQuad(root, "face4", atlas);
-        faces[5] = Icons.getNamedIconQuad(root, "face5", atlas);
-        faces[6] = Icons.getNamedIconQuad(root, "face6", atlas);
-        faces[7] = Icons.getNamedIconQuad(root, "face7", atlas);
-        faces[8] = Icons.getNamedIconQuad(root, "face8", atlas);
+        flags[0] = atlas.getNamedIconQuad("flag0");
+        flags[1] = atlas.getNamedIconQuad("flag1");
+        flags[2] = atlas.getNamedIconQuad("flag2");
+        flags[3] = atlas.getNamedIconQuad("flag3");
+        flags[4] = atlas.getNamedIconQuad("flag4");
+        boats[0] = atlas.getNamedIconQuad("boat0");
+        boats[1] = atlas.getNamedIconQuad("boat1");
+        boats[2] = atlas.getNamedIconQuad("boat2");
+        boats[3] = atlas.getNamedIconQuad("boat3");
+        boats[4] = atlas.getNamedIconQuad("boat4");
+        hidden[0] = getNamedGUIIcon(atlas, "hidden0");
+        hidden[1] = getNamedGUIIcon(atlas, "hidden1");
+        faces[0] = atlas.getNamedIconQuad("face0");
+        faces[1] = atlas.getNamedIconQuad("face1");
+        faces[2] = atlas.getNamedIconQuad("face2");
+        faces[3] = atlas.getNamedIconQuad("face3");
+        faces[4] = atlas.getNamedIconQuad("face4");
+        faces[5] = atlas.getNamedIconQuad("face5");
+        faces[6] = atlas.getNamedIconQuad("face6");
+        faces[7] = atlas.getNamedIconQuad("face7");
+        faces[8] = atlas.getNamedIconQuad("face8");
 
-        map = Icons.getNamedIconQuad(root, "map", atlas);
+        map = atlas.getNamedIconQuad("map");
         for (int i = 0; i < NUM_ISLANDS; i++) {
-            islands[i] = loadMapIslandData(root, "island" + i, atlas);
+            islands[i] = loadMapIslandData(atlas, "island" + i);
         }
 
-        Node map_node = Icons.getNodeByName("map", root);
-        offset_x = Icons.getInt(map_node, "offset_x");
-        offset_y = Icons.getInt(map_node, "offset_y");
-        width = Icons.getInt(map_node, "width");
-        height = Icons.getInt(map_node, "height");
+        IconAtlas.Element map_node = atlas.getElement("map");
+        offset_x = map_node.getInt("offset_x");
+        offset_y = map_node.getInt("offset_y");
+        width = map_node.getInt("width");
+        height = map_node.getInt("height");
     }
 
-    private MapIslandData loadMapIslandData(Node root, String name,
-            Texture texture) {
-        Node node = Icons.getNodeByName(name, root);
-        ModeIconQuads quads = Icons.getNamedIconQuads(node, "island", texture);
-        Node n = Icons.getNodeByName("island", node);
-        int x = Icons.getInt(n, "x");
-        int y = texture.getHeight() - Icons.getInt(n, "y");
-        int pin_index = Icons.getInt(n, "pin_index");
-        int pin_x = Icons.getInt(n, "pin_x");
-        int pin_y = texture.getHeight() - Icons.getInt(n, "pin_y");
+    private MapIslandData loadMapIslandData(IconAtlas atlas, String name) {
+        IconAtlas.Element node = atlas.getElement(name);
+        ModeIconQuads quads = node.getNamedIconQuads("island");
+        IconAtlas.Element n = node.getElement("island");
+        int texHeight = atlas.getTexture().getHeight();
+        int x = n.getInt("x");
+        int y = texHeight - n.getInt("y");
+        int pin_index = n.getInt("pin_index");
+        int pin_x = n.getInt("pin_x");
+        int pin_y = texHeight - n.getInt("pin_y");
         return new MapIslandData(quads, x, y, flags[pin_index], boats[pin_index], pin_x, pin_y);
     }
 
-    private GUIIcon getNamedGUIIcon(Node root, String name, Texture texture) {
-        IconQuad temp = Icons.getNamedIconQuad(root, name, texture);
-        Node n = Icons.getNodeByName(name, root);
-        int x = Icons.getInt(n, "x");
-        int y = texture.getHeight() - Icons.getInt(n, "y");
+    private GUIIcon getNamedGUIIcon(IconAtlas atlas, String name) {
+        IconQuad temp = atlas.getNamedIconQuad(name);
+        IconAtlas.Element n = atlas.getElement(name);
+        int x = n.getInt("x");
+        int y = atlas.getTexture().getHeight() - n.getInt("y");
         GUIIcon gui_icon = new GUIIcon(temp);
         gui_icon.setPos(x, y);
         return gui_icon;

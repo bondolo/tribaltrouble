@@ -21,14 +21,15 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * Utilities for loading icon atlases
+ * Utilities for loading icon atlases.
  */
 public final class Icons {
     private Icons() {
         // no instances
     }
 
-    public static Node loadFile(String xml_file, @Nullable ErrorHandler error_handler) {
+
+    static Node loadFile(String xml_file, @Nullable ErrorHandler error_handler) {
         URL url = Utils.makeURL(xml_file);
 
         try {
@@ -43,7 +44,7 @@ public final class Icons {
         }
     }
 
-    public static Texture loadTexture(Node n) {
+    static Texture loadTexture(Node n) {
         return loadTexture(n.getAttributes().getNamedItem("texture").getNodeValue());
     }
 
@@ -51,7 +52,7 @@ public final class Icons {
         return Resources.findResource(TextureFile.forUI(tex_file));
     }
 
-    public static Node getNodeByName(String name, Node n) {
+    static Node getNodeByName(String name, Node n) {
         NodeList nl = n.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             if (nl.item(i).getNodeName().equals(name))
@@ -61,26 +62,26 @@ public final class Icons {
         return null;
     }
 
-    public static int getInt(Node n, String key) {
+    static int getInt(Node n, String key) {
         String string = n.getAttributes().getNamedItem(key).getNodeValue();
         return Integer.parseInt(string);
     }
 
-    public static float getFloat(Node n, String key) {
+    static float getFloat(Node n, String key) {
         String string = n.getAttributes().getNamedItem(key).getNodeValue();
         return Float.parseFloat(string);
     }
 
-    public static ModeIconQuads getNamedIconQuads(Node n, String name,
+    static ModeIconQuads getNamedIconQuads(Node n, String name,
             Texture texture) {
         return getIconQuads(getNodeByName(name, n), texture);
     }
 
-    public static IconQuad getNamedIconQuad(Node n, String name, Texture texture) {
+    static IconQuad getNamedIconQuad(Node n, String name, Texture texture) {
         return getIconQuad(getNodeByName(name, n), texture);
     }
 
-    public static ModeIconQuads getIconQuads(Node n, Texture texture) {
+    static ModeIconQuads getIconQuads(Node n, Texture texture) {
         return new ModeIconQuads(
                 getIconQuad(getNodeByName("normal", n), texture),
                 getIconQuad(getNodeByName("active", n), texture),
@@ -88,12 +89,12 @@ public final class Icons {
         );
     }
 
-    public static IconQuad getIconQuad(Node n, Texture texture) {
+    static IconQuad getIconQuad(Node n, Texture texture) {
         Node q = getNodeByName("quad", n);
         return parseIconQuad(q, texture);
     }
 
-    public static IconQuad parseIconQuad(Node q, Texture texture) {
+    static IconQuad parseIconQuad(Node q, Texture texture) {
         int left = getInt(q, "left");
         int top = getInt(q, "top");
         int right = getInt(q, "right");
@@ -115,11 +116,11 @@ public final class Icons {
         return new IconQuad(u1, v1, u2, v2, right - left, bottom - top, texture);
     }
 
-    public static Color.Linear getNamedColor(Node n, String name) {
+    static Color.Linear getNamedColor(Node n, String name) {
         return getColor(getNodeByName(name, n));
     }
 
-    public static Color.Linear getColor(Node n) {
+    static Color.Linear getColor(Node n) {
         Node q = getNodeByName("color", n);
         float r = getFloat(q, "r");
         float g = getFloat(q, "g");

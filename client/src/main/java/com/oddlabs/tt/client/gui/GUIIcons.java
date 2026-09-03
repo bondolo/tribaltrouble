@@ -1,8 +1,8 @@
 package com.oddlabs.tt.client.gui;
 
 import com.oddlabs.tt.gui.GUIErrorHandler;
+import com.oddlabs.tt.gui.IconAtlas;
 import com.oddlabs.tt.gui.Icons;
-
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.simulation.model.Cost;
@@ -14,7 +14,6 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.util.Color;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.w3c.dom.Node;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -64,25 +63,24 @@ public class GUIIcons {
     }
 
     private GUIIcons(String xml_file) {
-        Node root = Icons.loadFile(xml_file, new GUIErrorHandler());
-        Texture texture = Icons.loadTexture(root);
+        IconAtlas atlas = IconAtlas.load(xml_file, new GUIErrorHandler());
 
-        harvest_icon = Icons.getNamedIconQuads(root, "harvest_icon", texture);
-        tree_icon = Icons.getNamedIconQuads(root, "tree_icon", texture);
-        rock_icon = Icons.getNamedIconQuads(root, "rock_icon", texture);
-        iron_icon = Icons.getNamedIconQuads(root, "iron_icon", texture);
-        rubber_icon = Icons.getNamedIconQuads(root, "rubber_icon", texture);
-        tree_status_icon = Icons.getNamedIconQuad(root, "tree_status_icon", texture);
-        rock_status_icon = Icons.getNamedIconQuad(root, "rock_status_icon", texture);
-        iron_status_icon = Icons.getNamedIconQuad(root, "iron_status_icon", texture);
-        rubber_status_icon = Icons.getNamedIconQuad(root, "rubber_status_icon", texture);
-        cheat_icon = Icons.getNamedIconQuad(root, "cheat_icon", texture);
+        harvest_icon = atlas.getNamedIconQuads("harvest_icon");
+        tree_icon = atlas.getNamedIconQuads("tree_icon");
+        rock_icon = atlas.getNamedIconQuads("rock_icon");
+        iron_icon = atlas.getNamedIconQuads("iron_icon");
+        rubber_icon = atlas.getNamedIconQuads("rubber_icon");
+        tree_status_icon = atlas.getNamedIconQuad("tree_status_icon");
+        rock_status_icon = atlas.getNamedIconQuad("rock_status_icon");
+        iron_status_icon = atlas.getNamedIconQuad("iron_status_icon");
+        rubber_status_icon = atlas.getNamedIconQuad("rubber_status_icon");
+        cheat_icon = atlas.getNamedIconQuad("cheat_icon");
 
-        viking_icons = GUIIcons.parseRaceIcons(root, "vikings", texture);
-        native_icons = GUIIcons.parseRaceIcons(root, "natives", texture);
+        viking_icons = GUIIcons.parseRaceIcons(atlas, "vikings");
+        native_icons = GUIIcons.parseRaceIcons(atlas, "natives");
         watch = generateWatchIcons();
-        infinite = Icons.getNamedIconQuad(root, "infinite", texture);
-        notify_arrow_data = GUIIcons.parseNotifyArrowData(root, texture);
+        infinite = atlas.getNamedIconQuad("infinite");
+        notify_arrow_data = GUIIcons.parseNotifyArrowData(atlas);
         tool_tip_icons = new EnumMap<>(Map.of(
                 SupplyType.WOOD, List.of(tree_status_icon),
                 SupplyType.ROCK, List.of(rock_status_icon),
@@ -106,33 +104,32 @@ public class GUIIcons {
         };
     }
 
-    private static RaceIcons parseRaceIcons(Node n, String head,
-            Texture texture) {
-        return new RaceIcons(Icons.getNamedIconQuad(n, head + "_unit_status_icon", texture),
-                Icons.getNamedIconQuad(n, head + "_weapon_rock_status_icon", texture),
-                Icons.getNamedIconQuad(n, head + "_weapon_iron_status_icon", texture),
-                Icons.getNamedIconQuad(n, head + "_weapon_rubber_status_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_build_weapons_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_build_weapon_rock_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_build_weapon_iron_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_build_weapon_rubber_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_army_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_warrior_rock_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_warrior_iron_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_warrior_rubber_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_peon_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_chieftain_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_transport_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_attack_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_move_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_gather_repair_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_quarters_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_armory_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_tower_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_tower_exit_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_rally_point_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_magic1_icon", texture),
-                Icons.getNamedIconQuads(n, head + "_magic2_icon", texture));
+    private static RaceIcons parseRaceIcons(IconAtlas atlas, String head) {
+        return new RaceIcons(atlas.getNamedIconQuad(head + "_unit_status_icon"),
+                atlas.getNamedIconQuad(head + "_weapon_rock_status_icon"),
+                atlas.getNamedIconQuad(head + "_weapon_iron_status_icon"),
+                atlas.getNamedIconQuad(head + "_weapon_rubber_status_icon"),
+                atlas.getNamedIconQuads(head + "_build_weapons_icon"),
+                atlas.getNamedIconQuads(head + "_build_weapon_rock_icon"),
+                atlas.getNamedIconQuads(head + "_build_weapon_iron_icon"),
+                atlas.getNamedIconQuads(head + "_build_weapon_rubber_icon"),
+                atlas.getNamedIconQuads(head + "_army_icon"),
+                atlas.getNamedIconQuads(head + "_warrior_rock_icon"),
+                atlas.getNamedIconQuads(head + "_warrior_iron_icon"),
+                atlas.getNamedIconQuads(head + "_warrior_rubber_icon"),
+                atlas.getNamedIconQuads(head + "_peon_icon"),
+                atlas.getNamedIconQuads(head + "_chieftain_icon"),
+                atlas.getNamedIconQuads(head + "_transport_icon"),
+                atlas.getNamedIconQuads(head + "_attack_icon"),
+                atlas.getNamedIconQuads(head + "_move_icon"),
+                atlas.getNamedIconQuads(head + "_gather_repair_icon"),
+                atlas.getNamedIconQuads(head + "_quarters_icon"),
+                atlas.getNamedIconQuads(head + "_armory_icon"),
+                atlas.getNamedIconQuads(head + "_tower_icon"),
+                atlas.getNamedIconQuads(head + "_tower_exit_icon"),
+                atlas.getNamedIconQuads(head + "_rally_point_icon"),
+                atlas.getNamedIconQuads(head + "_magic1_icon"),
+                atlas.getNamedIconQuads(head + "_magic2_icon"));
     }
 
     private static IconQuad[] generateWatchIcons() {
@@ -251,13 +248,13 @@ public class GUIIcons {
         }).toArray(IconQuad[]::new);
     }
 
-    private static NotifyArrowData parseNotifyArrowData(Node n, Texture texture) {
-        Node node = Icons.getNodeByName("notify_arrow", n);
-        return new NotifyArrowData(Icons.getIconQuad(node, texture),
-                Icons.getInt(node, "head_x"),
-                Icons.getInt(node, "head_y"),
-                Icons.getInt(node, "end_x"),
-                Icons.getInt(node, "end_y"));
+    private static NotifyArrowData parseNotifyArrowData(IconAtlas atlas) {
+        IconAtlas.Element node = atlas.getElement("notify_arrow");
+        return new NotifyArrowData(node.getIconQuad(),
+                node.getInt("head_x"),
+                node.getInt("head_y"),
+                node.getInt("end_x"),
+                node.getInt("end_y"));
     }
 
     public List<IconQuad> getToolTipIcon(SupplyType key) {
