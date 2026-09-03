@@ -12,6 +12,11 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
+tasks.named<JavaCompile>("compileTestJava") {
+    options.compilerArgs.addAll(listOf("--add-modules", "java.desktop"))
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs("--add-modules", "java.desktop")
 }
