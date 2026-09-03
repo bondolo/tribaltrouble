@@ -3,7 +3,6 @@ module com.oddlabs.common {
     requires static org.jspecify;
     requires java.desktop;
     requires java.logging;
-    requires kotlin.stdlib;
 
     exports com.oddlabs.event;
     exports com.oddlabs.geometry;
