@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Holds native state for shaders including vertex, fragment, and optionally geometry shader.
@@ -115,9 +117,20 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
         GL20.glCompileShader(shaderId);
 
         if (GL20.glGetShaderi(shaderId, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            String log = GL20.glGetShaderInfoLog(shaderId, 1024);
+            String log = GL20.glGetShaderInfoLog(shaderId, 4096);
             GL20.glDeleteShader(shaderId);
-            throw new IllegalArgumentException("Shader compilation failed: " + log);
+            var typeName = switch (type) {
+                case GL20.GL_VERTEX_SHADER -> "Vertex";
+                case GL20.GL_FRAGMENT_SHADER -> "Fragment";
+                case GL32.GL_GEOMETRY_SHADER -> "Geometry";
+                default -> "Shader (" + type + ")";
+            };
+            String[] lines = source.split("\n", -1);
+            var numberedSource = IntStream.rangeClosed(0, lines.length)
+                    .mapToObj(i -> String.format("%4d: %s%n", i + 1, lines[i]))
+                    .collect(Collectors.joining(""));
+            throw new IllegalArgumentException(typeName + " shader compilation failed:\n" + log +
+                    "\nSource:\n" + numberedSource);
         }
         return shaderId;
     }
