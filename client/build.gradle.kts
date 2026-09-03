@@ -9,9 +9,7 @@ lwjgl {
     version = libs.versions.lwjgl.get()
     implementation(
         Module.CORE,
-        Module.OPENGL,
-        Module.SDL,
-        Module.STB
+        Module.OPENGL
     )
 }
 

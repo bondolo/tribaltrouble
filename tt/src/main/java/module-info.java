@@ -18,8 +18,6 @@ module com.oddlabs.tt {
     requires java.logging;
     requires org.lwjgl;
     requires org.lwjgl.sdl;
-    requires org.lwjgl.opengl;
-    requires org.lwjgl.stb;
 
     uses com.oddlabs.tt.base.global.PropertiesSerializer;
 }

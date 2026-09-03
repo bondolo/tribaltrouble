@@ -7,9 +7,7 @@ module com.oddlabs.tt.client {
     requires java.xml;
     requires java.logging;
     requires org.lwjgl;
-    requires org.lwjgl.sdl;
     requires org.lwjgl.opengl;
-    requires org.lwjgl.stb;
 
     exports com.oddlabs.tt.client.camera;
     exports com.oddlabs.tt.client.delegate;
