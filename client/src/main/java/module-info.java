@@ -4,7 +4,6 @@ module com.oddlabs.tt.client {
     requires com.oddlabs.tt.effects;
     requires com.oddlabs.tt.gui;
     requires static org.jspecify;
-    requires java.xml;
     requires java.logging;
     requires org.lwjgl;
     requires org.lwjgl.opengl;
