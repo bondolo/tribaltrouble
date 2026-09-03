@@ -11,8 +11,6 @@ module com.oddlabs.tt.content {
     requires com.oddlabs.tt.client;
     requires org.joml;
     requires static org.jspecify;
-    requires java.desktop;
-    requires java.xml;
     requires java.logging;
 
     exports com.oddlabs.tt.content;

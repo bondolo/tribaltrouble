@@ -1,12 +1,6 @@
 module com.oddlabs.tt.gui {
     requires transitive com.oddlabs.tt.engine;
-    requires transitive com.oddlabs.tt.input;
-    requires transitive com.oddlabs.tt.window;
-    requires com.oddlabs.tt.base;
-    requires com.oddlabs.common;
-    requires org.joml;
     requires static org.jspecify;
-    requires java.desktop;
     requires java.xml;
     requires java.logging;
 

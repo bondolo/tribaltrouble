@@ -3,9 +3,7 @@ module com.oddlabs.tt.procedural {
     requires com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
     requires org.joml;
-    requires org.jspecify;
-    requires java.desktop;
-    requires java.logging;
+    requires static org.jspecify;
 
     exports com.oddlabs.tt.procedural;
 }
