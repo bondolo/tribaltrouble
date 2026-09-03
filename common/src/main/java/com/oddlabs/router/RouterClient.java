@@ -5,20 +5,22 @@ import com.oddlabs.net.ARMIInterfaceMethods;
 import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
-import kotlin.collections.ArrayDeque;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Handles communication and state for a client connected to a router session.
+ */
 final class RouterClient implements ConnectionInterface {
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(RouterInterface.class);
     private final RouterClientInterface client_interface;
     private final Logger logger;
     private final AbstractConnection connection;
     private final Router router;
-    private final List<Integer> checksums = new ArrayDeque<>();
+    private final List<Integer> checksums = new ArrayList<>();
     private int client_id;
     private SessionManager.Timeout timeout;
     private Session session;
