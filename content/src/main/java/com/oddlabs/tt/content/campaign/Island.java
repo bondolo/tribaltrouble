@@ -102,7 +102,7 @@ public abstract class Island {
         };
         IslandConfig islandConfig = new IslandConfig(terrain, meters_per_world, hills, vegetation_amount,
                 supplies_amount, seed);
-        return Menu.startNewGame(gui_root, null, new WorldParameters(
+        return Menu.startNewGame(campaign.getEngine(), gui_root, null, new WorldParameters(
                 Game.GAMESPEED_NORMAL,
                 "Campaign" + campaign_num, initial_units,
                 Player.DEFAULT_MAX_UNIT_COUNT),

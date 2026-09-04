@@ -80,7 +80,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         race_pulldown.addItem(new PulldownItem<>(i18n("natives"), Race.NATIVES));
         race_pulldown.addItemChosenListener((PulldownMenu<Race> menu, int item_index) -> {
             if (menu.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS) == Race.NATIVES
-                    && (!gui_root.getGUI().getEngine().getSettings().hasNativeCampaign())) {
+                    && (!gui_root.getGUI().getSettings().hasNativeCampaign())) {
                 menu.chooseItem(INDEX_VIKINGS);
                 gui_root.addModalForm(new MessageForm(i18n("native_unavailable")));
             }
@@ -167,11 +167,11 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         Race chosenRace = race_pulldown.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS);
         switch (chosenRace) {
             case VIKINGS -> {
-                campaign = new VikingCampaign(gui_root, main_menu.getAudioManager());
+                campaign = new VikingCampaign(gui_root, main_menu.getEngine());
                 campaign.getState().setRace(Race.VIKINGS);
             }
             case NATIVES -> {
-                campaign = new NativeCampaign(gui_root, main_menu.getAudioManager());
+                campaign = new NativeCampaign(gui_root, main_menu.getEngine());
                 campaign.getState().setRace(Race.NATIVES);
             }
             default -> throw new IllegalArgumentException();

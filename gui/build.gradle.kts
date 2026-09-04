@@ -14,6 +14,8 @@ lwjgl {
 }
 
 dependencies {
+    api(project(":base"))
+    api(project(":window"))
     api(project(":engine"))
     compileOnlyApi(libs.jspecify)
 

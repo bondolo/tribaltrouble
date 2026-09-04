@@ -1,13 +1,13 @@
 package com.oddlabs.tt.content.campaign;
 
 
-import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.NativeCampaignIcons;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.ClientEngine;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -44,14 +44,14 @@ public final class NativeCampaign extends Campaign {
             .toArray(Island[]::new);
 
     public NativeCampaign(GUIRoot gui_root,
-            AudioManager audioManager) {
-        this(gui_root, new CampaignState(INITIAL_STATES), audioManager);
+            ClientEngine engine) {
+        this(gui_root, new CampaignState(INITIAL_STATES), engine);
     }
 
     public NativeCampaign(GUIRoot gui_root,
             CampaignState campaign_state,
-            AudioManager audioManager) {
-        super(campaign_state, audioManager);
+            ClientEngine engine) {
+        super(campaign_state, engine);
 
         if (getState().getCurrentIsland() == -1) {
             startIsland(gui_root, 0);

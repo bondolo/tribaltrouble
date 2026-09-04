@@ -80,7 +80,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
                 button_load.setDisabled(false);
             }
         };
-        load_campaign_box = new LoadCampaignBox(gui_root, listListener);
+        load_campaign_box = new LoadCampaignBox(gui_root, listListener, main_menu.getEngine());
 
         // Add listener after load_campaign_box is initialized
         button_load.addMouseClickListener((_, _, _, _) -> {
@@ -120,8 +120,8 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
 
     public void load(CampaignState campaign_state) {
         Campaign campaign = campaign_state.getRace() == Race.VIKINGS
-                ? new VikingCampaign(gui_root, campaign_state, main_menu.getAudioManager())
-                : new NativeCampaign(gui_root, campaign_state, main_menu.getAudioManager());
+                ? new VikingCampaign(gui_root, campaign_state, main_menu.getEngine())
+                : new NativeCampaign(gui_root, campaign_state, main_menu.getEngine());
         setDisabled(true);
         if (campaign_state.getIslandState(0) == CampaignState.ISLAND_COMPLETED) {
             campaign.pushDelegate(gui_root.getGUI());

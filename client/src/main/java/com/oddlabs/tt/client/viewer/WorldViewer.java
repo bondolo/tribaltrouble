@@ -111,10 +111,11 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final InGameChatHistory in_game_chat_history;
 
     public WorldViewer(final GUIRoot gui_root,
+            ClientEngine engine,
             WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<GeneratedLandscapeData> generator,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
             SessionID session_id) {
-        this.engine = gui_root.getGUI().getEngine();
+        this.engine = engine;
         this.world_params = world_params;
         this.ingame_info = ingame_info;
         this.network = engine.getNetwork().getSelector();
@@ -292,7 +293,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         camera_state.setFog(world_info.fog_info());
         this.world = ProgressListener.subTask(0.10f,
                 () -> World.newWorld(landscape_resources, races_resources, listener, world_params,
-                        world_info.landscapeData(), player_infos, AccessibilitySettings.from(engine.getSettings()).linear_team_colours,
+                        world_info.landscapeData(), player_infos, AccessibilitySettings.from(engine
+                                .getSettings()).linear_team_colours,
                         RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
         initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);

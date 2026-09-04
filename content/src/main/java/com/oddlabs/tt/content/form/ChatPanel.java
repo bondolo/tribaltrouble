@@ -49,11 +49,11 @@ public class ChatPanel extends Panel implements ChatListener {
         return Utils.getBundleString(getBundle(), key);
     }
 
-    public ChatPanel(GUIRoot gui_root, ChatRoomInfo info, int compare_width, int compare_height,
+    public ChatPanel(GUIRoot gui_root, ClientEngine engine, ChatRoomInfo info, int compare_width, int compare_height,
             int button_width, EnterListener chat_listener, MouseClickListener leave_listener) {
         super(getI18N("chat"));
         this.gui_root = gui_root;
-        this.engine = gui_root.getGUI().getEngine();
+        this.engine = engine;
         FormData fdata = Skin.getSkin().getFormData();
         Box pdata = Skin.getSkin().getPanelData().box();
         Box edata = Skin.getSkin().getEditBox();
@@ -183,7 +183,8 @@ public class ChatPanel extends Panel implements ChatListener {
             ChatRoomUser user = box.getRightClickedRowData();
             String nick = user.getNick();
             switch (item_index) {
-                case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(gui_root, nick));
+                case PULLDOWN_INDEX_MESSAGE -> gui_root.addModalForm(new PrivateMessageForm(engine.getNetwork()
+                        .getMatchmakingClient(), nick));
                 case PULLDOWN_INDEX_INFO -> engine.getNetwork().getMatchmakingClient().requestInfo(nick);
                 case PULLDOWN_INDEX_IGNORE -> {
                     if (ChatCommand.isIgnoring(nick))
@@ -206,7 +207,7 @@ public class ChatPanel extends Panel implements ChatListener {
 
         @Override
         public void rowDoubleClicked(ChatRoomUser user) {
-            private_message_form = new PrivateMessageForm(gui_root, user.getNick());
+            private_message_form = new PrivateMessageForm(engine.getNetwork().getMatchmakingClient(), user.getNick());
             gui_root.addModalForm(private_message_form);
         }
 

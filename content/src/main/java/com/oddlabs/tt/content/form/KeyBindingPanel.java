@@ -20,7 +20,6 @@ import com.oddlabs.tt.gui.SortedLabel;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputBinding;
-import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.util.Color;
 
@@ -41,12 +40,10 @@ public class KeyBindingPanel extends Panel {
 
     private final MultiColumnComboBox<GameAction> list_box;
     private final GUIRoot gui_root;
-    private final ClientEngine engine;
 
     public KeyBindingPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("key_bindings_title"));
         this.gui_root = gui_root;
-        this.engine = gui_root.getGUI().getEngine();
 
         ColumnInfo[] infos = new ColumnInfo[]{
                 new ColumnInfo(AbstractOptionsMenu.i18n("column_action"), COL_ACTION_WIDTH),
@@ -105,10 +102,10 @@ public class KeyBindingPanel extends Panel {
         Row<GameAction, ?> rowToSelect = null;
 
         for (GameAction action : GameAction.values()) {
-            if (action.name().startsWith("DEBUG_") && !engine.getSettings().inDeveloperMode()) {
+            if (action.name().startsWith("DEBUG_") && !gui_root.getGUI().getSettings().inDeveloperMode()) {
                 continue;
             }
-            if (action.name().startsWith("CHEAT_") && !engine.getSettings().inDeveloperMode()) {
+            if (action.name().startsWith("CHEAT_") && !gui_root.getGUI().getSettings().inDeveloperMode()) {
                 continue;
             }
             String name;
@@ -147,7 +144,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void saveMappings() {
-        engine.getWindow().showSaveFileDialog(
+        gui_root.getGUI().getWindow().showSaveFileDialog(
                 AbstractOptionsMenu.i18n("json_files"),
                 "json",
                 "keybindings.json",
@@ -166,7 +163,7 @@ public class KeyBindingPanel extends Panel {
     }
 
     private void loadMappings() {
-        engine.getWindow().showOpenFileDialog(
+        gui_root.getGUI().getWindow().showOpenFileDialog(
                 AbstractOptionsMenu.i18n("json_files"),
                 "json",
                 path -> {

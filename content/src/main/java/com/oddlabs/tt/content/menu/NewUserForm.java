@@ -161,7 +161,7 @@ public final class NewUserForm extends Form {
 
     private void doCreateUser(String username, LoginDetails login_details, String password,
             Login login) {
-        var settings = main_menu.getGUIRoot().getGUI().getEngine().getSettings();
+        var settings = main_menu.getGUIRoot().getGUI().getSettings();
         var account = AccountSettings.from(settings);
         account.username = username;
         account.pw_digest = password;

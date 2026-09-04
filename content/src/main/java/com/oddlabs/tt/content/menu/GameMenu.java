@@ -509,7 +509,8 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     @Override
     public void gameStarted(LoadCallback<GUIRoot, UIRenderer> loadCallback) {
         setDisabled(true);
-        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), loadCallback);
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), engine.getAudioManager(),
+                loadCallback);
     }
 
     private void finishChatAppend() {

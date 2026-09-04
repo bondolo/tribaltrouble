@@ -271,7 +271,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     }
 
     private ChatPanel createChatRoomPanel(ChatRoomInfo info) {
-        ChatPanel panel = new ChatPanel(gui_root, info, chat_room_list_panel.getWidth(), chat_room_list_panel
+        ChatPanel panel = new ChatPanel(gui_root, engine, info, chat_room_list_panel.getWidth(), chat_room_list_panel
                 .getHeight(), BUTTON_WIDTH_SHORT, new SendChatListener(), (_, _, _, _) -> leaveChatRoom());
         var chatHub = engine.getNetwork().getChatHub();
         chatHub.setIgnoreFilter(ChatCommand::isIgnoring);
@@ -525,7 +525,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
             var matchmaker = engine.getNetwork().getMatchmakingClient();
             if (matchmaker.getProfile() != null) {
                 Panel panel = new Panel(i18n("game"));
-                Group g = new TerrainMenu(gui_root, main_menu, true,
+                Group g = new TerrainMenu(gui_root, engine, main_menu, true,
                         SelectGameMenu.this);
                 panel.addChild(g);
                 g.place();

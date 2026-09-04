@@ -34,7 +34,7 @@ public class GeneralPanel extends Panel {
 
     public GeneralPanel(GUIRoot gui_root, IntConsumer onGamespeedChange) {
         super(AbstractOptionsMenu.i18n("general_settings_caption"));
-        Settings settings = gui_root.getGUI().getEngine().getSettings();
+        Settings settings = gui_root.getGUI().getSettings();
 
         CameraSettings camera = CameraSettings.from(settings);
         GameplaySettings gameplay = GameplaySettings.from(settings);

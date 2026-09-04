@@ -30,19 +30,19 @@ public abstract class AbstractOptionsMenu extends Form {
     private final GeneralPanel generalPanel;
     private final GraphicsPanel graphicsPanel;
 
-    AbstractOptionsMenu(GUIRoot gui_root) {
+    AbstractOptionsMenu(GUIRoot gui_root, com.oddlabs.tt.engine.ClientEngine engine) {
         Label label_headline = new Label(i18n("options_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
         generalPanel = new GeneralPanel(gui_root, this::changeGamespeed);
-        graphicsPanel = new GraphicsPanel(gui_root, this);
+        graphicsPanel = new GraphicsPanel(gui_root, this, engine);
 
         PanelGroup panel_group = new PanelGroup(
                 generalPanel,
                 graphicsPanel,
                 new KeyBindingPanel(gui_root),
                 new AccessibilityPanel(gui_root),
-                new SoundPanel(gui_root),
+                new SoundPanel(gui_root, engine.getAudioManager()),
                 new LanguagePanel(gui_root)
         );
         addChild(panel_group);
@@ -54,7 +54,7 @@ public abstract class AbstractOptionsMenu extends Form {
 
         HorizButton button_about = new HorizButton(i18n("about"), BUTTON_WIDTH);
         button_about.addMouseClickListener((_, _, _, _) -> gui_root.addModalForm(new CreditsForm(
-                gui_root.getGUI().getEngine().getSettings().last_revision)));
+                gui_root.getGUI().getSettings().last_revision)));
         addChild(button_about);
 
         // Place objects

@@ -14,6 +14,7 @@ import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.global.LocaleSettings;
+import com.oddlabs.tt.engine.ClientEngine;
 
 import java.util.List;
 import java.util.Locale;
@@ -26,9 +27,9 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 public class LanguagePanel extends Panel {
     public LanguagePanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("language_caption"));
-        Settings settings = gui_root.getGUI().getEngine().getSettings();
+        Settings settings = gui_root.getGUI().getSettings();
         LocaleSettings localeSettings = LocaleSettings.from(settings);
-        Locale defaultLocale = gui_root.getGUI().getEngine().getDefaultLocale();
+        Locale defaultLocale = ClientEngine.getDefaultLocale();
 
         // Language
         Group language_group = new Group();
@@ -62,7 +63,7 @@ public class LanguagePanel extends Panel {
 
         // System default last
         var label = new Label(AbstractOptionsMenu.i18n("system_default"), Skin.getSkin().getMultiColumnComboBoxData()
-                    .font());
+                .font());
         var iconLabel = new IconLabel(Skin.getSkin().getFlagDefault(), label);
         Row<Locale, IconLabel> row = new Row<>(List.of(iconLabel), defaultLocale);
         language_list_box.addRow(row);

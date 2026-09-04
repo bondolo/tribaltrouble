@@ -26,11 +26,11 @@ public class SoundPanel extends Panel {
     private static final int MAX_VALUE = 20;
     private static final boolean TEMPORARILY_DISABLE_MUSIC_CONTROLS = false;
 
-    public SoundPanel(GUIRoot gui_root) {
-        this(gui_root, AudioSettings.from(gui_root.getGUI().getEngine().getSettings()),
-                AccessibilitySettings.from(gui_root.getGUI().getEngine().getSettings()),
-                gui_root.getGUI().getEngine().getAudioManager(),
-                gui_root.getGUI().getEngine().getEventQueue().getDeterministic());
+    public SoundPanel(GUIRoot gui_root, AudioManager audioManager) {
+        this(gui_root, AudioSettings.from(gui_root.getGUI().getSettings()),
+                AccessibilitySettings.from(gui_root.getGUI().getSettings()),
+                audioManager,
+                gui_root.getGUI().getEventQueue().getDeterministic());
     }
 
     public SoundPanel(GUIRoot gui_root, AudioSettings audioSettings,

@@ -109,7 +109,16 @@ public final class Main {
                             settings.crashed = true;
                             settings.save();
                             settings.crashed = false;
-                            GUI gui = new GUI(localInput, clientEngine);
+                            GUI gui = new GUI(
+                                    localInput,
+                                    clientEngine.getWindow(),
+                                    eventQueue,
+                                    settings,
+                                    clientEngine::shutdown,
+                                    clientEngine::updateProgress,
+                                    () -> clientEngine.getFPS()
+                            );
+                            gui.setMovieRecordingStarter(clientEngine::startMovieRecording);
                             gui.setCloseHandler(() -> {
                                 if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
                                     clientEngine.shutdown();
@@ -119,6 +128,7 @@ public final class Main {
                                 }
                             });
                             Runnable loadTask = gui.callWithSkin(() -> Menu.setupMainMenu(
+                                    clientEngine,
                                     gui,
                                     firstProgress
                             ));

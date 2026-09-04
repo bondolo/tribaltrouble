@@ -144,7 +144,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         }
 
         // If in developer mode
-        if (!getGUIRoot().getGUI().getEngine().getSettings().inDeveloperMode())
+        if (!getGUIRoot().getGUI().getSettings().inDeveloperMode())
             return false;
 
         if (actions.contains(GameAction.DEBUG_PRINT_INFO)) {
@@ -184,7 +184,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
             }
 
             if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
-                var gameplay = GameplaySettings.from(viewer.getGUIRoot().getGUI().getEngine().getSettings());
+                var gameplay = GameplaySettings.from(viewer.getGUIRoot().getGUI().getSettings());
                 gameplay.aggressive_units = !gameplay.aggressive_units;
                 ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.gui.GUIRoot");
                 viewer.getGUIRoot().getInfoPrinter().print(

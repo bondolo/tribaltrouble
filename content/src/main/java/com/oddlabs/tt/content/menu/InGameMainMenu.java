@@ -22,7 +22,7 @@ public final class InGameMainMenu extends Menu {
     private Group game_infos;
 
     public InGameMainMenu(WorldViewer viewer, Camera camera) {
-        super(viewer.getGUIRoot(), camera);
+        super(viewer.getGUIRoot(), camera, viewer.getEngine());
         this.viewer = viewer;
         reload();
     }
