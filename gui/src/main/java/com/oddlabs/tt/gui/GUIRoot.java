@@ -182,7 +182,8 @@ public final class GUIRoot extends GUIObject {
     }
 
     public void setToolTipTimer() {
-        tool_tip_timer.setTimerInterval(gui.getEngine().getSettings().control.tooltip_delay
+        GUISettings guiSettings = GUISettings.from(gui.getEngine().getSettings());
+        tool_tip_timer.setTimerInterval(guiSettings.tooltip_delay
                 * ToolTipBox.MAX_DELAY_SECONDS);
     }
 
@@ -335,7 +336,8 @@ public final class GUIRoot extends GUIObject {
     }
 
     public float calculateEffectiveScale(int width, int height) {
-        return calculateEffectiveScale(width, height, gui.getEngine().getSettings().control.ui_scale);
+        GUISettings guiSettings = GUISettings.from(gui.getEngine().getSettings());
+        return calculateEffectiveScale(width, height, guiSettings.ui_scale);
     }
 
     public static float calculateEffectiveScale(int width, int height, float uiScale) {
@@ -381,13 +383,6 @@ public final class GUIRoot extends GUIObject {
                 if (event.consumeAction(GameAction.GLOBAL_SCREENSHOT)) {
                     String filename = GLUtils.takeScreenshot("");
                     info_printer.print(i18n("screenshot_message", filename));
-                    consumed = true;
-                }
-                if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
-                    var control = gui.getEngine().getSettings().control;
-                    control.aggressive_units = !control.aggressive_units;
-                    info_printer.print(i18n(control.aggressive_units
-                            ? "aggressive_unites_on" : "aggressive_unites_off"));
                     consumed = true;
                 }
                 if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {

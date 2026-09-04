@@ -4,11 +4,12 @@ import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.base.util.StatCounter;
 import com.oddlabs.tt.engine.render.state.GLRenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.engine.settings.Settings;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
+import com.oddlabs.tt.window.WindowSettings;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -117,6 +118,7 @@ public final class Renderer implements AutoCloseable {
     }
 
     public void initNative(boolean crashed) throws Exception {
+        WindowSettings windowSettings = WindowSettings.from(settings);
         try {
             int bpp = 32;
             try {
@@ -128,9 +130,9 @@ public final class Renderer implements AutoCloseable {
             window.setTitle("Tribal Trouble");
 
             SerializableDisplayMode target_mode;
-            int width = crashed ? settings.window.view_width : settings.window.new_view_width;
-            int height = crashed ? settings.window.view_height : settings.window.new_view_height;
-            int freq = crashed ? settings.window.view_freq : settings.window.new_view_freq;
+            int width = crashed ? windowSettings.view_width : windowSettings.new_view_width;
+            int height = crashed ? windowSettings.view_height : windowSettings.new_view_height;
+            int freq = crashed ? windowSettings.view_freq : windowSettings.new_view_freq;
 
             if (width < SerializableDisplayMode.MIN_WIDTH || height < SerializableDisplayMode.MIN_HEIGHT) {
                 try {
@@ -148,7 +150,7 @@ public final class Renderer implements AutoCloseable {
                 target_mode = new SerializableDisplayMode(width, height, bpp, freq);
             }
 
-            boolean fs = settings.window.fullscreen;
+            boolean fs = windowSettings.fullscreen;
             window.create(target_mode, fs);
 
             Path iconPath = Path.of("assets/widget/TribalTrouble.wdgt/Icon.png");
@@ -186,8 +188,8 @@ public final class Renderer implements AutoCloseable {
                     + " is less than the required 8.");
         }
 
-        logger.info("vsync = " + settings.window.vsync);
-        if (settings.window.vsync) {
+        logger.info("vsync = " + windowSettings.vsync);
+        if (windowSettings.vsync) {
             window.setVSyncEnabled(true);
         }
         NativeResource.setErrorChecker(GLUtils::checkGLError);
@@ -197,7 +199,7 @@ public final class Renderer implements AutoCloseable {
 
     private void initGL() {
         VBO.releaseAll();
-        boolean enableMultisample = settings.window.view_samples > 0 && window.getPixelDensity() <= 1.0f;
+        boolean enableMultisample = WindowSettings.from(settings).view_samples > 0 && window.getPixelDensity() <= 1.0f;
         renderContext.applyDefaults(enableMultisample);
         int w = window.getWidth();
         int h = window.getHeight();

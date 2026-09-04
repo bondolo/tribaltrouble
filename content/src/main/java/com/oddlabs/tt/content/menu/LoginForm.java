@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Login;
+import com.oddlabs.tt.net.AccountSettings;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
@@ -47,10 +48,11 @@ public final class LoginForm extends Form {
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
         var settings = gui_root.getGUI().getEngine().getSettings();
-        boolean remember = settings.account.remember_login;
+        var account = AccountSettings.from(settings);
+        boolean remember = account.remember_login;
         if (!remember) {
-            settings.account.username = "";
-            settings.account.pw_digest = "";
+            account.username = "";
+            account.pw_digest = "";
         }
 
         // headline
@@ -63,13 +65,13 @@ public final class LoginForm extends Form {
         Label label_username = new Label(i18n("username"), Skin.getSkin().getEditFont());
         editline_username = new EditLine(EDITLINE_WIDTH, 255);
         editline_username.addEnterListener(login_listener);
-        editline_username.append(settings.account.username);
+        editline_username.append(account.username);
         Label label_password = new Label(i18n("password"), Skin.getSkin().getEditFont());
         editline_password = new PasswordLine(EDITLINE_WIDTH, 255);
         editline_password.addEnterListener(login_listener);
         if (remember) {
             editline_password.append("*************");
-            editline_password.setPasswordDigest(settings.account.pw_digest);
+            editline_password.setPasswordDigest(account.pw_digest);
         }
         remember_checkbox = new CheckBox(remember, i18n("remember_login"));
 
@@ -142,11 +144,12 @@ public final class LoginForm extends Form {
 
     private void doLogin(String username, String password, Login login, boolean remember_login) {
         var settings = gui_root.getGUI().getEngine().getSettings();
+        var account = AccountSettings.from(settings);
         if (remember_login) {
-            settings.account.username = username;
-            settings.account.pw_digest = password;
+            account.username = username;
+            account.pw_digest = password;
         }
-        settings.account.remember_login = remember_login;
+        account.remember_login = remember_login;
         Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, null);
         gui_root.addModalForm(connecting_form);
     }

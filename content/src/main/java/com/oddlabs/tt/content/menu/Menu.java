@@ -3,6 +3,7 @@ package com.oddlabs.tt.content.menu;
 import com.oddlabs.matchmaking.Game;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.base.util.ProgressListener;
@@ -13,6 +14,7 @@ import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.client.delegate.FormFactory;
 import com.oddlabs.tt.client.render.DefaultRenderer;
 import com.oddlabs.tt.client.render.Picker;
+import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.client.trigger.GameOverTrigger;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.Selection;
@@ -33,6 +35,7 @@ import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
@@ -430,8 +433,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 () -> World.newWorld(landscape_resources, null,
                         new NotificationListener() {
                         }, world_params, world_info.landscapeData(), players,
-                        engine.getSettings().accessibility.linear_team_colours,
-                        RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail]));
+                        AccessibilitySettings.from(engine.getSettings()).linear_team_colours,
+                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
         AnimationManager menuAnimationManager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);
         Player local_player = world.getPlayers().getFirst();
@@ -447,11 +450,12 @@ public abstract class Menu extends CameraDelegate<Camera> {
         MainMenu main_menu = new MainMenu(gui_root,
                 new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager));
         gui_root.pushDelegate(main_menu);
-        if (first_progress && engine.getSettings().audio.warning_no_sound
+        AudioSettings audioSettings = AudioSettings.from(engine.getSettings());
+        if (first_progress && audioSettings.warning_no_sound
                 && !engine.getEventQueue().getDeterministic().log(engine.getAudioManager() != null)) {
             gui_root.addModalForm(new WarningForm(i18n("sound_not_available_caption"), i18n(
                     "sound_not_available_message"),
-                    doNotShowAgain -> engine.getSettings().audio.warning_no_sound = !doNotShowAgain));
+                    doNotShowAgain -> audioSettings.warning_no_sound = !doNotShowAgain));
         }
         if (!initNetwork(engine)) {
             gui_root.addModalForm(new MessageForm(i18n("network_not_available_caption"),

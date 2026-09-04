@@ -2,10 +2,12 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
+import com.oddlabs.tt.engine.settings.GraphicsSettings;
 
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
+import com.oddlabs.tt.client.GameplaySettings;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -131,7 +133,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
         this.local_player = local_player;
         this.gui_root = gui_root;
-        this.sprite_sorter = new SpriteSorter(gui_root.getGUI().getEngine().getSettings().graphic_detail);
+        this.sprite_sorter = new SpriteSorter(GraphicsSettings.from(gui_root.getGUI().getEngine().getSettings()).graphic_detail);
         this.render_queues = render_queues;
         this.respond_manager = new RespondManager(manager);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, sprite_sorter,
@@ -173,7 +175,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         pickObjects();
         Target nearest_pickable = getNearestPick(element_pick_list, Target.class);
         Selectable<?>[] selection = selected_army.filter(Abilities.TARGET);
-        boolean aggressive = gui_root.getInputManager().getControlSettings().aggressive_units;
+        boolean aggressive = GameplaySettings.from(gui_root.getGUI().getEngine().getSettings()).aggressive_units;
         if (nearest_pickable != null) {
             if (!(nearest_pickable instanceof SceneryModel sceneryModel) || sceneryModel.isOccupying())
                 respond_manager.addResponder(nearest_pickable);

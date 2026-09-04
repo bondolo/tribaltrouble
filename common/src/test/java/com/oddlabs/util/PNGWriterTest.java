@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Tests for {@link PNGWriter}.
  */
 final class PNGWriterTest {
-    private static final byte[] EXPECTED_SIGNATURE = new byte[] {
+    private static final byte[] EXPECTED_SIGNATURE = new byte[]{
             (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A
     };
 
@@ -33,7 +33,7 @@ final class PNGWriterTest {
     void writesValidPngStructure() throws IOException {
         int width = 2;
         int height = 2;
-        byte[] rgba = new byte[] {
+        byte[] rgba = new byte[]{
                 (byte) 255, 0, 0, (byte) 255,        // Red
                 0, (byte) 255, 0, (byte) 255,        // Green
                 0, 0, (byte) 255, (byte) 255,        // Blue
@@ -58,7 +58,7 @@ final class PNGWriterTest {
         assertEquals(13, ihdrLen);
         byte[] ihdrType = new byte[4];
         dis.readFully(ihdrType);
-        assertArrayEquals(new byte[] { 'I', 'H', 'D', 'R' }, ihdrType);
+        assertArrayEquals(new byte[]{'I', 'H', 'D', 'R'}, ihdrType);
 
         byte[] ihdrData = new byte[13];
         dis.readFully(ihdrData);
@@ -81,7 +81,7 @@ final class PNGWriterTest {
         int idatLen = dis.readInt();
         byte[] idatType = new byte[4];
         dis.readFully(idatType);
-        assertArrayEquals(new byte[] { 'I', 'D', 'A', 'T' }, idatType);
+        assertArrayEquals(new byte[]{'I', 'D', 'A', 'T'}, idatType);
 
         byte[] idatData = new byte[idatLen];
         dis.readFully(idatData);
@@ -110,7 +110,7 @@ final class PNGWriterTest {
         assertEquals(0, iendLen);
         byte[] iendType = new byte[4];
         dis.readFully(iendType);
-        assertArrayEquals(new byte[] { 'I', 'E', 'N', 'D' }, iendType);
+        assertArrayEquals(new byte[]{'I', 'E', 'N', 'D'}, iendType);
         int iendCrc = dis.readInt();
         crc.reset();
         crc.update(iendType);

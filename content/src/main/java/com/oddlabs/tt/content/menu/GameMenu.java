@@ -8,6 +8,7 @@ import com.oddlabs.tt.content.form.GameInfoForm;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.engine.font.Font;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.Box;
 import com.oddlabs.tt.gui.Diode;
 import com.oddlabs.tt.gui.EditLine;
@@ -478,7 +479,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             ratings[index].place(ready_mark, RIGHT_MID);
         }
         String player_str = i18n("player", Integer.toString(index + 1));
-        var color = engine.getSettings().accessibility.team_colours[index];
+        var color = AccessibilitySettings.from(engine.getSettings()).team_colours[index];
         Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(color);
         group.addChild(label);
         label.place(pulldown_button, LEFT_MID);

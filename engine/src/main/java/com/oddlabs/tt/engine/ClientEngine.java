@@ -2,16 +2,20 @@ package com.oddlabs.tt.engine;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.audio.AudioManager;
+import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
+import com.oddlabs.tt.base.global.LocaleSettings;
+import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.tt.engine.render.ClientStartup;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.settings.Settings;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.window.LWJGL3Window;
@@ -84,7 +88,7 @@ public final class ClientEngine implements AutoCloseable {
         this.event_queue = eventQueue;
         this.network = network;
         this.audioManager = audioManager;
-        window.setSettings(settings.window);
+        window.setSettings(WindowSettings.from(settings));
         this.renderer = new Renderer(window, settings);
     }
 
@@ -147,8 +151,9 @@ public final class ClientEngine implements AutoCloseable {
     }
 
     public void toggleSound() {
-        settings.audio.play_sfx = !settings.audio.play_sfx;
-        audioManager.setSfxEnabled(settings.audio.play_sfx);
+        AudioSettings audio = AudioSettings.from(settings);
+        audio.play_sfx = !audio.play_sfx;
+        audioManager.setSfxEnabled(audio.play_sfx);
     }
 
     public void startMovieRecording() {
@@ -166,7 +171,7 @@ public final class ClientEngine implements AutoCloseable {
             boolean fs = !window.isFullscreen() && !event_queue.getDeterministic().isPlayback();
             logger.info("Toggling fullscreen to: " + fs + ". Current mode: " + window.getDisplayMode());
             window.setFullscreen(fs);
-            settings.window.fullscreen = fs;
+            WindowSettings.from(settings).fullscreen = fs;
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Mode switching failed with exception", e);
             throw new IllegalStateException("Mode switching failed", e);
@@ -187,16 +192,17 @@ public final class ClientEngine implements AutoCloseable {
     }
 
     public void setModeToNearest(SerializableDisplayMode mode) {
-        boolean fs = settings.window.fullscreen;
+        boolean fs = WindowSettings.from(settings).fullscreen;
         window.create(mode, fs);
         modeSwitchedNow(mode);
     }
 
     private void modeSwitchedLater(SerializableDisplayMode new_mode) {
-        settings.window.fullscreen = window.isFullscreen();
-        settings.window.new_view_width = new_mode.getWidth();
-        settings.window.new_view_height = new_mode.getHeight();
-        settings.window.new_view_freq = new_mode.getFrequency();
+        WindowSettings windowSettings = WindowSettings.from(settings);
+        windowSettings.fullscreen = window.isFullscreen();
+        windowSettings.new_view_width = new_mode.getWidth();
+        windowSettings.new_view_height = new_mode.getHeight();
+        windowSettings.new_view_freq = new_mode.getFrequency();
     }
 
     private void modeSwitchedNow(SerializableDisplayMode new_mode) {
@@ -207,9 +213,10 @@ public final class ClientEngine implements AutoCloseable {
     private void modeSwitched() {
         SerializableDisplayMode new_mode = getCurrentDisplayMode();
         logger.info("Mode switch detected. New mode: " + new_mode);
-        settings.window.view_width = new_mode.getWidth();
-        settings.window.view_height = new_mode.getHeight();
-        settings.window.view_freq = new_mode.getFrequency();
+        WindowSettings windowSettings = WindowSettings.from(settings);
+        windowSettings.view_width = new_mode.getWidth();
+        windowSettings.view_height = new_mode.getHeight();
+        windowSettings.view_freq = new_mode.getFrequency();
     }
 
     private void runGameLoop(FrameDriver driver) {
@@ -218,7 +225,7 @@ public final class ClientEngine implements AutoCloseable {
         }
         long current_time;
         if (grab_frames) {
-            framePacer.warpTime(settings.frame_grab_milliseconds_per_frame);
+            framePacer.warpTime(AppConfig.FRAME_GRAB_MILLISECONDS_PER_FRAME);
             current_time = framePacer.getSystemTime();
         } else {
             current_time = framePacer.getSystemTime();
@@ -319,7 +326,7 @@ public final class ClientEngine implements AutoCloseable {
 
         Path event_logs_dir = gamePaths.logDir();
         Path event_log_dir = event_logs_dir.resolve(Long.toString(System.currentTimeMillis()));
-        if (settings.save_event_log) {
+        if (AppConfig.SAVE_EVENT_LOG) {
             setupLogging(event_log_dir, silent);
             event_queue.setEventsLogged(event_log_dir.resolve(com.oddlabs.util.Utils.EVENT_LOG));
         }
@@ -328,8 +335,9 @@ public final class ClientEngine implements AutoCloseable {
         var game_dir = deterministic.log(gamePaths.dataDir());
         event_log_dir = deterministic.log(event_log_dir);
         deterministic.log(settings);
-        Locale language = "default".equals(settings.control.language)
-                ? deterministic.log(ClientEngine.default_locale) : Locale.forLanguageTag(settings.control.language);
+        LocaleSettings locale = LocaleSettings.from(settings);
+        Locale language = "default".equals(locale.language)
+                ? deterministic.log(ClientEngine.default_locale) : Locale.forLanguageTag(locale.language);
         IO.println("Using language " + language);
         Locale.setDefault(language);
 
@@ -394,7 +402,7 @@ public final class ClientEngine implements AutoCloseable {
                 window.focus();
             } else if (!isActive && wasActive) {
                 logger.info("[ClientEngine] Focus Lost (isActive=false, wasActive=" + wasActive + ")");
-                if (settings.window.fullscreen) {
+                if (WindowSettings.from(settings).fullscreen) {
                     window.minimize();
                 }
             }

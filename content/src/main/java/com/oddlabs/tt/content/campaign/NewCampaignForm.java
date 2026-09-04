@@ -80,7 +80,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
         race_pulldown.addItem(new PulldownItem<>(i18n("natives"), Race.NATIVES));
         race_pulldown.addItemChosenListener((PulldownMenu<Race> menu, int item_index) -> {
             if (menu.getChosenItem().map(PulldownItem::getAttachment).orElse(Race.VIKINGS) == Race.NATIVES
-                    && (!gui_root.getGUI().getEngine().getSettings().has_native_campaign)) {
+                    && (!gui_root.getGUI().getEngine().getSettings().hasNativeCampaign())) {
                 menu.chooseItem(INDEX_VIKINGS);
                 gui_root.addModalForm(new MessageForm(i18n("native_unavailable")));
             }

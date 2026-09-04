@@ -1,6 +1,7 @@
 package com.oddlabs.tt.audio;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.SettingsRegistry;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -16,6 +17,16 @@ import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 public final class AudioSettings implements Serializable, PropertiesSerializer {
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Retrieves the {@link AudioSettings} instance registered with the given settings registry.
+     *
+     * @param settings the settings registry
+     * @return the registered audio settings
+     */
+    public static AudioSettings from(SettingsRegistry settings) {
+        return settings.get(AudioSettings.class);
+    }
 
     public boolean play_music = true;
     public boolean play_sfx = true;

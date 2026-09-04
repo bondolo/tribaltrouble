@@ -1,5 +1,6 @@
 package com.oddlabs.tt.content.menu;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MenuButton;
@@ -29,7 +30,7 @@ public final class MainMenu extends Menu {
         single_player.addMouseClickListener((_, _, _, _) -> setMenu(new TerrainMenuForm(MainMenu.this)));
         addChild(single_player);
 
-        if (!engine.getSettings().hide_multiplayer) {
+        if (!AppConfig.HIDE_MULTIPLAYER) {
             MenuButton multi_player = new MenuButton(Menu.i18n("multiplayer"), COLOR_NORMAL, COLOR_ACTIVE);
             multi_player.addMouseClickListener((_, _, _, _) -> {
                 if (engine.getNetwork().getMatchmakingClient().isConnected()) {

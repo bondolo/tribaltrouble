@@ -27,8 +27,8 @@ public class SoundPanel extends Panel {
     private static final boolean TEMPORARILY_DISABLE_MUSIC_CONTROLS = false;
 
     public SoundPanel(GUIRoot gui_root) {
-        this(gui_root, gui_root.getGUI().getEngine().getSettings().audio,
-                gui_root.getGUI().getEngine().getSettings().accessibility,
+        this(gui_root, AudioSettings.from(gui_root.getGUI().getEngine().getSettings()),
+                AccessibilitySettings.from(gui_root.getGUI().getEngine().getSettings()),
                 gui_root.getGUI().getEngine().getAudioManager(),
                 gui_root.getGUI().getEngine().getEventQueue().getDeterministic());
     }

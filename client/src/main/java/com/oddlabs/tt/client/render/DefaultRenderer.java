@@ -28,7 +28,9 @@ import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
-import com.oddlabs.tt.engine.settings.Settings;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
+import com.oddlabs.tt.engine.settings.GraphicsSettings;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.ToolTip;
@@ -88,7 +90,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.render_queues = render_queues;
         this.picker = picker;
         this.selection = selection;
-        this.sprite_sorter = new SpriteSorter(settings.graphic_detail);
+        this.sprite_sorter = new SpriteSorter(GraphicsSettings.from(settings).graphic_detail);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
                 selection, audioManager);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
@@ -103,7 +105,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
         this.emitterRenderer = new EmitterRenderer();
-        this.postProcessor = new PostProcessor(settings.accessibility, width, height);
+        this.postProcessor = new PostProcessor(AccessibilitySettings.from(settings), width, height);
         DebugRender.setShaderRenderer(new DebugShaderRenderer(
                 new DebugMeshShader(), modelViewStack, projectionStack
         ));

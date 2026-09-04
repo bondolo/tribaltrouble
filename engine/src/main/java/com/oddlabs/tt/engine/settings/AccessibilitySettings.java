@@ -1,6 +1,7 @@
 package com.oddlabs.tt.engine.settings;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.SettingsRegistry;
 import com.oddlabs.util.Color;
 
 import java.io.Serial;
@@ -21,6 +22,16 @@ import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 public final class AccessibilitySettings implements Serializable, PropertiesSerializer {
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Retrieves the {@link AccessibilitySettings} instance registered with the given settings registry.
+     *
+     * @param settings the settings registry
+     * @return the registered accessibility settings
+     */
+    public static AccessibilitySettings from(SettingsRegistry settings) {
+        return settings.get(AccessibilitySettings.class);
+    }
 
     private static final Logger logger = Logger.getLogger(AccessibilitySettings.class.getName());
 

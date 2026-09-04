@@ -1,7 +1,7 @@
 package com.oddlabs.tt.content.form;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.tt.engine.settings.Settings;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.gui.CheckBox;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -12,6 +12,9 @@ import com.oddlabs.tt.gui.PulldownItem;
 import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
+import com.oddlabs.tt.client.GameplaySettings;
+import com.oddlabs.tt.client.camera.CameraSettings;
+import com.oddlabs.tt.gui.GUISettings;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.model.Gamespeed;
 
@@ -33,12 +36,16 @@ public class GeneralPanel extends Panel {
         super(AbstractOptionsMenu.i18n("general_settings_caption"));
         Settings settings = gui_root.getGUI().getEngine().getSettings();
 
+        CameraSettings camera = CameraSettings.from(settings);
+        GameplaySettings gameplay = GameplaySettings.from(settings);
+        GUISettings guiSettings = GUISettings.from(settings);
+
         // Invert camera
         Group group_invert_camera = new Group();
         addChild(group_invert_camera);
-        CheckBox cb_invert_camera = new CheckBox(settings.control.invert_camera_pitch,
+        CheckBox cb_invert_camera = new CheckBox(camera.invert_camera_pitch,
                 AbstractOptionsMenu.i18n("invert_camera"), AbstractOptionsMenu.i18n("invert_camera_tip"));
-        cb_invert_camera.addCheckBoxListener(marked -> settings.control.invert_camera_pitch = marked);
+        cb_invert_camera.addCheckBoxListener(marked -> camera.invert_camera_pitch = marked);
         group_invert_camera.addChild(cb_invert_camera);
         cb_invert_camera.place();
         group_invert_camera.compileCanvas();
@@ -46,10 +53,10 @@ public class GeneralPanel extends Panel {
         // Aggressive units
         Group group_aggressive_units = new Group();
         addChild(group_aggressive_units);
-        CheckBox cb_aggressive_units = new CheckBox(settings.control.aggressive_units,
+        CheckBox cb_aggressive_units = new CheckBox(gameplay.aggressive_units,
                 AbstractOptionsMenu.i18n("aggressive_units"), AbstractOptionsMenu.i18n("aggressive_units_tip",
                         "Ctrl-A"));
-        cb_aggressive_units.addCheckBoxListener(marked -> settings.control.aggressive_units = marked);
+        cb_aggressive_units.addCheckBoxListener(marked -> gameplay.aggressive_units = marked);
         group_aggressive_units.addChild(cb_aggressive_units);
         cb_aggressive_units.place();
         group_aggressive_units.compileCanvas();
@@ -64,10 +71,10 @@ public class GeneralPanel extends Panel {
         group_mapmode.addChild(label_mapmode_none);
         Label label_mapmode_high = new Label(AbstractOptionsMenu.i18n("delay_high"), Skin.getSkin().getEditFont());
         group_mapmode.addChild(label_mapmode_high);
-        Slider slider_mapmode = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (settings.control.mapmode_delay
+        Slider slider_mapmode = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (camera.mapmode_delay
                 * MAX_VALUE));
         group_mapmode.addChild(slider_mapmode);
-        slider_mapmode.addValueListener(value -> settings.control.mapmode_delay = (float) value / (MAX_VALUE));
+        slider_mapmode.addValueListener(value -> camera.mapmode_delay = (float) value / (MAX_VALUE));
         label_mapmode_headline.place();
         label_mapmode_none.place(label_mapmode_headline, BOTTOM_LEFT);
         slider_mapmode.place(label_mapmode_none, RIGHT_MID);
@@ -84,11 +91,11 @@ public class GeneralPanel extends Panel {
         group_tooltip.addChild(label_tooltip_none);
         Label label_tooltip_high = new Label(AbstractOptionsMenu.i18n("delay_high"), Skin.getSkin().getEditFont());
         group_tooltip.addChild(label_tooltip_high);
-        Slider slider_tooltip = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (settings.control.tooltip_delay
+        Slider slider_tooltip = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (guiSettings.tooltip_delay
                 * MAX_VALUE));
         group_tooltip.addChild(slider_tooltip);
         slider_tooltip.addValueListener(value -> {
-            settings.control.tooltip_delay = (float) value / (MAX_VALUE);
+            guiSettings.tooltip_delay = (float) value / (MAX_VALUE);
             gui_root.setToolTipTimer();
         });
         label_tooltip_headline.place();

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.SettingsRegistry;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -15,6 +16,16 @@ import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 public final class AccountSettings implements Serializable, PropertiesSerializer {
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Retrieves the {@link AccountSettings} instance registered with the given settings registry.
+     *
+     * @param settings the settings registry
+     * @return the registered account settings
+     */
+    public static AccountSettings from(SettingsRegistry settings) {
+        return settings.get(AccountSettings.class);
+    }
 
     public String username = "";
     public String pw_digest = "";

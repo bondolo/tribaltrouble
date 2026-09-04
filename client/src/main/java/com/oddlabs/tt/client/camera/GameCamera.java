@@ -232,7 +232,7 @@ public final class GameCamera extends Camera {
 
     private void doPitch(float time_delta) {
         checkKeys();
-        boolean invert = viewer.getInputManager().getControlSettings().invert_camera_pitch;
+        boolean invert = CameraSettings.from(viewer.getEngine().getSettings()).invert_camera_pitch;
         if ((pitch_down && !invert) || (pitch_up && invert)) {
             getState().setTargetVertAngle(getState().getTargetVertAngle() - time_delta * ANGLE_DELTA);
             checkPosition();

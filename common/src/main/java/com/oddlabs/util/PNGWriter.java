@@ -14,12 +14,12 @@ import java.util.zip.DeflaterOutputStream;
  * Writes raw pixel data to PNG format.
  */
 public final class PNGWriter {
-    private static final byte[] PNG_SIGNATURE = new byte[] {
+    private static final byte[] PNG_SIGNATURE = new byte[]{
             (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A
     };
-    private static final byte[] CHUNK_IHDR = new byte[] { 'I', 'H', 'D', 'R' };
-    private static final byte[] CHUNK_IDAT = new byte[] { 'I', 'D', 'A', 'T' };
-    private static final byte[] CHUNK_IEND = new byte[] { 'I', 'E', 'N', 'D' };
+    private static final byte[] CHUNK_IHDR = new byte[]{'I', 'H', 'D', 'R'};
+    private static final byte[] CHUNK_IDAT = new byte[]{'I', 'D', 'A', 'T'};
+    private static final byte[] CHUNK_IEND = new byte[]{'I', 'E', 'N', 'D'};
 
     private PNGWriter() {
         // no instances

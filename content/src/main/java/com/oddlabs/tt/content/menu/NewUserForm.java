@@ -2,6 +2,7 @@ package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.matchmaking.Login;
 import com.oddlabs.matchmaking.LoginDetails;
+import com.oddlabs.tt.net.AccountSettings;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.gui.ButtonObject;
 import com.oddlabs.tt.gui.CancelButton;
@@ -161,8 +162,9 @@ public final class NewUserForm extends Form {
     private void doCreateUser(String username, LoginDetails login_details, String password,
             Login login) {
         var settings = main_menu.getGUIRoot().getGUI().getEngine().getSettings();
-        settings.account.username = username;
-        settings.account.pw_digest = password;
+        var account = AccountSettings.from(settings);
+        account.username = username;
+        account.pw_digest = password;
         Form connecting_form = new MatchmakingConnectingForm(this, main_menu, login, login_details);
         gui_root.addModalForm(connecting_form);
     }

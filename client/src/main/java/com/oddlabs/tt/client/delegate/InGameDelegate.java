@@ -18,7 +18,10 @@ import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.simulation.player.AI;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ResourceBundle;
 import java.util.Set;
+import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.GameplaySettings;
 
 /**
  * Base class for all delegates active during actual gameplay. Provides common functionality
@@ -176,6 +179,17 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
 
             if (event.consumeAction(GameAction.GLOBAL_MENU)) {
                 viewer.getInGameInfo().openInGameMenu(viewer, getCamera());
+                event.consume();
+                return;
+            }
+
+            if (event.consumeAction(GameAction.GLOBAL_AGGRESSIVE_UNITS)) {
+                var gameplay = GameplaySettings.from(viewer.getGUIRoot().getGUI().getEngine().getSettings());
+                gameplay.aggressive_units = !gameplay.aggressive_units;
+                ResourceBundle bundle = ResourceBundle.getBundle("com.oddlabs.tt.gui.GUIRoot");
+                viewer.getGUIRoot().getInfoPrinter().print(
+                        Utils.getBundleString(bundle, gameplay.aggressive_units
+                                ? "aggressive_unites_on" : "aggressive_unites_off"));
                 event.consume();
                 return;
             }
