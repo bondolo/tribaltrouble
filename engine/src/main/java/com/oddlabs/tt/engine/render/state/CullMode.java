@@ -2,25 +2,30 @@ package com.oddlabs.tt.engine.render.state;
 
 import org.lwjgl.opengl.GL11;
 
-public enum CullMode implements Mode {
+/**
+ * Polygon culling modes for rendering geometry.
+ */
+public enum CullMode {
     NONE {
         @Override
-        public void apply(RenderContext context) {
+        void apply(RenderContext context) {
             context.setCullFace(false);
         }
     },
     BACK {
         @Override
-        public void apply(RenderContext context) {
+        void apply(RenderContext context) {
             context.setCullFace(true);
             context.setCullFaceMode(GL11.GL_BACK);
         }
     },
     FRONT {
         @Override
-        public void apply(RenderContext context) {
+        void apply(RenderContext context) {
             context.setCullFace(true);
             context.setCullFaceMode(GL11.GL_FRONT);
         }
     };
+
+    abstract void apply(RenderContext context);
 }

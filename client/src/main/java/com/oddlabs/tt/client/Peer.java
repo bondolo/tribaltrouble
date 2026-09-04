@@ -10,7 +10,7 @@ import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.base.global.LocaleSettings;
 import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.FrameDriver;
+import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.engine.render.Renderer;
 import com.oddlabs.tt.base.global.Settings;
@@ -125,8 +125,8 @@ public final class Peer implements AutoCloseable {
         return framePacer;
     }
 
-    public void updateProgress(FrameDriver driver) {
-        renderer.updateProgress(driver);
+    public void updateProgress(GUI gui) {
+        renderer.updateProgress(gui::render);
     }
 
     public float getFPS() {
@@ -216,7 +216,7 @@ public final class Peer implements AutoCloseable {
         windowSettings.view_freq = new_mode.getFrequency();
     }
 
-    private void runGameLoop(FrameDriver driver) {
+    private void runGameLoop(GUI gui) {
         if (framePacer.isTimeFrozen() && !framePacer.isTimeStopped()) {
             framePacer.unfreezeTime();
         }
@@ -251,10 +251,10 @@ public final class Peer implements AutoCloseable {
                     && !isFinished()) {
                 selector.tick();
 
-                driver.tick();
+                gui.tick();
                 if (deterministic.log(window.isOpen() && window.isCloseRequested())) {
                     window.setCloseRequested(false);
-                    driver.onCloseRequested();
+                    gui.onCloseRequested();
                 }
                 framePacer.pathfindsPerTick.updateAbsolute(
                         com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame);
@@ -277,7 +277,7 @@ public final class Peer implements AutoCloseable {
                     }
                 }
                 if (!DebugFlags.frustum_freeze) {
-                    driver.pickHover();
+                    gui.pickHover();
                 }
             }
         }
@@ -367,11 +367,11 @@ public final class Peer implements AutoCloseable {
 
     private void runSession(ClientStartup startup, Instant startTime) {
         ClientStartup.Session session = startup.init(this, true);
-        session.driver().run(() -> runMainLoop(session, startTime));
+        runMainLoop(session, startTime);
     }
 
     private void runMainLoop(ClientStartup.Session session, Instant startTime) {
-        FrameDriver driver = session.driver();
+        GUI gui = session.gui();
         Runnable load_task = session.loadTask();
         boolean first_frame = true;
         boolean wasActive = window.isActive();
@@ -406,7 +406,7 @@ public final class Peer implements AutoCloseable {
             wasActive = isActive;
 
             long t2 = System.nanoTime();
-            runGameLoop(driver);
+            runGameLoop(gui);
             long t3 = System.nanoTime();
             totalRunGameLoopTime += (t3 - t2);
 
@@ -424,7 +424,7 @@ public final class Peer implements AutoCloseable {
             totalWindowUpdateTime += (t7 - t6);
 
             long t8 = System.nanoTime();
-            renderer.display(driver);
+            renderer.display(gui::render);
             long t9 = System.nanoTime();
             totalDisplayTime += (t9 - t8);
 

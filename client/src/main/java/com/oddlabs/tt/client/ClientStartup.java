@@ -1,21 +1,20 @@
 package com.oddlabs.tt.client;
 
-import com.oddlabs.tt.engine.render.FrameDriver;
-import org.jspecify.annotations.NonNull;
+import com.oddlabs.tt.gui.GUI;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Functional interface for initializing client systems, frame driver, and returning an optional background load task.
+ * Initializes client systems and GUI, returning an optional background load task.
  */
 @FunctionalInterface
 public interface ClientStartup {
     /**
-     * Container holding the initialized frame driver and optional background load task.
+     * Container holding the initialized GUI and optional background load task.
      *
-     * @param driver the active frame driver
+     * @param gui the active GUI
      * @param loadTask optional background runnable to execute after the first frame
      */
-    record Session(@NonNull FrameDriver driver, @Nullable Runnable loadTask) {
+    record Session(GUI gui, @Nullable Runnable loadTask) {
     }
 
     /**
@@ -23,8 +22,7 @@ public interface ClientStartup {
      *
      * @param engine the active client engine
      * @param firstProgress whether this is the initial application load
-     * @return client session holding the frame driver and load task
+     * @return client session holding the GUI and load task
      */
-    @NonNull
-    Session init(@NonNull Peer engine, boolean firstProgress);
+    Session init(Peer engine, boolean firstProgress);
 }
