@@ -7,7 +7,7 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.client.gui.NativeCampaignIcons;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -44,13 +44,13 @@ public final class NativeCampaign extends Campaign {
             .toArray(Island[]::new);
 
     public NativeCampaign(GUIRoot gui_root,
-            ClientEngine engine) {
+            Peer engine) {
         this(gui_root, new CampaignState(INITIAL_STATES), engine);
     }
 
     public NativeCampaign(GUIRoot gui_root,
             CampaignState campaign_state,
-            ClientEngine engine) {
+            Peer engine) {
         super(campaign_state, engine);
 
         if (getState().getCurrentIsland() == -1) {

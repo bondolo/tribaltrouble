@@ -13,7 +13,7 @@ import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.simulation.model.Difficulty;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.util.DeterministicSerializer;
@@ -42,14 +42,14 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
 
     private final MultiColumnComboBox<CampaignState> list_box;
     private final GUIRoot gui_root;
-    private final ClientEngine engine;
+    private final Peer engine;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
 
     private String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, ClientEngine engine) {
+    public LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer engine) {
         this.engine = engine;
         this.gui_root = gui_root;
         ColumnInfo[] infos = {
@@ -66,22 +66,23 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         refresh();
     }
 
-    public static <T> void saveSavegames(ClientEngine engine, CampaignState[] states,
+    public static <T> void saveSavegames(
+            Peer engine, CampaignState[] states,
             DeterministicSerializerLoopbackInterface<T> callback) {
         DeterministicSerializer.save(engine.getEventQueue().getDeterministic(), states,
                 getSaveSavegamesFile(engine), callback);
     }
 
-    private static Path getSaveSavegamesFile(ClientEngine engine) {
+    private static Path getSaveSavegamesFile(Peer engine) {
         return engine.getGamePaths().dataDir().resolve(SAVEGAMES_FILE_NAME);
     }
 
-    public static <T> void loadSavegames(ClientEngine engine, DeterministicSerializerLoopbackInterface<T> callback) {
+    public static <T> void loadSavegames(Peer engine, DeterministicSerializerLoopbackInterface<T> callback) {
         DeterministicSerializer.load(engine.getEventQueue().getDeterministic(), getLoadSavegamesFile(engine),
                 callback);
     }
 
-    private static Path getLoadSavegamesFile(ClientEngine engine) {
+    private static Path getLoadSavegamesFile(Peer engine) {
         Path file = getSaveSavegamesFile(engine);
         return !Files.isReadable(file) ? Utils.getInstallDir().resolve(SAVEGAMES_FILE_NAME) : file;
     }

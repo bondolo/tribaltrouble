@@ -1,6 +1,6 @@
 package com.oddlabs.tt.content.form;
 
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.gui.CheckBox;
@@ -35,9 +35,9 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
 public class GraphicsPanel extends Panel {
     private final Label label_pct;
-    private final ClientEngine engine;
+    private final Peer engine;
 
-    public GraphicsPanel(GUIRoot gui_root, Form options, ClientEngine engine) {
+    public GraphicsPanel(GUIRoot gui_root, Form options, Peer engine) {
         super(AbstractOptionsMenu.i18n("graphics_caption"));
         this.engine = engine;
         var labelFont = Skin.getSkin().getEditFont();

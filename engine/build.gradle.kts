@@ -20,7 +20,6 @@ dependencies {
     api(project(":common"))
     api(project(":simulation"))
     api(project(":procedural"))
-    api(project(":net"))
     api(project(":window"))
     api(project(":input"))
     api(project(":audio"))

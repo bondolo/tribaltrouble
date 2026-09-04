@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine;
+package com.oddlabs.tt.client;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.audio.AudioManager;
@@ -9,7 +9,6 @@ import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.base.global.LocaleSettings;
 import com.oddlabs.tt.window.WindowSettings;
-import com.oddlabs.tt.engine.render.ClientStartup;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.engine.render.FramePacer;
@@ -37,11 +36,10 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 /**
- * Desktop game client application host and game loop coordinator.
- * Manages the main game loop, window event pumping, audio updates, simulation pacing, and display presentation.
+ * Desktop client peer node coordinating the main game loop, window events, audio updates, simulation pacing, and presentation.
  */
-public final class ClientEngine implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(ClientEngine.class.getSimpleName());
+public final class Peer implements AutoCloseable {
+    private static final Logger logger = Logger.getLogger(Peer.class.getSimpleName());
     private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final boolean PROFILE = Boolean.getBoolean("com.oddlabs.tt.profile");
 
@@ -74,7 +72,7 @@ public final class ClientEngine implements AutoCloseable {
     private long totalGLFinishTime;
     private long totalLoopTime;
 
-    public ClientEngine(
+    public Peer(
             GamePaths gamePaths,
             Settings settings,
             Window window,
@@ -235,7 +233,7 @@ public final class ClientEngine implements AutoCloseable {
         framePacer.setLastFrameTime(current_time);
         Deterministic deterministic = event_queue.getDeterministic();
         if (time_diff > AnimationManager.MAX_STEP_MILLIS && !deterministic.isPlayback()) {
-            Logger.getLogger(ClientEngine.class.getName()).warning("Skipping large time diff: "
+            Logger.getLogger(Peer.class.getName()).warning("Skipping large time diff: "
                     + time_diff + " ms.");
             time_diff = 0;
         }
@@ -272,7 +270,7 @@ public final class ClientEngine implements AutoCloseable {
                     int checksum = event_queue.computeChecksum();
                     int logged_checksum = deterministic.log(checksum);
                     if (checksum != logged_checksum && framePacer.shouldComplainChecksum()) {
-                        Logger.getLogger(ClientEngine.class.getName()).severe(
+                        Logger.getLogger(Peer.class.getName()).severe(
                                 "********** ERROR: Checksum mismatch at tick " + event_queue
                                         .getHighPrecisionManager().getTick() + " | checksum = " + checksum
                                         + " | logged_checksum = " + logged_checksum + " **********");
@@ -337,7 +335,7 @@ public final class ClientEngine implements AutoCloseable {
         deterministic.log(settings);
         LocaleSettings locale = LocaleSettings.from(settings);
         Locale language = "default".equals(locale.language)
-                ? deterministic.log(ClientEngine.default_locale) : Locale.forLanguageTag(locale.language);
+                          ? deterministic.log(Peer.default_locale) : Locale.forLanguageTag(locale.language);
         IO.println("Using language " + language);
         Locale.setDefault(language);
 

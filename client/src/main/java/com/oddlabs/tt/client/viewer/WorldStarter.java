@@ -4,7 +4,7 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.Participant;
 import com.oddlabs.router.SessionID;
 import com.oddlabs.tt.base.util.LoadCallback;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.procedural.GeneratedLandscapeData;
@@ -23,7 +23,7 @@ import java.util.List;
  * and sets up the active gameplay session once loading is complete.
  */
 public final class WorldStarter implements LoadCallback<GUIRoot, UIRenderer> {
-    private final ClientEngine engine;
+    private final Peer engine;
     private final UnitInfo[] unit_infos;
     private final PlayerSlot[] player_slots;
     private final short player_slot;
@@ -36,7 +36,7 @@ public final class WorldStarter implements LoadCallback<GUIRoot, UIRenderer> {
     public WorldStarter(int session_id, WorldGenerator<GeneratedLandscapeData> generator,
             WorldParameters world_params,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot, InGameInfo ingame_info,
-            @Nullable WorldInitAction initial_action, ClientEngine engine) {
+            @Nullable WorldInitAction initial_action, Peer engine) {
         this.engine = engine;
         this.initial_action = initial_action;
         this.session_id = session_id;

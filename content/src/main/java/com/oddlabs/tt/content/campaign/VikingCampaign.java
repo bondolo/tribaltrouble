@@ -4,7 +4,7 @@ package com.oddlabs.tt.content.campaign;
 import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.client.gui.VikingCampaignIcons;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
@@ -58,13 +58,13 @@ public final class VikingCampaign extends Campaign {
             .map(c -> c.apply(this))
             .toArray(Island[]::new);
 
-    public VikingCampaign(GUIRoot gui_root, ClientEngine engine) {
+    public VikingCampaign(GUIRoot gui_root, Peer engine) {
         this(gui_root, new CampaignState(INITIAL_STATES), engine);
     }
 
     public VikingCampaign(GUIRoot gui_root,
             CampaignState campaign_state,
-            ClientEngine engine) {
+            Peer engine) {
         super(campaign_state, engine);
         if (getState().getCurrentIsland() == -1) {
             startIsland(gui_root, 0);

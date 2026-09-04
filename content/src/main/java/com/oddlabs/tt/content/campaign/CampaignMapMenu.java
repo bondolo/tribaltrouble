@@ -3,7 +3,7 @@ package com.oddlabs.tt.content.campaign;
 import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.QuestionForm;
@@ -25,14 +25,14 @@ import org.jspecify.annotations.Nullable;
 final class CampaignMapMenu extends Form {
     private static final Color.Linear DARK_GLASS = Color.Linear.BLACK.alpha(0.345f);
     private final GUIRoot gui_root;
-    private final ClientEngine engine;
+    private final Peer engine;
     private final GUIImage overlay;
     private final GUIImage logo;
     private final MenuButton resumeButton;
 
     private @Nullable Form current_menu;
 
-    CampaignMapMenu(GUIRoot gui_root, ClientEngine engine) {
+    CampaignMapMenu(GUIRoot gui_root, Peer engine) {
         this.gui_root = gui_root;
         this.engine = engine;
 

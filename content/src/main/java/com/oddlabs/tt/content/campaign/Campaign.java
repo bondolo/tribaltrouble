@@ -4,7 +4,7 @@ import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.client.trigger.GameOverDelayTrigger;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MessageForm;
@@ -25,10 +25,10 @@ public abstract class Campaign {
 
     private final CampaignState state;
     private final AudioManager audioManager;
-    private final ClientEngine engine;
+    private final Peer engine;
     private CampaignState[] campaign_states; // for saving
 
-    public Campaign(CampaignState state, ClientEngine engine) {
+    public Campaign(CampaignState state, Peer engine) {
         this.state = state;
         this.engine = engine;
         this.audioManager = engine.getAudioManager();
@@ -42,7 +42,7 @@ public abstract class Campaign {
         return audioManager;
     }
 
-    public final ClientEngine getEngine() {
+    public final Peer getEngine() {
         return engine;
     }
 

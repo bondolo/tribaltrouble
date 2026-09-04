@@ -43,7 +43,7 @@ import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.net.MatchmakingListener;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.font.Font;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import org.jspecify.annotations.Nullable;
@@ -68,7 +68,7 @@ public final class SelectGameMenu extends Form implements MatchmakingListener, T
     private static final int PANEL_INDEX_CHAT = 1;
     private static final int PANEL_INDEX_HIGHSCORE = 2;
 
-    private final ClientEngine engine;
+    private final Peer engine;
     private final Menu main_menu;
     private final ProfilesForm profiles_form;
     private final Panel[] panels = new Panel[3];

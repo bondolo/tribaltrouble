@@ -19,7 +19,7 @@ import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.client.render.DefaultRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.client.render.RacesAssetsLoader;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.engine.render.CameraState;
@@ -87,7 +87,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     private static final String[] GAMESPEED_STRINGS = new String[]{"paused", "slow", "normal", "fast", "ludicrous"};
 
-    private final ClientEngine engine;
+    private final Peer engine;
     private final GameCamera camera;
     private final ActionButtonPanel panel;
     private final SelectionDelegate delegate;
@@ -111,7 +111,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     private final InGameChatHistory in_game_chat_history;
 
     public WorldViewer(final GUIRoot gui_root,
-            ClientEngine engine,
+            Peer engine,
             WorldParameters world_params, InGameInfo ingame_info, WorldGenerator<GeneratedLandscapeData> generator,
             PlayerSlot[] player_slots, UnitInfo[] unit_infos, short player_slot,
             SessionID session_id) {
@@ -347,7 +347,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return in_game_chat_history;
     }
 
-    public ClientEngine getEngine() {
+    public Peer getEngine() {
         return engine;
     }
 

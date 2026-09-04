@@ -1,6 +1,6 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client;
 
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.engine.render.FrameDriver;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -26,5 +26,5 @@ public interface ClientStartup {
      * @return client session holding the frame driver and load task
      */
     @NonNull
-    Session init(@NonNull ClientEngine engine, boolean firstProgress);
+    Session init(@NonNull Peer engine, boolean firstProgress);
 }

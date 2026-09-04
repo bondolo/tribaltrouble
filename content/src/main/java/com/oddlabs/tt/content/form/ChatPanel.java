@@ -2,15 +2,13 @@ package com.oddlabs.tt.content.form;
 
 import com.oddlabs.tt.gui.*;
 import com.oddlabs.tt.gui.event.*;
-import com.oddlabs.tt.client.gui.*;
 
 import com.oddlabs.matchmaking.ChatRoomUser;
 import com.oddlabs.tt.client.viewer.ChatCommand;
 import com.oddlabs.tt.gui.event.EnterListener;
 import com.oddlabs.tt.gui.event.ItemChosenListener;
 import com.oddlabs.tt.gui.event.MouseClickListener;
-import com.oddlabs.tt.gui.event.RowListener;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMessage;
 import com.oddlabs.tt.net.ChatRoomInfo;
@@ -35,7 +33,7 @@ public class ChatPanel extends Panel implements ChatListener {
     private final TextBox chat_box;
     private final EditLine chat_line;
     private final GUIRoot gui_root;
-    private final ClientEngine engine;
+    private final Peer engine;
 
     private final int user_list_width;
 
@@ -49,7 +47,7 @@ public class ChatPanel extends Panel implements ChatListener {
         return Utils.getBundleString(getBundle(), key);
     }
 
-    public ChatPanel(GUIRoot gui_root, ClientEngine engine, ChatRoomInfo info, int compare_width, int compare_height,
+    public ChatPanel(GUIRoot gui_root, Peer engine, ChatRoomInfo info, int compare_width, int compare_height,
             int button_width, EnterListener chat_listener, MouseClickListener leave_listener) {
         super(getI18N("chat"));
         this.gui_root = gui_root;

@@ -14,7 +14,7 @@ import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
 import com.oddlabs.tt.base.global.LocaleSettings;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +29,7 @@ public class LanguagePanel extends Panel {
         super(AbstractOptionsMenu.i18n("language_caption"));
         Settings settings = gui_root.getGUI().getSettings();
         LocaleSettings localeSettings = LocaleSettings.from(settings);
-        Locale defaultLocale = ClientEngine.getDefaultLocale();
+        Locale defaultLocale = Peer.getDefaultLocale();
 
         // Language
         Group language_group = new Group();

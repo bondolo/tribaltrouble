@@ -9,8 +9,8 @@ import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.render.ClientStateInitializer;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.engine.ClientEngine;
-import com.oddlabs.tt.engine.render.ClientStartup;
+import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.client.ClientStartup;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.LocalInput;
@@ -92,7 +92,7 @@ public final class Main {
 
                 Network network = new Network(new com.oddlabs.net.NetworkSelector(eventQueue.getDeterministic(),
                         eventQueue::getMillis));
-                ClientEngine engine = new ClientEngine(gamePaths, settings, window, eventQueue, network, audioManager);
+                Peer engine = new Peer(gamePaths, settings, window, eventQueue, network, audioManager);
                 engine.run(
                         (clientEngine, firstProgress) -> {
                             ClientStateInitializer.init(audioManager);
