@@ -10,7 +10,7 @@ public final class InGameOptionsMenu extends AbstractOptionsMenu {
     private final WorldViewer viewer;
 
     public InGameOptionsMenu(WorldViewer viewer) {
-        super(viewer.getGUIRoot());
+        super(viewer.getGUIRoot(), viewer.getEngine());
         this.viewer = viewer;
         chooseGamespeed(getGamespeed());
     }

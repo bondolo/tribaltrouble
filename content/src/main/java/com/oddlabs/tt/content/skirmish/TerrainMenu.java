@@ -159,9 +159,9 @@ public final class TerrainMenu extends Group {
     }
 
     @SuppressWarnings("unchecked")
-    public TerrainMenu(GUIRoot gui_root,
+    public TerrainMenu(GUIRoot gui_root, ClientEngine engine,
             @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
-        this.engine = gui_root.getGUI().getEngine();
+        this.engine = engine;
         this.network = engine.getNetwork().getSelector();
         this.gui_root = gui_root;
         this.audioManager = engine.getAudioManager();
@@ -738,7 +738,8 @@ public final class TerrainMenu extends Group {
                 ? multiplayer_setup.getWorldParameters() : skirmish_setup.getWorldParameters();
         IslandConfig islandConfig = multiplayer
                 ? multiplayer_setup.getIslandConfig() : skirmish_setup.getIslandConfig();
-        GameNetwork game_network = Menu.startNewGame(gui_root,
+        GameNetwork game_network = Menu.startNewGame(engine,
+                gui_root,
                 menu,
                 parameters,
                 ingame_info,

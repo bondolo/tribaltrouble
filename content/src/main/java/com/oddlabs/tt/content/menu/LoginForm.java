@@ -47,7 +47,7 @@ public final class LoginForm extends Form {
     public LoginForm(Menu main_menu) {
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
-        var settings = gui_root.getGUI().getEngine().getSettings();
+        var settings = gui_root.getGUI().getSettings();
         var account = AccountSettings.from(settings);
         boolean remember = account.remember_login;
         if (!remember) {
@@ -143,7 +143,7 @@ public final class LoginForm extends Form {
     }
 
     private void doLogin(String username, String password, Login login, boolean remember_login) {
-        var settings = gui_root.getGUI().getEngine().getSettings();
+        var settings = gui_root.getGUI().getSettings();
         var account = AccountSettings.from(settings);
         if (remember_login) {
             account.username = username;

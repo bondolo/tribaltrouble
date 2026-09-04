@@ -12,14 +12,14 @@ import com.oddlabs.tt.content.tutorial.TutorialForm;
  * The game main menu
  */
 public final class MainMenu extends Menu {
-    public MainMenu(GUIRoot gui_root, Camera camera) {
-        super(gui_root, camera);
+    public MainMenu(GUIRoot gui_root, Camera camera, com.oddlabs.tt.engine.ClientEngine engine) {
+        super(gui_root, camera, engine);
         reload();
     }
 
     private void addGameTypeButtons() {
         MenuButton tutorial = new MenuButton(Menu.i18n("tutorial"), COLOR_NORMAL, COLOR_ACTIVE);
-        tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(getGUIRoot())));
+        tutorial.addMouseClickListener((_, _, _, _) -> setMenu(new TutorialForm(getGUIRoot(), engine)));
         addChild(tutorial);
 
         MenuButton campaign_menu = new MenuButton(Menu.i18n("campaign"), COLOR_NORMAL, COLOR_ACTIVE);

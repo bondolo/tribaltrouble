@@ -136,7 +136,7 @@ public final class ClientEngine implements AutoCloseable {
         return renderer.getFPS();
     }
 
-    public Locale getDefaultLocale() {
+    public static Locale getDefaultLocale() {
         return default_locale;
     }
 

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.form;
 
 import com.oddlabs.matchmaking.Game;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.gui.CancelButton;
@@ -36,11 +37,14 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     private final MultiplayerLobby owner;
     private final GUIRoot gui_root;
     private final GameNetwork<GUIRoot, UIRenderer> game_network;
+    private final AudioManager audioManager;
 
-    public ConnectingForm(GameNetwork<GUIRoot, UIRenderer> game_network, GUIRoot gui_root, MultiplayerLobby owner) {
+    public ConnectingForm(GameNetwork<GUIRoot, UIRenderer> game_network, GUIRoot gui_root, MultiplayerLobby owner,
+            AudioManager audioManager) {
         this.game_network = game_network;
         this.gui_root = gui_root;
         this.owner = owner;
+        this.audioManager = audioManager;
 
         Label info_label = new Label(i18n("connecting"), Skin.getSkin().getHeadlineFont());
         addChild(info_label);
@@ -86,7 +90,8 @@ public final class ConnectingForm extends Form implements ConfigurationListener<
     @Override
     public void gameStarted(LoadCallback<GUIRoot, UIRenderer> loadCallback) {
         remove();
-        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), loadCallback);
+        ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), audioManager,
+                loadCallback);
     }
 
     @Override

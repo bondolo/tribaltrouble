@@ -1,13 +1,14 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.client.gui.CampaignIcons;
+import com.oddlabs.tt.client.trigger.GameOverDelayTrigger;
+import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.client.trigger.GameOverDelayTrigger;
+import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.util.DeterministicSerializerLoopbackInterface;
 
 import java.util.ResourceBundle;
@@ -24,11 +25,13 @@ public abstract class Campaign {
 
     private final CampaignState state;
     private final AudioManager audioManager;
+    private final ClientEngine engine;
     private CampaignState[] campaign_states; // for saving
 
-    public Campaign(CampaignState state, AudioManager audioManager) {
+    public Campaign(CampaignState state, ClientEngine engine) {
         this.state = state;
-        this.audioManager = audioManager;
+        this.engine = engine;
+        this.audioManager = engine.getAudioManager();
     }
 
     public final CampaignState getState() {
@@ -37,6 +40,10 @@ public abstract class Campaign {
 
     public final AudioManager getAudioManager() {
         return audioManager;
+    }
+
+    public final ClientEngine getEngine() {
+        return engine;
     }
 
     public final void pushDelegate(GUI gui) {

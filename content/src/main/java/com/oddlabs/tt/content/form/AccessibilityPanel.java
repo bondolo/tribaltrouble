@@ -30,7 +30,7 @@ public final class AccessibilityPanel extends Panel {
 
     public AccessibilityPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("accessibility_caption"));
-        AccessibilitySettings accessibility = AccessibilitySettings.from(gui_root.getGUI().getEngine().getSettings());
+        AccessibilitySettings accessibility = AccessibilitySettings.from(gui_root.getGUI().getSettings());
 
         final int SLIDER_PADDING = Skin.getSkin().getGroupData().group().getLeftOffset() + Skin.getSkin().getGroupData()
                 .group().getRightOffset();

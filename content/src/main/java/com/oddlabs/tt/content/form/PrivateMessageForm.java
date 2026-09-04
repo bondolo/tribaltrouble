@@ -23,6 +23,9 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
+/**
+ * Modal form for sending a private message to a specific user.
+ */
 public final class PrivateMessageForm extends Form {
     private static final int BUTTON_WIDTH = 100;
     private static final int EDITLINE_WIDTH = 240;
@@ -36,8 +39,8 @@ public final class PrivateMessageForm extends Form {
     private final String nick;
     private final MatchmakingClient client;
 
-    public PrivateMessageForm(GUIRoot gui_root, String nick) {
-        this.client = gui_root.getGUI().getEngine().getNetwork().getMatchmakingClient();
+    public PrivateMessageForm(MatchmakingClient client, String nick) {
+        this.client = client;
         this.nick = nick;
         // headline
         Label label_headline = new Label(i18n("private_message_caption"), Skin.getSkin().getHeadlineFont());

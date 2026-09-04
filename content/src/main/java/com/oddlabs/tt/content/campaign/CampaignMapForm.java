@@ -3,6 +3,7 @@ package com.oddlabs.tt.content.campaign;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.content.menu.Menu;
+import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIIcon;
@@ -69,7 +70,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                                 i18n("native_campaign_opened"),
                                 null,
                                 Origin.AT_START,
-                                () -> closeCampaign(gui_root.getGUI()));
+                                () -> closeCampaign(campaign.getEngine(), gui_root.getGUI()));
                         gui_root.addModalForm(dialog);
                     };
                     CampaignDialogForm dialog = new CampaignDialogForm(i18n("viking_header"),
@@ -78,7 +79,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                             Origin.AT_START,
                             runnable_next);
                     gui_root.addModalForm(dialog);
-                    var settings = gui_root.getGUI().getEngine().getSettings();
+                    var settings = gui_root.getGUI().getSettings();
                     settings.setHasNativeCampaign(true);
                     settings.save();
                 }
@@ -94,7 +95,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
                             i18n("native_campaign_completed"),
                             campaign.getIcons().getFaces()[0],
                             Origin.AT_START,
-                            () -> closeCampaign(gui_root.getGUI()));
+                            () -> closeCampaign(campaign.getEngine(), gui_root.getGUI()));
                     gui_root.addModalForm(dialog);
                 }
             }
@@ -219,7 +220,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
 
         if (event.getPhase() == InputPhase.PRESSED) {
             if (event.consumeAction(GameAction.GLOBAL_MENU) || event.consumeAction(GameAction.UI_CANCEL)) {
-                getGUIRoot().addModalForm(new CampaignMapMenu(getGUIRoot()));
+                getGUIRoot().addModalForm(new CampaignMapMenu(getGUIRoot(), campaign.getEngine()));
                 event.consume();
                 return;
             }
@@ -269,8 +270,8 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         }
     }
 
-    public static void closeCampaign(GUI gui) {
-        Menu.startMenu(gui);
+    public static void closeCampaign(ClientEngine engine, GUI gui) {
+        Menu.startMenu(engine, gui);
     }
 
     @Override
@@ -281,13 +282,13 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     @Override
     protected void doAdd() {
         super.doAdd();
-        getGUIRoot().getGUI().getEngine().getEventQueue().getManager().registerAnimation(this);
+        getGUIRoot().getGUI().getAnimationManager().registerAnimation(this);
     }
 
     @Override
     protected void doRemove() {
         super.doRemove();
-        getGUIRoot().getGUI().getEngine().getEventQueue().getManager().removeAnimation(this);
+        getGUIRoot().getGUI().getAnimationManager().removeAnimation(this);
     }
 
     @Override

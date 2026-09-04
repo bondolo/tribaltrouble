@@ -89,7 +89,7 @@ public class KeyBindingDialog extends Form {
             Key key = event.getKeyCode();
 
             if (event.hasAction(GameAction.GLOBAL_QUIT)) {
-                guiRoot.addModalForm(new QuitForm(guiRoot.getGUI().getEngine()::shutdown));
+                guiRoot.addModalForm(new QuitForm(guiRoot.getGUI().getShutdownHandler()));
                 event.consume();
                 return;
             }

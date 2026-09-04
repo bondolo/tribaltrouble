@@ -65,7 +65,7 @@ public final class GUIRoot extends GUIObject {
     GUIRoot(GUI gui) {
         this.gui = gui;
         this.info_printer = new InfoPrinter(this, 4, Skin.getSkin().getEditFont());
-        this.status = new Status(gui.getEngine());
+        this.status = new Status(gui.getSettings(), gui.getFpsSupplier());
         this.tool_tip_timer = new TimerAnimation(gui.getAnimationManager(), this::timerUpdate, 0);
         this.input_state = new InputState(this);
         setPos(0, 0);
@@ -182,7 +182,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     public void setToolTipTimer() {
-        GUISettings guiSettings = GUISettings.from(gui.getEngine().getSettings());
+        GUISettings guiSettings = GUISettings.from(gui.getSettings());
         tool_tip_timer.setTimerInterval(guiSettings.tooltip_delay
                 * ToolTipBox.MAX_DELAY_SECONDS);
     }
@@ -336,7 +336,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     public float calculateEffectiveScale(int width, int height) {
-        GUISettings guiSettings = GUISettings.from(gui.getEngine().getSettings());
+        GUISettings guiSettings = GUISettings.from(gui.getSettings());
         return calculateEffectiveScale(width, height, guiSettings.ui_scale);
     }
 
@@ -362,7 +362,7 @@ public final class GUIRoot extends GUIObject {
         if (width <= 0 || height <= 0) return;
 
         effective_scale = calculateEffectiveScale(width, height);
-        float density = gui.getEngine().getWindow().getPixelDensity();
+        float density = gui.getWindow().getPixelDensity();
         physical_scale = effective_scale * density;
 
         var pointerInput = gui.getLocalInput().getPointerInput();
@@ -392,7 +392,7 @@ public final class GUIRoot extends GUIObject {
                 // GLOBAL_MENU removed because it requires viewer which GUIRoot doesn't have.
 
                 if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
-                    gui.getEngine().toggleFullscreen();
+                    gui.toggleFullscreen();
                     consumed = true;
                 }
 
@@ -454,7 +454,7 @@ public final class GUIRoot extends GUIObject {
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_START_RECORDING)) {
-                        gui.getEngine().startMovieRecording();
+                        gui.startMovieRecording();
                         consumed = true;
                     }
                     if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {

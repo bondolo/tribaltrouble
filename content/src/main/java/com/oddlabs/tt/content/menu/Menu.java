@@ -112,9 +112,9 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private @Nullable GUIImage overlay;
     private @Nullable GUIImage logo;
 
-    protected Menu(GUIRoot gui_root, Camera camera) {
+    protected Menu(GUIRoot gui_root, Camera camera, ClientEngine engine) {
         super(gui_root, camera);
-        this.engine = gui_root.getGUI().getEngine();
+        this.engine = engine;
         setCanFocus(true);
         setFocusCycle(true);
     }
@@ -152,7 +152,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     }
 
     protected final void addDefaultOptionsButton() {
-        addOptionsButton(() -> new OptionsMenu(getGUIRoot()));
+        addOptionsButton(() -> new OptionsMenu(getGUIRoot(), engine));
     }
 
     final void addOptionsButton(FormFactory<?> factory) {
@@ -329,21 +329,21 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 unit_infos, player_slot) -> new WorldStarter(session_id,
                         (WorldGenerator<GeneratedLandscapeData>) generator, world_params, player_slots, unit_infos,
                         player_slot, ingame_info,
-                        new DefaultWorldInitAction());
+                        new DefaultWorldInitAction(), engine);
         Client<GUIRoot, UIRenderer> client = new Client<>(null, networkSelector, matchmakingClient, chatHub, host_id,
                 starterFactory,
                 new DefaultPlayerSlotHandler());
         GameNetwork<GUIRoot, UIRenderer> game_network = new GameNetwork<>(null, client);
-        ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner);
+        ConnectingForm connecting_form = new ConnectingForm(game_network, getGUIRoot(), owner, engine
+                .getAudioManager());
         client.setConfigurationListener(connecting_form);
         gui_root.addModalForm(connecting_form);
         return game_network;
     }
 
-    public static GameNetwork<GUIRoot, UIRenderer> startNewGame(GUIRoot gui_root,
+    public static GameNetwork<GUIRoot, UIRenderer> startNewGame(ClientEngine engine, GUIRoot gui_root,
             MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
             WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names) {
-        var engine = gui_root.getGUI().getEngine();
         boolean multiplayer = ingame_info.isMultiplayer();
         WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
         InetAddress address = multiplayer ? null : com.oddlabs.util.Utils.getLoopbackAddress();
@@ -358,12 +358,13 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 player_slots, unit_infos,
                 player_slot) -> new WorldStarter(
                         session_id, (WorldGenerator<GeneratedLandscapeData>) gen,
-                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action);
+                        world_params, player_slots, unit_infos, player_slot, ingame_info, init_action, engine);
         Client<GUIRoot, UIRenderer> client = new Client<>(server::close, networkSelector, matchmakingClient,
                 chatHub, -1, starterFactory, new DefaultPlayerSlotHandler());
         GameNetwork<GUIRoot, UIRenderer> game_network = new GameNetwork<>(server, client);
         if (multiplayer) {
-            ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner);
+            ConnectingForm connecting_form = new ConnectingForm(game_network, gui_root, owner, engine
+                    .getAudioManager());
             client.setConfigurationListener(connecting_form);
             gui_root.addModalForm(connecting_form);
         } else {
@@ -388,7 +389,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
                     ProgressForm.Mode mode = ingame_info.showLoadingHints()
                             ? ProgressForm.Mode.GAME_LOAD
                             : ProgressForm.Mode.TUTORIAL;
-                    ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), loadCallback,
+                    ProgressForm.setProgressForm(game_network.getClient().getNetwork(), gui_root.getGUI(), engine
+                            .getAudioManager(), loadCallback,
                             mode);
                 }
             });
@@ -396,27 +398,25 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static void startMenu(GUI gui) {
-        setupMainMenu(gui, false);
+    public static void startMenu(ClientEngine engine, GUI gui) {
+        setupMainMenu(engine, gui, false);
     }
 
-    public static @Nullable Runnable setupMainMenu(GUI gui,
+    public static @Nullable Runnable setupMainMenu(ClientEngine engine, GUI gui,
             final boolean first_progress) {
-        var engine = gui.getEngine();
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
                 LandscapeConfig.LANDSCAPE_VEGETATION, LandscapeConfig.LANDSCAPE_RESOURCES,
                 LandscapeConfig.LANDSCAPE_SEED);
         final WorldGenerator<GeneratedLandscapeData> generator = new IslandGenerator(islandConfig);
         ProgressForm.Mode mode = first_progress ? ProgressForm.Mode.STARTUP : ProgressForm.Mode.MENU_RETURN;
-        return ProgressForm.setProgressForm(engine.getNetwork().getSelector(), gui, (
-                GUIRoot gui_root) -> finishMainMenu(gui_root,
+        return ProgressForm.setProgressForm(engine.getNetwork().getSelector(), gui, engine.getAudioManager(), (
+                GUIRoot gui_root) -> finishMainMenu(engine, gui_root,
                         first_progress, generator), mode);
     }
 
-    private static UIRenderer finishMainMenu(GUIRoot gui_root,
+    private static UIRenderer finishMainMenu(ClientEngine engine, GUIRoot gui_root,
             boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator) {
-        var engine = gui_root.getGUI().getEngine();
         engine.getFramePacer().freezeTime();
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
@@ -448,7 +448,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 gui_root.getWidth(), gui_root.getHeight());
         engine.getAudioManager().setMusic(AudioAssets.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(gui_root,
-                new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager));
+                new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager), engine);
         gui_root.pushDelegate(main_menu);
         AudioSettings audioSettings = AudioSettings.from(engine.getSettings());
         if (first_progress && audioSettings.warning_no_sound

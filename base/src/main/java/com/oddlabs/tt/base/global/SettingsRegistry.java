@@ -10,7 +10,7 @@ public interface SettingsRegistry {
      * Retrieves a registered {@link PropertiesSerializer} by its class.
      *
      * @param type the settings component class
-     * @param <T>  the settings component type
+     * @param <T> the settings component type
      * @return the registered instance
      * @throws NoSuchElementException if no instance is registered for the specified type
      */

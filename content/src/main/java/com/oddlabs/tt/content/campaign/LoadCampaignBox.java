@@ -49,8 +49,8 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener) {
-        this.engine = gui_root.getGUI().getEngine();
+    public LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, ClientEngine engine) {
+        this.engine = engine;
         this.gui_root = gui_root;
         ColumnInfo[] infos = {
                 new ColumnInfo(i18n("name"), WIDTH_NAME),

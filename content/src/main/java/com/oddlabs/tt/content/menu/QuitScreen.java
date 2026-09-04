@@ -57,7 +57,7 @@ public final class QuitScreen extends CameraDelegate<Camera> implements Updatabl
 
     private void quit() {
         if (key_pressed && time_out)
-            getGUIRoot().getGUI().getEngine().shutdown();
+            getGUIRoot().getGUI().getShutdownHandler().run();
     }
 
     @Override

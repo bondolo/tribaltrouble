@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.form;
 
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.base.util.Utils;
@@ -62,77 +63,68 @@ public final class ProgressForm {
     private long lastUpdateTime;
     private float currentProgress;
 
-    public static void setProgressForm(NetworkSelector network, GUI gui,
+    /**
+     * Visual layout parameters for a progress screen.
+     */
+    private record Layout(
+            String texture,
+            int textureWidth,
+            int textureHeight,
+            int imageWidth,
+            int imageHeight,
+            int progressX,
+            int progressY,
+            int progressWidth,
+            boolean showProgressBar,
+            boolean firstProgress
+    ) {}
+
+    public static void setProgressForm(NetworkSelector network, GUI gui, @Nullable AudioManager audioManager,
             LoadCallback<GUIRoot, UIRenderer> callback) {
-        setProgressForm(network, gui, callback, Mode.GAME_LOAD);
+        setProgressForm(network, gui, audioManager, callback, Mode.GAME_LOAD);
     }
 
     public static @Nullable Runnable setProgressForm(NetworkSelector network, final GUI gui,
+            @Nullable AudioManager audioManager,
             final LoadCallback<GUIRoot, UIRenderer> callback, final Mode mode) {
-        String texture;
-        int texture_width;
-        int texture_height;
-        int image_width;
-        int image_height;
-        int progress_x;
-        int progress_y;
-        int progress_width;
         boolean show_tip = (mode == Mode.GAME_LOAD);
-        boolean show_progress_bar = (mode != Mode.MENU_RETURN);
-        boolean first_progress = (mode == Mode.STARTUP);
+        Layout layout = switch (mode) {
+            case STARTUP -> new Layout("/textures/gui/oddlabs", 1024, 1024, 800, 600, 320, 145, 200, true, true);
+            case GAME_LOAD, TUTORIAL -> new Layout("/textures/gui/startup", 1024, 1024, 800, 600, 250, 145, 300, true, false);
+            case MENU_RETURN -> new Layout("/textures/gui/startup", 1024, 1024, 800, 600, 250, 145, 300, false, false);
+        };
 
-        if (mode == Mode.STARTUP) {
-            texture = "/textures/gui/oddlabs";
-            texture_width = 1024;
-            texture_height = 1024;
-            image_width = 800;
-            image_height = 600;
-            progress_x = 320;
-            progress_y = 145;
-            progress_width = 200;
-        } else {
-            texture = "/textures/gui/startup";
-            texture_width = 1024;
-            texture_height = 1024;
-            image_width = 800;
-            image_height = 600;
-            progress_x = 250;
-            progress_y = 145;
-            progress_width = 300;
-        }
+        ProgressForm form = gui.callWithSkin(() -> new ProgressForm(network, gui, audioManager,
+                callback, mode, layout, show_tip));
 
-        ProgressForm form = gui.callWithSkin(() -> new ProgressForm(network, gui, callback, mode,
-                texture, texture_width, texture_height, image_width, image_height, progress_x, progress_y,
-                progress_width, show_progress_bar, show_tip));
-
-        return first_progress ? form.getLoadTask() : null;
+        return layout.firstProgress() ? form.getLoadTask() : null;
     }
 
-    private ProgressForm(NetworkSelector network, final GUI gui, final LoadCallback<GUIRoot, UIRenderer> callback,
-            Mode mode,
-            String texture_name, int texture_width, int texture_height, int image_width, int image_height,
-            int progress_x, int progress_y, int progress_width,
-            boolean show_progress_bar, boolean show_tip) {
+    private ProgressForm(NetworkSelector network, final GUI gui, @Nullable AudioManager audioManager,
+            final LoadCallback<GUIRoot, UIRenderer> callback,
+            Mode mode, Layout layout, boolean show_tip) {
         this.network = network;
         this.gui = gui;
-        this.load_fadable = () -> gui.runWithSkin(() -> executeCallback(callback));
-        gui.getEngine().stopSound();
+        this.load_fadable = () -> gui.runWithSkin(() -> executeCallback(callback, audioManager));
+        if (audioManager != null) {
+            audioManager.stopSources();
+        }
         var gui_root = (mode == Mode.STARTUP) ? gui.getGUIRoot() : gui.newFade(load_fadable, null);
         CameraDelegate<NullCamera> delegate = new NullDelegate(gui_root, false);
         gui_root.pushDelegate(delegate);
 
         int screen_width = gui_root.getWidth();
         int screen_height = gui_root.getHeight();
-        progress_width = (int) (progress_width * (float) screen_width / image_width);
-        progress_x = (int) (progress_x * (float) screen_width / image_width);
-        progress_y = (int) (progress_y * (float) screen_height / image_height);
+        int progress_width = (int) (layout.progressWidth() * (float) screen_width / layout.imageWidth());
+        int progress_x = (int) (layout.progressX() * (float) screen_width / layout.imageWidth());
+        int progress_y = (int) (layout.progressY() * (float) screen_height / layout.imageHeight());
 
-        GUIImage image = new GUIImage(screen_width, screen_height, 0f, 0f, (float) image_width / texture_width,
-                (float) image_height / texture_height, texture_name);
+        GUIImage image = new GUIImage(screen_width, screen_height, 0f, 0f, (float) layout.imageWidth() / layout.textureWidth(),
+                (float) layout.imageHeight() / layout.textureHeight(), layout.texture());
         image.setPos(0, 0);
         delegate.addChild(image);
 
-        if (show_progress_bar) {
+        if (layout.showProgressBar()) {
             ProgressBar bar = new ProgressBar(progress_width, false);
             progress_y -= bar.getHeight();
             bar.setPos(progress_x, progress_y);
@@ -161,8 +153,12 @@ public final class ProgressForm {
         return load_fadable::fadingDone;
     }
 
-    private void executeCallback(LoadCallback<GUIRoot, UIRenderer> callback) {
-        Fadable start_sources_fadable = () -> gui.getEngine().startSound();
+    private void executeCallback(LoadCallback<GUIRoot, UIRenderer> callback, @Nullable AudioManager audioManager) {
+        Fadable start_sources_fadable = () -> {
+            if (audioManager != null) {
+                audioManager.startSources();
+            }
+        };
 
         GUIRoot client_root = gui.createRoot();
         ProgressListener listener = new FormProgressListener();

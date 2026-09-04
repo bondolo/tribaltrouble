@@ -34,7 +34,8 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
 
     private static final Logger logger = Logger.getLogger(Settings.class.getName());
 
-    private final ConcurrentMap<Class<? extends PropertiesSerializer>, PropertiesSerializer> serializers = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<? extends PropertiesSerializer>, PropertiesSerializer> serializers
+            = new ConcurrentHashMap<>();
 
     private transient final @Nullable Path game_dir;
 
