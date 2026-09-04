@@ -12,7 +12,6 @@ import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.MouseClickListener;
 import com.oddlabs.tt.client.viewer.WorldViewer;
-import com.oddlabs.tt.content.menu.MainMenu;
 import com.oddlabs.tt.content.tutorial.trigger.BuildingChieftainTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.PlacingDelegateTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.ScrollTrigger;
@@ -20,16 +19,7 @@ import com.oddlabs.tt.content.tutorial.trigger.SelectArmoryTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.SelectTowerTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialOverTrigger;
 import com.oddlabs.tt.content.tutorial.trigger.TutorialTrigger;
-import com.oddlabs.tt.engine.ClientEngine;
-import com.oddlabs.tt.gui.CancelButton;
-import com.oddlabs.tt.gui.Form;
-import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.gui.HorizButton;
-import com.oddlabs.tt.gui.Label;
-import com.oddlabs.tt.gui.MouseButton;
-import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.gui.Skin;
-import com.oddlabs.tt.gui.event.MouseClickListener;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.client.viewer.WorldInitAction;
@@ -67,13 +57,13 @@ public final class TutorialForm extends Form {
     }
 
     private final GUIRoot gui_root;
-    private final ClientEngine engine;
+    private final Peer engine;
 
     private static String formatTutorial(int tutorial_number) {
         return i18n("tutorial", Integer.toString(tutorial_number));
     }
 
-    public TutorialForm(GUIRoot gui_root, ClientEngine engine) {
+    public TutorialForm(GUIRoot gui_root, Peer engine) {
         this.gui_root = gui_root;
         this.engine = engine;
         Label headline = new Label(i18n("tutorial_caption"), Skin.getSkin().getHeadlineFont());
@@ -152,7 +142,8 @@ public final class TutorialForm extends Form {
         TutorialTrigger create(WorldViewer viewer);
     }
 
-    private static void startNewGame(ClientEngine engine, GUIRoot gui_root,
+    private static void startNewGame(
+            Peer engine, GUIRoot gui_root,
             TriggerFactory factory, int tutorial_num) {
         TutorialInGameInfo ingame_info = new TutorialInGameInfo();
         GameNetwork game_network = doStartNewGame(engine, gui_root, ingame_info, new TutorialAction(factory,
@@ -162,7 +153,8 @@ public final class TutorialForm extends Form {
         game_network.getClient().getServerInterface().startServer();
     }
 
-    private static GameNetwork doStartNewGame(ClientEngine engine, GUIRoot gui_root,
+    private static GameNetwork doStartNewGame(
+            Peer engine, GUIRoot gui_root,
             TutorialInGameInfo ingame_info, final @Nullable WorldInitAction initial_action,
             int initial_unit_count, int tutorial_num) {
         int size = 256;
@@ -188,7 +180,7 @@ public final class TutorialForm extends Form {
         return true;
     }
 
-    public static void startTutorial(ClientEngine engine, GUIRoot gui_root, int tutorial_number) {
+    public static void startTutorial(Peer engine, GUIRoot gui_root, int tutorial_number) {
         final TutorialInGameInfo ingame_info;
         GameNetwork game_network;
         switch (tutorial_number) {

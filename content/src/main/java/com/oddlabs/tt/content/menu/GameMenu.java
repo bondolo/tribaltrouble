@@ -39,7 +39,7 @@ import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.client.viewer.ChatCommand;
 import com.oddlabs.tt.base.util.LoadCallback;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -116,7 +116,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
     private final GUIRoot gui_root;
     private final int local_player_slot;
     private final WorldGenerator<?> generator;
-    private final ClientEngine engine;
+    private final Peer engine;
     private final GameNetwork<GUIRoot, UIRenderer> game_network;
     private final Game game;
     private final boolean rated;

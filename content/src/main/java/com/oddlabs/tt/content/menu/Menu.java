@@ -26,7 +26,7 @@ import com.oddlabs.tt.content.form.MultiplayerLobby;
 import com.oddlabs.tt.content.form.OptionsMenu;
 import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.LandscapeAssetsLoader;
@@ -104,7 +104,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    protected final ClientEngine engine;
+    protected final Peer engine;
 
     private @Nullable Form current_menu;
     private boolean current_menu_centered;
@@ -112,14 +112,14 @@ public abstract class Menu extends CameraDelegate<Camera> {
     private @Nullable GUIImage overlay;
     private @Nullable GUIImage logo;
 
-    protected Menu(GUIRoot gui_root, Camera camera, ClientEngine engine) {
+    protected Menu(GUIRoot gui_root, Camera camera, Peer engine) {
         super(gui_root, camera);
         this.engine = engine;
         setCanFocus(true);
         setFocusCycle(true);
     }
 
-    public final ClientEngine getEngine() {
+    public final Peer getEngine() {
         return engine;
     }
 
@@ -341,7 +341,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static GameNetwork<GUIRoot, UIRenderer> startNewGame(ClientEngine engine, GUIRoot gui_root,
+    public static GameNetwork<GUIRoot, UIRenderer> startNewGame(
+            Peer engine, GUIRoot gui_root,
             MultiplayerLobby owner, WorldParameters world_params, InGameInfo ingame_info,
             WorldInitAction init_action, Game game, IslandConfig islandConfig, String[] ai_names) {
         boolean multiplayer = ingame_info.isMultiplayer();
@@ -398,11 +399,12 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return game_network;
     }
 
-    public static void startMenu(ClientEngine engine, GUI gui) {
+    public static void startMenu(Peer engine, GUI gui) {
         setupMainMenu(engine, gui, false);
     }
 
-    public static @Nullable Runnable setupMainMenu(ClientEngine engine, GUI gui,
+    public static @Nullable Runnable setupMainMenu(
+            Peer engine, GUI gui,
             final boolean first_progress) {
         IslandConfig islandConfig = new IslandConfig(
                 Terrain.NATIVE, 256, LandscapeConfig.LANDSCAPE_HILLS,
@@ -415,7 +417,8 @@ public abstract class Menu extends CameraDelegate<Camera> {
                         first_progress, generator), mode);
     }
 
-    private static UIRenderer finishMainMenu(ClientEngine engine, GUIRoot gui_root,
+    private static UIRenderer finishMainMenu(
+            Peer engine, GUIRoot gui_root,
             boolean first_progress, WorldGenerator<GeneratedLandscapeData> generator) {
         engine.getFramePacer().freezeTime();
         MatrixStack modelViewStack = new MatrixStack();
@@ -465,7 +468,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return renderer;
     }
 
-    public static boolean initNetwork(ClientEngine engine) {
+    public static boolean initNetwork(Peer engine) {
         boolean is_network_created;
         try {
             engine.getNetwork().getSelector().initSelector();

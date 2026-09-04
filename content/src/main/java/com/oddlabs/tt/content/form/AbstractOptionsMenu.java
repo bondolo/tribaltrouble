@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.form;
 
 import com.oddlabs.tt.base.util.Utils;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.CancelListener;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -30,7 +31,7 @@ public abstract class AbstractOptionsMenu extends Form {
     private final GeneralPanel generalPanel;
     private final GraphicsPanel graphicsPanel;
 
-    AbstractOptionsMenu(GUIRoot gui_root, com.oddlabs.tt.engine.ClientEngine engine) {
+    AbstractOptionsMenu(GUIRoot gui_root, Peer engine) {
         Label label_headline = new Label(i18n("options_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 

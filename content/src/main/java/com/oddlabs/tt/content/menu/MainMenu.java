@@ -1,6 +1,7 @@
 package com.oddlabs.tt.content.menu;
 
 import com.oddlabs.tt.base.global.AppConfig;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MenuButton;
@@ -12,7 +13,7 @@ import com.oddlabs.tt.content.tutorial.TutorialForm;
  * The game main menu
  */
 public final class MainMenu extends Menu {
-    public MainMenu(GUIRoot gui_root, Camera camera, com.oddlabs.tt.engine.ClientEngine engine) {
+    public MainMenu(GUIRoot gui_root, Camera camera, Peer engine) {
         super(gui_root, camera, engine);
         reload();
     }

@@ -3,7 +3,6 @@ module com.oddlabs.tt.engine {
     requires transitive com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
     requires transitive com.oddlabs.tt.procedural;
-    requires transitive com.oddlabs.tt.net;
     requires transitive com.oddlabs.tt.window;
     requires transitive com.oddlabs.tt.input;
     requires transitive com.oddlabs.tt.audio;
@@ -16,7 +15,6 @@ module com.oddlabs.tt.engine {
     requires org.lwjgl.sdl;
     requires org.lwjgl.stb;
 
-    exports com.oddlabs.tt.engine;
     exports com.oddlabs.tt.engine.cursor;
     exports com.oddlabs.tt.engine.font;
     exports com.oddlabs.tt.engine.image;

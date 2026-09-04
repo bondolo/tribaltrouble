@@ -3,7 +3,7 @@ package com.oddlabs.tt.content.campaign;
 import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.content.menu.Menu;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.GUIIcon;
@@ -270,7 +270,7 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
         }
     }
 
-    public static void closeCampaign(ClientEngine engine, GUI gui) {
+    public static void closeCampaign(Peer engine, GUI gui) {
         Menu.startMenu(engine, gui);
     }
 

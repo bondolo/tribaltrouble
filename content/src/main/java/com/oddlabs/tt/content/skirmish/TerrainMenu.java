@@ -11,7 +11,7 @@ import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.content.form.AbstractOptionsMenu;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.content.menu.SelectGameMenu;
-import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.CheckBox;
@@ -114,7 +114,7 @@ public final class TerrainMenu extends Group {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final ClientEngine engine;
+    private final Peer engine;
     private final AudioManager audioManager;
     private final @Nullable Menu main_menu;
     private final @Nullable TerrainMenuListener owner;
@@ -159,7 +159,7 @@ public final class TerrainMenu extends Group {
     }
 
     @SuppressWarnings("unchecked")
-    public TerrainMenu(GUIRoot gui_root, ClientEngine engine,
+    public TerrainMenu(GUIRoot gui_root, Peer engine,
             @Nullable Menu main_menu, boolean multiplayer, @Nullable TerrainMenuListener owner) {
         this.engine = engine;
         this.network = engine.getNetwork().getSelector();

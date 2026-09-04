@@ -14,7 +14,12 @@ lwjgl {
 }
 
 dependencies {
+    api(project(":base"))
+    api(project(":common"))
     api(project(":simulation"))
+    api(project(":net"))
+    api(project(":window"))
+    api(project(":audio"))
     api(project(":engine"))
     implementation(project(":effects"))
     implementation(project(":gui"))
