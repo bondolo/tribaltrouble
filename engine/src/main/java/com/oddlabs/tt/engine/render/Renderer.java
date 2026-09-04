@@ -57,7 +57,7 @@ public final class Renderer implements AutoCloseable {
         renderContext.reset();
     }
 
-    public void display(FrameDriver driver) {
+    public void display(Runnable renderPass) {
         fps.updateDelta(System.currentTimeMillis());
         NativeResource.processCleanupTasks();
         GLUtils.checkGLError("After Cleanup");
@@ -72,16 +72,16 @@ public final class Renderer implements AutoCloseable {
         }
         renderContext.setViewport(0, 0, w, h);
 
-        driver.render();
+        renderPass.run();
 
         if (DebugFlags.debugRenderingEnabled()) {
             renderContext.validate();
         }
     }
 
-    public void updateProgress(FrameDriver driver) {
+    public void updateProgress(Runnable renderPass) {
         renderContext.reset(); // Fix texture bleeding
-        display(driver);
+        display(renderPass);
         window.update();
         window.pollEvents();
     }

@@ -46,8 +46,10 @@ final class ViewerStallHandler implements StallHandler {
         float elapsed_time = viewer.getTime() - local_stall_time;
         if (tick == 0 || elapsed_time > SHOW_WAITING_DELAY_SECONDS) {
             if (waiting_for_players_form == null) {
-                waiting_for_players_form = new WaitingForPlayersForm(viewer);
-                viewer.getGUIRoot().addModalForm(waiting_for_players_form);
+                viewer.getGUIRoot().getGUI().runWithSkin(() -> {
+                    waiting_for_players_form = new WaitingForPlayersForm(viewer);
+                    viewer.getGUIRoot().addModalForm(waiting_for_players_form);
+                });
             }
         }
     }

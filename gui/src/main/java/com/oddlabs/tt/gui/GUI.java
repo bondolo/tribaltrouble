@@ -6,7 +6,6 @@ import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
@@ -24,14 +23,14 @@ import java.util.function.DoubleSupplier;
 /**
  * Container for the 2D user interface
  */
-public final class GUI implements Animated, FrameDriver {
+public final class GUI implements Animated {
     private final Skin skin;
     private final LocalInput localInput;
     private final Window window;
     private final LocalEventQueue eventQueue;
     private final Settings settings;
     private final Runnable shutdownHandler;
-    private final @Nullable Consumer<FrameDriver> progressUpdater;
+    private final @Nullable Consumer<GUI> progressUpdater;
     private final DoubleSupplier fpsSupplier;
     private @Nullable Runnable movieRecordingStarter;
     private final GUIRenderer guiRenderer = new GUIRenderer();
@@ -42,7 +41,7 @@ public final class GUI implements Animated, FrameDriver {
     private @Nullable Runnable closeHandler;
 
     public GUI(LocalInput localInput, Skin skin, Window window, LocalEventQueue eventQueue, Settings settings,
-            Runnable shutdownHandler, @Nullable Consumer<FrameDriver> progressUpdater, DoubleSupplier fpsSupplier) {
+            Runnable shutdownHandler, @Nullable Consumer<GUI> progressUpdater, DoubleSupplier fpsSupplier) {
         this.localInput = localInput;
         this.skin = skin;
         this.window = window;
@@ -55,13 +54,13 @@ public final class GUI implements Animated, FrameDriver {
     }
 
     public GUI(LocalInput localInput, Window window, LocalEventQueue eventQueue, Settings settings,
-            Runnable shutdownHandler, @Nullable Consumer<FrameDriver> progressUpdater, DoubleSupplier fpsSupplier) {
+            Runnable shutdownHandler, @Nullable Consumer<GUI> progressUpdater, DoubleSupplier fpsSupplier) {
         this(localInput, new Skin("/gui/gui_skin.xml"), window, eventQueue, settings, shutdownHandler, progressUpdater,
                 fpsSupplier);
     }
 
     public GUI(LocalInput localInput, Window window, LocalEventQueue eventQueue, Settings settings,
-            Runnable shutdownHandler, @Nullable Consumer<FrameDriver> progressUpdater) {
+            Runnable shutdownHandler, @Nullable Consumer<GUI> progressUpdater) {
         this(localInput, window, eventQueue, settings, shutdownHandler, progressUpdater, () -> 0.0);
     }
 
@@ -133,17 +132,10 @@ public final class GUI implements Animated, FrameDriver {
         this.closeHandler = closeHandler;
     }
 
-    @Override
-    public void run(Runnable session) {
-        runWithSkin(session);
-    }
-
-    @Override
     public void tick() {
         ScopedValue.where(Skin.CURRENT, skin).run(() -> localInput.poll(getGUIRoot()));
     }
 
-    @Override
     public void onCloseRequested() {
         ScopedValue.where(Skin.CURRENT, skin).run(() -> {
             if (closeHandler != null) {
@@ -217,7 +209,6 @@ public final class GUI implements Animated, FrameDriver {
         return renderer;
     }
 
-    @Override
     public void render() {
         Matrix4f proj = new Matrix4f();
         var guiRoot = getGUIRoot();
@@ -253,7 +244,6 @@ public final class GUI implements Animated, FrameDriver {
         }
     }
 
-    @Override
     public void pickHover() {
         var guiRoot = getGUIRoot();
         CameraState camera = guiRoot.getDelegate().getCameraState();
