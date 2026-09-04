@@ -1,6 +1,7 @@
 package com.oddlabs.tt.input;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.SettingsRegistry;
 import org.jspecify.annotations.Nullable;
 
 import java.io.Serial;
@@ -29,6 +30,16 @@ import java.util.stream.Collectors;
 public final class InputBindingSettings implements Serializable, PropertiesSerializer {
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Retrieves the {@link InputBindingSettings} instance registered with the given settings registry.
+     *
+     * @param settings the settings registry
+     * @return the registered input binding settings
+     */
+    public static InputBindingSettings from(SettingsRegistry settings) {
+        return settings.get(InputBindingSettings.class);
+    }
 
     private static final Logger logger = Logger.getLogger(InputBindingSettings.class.getName());
 

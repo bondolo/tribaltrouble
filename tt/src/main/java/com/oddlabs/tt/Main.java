@@ -1,15 +1,17 @@
 package com.oddlabs.tt;
 
 import com.oddlabs.tt.audio.AudioProvider;
+import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.GamePaths;
+import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.render.ClientStateInitializer;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.engine.ClientEngine;
 import com.oddlabs.tt.engine.render.ClientStartup;
-import com.oddlabs.tt.engine.settings.Settings;
+import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.gui.GUI;
 import com.oddlabs.tt.gui.LocalInput;
 import com.oddlabs.tt.input.InputManager;
@@ -81,11 +83,12 @@ public final class Main {
             logger.info("Starting game....");
             GamePaths gamePaths = new GamePaths();
             Settings settings = new Settings(gamePaths.dataDir());
+            AudioSettings audioSettings = AudioSettings.from(settings);
             try (var window = new LWJGL3Window(); var eventQueue = new LocalEventQueue(); var audioManager
-                    = AudioProvider.load(settings.audio, eventQueue.getManager())) {
-                audioManager.setSfxGain(settings.audio.sound_gain)
-                        .setMusicGain(settings.audio.music_gain)
-                        .setSfxEnabled(settings.audio.play_sfx);
+                    = AudioProvider.load(audioSettings, eventQueue.getManager())) {
+                audioManager.setSfxGain(audioSettings.sound_gain)
+                        .setMusicGain(audioSettings.music_gain)
+                        .setSfxEnabled(audioSettings.play_sfx);
 
                 Network network = new Network(new com.oddlabs.net.NetworkSelector(eventQueue.getDeterministic(),
                         eventQueue::getMillis));
@@ -93,7 +96,7 @@ public final class Main {
                 engine.run(
                         (clientEngine, firstProgress) -> {
                             ClientStateInitializer.init(audioManager);
-                            InputManager inputManager = new InputManager(settings.inputBindings, settings.control);
+                            InputManager inputManager = new InputManager(InputBindingSettings.from(settings));
                             LocalInput localInput = new LocalInput(
                                     clientEngine.getWindow(), inputManager,
                                     eventQueue.getDeterministic(), () -> clientEngine.getSettings().inDeveloperMode(),

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.window;
 
 import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.SettingsRegistry;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -16,6 +17,16 @@ import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 public final class WindowSettings implements Serializable, PropertiesSerializer {
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Retrieves the {@link WindowSettings} instance registered with the given settings registry.
+     *
+     * @param settings the settings registry
+     * @return the registered window settings
+     */
+    public static WindowSettings from(SettingsRegistry settings) {
+        return settings.get(WindowSettings.class);
+    }
 
     public int view_width = -1;
     public int view_height = -1;

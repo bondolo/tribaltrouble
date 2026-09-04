@@ -18,6 +18,9 @@ public final class AppConfig {
      * high-frequency repeating detail textures.
      */
     public static final int DEFAULT_TEXELS_PER_GRID_UNIT = 8;
+    public static final boolean SAVE_EVENT_LOG = true;
+    public static final boolean HIDE_MULTIPLAYER = true;
+    public static final int FRAME_GRAB_MILLISECONDS_PER_FRAME = 40;
 
     private AppConfig() {
     }

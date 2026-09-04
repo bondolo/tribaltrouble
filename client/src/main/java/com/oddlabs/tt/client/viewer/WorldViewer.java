@@ -20,6 +20,8 @@ import com.oddlabs.tt.client.render.DefaultRenderer;
 import com.oddlabs.tt.client.render.Picker;
 import com.oddlabs.tt.client.render.RacesAssetsLoader;
 import com.oddlabs.tt.engine.ClientEngine;
+import com.oddlabs.tt.engine.settings.AccessibilitySettings;
+import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.LandscapeBaker;
 import com.oddlabs.tt.engine.render.LandscapeRenderer;
@@ -290,8 +292,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         camera_state.setFog(world_info.fog_info());
         this.world = ProgressListener.subTask(0.10f,
                 () -> World.newWorld(landscape_resources, races_resources, listener, world_params,
-                        world_info.landscapeData(), player_infos, engine.getSettings().accessibility.linear_team_colours,
-                        RenderConfig.INSERT_PLANTS[engine.getSettings().graphic_detail]));
+                        world_info.landscapeData(), player_infos, AccessibilitySettings.from(engine.getSettings()).linear_team_colours,
+                        RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
         initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
@@ -550,7 +552,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
     }
 
     private void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
-        if (engine.getSettings().accessibility.sound_emojis) {
+        if (AccessibilitySettings.from(engine.getSettings()).sound_emojis) {
             renderer.getRenderState().addVisualSound(model, emoji, audioDistance);
         }
     }

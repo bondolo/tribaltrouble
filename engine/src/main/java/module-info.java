@@ -32,8 +32,7 @@ module com.oddlabs.tt.engine {
 
     opens com.oddlabs.tt.engine.render to com.oddlabs.tt.base;
 
-    uses com.oddlabs.tt.base.global.PropertiesSerializer;
-
     provides com.oddlabs.tt.base.global.PropertiesSerializer with
-            com.oddlabs.tt.engine.settings.AccessibilitySettings;
+            com.oddlabs.tt.engine.settings.AccessibilitySettings,
+            com.oddlabs.tt.engine.settings.GraphicsSettings;
 }

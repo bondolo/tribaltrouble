@@ -1,13 +1,6 @@
-package com.oddlabs.tt.engine.settings;
+package com.oddlabs.tt.base.global;
 
-import com.oddlabs.tt.audio.AudioSettings;
-import com.oddlabs.tt.base.global.AppConfig;
-import com.oddlabs.tt.base.global.PropertiesSerializer;
-import com.oddlabs.tt.input.ControlSettings;
-import com.oddlabs.tt.input.InputBindingSettings;
-import com.oddlabs.tt.net.AccountSettings;
-import com.oddlabs.tt.window.WindowSettings;
-import com.oddlabs.util.Color;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -20,11 +13,11 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.function.Supplier;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 import static com.oddlabs.tt.base.global.SettingsHelper.getBoolean;
@@ -35,40 +28,31 @@ import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 /**
  * Global game settings coordinator and configuration persistence.
  */
-public final class Settings implements Serializable, PropertiesSerializer {
+public final class Settings implements Serializable, PropertiesSerializer, SettingsRegistry {
     @Serial
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(Settings.class.getName());
 
-    public static final Color.Standard[] DEFAULT_TEAM_COLOURS = AccessibilitySettings.DEFAULT_TEAM_COLOURS;
-
-    private final Map<Class<? extends PropertiesSerializer>, PropertiesSerializer> serializers = new LinkedHashMap<>();
+    private final ConcurrentMap<Class<? extends PropertiesSerializer>, PropertiesSerializer> serializers = new ConcurrentHashMap<>();
 
     private transient final @Nullable Path game_dir;
 
-    public final WindowSettings window;
-    public final AudioSettings audio;
-    public final AccountSettings account;
-    public final AccessibilitySettings accessibility;
-    public final ControlSettings control;
-    public final InputBindingSettings inputBindings;
-
     public transient Path last_event_log_dir = Path.of("");
+    // FIXME: Replace with build version metadata
     public int last_revision = -1;
     public boolean crashed = false;
 
-    public int graphic_detail = AppConfig.DEFAULT_DETAIL_NORMAL;
-
     private final boolean developer_mode = Boolean.getBoolean("com.oddlabs.tt.developer");
-    public boolean has_native_campaign = developer_mode;
+    private boolean has_native_campaign = false;
 
-    public final boolean save_event_log = true;
-    public boolean generate_dummy_worlds = false;
-    public boolean first_run = true;
+    public boolean hasNativeCampaign() {
+        return developer_mode || has_native_campaign;
+    }
 
-    public final boolean hide_multiplayer = true;
-    public final int frame_grab_milliseconds_per_frame = 40;
+    public void setHasNativeCampaign(boolean has_native_campaign) {
+        this.has_native_campaign = has_native_campaign;
+    }
 
     public Settings() {
         this(null);
@@ -77,13 +61,9 @@ public final class Settings implements Serializable, PropertiesSerializer {
     public Settings(@Nullable Path game_dir) {
         this.game_dir = game_dir;
         initSerializers();
-        this.window = getOrCreate(WindowSettings.class, WindowSettings::new);
-        this.audio = getOrCreate(AudioSettings.class, AudioSettings::new);
-        this.account = getOrCreate(AccountSettings.class, AccountSettings::new);
-        this.accessibility = getOrCreate(AccessibilitySettings.class, AccessibilitySettings::new);
-        this.control = getOrCreate(ControlSettings.class, ControlSettings::new);
-        this.inputBindings = getOrCreate(InputBindingSettings.class, InputBindingSettings::new);
     }
+
+    private final Properties loadedProperties = new Properties();
 
     private void initSerializers() {
         ServiceLoader<PropertiesSerializer> loader = ServiceLoader.load(PropertiesSerializer.class);
@@ -95,33 +75,29 @@ public final class Settings implements Serializable, PropertiesSerializer {
     /**
      * Retrieves a registered {@link PropertiesSerializer} by its class.
      */
+    @Override
     @SuppressWarnings("unchecked")
-    public <T extends PropertiesSerializer> T get(Class<T> type) {
-        T serializer = (T) serializers.get(type);
-        if (serializer == null) {
-            throw new IllegalArgumentException("No PropertiesSerializer registered for: " + type.getName());
-        }
-        return serializer;
-    }
-
-    /**
-     * Retrieves a registered {@link PropertiesSerializer} by its class, or creates and registers a new instance.
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends PropertiesSerializer> T getOrCreate(Class<T> type,
-            Supplier<T> fallback) {
-        T serializer = (T) serializers.get(type);
-        if (serializer == null) {
-            serializer = fallback.get();
-            serializers.put(type, serializer);
-        }
-        return serializer;
+    public <T extends PropertiesSerializer> @NonNull T get(Class<T> type) {
+        return (T) serializers.computeIfAbsent(type, t -> {
+            try {
+                T instance = type.getDeclaredConstructor().newInstance();
+                if (!loadedProperties.isEmpty()) {
+                    instance.loadFromProperties(loadedProperties);
+                }
+                return instance;
+            } catch (Exception _) {
+                throw new NoSuchElementException("No settings component registered for: " + type.getName());
+            }
+        });
     }
 
     /**
      * Registers a custom or dynamic {@link PropertiesSerializer}.
      */
     public void registerSerializer(PropertiesSerializer serializer) {
+        if (!loadedProperties.isEmpty()) {
+            serializer.loadFromProperties(loadedProperties);
+        }
         serializers.put(serializer.getClass(), serializer);
     }
 
@@ -173,13 +149,14 @@ public final class Settings implements Serializable, PropertiesSerializer {
 
     @Override
     public void saveToProperties(Properties props) {
+        props.putAll(loadedProperties);
+
         Settings defaults = new Settings();
 
         setProperty(props, "last_event_log_dir", last_event_log_dir, defaults.last_event_log_dir);
         setProperty(props, "last_revision", last_revision, defaults.last_revision);
         setProperty(props, "crashed", crashed, defaults.crashed);
-        setProperty(props, "graphic_detail", graphic_detail, defaults.graphic_detail);
-        setProperty(props, "first_run", first_run, defaults.first_run);
+        setProperty(props, "has_native_campaign", has_native_campaign, defaults.has_native_campaign);
 
         for (PropertiesSerializer serializer : serializers.values()) {
             serializer.saveToProperties(props);
@@ -188,11 +165,13 @@ public final class Settings implements Serializable, PropertiesSerializer {
 
     @Override
     public void loadFromProperties(Properties props) {
+        loadedProperties.clear();
+        loadedProperties.putAll(props);
+
         last_event_log_dir = getPath(props, "last_event_log_dir", last_event_log_dir);
         last_revision = getInt(props, "last_revision", last_revision);
         crashed = getBoolean(props, "crashed", crashed);
-        graphic_detail = getInt(props, "graphic_detail", graphic_detail);
-        first_run = getBoolean(props, "first_run", first_run);
+        has_native_campaign = getBoolean(props, "has_native_campaign", has_native_campaign);
 
         for (PropertiesSerializer serializer : serializers.values()) {
             serializer.loadFromProperties(props);
