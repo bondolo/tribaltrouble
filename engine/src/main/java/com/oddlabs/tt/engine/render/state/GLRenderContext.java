@@ -25,7 +25,7 @@ import static com.oddlabs.tt.engine.util.GLUtils.checkGLError;
  * RenderContext implementation for LWJGL OpenGL bindings.
  * Manages OpenGL state transitions and provides shadowing to minimize redundant GL calls.
  */
-public final class GLRenderContext implements RenderContext {
+final class GLRenderContext implements RenderContext {
     private static final Logger logger = Logger.getLogger(GLRenderContext.class.getName());
     private static final ScopedState NO_OP = () -> {
     };
@@ -73,7 +73,7 @@ public final class GLRenderContext implements RenderContext {
 
     private final Map<Integer, FboCacheEntry> fboCache = new HashMap<>();
 
-    public GLRenderContext() {
+    GLRenderContext() {
         Arrays.fill(boundTextures, -1);
         Arrays.fill(boundTargets, -1);
         Arrays.fill(boundBuffers, -1);

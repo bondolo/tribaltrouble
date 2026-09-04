@@ -1,14 +1,9 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * Interface for shaders that support a common, simple lighting model.
+ * Common lighting model shader contracts and functions.
  */
-public interface LitShader extends Shader {
-    String LIGHTING_CONSTANTS = "";
-
-    interface Uniforms {
-    }
-
+interface LitShader extends Shader {
     String PERTURB_NORMAL_FUNC = """
             mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv) {
                 // get edge vectors of the pixel triangle
