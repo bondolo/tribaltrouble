@@ -8,14 +8,14 @@ import java.util.IdentityHashMap;
 import java.util.List;
 
 /**
- * Helper class for tracking texture slots in multi-texture batching renderers.
+ * Texture slot tracking in multi-texture batching renderers.
  */
-public final class TextureBatcher {
+final class TextureBatcher {
     private final int maxSlots;
     private final IdentityHashMap<Texture, Integer> textureToSlot = new IdentityHashMap<>();
     private final List<Texture> activeTextures;
 
-    public TextureBatcher(int maxSlots) {
+    TextureBatcher(int maxSlots) {
         this.maxSlots = maxSlots;
         this.activeTextures = new ArrayList<>(maxSlots);
     }
@@ -24,7 +24,7 @@ public final class TextureBatcher {
      * Gets the current slot for a texture, or assigns a new one if available.
      * Returns -1 if the texture is not currently batched and the batch is full.
      */
-    public int getOrAssignSlot(Texture texture) {
+    int getOrAssignSlot(Texture texture) {
         Integer slot = textureToSlot.get(texture);
         if (slot != null) {
             return slot;
@@ -41,13 +41,13 @@ public final class TextureBatcher {
     /**
      * Binds all active textures to the provided RenderContext, starting at the specified offset unit.
      */
-    public void bindTextures(RenderContext context, int startUnit) {
+    void bindTextures(RenderContext context, int startUnit) {
         for (int i = 0; i < activeTextures.size(); i++) {
             context.setTexture(startUnit + i, activeTextures.get(i).getHandle());
         }
     }
 
-    public void clear() {
+    void clear() {
         textureToSlot.clear();
         activeTextures.clear();
     }

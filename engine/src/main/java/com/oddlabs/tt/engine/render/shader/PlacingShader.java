@@ -67,7 +67,6 @@ public final class PlacingShader extends ShaderProgram implements FogShader, Lit
 
     private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
-            LIGHTING_CONSTANTS +
             FOG_FUNCTION +
             PERTURB_NORMAL_FUNC +
             FRAGMENT_LIGHTING_FUNCTION +

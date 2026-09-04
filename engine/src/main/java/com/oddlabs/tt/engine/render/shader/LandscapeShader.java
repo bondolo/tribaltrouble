@@ -65,7 +65,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
     private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
-            LIGHTING_CONSTANTS +
             FOG_FUNCTION +
             """
                     uniform sampler2D u_DiffuseMap;

@@ -13,7 +13,6 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.FrameDriver;
 import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.engine.render.Renderer;
-import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.net.Network;
@@ -351,7 +350,7 @@ public final class Peer implements AutoCloseable {
 
         startSound();
 
-        ScopedValue.where(RenderContext.CURRENT, renderer.getRenderContext()).run(() -> {
+        renderer.runWithContext(() -> {
             try {
                 try {
                     renderer.initNative(crashed);
@@ -447,7 +446,7 @@ public final class Peer implements AutoCloseable {
                         load_task.run();
                     } finally {
                         event_queue.getDeterministic().setEnabled(false);
-                        RenderContext.current().reset();
+                        renderer.resetContext();
                     }
                     load_task = null;
                 }

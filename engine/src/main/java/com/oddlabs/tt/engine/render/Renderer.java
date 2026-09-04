@@ -2,7 +2,7 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.base.util.StatCounter;
-import com.oddlabs.tt.engine.render.state.GLRenderContext;
+import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.engine.util.GLUtils;
@@ -30,7 +30,7 @@ public final class Renderer implements AutoCloseable {
 
     private final Window window;
     private final Settings settings;
-    private final GLRenderContext renderContext = new GLRenderContext();
+    private final RenderContext renderContext = RenderContext.create();
 
     private int lastDisplayW = -1;
     private int lastDisplayH = -1;
@@ -49,8 +49,12 @@ public final class Renderer implements AutoCloseable {
         cleanup();
     }
 
-    public GLRenderContext getRenderContext() {
-        return renderContext;
+    public void runWithContext(Runnable action) {
+        ScopedValue.where(RenderContext.CURRENT, renderContext).run(action);
+    }
+
+    public void resetContext() {
+        renderContext.reset();
     }
 
     public void display(FrameDriver driver) {

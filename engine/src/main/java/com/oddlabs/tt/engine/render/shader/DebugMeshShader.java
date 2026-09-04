@@ -70,7 +70,6 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
-            LIGHTING_CONSTANTS +
             VERTEX_LIGHTING_FUNCTION +
             """
                     layout(location = 0) in vec3 in_Position;

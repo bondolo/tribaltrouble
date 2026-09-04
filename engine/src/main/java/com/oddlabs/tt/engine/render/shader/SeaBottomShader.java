@@ -46,7 +46,6 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
 
     private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
-            LIGHTING_CONSTANTS +
             FOG_FUNCTION +
             COLOR_SPACE_FUNCTIONS +
             """

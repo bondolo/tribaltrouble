@@ -17,6 +17,10 @@ public interface RenderContext {
         return CURRENT.get();
     }
 
+    static RenderContext create() {
+        return new GLRenderContext();
+    }
+
     // State Management
     void setBlendMode(BlendMode mode);
 
