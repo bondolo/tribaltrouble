@@ -35,7 +35,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 /**
- * Desktop client peer node coordinating the main game loop, window events, audio updates, simulation pacing, and presentation.
+ * Desktop client peer node coordinating the main game loop, window events, audio updates, simulation pacing, and
+ * presentation.
  */
 public final class Peer implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(Peer.class.getSimpleName());
@@ -334,7 +335,7 @@ public final class Peer implements AutoCloseable {
         deterministic.log(settings);
         LocaleSettings locale = LocaleSettings.from(settings);
         Locale language = "default".equals(locale.language)
-                          ? deterministic.log(Peer.default_locale) : Locale.forLanguageTag(locale.language);
+                ? deterministic.log(Peer.default_locale) : Locale.forLanguageTag(locale.language);
         IO.println("Using language " + language);
         Locale.setDefault(language);
 

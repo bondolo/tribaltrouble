@@ -4,7 +4,6 @@ import com.oddlabs.tt.procedural.GeneratedLandscapeData;
 import com.oddlabs.tt.procedural.Landscape;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
-import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
@@ -30,7 +29,7 @@ class ParticleTest {
         Landscape landscape = new Landscape(2, config, 0.5f, 5, 0.5f);
         LandscapeData data = new GeneratedLandscapeData(config, landscape);
         WorldParameters params = new WorldParameters(0, "test", 0, 10);
-        world = World.newWorld(new LandscapeGeometry(), null, new NotificationListener() {
+        world = World.newWorld(null, null, new NotificationListener() {
         }, params, data, List.of(), new Color.Linear[0], false);
     }
 

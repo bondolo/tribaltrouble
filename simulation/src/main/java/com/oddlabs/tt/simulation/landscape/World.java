@@ -68,12 +68,13 @@ public final class World implements SimulationClock {
     private int gamespeed;
 
     public static World newWorld(
-            LandscapeBoundsProvider landscape_resources, @Nullable RaceData races_resources,
+            @Nullable RaceData races_resources,
+            @Nullable LandscapeBoundsProvider landscape_resources,
             NotificationListener notification_listener, WorldParameters world_params,
             LandscapeData landscapeData, List<PlayerInfo> player_infos,
             Color.Linear[] teamColors, boolean insertPlants) {
         ProgressListener.progress();
-        World world = new World(landscape_resources, races_resources, notification_listener,
+        World world = new World(races_resources, landscape_resources, notification_listener,
                 world_params, landscapeData, player_infos, teamColors, insertPlants);
         ProgressListener.progress();
         ProgressListener.progress(1 / 5f);
@@ -146,15 +147,16 @@ public final class World implements SimulationClock {
         return getAnimationManagerRealTime().getTick();
     }
 
-    private World(LandscapeBoundsProvider landscape_resources,
-            @Nullable RaceData races_resources, NotificationListener notification_listener,
+    private World(@Nullable RaceData races_resources,
+            @Nullable LandscapeBoundsProvider landscape_resources,
+            NotificationListener notification_listener,
             WorldParameters world_params, LandscapeData landscapeData,
             List<PlayerInfo> player_infos, Color.Linear[] teamColors,
             boolean insertPlants) {
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscapeData.terrain();
         this.plantCoordinates = landscapeData.plants();
-        this.landscape_resources = landscape_resources;
+        this.landscape_resources = landscape_resources != null ? landscape_resources : new LandscapeGeometry();
         this.races_resources = races_resources;
         this.max_unit_count = world_params.maxUnitCount();
         this.notification_listener = notification_listener;

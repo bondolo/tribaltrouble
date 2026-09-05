@@ -45,6 +45,7 @@ import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
+import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
@@ -127,7 +128,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         RenderQueues render_queues = new RenderQueues();
-        LandscapeAssetsLoader landscape_resources = ProgressListener.subTask(0.15f,
+        LandscapeGeometry landscape_geometry = new LandscapeGeometry();
+        ProgressListener.subTask(0.15f,
                 () -> new LandscapeAssetsLoader(render_queues));
         RaceData races_resources = ProgressListener.subTask(0.35f,
                 () -> RacesAssetsLoader.load(render_queues));
@@ -292,7 +294,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 () -> LandscapeBaker.bakeWorld(landscapeData));
         camera_state.setFog(world_info.fog_info());
         this.world = ProgressListener.subTask(0.10f,
-                () -> World.newWorld(landscape_resources, races_resources, listener, world_params,
+                () -> World.newWorld(races_resources, landscape_geometry, listener, world_params,
                         world_info.landscapeData(), player_infos, AccessibilitySettings.from(engine
                                 .getSettings()).linear_team_colours,
                         RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
