@@ -24,7 +24,7 @@ import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.render.LandscapeBaker;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.client.render.LandscapeRenderer;
 import com.oddlabs.tt.client.render.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;

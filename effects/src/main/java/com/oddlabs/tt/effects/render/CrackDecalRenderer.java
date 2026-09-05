@@ -2,7 +2,6 @@ package com.oddlabs.tt.effects.render;
 
 
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
@@ -37,20 +36,20 @@ public final class CrackDecalRenderer extends ShadowListRenderer {
 
     @Override
     public void renderShadows(RenderContext context, RenderQueues queues,
-            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            float worldSize, Texture heightTexture, MatrixStack modelViewStack,
             MatrixStack projectionStack) {
         if (crack_list.isEmpty()) {
             return;
         }
 
-        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
             setPattern(Selectable.VisualPattern.NONE);
             bindShadowTexture(crackTexture);
             while (!crack_list.isEmpty()) {
                 var model = crack_list.pop();
                 setShadowColor(model.getShadowColor());
                 setPatternVal(model.getShadowPattern());
-                renderShadow(context, renderer, model);
+                renderShadow(context, model);
             }
         }
     }

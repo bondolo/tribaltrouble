@@ -28,7 +28,7 @@ import com.oddlabs.tt.content.form.ProgressForm;
 import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.render.LandscapeBaker;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
+import com.oddlabs.tt.client.render.LandscapeRenderer;
 import com.oddlabs.tt.client.render.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;

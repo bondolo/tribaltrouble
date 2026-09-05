@@ -1,8 +1,17 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
 
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
+import com.oddlabs.tt.engine.render.BoundingMode;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.HeightMapVisual;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.PatchMesh;
+import com.oddlabs.tt.engine.render.RenderTools;
+import com.oddlabs.tt.engine.render.SceneRenderer;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.scenery.Sky;
 import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.render.shader.LandscapeShader;

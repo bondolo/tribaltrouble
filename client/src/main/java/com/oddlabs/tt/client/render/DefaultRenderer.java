@@ -11,7 +11,6 @@ import com.oddlabs.tt.effects.render.SonicBlastRenderer;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.InstancedSpriteRenderer;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PostProcessor;
 import com.oddlabs.tt.engine.render.DebugFlags;
@@ -95,8 +94,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
                 selection, audioManager);
         this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
         this.landscape_renderer = landscape_renderer;
-        this.sky = new Sky(landscape_renderer, world_info.landscapeData().terrain(), world_info.detail(), world_info
-                .detailNormal());
+        this.sky = new Sky(world.getHeightMap(), world_info.landscapeData().terrain(),
+                world_info.detail(), world_info.detailNormal());
         this.modelViewStack = modelViewStack;
         this.projectionStack = projectionStack;
         this.water = new Water(landscape_renderer.getHeightMapVisual(), world.getHeightMap(), world_info.landscapeData()
@@ -296,7 +295,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         }
         sprite_sorter.distributeModels();
         if (DebugFlags.process_shadows) {
-            render_queues.renderShadows(context, landscape_renderer, modelViewStack, projectionStack);
+            render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
+                    landscape_renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack);
             if (DebugFlags.process_trees) {
                 tree_renderer.renderShadows(element_renderer.getRenderState().getDefaultShadowRenderer());
             }

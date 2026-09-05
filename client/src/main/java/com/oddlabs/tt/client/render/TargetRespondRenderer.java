@@ -1,7 +1,6 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
@@ -36,17 +35,17 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
 
     @Override
     public void renderShadows(RenderContext context, RenderQueues queues,
-            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            float worldSize, Texture heightTexture, MatrixStack modelViewStack,
             MatrixStack projectionStack) {
         if (target_list.isEmpty()) return;
 
-        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.GREEN);
             setPattern(Selectable.VisualPattern.FRIENDLY);
             bindShadowTexture(ring);
             while (!target_list.isEmpty()) {
                 var target = target_list.pop();
-                renderShadow(context, renderer, target.getPositionX(), target
+                renderShadow(context, target.getPositionX(), target
                         .getPositionY(), SHADOW_SIZE * target.getProgress()
                 );
             }
