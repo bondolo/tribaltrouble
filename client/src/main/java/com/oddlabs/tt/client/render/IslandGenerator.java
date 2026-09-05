@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.resource;
+package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.ProgressListener;

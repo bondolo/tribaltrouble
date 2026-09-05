@@ -6,6 +6,9 @@ import com.oddlabs.tt.client.camera.Camera;
 import com.oddlabs.tt.client.delegate.GameStatsDelegate;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 
+/**
+ * Triggers the game statistics screen after a brief delay following game over.
+ */
 public final class GameOverDelayTrigger implements Updatable<TimerAnimation> {
 
     private final WorldViewer viewer;

@@ -1,10 +1,11 @@
-package com.oddlabs.tt.engine.render;
-
+package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.engine.image.GLByteImage;
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.engine.render.FBO;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.DistanceFogInfo;
 import com.oddlabs.tt.engine.resource.WorldInfo;
