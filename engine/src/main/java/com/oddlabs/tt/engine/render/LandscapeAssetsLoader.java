@@ -4,7 +4,6 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.SpriteFile;
-import com.oddlabs.tt.simulation.landscape.LandscapeBoundsProvider;
 import com.oddlabs.tt.simulation.model.Terrain;
 
 import java.util.Arrays;
@@ -12,16 +11,10 @@ import java.util.EnumMap;
 import java.util.stream.IntStream;
 
 /**
- * Client-side asset loader that loads landscape-associated sprites (rocks, iron, plants, chickens)
- * and exposes their physical bounds to the simulation via {@link LandscapeBoundsProvider}.
+ * Loads landscape-associated sprites (rocks, iron, plants, chickens) into the asset registry.
  */
-public final class LandscapeAssetsLoader implements LandscapeBoundsProvider {
+public final class LandscapeAssetsLoader {
     public static final int SUPPLY_FRAGMENT_COUNT = 5;
-
-    private final SpriteKey[] rock_fragment_sprites;
-    private final SpriteKey[] iron_fragment_sprites;
-    private final EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(Terrain.class);
-    private final SpriteKey chicken;
 
     public LandscapeAssetsLoader(RenderQueues queues) {
         int num_progress = 13;
@@ -32,15 +25,16 @@ public final class LandscapeAssetsLoader implements LandscapeBoundsProvider {
                 .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, true, true, true, false))
                 .toArray(SpriteFile[]::new);
 
-        rock_fragment_sprites = Arrays.stream(fragments)
+        SpriteKey[] rock_fragment_sprites = Arrays.stream(fragments)
                 .map(queues::register)
                 .toArray(SpriteKey[]::new);
 
-        iron_fragment_sprites = Arrays.stream(fragments)
+        SpriteKey[] iron_fragment_sprites = Arrays.stream(fragments)
                 .map(spriteFile -> queues.register(spriteFile, 1))
                 .toArray(SpriteKey[]::new);
         ProgressListener.progress(1f / num_progress);
 
+        EnumMap<Terrain, SpriteKey[]> plant_sprites = new EnumMap<>(Terrain.class);
         plant_sprites.put(
                 Terrain.NATIVE, IntStream.rangeClosed(1, 4)
                         .mapToObj(i -> String.format("/geometry/misc/plant_%d.binsprite", i))
@@ -58,7 +52,7 @@ public final class LandscapeAssetsLoader implements LandscapeBoundsProvider {
         SpriteFile sprite_list_chicken = new SpriteFile("/geometry/misc/chicken.binsprite",
                 RenderConfig.NO_MIPMAP_CUTOFF,
                 true, true, true, false);
-        chicken = queues.register(sprite_list_chicken);
+        SpriteKey chicken = queues.register(sprite_list_chicken);
 
         AssetRegistry ar = AssetRegistry.getInstance();
         ar.registerRockFragments(rock_fragment_sprites);
@@ -69,30 +63,5 @@ public final class LandscapeAssetsLoader implements LandscapeBoundsProvider {
         ar.registerChicken(chicken);
 
         ProgressListener.progress(1f / num_progress);
-    }
-
-    public SpriteKey getChicken() {
-        return chicken;
-    }
-
-    @Override
-    public SpriteKey getRockBounds(int index) {
-        return rock_fragment_sprites[index % rock_fragment_sprites.length];
-    }
-
-    @Override
-    public SpriteKey getIronBounds(int index) {
-        return iron_fragment_sprites[index % iron_fragment_sprites.length];
-    }
-
-    @Override
-    public SpriteKey getPlantBounds(Terrain terrain, int index) {
-        var sprites = plant_sprites.get(terrain);
-        return sprites[index % sprites.length];
-    }
-
-    @Override
-    public SpriteKey getChickenBounds() {
-        return chicken;
     }
 }

@@ -430,10 +430,10 @@ public abstract class Menu extends CameraDelegate<Camera> {
         WorldInfo<Texture> world_info = ProgressListener.subTask(0.30f,
                 () -> LandscapeBaker.bakeWorld(landscapeData));
         RenderQueues render_queues = new RenderQueues();
-        LandscapeAssetsLoader landscape_resources = ProgressListener.subTask(0.15f,
+        ProgressListener.subTask(0.15f,
                 () -> new LandscapeAssetsLoader(render_queues));
         World world = ProgressListener.subTask(0.15f,
-                () -> World.newWorld(landscape_resources, null,
+                () -> World.newWorld(null, null,
                         new NotificationListener() {
                         }, world_params, world_info.landscapeData(), players,
                         AccessibilitySettings.from(engine.getSettings()).linear_team_colours,
