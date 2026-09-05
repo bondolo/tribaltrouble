@@ -407,7 +407,7 @@ public final class Peer implements AutoCloseable {
             wasActive = isActive;
 
             long t2 = System.nanoTime();
-            runGameLoop(gui);
+            gui.runWithSkin(() -> runGameLoop(gui));
             long t3 = System.nanoTime();
             totalRunGameLoopTime += (t3 - t2);
 
