@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.audio.AudioParameters;
-import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.particle.RingEmitter;
@@ -132,18 +131,6 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
             }
         }
         return AssetRegistry.getInstance().getIronFragmentSprite(ironSupply.getFragmentIndex());
-    }
-
-    @Override
-    public BoundsProvider getBoundsProvider() {
-        if (isSpawning()) {
-            float progress = getSpawnProgress();
-            float coolProgress = Math.min(1.0f, (progress - FALL_DURATION_RATIO) / (0.85f - FALL_DURATION_RATIO));
-            if (coolProgress < 0.9f) {
-                return ironSupply.getWorld().getLandscapeResources().getRockBounds(ironSupply.getFragmentIndex());
-            }
-        }
-        return ironSupply.getBoundsProvider();
     }
 
     @Override
