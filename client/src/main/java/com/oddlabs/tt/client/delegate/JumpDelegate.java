@@ -6,6 +6,9 @@ import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Input delegate that controls the camera during automated jump sequences and executes a callback upon completion.
+ */
 public final class JumpDelegate extends InGameDelegate<JumpCamera> {
     private final @Nullable Runnable runnable;
 
@@ -39,7 +42,8 @@ public final class JumpDelegate extends InGameDelegate<JumpCamera> {
     @Override
     public void doRemove() {
         super.doRemove();
-        if (runnable != null)
+        if (runnable != null) {
             runnable.run();
+        }
     }
 }

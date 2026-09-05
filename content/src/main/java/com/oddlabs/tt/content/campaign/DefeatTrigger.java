@@ -9,6 +9,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ResourceBundle;
 
+/**
+ * Monitors campaign levels to check for the defeat condition, such as chieftain death or unit loss.
+ */
 public final class DefeatTrigger extends IntervalTrigger {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(DefeatTrigger.class.getName());
 
