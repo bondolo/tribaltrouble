@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render.scenery;
 import com.oddlabs.tt.engine.procedural.GeneratorClouds;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.SceneRenderer;
 import com.oddlabs.tt.engine.render.Texture;
@@ -136,15 +135,14 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
     private float lastTime = 0f;
 
-    public Sky(LandscapeRenderer renderer, Terrain terrain, Texture detail,
+    public Sky(HeightMap heightMap, Terrain terrain, Texture detail,
             Texture detailNormal) {
-        this(renderer, terrain, (float) (renderer.getHeightMap().getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 20, 20,
-                SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, renderer
-                        .getHeightMap().getMetersPerWorld() / 2f, renderer.getHeightMap().getMetersPerWorld() / 2f,
-                SKYDOME_HEIGHT, detail, detailNormal);
+        this(heightMap, terrain, (float) (heightMap.getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 20, 20,
+                SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, heightMap.getMetersPerWorld() / 2f,
+                heightMap.getMetersPerWorld() / 2f, SKYDOME_HEIGHT, detail, detailNormal);
     }
 
-    private Sky(LandscapeRenderer landscape_renderer, Terrain terrain,
+    private Sky(HeightMap heightMap, Terrain terrain,
             float inner_radius, float radius, int subdiv_axis, int subdiv_height, float outer_utile, float outer_vtile,
             float inner_utile, float inner_vtile, float origin_x, float origin_y, float origin_z,
             Texture detail, Texture detailNormal) {
@@ -177,13 +175,13 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         List<ShortBuffer> stitch_indices_list = new ArrayList<>();
         int num_vertices_water = 0;
         int num_indices = 0;
-        SkyStitchVertex[] previous_vertices = makeLandscapeVertices(landscape_renderer.getHeightMap());
+        SkyStitchVertex[] previous_vertices = makeLandscapeVertices(heightMap);
         vertices_stitch_list.add(previous_vertices);
         num_vertices_water += previous_vertices.length;
         for (int i = 0; i < NUM_WATER_RINGS; i++) {
             float radius_factor = (float) (i + 1) / NUM_WATER_RINGS;
             float ring_radius = inner_radius + (float) Math.pow(radius - inner_radius, radius_factor);
-            SkyStitchVertex[] ring_vertices = makeDomeVertices(landscape_renderer.getHeightMap(), i + 1,
+            SkyStitchVertex[] ring_vertices = makeDomeVertices(heightMap, i + 1,
                     num_vertices_water, ring_radius, origin_x, origin_y);
             vertices_stitch_list.add(ring_vertices);
             num_vertices_water += ring_vertices.length;
@@ -207,8 +205,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         }
         all_indices.flip();
         water_indices = new ShortVBO(GL15.GL_STATIC_DRAW, all_indices);
-        water_vertices = toVBO(all_vertices, landscape_renderer.getHeightMap().getSeaLevelMeters());
-        bottom_vertices = toBottomVBO(all_vertices, landscape_renderer.getHeightMap());
+        water_vertices = toVBO(all_vertices, heightMap.getSeaLevelMeters());
+        bottom_vertices = toBottomVBO(all_vertices, heightMap);
 
         this.skyVAO = new VertexArray();
         skyVAO.bind();

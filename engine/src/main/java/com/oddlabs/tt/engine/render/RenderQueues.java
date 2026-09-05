@@ -249,12 +249,12 @@ public final class RenderQueues implements AutoCloseable {
         blend_sprite_renderers.forEach(SpriteRenderer::renderNoDetail);
     }
 
-    public void renderShadows(RenderContext context, LandscapeRenderer renderer,
+    public void renderShadows(RenderContext context, float worldSize, Texture heightTexture,
             MatrixStack modelViewStack, MatrixStack projectionStack) {
         decalRenderer.clear();
-        try (var _ = decalRenderer.setup(context, renderer, modelViewStack, projectionStack)) {
+        try (var _ = decalRenderer.setup(context, worldSize, heightTexture, modelViewStack, projectionStack)) {
             for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
-                shadowListRenderer.renderShadows(context, this, renderer, modelViewStack, projectionStack);
+                shadowListRenderer.renderShadows(context, this, worldSize, heightTexture, modelViewStack, projectionStack);
             }
         }
     }

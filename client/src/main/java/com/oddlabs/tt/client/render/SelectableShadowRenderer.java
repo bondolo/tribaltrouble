@@ -1,7 +1,6 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
-import com.oddlabs.tt.engine.render.LandscapeRenderer;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.ModelState;
 import com.oddlabs.tt.engine.render.DebugFlags;
@@ -68,15 +67,15 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
 
     @Override
     public void renderShadows(RenderContext context, RenderQueues queues,
-            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            float worldSize, Texture heightTexture, MatrixStack modelViewStack,
             MatrixStack projectionStack) {
-        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.WHITE);
             setPattern(Selectable.VisualPattern.NONE);
             bindShadowTexture(halos.get(GeneratorHalos.HaloType.SHADOWED));
             while (!shadowed_list.isEmpty()) {
                 var model = shadowed_list.pop();
-                renderShadow(context, renderer, model);
+                renderShadow(context, model);
             }
 
             bindShadowTexture(halos.get(GeneratorHalos.HaloType.SELECTED));
@@ -86,7 +85,7 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
                 setShadowColor(modelState.getSelectionColor());
                 setPattern(modelState.getPattern());
 
-                renderShadow(context, renderer, model);
+                renderShadow(context, model);
             }
         }
     }

@@ -19,10 +19,10 @@ public abstract class ShadowRenderer {
     private @Nullable DecalRenderer sharedRenderer;
 
     public ScopedState setupShadows(RenderContext context, RenderQueues queues,
-            LandscapeRenderer renderer, MatrixStack modelViewStack,
+            float worldSize, Texture heightTexture, MatrixStack modelViewStack,
             MatrixStack projectionStack) {
         this.sharedRenderer = queues.getDecalRenderer();
-        var decalState = sharedRenderer.setup(context, renderer, modelViewStack, projectionStack);
+        var decalState = sharedRenderer.setup(context, worldSize, heightTexture, modelViewStack, projectionStack);
 
         return () -> {
             decalState.close();
@@ -52,22 +52,19 @@ public abstract class ShadowRenderer {
         this.radial = radial;
     }
 
-    public final void renderShadow(RenderContext context, LandscapeRenderer renderer,
-            Shadowable model) {
+    public final void renderShadow(RenderContext context, Shadowable model) {
         if (currentTexture != null && sharedRenderer != null) {
-            renderShadow(context, renderer, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(),
+            renderShadow(context, model.getPositionX(), model.getPositionY(), model.getShadowDiameter(),
                     color, model.getShadowVerticalCenter(), model.getShadowOpacity());
         }
     }
 
-    public final void renderShadow(RenderContext context, LandscapeRenderer renderer,
-            float f_x, float f_y, float shadow_size) {
-        renderShadow(context, renderer, f_x, f_y, shadow_size, color, 0.6f, 1.0f);
+    public final void renderShadow(RenderContext context, float f_x, float f_y, float shadow_size) {
+        renderShadow(context, f_x, f_y, shadow_size, color, 0.6f, 1.0f);
     }
 
-    public final void renderShadow(RenderContext context, LandscapeRenderer renderer,
-            float f_x, float f_y, float shadow_size, Color.Linear color, float shadowOffsetScale,
-            float shadowOpacity) {
+    public final void renderShadow(RenderContext context, float f_x, float f_y, float shadow_size,
+            Color.Linear color, float shadowOffsetScale, float shadowOpacity) {
         if (currentTexture != null && sharedRenderer != null) {
             // Expand the quad for radial halos to provide room for the offset shadow blob and animation padding.
             float size = radial ? shadow_size * 2.5f : shadow_size;

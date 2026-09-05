@@ -1,9 +1,6 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.simulation.model.Target;
@@ -13,6 +10,9 @@ import org.lwjgl.opengl.GL12;
 
 import java.util.List;
 
+/**
+ * Renders building site placement markers and radius indicators.
+ */
 public final class BuildingSiteRenderer extends ShadowRenderer {
 
     private final Texture green;
@@ -28,7 +28,8 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
             LandscapeRenderer renderer, MatrixStack modelViewStack,
             MatrixStack projectionStack, List<? extends Target> targets, float center_x,
             float center_y, float max_radius) {
-        try (var _ = setupShadows(context, queues, renderer, modelViewStack, projectionStack)) {
+        try (var _ = setupShadows(context, queues, (float) renderer.getHeightMap().getMetersPerWorld(),
+                renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack)) {
             bindShadowTexture(green);
             float radius_sqr = max_radius * max_radius;
             for (Target target : targets) {
@@ -39,7 +40,7 @@ public final class BuildingSiteRenderer extends ShadowRenderer {
                     setShadowColor(Color.Linear.WHITE);
                 else
                     setShadowColor(Color.Linear.GREEN.alpha(Math.max(0f, 1 - a * a)));
-                renderShadow(context, renderer, target.getPositionX(), target.getPositionY(), 2f);
+                renderShadow(context, target.getPositionX(), target.getPositionY(), 2f);
             }
         }
     }
