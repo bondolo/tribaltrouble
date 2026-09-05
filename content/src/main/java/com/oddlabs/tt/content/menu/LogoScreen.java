@@ -6,10 +6,8 @@ import com.oddlabs.tt.client.camera.StaticCamera;
 import com.oddlabs.tt.client.delegate.CameraDelegate;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.IconQuad;
-import com.oddlabs.tt.gui.Fadable;
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputPhase;
@@ -17,6 +15,9 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.gui.render.UIRenderer;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Displays the initial logo splash screen and handles fading to the next interface.
+ */
 public final class LogoScreen extends CameraDelegate<StaticCamera> implements Updatable<TimerAnimation> {
     private static final float DELAY = 4f;
     private static final int overlay_texture_width = 1024;
@@ -27,16 +28,16 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     private final @Nullable GUIIcon overlay;
     private final TimerAnimation delay_timer;
     private final GUIRoot client_root;
-    private final @Nullable Fadable fadable;
+    private final @Nullable Runnable onComplete;
     private final UIRenderer renderer;
     private boolean fade_started = false;
 
-    public LogoScreen(GUIRoot gui_root, @Nullable Texture logo, @Nullable Fadable fadable,
+    public LogoScreen(GUIRoot gui_root, @Nullable Texture logo, @Nullable Runnable onComplete,
             GUIRoot client_root, UIRenderer renderer) {
         super(gui_root, new StaticCamera(new CameraState()));
         this.delay_timer = new TimerAnimation(gui_root.getAnimationManager(), this, DELAY);
         this.client_root = client_root;
-        this.fadable = fadable;
+        this.onComplete = onComplete;
         this.renderer = renderer;
         setCanFocus(true);
         setFocusCycle(true);
@@ -71,7 +72,7 @@ public final class LogoScreen extends CameraDelegate<StaticCamera> implements Up
     public void fade() {
         if (!fade_started) {
             fade_started = true;
-            getGUIRoot().getGUI().newFade(fadable, client_root, renderer);
+            getGUIRoot().getGUI().newFade(onComplete, client_root, renderer);
         }
     }
 

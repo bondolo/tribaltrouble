@@ -156,15 +156,15 @@ public final class GUI implements Animated {
         return newFade(null, null);
     }
 
-    public GUIRoot newFade(@Nullable Fadable fadable, @Nullable UIRenderer renderer) {
+    public GUIRoot newFade(@Nullable Runnable onComplete, @Nullable UIRenderer renderer) {
         GUIRoot gui_root = createRoot();
-        newFade(fadable, gui_root, renderer);
+        newFade(onComplete, gui_root, renderer);
         return gui_root;
     }
 
-    public GUIRoot newFade(@Nullable Fadable fadable, GUIRoot gui_root,
+    public GUIRoot newFade(@Nullable Runnable onComplete, GUIRoot gui_root,
             @Nullable UIRenderer renderer) {
-        fade = new Fade(fadable, gui_root, renderer);
+        fade = new Fade(onComplete, gui_root, renderer);
         eventQueue.getManager().registerAnimation(this);
         return gui_root;
     }

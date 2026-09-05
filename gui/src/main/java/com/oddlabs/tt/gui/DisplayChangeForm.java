@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import static com.oddlabs.tt.gui.Origin.AT_END;
 import static com.oddlabs.tt.gui.Placement.LEFT_MID;
@@ -17,18 +18,18 @@ public final class DisplayChangeForm extends Form {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    private final DoNowListener donow_listener;
+    private final Consumer<Boolean> changeHandler;
     private final HorizButton later_button;
 
-    public DisplayChangeForm(DoNowListener donow_listener) {
-        this.donow_listener = donow_listener;
+    public DisplayChangeForm(Consumer<Boolean> changeHandler) {
+        this.changeHandler = changeHandler;
         LabelBox info_label = new LabelBox(i18n("warning_message"), Skin.getSkin().getEditFont(), 500);
         addChild(info_label);
         HorizButton now_button = new HorizButton(i18n("now"), 120);
         addChild(now_button);
         now_button.addMouseClickListener((_, _, _, _) -> {
             remove();
-            donow_listener.doChange(true);
+            changeHandler.accept(true);
         });
         later_button = new HorizButton(i18n("later"), 120);
         addChild(later_button);
@@ -54,6 +55,6 @@ public final class DisplayChangeForm extends Form {
 
     @Override
     protected void doCancel() {
-        donow_listener.doChange(false);
+        changeHandler.accept(false);
     }
 }
