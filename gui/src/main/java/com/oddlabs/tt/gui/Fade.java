@@ -12,15 +12,15 @@ import org.jspecify.annotations.Nullable;
 final class Fade {
     private static final float FADE_TIME = 1f;
 
-    private final @Nullable Fadable fadable;
+    private final @Nullable Runnable onComplete;
     private final GUIRoot gui_root;
     private final @Nullable UIRenderer renderer;
 
     private float time = 0;
     private boolean image_switched = false;
 
-    Fade(@Nullable Fadable fadable, GUIRoot gui_root, @Nullable UIRenderer renderer) {
-        this.fadable = fadable;
+    Fade(@Nullable Runnable onComplete, GUIRoot gui_root, @Nullable UIRenderer renderer) {
+        this.onComplete = onComplete;
         this.gui_root = gui_root;
         this.renderer = renderer;
     }
@@ -34,8 +34,8 @@ final class Fade {
 
         if (time >= FADE_TIME) {
             gui.stopFade();
-            if (fadable != null)
-                fadable.fadingDone();
+            if (onComplete != null)
+                onComplete.run();
         }
     }
 
