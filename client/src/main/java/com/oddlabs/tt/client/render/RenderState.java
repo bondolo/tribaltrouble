@@ -38,7 +38,6 @@ import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
-import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
@@ -752,9 +751,9 @@ public final class RenderState implements SceneContext {
         }
     }
 
-    public void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
+    public void addAccessory(Model model, Accessory accessory) {
         VisualModel vm = getOrCreateVisualModel(model);
-        vm.addVisualSound(emoji, audioDistance);
+        vm.addAccessory(accessory);
     }
 
     public void onSupplySpawn(SupplyModel supplyModel) {

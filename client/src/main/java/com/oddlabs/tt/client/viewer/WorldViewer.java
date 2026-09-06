@@ -31,6 +31,8 @@ import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.procedural.GeneratedLandscapeData;
+import com.oddlabs.tt.client.render.VisualSoundAccessory;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -173,17 +175,14 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void onHarvest(Model model, SupplyType supplyType) {
-                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioRegistry.getHarvestSound(supplyType));
-                addVisualSound(model, EmojiType.fromSupply(supplyType), AudioRegistry.AUDIO_DISTANCE_DEATH);
+                playAudioWithVisual(model, AudioRegistry.getHarvestSound(supplyType),
+                        EmojiType.fromSupply(supplyType));
             }
 
             @Override
             public void onRepair(Model model) {
-                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioRegistry.getHarvestSound(SupplyType.WOOD));
                 var emoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-                addVisualSound(model, emoji, AudioRegistry.AUDIO_DISTANCE_DEATH);
+                playAudioWithVisual(model, AudioRegistry.getHarvestSound(SupplyType.WOOD), emoji);
             }
 
             @Override
@@ -207,8 +206,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 var params = new AudioParameters(deathSound, AudioRegistry.AUDIO_RANK_DEATH,
                         AudioRegistry.AUDIO_DISTANCE_DEATH, AudioRegistry.AUDIO_GAIN_DEATH,
                         AudioRegistry.AUDIO_RADIUS_DEATH);
-                audioManager.newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
-                addVisualSound(unit, EmojiType.GRAVESTONE, AudioRegistry.AUDIO_DISTANCE_DEATH);
+                playAudioWithVisual(unit, params, EmojiType.GRAVESTONE);
             }
 
             @Override
@@ -231,10 +229,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void onChickenCluck(Model model) {
-                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioRegistry.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
-                                AudioRegistry.CHICKEN_IDLES.length)]);
-                addVisualSound(model, EmojiType.CHICKEN_CLUCK, AudioRegistry.AUDIO_DISTANCE_DEATH);
+                AudioParameters sound = AudioRegistry.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
+                        AudioRegistry.CHICKEN_IDLES.length)];
+                playAudioWithVisual(model, sound, EmojiType.CHICKEN_CLUCK);
             }
 
             @Override
@@ -244,9 +241,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void onChickenDeath(Model model) {
-                audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioRegistry.CHICKEN_DEATH);
-                addVisualSound(model, EmojiType.HARVEST_RUBBER, AudioRegistry.AUDIO_DISTANCE_DEATH);
+                playAudioWithVisual(model, AudioRegistry.CHICKEN_DEATH, EmojiType.HARVEST_RUBBER);
             }
 
             @Override
@@ -556,9 +551,16 @@ public final class WorldViewer implements Animated, AutoCloseable {
         return gui_root.getTime();
     }
 
-    private void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
+    private void playAudioWithVisual(Model model, AudioParameters sound, EmojiType emoji) {
+        audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(), sound);
         if (AccessibilitySettings.from(engine.getSettings()).sound_emojis) {
-            renderer.getRenderState().addVisualSound(model, emoji, audioDistance);
+            addVisualSound(model, emoji, sound.distance());
         }
+    }
+
+    private void addVisualSound(Model model, EmojiType emoji, float audioDistance) {
+        AssetRegistry.getInstance().getEmojiSprite(emoji)
+                .map(sprite -> new VisualSoundAccessory(sprite, emoji.getDuration(), audioDistance))
+                .ifPresent(accessory -> renderer.getRenderState().addAccessory(model, accessory));
     }
 }
