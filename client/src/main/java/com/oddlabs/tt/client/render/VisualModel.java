@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.Accessory;
-import com.oddlabs.tt.simulation.model.EmojiType;
+import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.simulation.model.Model;
 
 import java.util.SequencedCollection;
@@ -20,9 +20,5 @@ public interface VisualModel {
 
     void close();
 
-    void addVisualSound(EmojiType emoji, float duration, float audioDistance);
-
-    default void addVisualSound(EmojiType emoji, float audioDistance) {
-        addVisualSound(emoji, emoji.getDuration(), audioDistance);
-    }
+    void addVisualSound(EmojiType emoji, float audioDistance);
 }

@@ -1,5 +1,6 @@
-package com.oddlabs.tt.simulation.model;
+package com.oddlabs.tt.client.resource;
 
+import com.oddlabs.tt.simulation.model.SupplyType;
 
 /**
  * Logical identifiers for emoji graphics displayed as thought bubbles or visual sounds.

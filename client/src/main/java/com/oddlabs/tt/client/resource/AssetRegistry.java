@@ -5,7 +5,6 @@ import com.oddlabs.tt.engine.procedural.GeneratorCrack;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.simulation.model.BuildingType;
-import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Terrain;

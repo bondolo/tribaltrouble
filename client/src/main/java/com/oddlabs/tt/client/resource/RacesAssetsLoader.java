@@ -21,7 +21,6 @@ import com.oddlabs.tt.engine.render.TextureKey;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.simulation.model.BuildingType;
-import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.SupplyType;
