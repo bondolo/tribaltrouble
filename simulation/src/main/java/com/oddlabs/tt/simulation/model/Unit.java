@@ -571,7 +571,7 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
                 DieBehaviour die_behaviour = (DieBehaviour) getCurrentBehaviour();
                 return die_behaviour.getOffsetZ();
             } else
-                return getSlopeOffset(getSize() * 0.2f);
+                return 0f;
         }
     }
 
