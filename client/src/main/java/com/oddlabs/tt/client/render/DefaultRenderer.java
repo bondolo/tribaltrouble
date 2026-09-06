@@ -25,7 +25,7 @@ import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
 import com.oddlabs.tt.engine.render.state.RenderContext;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;

@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.resource;
+package com.oddlabs.tt.client.resource;
 
 import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.audio.AudioParameters;
@@ -12,8 +12,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-/** Constants for all the game audio assets and parameters */
-public class AudioAssets {
+/**
+ * Audio asset constants and playback parameters for client sound effects and music.
+ */
+public final class AudioRegistry {
 
     // Sound effects
     public static final AudioFile SFX_AMBIENT_BEACH = new AudioFile("/sfx/ambient_beach.ogg");
@@ -285,7 +287,7 @@ public class AudioAssets {
             ))
             .toArray(AudioParameters[]::new);
 
-    private AudioAssets() {
+    private AudioRegistry() {
         // No instances
     }
 }

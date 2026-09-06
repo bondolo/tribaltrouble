@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;

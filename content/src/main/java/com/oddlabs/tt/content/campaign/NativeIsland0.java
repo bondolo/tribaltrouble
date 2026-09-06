@@ -30,7 +30,7 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.NearArmyTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;

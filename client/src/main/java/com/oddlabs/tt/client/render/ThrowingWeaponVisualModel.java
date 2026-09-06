@@ -6,7 +6,7 @@ import com.oddlabs.tt.audio.AudioPlayer;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.DirectedThrowingWeapon;
 import com.oddlabs.tt.simulation.model.weapon.ThrowingWeapon;
@@ -26,11 +26,11 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
         super(weapon);
         this.weapon = weapon;
         var sound = weapon instanceof DirectedThrowingWeapon
-                ? AudioAssets.SFX_WEAPON_SPEAR
-                : AudioAssets.SFX_WEAPON_AXE;
-        var params = new AudioParameters(sound, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
-                AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
-                AudioAssets.AUDIO_RADIUS_WEAPON_ATTACK,
+                ? AudioRegistry.SFX_WEAPON_SPEAR
+                : AudioRegistry.SFX_WEAPON_AXE;
+        var params = new AudioParameters(sound, AudioRegistry.AUDIO_RANK_WEAPON_ATTACK,
+                AudioRegistry.AUDIO_DISTANCE_WEAPON_ATTACK, AudioRegistry.AUDIO_GAIN_WEAPON_ATTACK,
+                AudioRegistry.AUDIO_RADIUS_WEAPON_ATTACK,
                 ThreadLocalRandom.current().nextFloat(0.9f, 1.1f));
         this.audioPlayer = audio.newAudio(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ(), params);
     }

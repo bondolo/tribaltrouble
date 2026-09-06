@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.effects.render.EmitterAccessory;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
@@ -12,7 +12,7 @@ import com.oddlabs.tt.effects.particle.ColorSpectrum;
 import com.oddlabs.tt.effects.particle.Emitter;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -132,7 +132,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
 
     private void triggerCollapseEffects() {
         audio.newAudio(building.getPositionX(), building.getPositionY(),
-                building.getPositionZ(), AudioAssets.BUILDING_COLLAPSE);
+                building.getPositionZ(), AudioRegistry.BUILDING_COLLAPSE);
         final Terrain terrain = building.getOwner().getWorld().getTerrainType();
         final Color.Linear dustColor = terrain.getDustColor().desaturate(0.5f);
 

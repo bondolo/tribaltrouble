@@ -7,8 +7,8 @@ import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.RockSupply;
@@ -123,9 +123,9 @@ public final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockS
                     soundPlayed = true;
                     audio.newAudio(rockSupply.getPositionX(), rockSupply.getPositionY(),
                             rockSupply.getPositionZ(),
-                            new AudioParameters(AudioAssets.SFX_RUMBLE, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION));
+                            new AudioParameters(AudioRegistry.SFX_RUMBLE, AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
+                                    AudioRegistry.AUDIO_DISTANCE_SUPPLY_ACTION, AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
+                                    AudioRegistry.AUDIO_RADIUS_SUPPLY_ACTION));
                 }
             } else if (progress < 0.7f) {
                 if (progress > 0.65f) {

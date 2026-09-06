@@ -2,7 +2,7 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.model.EmojiType;
 import com.oddlabs.tt.simulation.model.Model;
 

@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.effects.render.EmitterAccessory;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 
 import com.oddlabs.tt.audio.AudioImplementation;
 import com.oddlabs.tt.engine.render.*;
@@ -11,7 +11,7 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.effects.particle.LinearEmitter;
 import com.oddlabs.tt.effects.particle.RandomAccelerationEmitter;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -108,7 +108,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
             if (productionPlayer == null) {
                 productionPlayer = audio.newAudio(
                         building.getPositionX(), building.getPositionY(), building.getPositionZ(),
-                        AudioAssets.WEAPONS_PRODUCTION);
+                        AudioRegistry.WEAPONS_PRODUCTION);
             }
         } else {
             if (productionPlayer != null) {

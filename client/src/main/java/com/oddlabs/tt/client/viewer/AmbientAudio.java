@@ -13,7 +13,7 @@ import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.base.geom.BoundingBox;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import org.joml.Vector3f;
 
 import java.util.logging.Logger;
@@ -40,9 +40,9 @@ public final class AmbientAudio implements AutoCloseable {
 
     public AmbientAudio(AudioManager audioManager) {
         this.audioManager = audioManager;
-        this.ambient_forest = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_FOREST);
-        this.ambient_beach = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_BEACH);
-        this.ambient_wind = audioManager.newAudio(10000f, 10000f, 10000f, AudioAssets.AMBIENT_WIND);
+        this.ambient_forest = audioManager.newAudio(10000f, 10000f, 10000f, AudioRegistry.AMBIENT_FOREST);
+        this.ambient_beach = audioManager.newAudio(10000f, 10000f, 10000f, AudioRegistry.AMBIENT_BEACH);
+        this.ambient_wind = audioManager.newAudio(10000f, 10000f, 10000f, AudioRegistry.AMBIENT_WIND);
     }
 
     private static int countTrees(AbstractTreeGroup node, float x, float y, float radiusSq, int threshold,
@@ -115,7 +115,7 @@ public final class AmbientAudio implements AutoCloseable {
         // update placement and gain of ambient forest source
         ambient_forest.setPosition(0f, 0f, landscapeEnvironment.getHeight(camera.getCurrentX(), camera.getCurrentY())
                 - camera.getCurrentZ() + 8f);
-        ambient_forest.setGain(AudioAssets.AUDIO_GAIN_AMBIENT_FOREST * Math.clamp(1f - dr + 0.5f, 0f, 1f));
+        ambient_forest.setGain(AudioRegistry.AUDIO_GAIN_AMBIENT_FOREST * Math.clamp(1f - dr + 0.5f, 0f, 1f));
 
         // update placement and gain of ambient beach source
         float factor = 1f;
@@ -125,13 +125,13 @@ public final class AmbientAudio implements AutoCloseable {
         float beach_y = (camera.getCurrentY() - meters_per_world / 2f) * factor;
         float beach_z = landscapeEnvironment.getHeight(camera.getCurrentX(), camera.getCurrentY()) - camera
                 .getCurrentZ();
-        float beach_gain = AudioAssets.AUDIO_GAIN_AMBIENT_BEACH * Math.clamp(1f - Math.abs(4f * dr - 3.75f), 0f, 1f);
+        float beach_gain = AudioRegistry.AUDIO_GAIN_AMBIENT_BEACH * Math.clamp(1f - Math.abs(4f * dr - 3.75f), 0f, 1f);
         ambient_beach.setPosition(beach_x, beach_y, beach_z);
         ambient_beach.setGain(beach_gain);
 
         // update placement of ambient wind source
         ambient_wind.setPosition(0f, 0f, Math.max(0f, 50f + GameCamera.MAX_Z - camera.getCurrentZ()));
-        ambient_wind.setGain(AudioAssets.AUDIO_GAIN_AMBIENT_WIND);
+        ambient_wind.setGain(AudioRegistry.AUDIO_GAIN_AMBIENT_WIND);
 
         if (audioManager.isEFXSupported()) {
             float camZ = camera.getCurrentZ();

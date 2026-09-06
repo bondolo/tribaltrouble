@@ -7,7 +7,7 @@ import com.oddlabs.tt.engine.render.AnimatedAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SonicBlastAccessory;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.SonicBlast;
@@ -31,9 +31,9 @@ public final class SonicBlastVisualModel extends AbstractVisualModel implements 
         this.audio = audio;
         World world = blast.getWorld();
         this.lur = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
-                AudioAssets.SONIC_BLAST_LUR[world.getRandom().nextInt(AudioAssets.SONIC_BLAST_LUR.length)]);
+                AudioRegistry.SONIC_BLAST_LUR[world.getRandom().nextInt(AudioRegistry.SONIC_BLAST_LUR.length)]);
         this.rumble = audio.newAudio(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(),
-                AudioAssets.SONIC_BLAST_RUMBLE);
+                AudioRegistry.SONIC_BLAST_RUMBLE);
         triggerBlast(blast.getPositionX(), blast.getPositionY(), blast.getPositionZ(), blast.getHitRadius(), blast
                 .getSeconds());
     }
@@ -45,7 +45,7 @@ public final class SonicBlastVisualModel extends AbstractVisualModel implements 
         }
         World world = blast.getWorld();
         this.effect = new SonicBlastEffect(world, new Vector3f(x, y, z), radius, duration);
-        audio.newAudio(x, y, z, AudioAssets.SONIC_BLAST);
+        audio.newAudio(x, y, z, AudioRegistry.SONIC_BLAST);
         lur.stop(10.0f);
         rumble.stop(15.0f);
     }

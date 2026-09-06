@@ -18,20 +18,20 @@ import com.oddlabs.tt.client.gui.ActionButtonPanel;
 import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.client.render.DefaultRenderer;
 import com.oddlabs.tt.client.render.Picker;
-import com.oddlabs.tt.client.render.RacesAssetsLoader;
+import com.oddlabs.tt.client.resource.RacesAssetsLoader;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.engine.settings.GraphicsSettings;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.render.LandscapeBaker;
 import com.oddlabs.tt.client.render.LandscapeRenderer;
-import com.oddlabs.tt.client.render.LandscapeAssetsLoader;
+import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.procedural.GeneratedLandscapeData;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
@@ -168,46 +168,47 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void treeFelled(AbstractTreeGroup.TreeType treeType, float x, float y, float z) {
-                audioManager.newAudio(x, y, z, AudioAssets.TREE_FALL[treeType.ordinal() % 2]);
+                audioManager.newAudio(x, y, z, AudioRegistry.TREE_FALL[treeType.ordinal() % 2]);
             }
 
             @Override
             public void onHarvest(Model model, SupplyType supplyType) {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioAssets.getHarvestSound(supplyType));
-                addVisualSound(model, EmojiType.fromSupply(supplyType), AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioRegistry.getHarvestSound(supplyType));
+                addVisualSound(model, EmojiType.fromSupply(supplyType), AudioRegistry.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
             public void onRepair(Model model) {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioAssets.getHarvestSound(SupplyType.WOOD));
+                        AudioRegistry.getHarvestSound(SupplyType.WOOD));
                 var emoji = ThreadLocalRandom.current().nextBoolean() ? EmojiType.REPAIR_SAW : EmojiType.REPAIR_HAMMER;
-                addVisualSound(model, emoji, AudioAssets.AUDIO_DISTANCE_DEATH);
+                addVisualSound(model, emoji, AudioRegistry.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
             public void onBuildingHit(float x, float y, float z) {
                 audioManager.newAudio(x, y, z,
-                        AudioAssets.BUILDING_HITS[ThreadLocalRandom.current().nextInt(
-                                AudioAssets.BUILDING_HITS.length)]);
+                        AudioRegistry.BUILDING_HITS[ThreadLocalRandom.current().nextInt(
+                                AudioRegistry.BUILDING_HITS.length)]);
             }
 
             @Override
             public void onUnitDeath(Unit unit, UnitVisualType unitType, Race race) {
                 AudioFile deathSound = switch (unitType) {
-                    case PEON -> AudioAssets.SFX_DEATH_PEON;
+                    case PEON -> AudioRegistry.SFX_DEATH_PEON;
                     case WARRIOR_ROCK -> (race == Race.VIKINGS)
-                            ? AudioAssets.SFX_DEATH_VIKING_WARRIORS[0]
-                            : AudioAssets.SFX_DEATH_NATIVE_WARRIORS[0];
+                            ? AudioRegistry.SFX_DEATH_VIKING_WARRIORS[0]
+                            : AudioRegistry.SFX_DEATH_NATIVE_WARRIORS[0];
                     case WARRIOR_IRON, WARRIOR_RUBBER, CHIEFTAIN -> (race == Race.VIKINGS)
-                            ? AudioAssets.SFX_DEATH_VIKING_WARRIORS[1]
-                            : AudioAssets.SFX_DEATH_NATIVE_WARRIORS[1];
+                            ? AudioRegistry.SFX_DEATH_VIKING_WARRIORS[1]
+                            : AudioRegistry.SFX_DEATH_NATIVE_WARRIORS[1];
                 };
-                var params = new AudioParameters(deathSound, AudioAssets.AUDIO_RANK_DEATH,
-                        AudioAssets.AUDIO_DISTANCE_DEATH, AudioAssets.AUDIO_GAIN_DEATH, AudioAssets.AUDIO_RADIUS_DEATH);
+                var params = new AudioParameters(deathSound, AudioRegistry.AUDIO_RANK_DEATH,
+                        AudioRegistry.AUDIO_DISTANCE_DEATH, AudioRegistry.AUDIO_GAIN_DEATH,
+                        AudioRegistry.AUDIO_RADIUS_DEATH);
                 audioManager.newAudio(unit.getPositionX(), unit.getPositionY(), unit.getPositionZ(), params);
-                addVisualSound(unit, EmojiType.GRAVESTONE, AudioAssets.AUDIO_DISTANCE_DEATH);
+                addVisualSound(unit, EmojiType.GRAVESTONE, AudioRegistry.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -215,37 +216,37 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 AudioFile sound;
                 if (unitType == UnitVisualType.CHIEFTAIN) {
                     AudioFile[] hits = (race == Race.VIKINGS)
-                            ? AudioAssets.SFX_VIKING_CHIEFTAIN_HITS
-                            : AudioAssets.SFX_NATIVE_CHIEFTAIN_HITS;
+                            ? AudioRegistry.SFX_VIKING_CHIEFTAIN_HITS
+                            : AudioRegistry.SFX_NATIVE_CHIEFTAIN_HITS;
                     sound = hits[ThreadLocalRandom.current().nextInt(hits.length)];
                 } else {
-                    sound = AudioAssets.SFX_IMPACT_MEATS[ThreadLocalRandom.current().nextInt(
-                            AudioAssets.SFX_IMPACT_MEATS.length)];
+                    sound = AudioRegistry.SFX_IMPACT_MEATS[ThreadLocalRandom.current().nextInt(
+                            AudioRegistry.SFX_IMPACT_MEATS.length)];
                 }
-                var params = new AudioParameters(sound, AudioAssets.AUDIO_RANK_WEAPON_HIT,
-                        AudioAssets.AUDIO_DISTANCE_WEAPON_HIT, AudioAssets.AUDIO_GAIN_WEAPON_HIT,
-                        AudioAssets.AUDIO_RADIUS_WEAPON_HIT);
+                var params = new AudioParameters(sound, AudioRegistry.AUDIO_RANK_WEAPON_HIT,
+                        AudioRegistry.AUDIO_DISTANCE_WEAPON_HIT, AudioRegistry.AUDIO_GAIN_WEAPON_HIT,
+                        AudioRegistry.AUDIO_RADIUS_WEAPON_HIT);
                 audioManager.newAudio(x, y, z, params);
             }
 
             @Override
             public void onChickenCluck(Model model) {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioAssets.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
-                                AudioAssets.CHICKEN_IDLES.length)]);
-                addVisualSound(model, EmojiType.CHICKEN_CLUCK, AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioRegistry.CHICKEN_IDLES[ThreadLocalRandom.current().nextInt(
+                                AudioRegistry.CHICKEN_IDLES.length)]);
+                addVisualSound(model, EmojiType.CHICKEN_CLUCK, AudioRegistry.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
             public void onChickenPeck(float x, float y, float z) {
-                audioManager.newAudio(x, y, z, AudioAssets.CHICKEN_PECK);
+                audioManager.newAudio(x, y, z, AudioRegistry.CHICKEN_PECK);
             }
 
             @Override
             public void onChickenDeath(Model model) {
                 audioManager.newAudio(model.getPositionX(), model.getPositionY(), model.getPositionZ(),
-                        AudioAssets.CHICKEN_DEATH);
-                addVisualSound(model, EmojiType.HARVEST_RUBBER, AudioAssets.AUDIO_DISTANCE_DEATH);
+                        AudioRegistry.CHICKEN_DEATH);
+                addVisualSound(model, EmojiType.HARVEST_RUBBER, AudioRegistry.AUDIO_DISTANCE_DEATH);
             }
 
             @Override
@@ -275,9 +276,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void onWeaponThrow(float x, float y, float z) {
-                var params = new AudioParameters(AudioAssets.SFX_WEAPON_SPEAR, AudioAssets.AUDIO_RANK_WEAPON_ATTACK,
-                        AudioAssets.AUDIO_DISTANCE_WEAPON_ATTACK, AudioAssets.AUDIO_GAIN_WEAPON_ATTACK,
-                        AudioAssets.AUDIO_RADIUS_WEAPON_ATTACK);
+                var params = new AudioParameters(AudioRegistry.SFX_WEAPON_SPEAR, AudioRegistry.AUDIO_RANK_WEAPON_ATTACK,
+                        AudioRegistry.AUDIO_DISTANCE_WEAPON_ATTACK, AudioRegistry.AUDIO_GAIN_WEAPON_ATTACK,
+                        AudioRegistry.AUDIO_RADIUS_WEAPON_ATTACK);
                 audioManager.newAudio(x, y, z, params);
             }
 

@@ -19,6 +19,7 @@ module com.oddlabs.tt.client {
     exports com.oddlabs.tt.client.delegate;
     exports com.oddlabs.tt.client.gui;
     exports com.oddlabs.tt.client.render;
+    exports com.oddlabs.tt.client.resource;
     exports com.oddlabs.tt.client.trigger;
     exports com.oddlabs.tt.client.viewer;
 
@@ -27,6 +28,7 @@ module com.oddlabs.tt.client {
     opens com.oddlabs.tt.client.delegate;
     opens com.oddlabs.tt.client.gui;
     opens com.oddlabs.tt.client.render;
+    opens com.oddlabs.tt.client.resource;
     opens com.oddlabs.tt.client.trigger;
     opens com.oddlabs.tt.client.viewer;
 
