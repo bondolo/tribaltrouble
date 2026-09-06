@@ -1,4 +1,4 @@
-package com.oddlabs.tt.client.gui;
+package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.tt.gui.GUIErrorHandler;
 import com.oddlabs.tt.gui.GUIIcon;
@@ -7,43 +7,34 @@ import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
 /**
- * Loads and provides icon resources for the Viking campaign map.
+ * Loads and provides icon resources for the Native campaign map.
  */
-public final class VikingCampaignIcons implements CampaignIcons {
-    private static final int NUM_ISLANDS = 15;
+final class NativeCampaignIcons implements CampaignIcons {
+    private static final int NUM_ISLANDS = 8;
 
-    private static final VikingCampaignIcons ICONS = new VikingCampaignIcons("/gui/viking_campaign.xml");
+    private static final NativeCampaignIcons ICONS = new NativeCampaignIcons("/gui/native_campaign.xml");
 
     private final IconQuad map;
     private final MapIslandData[] islands = new MapIslandData[NUM_ISLANDS];
-    private final IconQuad[] flags = new IconQuad[5];
-    private final IconQuad[] boats = new IconQuad[5];
-    private final GUIIcon[] hidden = new GUIIcon[2];
+    private final IconQuad[] flags = new IconQuad[3];
+    private final IconQuad[] boats = new IconQuad[3];
+    private final GUIIcon[] hidden = new GUIIcon[1];
     private final IconQuad[] faces = new IconQuad[9];
-    private final int offset_x;
-    private final int offset_y;
-    private final int width;
-    private final int height;
 
-    public static VikingCampaignIcons getIcons() {
+    static NativeCampaignIcons getIcons() {
         return ICONS;
     }
 
-    private VikingCampaignIcons(String xml_file) {
+    private NativeCampaignIcons(String xml_file) {
         IconAtlas atlas = IconAtlas.load(xml_file, new GUIErrorHandler());
 
         flags[0] = atlas.getNamedIconQuad("flag0");
         flags[1] = atlas.getNamedIconQuad("flag1");
         flags[2] = atlas.getNamedIconQuad("flag2");
-        flags[3] = atlas.getNamedIconQuad("flag3");
-        flags[4] = atlas.getNamedIconQuad("flag4");
         boats[0] = atlas.getNamedIconQuad("boat0");
         boats[1] = atlas.getNamedIconQuad("boat1");
         boats[2] = atlas.getNamedIconQuad("boat2");
-        boats[3] = atlas.getNamedIconQuad("boat3");
-        boats[4] = atlas.getNamedIconQuad("boat4");
         hidden[0] = getNamedGUIIcon(atlas, "hidden0");
-        hidden[1] = getNamedGUIIcon(atlas, "hidden1");
         faces[0] = atlas.getNamedIconQuad("face0");
         faces[1] = atlas.getNamedIconQuad("face1");
         faces[2] = atlas.getNamedIconQuad("face2");
@@ -58,12 +49,6 @@ public final class VikingCampaignIcons implements CampaignIcons {
         for (int i = 0; i < NUM_ISLANDS; i++) {
             islands[i] = loadMapIslandData(atlas, "island" + i);
         }
-
-        IconAtlas.Element map_node = atlas.getElement("map");
-        offset_x = map_node.getInt("offset_x");
-        offset_y = map_node.getInt("offset_y");
-        width = map_node.getInt("width");
-        height = map_node.getInt("height");
     }
 
     private MapIslandData loadMapIslandData(IconAtlas atlas, String name) {
@@ -107,22 +92,6 @@ public final class VikingCampaignIcons implements CampaignIcons {
     @Override
     public int getNumIslands() {
         return islands.length;
-    }
-
-    public int getOffsetX() {
-        return offset_x;
-    }
-
-    public int getOffsetY() {
-        return offset_y;
-    }
-
-    public int getInternalWidth() {
-        return width;
-    }
-
-    public int getInternalHeight() {
-        return height;
     }
 
     @Override

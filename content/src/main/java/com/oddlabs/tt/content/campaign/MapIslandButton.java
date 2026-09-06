@@ -1,4 +1,4 @@
-package com.oddlabs.tt.client.gui;
+package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.tt.gui.GUIObject;
 import com.oddlabs.tt.gui.GUIRoot;
@@ -7,16 +7,19 @@ import com.oddlabs.tt.gui.IconButton;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
-public class MapIslandButton extends IconButton {
+/**
+ * Interactive island button on the campaign map.
+ */
+final class MapIslandButton extends IconButton {
     private final int islandIndex;
 
-    public MapIslandButton(ModeIconQuads icon, int islandIndex) {
+    MapIslandButton(ModeIconQuads icon, int islandIndex) {
         super(icon, () -> "");
         this.islandIndex = islandIndex;
         setCanFocus(true);
     }
 
-    public int getIslandIndex() {
+    int getIslandIndex() {
         return islandIndex;
     }
 

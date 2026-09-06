@@ -1,7 +1,6 @@
 package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.tt.audio.AudioManager;
-import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.client.trigger.GameOverDelayTrigger;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;

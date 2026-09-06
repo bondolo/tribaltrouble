@@ -1,8 +1,6 @@
 package com.oddlabs.tt.content.campaign;
 
 
-import com.oddlabs.tt.client.gui.CampaignIcons;
-import com.oddlabs.tt.client.gui.VikingCampaignIcons;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.Form;

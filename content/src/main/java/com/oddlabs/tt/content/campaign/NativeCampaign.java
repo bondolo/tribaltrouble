@@ -1,10 +1,8 @@
 package com.oddlabs.tt.content.campaign;
 
 
-import com.oddlabs.tt.client.gui.CampaignIcons;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
-import com.oddlabs.tt.client.gui.NativeCampaignIcons;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;

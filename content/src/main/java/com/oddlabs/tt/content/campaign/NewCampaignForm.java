@@ -37,7 +37,7 @@ import static com.oddlabs.tt.gui.Placement.LEFT_MID;
 /**
  * UI form for creating a new single-player campaign.
  */
-public final class NewCampaignForm extends Form implements DeterministicSerializerLoopbackInterface<CampaignState[]> {
+final class NewCampaignForm extends Form implements DeterministicSerializerLoopbackInterface<CampaignState[]> {
     private static final int BUTTON_WIDTH = 100;
     private static final int EDITLINE_WIDTH = 240;
 
@@ -58,7 +58,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     private final PulldownMenu<Difficulty> difficulty_pulldown = new PulldownMenu<>();
     private CampaignState @Nullable [] campaign_states;
 
-    public NewCampaignForm(Menu main_menu,
+    NewCampaignForm(Menu main_menu,
             CampaignForm campaign_form) {
         this.main_menu = main_menu;
         this.gui_root = main_menu.getGUIRoot();
@@ -195,7 +195,7 @@ public final class NewCampaignForm extends Form implements DeterministicSerializ
     @Override
     public void failed(Throwable e) {
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
-        } else if (e instanceof InvalidClassException) {
+        } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
         } else {
             String failed_message = i18n("failed_message", LoadCampaignBox.SAVEGAMES_FILE_NAME, e.getMessage());
             gui_root.addModalForm(new MessageForm(failed_message));

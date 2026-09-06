@@ -26,14 +26,22 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class LoadCampaignBox extends GUIObject implements DeterministicSerializerLoopbackInterface<
+/**
+ * Multi-column combo box widget displaying saved campaign states with save/load coordination.
+ */
+final class LoadCampaignBox extends GUIObject implements DeterministicSerializerLoopbackInterface<
         CampaignState[]> {
     private static final Logger logger = Logger.getLogger(LoadCampaignBox.class.getSimpleName());
-    public static final Path SAVEGAMES_FILE_NAME = Path.of("savegames");
+    static final Path SAVEGAMES_FILE_NAME = Path.of("savegames");
+    private static final Map<String, String> CLASS_ALIASES = Map.of(
+            "com.oddlabs.tt.player.campaign.CampaignState", CampaignState.class.getName(),
+            "com.oddlabs.tt.simulation.campaign.CampaignState", CampaignState.class.getName()
+    );
 
     private static final int WIDTH_NAME = 210;
     private static final int WIDTH_RACE = 70;
@@ -49,7 +57,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer engine) {
+    LoadCampaignBox(GUIRoot gui_root, RowListener<CampaignState> listener, Peer engine) {
         this.engine = engine;
         this.gui_root = gui_root;
         ColumnInfo[] infos = {
@@ -66,7 +74,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         refresh();
     }
 
-    public static <T> void saveSavegames(
+    static <T> void saveSavegames(
             Peer engine, CampaignState[] states,
             DeterministicSerializerLoopbackInterface<T> callback) {
         DeterministicSerializer.save(engine.getEventQueue().getDeterministic(), states,
@@ -77,9 +85,9 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
         return engine.getGamePaths().dataDir().resolve(SAVEGAMES_FILE_NAME);
     }
 
-    public static <T> void loadSavegames(Peer engine, DeterministicSerializerLoopbackInterface<T> callback) {
+    static <T> void loadSavegames(Peer engine, DeterministicSerializerLoopbackInterface<T> callback) {
         DeterministicSerializer.load(engine.getEventQueue().getDeterministic(), getLoadSavegamesFile(engine),
-                callback);
+                callback, CLASS_ALIASES);
     }
 
     private static Path getLoadSavegamesFile(Peer engine) {
@@ -140,7 +148,7 @@ public final class LoadCampaignBox extends GUIObject implements DeterministicSer
     public void failed(Throwable e) {
         logger.log(Level.SEVERE, "Failed to load savegames", e);
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
-        } else if (e instanceof InvalidClassException) {
+        } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
             String invalid_message = i18n("invalid_message", SAVEGAMES_FILE_NAME);
             gui_root.addModalForm(new MessageForm(invalid_message));
         } else {
