@@ -61,7 +61,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         def(GameAction.GLOBAL_CHAT_TEAM, Key.RETURN, Modifier.SHIFT);
         def(GameAction.GLOBAL_MENU, Key.ESCAPE);
         def(GameAction.GLOBAL_TOGGLE_STATUS, Key.I, Modifier.CONTROL);
-        def(GameAction.DEBUG_PRINT_INFO, Key.I, Modifier.CONTROL);
+        def(GameAction.DEBUG_PRINT_INFO, Key.I, Modifier.CONTROL, Modifier.ALT);
         def(GameAction.GLOBAL_AGGRESSIVE_UNITS, Key.A, Modifier.CONTROL);
 
         // Camera
@@ -226,7 +226,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         def(GameAction.CHEAT_12, Key.F12, Modifier.ALT);
 
         // Debug
-        def(GameAction.DEBUG_PRINT_INFO, Key.I, Modifier.CONTROL);
+        def(GameAction.DEBUG_PRINT_INFO, Key.I, Modifier.CONTROL, Modifier.ALT);
         def(GameAction.DEBUG_KILL_SELECTED, Key.K, Modifier.CONTROL);
         def(GameAction.DEBUG_TOGGLE_LIGHT, Key.L);
         def(GameAction.DEBUG_TOGGLE_LIGHT, Key.O);
