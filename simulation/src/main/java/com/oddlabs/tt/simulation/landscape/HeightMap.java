@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import org.joml.Vector3f;
 import java.util.List;
 
 /**
@@ -10,9 +9,6 @@ public final class HeightMap implements LandscapeEnvironment {
     public static final int METERS_PER_UNIT_GRID = 2;
     public static final int GRID_UNITS_PER_PATCH_EXP = 4;
     public static final int GRID_UNITS_PER_PATCH = 1 << GRID_UNITS_PER_PATCH_EXP;
-
-    static final int MIN_INTERSECTING_LEVEL = 5;
-    private static final Vector3f plane = new Vector3f();
 
     private final World world_instance;
     private final LandscapeData landscapeData;
@@ -104,39 +100,6 @@ public final class HeightMap implements LandscapeEnvironment {
         return landscapeData.accessGrid();
     }
 
-    void makePlaneVector(int x0, int y0, int x1, int y1, int x2, int y2, Vector3f plane) {
-        makePlaneVector(x0, y0, getWrappedHeight(x0, y0),
-                x1, y1, getWrappedHeight(x1, y1),
-                x2, y2, getWrappedHeight(x2, y2), plane);
-    }
-
-    private static void makePlaneVector(float h1x, float h1y, float h1z, float h2x, float h2y, float h2z, float h3x,
-            float h3y, float h3z, Vector3f plane) {
-        float v1x = h2x - h1x;
-        float v1y = h2y - h1y;
-        float v1z = h2z - h1z;
-        float v2x = h3x - h1x;
-        float v2y = h3y - h1y;
-        float v2z = h3z - h1z;
-
-        Vector3f vec1 = new Vector3f(v1x, v1y, v1z);
-        Vector3f vec2 = new Vector3f(v2x, v2y, v2z);
-        vec2.cross(vec1);
-
-        // Optimization for planeHeight!
-        float inv_z = -1f / vec2.z;
-        plane.set(vec2.x * inv_z, vec2.y * inv_z, (-vec2.x * h1x - vec2.y * h1y) * inv_z + h1z);
-    }
-
-    static float planeHeight(float x, float y, Vector3f plane) {
-        return plane.x * x + plane.y * y + plane.z;
-    }
-
-    private static float doPlane(float x, float y, float h1x, float h1y, float h1z, float h2x, float h2y, float h2z,
-            float h3x, float h3y, float h3z) {
-        makePlaneVector(h1x, h1y, h1z, h2x, h2y, h2z, h3x, h3y, h3z, plane);
-        return planeHeight(x, y, plane);
-    }
 
     @Override
     public boolean isBelowSeaLevel(int patch_x, int patch_y) {
@@ -184,10 +147,9 @@ public final class HeightMap implements LandscapeEnvironment {
         float h01 = heightmap[y1 * size + x0];
         float h11 = heightmap[y1 * size + x1];
 
-        float h0 = h00 * (1 - dx) + h10 * dx;
-        float h1 = h01 * (1 - dx) + h11 * dx;
-
-        return h0 * (1 - dy) + h1 * dy;
+        return dx + dy < 1.0f
+               ? h00 + dx * (h10 - h00) + dy * (h01 - h00)
+               : h11 + (1.0f - dx) * (h01 - h11) + (1.0f - dy) * (h10 - h11);
     }
 
     @Override
