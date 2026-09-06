@@ -536,8 +536,7 @@ public final class LWJGL3Window implements Window {
                         active = false;
                     }
                     case SDL_EVENT_WINDOW_OCCLUDED -> {
-                        logger.info("MacNative: Window occluded event received.");
-                        active = false;
+                        logger.fine("MacNative: Window occluded event received.");
                     }
                     case SDL_EVENT_WINDOW_FOCUS_GAINED -> {
                         active = true;
@@ -594,6 +593,10 @@ public final class LWJGL3Window implements Window {
 
     @Override
     public boolean isActive() {
+        if (windowHandle != MemoryUtil.NULL) {
+            long flags = SDL_GetWindowFlags(windowHandle);
+            return (flags & SDL_WINDOW_INPUT_FOCUS) != 0 || active;
+        }
         return active;
     }
 
@@ -740,7 +743,8 @@ public final class LWJGL3Window implements Window {
         return filterAndSortModes(modes);
     }
 
-    private record Resolution(int width, int height) {}
+    private record Resolution(int width, int height) {
+    }
 
     private static int compareModePreference(SerializableDisplayMode m1, SerializableDisplayMode m2) {
         if (m1.getFrequency() != m2.getFrequency()) {
@@ -753,8 +757,8 @@ public final class LWJGL3Window implements Window {
         Map<Resolution, SerializableDisplayMode> bestModes = new HashMap<>();
         for (SerializableDisplayMode mode : modes) {
             Resolution key = new Resolution(mode.getWidth(), mode.getHeight());
-            bestModes.merge(key, mode, (existing, replacement) ->
-                    compareModePreference(replacement, existing) > 0 ? replacement : existing);
+            bestModes.merge(key, mode, (existing, replacement) -> compareModePreference(replacement, existing) > 0
+                    ? replacement : existing);
         }
         return bestModes.values().stream()
                 .sorted((m1, m2) -> {
