@@ -1,9 +1,12 @@
-package com.oddlabs.tt.client.gui;
+package com.oddlabs.tt.content.campaign;
 
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.engine.render.IconQuad;
 
-public interface CampaignIcons {
+/**
+ * Provides access to icon resources, maps, and island definitions for a campaign.
+ */
+interface CampaignIcons {
     GUIIcon[] getHiddenRoutes();
 
     IconQuad[] getFaces();
@@ -12,9 +15,5 @@ public interface CampaignIcons {
 
     int getNumIslands();
 
-    //	public int getOffsetX();
-//	public int getOffsetY();
-//	public int getInternalWidth();
-//	public int getInternalHeight();
     MapIslandData getMapIslandData(int i);
 }

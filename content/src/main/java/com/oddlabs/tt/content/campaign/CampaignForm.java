@@ -154,7 +154,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     @Override
     public void failed(Throwable e) {
         if (e instanceof FileNotFoundException || e instanceof NoSuchFileException) {
-        } else if (e instanceof InvalidClassException) {
+        } else if (e instanceof InvalidClassException || e instanceof ClassNotFoundException) {
         } else {
             logger.log(Level.SEVERE, "Load failed", e);
             String failed_message = i18n("failed_message", LoadCampaignBox.SAVEGAMES_FILE_NAME, e.getMessage());
