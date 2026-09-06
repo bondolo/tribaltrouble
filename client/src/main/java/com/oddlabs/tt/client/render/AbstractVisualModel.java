@@ -2,8 +2,6 @@ package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.engine.render.AnimatedAccessory;
-import com.oddlabs.tt.client.resource.AssetRegistry;
-import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.simulation.model.Model;
 
 import java.util.ArrayList;
@@ -23,7 +21,8 @@ public abstract class AbstractVisualModel implements VisualModel {
         this.model = model;
     }
 
-    protected final void addAccessory(Accessory accessory) {
+    @Override
+    public final void addAccessory(Accessory accessory) {
         accessories.add(accessory);
     }
 
@@ -102,12 +101,5 @@ public abstract class AbstractVisualModel implements VisualModel {
             acc.close();
         }
         accessories.clear();
-    }
-
-    @Override
-    public void addVisualSound(EmojiType emoji, float audioDistance) {
-        AssetRegistry.getInstance().getEmojiSprite(emoji)
-                .map(sprite -> new VisualSoundAccessory(sprite, emoji.getDuration(), audioDistance))
-                .ifPresent(accessories::add);
     }
 }
