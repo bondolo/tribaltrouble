@@ -7,8 +7,8 @@ import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.Stun;
@@ -48,7 +48,7 @@ public final class StunVisualModel extends AbstractVisualModel implements Emitte
                 AssetRegistry.getInstance().getNoteTextures());
 
         this.sound = audio.newAudio(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ(),
-                AudioAssets.STUN_LUR[ThreadLocalRandom.current().nextInt(AudioAssets.STUN_LUR.length)]);
+                AudioRegistry.STUN_LUR[ThreadLocalRandom.current().nextInt(AudioRegistry.STUN_LUR.length)]);
     }
 
     @Override

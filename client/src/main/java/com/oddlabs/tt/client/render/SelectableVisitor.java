@@ -3,7 +3,7 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.engine.render.ElementSceneContext;
 import com.oddlabs.tt.engine.render.ModelVisitor;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Model;

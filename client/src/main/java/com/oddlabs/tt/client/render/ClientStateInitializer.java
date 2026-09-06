@@ -1,7 +1,7 @@
 package com.oddlabs.tt.client.render;
 
 import com.oddlabs.tt.audio.AudioImplementation;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.IronSupply;
@@ -53,6 +53,6 @@ public final class ClientStateInitializer {
      */
     public static void init(AudioImplementation audio) {
         EditLine.setErrorAudioHandler(
-                () -> audio.newAudio(0f, 0f, 0f, AudioAssets.ERROR_SOUND));
+                () -> audio.newAudio(0f, 0f, 0f, AudioRegistry.ERROR_SOUND));
     }
 }

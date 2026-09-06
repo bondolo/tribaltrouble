@@ -1,6 +1,5 @@
 /**
- * Resource management and game asset loaders.
- * Contains world generators, game data models, and assets.
+ * Resource management for engine graphics assets, fonts, and world descriptors.
  */
 @NullMarked
 package com.oddlabs.tt.engine.resource;

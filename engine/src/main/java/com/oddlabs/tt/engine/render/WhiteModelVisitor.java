@@ -1,6 +1,4 @@
-package com.oddlabs.tt.client.render;
-
-import com.oddlabs.tt.engine.render.*;
+package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
@@ -13,7 +11,7 @@ import org.jspecify.annotations.Nullable;
  * A specialized {@link ModelVisitor} that renders models with a neutral white team color.
  * Used as a base for custom visitors or for temporary visual effects.
  */
-class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
+public class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     private static final WhiteModelVisitor<Model> INSTANCE = new WhiteModelVisitor<>();
 
     @SuppressWarnings("unchecked")

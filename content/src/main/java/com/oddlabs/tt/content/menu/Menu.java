@@ -29,14 +29,14 @@ import com.oddlabs.tt.content.form.QuitForm;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.client.render.LandscapeBaker;
 import com.oddlabs.tt.client.render.LandscapeRenderer;
-import com.oddlabs.tt.client.render.LandscapeAssetsLoader;
+import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.client.render.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.FocusDirection;
@@ -449,7 +449,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 projectionStack,
                 engine.getAudioManager(), engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
-        engine.getAudioManager().setMusic(AudioAssets.MUSIC_MENU, 0f);
+        engine.getAudioManager().setMusic(AudioRegistry.MUSIC_MENU, 0f);
         MainMenu main_menu = new MainMenu(gui_root,
                 new MenuCamera(world, gui_root.getAnimationManagerHighPrecision(), menuAnimationManager), engine);
         gui_root.pushDelegate(main_menu);

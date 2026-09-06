@@ -7,8 +7,8 @@ import com.oddlabs.tt.effects.particle.RandomVelocityEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.PoisonFog;
@@ -52,7 +52,7 @@ public final class PoisonFogVisualModel extends AbstractVisualModel implements E
         World world = poisonFog.getWorld();
         this.bubblingSound = audio.newAudio(poisonFog.getPositionX(), poisonFog.getPositionY(),
                 world.getHeightMap().getNearestHeight(poisonFog.getPositionX(), poisonFog.getPositionY()),
-                AudioAssets.BUBBLING);
+                AudioRegistry.BUBBLING);
     }
 
     @Override
@@ -87,7 +87,7 @@ public final class PoisonFogVisualModel extends AbstractVisualModel implements E
 
                 if (bursts % nextSound == 0) {
                     nextSound = MIN_BURSTS_PER_SOUND + ThreadLocalRandom.current().nextInt(5);
-                    audio.newAudio(x, y, z, AudioAssets.POISON_GAS);
+                    audio.newAudio(x, y, z, AudioRegistry.POISON_GAS);
                 }
                 bursts++;
             }

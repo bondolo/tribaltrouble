@@ -11,8 +11,8 @@ import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.LightningAccessory;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.weapon.LightningCloud;
@@ -90,9 +90,9 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
 
             if (strikeAudioCooldown <= 0f) {
                 var params = new AudioParameters(
-                        AudioAssets.SFX_FLASH, AudioAssets.AUDIO_RANK_MAGIC,
-                        AudioAssets.AUDIO_DISTANCE_MAGIC, AudioAssets.AUDIO_GAIN_LIGHTNING,
-                        AudioAssets.AUDIO_RADIUS_LIGHTNING);
+                        AudioRegistry.SFX_FLASH, AudioRegistry.AUDIO_RANK_MAGIC,
+                        AudioRegistry.AUDIO_DISTANCE_MAGIC, AudioRegistry.AUDIO_GAIN_LIGHTNING,
+                        AudioRegistry.AUDIO_RADIUS_LIGHTNING);
                 audio.newAudio(tx, ty, tz, params);
                 strikeAudioCooldown = 0.8f;
             }
@@ -115,7 +115,7 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
         if (firstRun) {
             cloudSound = audio.newAudio(cloud.getPositionX(), cloud.getPositionY(), cloud
                     .getPositionZ(),
-                    AudioAssets.LIGHTNING_CLOUD);
+                    AudioRegistry.LIGHTNING_CLOUD);
             firstRun = false;
         }
         if (cloudSound != null) {

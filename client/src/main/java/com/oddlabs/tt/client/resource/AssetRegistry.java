@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.resource;
+package com.oddlabs.tt.client.resource;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.engine.procedural.GeneratorCrack;

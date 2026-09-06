@@ -4,7 +4,7 @@ import com.oddlabs.tt.effects.particle.BalancedParametricEmitter;
 import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.effects.render.EmitterAttachedAccessory;
 import com.oddlabs.tt.engine.render.Accessory;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;

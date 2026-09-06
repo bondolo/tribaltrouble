@@ -1,6 +1,6 @@
 package com.oddlabs.tt.client.viewer;
 
-import com.oddlabs.tt.engine.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.gui.GUIRoot;

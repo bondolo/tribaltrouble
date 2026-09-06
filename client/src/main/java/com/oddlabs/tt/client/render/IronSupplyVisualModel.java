@@ -8,8 +8,8 @@ import com.oddlabs.tt.effects.particle.RingEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-import com.oddlabs.tt.engine.resource.AudioAssets;
+import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
@@ -157,9 +157,9 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
                     airBurstPlayed = true;
                     audio.newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
                             ironSupply.getPositionZ(),
-                            new AudioParameters(AudioAssets.SFX_LURBLAST, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.8f
+                            new AudioParameters(AudioRegistry.SFX_LURBLAST, AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
+                                    AudioRegistry.AUDIO_DISTANCE_SUPPLY_ACTION, AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
+                                    AudioRegistry.AUDIO_RADIUS_SUPPLY_ACTION, 0.8f
                             ));
                 }
 
@@ -244,9 +244,9 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
                     cooling = true;
                     audio.newAudio(ironSupply.getPositionX(), ironSupply.getPositionY(),
                             ironSupply.getPositionZ(),
-                            new AudioParameters(AudioAssets.SFX_GAS, AudioAssets.AUDIO_RANK_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_DISTANCE_SUPPLY_ACTION, AudioAssets.AUDIO_GAIN_SUPPLY_ACTION,
-                                    AudioAssets.AUDIO_RADIUS_SUPPLY_ACTION, 0.65f
+                            new AudioParameters(AudioRegistry.SFX_GAS, AudioRegistry.AUDIO_RANK_SUPPLY_ACTION,
+                                    AudioRegistry.AUDIO_DISTANCE_SUPPLY_ACTION, AudioRegistry.AUDIO_GAIN_SUPPLY_ACTION,
+                                    AudioRegistry.AUDIO_RADIUS_SUPPLY_ACTION, 0.65f
                             )).stop(1.3f);
                 }
 

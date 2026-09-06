@@ -1,8 +1,9 @@
-package com.oddlabs.tt.client.render;
+package com.oddlabs.tt.client.resource;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.client.gui.GUIIcons;
+import com.oddlabs.tt.client.render.SelectableShadowRenderer;
 import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
 import com.oddlabs.tt.engine.procedural.GeneratorLightning;
@@ -17,8 +18,6 @@ import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.TextureKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
-import com.oddlabs.tt.engine.resource.AudioAssets;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.engine.resource.TextureFile;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -300,15 +299,15 @@ public final class RacesAssetsLoader {
 
         AssetRegistry.getInstance().registerRaceAudio(
                 Race.NATIVES,
-                new AudioParameters(AudioAssets.SFX_ATTACKNOTIFY_NATIVE, AudioAssets.AUDIO_RANK_NOTIFICATION,
-                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
-                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                new AudioParameters(AudioRegistry.SFX_ATTACKNOTIFY_NATIVE, AudioRegistry.AUDIO_RANK_NOTIFICATION,
+                        AudioRegistry.AUDIO_DISTANCE_NOTIFICATION, AudioRegistry.AUDIO_GAIN_NOTIFICATION,
+                        AudioRegistry.AUDIO_RADIUS_NOTIFICATION,
                         1f, false, true),
-                new AudioParameters(AudioAssets.SFX_BUILDINGNOTIFY_NATIVE, AudioAssets.AUDIO_RANK_NOTIFICATION,
-                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
-                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                new AudioParameters(AudioRegistry.SFX_BUILDINGNOTIFY_NATIVE, AudioRegistry.AUDIO_RANK_NOTIFICATION,
+                        AudioRegistry.AUDIO_DISTANCE_NOTIFICATION, AudioRegistry.AUDIO_GAIN_NOTIFICATION,
+                        AudioRegistry.AUDIO_RADIUS_NOTIFICATION,
                         1f, false, true),
-                AudioAssets.MUSIC_NATIVE
+                AudioRegistry.MUSIC_NATIVE
         );
 
         SpriteKey viking_rally_point = queues.register(
@@ -319,15 +318,15 @@ public final class RacesAssetsLoader {
 
         AssetRegistry.getInstance().registerRaceAudio(
                 Race.VIKINGS,
-                new AudioParameters(AudioAssets.SFX_ATTACKNOTIFY_VIKING, AudioAssets.AUDIO_RANK_NOTIFICATION,
-                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
-                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                new AudioParameters(AudioRegistry.SFX_ATTACKNOTIFY_VIKING, AudioRegistry.AUDIO_RANK_NOTIFICATION,
+                        AudioRegistry.AUDIO_DISTANCE_NOTIFICATION, AudioRegistry.AUDIO_GAIN_NOTIFICATION,
+                        AudioRegistry.AUDIO_RADIUS_NOTIFICATION,
                         1f, false, true),
-                new AudioParameters(AudioAssets.SFX_BUILDINGNOTIFY_VIKING, AudioAssets.AUDIO_RANK_NOTIFICATION,
-                        AudioAssets.AUDIO_DISTANCE_NOTIFICATION, AudioAssets.AUDIO_GAIN_NOTIFICATION,
-                        AudioAssets.AUDIO_RADIUS_NOTIFICATION,
+                new AudioParameters(AudioRegistry.SFX_BUILDINGNOTIFY_VIKING, AudioRegistry.AUDIO_RANK_NOTIFICATION,
+                        AudioRegistry.AUDIO_DISTANCE_NOTIFICATION, AudioRegistry.AUDIO_GAIN_NOTIFICATION,
+                        AudioRegistry.AUDIO_RADIUS_NOTIFICATION,
                         1f, false, true),
-                AudioAssets.MUSIC_VIKING
+                AudioRegistry.MUSIC_VIKING
         );
 
         SpriteKey[] wood_fragment_sprites = new SpriteKey[4];

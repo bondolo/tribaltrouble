@@ -1,10 +1,9 @@
-package com.oddlabs.tt.client.render;
+package com.oddlabs.tt.client.resource;
 
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.engine.resource.AssetRegistry;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.simulation.model.Terrain;
 

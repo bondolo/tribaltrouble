@@ -254,7 +254,8 @@ public final class RenderQueues implements AutoCloseable {
         decalRenderer.clear();
         try (var _ = decalRenderer.setup(context, worldSize, heightTexture, modelViewStack, projectionStack)) {
             for (ShadowListRenderer shadowListRenderer : shadow_renderer_lookup) {
-                shadowListRenderer.renderShadows(context, this, worldSize, heightTexture, modelViewStack, projectionStack);
+                shadowListRenderer.renderShadows(context, this, worldSize, heightTexture, modelViewStack,
+                        projectionStack);
             }
         }
     }

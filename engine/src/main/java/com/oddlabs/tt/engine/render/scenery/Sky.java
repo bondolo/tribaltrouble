@@ -138,7 +138,8 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     public Sky(HeightMap heightMap, Terrain terrain, Texture detail,
             Texture detailNormal) {
         this(heightMap, terrain, (float) (heightMap.getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 20, 20,
-                SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, heightMap.getMetersPerWorld() / 2f,
+                SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, heightMap
+                        .getMetersPerWorld() / 2f,
                 heightMap.getMetersPerWorld() / 2f, SKYDOME_HEIGHT, detail, detailNormal);
     }
 
