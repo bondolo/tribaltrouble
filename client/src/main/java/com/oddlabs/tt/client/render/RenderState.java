@@ -38,7 +38,7 @@ import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
-import com.oddlabs.tt.simulation.model.EmojiType;
+import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.simulation.model.IronSupply;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
@@ -750,11 +750,6 @@ public final class RenderState implements SceneContext {
         if (getOrCreateVisualModel(model) instanceof SonicBlastAccessory sba) {
             sba.triggerBlast(x, y, z, radius, duration);
         }
-    }
-
-    public void addVisualSound(Model model, EmojiType emoji, float duration, float audioDistance) {
-        VisualModel vm = getOrCreateVisualModel(model);
-        vm.addVisualSound(emoji, duration, audioDistance);
     }
 
     public void addVisualSound(Model model, EmojiType emoji, float audioDistance) {

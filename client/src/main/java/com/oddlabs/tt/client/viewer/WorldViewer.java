@@ -68,7 +68,7 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.player.VikingChieftainAI;
 
 import com.oddlabs.tt.audio.AudioFile;
-import com.oddlabs.tt.simulation.model.EmojiType;
+import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitVisualType;
