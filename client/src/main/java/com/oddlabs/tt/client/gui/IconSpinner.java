@@ -21,8 +21,13 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 import java.util.ResourceBundle;
 
-/** A spinner control with an associated icon. */
+/** Spinner control with an associated icon. */
 public abstract class IconSpinner extends GUIObject {
+    /** Number of items adjusted in a batch operation. */
+    public static final int BATCH_AMOUNT = 10;
+    /** Number of items adjusted in a single-step operation. */
+    public static final int SINGLE_AMOUNT = 1;
+
     private static final ResourceBundle bundle = ResourceBundle.getBundle(IconSpinner.class.getName());
 
     private String i18n(String key, Object... args) {
@@ -122,9 +127,12 @@ public abstract class IconSpinner extends GUIObject {
 
     public final void shortcutPressed(boolean decrement, boolean batch) {
         if (!isDisabled()) {
-            MouseButton mouse_button = batch ? MouseButton.RIGHT : MouseButton.LEFT;
-
-            (decrement ? button_minus : button_plus).mousePressedAll(mouse_button, 0, 0);
+            int amount = batch ? BATCH_AMOUNT : SINGLE_AMOUNT;
+            if (decrement) {
+                decrease(amount);
+            } else {
+                increase(amount);
+            }
         }
     }
 
@@ -181,7 +189,7 @@ public abstract class IconSpinner extends GUIObject {
 
         @Override
         public void mousePressed(MouseButton button, int x, int y) {
-            increase(button == MouseButton.RIGHT ? 10 : 1);
+            increase(button == MouseButton.RIGHT ? BATCH_AMOUNT : SINGLE_AMOUNT);
         }
 
         @Override
@@ -202,7 +210,7 @@ public abstract class IconSpinner extends GUIObject {
 
         @Override
         public void mousePressed(MouseButton button, int x, int y) {
-            decrease(button == MouseButton.RIGHT ? 10 : 1);
+            decrease(button == MouseButton.RIGHT ? BATCH_AMOUNT : SINGLE_AMOUNT);
         }
 
         @Override

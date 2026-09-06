@@ -639,6 +639,21 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
             parent.mouseEnteredAll();
     }
 
+    /**
+     * Activates this component, performing its primary action (e.g. as if clicked or triggered by a shortcut).
+     */
+    public void activate() {
+        if (disabled) {
+            return;
+        }
+        mouseClicked(MouseButton.LEFT, 0, 0, 1);
+        for (var listener : listeners) {
+            if (listener instanceof MouseClickListener l) {
+                l.mouseClicked(MouseButton.LEFT, 0, 0, 1);
+            }
+        }
+    }
+
     public final void mouseClickedAll(MouseButton button, int x, int y, int clicks) {
         if (disabled)
             return;
@@ -735,7 +750,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
                 mousePressedAll(MouseButton.LEFT, 0, 0);
             } else if (event.getPhase() == InputPhase.RELEASED) {
                 mouseReleasedAll(MouseButton.LEFT, 0, 0);
-                mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+                activate();
             }
             event.consume();
         }

@@ -920,7 +920,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
     }
 
     private void activate(InputEvent event, GUIObject button) {
-        button.mouseClickedAll(MouseButton.LEFT, 0, 0, 1);
+        button.activate();
         event.consume();
     }
 
