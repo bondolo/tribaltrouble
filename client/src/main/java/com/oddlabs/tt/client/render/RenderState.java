@@ -624,8 +624,8 @@ public final class RenderState implements SceneContext {
     };
 
     private void visitSceneryModel(final SceneryModel model) {
-        float z_offset = getVisuallyCorrectHeight(model.getPositionX(), model.getPositionY());
-        if (picking && !pickingInFrustum(model, camera.getFrustum(), z_offset, Math.max(1.0f, model.getSize()), 2.0f)) {
+        if (picking && !visible_override
+                && RenderTools.inFrustum(model, camera.getFrustum()) == RenderTools.FrustumIntersection.ALL_OUTSIDE) {
             return;
         }
         ModelState<SceneryModel> state = getCachedState(scenery_model_visitor, model);
