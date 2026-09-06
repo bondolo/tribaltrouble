@@ -858,63 +858,65 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
      * Handles spinner adjustments for peons and armory resources.
      */
     private void handleSpinners(InputEvent event, boolean pressed) {
-        var peon = checkResourceAction(event, GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC,
-                GameAction.TRAIN_PEON_BATCH, GameAction.TRAIN_PEON_BATCH_DEC);
-        if (peon.active()) {
-            if (current_quarters) {
+        if (current_quarters) {
+            var peon = checkResourceAction(event, GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC,
+                    GameAction.TRAIN_PEON_BATCH, GameAction.TRAIN_PEON_BATCH_DEC);
+            if (peon.active()) {
                 if (pressed) quarters_peon_button.shortcutPressed(peon.decrement(), peon.batch());
                 else quarters_peon_button.shortcutReleased(peon.decrement(), peon.batch());
-                event.getActions().clear();
-            } else if (current_armory && current_submenu == army_group) {
-                if (pressed) army_peon_button.shortcutPressed(peon.decrement(), peon.batch());
-                else army_peon_button.shortcutReleased(peon.decrement(), peon.batch());
-                event.getActions().clear();
+                event.consume();
             }
             return;
         }
 
-        var chicken = checkResourceAction(event, GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC,
-                GameAction.RES_CHICKEN_BATCH, GameAction.RES_CHICKEN_BATCH_DEC);
-        if (chicken.active()) {
-            handleArmoryShortcut(pressed, chicken, harvest_rubber_button, build_weapon_rubber_button,
-                    army_warrior_rubber_button, transport_rubber_button);
-            if (pressed) event.getActions().clear();
+        if (!current_armory) {
             return;
         }
 
-        var iron = checkResourceAction(event, GameAction.RES_IRON, GameAction.RES_IRON_DEC,
-                GameAction.RES_IRON_BATCH, GameAction.RES_IRON_BATCH_DEC);
-        if (iron.active()) {
-            handleArmoryShortcut(pressed, iron, harvest_iron_button, build_weapon_iron_button,
-                    army_warrior_iron_button, transport_iron_button);
-            if (pressed) event.getActions().clear();
-            return;
-        }
-
-        var tree = checkResourceAction(event, GameAction.RES_TREE, GameAction.RES_TREE_DEC,
-                GameAction.RES_TREE_BATCH, GameAction.RES_TREE_BATCH_DEC);
-        if (tree.active()) {
-            handleArmoryShortcut(pressed, tree, harvest_tree_button, null, null, transport_tree_button);
-            if (pressed) event.getActions().clear();
-            return;
-        }
-
-        var rock = checkResourceAction(event, GameAction.RES_ROCK, GameAction.RES_ROCK_DEC,
-                GameAction.RES_ROCK_BATCH, GameAction.RES_ROCK_BATCH_DEC);
-        if (rock.active()) {
-            handleArmoryShortcut(pressed, rock, harvest_rock_button, build_weapon_rock_button,
-                    army_warrior_rock_button, transport_rock_button);
-            if (pressed) event.getActions().clear();
-            return;
-        }
-
-        // Legacy transport alias (tower hotkey) from top-level Armory
-        if (!pressed && (event.consumeAction(GameAction.UNIT_BUILD_TOWER) || event.consumeAction(
-                GameAction.PROD_TRANSPORT))) {
-            if (current_armory && current_submenu == null) {
+        if (current_submenu == null) {
+            // Legacy transport alias (tower hotkey) from top-level Armory
+            if (!pressed && (event.consumeAction(GameAction.UNIT_BUILD_TOWER) || event.consumeAction(
+                    GameAction.PROD_TRANSPORT))) {
                 activate(event, transport_button);
             }
+            return;
         }
+
+        if (current_submenu == army_group) {
+            var peon = checkResourceAction(event, GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC,
+                    GameAction.TRAIN_PEON_BATCH, GameAction.TRAIN_PEON_BATCH_DEC);
+            if (peon.active()) {
+                if (pressed) army_peon_button.shortcutPressed(peon.decrement(), peon.batch());
+                else army_peon_button.shortcutReleased(peon.decrement(), peon.batch());
+                event.consume();
+                return;
+            }
+        }
+
+        if (handleArmoryResource(event, pressed, GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC,
+                GameAction.RES_CHICKEN_BATCH, GameAction.RES_CHICKEN_BATCH_DEC,
+                harvest_rubber_button, build_weapon_rubber_button,
+                army_warrior_rubber_button, transport_rubber_button)) {
+            return;
+        }
+
+        if (handleArmoryResource(event, pressed, GameAction.RES_IRON, GameAction.RES_IRON_DEC,
+                GameAction.RES_IRON_BATCH, GameAction.RES_IRON_BATCH_DEC,
+                harvest_iron_button, build_weapon_iron_button,
+                army_warrior_iron_button, transport_iron_button)) {
+            return;
+        }
+
+        if (handleArmoryResource(event, pressed, GameAction.RES_TREE, GameAction.RES_TREE_DEC,
+                GameAction.RES_TREE_BATCH, GameAction.RES_TREE_BATCH_DEC,
+                harvest_tree_button, null, null, transport_tree_button)) {
+            return;
+        }
+
+        handleArmoryResource(event, pressed, GameAction.RES_ROCK, GameAction.RES_ROCK_DEC,
+                GameAction.RES_ROCK_BATCH, GameAction.RES_ROCK_BATCH_DEC,
+                harvest_rock_button, build_weapon_rock_button,
+                army_warrior_rock_button, transport_rock_button);
     }
 
     private void activate(InputEvent event, GUIObject button) {
@@ -933,25 +935,32 @@ public final class ActionButtonPanel extends GUIObject implements Animated {
         return new ResourceAction(false, false, false);
     }
 
-    private void handleArmoryShortcut(
-            boolean pressed, ResourceAction action,
+    private boolean handleArmoryResource(
+            InputEvent event, boolean pressed,
+            GameAction base, GameAction dec, GameAction batch, GameAction batchDec,
             @Nullable IconSpinner harvestBtn,
             @Nullable IconSpinner buildBtn,
             @Nullable IconSpinner armyBtn,
             @Nullable IconSpinner transportBtn
     ) {
-        if (!current_armory) return;
-
         IconSpinner target = null;
         if (current_submenu == harvest_group) target = harvestBtn;
         else if (current_submenu == build_group) target = buildBtn;
         else if (current_submenu == army_group) target = armyBtn;
         else if (current_submenu == transport_group) target = transportBtn;
 
-        if (target != null) {
+        if (target == null) {
+            return false;
+        }
+
+        var action = checkResourceAction(event, base, dec, batch, batchDec);
+        if (action.active()) {
             if (pressed) target.shortcutPressed(action.decrement(), action.batch());
             else target.shortcutReleased(action.decrement(), action.batch());
+            event.consume();
+            return true;
         }
+        return false;
     }
 
     @Override

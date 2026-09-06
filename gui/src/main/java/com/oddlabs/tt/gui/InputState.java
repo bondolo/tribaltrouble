@@ -230,6 +230,9 @@ public final class InputState {
 
         if (!repeat) {
             InputEvent event = new InputEvent(keyEvent, actions, InputPhase.PRESSED);
+            if (gui_root.handleGlobalInput(event)) {
+                return;
+            }
             focused.handleInputAll(event);
         } else {
             // Repeat phase

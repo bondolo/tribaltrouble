@@ -366,106 +366,112 @@ public final class GUIRoot extends GUIObject {
         setDim(virtualWidth, virtualHeight);
     }
 
+    public boolean handleGlobalInput(InputEvent event) {
+        if (event.getPhase() != InputPhase.PRESSED || !event.hasActions()) {
+            return false;
+        }
+
+        boolean consumed = false;
+        if (event.consumeAction(GameAction.GLOBAL_SCREENSHOT)) {
+            String filename = GLUtils.takeScreenshot("");
+            info_printer.print(i18n("screenshot_message", filename));
+            consumed = true;
+        }
+        if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {
+            DebugFlags.draw_status = !DebugFlags.draw_status;
+            consumed = true;
+        }
+        // GLOBAL_MENU removed because it requires viewer which GUIRoot doesn't have.
+
+        if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
+            gui.toggleFullscreen();
+            consumed = true;
+        }
+
+        // Debug Actions (Only those that don't need Viewer)
+        if (gui.getLocalInput().inDeveloperMode()) {
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
+                DebugFlags.draw_light = !DebugFlags.draw_light;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_PLANTS)) {
+                DebugFlags.draw_plants = !DebugFlags.draw_plants;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_PARTICLES)) {
+                DebugFlags.draw_particles = !DebugFlags.draw_particles;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_AXES)) {
+                DebugFlags.draw_axes = !DebugFlags.draw_axes;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_MISC)) {
+                DebugFlags.draw_misc = !DebugFlags.draw_misc;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_PROCESS_MISC)) {
+                logger.info("WARNING: DEBUG_PROCESS_MISC triggered!");
+                DebugFlags.process_misc = !DebugFlags.process_misc;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_RESET_CURSOR)) {
+                gui.getLocalInput().getInputProvider().setCursorPosition(10, 10);
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_DETAIL)) {
+                DebugFlags.draw_detail = !DebugFlags.draw_detail;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_CRASH)) {
+                logger.info("crash!");
+                throw new IllegalStateException("Debug crash action triggered.");
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRAME_BUFFER)) {
+                DebugFlags.clear_frame_buffer = !DebugFlags.clear_frame_buffer;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_BOUNDING)) {
+                DebugFlags.switchBoundingMode();
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRUSTUM_FREEZE)) {
+                DebugFlags.frustum_freeze = !DebugFlags.frustum_freeze;
+                logger.info("DebugFlags.frustum_freeze = " + DebugFlags.frustum_freeze);
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_FORCE_GC)) {
+                logger.info("GC Forced");
+                System.gc();
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_START_RECORDING)) {
+                gui.startMovieRecording();
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {
+                DebugFlags.draw_water = !DebugFlags.draw_water;
+                consumed = true;
+            }
+            if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
+                logger.info("*********************************************************");
+                gui.getEventQueue().debugPrintAnimations();
+                logger.info("Texture.globalSize() = " + Texture.globalSize());
+                consumed = true;
+            }
+        }
+
+        if (consumed) {
+            event.consume();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void handleInput(InputEvent event) {
-        if (event.getPhase() == InputPhase.PRESSED) {
-            boolean consumed = false;
-
-            if (event.hasActions()) {
-                if (event.consumeAction(GameAction.GLOBAL_SCREENSHOT)) {
-                    String filename = GLUtils.takeScreenshot("");
-                    info_printer.print(i18n("screenshot_message", filename));
-                    consumed = true;
-                }
-                if (event.consumeAction(GameAction.GLOBAL_TOGGLE_STATUS)) {
-                    DebugFlags.draw_status = !DebugFlags.draw_status;
-                    consumed = true;
-                }
-                // GLOBAL_MENU removed because it requires viewer which GUIRoot doesn't have.
-
-                if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
-                    gui.toggleFullscreen();
-                    consumed = true;
-                }
-
-                // Debug Actions (Only those that don't need Viewer)
-                if (gui.getLocalInput().inDeveloperMode()) {
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
-                        DebugFlags.draw_light = !DebugFlags.draw_light;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_PLANTS)) {
-                        DebugFlags.draw_plants = !DebugFlags.draw_plants;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_PARTICLES)) {
-                        DebugFlags.draw_particles = !DebugFlags.draw_particles;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_AXES)) {
-                        DebugFlags.draw_axes = !DebugFlags.draw_axes;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_MISC)) {
-                        DebugFlags.draw_misc = !DebugFlags.draw_misc;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_PROCESS_MISC)) {
-                        logger.info("WARNING: DEBUG_PROCESS_MISC triggered!");
-                        DebugFlags.process_misc = !DebugFlags.process_misc;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_RESET_CURSOR)) {
-                        gui.getLocalInput().getInputProvider().setCursorPosition(10, 10);
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_DETAIL)) {
-                        DebugFlags.draw_detail = !DebugFlags.draw_detail;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_CRASH)) {
-                        logger.info("crash!");
-                        throw new IllegalStateException("Debug crash action triggered.");
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRAME_BUFFER)) {
-                        DebugFlags.clear_frame_buffer = !DebugFlags.clear_frame_buffer;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_BOUNDING)) {
-                        DebugFlags.switchBoundingMode();
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_FRUSTUM_FREEZE)) {
-                        DebugFlags.frustum_freeze = !DebugFlags.frustum_freeze;
-                        logger.info("DebugFlags.frustum_freeze = " + DebugFlags.frustum_freeze);
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_FORCE_GC)) {
-                        logger.info("GC Forced");
-                        System.gc();
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_START_RECORDING)) {
-                        gui.startMovieRecording();
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_TOGGLE_WATER)) {
-                        DebugFlags.draw_water = !DebugFlags.draw_water;
-                        consumed = true;
-                    }
-                    if (event.consumeAction(GameAction.DEBUG_DUMP_ANIMATIONS)) {
-                        logger.info("*********************************************************");
-                        gui.getEventQueue().debugPrintAnimations();
-                        logger.info("Texture.globalSize() = " + Texture.globalSize());
-                        consumed = true;
-                    }
-                }
-            }
-
-            if (consumed) {
-                event.consume();
-                return;
-            }
+        if (handleGlobalInput(event)) {
+            return;
         }
         super.handleInput(event);
     }
