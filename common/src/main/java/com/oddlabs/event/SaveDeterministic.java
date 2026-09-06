@@ -16,6 +16,9 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
+/**
+ * Saves deterministic event streams to a file channel.
+ */
 public final class SaveDeterministic extends Deterministic {
     private static final short MAX_DEFAULTS = Short.MAX_VALUE;
 
@@ -153,7 +156,7 @@ public final class SaveDeterministic extends Deterministic {
         }
     }
 
-    public final class ByteBufferOutputStream extends OutputStream {
+    private final class ByteBufferOutputStream extends OutputStream {
         @Override
         public void write(int b) throws IOException {
             log((byte) b);

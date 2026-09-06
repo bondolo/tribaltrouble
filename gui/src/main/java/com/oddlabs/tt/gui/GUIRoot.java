@@ -11,7 +11,6 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.gui.delegate.InputDelegate;
 import com.oddlabs.tt.gui.delegate.ModalDelegate;
-import com.oddlabs.tt.gui.delegate.NullDelegate;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
@@ -196,7 +195,7 @@ public final class GUIRoot extends GUIObject {
         tool_tip_timer.stop();
     }
 
-    public InfoPrinter getInfoPrinter() {
+    public com.oddlabs.tt.base.util.InfoPrinter getInfoPrinter() {
         return info_printer;
     }
 

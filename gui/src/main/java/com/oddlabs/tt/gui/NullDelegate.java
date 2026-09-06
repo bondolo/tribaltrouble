@@ -1,16 +1,15 @@
-package com.oddlabs.tt.gui.delegate;
+package com.oddlabs.tt.gui;
 
-import com.oddlabs.tt.gui.GUIObject;
-import com.oddlabs.tt.gui.MouseButton;
+import com.oddlabs.tt.gui.delegate.InputDelegate;
 import com.oddlabs.tt.input.InputEvent;
 
 /**
  * Null input delegate representing an empty or inactive delegate state.
  */
-public class NullDelegate extends GUIObject implements InputDelegate {
+final class NullDelegate extends GUIObject implements InputDelegate {
     private final boolean renderCursor;
 
-    public NullDelegate(boolean renderCursor) {
+    NullDelegate(boolean renderCursor) {
         this.renderCursor = renderCursor;
         setPos(0, 0);
         setCanFocus(true);

@@ -7,9 +7,10 @@ import com.oddlabs.util.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class InfoPrinter extends GUIObject implements Animated, com.oddlabs.tt.base.util.InfoPrinter {
-    public static final Color.Linear PRIVATE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
-    public static final Color.Linear TEAM_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
+/**
+ * Overlay widget rendering recent informational lines and chat messages.
+ */
+final class InfoPrinter extends GUIObject implements Animated, com.oddlabs.tt.base.util.InfoPrinter {
     private static final float SECONDS_PER_TIMEOUT = 8f;
 
     private final Font font;
@@ -20,7 +21,7 @@ public final class InfoPrinter extends GUIObject implements Animated, com.oddlab
 
     private float time;
 
-    public InfoPrinter(GUIRoot gui_root, int lines, Font font) {
+    InfoPrinter(GUIRoot gui_root, int lines, Font font) {
         this.gui_root = gui_root;
         this.lines = lines;
         this.font = font;
@@ -29,7 +30,7 @@ public final class InfoPrinter extends GUIObject implements Animated, com.oddlab
         time = 0;
     }
 
-    public GUIRoot getGUIRoot() {
+    GUIRoot getGUIRoot() {
         return gui_root;
     }
 
@@ -49,6 +50,7 @@ public final class InfoPrinter extends GUIObject implements Animated, com.oddlab
         print(text, Color.Linear.TRANSPARENT);
     }
 
+    @Override
     public void print(String text, Color color) {
         int width = Math.min(font.getWidth(text), getWidth());
         LabelBox label_box = new BackgroundLabelBox(text, font, width);
