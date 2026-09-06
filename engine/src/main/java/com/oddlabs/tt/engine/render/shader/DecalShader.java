@@ -107,7 +107,7 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                         // Shadow offset in local decal space (±0.5 = quad edge = one radius).
                         // Cast shadow away from the sun direction.
                         if ((vs_out.Flags & 1) != 0) { // Radial flag
-                            vs_out.ShadowOffset = -u_lightDirection.xy * 0.225 * in_InstanceOffsetScale;
+                            vs_out.ShadowOffset = u_lightDirection.xy * 0.225 * in_InstanceOffsetScale;
                         } else {
                             vs_out.ShadowOffset = vec2(0.0);
                         }

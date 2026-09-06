@@ -148,8 +148,8 @@ public final class HeightMap implements LandscapeEnvironment {
         float h11 = heightmap[y1 * size + x1];
 
         return dx + dy < 1.0f
-               ? h00 + dx * (h10 - h00) + dy * (h01 - h00)
-               : h11 + (1.0f - dx) * (h01 - h11) + (1.0f - dy) * (h10 - h11);
+                ? h00 + dx * (h10 - h00) + dy * (h01 - h00)
+                : h11 + (1.0f - dx) * (h01 - h11) + (1.0f - dy) * (h10 - h11);
     }
 
     @Override
@@ -216,5 +216,6 @@ public final class HeightMap implements LandscapeEnvironment {
             if (y == patch_y1) break;
         }
         world_instance.getNotificationListener().patchesEdited(patch_x0, patch_y0, patch_x1, patch_y1);
+        world_instance.getNotificationListener().onHeightEdited(wrappedX, wrappedY, height);
     }
 }

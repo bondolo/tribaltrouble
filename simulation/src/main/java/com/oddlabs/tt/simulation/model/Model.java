@@ -14,11 +14,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
     private float baseZ;
     /** if true then the Model is positioned relative to the terrain at (x, y) */
     private boolean groundBased = true;
-    private boolean cachedSlopeValid = false;
-    /** radius used when {@link #cachedSlopeOffset} was calculated */
-    private float cachedSlopeRadius = Float.NaN;
-    /** Offset from the base Z position to account for terrain slope surrounding model */
-    private float cachedSlopeOffset;
 
     protected Model(World world) {
         super(world.getElementRoot());
@@ -46,41 +41,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
         return 0f;
     }
 
-    protected final float getSlopeOffset(float radius) {
-        if (!groundBased) {
-            return 0f;
-        }
-        if (!cachedSlopeValid || radius != cachedSlopeRadius) {
-            cachedSlopeOffset = calculateSlopeOffset(radius);
-            cachedSlopeRadius = radius;
-            cachedSlopeValid = true;
-        }
-        return cachedSlopeOffset;
-    }
-
-    private float calculateSlopeOffset(float r) {
-        float x = getPositionX();
-        float y = getPositionY();
-        var hm = world.getHeightMap();
-
-        float h_center = hm.getNearestHeight(x, y);
-        float h_max = h_center;
-
-        // Axis-aligned
-        h_max = Math.max(h_max, hm.getNearestHeight(x + r, y));
-        h_max = Math.max(h_max, hm.getNearestHeight(x - r, y));
-        h_max = Math.max(h_max, hm.getNearestHeight(x, y + r));
-        h_max = Math.max(h_max, hm.getNearestHeight(x, y - r));
-
-        // Diagonals
-        float d = r * 0.707f;
-        h_max = Math.max(h_max, hm.getNearestHeight(x + d, y + d));
-        h_max = Math.max(h_max, hm.getNearestHeight(x - d, y + d));
-        h_max = Math.max(h_max, hm.getNearestHeight(x + d, y - d));
-        h_max = Math.max(h_max, hm.getNearestHeight(x - d, y - d));
-
-        return Math.max(0f, h_max - h_center);
-    }
 
     public int getAnimation() {
         return 0;
@@ -127,7 +87,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
     public final void setPosition(float x, float y) {
         super.setPosition(x, y);
         groundBased = true;
-        cachedSlopeValid = false;
         reinsert();
     }
 
@@ -135,7 +94,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
         super.setPosition(x, y);
         baseZ = z;
         groundBased = false;
-        cachedSlopeValid = false;
         updateModelInternal();
     }
 

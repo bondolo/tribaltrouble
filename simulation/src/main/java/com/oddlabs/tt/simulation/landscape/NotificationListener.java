@@ -28,6 +28,9 @@ public interface NotificationListener {
     default void patchesEdited(int patch_x0, int patch_y0, int patch_x1, int patch_y1) {
     }
 
+    default void onHeightEdited(int gridX, int gridY, float height) {
+    }
+
     default void gamespeedChanged(int speed) {
     }
 

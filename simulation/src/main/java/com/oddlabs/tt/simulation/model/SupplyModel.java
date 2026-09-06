@@ -122,15 +122,6 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         this.grid_y = grid_y;
     }
 
-    @Override
-    public float getOffsetZ() {
-        return getSlopeOffset();
-    }
-
-    protected final float getSlopeOffset() {
-        return getSlopeOffset(getSize() * 0.2f);
-    }
-
     public BoundsProvider getBoundsProvider() {
         return boundsProvider;
     }

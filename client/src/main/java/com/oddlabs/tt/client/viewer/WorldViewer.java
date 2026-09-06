@@ -283,6 +283,13 @@ public final class WorldViewer implements Animated, AutoCloseable {
             public void onModelRemoved(Model model) {
                 WorldViewer.this.renderer.getRenderState().onModelRemoved(model);
             }
+
+            @Override
+            public void onHeightEdited(int gridX, int gridY, float height) {
+                if (initialized[0] && landscape_renderer != null) {
+                    landscape_renderer.getHeightMapVisual().editHeight(gridX, gridY, height);
+                }
+            }
         };
         var player_infos = Arrays.stream(player_slots).map(slot -> (PlayerInfo) slot.getInfo()).toList();
         GeneratedLandscapeData landscapeData = ProgressListener.subTask(0.25f,
