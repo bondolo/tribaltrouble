@@ -512,35 +512,8 @@ public final class Picker implements Updatable<TimerAnimation> {
     }
 
     public void pickHover(CameraState camera, int x, int y) {
-        int[] viewport = new int[4];
         float scale = gui_root.getGlobalScale();
-        setupPicking(camera, x * scale, y * scale, PICK_SIZE, PICK_SIZE, viewport);
-        pickObjects();
-        Target nearest = getNearestPick(element_pick_list, Target.class);
-        Target new_current_hovered;
-        if (nearest != null) {
-            new_current_hovered = nearest;
-        } else {
-            pickResources();
-            new_current_hovered = getNearestPick(tree_pick_list, Target.class);
-        }
-        if (current_hovered != new_current_hovered) {
-            tool_tip_timer.resetTime();
-            boolean old_tip = current_hovered instanceof ModelToolTip;
-            boolean new_tip = new_current_hovered instanceof ModelToolTip;
-            if (!old_tip && new_tip) {
-                tool_tip_timer.start();
-                render_tool_tip = false;
-            }
-            if (old_tip && !new_tip) {
-                if (!render_tool_tip)
-                    tool_tip_timer.stop();
-                else
-                    render_tool_tip = false;
-            }
-            current_hovered = new_current_hovered;
-            current_tooltip = new_tip ? new ToolTipAdapter((ModelToolTip) current_hovered, local_player) : null;
-        }
+        pickHoverPhysical(camera, Math.round(x * scale), Math.round(y * scale));
     }
 
     @Override
@@ -582,8 +555,8 @@ public final class Picker implements Updatable<TimerAnimation> {
         var window = gui_root.getLocalInput().getWindow();
         viewport[0] = 0;
         viewport[1] = 0;
-        viewport[2] = window.getLogicalWidth();
-        viewport[3] = window.getLogicalHeight();
+        viewport[2] = window.getWidth();
+        viewport[3] = window.getHeight();
 
         if (width > 0 && height > 0) {
             Vector3f temp_vector = new Vector3f((viewport[2] - 2 * (x_center - viewport[0])) / width, (viewport[3] - 2

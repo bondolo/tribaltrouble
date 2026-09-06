@@ -168,6 +168,13 @@ public final class InputState {
         drag_y = scaledY;
     }
 
+    void reanchorDrag(int newVirtualX, int newVirtualY) {
+        this.drag_x = newVirtualX;
+        this.drag_y = newVirtualY;
+        this.absolute_drag_x = newVirtualX;
+        this.absolute_drag_y = newVirtualY;
+    }
+
     private boolean clickedSameArea() {
         var localInput = gui_root.getLocalInput();
         return Math.abs(localInput.getMouseX() - clicked_x) < DOUBLE_CLICK_THRESHOLD && Math.abs(localInput.getMouseY()
