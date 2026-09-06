@@ -33,7 +33,10 @@ import static com.oddlabs.tt.gui.Placement.BOTTOM_LEFT;
 import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 import static com.oddlabs.tt.gui.Placement.RIGHT_TOP;
 
-public class GraphicsPanel extends Panel {
+/**
+ * Configuration panel for graphical settings, display resolutions, and UI scale.
+ */
+public final class GraphicsPanel extends Panel {
     private final Label label_pct;
     private final Peer engine;
 
@@ -98,11 +101,19 @@ public class GraphicsPanel extends Panel {
         slider_ui_scale.addValueListener(value -> {
             guiSettings.ui_scale = value / 1000f;
             updateScaleLabel();
+            var window = engine.getWindow();
+            float currentScale = gui_root.getGlobalScale();
+            float targetScale = GUIRoot.calculateEffectiveScale(window.getWidth(), window.getHeight(),
+                    guiSettings.ui_scale);
+            if (targetScale != currentScale) {
+                gui_root.displayChanged(window.getWidth(), window.getHeight());
+                slider_ui_scale.reanchor();
+            }
         });
 
         slider_ui_scale.addReleaseListener(() -> {
             var window = engine.getWindow();
-            gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
+            gui_root.displayChanged(window.getWidth(), window.getHeight());
         });
 
         label_ui_scale.place();
@@ -203,7 +214,7 @@ public class GraphicsPanel extends Panel {
 
     public void updateScaleLabel() {
         var window = engine.getWindow();
-        float scale = GUIRoot.calculateEffectiveScale(window.getLogicalWidth(), window.getLogicalHeight(),
+        float scale = GUIRoot.calculateEffectiveScale(window.getWidth(), window.getHeight(),
                 GUISettings.from(engine.getSettings()).ui_scale);
         label_pct.setText(String.format("%d%%", (int) (scale * 100)));
     }

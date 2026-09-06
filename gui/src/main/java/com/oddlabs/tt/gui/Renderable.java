@@ -239,8 +239,4 @@ public abstract class Renderable<R extends Renderable<R>> extends ListElementImp
     protected float getGlobalScale() {
         return parent != null ? parent.getGlobalScale() : 1.0f;
     }
-
-    protected float getPhysicalScale() {
-        return parent != null ? parent.getPhysicalScale() : 1.0f;
-    }
 }

@@ -25,7 +25,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -65,11 +67,14 @@ public final class LWJGL3Window implements Window {
     private static long isActiveSel = MemoryUtil.NULL;
     private static long nsApp = MemoryUtil.NULL;
 
+    private static final int kDisplayModeNativeFlag = 0x02000000;
+
     private static long cgMainDisplayID = MemoryUtil.NULL;
     private static long cgDisplayCopyAllDisplayModes = MemoryUtil.NULL;
     private static long cgDisplayModeGetIOFlags = MemoryUtil.NULL;
     private static long cgDisplayModeGetPixelWidth = MemoryUtil.NULL;
     private static long cgDisplayModeGetPixelHeight = MemoryUtil.NULL;
+    private static long cgDisplayModeGetRefreshRate = MemoryUtil.NULL;
     private static long cfArrayGetCount = MemoryUtil.NULL;
     private static long cfArrayGetValueAtIndex = MemoryUtil.NULL;
     private static long cfRelease = MemoryUtil.NULL;
@@ -91,6 +96,7 @@ public final class LWJGL3Window implements Window {
                 cgDisplayModeGetIOFlags = cg.getFunctionAddress("CGDisplayModeGetIOFlags");
                 cgDisplayModeGetPixelWidth = cg.getFunctionAddress("CGDisplayModeGetPixelWidth");
                 cgDisplayModeGetPixelHeight = cg.getFunctionAddress("CGDisplayModeGetPixelHeight");
+                cgDisplayModeGetRefreshRate = cg.getFunctionAddress("CGDisplayModeGetRefreshRate");
 
                 var cf = MacOSXLibrary.create("/System/Library/Frameworks/CoreFoundation.framework");
                 cfArrayGetCount = cf.getFunctionAddress("CFArrayGetCount");
@@ -104,7 +110,7 @@ public final class LWJGL3Window implements Window {
         }
     }
 
-    private static @Nullable List<SerializableDisplayMode> getMacNativeDisplayModes() {
+    static @Nullable List<SerializableDisplayMode> getMacNativeDisplayModes() {
         if (!isMac) return null;
         initMacFFI();
         if (!macInitialized) return null;
@@ -115,6 +121,25 @@ public final class LWJGL3Window implements Window {
             if (modesArray == MemoryUtil.NULL) return null;
 
             int count = (int) JNI.invokePJ(modesArray, cfArrayGetCount);
+            int nativeW = 0;
+            int nativeH = 0;
+            for (int i = 0; i < count; i++) {
+                long mode = JNI.invokePPJ(modesArray, i, cfArrayGetValueAtIndex);
+                if (mode == MemoryUtil.NULL) continue;
+
+                int flags = JNI.invokePI(mode, cgDisplayModeGetIOFlags);
+                if ((flags & kDisplayModeNativeFlag) != 0) {
+                    int w = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelWidth);
+                    int h = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelHeight);
+                    if (w > nativeW) nativeW = w;
+                    if (h > nativeH) nativeH = h;
+                }
+            }
+
+            if (nativeW > 0 && nativeH > 0) {
+                logger.info("Mac native display panel dimensions: " + nativeW + "x" + nativeH);
+            }
+
             List<SerializableDisplayMode> result = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 long mode = JNI.invokePPJ(modesArray, i, cfArrayGetValueAtIndex);
@@ -133,8 +158,20 @@ public final class LWJGL3Window implements Window {
 
                 int w = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelWidth);
                 int h = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelHeight);
+
+                if (nativeW > 0 && nativeH > 0 && (w > nativeW || h > nativeH)) {
+                    continue;
+                }
+
                 if (w >= SerializableDisplayMode.MIN_WIDTH && h >= SerializableDisplayMode.MIN_HEIGHT) {
-                    result.add(new SerializableDisplayMode(w, h, 32, 60));
+                    int freq = 60;
+                    if (cgDisplayModeGetRefreshRate != MemoryUtil.NULL) {
+                        double rate = JNI.invokePD(mode, cgDisplayModeGetRefreshRate);
+                        if (rate > 0) {
+                            freq = (int) Math.round(rate);
+                        }
+                    }
+                    result.add(new SerializableDisplayMode(w, h, 32, freq));
                 }
             }
             JNI.invokePV(modesArray, cfRelease);
@@ -677,14 +714,7 @@ public final class LWJGL3Window implements Window {
 
         List<SerializableDisplayMode> macNativeModes = getMacNativeDisplayModes();
         if (macNativeModes != null && !macNativeModes.isEmpty()) {
-            return macNativeModes.stream()
-                    .distinct()
-                    .sorted((m1, m2) -> {
-                        int cmp = Integer.compare(m2.getWidth(), m1.getWidth());
-                        if (cmp != 0) return cmp;
-                        return Integer.compare(m2.getHeight(), m1.getHeight());
-                    })
-                    .collect(Collectors.toList());
+            return filterAndSortModes(macNativeModes);
         }
 
         PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
@@ -707,8 +737,26 @@ public final class LWJGL3Window implements Window {
         }
         nSDL_free(pb.address());
 
-        return modes.stream()
-                .distinct()
+        return filterAndSortModes(modes);
+    }
+
+    private record Resolution(int width, int height) {}
+
+    private static int compareModePreference(SerializableDisplayMode m1, SerializableDisplayMode m2) {
+        if (m1.getFrequency() != m2.getFrequency()) {
+            return Integer.compare(m1.getFrequency(), m2.getFrequency());
+        }
+        return Integer.compare(m1.getBitsPerPixel(), m2.getBitsPerPixel());
+    }
+
+    static List<SerializableDisplayMode> filterAndSortModes(List<SerializableDisplayMode> modes) {
+        Map<Resolution, SerializableDisplayMode> bestModes = new HashMap<>();
+        for (SerializableDisplayMode mode : modes) {
+            Resolution key = new Resolution(mode.getWidth(), mode.getHeight());
+            bestModes.merge(key, mode, (existing, replacement) ->
+                    compareModePreference(replacement, existing) > 0 ? replacement : existing);
+        }
+        return bestModes.values().stream()
                 .sorted((m1, m2) -> {
                     int cmp = Integer.compare(m2.getWidth(), m1.getWidth());
                     if (cmp != 0) return cmp;

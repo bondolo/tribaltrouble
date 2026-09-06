@@ -20,6 +20,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+/**
+ * Base class for all visual components and user input receivers in the GUI tree.
+ */
 public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip {
     private static final Logger logger = Logger.getLogger(GUIObject.class.getName());
     private static final int ROW_TOLERANCE = 5;

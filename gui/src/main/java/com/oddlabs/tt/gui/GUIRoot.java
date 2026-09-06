@@ -59,7 +59,6 @@ public final class GUIRoot extends GUIObject {
     private GUIObject global_focus = this;
 
     private float effective_scale = 1.0f;
-    private float physical_scale = 1.0f;
 
     GUIRoot(GUI gui) {
         this.gui = gui;
@@ -146,11 +145,6 @@ public final class GUIRoot extends GUIObject {
     @Override
     public float getGlobalScale() {
         return effective_scale;
-    }
-
-    @Override
-    public float getPhysicalScale() {
-        return physical_scale;
     }
 
     @Override
@@ -362,7 +356,6 @@ public final class GUIRoot extends GUIObject {
 
         effective_scale = calculateEffectiveScale(width, height);
         float density = gui.getWindow().getPixelDensity();
-        physical_scale = effective_scale * density;
 
         var pointerInput = gui.getLocalInput().getPointerInput();
         pointerInput.loadCursors(effective_scale, density);

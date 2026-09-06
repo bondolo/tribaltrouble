@@ -173,7 +173,7 @@ public final class GUI implements Animated {
         return ScopedValue.where(Skin.CURRENT, skin).call(() -> {
             GUIRoot gui_root = new GUIRoot(this);
             // This happens early before the viewport is fully initialized
-            gui_root.displayChanged(window.getLogicalWidth(), window.getLogicalHeight());
+            gui_root.displayChanged(window.getWidth(), window.getHeight());
             return gui_root;
         });
     }

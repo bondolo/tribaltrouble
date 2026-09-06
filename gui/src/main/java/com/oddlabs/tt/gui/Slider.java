@@ -9,9 +9,13 @@ import com.oddlabs.tt.engine.render.GUIRenderer;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+/**
+ * Interactive slider control for selecting integer values along a horizontal track.
+ */
 public final class Slider extends GUIObject {
     private final Set<ValueListener> value_listeners = new CopyOnWriteArraySet<>();
     private final Set<Runnable> release_listeners = new CopyOnWriteArraySet<>();
+    private final DragListener drag_listener = new DragListener();
 
     private final SliderButton button;
     private final int left_offset;
@@ -35,7 +39,6 @@ public final class Slider extends GUIObject {
         setValue(init_value);
         addChild(button);
 
-        DragListener drag_listener = new DragListener();
         button.addMouseMotionListener(drag_listener);
         button.addMouseButtonListener(drag_listener);
     }
@@ -146,13 +149,40 @@ public final class Slider extends GUIObject {
         value_listeners.remove(listener);
     }
 
+    public void reanchor() {
+        if (!drag_listener.dragging) {
+            return;
+        }
+        GUIRoot root = getParentGUIRoot();
+        if (root == null) {
+            return;
+        }
+        float scale = root.getGlobalScale();
+        float rootX = button.getRootX();
+        float rootY = button.getRootY();
+        float virtualGrabX = rootX + drag_listener.grab_offset_x;
+        float virtualGrabY = rootY + drag_listener.grab_offset_y;
+        int physX = Math.round(virtualGrabX * scale);
+        int physY = Math.round(virtualGrabY * scale);
+
+        root.setCursorPosition(physX, physY);
+        drag_listener.start_offset = valueToOffset(value);
+        root.getInputState().reanchorDrag(Math.round(virtualGrabX), Math.round(virtualGrabY));
+    }
+
     private final class DragListener implements MouseMotionListener, MouseButtonListener {
         final SliderData data = Skin.getSkin().getSliderData();
         float start_offset;
+        int grab_offset_x;
+        int grab_offset_y;
+        boolean dragging;
 
         @Override
         public void mousePressed(MouseButton button, int x, int y) {
             start_offset = valueToOffset(value);
+            grab_offset_x = x;
+            grab_offset_y = y;
+            dragging = true;
         }
 
         @Override
@@ -177,6 +207,7 @@ public final class Slider extends GUIObject {
 
         @Override
         public void mouseReleased(MouseButton button, int x, int y) {
+            dragging = false;
             notifyRelease();
         }
 

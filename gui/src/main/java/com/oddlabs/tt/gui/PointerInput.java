@@ -126,6 +126,7 @@ public final class PointerInput {
     }
 
     public void setCursorPosition(int x, int y) {
+        localInput.setMousePosition(x, y);
         if (!localInput.getDeterministic().isPlayback())
             inputProvider.setCursorPosition(x, y);
     }

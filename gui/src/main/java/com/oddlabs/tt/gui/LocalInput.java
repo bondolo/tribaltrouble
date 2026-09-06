@@ -175,6 +175,11 @@ public final class LocalInput implements AutoCloseable {
         return mouse_x;
     }
 
+    void setMousePosition(int x, int y) {
+        this.mouse_x = x;
+        this.mouse_y = y;
+    }
+
     public void init() {
         if (inputProvider instanceof LWJGL3InputProvider lwjgl3InputProvider) {
             lwjgl3InputProvider.initCallbacks();

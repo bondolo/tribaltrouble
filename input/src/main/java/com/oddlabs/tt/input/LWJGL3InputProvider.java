@@ -53,8 +53,8 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     private final Deque<MouseEvent> mouseEvents = new ArrayDeque<>();
     private @Nullable MouseEvent currentMouseEvent;
     private double mouseX, mouseY;
-    private int lastLogicalX = Integer.MIN_VALUE;
-    private int lastLogicalY = Integer.MIN_VALUE;
+    private int lastPhysicalX = Integer.MIN_VALUE;
+    private int lastPhysicalY = Integer.MIN_VALUE;
 
     private static class KeyEvent {
         final int key;
@@ -144,9 +144,10 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
             }
             case SDL_EVENT_MOUSE_MOTION -> {
                 SDL_MouseMotionEvent motionEvent = event.motion();
-                int logicalHeight = window.getLogicalHeight();
-                this.mouseX = motionEvent.x();
-                this.mouseY = logicalHeight - motionEvent.y() - 1;
+                float density = window.getPixelDensity();
+                int framebufferHeight = window.getHeight();
+                this.mouseX = Math.round(motionEvent.x() * density);
+                this.mouseY = framebufferHeight - Math.round(motionEvent.y() * density) - 1;
                 int intX = (int) mouseX;
                 int intY = (int) mouseY;
                 synchronized (mouseEvents) {
@@ -159,7 +160,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
                             mouseEvents.removeLast();
                         }
                     } else {
-                        if (lastLogicalX == intX && lastLogicalY == intY) {
+                        if (lastPhysicalX == intX && lastPhysicalY == intY) {
                             return;
                         }
                     }
@@ -255,8 +256,8 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
             if (mouseEvents.isEmpty()) return false;
             currentMouseEvent = mouseEvents.poll();
             if (currentMouseEvent != null) {
-                lastLogicalX = currentMouseEvent.x();
-                lastLogicalY = currentMouseEvent.y();
+                lastPhysicalX = currentMouseEvent.x();
+                lastPhysicalY = currentMouseEvent.y();
             }
             return true;
         }
@@ -317,9 +318,9 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     @Override
     public void setCursorPosition(int x, int y) {
         if (windowHandle == MemoryUtil.NULL) return;
-        // Coordinates passed are in logical game units (the same as mouseMoved)
-        float screenX = (float) x;
-        float screenY = (float) (window.getLogicalHeight() - y - 1);
+        float density = window.getPixelDensity();
+        float screenX = x / density;
+        float screenY = (window.getHeight() - y - 1) / density;
         SDL_WarpMouseInWindow(windowHandle, screenX, screenY);
     }
 
