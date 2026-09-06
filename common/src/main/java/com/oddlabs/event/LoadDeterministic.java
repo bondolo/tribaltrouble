@@ -14,6 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * Loads deterministic event playback streams from a file channel.
+ */
 public final class LoadDeterministic extends Deterministic {
     private final ReadableByteChannel channel;
     private final ByteBuffer buffer;
@@ -202,7 +205,7 @@ public final class LoadDeterministic extends Deterministic {
         getDefaults();
     }
 
-    public final class ByteBufferInputStream extends InputStream {
+    private final class ByteBufferInputStream extends InputStream {
         @Override
         public int read() {
             byte b = log((byte) 0);

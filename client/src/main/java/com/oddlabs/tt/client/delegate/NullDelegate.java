@@ -5,7 +5,10 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.MouseButton;
 import com.oddlabs.tt.input.InputEvent;
 
-public class NullDelegate extends CameraDelegate<NullCamera> {
+/**
+ * Null camera delegate providing an empty delegate state for camera views.
+ */
+public final class NullDelegate extends CameraDelegate<NullCamera> {
     private final boolean render_cursor;
 
     public NullDelegate(GUIRoot gui_root, boolean render_cursor) {

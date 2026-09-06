@@ -37,7 +37,7 @@ import com.oddlabs.tt.client.resource.AudioRegistry;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Group;
-import com.oddlabs.tt.gui.InfoPrinter;
+import com.oddlabs.util.Color;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.net.ChatListener;
 import com.oddlabs.tt.net.ChatMethod;
@@ -89,6 +89,8 @@ import java.util.stream.Collectors;
 public final class WorldViewer implements Animated, AutoCloseable {
 
     private static final String[] GAMESPEED_STRINGS = new String[]{"paused", "slow", "normal", "fast", "ludicrous"};
+    private static final Color.Linear PRIVATE_MESSAGE_COLOR = new Color.Standard(0xFF_33_66_FF).linear();
+    private static final Color.Linear TEAM_MESSAGE_COLOR = new Color.Standard(0xFF_4C_7F_FF).linear();
 
     private final Peer engine;
     private final GameCamera camera;
@@ -310,8 +312,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
             var infoPrinter = gui_root.getInfoPrinter();
             switch (message.type()) {
                 case NORMAL -> infoPrinter.print(message.formatShort());
-                case TEAM -> infoPrinter.print(message.formatShort(), InfoPrinter.TEAM_COLOR);
-                case PRIVATE -> infoPrinter.print(message.formatShort(), InfoPrinter.PRIVATE_COLOR);
+                case TEAM -> infoPrinter.print(message.formatShort(), TEAM_MESSAGE_COLOR);
+                case PRIVATE -> infoPrinter.print(message.formatShort(), PRIVATE_MESSAGE_COLOR);
                 default -> {
                 }
             }
