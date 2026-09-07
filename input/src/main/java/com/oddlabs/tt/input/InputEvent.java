@@ -24,7 +24,7 @@ public final class InputEvent {
 
     public InputEvent(KeyboardEvent keyboardEvent, Set<GameAction> actions,
             InputPhase phase) {
-        this.actions = EnumSet.copyOf(actions);
+        this.actions = actions.isEmpty() ? EnumSet.noneOf(GameAction.class) : EnumSet.copyOf(actions);
         this.phase = phase;
         this.keyCode = keyboardEvent.keyCode();
         this.codepoint = keyboardEvent.keyCodepoint();

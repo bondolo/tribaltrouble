@@ -39,6 +39,10 @@ public abstract class ButtonObject extends GUIObject {
         return pressed;
     }
 
+    public final void addClickListener(Runnable listener) {
+        addMouseClickListener((_, _, _, _) -> listener.run());
+    }
+
     @Override
     protected final void mouseReleased(MouseButton button, int x, int y) {
         pressed = false;
