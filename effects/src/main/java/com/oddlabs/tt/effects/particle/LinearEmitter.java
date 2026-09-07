@@ -132,8 +132,17 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
 
     @Override
     public final void animate(float t) {
+        for (var particles : getParticles()) {
+            particles.removeIf(LinearParticle::isDead);
+        }
+
         updateSpawning(t);
         updateCluster(t);
+
+        if (!hasActiveParticles()) {
+            bounds.setBounds(getX(), getX(), getY(), getY(), getZ(), getZ());
+            return;
+        }
 
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
@@ -169,7 +178,6 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
                 z_min = Math.min(z_min, z - radius_z);
                 z_max = Math.max(z_max, z + radius_z);
             }
-            particles.removeIf(LinearParticle::isDead);
         }
         bounds.setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
     }

@@ -88,8 +88,17 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
     @Override
     public final void animate(float t) {
+        for (Deque<ParametricParticle> list : getParticles()) {
+            list.removeIf(ParametricParticle::isDead);
+        }
+
         updateSpawning(t);
         updateCluster(t);
+
+        if (!hasActiveParticles()) {
+            bounds.setBounds(getX(), getX(), getY(), getY(), getZ(), getZ());
+            return;
+        }
 
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
@@ -119,7 +128,6 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
                 z_min = Math.min(z_min, z - radius_z);
                 z_max = Math.max(z_max, z + radius_z);
             }
-            list.removeIf(ParametricParticle::isDead);
         }
         bounds.setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
     }

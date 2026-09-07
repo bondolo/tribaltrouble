@@ -94,6 +94,7 @@ public final class Lightning implements Animated, BoundsProvider {
             initParticle(particle);
             particles.add(particle);
         }
+        updateBounds();
     }
 
     private void initParticle(StretchParticle particle) {
@@ -105,8 +106,10 @@ public final class Lightning implements Animated, BoundsProvider {
         particle.setEnergy(energy);
     }
 
-    @Override
-    public void animate(float t) {
+    private void updateBounds() {
+        if (particles.isEmpty()) {
+            return;
+        }
         float x_min = Float.POSITIVE_INFINITY;
         float x_max = Float.NEGATIVE_INFINITY;
         float y_min = Float.POSITIVE_INFINITY;
@@ -115,22 +118,37 @@ public final class Lightning implements Animated, BoundsProvider {
         float z_max = Float.NEGATIVE_INFINITY;
 
         for (StretchParticle particle : particles) {
-            particle.update(t);
-            float x = particle.getSrcX();
-            float y = particle.getSrcY();
-            float z = particle.getSrcZ();
-            float radius_x = particle.getRadiusX() * SQRT_2;
-            float radius_y = particle.getRadiusY() * SQRT_2;
-            float radius_z = particle.getRadiusZ() * SQRT_2;
-            x_min = Math.min(x_min, x - radius_x);
-            x_max = Math.max(x_max, x + radius_x);
-            y_min = Math.min(y_min, y - radius_y);
-            y_max = Math.max(y_max, y + radius_y);
-            z_min = Math.min(z_min, z - radius_z);
-            z_max = Math.max(z_max, z + radius_z);
+            float sw = particle.getSrcWidth();
+            float dw = particle.getDstWidth();
+            float w = Math.max(sw, dw);
+
+            float sx = particle.getSrcX();
+            float sy = particle.getSrcY();
+            float sz = particle.getSrcZ();
+            float dx = particle.getDstX();
+            float dy = particle.getDstY();
+            float dz = particle.getDstZ();
+
+            x_min = Math.min(x_min, Math.min(sx, dx) - w);
+            x_max = Math.max(x_max, Math.max(sx, dx) + w);
+            y_min = Math.min(y_min, Math.min(sy, dy) - w);
+            y_max = Math.max(y_max, Math.max(sy, dy) + w);
+            z_min = Math.min(z_min, Math.min(sz, dz) - w);
+            z_max = Math.max(z_max, Math.max(sz, dz) + w);
         }
-        particles.removeIf(StretchParticle::isDead);
         bounds.setBounds(x_min, x_max, y_min, y_max, z_min, z_max);
+    }
+
+    @Override
+    public void animate(float t) {
+        particles.removeIf(StretchParticle::isDead);
+        if (particles.isEmpty()) {
+            return;
+        }
+        for (StretchParticle particle : particles) {
+            particle.update(t);
+        }
+        updateBounds();
     }
 
     public boolean isFinished() {

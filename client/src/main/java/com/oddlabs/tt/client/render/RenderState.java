@@ -243,7 +243,43 @@ public final class RenderState implements SceneContext {
             lastFrameTime = currentTime;
         }
         prepareTargetResponds();
+        prepareActiveLightnings();
+        prepareActiveSonicBlasts();
         prepareDetachedVisualEffects();
+    }
+
+    private void prepareActiveLightnings() {
+        if (picking) return;
+        for (VisualModel vm : visualModels.values()) {
+            if (vm instanceof LightningCloudVisualModel lca) {
+                lightning_queue.addAll(lca.getActiveLightnings());
+            }
+        }
+        for (VisualModel vm : detachedVisualModels) {
+            if (vm instanceof LightningCloudVisualModel lca) {
+                lightning_queue.addAll(lca.getActiveLightnings());
+            }
+        }
+    }
+
+    private void prepareActiveSonicBlasts() {
+        if (picking) return;
+        for (VisualModel vm : visualModels.values()) {
+            if (vm instanceof SonicBlastVisualModel sba) {
+                SonicBlastEffect effect = sba.getEffect();
+                if (effect != null && !effect.isDead()) {
+                    sonic_blast_queue.add(effect);
+                }
+            }
+        }
+        for (VisualModel vm : detachedVisualModels) {
+            if (vm instanceof SonicBlastVisualModel sba) {
+                SonicBlastEffect effect = sba.getEffect();
+                if (effect != null && !effect.isDead()) {
+                    sonic_blast_queue.add(effect);
+                }
+            }
+        }
     }
 
     private void prepareDetachedVisualEffects() {
@@ -254,14 +290,6 @@ public final class RenderState implements SceneContext {
                     WhiteModelVisitor.getInstance(), model);
             for (Accessory accessory : vm.getAccessories()) {
                 if (accessory != null && !accessory.isExpired()) {
-                    if (accessory instanceof LightningCloudVisualModel lca) {
-                        lightning_queue.addAll(lca.getActiveLightnings());
-                    } else if (accessory instanceof SonicBlastVisualModel sba) {
-                        SonicBlastEffect effect = sba.getEffect();
-                        if (effect != null && !effect.isDead()) {
-                            sonic_blast_queue.add(effect);
-                        }
-                    }
                     if (accessory instanceof EmitterAccessory ea) {
                         ea.addEmitters(emitter_queue);
                     }
@@ -396,15 +424,6 @@ public final class RenderState implements SceneContext {
     private <M extends Model> void visitAccessory(Accessory accessory,
             ElementSceneContext<M> parentState) {
         if (picking) return;
-
-        if (accessory instanceof LightningCloudVisualModel lca) {
-            lightning_queue.addAll(lca.getActiveLightnings());
-        } else if (accessory instanceof SonicBlastVisualModel sba) {
-            SonicBlastEffect effect = sba.getEffect();
-            if (effect != null && !effect.isDead()) {
-                sonic_blast_queue.add(effect);
-            }
-        }
 
         switch (accessory) {
             case EmitterAccessory ea -> {

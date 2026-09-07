@@ -1,6 +1,8 @@
 package com.oddlabs.tt.effects.particle;
 
 import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.geom.BoundingBox;
+import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.util.Color;
 import org.joml.Vector3f;
@@ -9,12 +11,13 @@ import org.joml.Vector3f;
  * A transient expanding-ring effect rendered by {@link com.oddlabs.tt.effects.render.SonicBlastRenderer}.
  * Advances through its animation each game tick and removes itself when its duration elapses.
  */
-public final class SonicBlastEffect implements Animated {
+public final class SonicBlastEffect implements Animated, BoundsProvider {
     private final World world;
     private final Vector3f position;
     private final float maxRadius;
     private final float duration;
     private final Color.Linear color;
+    private final BoundingBox bounds;
     private float time;
     private boolean dead;
 
@@ -31,6 +34,13 @@ public final class SonicBlastEffect implements Animated {
         this.color = color;
         this.time = 0;
         this.dead = false;
+
+        float visualRadius = maxRadius * 1.2f;
+        this.bounds = new BoundingBox();
+        this.bounds.setBounds(
+                position.x - visualRadius, position.x + visualRadius,
+                position.y - visualRadius, position.y + visualRadius,
+                position.z - 5f, position.z + 5f);
 
         world.getAnimationManagerGameTime().registerAnimation(this);
     }
@@ -93,5 +103,14 @@ public final class SonicBlastEffect implements Animated {
 
     public float getDuration() {
         return duration;
+    }
+
+    public BoundingBox getBounds() {
+        return bounds;
+    }
+
+    @Override
+    public BoundingBox[] bounds() {
+        return new BoundingBox[]{bounds};
     }
 }

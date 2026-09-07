@@ -85,6 +85,11 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
             for (SonicBlastEffect effect : activeEffects) {
                 if (effect.isDead()) continue;
+                if (!state.inNoDetailMode()
+                        && RenderTools.inFrustum(effect.getBounds(), state.getFrustum())
+                                == RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                    continue;
+                }
 
                 modelViewStack.push();
 

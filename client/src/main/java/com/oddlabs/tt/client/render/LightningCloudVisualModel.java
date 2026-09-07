@@ -31,7 +31,7 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
         LightningAccessory {
     private static final float BRIGHTNESS = Color.toLinear(.2f);
     private static final Color.LinearDelta BRIGHTNESS_DELTA = new Color.LinearDelta(BRIGHTNESS, 0);
-    private static final float LIGHTNING_TIME = .1f;
+    private static final float LIGHTNING_TIME = .15f;
     private static final Color.LinearDelta DELTA_COLOR = Color.LinearDelta.ZERO.alpha(-1f / LIGHTNING_TIME);
 
     private static final float CLOUD_RADIUS_XY = 2.5f;
