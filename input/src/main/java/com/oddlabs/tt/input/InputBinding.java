@@ -5,27 +5,43 @@ import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 /**
- * Binds a key (with modifiers) or a character to an action.
+ * Binds a key, character, or extended mouse button (with modifiers) to a game action.
  */
-public record InputBinding(Key key, int codepoint, Set<Modifier> modifiers,
-                           GameAction action)
+public record InputBinding(Key key, int codepoint, @Nullable ExtendedMouseButton mouseButton,
+                           Set<Modifier> modifiers, GameAction action)
         implements Comparable<InputBinding>, Serializable {
     private static final boolean IS_MACOS = System.getProperty("os.name", "").toLowerCase().contains("mac");
 
     public InputBinding(Key key, Set<Modifier> modifiers, GameAction action) {
-        this(key, -1, modifiers, action);
+        this(key, -1, null, modifiers, action);
+    }
+
+    public InputBinding(Key key, int codepoint, Set<Modifier> modifiers, GameAction action) {
+        this(key, codepoint, null, modifiers, action);
+    }
+
+    public InputBinding(ExtendedMouseButton mouseButton, Set<Modifier> modifiers, GameAction action) {
+        this(Key.KEY_UNKNOWN, -1, mouseButton, modifiers, action);
     }
 
     public InputBinding {
-
         modifiers = modifiers.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(modifiers);
     }
 
     public boolean matches(KeyboardEvent event) {
+        if (mouseButton != null) {
+            return false;
+        }
         return ((codepoint != -1) && (event.keyCodepoint() != -1))
                 ? event.keyCodepoint() == codepoint
                 : event.keyCode() == key && modifiers.equals(event.modifiers());
+    }
+
+    public boolean matches(ExtendedMouseButton button, Set<Modifier> activeModifiers) {
+        return mouseButton == button && modifiers.equals(activeModifiers);
     }
 
     public boolean shift() {
@@ -49,6 +65,14 @@ public record InputBinding(Key key, int codepoint, Set<Modifier> modifiers,
         if (codepoint != -1) {
             return String.valueOf((char) codepoint);
         }
+        String s = formatModifierPrefix();
+        if (mouseButton != null) {
+            return s + mouseButton.getDisplayName();
+        }
+        return s + key().getDisplayName();
+    }
+
+    private String formatModifierPrefix() {
         String s = "";
         if (IS_MACOS) {
             if (control()) s = s + "⌃";
@@ -61,11 +85,15 @@ public record InputBinding(Key key, int codepoint, Set<Modifier> modifiers,
             if (shift()) s = s + "Shift+";
             if (meta()) s = s + "Meta+";
         }
-        return s + key().getDisplayName();
+        return s;
     }
 
     @Override
     public int compareTo(InputBinding o) {
+        int mouseCompare = compareMouseButtons(this.mouseButton, o.mouseButton);
+        if (mouseCompare != 0) {
+            return mouseCompare;
+        }
         if (this.codepoint != o.codepoint) {
             return Integer.compare(this.codepoint, o.codepoint);
         }
@@ -87,5 +115,18 @@ public record InputBinding(Key key, int codepoint, Set<Modifier> modifiers,
         }
 
         return this.action().compareTo(o.action());
+    }
+
+    private static int compareMouseButtons(@Nullable ExtendedMouseButton a, @Nullable ExtendedMouseButton b) {
+        if (a == b) {
+            return 0;
+        }
+        if (a == null) {
+            return -1;
+        }
+        if (b == null) {
+            return 1;
+        }
+        return a.compareTo(b);
     }
 }

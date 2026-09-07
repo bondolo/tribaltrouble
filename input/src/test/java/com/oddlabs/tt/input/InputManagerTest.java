@@ -48,4 +48,44 @@ class InputManagerTest {
         Set<GameAction> actions = manager.getActions(event);
         assertTrue(actions.contains(GameAction.GLOBAL_MENU));
     }
+
+    @Test
+    void testExtendedMouseButtonActionsAndState() {
+        InputManager manager = new InputManager();
+
+        // Default binding: GAMEPLAY_BACK is bound to X1 without modifiers
+        Set<GameAction> actions = manager.getActions(ExtendedMouseButton.X1, Set.of());
+        assertTrue(actions.contains(GameAction.GAMEPLAY_BACK));
+
+        // X2 is unbound by default
+        Set<GameAction> x2Actions = manager.getActions(ExtendedMouseButton.X2, Set.of());
+        assertTrue(x2Actions.isEmpty());
+
+        // Update mouse button state
+        manager.updateMouseState(ExtendedMouseButton.X1, true);
+        assertTrue(manager.isActive(GameAction.GAMEPLAY_BACK));
+
+        manager.updateMouseState(ExtendedMouseButton.X1, false);
+        assertFalse(manager.isActive(GameAction.GAMEPLAY_BACK));
+    }
+
+    @Test
+    void testActiveModifiersFromKeyState() {
+        InputManager manager = new InputManager();
+        assertTrue(manager.getActiveModifiers().isEmpty());
+
+        KeyboardEvent shiftDown = new KeyboardEvent(Key.LSHIFT, 0, Set.of(), 1);
+        manager.updateState(shiftDown, true);
+        assertEquals(Set.of(Modifier.SHIFT), manager.getActiveModifiers());
+
+        KeyboardEvent ctrlDown = new KeyboardEvent(Key.RCONTROL, 0, Set.of(), 1);
+        manager.updateState(ctrlDown, true);
+        assertEquals(Set.of(Modifier.SHIFT, Modifier.CONTROL), manager.getActiveModifiers());
+
+        manager.updateState(shiftDown, false);
+        assertEquals(Set.of(Modifier.CONTROL), manager.getActiveModifiers());
+
+        manager.updateState(ctrlDown, false);
+        assertTrue(manager.getActiveModifiers().isEmpty());
+    }
 }

@@ -36,6 +36,19 @@ public final class InputEvent {
         this.consumed = false;
     }
 
+    public InputEvent(Set<GameAction> actions, Set<Modifier> modifiers, InputPhase phase) {
+        this.actions = actions.isEmpty() ? EnumSet.noneOf(GameAction.class) : EnumSet.copyOf(actions);
+        this.phase = phase;
+        this.keyCode = null;
+        this.codepoint = -1;
+        this.shiftDown = modifiers.contains(Modifier.SHIFT);
+        this.controlDown = modifiers.contains(Modifier.CONTROL);
+        this.altDown = modifiers.contains(Modifier.ALT);
+        this.metaDown = modifiers.contains(Modifier.META);
+        this.clicks = 1;
+        this.consumed = false;
+    }
+
     @Override
     public String toString() {
         return "InputEvent{" + "actions=" + actions + ", phase=" + phase + ", keyCode=" + keyCode + ", consumed="

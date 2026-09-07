@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.animation.Updatable;
 import com.oddlabs.tt.gui.render.Index;
+import com.oddlabs.tt.input.ExtendedMouseButton;
 import com.oddlabs.tt.input.GameAction;
 import com.oddlabs.tt.input.InputEvent;
 import com.oddlabs.tt.input.InputManager;
@@ -251,6 +252,33 @@ public final class InputState {
 
         InputEvent event = new InputEvent(keyEvent, actions, InputPhase.RELEASED);
         focused.handleInputAll(event);
+    }
+
+    public void extendedMousePressed(ExtendedMouseButton button) {
+        Set<Modifier> modifiers = inputManager.getActiveModifiers();
+        Set<GameAction> actions = inputManager.getActions(button, modifiers);
+        inputManager.updateMouseState(button, true);
+
+        if (!actions.isEmpty()) {
+            InputEvent event = new InputEvent(actions, modifiers, InputPhase.PRESSED);
+            if (gui_root.handleGlobalInput(event)) {
+                return;
+            }
+            GUIObject focused = gui_root.getGlobalFocus();
+            focused.handleInputAll(event);
+        }
+    }
+
+    public void extendedMouseReleased(ExtendedMouseButton button) {
+        Set<Modifier> modifiers = inputManager.getActiveModifiers();
+        Set<GameAction> actions = inputManager.getActions(button, modifiers);
+        inputManager.updateMouseState(button, false);
+
+        if (!actions.isEmpty()) {
+            InputEvent event = new InputEvent(actions, modifiers, InputPhase.RELEASED);
+            GUIObject focused = gui_root.getGlobalFocus();
+            focused.handleInputAll(event);
+        }
     }
 
     private final class DoubleClickTimer implements Updatable<TimerAnimation> {

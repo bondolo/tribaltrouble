@@ -141,6 +141,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
 //        def(GameAction.UNIT_ADD_ALL_IDLE, Key.N, Modifier.CONTROL, Modifier.SHIFT);
         def(GameAction.UNIT_SET_RALLY, Key.R);
         def(GameAction.GAMEPLAY_BACK, Key.ESCAPE);
+        defMouse(GameAction.GAMEPLAY_BACK, ExtendedMouseButton.X1);
 
         // Army Shortcuts (0-9)
         def(GameAction.ARMY_SELECT_0, Key.KEY_0);
@@ -256,6 +257,13 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
     private static void defChar(GameAction action, char character) {
         DEFAULT_BINDINGS.computeIfAbsent(action, k -> new TreeSet<>())
                 .add(new InputBinding(Key.KEY_UNKNOWN, (int) character, EnumSet.noneOf(Modifier.class), action));
+    }
+
+    private static void defMouse(GameAction action, ExtendedMouseButton button, Modifier... modifiers) {
+        Set<Modifier> modSet = EnumSet.noneOf(Modifier.class);
+        Collections.addAll(modSet, modifiers);
+        DEFAULT_BINDINGS.computeIfAbsent(action, k -> new TreeSet<>())
+                .add(new InputBinding(button, modSet, action));
     }
 
     private final NavigableSet<InputBinding> bindings = new TreeSet<>();
@@ -398,7 +406,9 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
             if (!first) sb.append(", ");
             first = false;
             sb.append("{");
-            if (b.key() != Key.KEY_UNKNOWN) {
+            if (b.mouseButton() != null) {
+                sb.append("\"mouse\": \"").append(b.mouseButton().name()).append("\"");
+            } else if (b.key() != Key.KEY_UNKNOWN) {
                 sb.append("\"key\": \"").append(b.key().name()).append("\"");
             } else if (b.codepoint() != 0) {
                 sb.append("\"char\": \"").append((char) b.codepoint()).append("\"");
@@ -441,6 +451,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
     private @Nullable InputBinding parseBindingObject(String content, GameAction action) {
         Key key = Key.KEY_UNKNOWN;
         int codepoint = 0;
+        @Nullable ExtendedMouseButton mouseButton = null;
         Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
 
         // Split by comma
@@ -457,6 +468,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
                     case "char" -> {
                         if (!v.isEmpty()) codepoint = v.charAt(0);
                     }
+                    case "mouse" -> mouseButton = ExtendedMouseButton.valueOf(v);
                     case "shift" -> {
                         if (Boolean.parseBoolean(v)) modifiers.add(Modifier.SHIFT);
                     }
@@ -471,11 +483,13 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
                     }
                 }
             } catch (Exception e) {
-                // Ignore invalid keys
                 logger.warning("ignoring " + k + ": " + v);
             }
         }
 
+        if (mouseButton != null) {
+            return new InputBinding(mouseButton, modifiers, action);
+        }
         if (codepoint != 0) {
             return new InputBinding(Key.KEY_UNKNOWN, codepoint, EnumSet.noneOf(Modifier.class), action);
         }

@@ -1,6 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
+import com.oddlabs.tt.input.ExtendedMouseButton;
 import com.oddlabs.tt.input.InputManager;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
@@ -116,6 +117,14 @@ public final class LocalInput implements AutoCloseable {
 
     public void mouseReleased(GUIRoot gui_root, MouseButton button) {
         gui_root.getInputState().mouseReleased(button);
+    }
+
+    public void extendedMousePressed(GUIRoot gui_root, ExtendedMouseButton button) {
+        gui_root.getInputState().extendedMousePressed(button);
+    }
+
+    public void extendedMouseReleased(GUIRoot gui_root, ExtendedMouseButton button) {
+        gui_root.getInputState().extendedMouseReleased(button);
     }
 
     public void mousePressed(GUIRoot gui_root, MouseButton button) {

@@ -15,6 +15,7 @@ public final class InputManager {
     private final InputBindingSettings settings;
     private final Set<GameAction> activeActions = EnumSet.noneOf(GameAction.class);
     private final Map<Key, Set<GameAction>> keyState = new EnumMap<>(Key.class);
+    private final Map<ExtendedMouseButton, Set<GameAction>> mouseButtonState = new EnumMap<>(ExtendedMouseButton.class);
 
     public InputManager(InputBindingSettings settings) {
         this.settings = settings;
@@ -66,12 +67,21 @@ public final class InputManager {
         return actions;
     }
 
-    // Called by LocalInput or InputState to update polling state
+    public Set<GameAction> getActions(ExtendedMouseButton button, Set<Modifier> modifiers) {
+        Set<GameAction> actions = EnumSet.noneOf(GameAction.class);
+        for (InputBinding binding : settings.getAllBindings()) {
+            if (binding.matches(button, modifiers)) {
+                actions.add(binding.action());
+            }
+        }
+        return actions;
+    }
+
     public void updateState(KeyboardEvent event, boolean pressed) {
         if (pressed) {
             Set<GameAction> actions = getActions(event);
+            keyState.put(event.keyCode(), actions);
             if (!actions.isEmpty()) {
-                keyState.put(event.keyCode(), actions);
                 activeActions.addAll(actions);
             }
         } else {
@@ -82,6 +92,39 @@ public final class InputManager {
         }
     }
 
+    public void updateMouseState(ExtendedMouseButton button, boolean pressed) {
+        if (pressed) {
+            Set<GameAction> actions = getActions(button, getActiveModifiers());
+            if (!actions.isEmpty()) {
+                mouseButtonState.put(button, actions);
+                activeActions.addAll(actions);
+            }
+        } else {
+            Set<GameAction> actions = mouseButtonState.remove(button);
+            if (actions != null) {
+                activeActions.removeAll(actions);
+            }
+        }
+    }
+
+    /**
+     * Derives the currently active keyboard modifiers from tracked key state.
+     */
+    public Set<Modifier> getActiveModifiers() {
+        Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+        for (Key key : keyState.keySet()) {
+            switch (key) {
+                case LSHIFT, RSHIFT -> modifiers.add(Modifier.SHIFT);
+                case LCONTROL, RCONTROL -> modifiers.add(Modifier.CONTROL);
+                case LALT, RALT -> modifiers.add(Modifier.ALT);
+                case LSUPER, RSUPER -> modifiers.add(Modifier.META);
+                default -> {
+                }
+            }
+        }
+        return modifiers;
+    }
+
     public boolean isActive(GameAction action) {
         return activeActions.contains(action);
     }
@@ -89,5 +132,6 @@ public final class InputManager {
     public void reset() {
         activeActions.clear();
         keyState.clear();
+        mouseButtonState.clear();
     }
 }

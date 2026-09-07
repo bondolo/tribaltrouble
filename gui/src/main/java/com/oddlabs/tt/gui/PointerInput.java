@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.tt.engine.cursor.Cursor;
 import com.oddlabs.tt.engine.cursor.CursorFile;
+import com.oddlabs.tt.input.ExtendedMouseButton;
 import com.oddlabs.tt.input.InputProvider;
 import org.jspecify.annotations.Nullable;
 
@@ -176,7 +177,8 @@ public final class PointerInput {
             accum_y = deterministic.log(inputProvider.getEventY());
             accum_dz += deterministic.log(inputProvider.getEventDWheel());
             accum_dx += deterministic.log(inputProvider.getEventDWheelX());
-            MouseButton button = MouseButton.fromInt(deterministic.log(inputProvider.getEventButton()));
+            int rawButton = deterministic.log(inputProvider.getEventButton());
+            MouseButton button = MouseButton.fromInt(rawButton);
             if (button != null) {
                 updateMouse(gui_root, accum_x, accum_y, accum_dz, accum_dx);
                 accum_dz = 0;
@@ -192,6 +194,18 @@ public final class PointerInput {
                     if (buttons.remove(button)) {
                         drag_button = null;
                         localInput.mouseReleased(gui_root, button);
+                    }
+                }
+            } else {
+                ExtendedMouseButton extButton = ExtendedMouseButton.fromIndex(rawButton);
+                if (extButton != null) {
+                    updateMouse(gui_root, accum_x, accum_y, accum_dz, accum_dx);
+                    accum_dz = 0;
+                    accum_dx = 0;
+                    if (deterministic.log(inputProvider.getEventButtonState())) {
+                        localInput.extendedMousePressed(gui_root, extButton);
+                    } else {
+                        localInput.extendedMouseReleased(gui_root, extButton);
                     }
                 }
             }

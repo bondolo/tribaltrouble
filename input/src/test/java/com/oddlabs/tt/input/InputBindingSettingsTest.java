@@ -54,4 +54,39 @@ class InputBindingSettingsTest {
         assertEquals(1, importedBindings.size());
         assertEquals(customBinding, importedBindings.first());
     }
+
+    @Test
+    void testMouseBindingPersistence() {
+        InputBindingSettings settings = new InputBindingSettings();
+        InputBinding mouseBinding = new InputBinding(ExtendedMouseButton.X2, Set.of(Modifier.SHIFT),
+                GameAction.GAMEPLAY_BACK);
+        settings.setBindings(GameAction.GAMEPLAY_BACK, Set.of(mouseBinding));
+
+        Properties props = new Properties();
+        settings.saveToProperties(props);
+
+        InputBindingSettings reloaded = new InputBindingSettings();
+        reloaded.loadFromProperties(props);
+
+        NavigableSet<InputBinding> reloadedBindings = reloaded.getBindings(GameAction.GAMEPLAY_BACK);
+        assertEquals(1, reloadedBindings.size());
+        assertEquals(mouseBinding, reloadedBindings.first());
+    }
+
+    @Test
+    void testExportImportJsonWithMouseBinding() {
+        InputBindingSettings settings = new InputBindingSettings();
+        InputBinding mouseBinding = new InputBinding(ExtendedMouseButton.X1, Set.of(), GameAction.GAMEPLAY_BACK);
+        settings.setBindings(GameAction.GAMEPLAY_BACK, Set.of(mouseBinding));
+
+        String json = settings.exportBindings();
+        assertNotNull(json);
+
+        InputBindingSettings imported = new InputBindingSettings();
+        imported.importBindings(json);
+
+        NavigableSet<InputBinding> importedBindings = imported.getBindings(GameAction.GAMEPLAY_BACK);
+        assertEquals(1, importedBindings.size());
+        assertEquals(mouseBinding, importedBindings.first());
+    }
 }
