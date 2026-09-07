@@ -381,14 +381,25 @@ public final class GUIRoot extends GUIObject {
             DebugFlags.draw_status = !DebugFlags.draw_status;
             consumed = true;
         }
-        // GLOBAL_MENU removed because it requires viewer which GUIRoot doesn't have.
 
         if (event.consumeAction(GameAction.GLOBAL_TOGGLE_FULLSCREEN)) {
             gui.toggleFullscreen();
             consumed = true;
         }
 
-        // Debug Actions (Only those that don't need Viewer)
+        if (consumed) {
+            event.consume();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleDebugInput(InputEvent event) {
+        if (event.getPhase() != InputPhase.PRESSED || !event.hasActions()) {
+            return false;
+        }
+
+        boolean consumed = false;
         if (gui.getLocalInput().inDeveloperMode()) {
             if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
                 DebugFlags.draw_light = !DebugFlags.draw_light;
@@ -471,6 +482,9 @@ public final class GUIRoot extends GUIObject {
     @Override
     public void handleInput(InputEvent event) {
         if (handleGlobalInput(event)) {
+            return;
+        }
+        if (handleDebugInput(event)) {
             return;
         }
         super.handleInput(event);
