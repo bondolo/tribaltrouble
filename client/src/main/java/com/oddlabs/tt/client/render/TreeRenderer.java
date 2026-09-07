@@ -11,7 +11,6 @@ import com.oddlabs.tt.engine.render.SceneRenderer;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.render.Tree;
 import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;

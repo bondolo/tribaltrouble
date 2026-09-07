@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 import java.nio.ByteBuffer;
 
 /**
- * Helper class to pack global uniform data into a ByteBuffer according to std140 layout.
+ * Packs global uniform data into a ByteBuffer according to std140 layout.
  */
 public final class GlobalUniforms {
 

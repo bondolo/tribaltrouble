@@ -1,9 +1,11 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
+
+import com.oddlabs.tt.engine.render.AnimatedAccessory;
 
 /**
- * Interface for accessories that can trigger lightning strikes.
+ * Accessory that triggers lightning strikes.
  */
-public interface LightningAccessory extends AnimatedAccessory {
+interface LightningAccessory extends AnimatedAccessory {
     /**
      * Triggers a lightning strike effect at the specified target coordinates.
      *

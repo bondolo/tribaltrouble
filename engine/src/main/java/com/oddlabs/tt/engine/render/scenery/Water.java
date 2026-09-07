@@ -33,7 +33,7 @@ import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Renders water surfaces.
+ * Water surface renderer for oceans and inland water.
  */
 public final class Water implements AutoCloseable {
     /** Depth scale (in meters) over which Native (Tropical) water alpha transitions. */

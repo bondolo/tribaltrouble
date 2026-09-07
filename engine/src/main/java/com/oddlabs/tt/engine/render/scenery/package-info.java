@@ -1,5 +1,5 @@
 /**
- * Rendering and management of background scenery elements such as the sky and water.
+ * Background scenery elements including sky dome, clouds, and water surfaces.
  */
 @NullMarked
 package com.oddlabs.tt.engine.render.scenery;

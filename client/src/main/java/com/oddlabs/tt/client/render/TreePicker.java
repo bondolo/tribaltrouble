@@ -6,7 +6,6 @@ import com.oddlabs.tt.engine.render.PolyDetail;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.engine.render.SpriteList;
-import com.oddlabs.tt.engine.render.Tree;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.SpriteFile;
 import com.oddlabs.tt.base.geom.BoundingBox;

@@ -9,7 +9,6 @@ import com.oddlabs.tt.effects.particle.Lightning;
 import com.oddlabs.tt.effects.particle.ParametricEmitter;
 import com.oddlabs.tt.effects.render.EmitterAccessory;
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.LightningAccessory;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.resource.AudioRegistry;

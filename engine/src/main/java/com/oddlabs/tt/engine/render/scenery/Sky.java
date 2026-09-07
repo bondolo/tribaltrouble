@@ -40,7 +40,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 /**
- * Renders the sky dome, clouds, and background water scenery (sea bottom and outer water).
+ * Sky dome, clouds, and background water scenery renderer.
  */
 public final class Sky implements SceneRenderer, AutoCloseable {
     private static final float[] SKYDOME_SPEED_OUTER = {0.2f, 0f};

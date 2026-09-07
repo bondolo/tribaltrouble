@@ -1,9 +1,11 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.client.render;
+
+import com.oddlabs.tt.engine.render.AnimatedAccessory;
 
 /**
- * Interface for accessories that can trigger sonic shockwave effects.
+ * Accessory that triggers sonic shockwave effects.
  */
-public interface SonicBlastAccessory extends AnimatedAccessory {
+interface SonicBlastAccessory extends AnimatedAccessory {
     /**
      * Triggers a sonic blast shockwave effect at the specified target coordinates.
      *
