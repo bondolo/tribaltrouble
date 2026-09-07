@@ -97,7 +97,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
         synchronized (manager) {
             if (ALC10.alcGetCurrentContext() != 0 && isPlaying() && buffersLoaded > 0) {
                 alBuffers.limit(buffersLoaded);
-                ((OpenALAudioSource) source).queue(alBuffers);
+                source.queue(alBuffers);
             }
         }
 
@@ -118,7 +118,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
         int processed;
         synchronized (manager) {
             if (ALC10.alcGetCurrentContext() == 0) return;
-            processed = ((OpenALAudioSource) source).processed();
+            processed = source.processed();
         }
 
         try (var stack = MemoryStack.stackPush()) {
@@ -134,11 +134,11 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
 
                 synchronized (manager) {
                     if (ALC10.alcGetCurrentContext() == 0) return;
-                    ((OpenALAudioSource) source).unqueued(al_return_buffers);
+                    source.unqueued(al_return_buffers);
                     int alBufferId = al_return_buffers.get(0);
                     AL10.alBufferData(alBufferId, al_format, pcmBuffer, al_rate);
                     if (isPlaying()) {
-                        ((OpenALAudioSource) source).queue(al_return_buffers);
+                        source.queue(al_return_buffers);
                     }
                 }
                 processed--;
