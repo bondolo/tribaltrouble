@@ -193,9 +193,7 @@ public final class Renderer implements AutoCloseable {
         }
 
         logger.info("vsync = " + windowSettings.vsync);
-        if (windowSettings.vsync) {
-            window.setVSyncEnabled(true);
-        }
+        window.setVSyncEnabled(windowSettings.vsync);
         NativeResource.setErrorChecker(GLUtils::checkGLError);
         initGL();
         window.update();

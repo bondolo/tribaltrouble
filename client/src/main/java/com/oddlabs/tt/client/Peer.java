@@ -277,12 +277,12 @@ public final class Peer implements AutoCloseable {
                         framePacer.setChecksumComplain(false);
                     }
                 }
-                if (!DebugFlags.frustum_freeze) {
-                    gui.pickHover();
-                }
             }
         }
         deterministic.setEnabled(false);
+        if (!DebugFlags.frustum_freeze) {
+            gui.pickHover();
+        }
     }
 
     public void run(ClientStartup startup, String... args) throws IOException {
@@ -418,16 +418,16 @@ public final class Peer implements AutoCloseable {
 
             audioManager.setMasterGain(isActive ? 1f : 0f);
             long t6 = System.nanoTime();
-            if (!first_frame && window.isVisible()) {
-                window.update();
-            }
+            renderer.display(gui::render);
             long t7 = System.nanoTime();
-            totalWindowUpdateTime += (t7 - t6);
+            totalDisplayTime += (t7 - t6);
 
             long t8 = System.nanoTime();
-            renderer.display(gui::render);
+            if (window.isVisible()) {
+                window.update();
+            }
             long t9 = System.nanoTime();
-            totalDisplayTime += (t9 - t8);
+            totalWindowUpdateTime += (t9 - t8);
 
             if (PROFILE) {
                 long tf0 = System.nanoTime();
@@ -441,7 +441,6 @@ public final class Peer implements AutoCloseable {
                 logger.info("First frame rendered after " + startup_time);
                 first_frame = false;
                 if (load_task != null) {
-                    window.update();
                     event_queue.getDeterministic().setEnabled(true);
                     try {
                         load_task.run();
