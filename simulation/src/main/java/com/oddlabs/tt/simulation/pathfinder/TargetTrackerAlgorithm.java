@@ -4,6 +4,8 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Optional;
+
 /**
  * Pathfinding tracker algorithm that tracks paths towards a specific target.
  */
@@ -29,19 +31,19 @@ public final class TargetTrackerAlgorithm implements TrackerAlgorithm {
     }
 
     @Override
-    public @Nullable Region findPathRegion(int src_x, int src_y) {
+    public Optional<Region> findPathRegion(int src_x, int src_y) {
         return target.isDead()
-                ? null
+                ? Optional.empty()
                 : PathFinder.findPathRegion(unit_grid,
                         unit_grid.getRegion(src_x, src_y),
                         unit_grid.getRegion(target.getGridX(), target.getGridY()));
     }
 
     @Override
-    public @Nullable GridPathNode findPathGrid(Region target_region, Region next_region, int src_x,
+    public Optional<GridPathNode> findPathGrid(Region target_region, Region next_region, int src_x,
             int src_y, boolean allow_secondary_targets) {
         return target.isDead()
-                ? null
+                ? Optional.empty()
                 : PathFinder.findPathGrid(unit_grid, next_region, null,
                         src_x, src_y,
                         target.getGridX(), target.getGridY(),

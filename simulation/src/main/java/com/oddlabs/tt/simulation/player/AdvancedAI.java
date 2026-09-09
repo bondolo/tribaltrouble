@@ -137,9 +137,8 @@ public final class AdvancedAI extends AI {
         nodeAttackWithWarriorsAndChieftain(numWarriors, numWarriors
                 >= params.numWarriorsForChieftain());
         nodeAssignIdlePeons();
-        if (getOwner().hasActiveChieftain()) {
-            getOwner().getRaceInfo().getChieftainAI().decide(getOwner().getChieftain().orElseThrow());
-        }
+        getOwner().getChieftain().ifPresent(chieftain ->
+                getOwner().getRaceInfo().getChieftainAI().decide(chieftain));
     }
 
     private void nodeDefendBase() {
@@ -578,15 +577,11 @@ public final class AdvancedAI extends AI {
     private boolean buildBuilding(BuildingType building_type, Selectable<?>[] selection, int grid_x,
             int grid_y) {
         BuildingSiteScanFilter filter = new BuildingSiteScanFilter(getUnitGrid(), getOwner().getRaceInfo()
-                .getBuildingTemplate(building_type), 40, true);
+                .getBuildingTemplate(building_type), 40);
         getUnitGrid().scan(filter, grid_x, grid_y);
-        List<? extends Target> target_list = filter.getResult();
-        if (!target_list.isEmpty()) {
-            Target target = target_list.getFirst();
+        return filter.getSingleResult().map(target -> {
             getOwner().placeBuilding(selection, building_type, target.getGridX(), target.getGridY());
             return true;
-        } else {
-            return false;
-        }
+        }).orElse(false);
     }
 }

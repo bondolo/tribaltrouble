@@ -2,10 +2,15 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.Optional;
+
 /**
  * Base A* heuristic search algorithm computing distance approximations and goal validation.
  */
 abstract class AStarAlgorithm implements PathFinderAlgorithm {
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private static final Optional<Node> SEARCH_EXHAUSTED = Optional.of(Node.TOMBSTONE);
+
     private final int dst_x;
     private final int dst_y;
     private final Region dst_region;
@@ -35,21 +40,23 @@ abstract class AStarAlgorithm implements PathFinderAlgorithm {
 
     protected abstract boolean isPathComplete(int dist_squared, Node node);
 
-    private @Nullable NodeResult defaultTouchNode() {
+    private Optional<Node> defaultTouchNode() {
         nodes_visited++;
         if (nodes_visited == RegionBuilder.MAX_EXAMINED_NODES_PER_PATH) {
-            if (allow_second_best) {
+            if (allow_second_best && second_best_node != null) {
                 Node result = second_best_node;
                 second_best_node = null;
-                return new NodeResult(result);
-            } else
-                return new NodeResult(null);
-        } else
-            return null;
+                return Optional.of(result);
+            } else {
+                return SEARCH_EXHAUSTED;
+            }
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public final @Nullable NodeResult touchNode(Node node) {
+    public final Optional<Node> touchNode(Node node) {
         int dx = node.getGridX() - dst_x;
         int dy = node.getGridY() - dst_y;
         int dist_squared = dx * dx + dy * dy;
@@ -60,13 +67,13 @@ abstract class AStarAlgorithm implements PathFinderAlgorithm {
         }
         if (isPathComplete(dist_squared, node)) {
             assert node != null : this + " " + dist_squared + " " + dx + " " + dy;
-            return new NodeResult(node);
+            return Optional.of(node);
         }
         return defaultTouchNode();
     }
 
     @Override
-    public final @Nullable NodeResult getBestNode() {
-        return null;
+    public final Optional<Node> getBestNode() {
+        return Optional.empty();
     }
 }

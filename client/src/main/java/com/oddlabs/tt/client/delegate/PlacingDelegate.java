@@ -129,7 +129,7 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
         UnitGrid unit_grid = getViewer().getWorld().getUnitGrid();
         BuildingSiteScanFilter filter = new BuildingSiteScanFilter(unit_grid, getTemplate(), GRID_RADIUS, false);
         unit_grid.scan(filter, placing_center_grid_x, placing_center_grid_y);
-        List<LandscapeTarget> target_list = filter.getResult();
+        List<LandscapeTarget> target_list = filter.getResults();
 
         site_renderer.renderSites(context, queues, renderer, modelViewStack, projectionStack, target_list, center_x,
                 center_y, 2 * GRID_RADIUS);

@@ -1,13 +1,14 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import org.jspecify.annotations.Nullable;
+import java.util.Optional;
 
+/**
+ * Filter strategy for discovering and accepting occupants during spatial queries.
+ */
 public interface FinderFilter<O extends Occupant> {
-    @Nullable
-    O getOccupantFromRegion(Region region, boolean one_region);
+    Optional<O> getOccupantFromRegion(Region region, boolean one_region);
 
-    @Nullable
-    O getBest();
+    Optional<O> getBest();
 
     boolean acceptOccupant(Occupant occ);
 }

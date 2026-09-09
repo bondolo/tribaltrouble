@@ -432,9 +432,8 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     private boolean canEnter(Target target) {
         return target instanceof Building building &&
                 !getAbilities().hasAbilities(Abilities.MAGIC) &&
-                building.getUnitContainer().isPresent() &&
                 getOwner() == building.getOwner() &&
-                building.getUnitContainer().get().canEnter(this);
+                building.getUnitContainer().map(c -> c.canEnter(this)).orElse(false);
     }
 
     @Override

@@ -4,6 +4,8 @@ import com.oddlabs.tt.base.util.TextAppender;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.Optional;
+
 /// Tracks and manages unit pathfinding through the game world. Combines high-level region pathfinding with low-level
 /// grid navigation and smooth Bézier curve movement.
 ///
@@ -204,14 +206,14 @@ public final class PathTracker {
                 region_path = (RegionNode) region_path.getParent();
             }
         }
-        target_region = tracker_algorithm.findPathRegion(src_x, src_y);
+        target_region = tracker_algorithm.findPathRegion(src_x, src_y).orElse(null);
         if (target_region != null)
             region_path = (RegionNode) target_region.newPath();
         else
             region_path = null;
     }
 
-    private @Nullable GridPathNode findPathToNextRegion(int src_x, int src_y, @Nullable RegionNode next_region_node,
+    private Optional<GridPathNode> findPathToNextRegion(int src_x, int src_y, @Nullable RegionNode next_region_node,
             boolean allow_secondary_targets) {
         Region next_region = null;
         Region next_next_region;
@@ -240,7 +242,7 @@ public final class PathTracker {
             GridPathNode patch_path = null;
             RegionNode search_next_region_node = next_region_node;
             for (int i = 0; i < REGION_SEARCH_TRIES; i++) {
-                patch_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), search_next_region_node, false);
+                patch_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), search_next_region_node, false).orElse(null);
                 if (done(unit.getGridX(), unit.getGridY()))
                     return State.DONE;
                 if (patch_path != null || search_next_region_node == null)
@@ -262,7 +264,7 @@ public final class PathTracker {
                     return State.BLOCKED;
             }
         } else if (grid_path == null && !done(next_unit_grid_x, next_unit_grid_y)) {
-            grid_path = findPathToNextRegion(next_unit_grid_x, next_unit_grid_y, next_region_node, true);
+            grid_path = findPathToNextRegion(next_unit_grid_x, next_unit_grid_y, next_region_node, true).orElse(null);
         }
         return State.OK;
     }
@@ -289,15 +291,14 @@ public final class PathTracker {
             return State.DONE;
         }
         RegionNode next_region_node = (RegionNode) region_path.getParent();
-        GridPathNode init_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), next_region_node, true);
+        Optional<GridPathNode> init_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), next_region_node, true);
         if (done(unit.getGridX(), unit.getGridY()))
             return State.DONE;
-        if (init_path == null) {
-            return State.BLOCKED;
-        }
-        initBezierPath(init_path.getDirection());
-        grid_path = (GridPathNode) init_path.getParent();
-        return State.OK;
+        return init_path.map(ip -> {
+            initBezierPath(ip.getDirection());
+            grid_path = (GridPathNode) ip.getParent();
+            return State.OK;
+        }).orElse(State.BLOCKED);
     }
 
     public UnitGrid getUnitGrid() {

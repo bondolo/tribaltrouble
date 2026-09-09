@@ -3,9 +3,7 @@ package com.oddlabs.tt.simulation.player;
 import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
-
-import java.util.stream.StreamSupport;
+import com.oddlabs.tt.simulation.pathfinder.CountOccupantScanFilter;
 
 /**
  * AI logic controller for Native chieftains, determining when to cast Poison Fog and Lightning Cloud.
@@ -52,32 +50,16 @@ public final class NativeChieftainAI extends ChieftainAI {
     }
 
     private int getNumEnemyUnitsClose(Unit chieftain, float hit_radius) {
-        var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
-                Unit.class);
+        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
+                Unit.class, unit -> unit.isAlive() && chieftain.getOwner().isEnemy(unit.getOwner()));
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
-        long num_enemy_units_close = StreamSupport.stream(filter.getResult().spliterator(), false)
-                .filter(Selectable::isAlive)
-                .filter(unit -> {
-                    float dx = unit.getPositionX() - chieftain.getPositionX();
-                    float dy = unit.getPositionY() - chieftain.getPositionY();
-                    float squared_dist = dx * dx + dy * dy;
-                    return chieftain.getOwner().isEnemy(unit.getOwner()) && squared_dist < hit_radius * hit_radius;
-                }).count();
-        return (int) num_enemy_units_close;
+        return filter.getCount();
     }
 
     private int getNumFriendlyUnitsClose(Unit chieftain, float hit_radius) {
-        var filter = new FindOccupantFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
-                Selectable.genericClass());
+        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
+                Selectable.genericClass(), s -> s.isAlive() && !chieftain.getOwner().isEnemy(s.getOwner()));
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
-        long num_friendly_units_close = StreamSupport.stream(filter.getResult().spliterator(), false)
-                .filter(Selectable::isAlive)
-                .filter(s -> {
-                    float dx = s.getPositionX() - chieftain.getPositionX();
-                    float dy = s.getPositionY() - chieftain.getPositionY();
-                    float squared_dist = dx * dx + dy * dy;
-                    return !chieftain.getOwner().isEnemy(s.getOwner()) && squared_dist < hit_radius * hit_radius;
-                }).count();
-        return (int) num_friendly_units_close;
+        return filter.getCount();
     }
 }

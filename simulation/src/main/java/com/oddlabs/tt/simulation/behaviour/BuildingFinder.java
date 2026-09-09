@@ -1,34 +1,35 @@
-package com.oddlabs.tt.simulation.model;
+package com.oddlabs.tt.simulation.behaviour;
 
+import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.pathfinder.FinderFilter;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.player.Player;
-import org.jspecify.annotations.Nullable;
+
+import java.util.Optional;
 
 /**
  * Filter strategy for locating candidate buildings owned by a specific player with matching abilities.
  */
-public final class BuildingFinder implements FinderFilter<Building> {
+final class BuildingFinder implements FinderFilter<Building> {
     private final Player owner;
     private final int abilities;
 
-    public BuildingFinder(Player owner, int abilities) {
+    BuildingFinder(Player owner, int abilities) {
         this.owner = owner;
         this.abilities = abilities;
     }
 
     @Override
-    public @Nullable Building getOccupantFromRegion(Region region, boolean one_region) {
+    public Optional<Building> getOccupantFromRegion(Region region, boolean one_region) {
         return region.getObjects(Building.class).stream()
                 .filter(this::accept)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     @Override
-    public @Nullable Building getBest() {
-        return null;
+    public Optional<Building> getBest() {
+        return Optional.empty();
     }
 
     private boolean accept(Building building) {

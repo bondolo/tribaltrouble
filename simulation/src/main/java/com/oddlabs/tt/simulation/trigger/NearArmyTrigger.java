@@ -1,7 +1,7 @@
 package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.pathfinder.FindOccupantFilter;
+import com.oddlabs.tt.simulation.pathfinder.CountOccupantScanFilter;
 import com.oddlabs.tt.simulation.player.Player;
 
 public final class NearArmyTrigger extends IntervalTrigger {
@@ -24,14 +24,13 @@ public final class NearArmyTrigger extends IntervalTrigger {
             if (unit.isDead()) {
                 continue;
             }
-            FindOccupantFilter<Unit> filter = new FindOccupantFilter<>(unit.getPositionX(), unit.getPositionY(), r,
-                    unit, Unit.class);
+            CountOccupantScanFilter<Unit> filter = new CountOccupantScanFilter<>(unit.getPositionX(),
+                    unit.getPositionY(), r, unit, Unit.class,
+                    filtered -> filtered.isAlive() && filtered.getOwner() == player, 1);
             player.getWorld().getUnitGrid().scan(filter, unit.getGridX(), unit.getGridY());
-            for (Unit filtered : filter.getResult()) {
-                if (!filtered.isDead() && filtered.getOwner() == player) {
-                    triggered();
-                    return;
-                }
+            if (filter.hasMatch()) {
+                triggered();
+                return;
             }
         }
     }

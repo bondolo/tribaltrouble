@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.BuildingFinder;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
@@ -63,9 +62,9 @@ public final class GatherController<S extends Supply> extends Controller {
 
     private void dropoff() {
         resetGiveUpCounter(State.HARVEST);
-        if (building_tracker != null && building_tracker.getOccupant() != null && unit.isCloseEnough(0f,
-                building_tracker.getOccupant())) {
-            Building building = building_tracker.getOccupant();
+        if (building_tracker != null && building_tracker.getOccupant().isPresent() && unit.isCloseEnough(0f,
+                building_tracker.getOccupant().get())) {
+            Building building = building_tracker.getOccupant().orElse(null);
             unit.getSupplyContainer().getSupplyType().ifPresent(unit_supply_type -> {
                 int num_supplies = building.getSupplyContainer(unit_supply_type).orElseThrow().increaseSupply(unit
                         .getSupplyContainer()

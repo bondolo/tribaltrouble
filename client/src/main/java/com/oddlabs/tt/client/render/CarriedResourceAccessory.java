@@ -27,7 +27,8 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     public @Nullable SpriteKey getSpriteRenderer() {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         if (supply_container != null) {
-            return supply_container.getSupplyType().map(type -> AssetRegistry.getInstance().getCarriedSupplySprite(unit
+            return supply_container.getSupplyType()
+                    .map(type -> AssetRegistry.getInstance().getCarriedSupplySprite(unit
                     .getOwner().getPlayerInfo().getRace(), type)
             ).orElse(null);
         }
@@ -39,7 +40,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
         UnitSupplyContainer supply_container = unit.getSupplyContainer();
         return unit.getAbilities().hasAbilities(Abilities.BUILD) &&
                 supply_container != null &&
-                supply_container.getSupplyType() != null &&
+                supply_container.getSupplyType().isPresent() &&
                 supply_container.getNumSupplies() > 0;
     }
 

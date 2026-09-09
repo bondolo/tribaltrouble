@@ -1,5 +1,8 @@
-package com.oddlabs.tt.simulation.model;
+package com.oddlabs.tt.simulation.behaviour;
 
+import com.oddlabs.tt.simulation.model.Supply;
+import com.oddlabs.tt.simulation.model.SupplyType;
+import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FinderFilter;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
@@ -7,33 +10,31 @@ import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Filter strategy for locating candidate resource supplies of a specific type closest to a unit.
  */
-public final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
+final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
     private final Unit unit;
     private final SupplyType supplyType;
     private final Set<Set<S>> regions = new CopyOnWriteArraySet<>();
     private int max_region_dist_sqr;
 
-    public SupplyFinder(Unit unit, SupplyType supplyType) {
+    SupplyFinder(Unit unit, SupplyType supplyType) {
         this.unit = unit;
         this.supplyType = supplyType;
     }
 
     @Override
-    public @Nullable S getOccupantFromRegion(Region region, boolean one_region) {
-        @SuppressWarnings("unchecked") Class<S> supplyClass = (Class<S>) supplyType.getSupplyClass();
+    public Optional<S> getOccupantFromRegion(Region region, boolean one_region) {
+        @SuppressWarnings("unchecked")
+        Class<S> supplyClass = (Class<S>) supplyType.getSupplyClass();
         Set<S> supplies = region.getObjects(supplyClass);
         if (one_region) {
-            if (!supplies.isEmpty()) {
-                S supply = findClosest(supplies);
-                assert !supply.isEmpty();
-                return supply;
-            }
+            return findClosest(supplies);
         } else {
             int dx = region.getGridX() - unit.getGridX();
             int dy = region.getGridY() - unit.getGridY();
@@ -47,30 +48,25 @@ public final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
                 regions.add(supplies);
             }
             if (!regions.isEmpty() && region_dist_sqr > max_region_dist_sqr) {
-                S supply = findClosest();
-                assert !supply.isEmpty();
-                return supply;
+                return findClosest();
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public S getBest() {
+    public Optional<S> getBest() {
         return findClosest();
     }
 
-    private @Nullable S findClosest(Set<S> supplies) {
-        return supplies.stream()
-                .min(Comparator.comparingInt(this::distanceSquared))
-                .orElse(null);
+    private Optional<S> findClosest(Set<S> supplies) {
+        return supplies.stream().min(Comparator.comparingInt(this::distanceSquared));
     }
 
-    private @Nullable S findClosest() {
-        S closest = regions.stream()
+    private Optional<S> findClosest() {
+        Optional<S> closest = regions.stream()
                 .flatMap(Set::stream)
-                .min(Comparator.comparingInt(this::distanceSquared))
-                .orElse(null);
+                .min(Comparator.comparingInt(this::distanceSquared));
         regions.clear();
         return closest;
     }

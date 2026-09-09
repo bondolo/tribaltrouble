@@ -2,7 +2,33 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Base abstract node for graph search and A* pathfinding algorithms.
+ */
 abstract class Node {
+    /** terminal node */
+    static final Node TOMBSTONE = new Node() {
+        @Override
+        public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
+            return false;
+        }
+
+        @Override
+        public @Nullable PathNode newPath() {
+            return null;
+        }
+
+        @Override
+        public int getGridX() {
+            return -1;
+        }
+
+        @Override
+        public int getGridY() {
+            return -1;
+        }
+    };
+
     /*	private int x;
         private int y;*/
     private int cost;

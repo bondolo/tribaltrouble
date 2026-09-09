@@ -2,7 +2,6 @@ package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Supply;
-import com.oddlabs.tt.simulation.model.SupplyFinder;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
@@ -40,12 +39,12 @@ public final class HarvestController<S extends Supply> extends Controller {
 
     @Override
     public void decide() {
-        if (unit.getSupplyContainer().getSupplyType().orElse(null) == supplyType && unit.getSupplyContainer()
-                .isSupplyFull()) {
+        if (unit.getSupplyContainer().getSupplyType().orElse(null) == supplyType &&
+                unit.getSupplyContainer().isSupplyFull()) {
             unit.popController();
         } else {
             if (tracker != null) {
-                supply = tracker.getOccupant();
+                supply = tracker.getOccupant().orElse(null);
             }
             gather();
         }

@@ -91,7 +91,7 @@ public final class UnitTemplate extends Template {
         return anim_types[animation.ordinal()];
     }
 
-    public UnitSupplyContainerFactory getUnitSupplyContainerFactory() {
+    public @Nullable UnitSupplyContainerFactory getUnitSupplyContainerFactory() {
         return supply_container_factory;
     }
 

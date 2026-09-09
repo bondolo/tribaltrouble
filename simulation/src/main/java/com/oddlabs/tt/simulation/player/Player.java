@@ -24,6 +24,7 @@ import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -272,19 +273,15 @@ public final class Player implements PlayerInterface {
     }
 
     public Optional<Building> buildBuilding(BuildingType building_type, int grid_x, int grid_y) {
-        BuildingSiteScanFilter filter = new BuildingSiteScanFilter(world.getUnitGrid(), getRaceInfo()
-                .getBuildingTemplate(
-                        building_type), 40, true);
+        BuildingSiteScanFilter filter = new BuildingSiteScanFilter(world.getUnitGrid(),
+                getRaceInfo().getBuildingTemplate(building_type), 40);
         world.getUnitGrid().scan(filter, grid_x, grid_y);
-        List<LandscapeTarget> target_list = filter.getResult();
-        Building b = null;
-        if (!target_list.isEmpty()) {
-            Target t = target_list.getFirst();
-            b = new Building(this, getRaceInfo().getBuildingTemplate(building_type), t.getGridX(), t.getGridY());
+        return filter.getSingleResult().map(t -> {
+            Building b = new Building(this, getRaceInfo().getBuildingTemplate(building_type), t.getGridX(), t.getGridY());
             b.place();
             b.repair(1000);
-        }
-        return Optional.ofNullable(b);
+            return b;
+        });
     }
 
     public Player init(float[] starting_location) {
@@ -298,7 +295,7 @@ public final class Player implements PlayerInterface {
         return findNearestEnemy(start_x, start_y, null);
     }
 
-    public Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, Selectable<?> target) {
+    public Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, @Nullable Selectable<?> target) {
         return findNearestEnemy(start_x, start_y, target, Selectable.genericClass());
     }
 
@@ -306,28 +303,17 @@ public final class Player implements PlayerInterface {
         return getUnits().getSet().stream().mapToInt(Selectable::getStatusValue).sum();
     }
 
-    public Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, Selectable<?> target,
-            Class<
-                    ? extends Selectable<?>> type) {
-        int best_dist_squared = Integer.MAX_VALUE;
-        Selectable<?> best_target = null;
-        for (Player player : world.getPlayers()) {
-            if (isEnemy(player)) {
-                for (var s : player.getUnits().getSet()) {
-                    if (!(type.isInstance(s)) || s == target) {
-                        continue;
-                    }
+    public Optional<Selectable<?>> findNearestEnemy(int start_x, int start_y, @Nullable Selectable<?> target,
+            Class<? extends Selectable<?>> type) {
+        return world.getPlayers().stream()
+                .filter(this::isEnemy)
+                .flatMap(player -> player.getUnits().getSet().stream())
+                .filter(s -> type.isInstance(s) && s != target)
+                .min(Comparator.comparingInt(s -> {
                     int dx = s.getGridX() - start_x;
                     int dy = s.getGridY() - start_y;
-                    int dist_squared = dx * dx + dy * dy;
-                    if (best_dist_squared > dist_squared) {
-                        best_dist_squared = dist_squared;
-                        best_target = s;
-                    }
-                }
-            }
-        }
-        return Optional.ofNullable(best_target);
+                    return dx * dx + dy * dy;
+                }));
     }
 
     public Optional<Selectable<?>> findNearestEnemyBuilding(int start_x, int start_y) {

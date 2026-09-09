@@ -36,9 +36,8 @@ public final class RepairController extends Controller {
     public void decide() {
         if (building.isDead()) {
             unit.popController();
-        } else if (unit.getSupplyContainer().getSupplyType().orElse(null) == SupplyType.WOOD && unit
-                .getSupplyContainer()
-                .getNumSupplies() > 0) {
+        } else if (unit.getSupplyContainer().getSupplyType().orElse(null) == SupplyType.WOOD &&
+                unit.getSupplyContainer().getNumSupplies() > 0) {
                     resetGiveUpCounter(State.HARVEST);
                     if (unit.isCloseEnough(0f, building)) {
                         if (building.isDamaged()) {

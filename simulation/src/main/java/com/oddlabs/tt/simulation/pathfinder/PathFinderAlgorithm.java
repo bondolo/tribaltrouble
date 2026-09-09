@@ -1,13 +1,15 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-import org.jspecify.annotations.Nullable;
+import java.util.Optional;
 
-public interface PathFinderAlgorithm {
-    @Nullable
-    NodeResult touchNode(Node node);
+/**
+ * Defines evaluation routines and cost heuristics for pathfinding graph searches.
+ */
+interface PathFinderAlgorithm {
 
-    @Nullable
-    NodeResult getBestNode();
+    Optional<Node> touchNode(Node node);
+
+    Optional<Node> getBestNode();
 
     int computeEstimatedCost(Node node);
 
