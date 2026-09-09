@@ -16,12 +16,13 @@ import java.util.logging.Logger;
 public record GamePaths(Path dataDir, Path logDir) {
     private static final Logger logger = Logger.getLogger(GamePaths.class.getName());
 
-    public GamePaths(Path dataDir) {
-        this(dataDir, dataDir.resolve("logs"));
+    public GamePaths() {
+        var paths = detect();
+        this(paths.dataDir(), paths.logDir());
     }
 
-    public GamePaths() {
-        this(detect().dataDir(), detect().logDir());
+    public GamePaths(Path dataDir) {
+        this(dataDir, dataDir.resolve("logs"));
     }
 
     public static GamePaths detect() {
