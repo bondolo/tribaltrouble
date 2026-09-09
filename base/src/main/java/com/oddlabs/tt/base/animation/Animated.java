@@ -7,7 +7,12 @@ import com.oddlabs.tt.base.event.StateChecksum;
  */
 @FunctionalInterface
 public interface Animated {
-    void animate(float t);
+    /**
+     * animation tick
+     *
+     * @param dt elapsed time since the previous tick.
+     */
+    void animate(float dt);
 
     default void updateChecksum(StateChecksum checksum) {
     }

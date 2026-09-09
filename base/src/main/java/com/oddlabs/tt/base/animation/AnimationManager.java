@@ -5,7 +5,6 @@ import com.oddlabs.tt.base.event.StateChecksum;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 /**
@@ -50,13 +49,10 @@ public final class AnimationManager {
         animations.forEach(anim -> anim.updateChecksum(checksum));
     }
 
-    public void runAnimations(float t) {
+    public void runAnimations(float dt) {
         tick++;
         flushAnimations();
-        Predicate<Animated> notDeleted = ((Predicate<Animated>) deleted_animations::contains).negate();
-        animations.stream()
-                .filter(notDeleted)
-                .forEach(a -> a.animate(t));
+        animations.forEach(a -> a.animate(dt));
     }
 
     public void debugPrintAnimations() {

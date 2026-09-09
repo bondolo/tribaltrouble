@@ -367,8 +367,8 @@ public final class WorldViewer implements Animated, AutoCloseable {
     }
 
     @Override
-    public void animate(float t) {
-        animation_manager_local.runAnimations(t);
+    public void animate(float dt) {
+        animation_manager_local.runAnimations(dt);
     }
 
     @Override

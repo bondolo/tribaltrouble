@@ -36,7 +36,7 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (audioPlayer != null) {
             audioPlayer.setPosition(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ());
         }

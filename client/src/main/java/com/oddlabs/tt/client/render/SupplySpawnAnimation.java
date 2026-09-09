@@ -23,8 +23,8 @@ public final class SupplySpawnAnimation implements Animated {
     }
 
     @Override
-    public void animate(float t) {
-        time = Math.min(time + t, limit);
+    public void animate(float dt) {
+        time = Math.min(time + dt, limit);
         visualModel.setSpawnProgress(time / limit);
         if (time >= limit) {
             visualModel.getModel().getWorld().getAnimationManagerGameTime().removeAnimation(this);

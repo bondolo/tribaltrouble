@@ -40,8 +40,8 @@ public final class VisualSoundAccessory implements AnimatedAccessory, BillboardA
     }
 
     @Override
-    public void animate(float t) {
-        age += t;
+    public void animate(float dt) {
+        age += dt;
     }
 
     @Override

@@ -221,7 +221,7 @@ public final class RenderState implements SceneContext {
         sonic_blast_queue.clear();
 
         if (!picking && currentTime >= 0f && lastFrameTime >= 0f) {
-            float dt = Math.min(0.1f, Math.max(0.001f, currentTime - lastFrameTime));
+            float dt = Math.clamp(currentTime - lastFrameTime, 0.001f, 0.1f);
             float gameSpeedFactor = local_player.getWorld().getSecondsPerTick()
                     / AnimationManager.ANIMATION_SECONDS_PER_TICK;
             float gameDt = dt * gameSpeedFactor;

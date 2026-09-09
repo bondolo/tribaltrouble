@@ -14,7 +14,12 @@ public interface VisualModel {
 
     boolean isExpired();
 
-    void update(float t);
+    /**
+     * update the visual model
+     *
+     * @param dt time delta since last update
+     */
+    void update(float dt);
 
     void close();
 

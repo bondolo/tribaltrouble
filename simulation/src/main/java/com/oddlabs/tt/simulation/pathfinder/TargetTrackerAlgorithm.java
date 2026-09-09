@@ -4,6 +4,9 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Pathfinding tracker algorithm that tracks paths towards a specific target.
+ */
 public final class TargetTrackerAlgorithm implements TrackerAlgorithm {
     private final UnitGrid unit_grid;
     private final Target target;

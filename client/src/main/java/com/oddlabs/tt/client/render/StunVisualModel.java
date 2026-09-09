@@ -52,15 +52,15 @@ public final class StunVisualModel extends AbstractVisualModel implements Emitte
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         emitter.getPosition().set(stun.getPositionX(), stun.getPositionY(), stun.getPositionZ());
 
-        age += t;
+        age += dt;
         if (age > 1.5f) {
             emitter.done();
         }
 
-        emitter.animate(t);
+        emitter.animate(dt);
     }
 
     @Override

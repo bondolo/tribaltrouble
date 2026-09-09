@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents a {@link Model} that can be selected, commanded, and augmented with accessories.
+ * Represents a {@link Model} that can be selected, commanded.
  * Base class for both {@link Unit} and {@link Building}.
  */
 public abstract sealed class Selectable<T extends Template> extends Model implements Target, Animated,
@@ -88,8 +88,8 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     }
 
     @Override
-    public final void animate(float t) {
-        last = current_behaviour.animate(t);
+    public final void animate(float dt) {
+        last = current_behaviour.animate(dt);
         switch (last) {
             case UNINTERRUPTIBLE -> {
             }
@@ -99,7 +99,7 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
             }
             case DONE -> decide();
         }
-        doAnimate(t);
+        doAnimate(dt);
         owner.getWorld().updateGlobalChecksum(grid_x + grid_y);
     }
 

@@ -79,7 +79,7 @@ public final class Stun extends Model implements Magic {
     private boolean logic_done = false;
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (!src.isDead()) {
             float x = src.getPositionX() + offset_x * src.getDirectionX() - offset_y * (-src.getDirectionY());
             float y = src.getPositionY() + offset_x * src.getDirectionY() + offset_y * src.getDirectionX();
@@ -116,7 +116,7 @@ public final class Stun extends Model implements Magic {
             logic_done = true;
         }
 
-        logic_timer += t;
+        logic_timer += dt;
         if (logic_timer > 5.5f) {
             remove();
         }

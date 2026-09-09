@@ -137,7 +137,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (time >= time_limit) {
             hitTarget(hit, getSrc().getOwner(), target);
             return;
@@ -146,7 +146,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         if (hit) {
             updateTarget();
         }
-        time += t;
+        time += dt;
         float progress = time / time_limit;
 
         float x;
@@ -159,8 +159,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
             y = end_y;
         }
 
-        current_z += z_speed * t;
-        z_speed += GRAVITY * t;
+        current_z += z_speed * dt;
+        z_speed += GRAVITY * dt;
 
         setPosition(x, y, current_z - deterministic_z);
     }

@@ -23,9 +23,9 @@ public abstract sealed class RotatingThrowingWeapon extends ThrowingWeapon permi
     }
 
     @Override
-    public final void animate(float t) {
-        super.animate(t);
-        setAngle(getAngle() + getAngleVelocity() * t);
+    public final void animate(float dt) {
+        super.animate(dt);
+        setAngle(getAngle() + getAngleVelocity() * dt);
     }
 
     protected abstract float getAngleVelocity();

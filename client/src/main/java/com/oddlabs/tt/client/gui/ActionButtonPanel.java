@@ -519,7 +519,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         Building new_building = viewer.getSelection().getCurrentSelection().getBuilding().orElse(null);
         boolean different_building = new_building != current_building;
         current_building = new_building;

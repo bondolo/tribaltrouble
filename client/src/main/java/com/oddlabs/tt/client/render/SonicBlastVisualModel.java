@@ -50,7 +50,7 @@ public final class SonicBlastVisualModel extends AbstractVisualModel implements 
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (effect != null && effect.isDead()) {
             effect = null;
         }

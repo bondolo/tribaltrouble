@@ -134,7 +134,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (isSpawning()) {
             float progress = getSpawnProgress();
             if (progress < FALL_DURATION_RATIO) {
@@ -165,7 +165,7 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
 
                 float visualZ = ironSupply.getPositionZ() + getOffsetZ();
                 emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), visualZ);
-                emitter.animate(t);
+                emitter.animate(dt);
             } else {
                 if (trailEmitter != null) {
                     trailEmitter.done();
@@ -254,14 +254,14 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
                 emitter.getPosition().set(ironSupply.getPositionX(), ironSupply.getPositionY(), ironSupply
                         .getPositionZ());
                 emitter.setParticlesPerSecond(SMOKE_PARTICLES_PER_SECOND * (1.0f - coolProgress));
-                emitter.animate(t);
+                emitter.animate(dt);
             }
         } else {
             cleanupEmitters();
         }
 
         for (var e : oneShotEmitters) {
-            e.animate(t);
+            e.animate(dt);
         }
         oneShotEmitters.removeIf(Emitter::isFinished);
     }

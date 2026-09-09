@@ -7,6 +7,9 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Core pathfinding routines computing optimal region and grid navigation paths.
+ */
 public final class PathFinder {
     private static final PocketList<Node> open_list = new PocketList<>(RegionBuilder.MAX_PATH_COST);
     private static final List<Node> visited_list = new ArrayList<>();
@@ -86,9 +89,7 @@ public final class PathFinder {
 
     private static void initSearch() {
         open_list.clear();
-        for (Node node : visited_list) {
-            node.reset();
-        }
+        visited_list.forEach(Node::reset);
         visited_list.clear();
     }
 

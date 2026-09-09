@@ -290,8 +290,8 @@ public final class CampaignMapForm extends CameraDelegate<StaticCamera> implemen
     }
 
     @Override
-    public void animate(float t) {
-        flicker_time += t;
+    public void animate(float dt) {
+        flicker_time += dt;
 
         // Multi-frequency wave for organic flickering (simulating an oil lamp).
         float n1 = (float) Math.sin(flicker_time * 1.8);

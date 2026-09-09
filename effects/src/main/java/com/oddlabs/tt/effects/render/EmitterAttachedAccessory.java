@@ -23,8 +23,8 @@ public final class EmitterAttachedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void animate(float t) {
-        emitter.animate(t);
+    public void animate(float dt) {
+        emitter.animate(dt);
     }
 
     @Override

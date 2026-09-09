@@ -334,7 +334,7 @@ public final class Player implements PlayerInterface {
         return findNearestEnemy(start_x, start_y, null, Building.class);
     }
 
-    public RaceInfo getRaceInfo() {
+    public @Nullable RaceInfo getRaceInfo() {
         var res = getWorld().getRaceData();
         return res != null ? res.getRaceInfo(player_info.getRace()) : null;
     }
@@ -347,7 +347,7 @@ public final class Player implements PlayerInterface {
         return building_count;
     }
 
-    public void setActiveChieftain(Unit chieftain) {
+    public void setActiveChieftain(@Nullable Unit chieftain) {
         this.chieftain = chieftain;
     }
 

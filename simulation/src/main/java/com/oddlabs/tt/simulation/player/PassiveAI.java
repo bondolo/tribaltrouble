@@ -5,6 +5,9 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.simulation.model.Target;
 
+/**
+ * Basic artificial intelligence controller for passive or idle units and chieftains.
+ */
 public final class PassiveAI extends AI {
     private final boolean walk_around;
 
@@ -14,9 +17,9 @@ public final class PassiveAI extends AI {
     }
 
     @Override
-    public void animate(float time) {
+    public void animate(float dt) {
         if (walk_around) {
-            if (!shouldDoAction(time))
+            if (!shouldDoAction(dt))
                 return;
             Selectable<?>[][] lists = getOwner().classifyUnits();
 

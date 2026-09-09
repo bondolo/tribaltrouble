@@ -87,13 +87,13 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     }
 
     @Override
-    public final void animate(float t) {
+    public final void animate(float dt) {
         for (Deque<ParametricParticle> list : getParticles()) {
             list.removeIf(ParametricParticle::isDead);
         }
 
-        updateSpawning(t);
-        updateCluster(t);
+        updateSpawning(dt);
+        updateCluster(dt);
 
         if (!hasActiveParticles()) {
             bounds.setBounds(getX(), getX(), getY(), getY(), getZ(), getZ());
@@ -109,7 +109,7 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
 
         for (Deque<ParametricParticle> list : getParticles()) {
             for (ParametricParticle particle : list) {
-                particle.update(t, getScaleX(), getScaleY(), getScaleZ());
+                particle.update(dt, getScaleX(), getScaleY(), getScaleZ());
                 float x = particle.getPosX();
                 float y = particle.getPosY();
                 float z = particle.getPosZ();

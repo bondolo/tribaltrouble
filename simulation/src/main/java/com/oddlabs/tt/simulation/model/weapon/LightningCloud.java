@@ -90,14 +90,14 @@ public final class LightningCloud extends Model implements Magic {
     }
 
     @Override
-    public void animate(float t) {
-        seconds_to_live -= t;
+    public void animate(float dt) {
+        seconds_to_live -= dt;
         if (seconds_to_live <= 0f) {
             owner.getWorld().getAnimationManagerGameTime().removeAnimation(this);
             remove();
         }
 
-        hit_timer += t;
+        hit_timer += dt;
 
         if (hit_timer > seconds_per_hit) {
             if (target == null) {
@@ -117,7 +117,7 @@ public final class LightningCloud extends Model implements Magic {
             float dist = (float) Math.sqrt(dx * dx + dy * dy);
             dx /= dist;
             dy /= dist;
-            if (dist < meters_per_second * t) {
+            if (dist < meters_per_second * dt) {
                 if (!target.isDead() && owner.getWorld().getRandom().nextFloat() < hit_chance * (1 - target
                         .getDefenseChance())) {
                     target.hit(damage, dx, dy, owner);
@@ -129,8 +129,8 @@ public final class LightningCloud extends Model implements Magic {
                 hit_timer = 0f;
                 strike_counter = 0;
             } else {
-                float x = getPositionX() + dx * (meters_per_second * t);
-                float y = getPositionY() + dy * (meters_per_second * t);
+                float x = getPositionX() + dx * (meters_per_second * dt);
+                float y = getPositionY() + dy * (meters_per_second * dt);
                 float z = owner.getWorld().getHeightMap().getNearestHeight(x, y) + height;
                 setPosition(x, y, z);
             }

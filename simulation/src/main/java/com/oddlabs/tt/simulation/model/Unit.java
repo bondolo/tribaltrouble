@@ -35,8 +35,8 @@ import java.util.Map;
 public final class Unit extends Selectable<UnitTemplate> implements Occupant, Movable {
 
     private static final float IDLE_SPEED = 1f / 2.5f;
+    /** Unit speed when transporting */
     private static final float TRANSPORT_SPEED_SCALE = 4f / 5f;
-    public static final int SPEAR_RELEASE_FRAME = 29;
 
     private static final int PENALTY_INCREMENT = 3;
     private static final int INITIAL_PATH_PENALTY = 5;
@@ -50,13 +50,13 @@ public final class Unit extends Selectable<UnitTemplate> implements Occupant, Mo
     public enum Animation {
         IDLING,
         MOVING,
-        THROWING,
+        THROWING, // or Harvest/Build/Hit for peon/chieftan
         DYING,
         MAGIC,
         THOR
     }
 
-
+    /** peons can carry resources */
     private final @Nullable UnitSupplyContainer supply_container;
     private final @Nullable String name;
     private final PathTracker path_tracker;

@@ -4,8 +4,11 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Spatial grid partitioning the game world into regions, occupants, and height coordinates.
+ */
 public final class UnitGrid {
-    private final Region[][] regions;
+    private final @Nullable Region[][] regions;
     private final @Nullable Occupant[][] occupants;
     private final HeightMap heightmap;
 
@@ -65,7 +68,7 @@ public final class UnitGrid {
         return occupants.length;
     }
 
-    public Region getRegion(int grid_x, int grid_y) {
+    public @Nullable Region getRegion(int grid_x, int grid_y) {
         Region region = regions[grid_y][grid_x];
         return region;
     }

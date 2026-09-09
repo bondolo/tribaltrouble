@@ -4,8 +4,7 @@ import com.oddlabs.tt.simulation.model.Unit;
 
 
 /**
- * Abstract base class for the Chieftain AI, implementing base decision-making
- * capabilities and utility computations for player chieftains.
+ * Chieftain AI, implementing base decision-making capabilities and utility computations for player chieftains.
  */
 public abstract sealed class ChieftainAI permits NativeChieftainAI, VikingChieftainAI {
     public abstract void decide(Unit chieftain);

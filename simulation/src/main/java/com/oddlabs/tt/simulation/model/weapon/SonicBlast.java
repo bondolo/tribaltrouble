@@ -73,8 +73,8 @@ public final class SonicBlast extends Model implements Magic {
     }
 
     @Override
-    public void animate(float t) {
-        time = Math.min(time + t, seconds);
+    public void animate(float dt) {
+        time = Math.min(time + dt, seconds);
         if (time >= seconds) {
             remove();
             return;

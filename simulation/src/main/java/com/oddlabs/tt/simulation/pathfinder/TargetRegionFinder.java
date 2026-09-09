@@ -2,6 +2,9 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Search algorithm locating valid target regions containing matching occupants.
+ */
 public final class TargetRegionFinder implements PathFinderAlgorithm {
     private final FinderFilter<?> filter;
     private final UnitGrid unit_grid;

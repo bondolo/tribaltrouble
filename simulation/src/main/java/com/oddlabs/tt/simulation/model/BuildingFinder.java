@@ -6,6 +6,9 @@ import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.player.Player;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Filter strategy for locating candidate buildings owned by a specific player with matching abilities.
+ */
 public final class BuildingFinder implements FinderFilter<Building> {
     private final Player owner;
     private final int abilities;

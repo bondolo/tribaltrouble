@@ -77,8 +77,8 @@ public final class SonicBlastEffect implements Animated, BoundsProvider {
     }
 
     @Override
-    public void animate(float t) {
-        update(t);
+    public void animate(float dt) {
+        update(dt);
     }
 
     public World getWorld() {

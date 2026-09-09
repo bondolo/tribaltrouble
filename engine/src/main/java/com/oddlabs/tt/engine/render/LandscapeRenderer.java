@@ -209,7 +209,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         // No animation needed for static VTF geometry
     }
 }

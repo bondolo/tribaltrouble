@@ -131,13 +131,13 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     }
 
     @Override
-    public final void animate(float t) {
+    public final void animate(float dt) {
         for (var particles : getParticles()) {
             particles.removeIf(LinearParticle::isDead);
         }
 
-        updateSpawning(t);
-        updateCluster(t);
+        updateSpawning(dt);
+        updateCluster(dt);
 
         if (!hasActiveParticles()) {
             bounds.setBounds(getX(), getX(), getY(), getY(), getZ(), getZ());
@@ -153,7 +153,7 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
 
         for (var particles : getParticles()) {
             for (LinearParticle particle : particles) {
-                particle.update(t);
+                particle.update(dt);
 
                 float x = particle.getPosX();
                 float y = particle.getPosY();

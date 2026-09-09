@@ -75,8 +75,8 @@ final class InfoPrinter extends GUIObject implements Animated, com.oddlabs.tt.ba
     }
 
     @Override
-    public void animate(float t) {
-        time += t;
+    public void animate(float dt) {
+        time += dt;
         for (int i = timers.size() - 1; i >= 0; i--) {
             float remove_time = timers.get(i);
             if (time > remove_time) {

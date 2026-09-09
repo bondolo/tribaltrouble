@@ -47,9 +47,9 @@ public final class LandscapeTargetRespond implements Animated, BoundsProvider {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (time > 0) {
-            time = Math.max(0, time - t);
+            time = Math.max(0, time - dt);
         } else {
             animation_manager.removeAnimation(this);
         }

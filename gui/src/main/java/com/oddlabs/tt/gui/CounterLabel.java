@@ -3,12 +3,16 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.engine.font.Font;
+import org.jspecify.annotations.Nullable;
 
+/**
+ * Renders a countdown timer label formatted in hours, minutes, and seconds.
+ */
 public final class CounterLabel extends Label implements Animated {
     private static final String colon = ":";
     private final float initial_seconds;
     private final boolean render_seconds;
-    private AnimationManager manager;
+    private @Nullable AnimationManager manager;
     private float seconds;
 
     public CounterLabel(float seconds, Font font, boolean render_seconds) {
@@ -25,8 +29,10 @@ public final class CounterLabel extends Label implements Animated {
     }
 
     public void stop() {
-        if (manager != null)
+        if (manager != null) {
             manager.removeAnimation(this);
+            manager = null;
+        }
     }
 
     private void setTime(float seconds) {
@@ -56,8 +62,8 @@ public final class CounterLabel extends Label implements Animated {
     }
 
     @Override
-    public void animate(float t) {
-        setTime(seconds - t);
+    public void animate(float dt) {
+        setTime(seconds - dt);
     }
 
 }

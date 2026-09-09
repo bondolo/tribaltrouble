@@ -1,20 +1,21 @@
 package com.oddlabs.tt.base.animation;
 
 import com.oddlabs.tt.base.event.StateChecksum;
-import org.jspecify.annotations.Nullable;
 
-
+/**
+ * Executes periodic timer callbacks managed by an animation manager.
+ */
 public final class TimerAnimation implements Animated {
     private final AnimationManager manager;
+    private final Updatable<TimerAnimation> timer_owner;
     private float time = 0;
     private float interval;
-    private @Nullable Updatable<TimerAnimation> timer_owner;
     private boolean running = false;
 
     public TimerAnimation(AnimationManager manager, Updatable<TimerAnimation> owner, float interval) {
         this.manager = manager;
-        this.interval = interval;
         this.timer_owner = owner;
+        this.interval = interval;
     }
 
     @Override
@@ -41,14 +42,6 @@ public final class TimerAnimation implements Animated {
         manager.registerAnimation(this);
     }
 
-    public void setTimerOwner(@Nullable Updatable<TimerAnimation> obj) {
-        this.timer_owner = obj;
-    }
-
-    public @Nullable Updatable<TimerAnimation> getTimerOwner() {
-        return timer_owner;
-    }
-
     public void setTimerInterval(float interval) {
         this.interval = interval;
     }
@@ -58,12 +51,11 @@ public final class TimerAnimation implements Animated {
     }
 
     @Override
-    public void animate(float t) {
-        time += t;
+    public void animate(float dt) {
+        time += dt;
         while (time > interval) {
-            time -= Math.max(t, interval);
-            if (timer_owner != null)
-                timer_owner.update(this);
+            time -= Math.max(dt, interval);
+            timer_owner.update(this);
         }
     }
 }

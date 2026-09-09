@@ -14,7 +14,6 @@ import com.oddlabs.tt.gui.render.UIRenderer;
 import com.oddlabs.tt.window.Window;
 import com.oddlabs.tt.window.WindowSettings;
 import org.joml.Matrix4f;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -64,27 +63,27 @@ public final class GUI implements Animated {
         this(localInput, window, eventQueue, settings, shutdownHandler, progressUpdater, () -> 0.0);
     }
 
-    public @NonNull DoubleSupplier getFpsSupplier() {
+    public DoubleSupplier getFpsSupplier() {
         return fpsSupplier;
     }
 
-    public @NonNull Window getWindow() {
+    public Window getWindow() {
         return window;
     }
 
-    public @NonNull LocalEventQueue getEventQueue() {
+    public LocalEventQueue getEventQueue() {
         return eventQueue;
     }
 
-    public @NonNull AnimationManager getAnimationManager() {
+    public AnimationManager getAnimationManager() {
         return eventQueue.getManager();
     }
 
-    public @NonNull Settings getSettings() {
+    public Settings getSettings() {
         return settings;
     }
 
-    public @NonNull Runnable getShutdownHandler() {
+    public Runnable getShutdownHandler() {
         return shutdownHandler;
     }
 
@@ -179,9 +178,9 @@ public final class GUI implements Animated {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (fade != null) {
-            ScopedValue.where(Skin.CURRENT, skin).run(() -> fade.animate(this, t));
+            ScopedValue.where(Skin.CURRENT, skin).run(() -> fade.animate(this, dt));
         }
     }
 

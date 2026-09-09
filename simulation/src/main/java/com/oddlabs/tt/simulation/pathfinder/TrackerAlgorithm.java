@@ -2,6 +2,9 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Defines path tracking strategy interface across high-level regions and grid nodes.
+ */
 public interface TrackerAlgorithm {
     boolean isDone(int x, int y);
 

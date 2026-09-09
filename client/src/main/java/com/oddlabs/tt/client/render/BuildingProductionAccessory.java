@@ -100,7 +100,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         boolean isProducing = building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)
                 && building.isAlive() && building.isProducing();
 
@@ -122,7 +122,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
             productionTimer = 0f;
             emitter.stop();
             if (emitter.hasActiveParticles()) {
-                emitter.animate(t);
+                emitter.animate(dt);
             }
             return;
         }
@@ -132,22 +132,22 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
             goingIdleTimer = 0f;
             state = State.PRODUCING;
             emitter.start();
-            productionTimer = Math.min(1.0f, productionTimer + t / WARMUP_DURATION);
+            productionTimer = Math.min(1.0f, productionTimer + dt / WARMUP_DURATION);
         } else {
             if (state == State.PRODUCING) {
-                idleTimer += t;
+                idleTimer += dt;
                 if (idleTimer >= IDLE_STOP_THRESHOLD) {
                     state = State.GOING_IDLE;
                     goingIdleTimer = 0f;
                 }
             } else if (state == State.GOING_IDLE) {
-                goingIdleTimer += t;
+                goingIdleTimer += dt;
                 if (goingIdleTimer >= GO_IDLE_DURATION) {
                     state = State.IDLE;
                     emitter.stop();
                 }
             } else if (state == State.IDLE) {
-                productionTimer = Math.max(0f, productionTimer - t / WARM_DURATION);
+                productionTimer = Math.max(0f, productionTimer - dt / WARM_DURATION);
             }
         }
 
@@ -160,7 +160,7 @@ public final class BuildingProductionAccessory implements EmitterAccessory {
         emitter.setSpectrum(spectrum);
 
         if (state != State.IDLE || emitter.hasActiveParticles()) {
-            emitter.animate(t);
+            emitter.animate(dt);
         }
     }
 

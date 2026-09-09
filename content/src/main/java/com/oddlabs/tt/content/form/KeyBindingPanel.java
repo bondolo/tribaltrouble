@@ -34,14 +34,14 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 /**
  * UI Panel for remapping game actions to keyboard and controller inputs.
  */
-public class KeyBindingPanel extends Panel {
+final class KeyBindingPanel extends Panel {
     private static final int COL_ACTION_WIDTH = 200;
     private static final int COL_BINDINGS_WIDTH = 300;
 
     private final MultiColumnComboBox<GameAction> list_box;
     private final GUIRoot gui_root;
 
-    public KeyBindingPanel(GUIRoot gui_root) {
+    KeyBindingPanel(GUIRoot gui_root) {
         super(AbstractOptionsMenu.i18n("key_bindings_title"));
         this.gui_root = gui_root;
 

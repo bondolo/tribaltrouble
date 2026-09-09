@@ -10,6 +10,9 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Grid scanner filter identifying legal terrain positions for constructing buildings.
+ */
 public final class BuildingSiteScanFilter implements ScanFilter {
     private final UnitGrid unit_grid;
     private final BuildingTemplate template;

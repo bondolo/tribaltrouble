@@ -6,6 +6,9 @@ import com.oddlabs.tt.simulation.landscape.World;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages periodic replenishment and respawning of world resources and supplies.
+ */
 public class SupplyManager implements Animated {
     private static final float SLEEP_TIME = 10f;
     private static final float MAX_EMPTY_SUPPLIES = .75f;
@@ -49,13 +52,13 @@ public class SupplyManager implements Animated {
     }
 
     @Override
-    public final void animate(float t) {
+    public final void animate(float dt) {
         if (time < 0) {
             resetCounter();
             if (shouldSpawn())
                 insertSupply();
         }
-        time -= t;
+        time -= dt;
     }
 
     protected boolean shouldSpawn() {

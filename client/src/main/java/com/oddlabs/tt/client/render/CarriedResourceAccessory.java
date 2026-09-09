@@ -19,6 +19,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
     private final Unit unit;
 
     public CarriedResourceAccessory(Unit unit) {
+        assert null != unit.getSupplyContainer() : "Unit must have a supply container";
         this.unit = unit;
     }
 

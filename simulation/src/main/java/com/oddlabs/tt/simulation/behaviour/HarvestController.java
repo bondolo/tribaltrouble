@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.behaviour;
 
+import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.SupplyFinder;
 import com.oddlabs.tt.simulation.model.SupplyType;
@@ -13,12 +14,13 @@ import org.jspecify.annotations.Nullable;
 public final class HarvestController<S extends Supply> extends Controller {
     private final Unit unit;
     private final SupplyType supplyType;
-    private FinderTrackerAlgorithm<S> tracker;
+    private @Nullable FinderTrackerAlgorithm<S> tracker;
 
     private @Nullable Supply supply;
 
     public HarvestController(Unit unit, @Nullable S supply, SupplyType supplyType) {
         super(1);
+        assert unit.getAbilities().hasAbilities(Abilities.BUILD) : "Unit does not have build ability";
         this.unit = unit;
         this.supply = supply;
         this.supplyType = supplyType;

@@ -2,6 +2,9 @@ package com.oddlabs.tt.simulation.pathfinder;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Base A* heuristic search algorithm computing distance approximations and goal validation.
+ */
 abstract class AStarAlgorithm implements PathFinderAlgorithm {
     private final int dst_x;
     private final int dst_y;

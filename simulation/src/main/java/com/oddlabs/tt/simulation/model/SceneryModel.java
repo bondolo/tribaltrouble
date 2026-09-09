@@ -106,8 +106,8 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     }
 
     @Override
-    public final void animate(float t) {
-        anim_time += t / 2.5f;
+    public final void animate(float dt) {
+        anim_time += dt / 2.5f;
         if (seconds_per_animation_cycle > -1 && anim_time > seconds_per_animation_cycle)
             anim_time = 0;
         reinsert();

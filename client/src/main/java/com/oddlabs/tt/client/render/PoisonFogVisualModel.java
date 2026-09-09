@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * {@link VisualModel} implementation for poison fog managing periodic poison gas puff bursts and bubbling audio.
  */
-public final class PoisonFogVisualModel extends AbstractVisualModel implements EmitterAccessory {
+final class PoisonFogVisualModel extends AbstractVisualModel implements EmitterAccessory {
     private static final int PARTICLES_PER_BURST = 4;
     private static final float SECONDS_BETWEEN_BURSTS = .15f;
     private static final float BURST_RADIUS = 2f;
@@ -45,7 +45,7 @@ public final class PoisonFogVisualModel extends AbstractVisualModel implements E
 
     private boolean soundStopped = false;
 
-    public PoisonFogVisualModel(PoisonFog poisonFog, AudioImplementation audio) {
+    PoisonFogVisualModel(PoisonFog poisonFog, AudioImplementation audio) {
         super(poisonFog);
         this.poisonFog = poisonFog;
         this.audio = audio;
@@ -56,8 +56,8 @@ public final class PoisonFogVisualModel extends AbstractVisualModel implements E
     }
 
     @Override
-    public void animate(float t) {
-        time += t;
+    public void animate(float dt) {
+        time += dt;
         World world = poisonFog.getWorld();
         Random random = world.getRandom();
 
@@ -97,7 +97,7 @@ public final class PoisonFogVisualModel extends AbstractVisualModel implements E
         }
 
         for (var e : burstEmitters) {
-            e.animate(t);
+            e.animate(dt);
         }
         burstEmitters.removeIf(Emitter::isFinished);
     }

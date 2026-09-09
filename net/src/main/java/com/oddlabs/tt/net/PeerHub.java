@@ -251,7 +251,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (router != null)
             router.process();
         int server_tick = millisToTick(server_millis);
@@ -259,10 +259,10 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             processStall();
         } else {
             if (!isPaused()) {
-                doTick(t);
+                doTick(dt);
                 int min_tick = millisToTick(server_millis - MILLISECONDS_PER_HEARTBEAT - CLIENT_MAX_DELAY_MILLIS);
                 while (getTick() < min_tick)
-                    doTick(t);
+                    doTick(dt);
             } else
                 pause_ticks++;
         }

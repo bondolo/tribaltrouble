@@ -7,8 +7,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Objects;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -35,8 +35,8 @@ public record SpriteGeometry(
                 .limit(animationInfos.length)
                 .toArray(BoundingBox[]::new);
 
-        AnimationInfo.AnimationType[] typeArray = IntStream.range(0, animationInfos.length)
-                .mapToObj(i -> animationInfos[i].getType())
+        AnimationInfo.AnimationType[] typeArray = Arrays.stream(animationInfos)
+                .map(AnimationInfo::getType)
                 .toArray(AnimationInfo.AnimationType[]::new);
 
         for (SpriteInfo spriteInfo : spriteInfos) {

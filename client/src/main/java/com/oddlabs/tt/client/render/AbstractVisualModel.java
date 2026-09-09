@@ -72,14 +72,14 @@ public abstract class AbstractVisualModel implements VisualModel {
     }
 
     @Override
-    public void update(float t) {
+    public void update(float dt) {
         if (this instanceof AnimatedAccessory animated) {
-            animated.animate(t);
+            animated.animate(dt);
         }
         boolean hasExpired = false;
         for (Accessory acc : accessories) {
             if (acc instanceof AnimatedAccessory animated) {
-                animated.animate(t);
+                animated.animate(dt);
             }
             if (acc.isExpired()) {
                 hasExpired = true;

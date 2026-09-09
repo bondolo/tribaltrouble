@@ -42,6 +42,7 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
     public transient Path last_event_log_dir = Path.of("");
     // FIXME: Replace with build version metadata
     public int last_revision = -1;
+    /** If true then the previous run crashed and we should restore "safe" defaults */
     public boolean crashed = false;
 
     private final boolean developer_mode = Boolean.getBoolean("com.oddlabs.tt.developer");
@@ -78,7 +79,7 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends PropertiesSerializer> @NonNull T get(Class<T> type) {
+    public <T extends PropertiesSerializer> T get(Class<T> type) {
         return (T) serializers.computeIfAbsent(type, t -> {
             try {
                 T instance = type.getDeclaredConstructor().newInstance();

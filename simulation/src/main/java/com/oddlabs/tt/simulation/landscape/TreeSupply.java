@@ -227,8 +227,8 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     }
 
     @Override
-    public void animate(float t) {
-        animation_time += t;
+    public void animate(float dt) {
+        animation_time += dt;
         if (animation_time >= SECOND_PER_TREEFALL) {
             world.getAnimationManagerRealTime().removeAnimation(this);
             hide = true;

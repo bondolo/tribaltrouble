@@ -29,6 +29,9 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * Artificial intelligence player implementation managing economic production, base defense, and unit armies.
+ */
 public final class AdvancedAI extends AI {
 
     private static final int SCORE_PEON = 1;
@@ -119,8 +122,8 @@ public final class AdvancedAI extends AI {
     }
 
     @Override
-    public void animate(float t) {
-        if (!shouldDoAction(t))
+    public void animate(float dt) {
+        if (!shouldDoAction(dt))
             return;
         reclassify();
         nodeDefendBase();

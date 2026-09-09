@@ -85,7 +85,7 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (building.isDead() && !hasCollapsed) {
             hasCollapsed = true;
             triggerCollapseEffects();
@@ -121,11 +121,11 @@ public final class BuildingDamagedAccessory implements EmitterAccessory {
         }
 
         if (isDamaged || emitter.hasActiveParticles()) {
-            emitter.animate(t);
+            emitter.animate(dt);
         }
 
         for (var e : transientEmitters) {
-            e.animate(t);
+            e.animate(dt);
         }
         transientEmitters.removeIf(Emitter::isFinished);
     }

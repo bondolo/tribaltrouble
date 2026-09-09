@@ -114,7 +114,7 @@ public final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockS
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         if (isSpawning()) {
             float progress = getSpawnProgress();
             if (progress < 0.3f) {
@@ -138,7 +138,7 @@ public final class RockSupplyVisualModel extends AbstractSupplyVisualModel<RockS
             if (smokeEmitter != null) {
                 smokeEmitter.getPosition().set(rockSupply.getPositionX(), rockSupply.getPositionY(), rockSupply
                         .getPositionZ());
-                smokeEmitter.animate(t);
+                smokeEmitter.animate(dt);
             }
         } else {
             cleanupEmitters();

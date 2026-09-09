@@ -42,7 +42,7 @@ public final class FreeQuitLabel extends Label implements Animated {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         int time_left = (int) PeerHub.getFreeQuitTimeLeft(world);
         if (time_left > 0) {
             clear();

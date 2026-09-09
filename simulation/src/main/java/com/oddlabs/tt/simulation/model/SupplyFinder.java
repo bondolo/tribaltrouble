@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * Finder filter that searches for closest available resources of a specific type.
+ * Filter strategy for locating candidate resource supplies of a specific type closest to a unit.
  */
 public final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
     private final Unit unit;

@@ -9,6 +9,9 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
+/**
+ * Coordinates animation managers, deterministic event logs, and local event queues.
+ */
 public final class LocalEventQueue implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(LocalEventQueue.class.getName());
 
@@ -70,13 +73,13 @@ public final class LocalEventQueue implements AutoCloseable {
         return deterministic;
     }
 
-    public void tickHighPrecision(float t) {
-        time += t;
-        getHighPrecisionManager().runAnimations(t);
+    public void tickHighPrecision(float dt) {
+        time += dt;
+        getHighPrecisionManager().runAnimations(dt);
     }
 
-    public void tickLowPrecision(float t) {
-        getManager().runAnimations(t);
+    public void tickLowPrecision(float dt) {
+        getManager().runAnimations(dt);
     }
 
     public void debugPrintAnimations() {

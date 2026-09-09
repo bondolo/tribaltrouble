@@ -37,7 +37,7 @@ public final class GameOverTrigger implements Animated {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         List<Player> players = viewer.getWorld().getPlayers();
         Player local_player = viewer.getLocalPlayer();
         boolean enemy_alive = false;

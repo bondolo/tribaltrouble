@@ -109,10 +109,10 @@ public final class RubberSupply extends SupplyModel implements Animated, Movable
     }
 
     @Override
-    public void animate(float t) {
-        anim_time += animation.getSpeed() * t;
+    public void animate(float dt) {
+        anim_time += animation.getSpeed() * dt;
         if (animation == Animation.FLYING || animation == Animation.RUNNING) {
-            fly(t);
+            fly(dt);
         } else if (!is_hit && anim_time >= 1f) {
             float random = getWorld().getRandom().nextFloat();
             if (random < .75) {

@@ -10,15 +10,9 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Logic controller for the Poison Fog magic effect.
- * Periodically spawns gas bursts and applies damage to units within its radius.
+ * Periodically applies damage to units within its radius.
  */
 public final class PoisonFog extends Model implements Magic {
-
-    private static final int PARTICLES_PER_BURST = 4;
-    private static final float SECONDS_BETWEEN_BURSTS = .15f;
-    private static final float BURST_RADIUS = 2f;
-    private static final float GAUSSIAN_LIMIT = 2.5f;
-
 
     private final float hit_radius;
     private final float hit_chance;
@@ -32,7 +26,6 @@ public final class PoisonFog extends Model implements Magic {
     private final float total_time;
 
     private float time = 0f;
-    private int bursts = 0;
     private int num_hits = 0;
 
     public PoisonFog(float offset_x, float offset_y, float offset_z, float hit_radius, float hit_chance, float interval,
@@ -83,15 +76,11 @@ public final class PoisonFog extends Model implements Magic {
     }
 
     @Override
-    public void animate(float t) {
-        time += t;
+    public void animate(float dt) {
+        time += dt;
         if (time >= total_time) {
             remove();
             return;
-        }
-
-        if (bursts * SECONDS_BETWEEN_BURSTS < time) {
-            bursts++;
         }
 
         if ((num_hits + 1) * interval < time) {
@@ -112,7 +101,7 @@ public final class PoisonFog extends Model implements Magic {
                     * (1 - s.getDefenseChance()))
                     || (!owner.isEnemy(s.getOwner()) && owner.getWorld().getRandom().nextFloat() < (hit_chance / 4f)
                             * (1 - s.getDefenseChance())
-                            && !owner.getChieftain().map(c -> s == c).orElse(false)))) {
+                            && owner.getChieftain().filter(c -> c == s).isEmpty()))) {
                 float inv_dist = 1f / ((float) Math.sqrt(squared_dist));
                 s.hit(damage, dx * inv_dist, dy * inv_dist, owner);
             }

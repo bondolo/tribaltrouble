@@ -140,13 +140,13 @@ public final class Lightning implements Animated, BoundsProvider {
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         particles.removeIf(StretchParticle::isDead);
         if (particles.isEmpty()) {
             return;
         }
         for (StretchParticle particle : particles) {
-            particle.update(t);
+            particle.update(dt);
         }
         updateBounds();
     }

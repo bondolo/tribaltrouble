@@ -106,9 +106,9 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
     }
 
     @Override
-    public void animate(float t) {
+    public void animate(float dt) {
         for (var lightning : activeLightnings) {
-            lightning.animate(t);
+            lightning.animate(dt);
         }
         activeLightnings.removeIf(Lightning::isFinished);
         if (firstRun) {
@@ -121,7 +121,7 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
             cloudSound.setPosition(cloud.getPositionX(), cloud.getPositionY(), cloud.getPositionZ());
         }
         if (strikeAudioCooldown > 0f) {
-            strikeAudioCooldown -= t;
+            strikeAudioCooldown -= dt;
         }
 
         // Update emitter position
@@ -130,19 +130,19 @@ public final class LightningCloudVisualModel extends AbstractVisualModel impleme
         // Handle cloud fade out in the last 2 seconds
         float secondsToLive = cloud.getSecondsToLive();
         if (secondsToLive <= 2.0f) {
-            emitter.adjustColor(new Color.LinearDelta(0f, -0.8f * t / 2.0f));
+            emitter.adjustColor(new Color.LinearDelta(0f, -0.8f * dt / 2.0f));
         }
 
         // Handle lightning strike cloud flash dimming
         if (lighted) {
-            lightningTimer -= t;
+            lightningTimer -= dt;
             if (lightningTimer <= 0) {
                 emitter.adjustColor(BRIGHTNESS_DELTA.negate());
                 lighted = false;
             }
         }
 
-        emitter.animate(t);
+        emitter.animate(dt);
     }
 
     public Deque<Lightning> getActiveLightnings() {

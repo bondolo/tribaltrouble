@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+/**
+ * Tracks and expires temporary highlight or response visual states for objects.
+ */
 public final class RespondManager implements Animated {
     private static final float SECONDS_PER_PICK_RESPOND = 1f / 3f;
 
@@ -30,8 +33,8 @@ public final class RespondManager implements Animated {
     }
 
     @Override
-    public void animate(float t) {
-        time += t;
+    public void animate(float dt) {
+        time += dt;
         timeout();
     }
 

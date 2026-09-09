@@ -69,9 +69,9 @@ public abstract class Camera implements Animated {
     }
 
     @Override
-    public final void animate(float delta_t) {
-        doAnimate(delta_t);
-        state.animate(delta_t, smoothness_factor);
+    public final void animate(float dt) {
+        doAnimate(dt);
+        state.animate(dt, smoothness_factor);
     }
 
     protected abstract void doAnimate(float delta_t);
