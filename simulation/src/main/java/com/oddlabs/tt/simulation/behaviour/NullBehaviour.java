@@ -3,7 +3,7 @@ package com.oddlabs.tt.simulation.behaviour;
 
 public final class NullBehaviour implements Behaviour {
     @Override
-    public State animate(float t) {
+    public State animate(float dt) {
         return State.INTERRUPTIBLE;
     }
 

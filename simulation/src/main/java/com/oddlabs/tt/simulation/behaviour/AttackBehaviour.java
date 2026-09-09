@@ -29,10 +29,10 @@ public final class AttackBehaviour implements Behaviour {
     }
 
     @Override
-    public State animate(float t) {
+    public State animate(float dt) {
         return switch (state) {
             case THROWING -> {
-                updateAttack(t);
+                updateAttack(dt);
                 if (anim_time <= 0) {
                     if (unit.isMounted())
                         unit.getWeaponFactory().attack(unit, target, 3f);
@@ -46,7 +46,7 @@ public final class AttackBehaviour implements Behaviour {
                 yield State.UNINTERRUPTIBLE;
             }
             case RELEASED -> {
-                updateAttack(t);
+                updateAttack(dt);
                 yield anim_time > 0 ? State.UNINTERRUPTIBLE : State.DONE;
             }
         };

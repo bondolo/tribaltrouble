@@ -27,8 +27,8 @@ public final class HarvestBehaviour implements Behaviour {
     }
 
     @Override
-    public State animate(float t) {
-        anim_time += t;
+    public State animate(float dt) {
+        anim_time += dt;
         if (anim_time > unit.getWeaponFactory().getSecondsPerRelease(1f / SECONDS_PER_ANIMATION_CYCLE) && !sound) {
             sound = true;
             unit.getWorld().getNotificationListener().onHarvest(unit, supply.getSupplyType());

@@ -12,9 +12,9 @@ public final class IdleBehaviour implements Behaviour {
     }
 
     @Override
-    public State animate(float t) {
+    public State animate(float dt) {
         unit.switchToIdleAnimation();
-        return controller.shouldSleep(t) ? State.INTERRUPTIBLE : State.DONE;
+        return controller.shouldSleep(dt) ? State.INTERRUPTIBLE : State.DONE;
     }
 
     @Override

@@ -13,7 +13,7 @@ public sealed interface Behaviour permits AttackBehaviour, DieBehaviour, Harvest
         DONE
     }
 
-    State animate(float t);
+    State animate(float dt);
 
     boolean isBlocking();
 

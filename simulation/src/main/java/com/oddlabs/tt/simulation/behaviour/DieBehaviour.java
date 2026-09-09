@@ -28,9 +28,9 @@ public final class DieBehaviour implements Behaviour {
     }
 
     @Override
-    public State animate(float t) {
-        anim_time -= t;
-        offset_z -= dz * t;
+    public State animate(float dt) {
+        anim_time -= dt;
+        offset_z -= dz * dt;
         if (anim_time < 0)
             switchState();
         return State.UNINTERRUPTIBLE;

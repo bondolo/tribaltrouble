@@ -15,9 +15,9 @@ public final class StunBehaviour implements Behaviour {
     }
 
     @Override
-    public State animate(float t) {
+    public State animate(float dt) {
         unit.switchToIdleAnimation();
-        return !controller.shouldSleep(t) ? State.DONE : State.UNINTERRUPTIBLE;
+        return !controller.shouldSleep(dt) ? State.DONE : State.UNINTERRUPTIBLE;
     }
 
     @Override

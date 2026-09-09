@@ -35,8 +35,8 @@ public final class MagicBehaviour implements Behaviour {
     }
 
     @Override
-    public State animate(float t) {
-        anim_time -= t;
+    public State animate(float dt) {
+        anim_time -= dt;
         return switch (state) {
             case PREPARING -> {
                 if (anim_time <= 0) {

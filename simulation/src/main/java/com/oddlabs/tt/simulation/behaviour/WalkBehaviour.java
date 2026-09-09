@@ -63,8 +63,8 @@ public final class WalkBehaviour implements Behaviour {
     }
 
     @Override
-    public State animate(float t) {
-        retry_delay_counter -= t;
+    public State animate(float dt) {
+        retry_delay_counter -= dt;
         boolean blocker_moved = blocking_movable != null && (blocking_movable.getGridX() != blocker_x
                 || blocking_movable.getGridY() != blocker_y);
         if (retry_delay_counter > 0 && !blocker_moved) {
@@ -73,7 +73,7 @@ public final class WalkBehaviour implements Behaviour {
         retry_delay_counter = 0;
         blocking_movable = null;
         PathTracker tracker = unit.getTracker();
-        state = tracker.animate(unit.getMetersPerSecond() * t);
+        state = tracker.animate(unit.getMetersPerSecond() * dt);
         return switch (state) {
             case OK -> {
                 switchToMoving();
