@@ -22,6 +22,9 @@ public final class AppConfig {
     public static final boolean HIDE_MULTIPLAYER = true;
     public static final int FRAME_GRAB_MILLISECONDS_PER_FRAME = 40;
 
+    public static final boolean DEVELOPER_MODE = Boolean.getBoolean("com.oddlabs.tt.developer");
+
     private AppConfig() {
+        // no instances
     }
 }

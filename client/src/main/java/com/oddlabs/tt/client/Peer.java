@@ -342,7 +342,7 @@ public final class Peer implements AutoCloseable {
         Path last_event_log_dir = settings.last_event_log_dir;
         boolean crashed = settings.crashed;
 
-        if (!settings.inDeveloperMode() && !deterministic.isPlayback()) {
+        if (!AppConfig.DEVELOPER_MODE && !deterministic.isPlayback()) {
             deleteOldLogs(last_event_log_dir.toFile(), event_log_dir.toFile(), event_logs_dir.toFile());
         }
 

@@ -1,5 +1,6 @@
 package com.oddlabs.tt.content.form;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.gui.*;
 import com.oddlabs.tt.gui.event.*;
 import com.oddlabs.tt.client.gui.*;
@@ -102,10 +103,10 @@ final class KeyBindingPanel extends Panel {
         Row<GameAction, ?> rowToSelect = null;
 
         for (GameAction action : GameAction.values()) {
-            if (action.name().startsWith("DEBUG_") && !gui_root.getGUI().getSettings().inDeveloperMode()) {
+            if (action.name().startsWith("DEBUG_") && !AppConfig.DEVELOPER_MODE) {
                 continue;
             }
-            if (action.name().startsWith("CHEAT_") && !gui_root.getGUI().getSettings().inDeveloperMode()) {
+            if (action.name().startsWith("CHEAT_") && !AppConfig.DEVELOPER_MODE) {
                 continue;
             }
             String name;

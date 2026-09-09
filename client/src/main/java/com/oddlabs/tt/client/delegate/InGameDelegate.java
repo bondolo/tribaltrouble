@@ -1,5 +1,6 @@
 package com.oddlabs.tt.client.delegate;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.tt.client.camera.Camera;
@@ -144,7 +145,7 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
         }
 
         // If in developer mode
-        if (!getGUIRoot().getGUI().getSettings().inDeveloperMode())
+        if (!AppConfig.DEVELOPER_MODE)
             return false;
 
         if (actions.contains(GameAction.DEBUG_PRINT_INFO)) {

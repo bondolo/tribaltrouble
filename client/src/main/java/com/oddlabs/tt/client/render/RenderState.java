@@ -289,7 +289,7 @@ public final class RenderState implements SceneContext {
             ElementSceneContext<Model> parentState = (ElementSceneContext<Model>) getCachedState(
                     WhiteModelVisitor.getInstance(), model);
             for (Accessory accessory : vm.getAccessories()) {
-                if (accessory != null && !accessory.isExpired()) {
+                if (!accessory.isExpired()) {
                     if (accessory instanceof EmitterAccessory ea) {
                         ea.addEmitters(emitter_queue);
                     }

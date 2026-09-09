@@ -1,6 +1,5 @@
 package com.oddlabs.tt.base.global;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -45,11 +44,10 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
     /** If true then the previous run crashed and we should restore "safe" defaults */
     public boolean crashed = false;
 
-    private final boolean developer_mode = Boolean.getBoolean("com.oddlabs.tt.developer");
     private boolean has_native_campaign = false;
 
     public boolean hasNativeCampaign() {
-        return developer_mode || has_native_campaign;
+        return AppConfig.DEVELOPER_MODE || has_native_campaign;
     }
 
     public void setHasNativeCampaign(boolean has_native_campaign) {
@@ -101,10 +99,6 @@ public final class Settings implements Serializable, PropertiesSerializer, Setti
             serializer.loadFromProperties(loadedProperties);
         }
         serializers.put(serializer.getClass(), serializer);
-    }
-
-    public boolean inDeveloperMode() {
-        return developer_mode;
     }
 
     private boolean playback;

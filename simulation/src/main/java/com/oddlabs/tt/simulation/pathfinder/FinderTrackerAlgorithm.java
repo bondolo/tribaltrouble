@@ -3,10 +3,13 @@ package com.oddlabs.tt.simulation.pathfinder;
 import com.oddlabs.tt.simulation.model.Selectable;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Pathfinding tracker algorithm that searches for dynamic occupants matching a filter.
+ */
 public final class FinderTrackerAlgorithm<O extends Occupant> implements TrackerAlgorithm {
     private final FinderFilter<O> filter;
     private final UnitGrid unit_grid;
-    private O target;
+    private @Nullable O target;
 
     public FinderTrackerAlgorithm(UnitGrid unit_grid, FinderFilter<O> filter) {
         this.unit_grid = unit_grid;

@@ -3,6 +3,7 @@ package com.oddlabs.tt;
 import com.oddlabs.tt.audio.AudioProvider;
 import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.base.util.Utils;
@@ -99,7 +100,7 @@ public final class Main {
                             InputManager inputManager = new InputManager(InputBindingSettings.from(settings));
                             LocalInput localInput = new LocalInput(
                                     clientEngine.getWindow(), inputManager,
-                                    eventQueue.getDeterministic(), () -> clientEngine.getSettings().inDeveloperMode(),
+                                    eventQueue.getDeterministic(), () -> AppConfig.DEVELOPER_MODE,
                                     clientEngine::shutdown,
                                     clientEngine.getFramePacer()
                             );

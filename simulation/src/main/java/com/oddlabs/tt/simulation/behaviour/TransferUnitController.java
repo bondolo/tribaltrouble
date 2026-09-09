@@ -5,10 +5,11 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingFinder;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.pathfinder.FinderTrackerAlgorithm;
+import org.jspecify.annotations.Nullable;
 
 public final class TransferUnitController extends Controller {
     private final Unit unit;
-    private FinderTrackerAlgorithm<Building> building_tracker;
+    private @Nullable FinderTrackerAlgorithm<Building> building_tracker;
 
     public TransferUnitController(Unit unit) {
         super(1);

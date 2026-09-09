@@ -1,5 +1,6 @@
 package com.oddlabs.tt.gui;
 
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.Settings;
 import com.oddlabs.tt.base.resource.NativeResource;
 import com.oddlabs.tt.engine.render.GUIRenderer;
@@ -24,7 +25,7 @@ public final class Status {
     public void render(GUIRenderer renderer) {
         long free_mem = Runtime.getRuntime().freeMemory();
         buf.delete(0, buf.length());
-        if (settings.inDeveloperMode()) {
+        if (AppConfig.DEVELOPER_MODE) {
             buf.append("JHeap ")
                     .append(free_mem)
                     .append("(");
