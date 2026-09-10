@@ -7,8 +7,8 @@ import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.VisualPattern;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 
 import java.util.ArrayDeque;
@@ -43,7 +43,7 @@ public final class CrackDecalRenderer extends ShadowListRenderer {
         }
 
         try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
-            setPattern(Selectable.VisualPattern.NONE);
+            setPattern(VisualPattern.NONE);
             bindShadowTexture(crackTexture);
             while (!crack_list.isEmpty()) {
                 var model = crack_list.pop();

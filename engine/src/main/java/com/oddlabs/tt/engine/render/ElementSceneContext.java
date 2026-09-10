@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
@@ -68,7 +67,7 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
     }
 
     @Override
-    public Selectable.VisualPattern getPattern() {
+    public VisualPattern getPattern() {
         return visitor.getPattern(this);
     }
 

@@ -6,8 +6,8 @@ import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.VisualPattern;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
 
 import java.util.ArrayDeque;
@@ -41,7 +41,7 @@ public final class TargetRespondRenderer extends ShadowListRenderer {
 
         try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.GREEN);
-            setPattern(Selectable.VisualPattern.FRIENDLY);
+            setPattern(VisualPattern.FRIENDLY);
             bindShadowTexture(ring);
             while (!target_list.isEmpty()) {
                 var target = target_list.pop();

@@ -8,8 +8,8 @@ import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.VisualPattern;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.util.Color;
 import org.lwjgl.opengl.GL11;
@@ -71,7 +71,7 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
             MatrixStack projectionStack) {
         try (var _ = setupShadows(context, queues, worldSize, heightTexture, modelViewStack, projectionStack)) {
             setShadowColor(Color.Linear.WHITE);
-            setPattern(Selectable.VisualPattern.NONE);
+            setPattern(VisualPattern.NONE);
             bindShadowTexture(halos.get(GeneratorHalos.HaloType.SHADOWED));
             while (!shadowed_list.isEmpty()) {
                 var model = shadowed_list.pop();

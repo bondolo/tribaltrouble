@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.render.state.ScopedState;
@@ -36,7 +35,7 @@ public abstract class ShadowRenderer {
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
     }
 
-    public void setPattern(Selectable.VisualPattern pattern) {
+    public void setPattern(VisualPattern pattern) {
         this.patternVal = (float) pattern.ordinal();
     }
 

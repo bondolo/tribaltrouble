@@ -8,7 +8,6 @@ import com.oddlabs.tt.simulation.pathfinder.ScanFilter;
 import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.base.event.StateChecksum;
-import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -21,24 +20,6 @@ import java.util.List;
  */
 public abstract sealed class Selectable<T extends Template> extends Model implements Target, Animated,
         ModelToolTip permits Unit, Building {
-
-    public enum VisualPattern {
-        NONE(Color.Standard.TRANSPARENT, Color.Standard.TRANSPARENT),
-        FRIENDLY(Color.Standard.GREEN, Color.Standard.DARK_GREEN),
-        NEUTRAL(Color.Standard.BLUE, Color.Standard.DARK_BLUE),
-        ENEMY(Color.Standard.RED, Color.Standard.DARK_RED),
-        FRIENDLY_BUILDING(Color.Standard.GREEN, Color.Standard.DARK_GREEN),
-        NEUTRAL_BUILDING(Color.Standard.BLUE, Color.Standard.DARK_BLUE),
-        ENEMY_BUILDING(Color.Standard.RED, Color.Standard.DARK_RED);
-
-        public final Color selectedColor;
-        public final Color hoveredColor;
-
-        VisualPattern(Color selectedColor, Color hoveredColor) {
-            this.selectedColor = selectedColor;
-            this.hoveredColor = hoveredColor;
-        }
-    }
 
     private final Player owner;
     private @Nullable Behaviour current_behaviour;
@@ -276,24 +257,6 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
 
     public final Player getOwner() {
         return getOwnerNoCheck();
-    }
-
-    public final VisualPattern getVisualPattern(Player localPlayer) {
-        boolean isBuilding = this instanceof Building;
-        return owner == localPlayer
-                ? isBuilding ? VisualPattern.FRIENDLY_BUILDING : VisualPattern.FRIENDLY
-                : localPlayer.isEnemy(owner)
-                        ? isBuilding ? VisualPattern.ENEMY_BUILDING : VisualPattern.ENEMY
-                : isBuilding ? VisualPattern.NEUTRAL_BUILDING : VisualPattern.NEUTRAL;
-    }
-
-    public final Color getSelectionColor(Player localPlayer, boolean selected, boolean hovered) {
-        VisualPattern pattern = getVisualPattern(localPlayer);
-        return selected
-                ? pattern.selectedColor
-                : hovered
-                        ? pattern.hoveredColor
-                : owner.getColor();
     }
 
     @Override

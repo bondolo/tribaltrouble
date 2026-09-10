@@ -2,7 +2,6 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
@@ -23,7 +22,7 @@ public interface ModelState<M extends Model> extends LODObject {
 
     Color getColor();
 
-    Selectable.VisualPattern getPattern();
+    VisualPattern getPattern();
 
     @Nullable
     M getModel();

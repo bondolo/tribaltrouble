@@ -4,7 +4,6 @@ package com.oddlabs.tt.effects.render;
 import com.oddlabs.tt.engine.render.*;
 
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.effects.particle.Particle;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
@@ -47,8 +46,8 @@ public final class ParticleModelState implements ModelState<Model> {
     }
 
     @Override
-    public Selectable.VisualPattern getPattern() {
-        return Selectable.VisualPattern.NONE;
+    public VisualPattern getPattern() {
+        return VisualPattern.NONE;
     }
 
     @Override

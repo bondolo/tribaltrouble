@@ -3,6 +3,7 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.engine.render.ElementSceneContext;
 import com.oddlabs.tt.engine.render.ModelVisitor;
 import com.oddlabs.tt.engine.render.SpriteKey;
+import com.oddlabs.tt.engine.render.VisualPattern;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
@@ -59,20 +60,40 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
         return getTeamColor(render_state.getModel());
     }
 
+    public static VisualPattern resolvePattern(Selectable<?> selectable, Player localPlayer) {
+        boolean isBuilding = selectable instanceof Building;
+        Player owner = selectable.getOwner();
+        return owner == localPlayer
+                ? isBuilding ? VisualPattern.FRIENDLY_BUILDING : VisualPattern.FRIENDLY
+                : localPlayer.isEnemy(owner)
+                        ? isBuilding ? VisualPattern.ENEMY_BUILDING : VisualPattern.ENEMY
+                : isBuilding ? VisualPattern.NEUTRAL_BUILDING : VisualPattern.NEUTRAL;
+    }
+
+    public static Color.Linear resolveSelectionColor(Selectable<?> selectable, Player localPlayer,
+            boolean selected, boolean hovered) {
+        VisualPattern pattern = resolvePattern(selectable, localPlayer);
+        return selected
+                ? pattern.selectedColor
+                : hovered
+                        ? pattern.hoveredColor
+                : selectable.getOwner().getColor();
+    }
+
     @Override
     public final Color getSelectionColor(ElementSceneContext<S> render_state) {
         RenderState renderState = (RenderState) render_state.sceneContext;
         Player local_player = renderState.getLocalPlayer();
         S model = render_state.getModel();
-        return model.getSelectionColor(local_player, renderState.isSelected(model),
+        return resolveSelectionColor(model, local_player, renderState.isSelected(model),
                 renderState.isHovered(model));
     }
 
     @Override
-    public final Selectable.VisualPattern getPattern(ElementSceneContext<S> render_state) {
+    public final VisualPattern getPattern(ElementSceneContext<S> render_state) {
         RenderState renderState = (RenderState) render_state.sceneContext;
         Player local_player = renderState.getLocalPlayer();
-        return render_state.getModel().getVisualPattern(local_player);
+        return resolvePattern(render_state.getModel(), local_player);
     }
 
     @Override

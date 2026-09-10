@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.simulation.model.Model;
-import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 
@@ -35,8 +34,8 @@ public class WhiteModelVisitor<M extends Model> extends ModelVisitor<M> {
     }
 
     @Override
-    public Selectable.VisualPattern getPattern(ElementSceneContext<M> render_state) {
-        return Selectable.VisualPattern.NONE;
+    public VisualPattern getPattern(ElementSceneContext<M> render_state) {
+        return VisualPattern.NONE;
     }
 
     @Override
