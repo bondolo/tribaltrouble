@@ -9,9 +9,6 @@ import java.util.Optional;
 /**
  * Pathfinding tracker algorithm that searches for dynamic occupants matching a filter.
  */
-/**
- * Pathfinding tracker algorithm that searches for dynamic occupants matching a filter.
- */
 public final class FinderTrackerAlgorithm<O extends Occupant> implements TrackerAlgorithm {
     private final FinderFilter<O> filter;
     private final UnitGrid unit_grid;
