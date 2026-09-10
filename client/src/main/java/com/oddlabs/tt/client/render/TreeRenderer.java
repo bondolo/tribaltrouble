@@ -1,5 +1,7 @@
 package com.oddlabs.tt.client.render;
 
+import com.oddlabs.tt.base.animation.Animated;
+import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.engine.render.BoundingMode;
 import com.oddlabs.tt.engine.render.CameraState;
@@ -15,36 +17,132 @@ import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
+import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
  * Specialized renderer for forest elements, coordinating the efficient
  * drawing of crown and trunk sprite lists using hardware instancing.
  */
-final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer {
+final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer, Animated {
     private static final Logger logger = Logger.getLogger(TreeRenderer.class.getName());
+    private static final float TREE_FALL_DURATION = 3f;
+    private static final float TREE_SPAWN_DURATION = 3f;
+
     private final InstancedSpriteRenderer instancedSpriteRenderer;
     private final WaveAnimation wave_animation = new WaveAnimation();
     private final @Nullable Cheat cheat;
     private final Matrix4f tempMatrix = new Matrix4f();
+    private final AnimationManager animationManager;
+    private final Map<TreeSupply, Float> fallingTrees = new ConcurrentHashMap<>();
+    private final Map<TreeSupply, Float> spawningTrees = new ConcurrentHashMap<>();
 
     TreeRenderer(@Nullable Cheat cheat, SpriteSorter sprite_sorter,
             RespondManager respond_manager,
-            InstancedSpriteRenderer instancedSpriteRenderer
+            InstancedSpriteRenderer instancedSpriteRenderer,
+            AnimationManager animationManager
     ) {
         super(sprite_sorter, respond_manager);
         this.cheat = cheat;
         this.instancedSpriteRenderer = instancedSpriteRenderer;
+        this.animationManager = animationManager;
+        animationManager.registerAnimation(this);
+    }
+
+    void onTreeFelled(TreeSupply tree) {
+        spawningTrees.remove(tree);
+        fallingTrees.put(tree, 0f);
+    }
+
+    void onTreeSpawned(TreeSupply tree) {
+        fallingTrees.remove(tree);
+        spawningTrees.put(tree, 0f);
+    }
+
+    @Override
+    protected boolean isFalling(TreeSupply tree_supply) {
+        return fallingTrees.containsKey(tree_supply);
+    }
+
+    @Override
+    public void animate(float dt) {
+        if (!fallingTrees.isEmpty()) {
+            for (var entry : fallingTrees.entrySet()) {
+                float progress = entry.getValue() + dt / TREE_FALL_DURATION;
+                if (!entry.getKey().isEmpty() || progress >= 1.0f) {
+                    fallingTrees.remove(entry.getKey());
+                } else {
+                    entry.setValue(progress);
+                }
+            }
+        }
+        if (!spawningTrees.isEmpty()) {
+            for (var entry : spawningTrees.entrySet()) {
+                float progress = entry.getValue() + dt / TREE_SPAWN_DURATION;
+                if (entry.getKey().isEmpty() || progress >= 1.0f) {
+                    spawningTrees.remove(entry.getKey());
+                } else {
+                    entry.setValue(progress);
+                }
+            }
+        }
     }
 
     public void renderShadows(SelectableShadowRenderer shadowRenderer) {
-        Arrays.stream(getRenderLists()).forEach(shadowRenderer::addToShadowList);
+        for (List<TreeSupply> list : getRenderLists()) {
+            for (TreeSupply tree : list) {
+                Tree visual = getTrees().get(tree.getTreeType());
+                Float fallProgress = fallingTrees.get(tree);
+                if (fallProgress != null) {
+                    float scale = Math.max(0f, 1f - fallProgress);
+                    float opacity = 1.0f + 0.3f * fallProgress;
+                    shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, opacity));
+                } else {
+                    Float spawnProgress = spawningTrees.get(tree);
+                    if (spawnProgress != null) {
+                        float inv = 1f - spawnProgress;
+                        float scale = 1f - inv * inv * inv * inv * inv * inv;
+                        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, 1.0f));
+                    } else {
+                        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, 1.0f, 1.0f));
+                    }
+                }
+            }
+        }
+    }
+
+    private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier) implements Shadowable {
+        @Override
+        public float getPositionX() {
+            return tree.getPositionX();
+        }
+
+        @Override
+        public float getPositionY() {
+            return tree.getPositionY();
+        }
+
+        @Override
+        public float getShadowDiameter() {
+            return visual.shadowDiameter() * scale;
+        }
+
+        @Override
+        public float getShadowVerticalCenter() {
+            return visual.shadowVerticalCenter();
+        }
+
+        @Override
+        public float getShadowOpacity() {
+            return visual.shadowOpacity() * opacityMultiplier;
+        }
     }
 
     public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
@@ -80,15 +178,19 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
 
     private void prepareMatrix(TreeSupply tree) {
         tempMatrix.set(tree.getMatrix());
-        if (tree.isEmpty()) {
-            float time = tree.getTreeFallProgress();
+        Float fallProgress = fallingTrees.get(tree);
+        if (fallProgress != null) {
+            float time = fallProgress;
             tempMatrix.translate(0f, 0f, -13f * (time * time * time * time * time * time));
             tempMatrix.rotate((float) Math.toRadians(90f * time * time), 1f, 0f, 0f);
         } else {
-            float scale = tree.getScale();
-            // trees shoot up and then get bushier. Yeah, palms should be different.
-            float zScale = (float) Math.log(scale * (Math.E - 1.0) + 1.0);
-            tempMatrix.scale(scale, scale, zScale);
+            Float spawnProgress = spawningTrees.get(tree);
+            if (spawnProgress != null) {
+                float inv = 1f - spawnProgress;
+                float scale = 1f - inv * inv * inv * inv * inv * inv;
+                float zScale = (float) Math.log(scale * (Math.E - 1.0) + 1.0);
+                tempMatrix.scale(scale, scale, zScale);
+            }
             wave_animation.mulRotation(tempMatrix);
         }
     }
@@ -148,5 +250,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
 
     @Override
     public void close() {
+        animationManager.removeAnimation(this);
+        fallingTrees.clear();
+        spawningTrees.clear();
     }
 }

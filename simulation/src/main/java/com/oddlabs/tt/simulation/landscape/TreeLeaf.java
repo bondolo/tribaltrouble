@@ -4,6 +4,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 
+/**
+ * Quadtree leaf node storing a flat collection of tree supplies.
+ */
 public final class TreeLeaf extends AbstractTreeGroup {
     private TreeSupply[] infos = new TreeSupply[0];
 
@@ -18,7 +21,7 @@ public final class TreeLeaf extends AbstractTreeGroup {
     }
 
     @Override
-    protected boolean initBounds() {
+    public boolean initBounds() {
         if (infos.length != 0) {
             TreeSupply info = infos[0];
             info.initBounds();

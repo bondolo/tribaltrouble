@@ -16,22 +16,10 @@ import java.util.List;
 public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeGroup, TreeLeaf, TreeSupply {
 
     public enum TreeType {
-        JUNGLE(16.0f, 0.5f, 0.6f, 0.9f),
-        PALM(20.0f, 0.3f, 1.0f, 0.95f),
-        OAK(20.0f, 0.5f, 0.6f, 0.7f),
-        PINE(12.0f, 0.6f, 0.3f, 0.65f);
-
-        final float shadowDiameter;
-        final float shadowOpacity;
-        final float shadowVerticalCenter;
-        public final float heightScale;
-
-        TreeType(float shadowDiameter, float shadowOpacity, float shadowVerticalCenter, float heightScale) {
-            this.shadowDiameter = shadowDiameter;
-            this.shadowOpacity = shadowOpacity;
-            this.shadowVerticalCenter = shadowVerticalCenter;
-            this.heightScale = heightScale;
-        }
+        JUNGLE,
+        PALM,
+        OAK,
+        PINE
     }
 
     private final @Nullable AbstractTreeGroup parent;
@@ -79,19 +67,6 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
             final float radius, List<int[]> tree_positions, float scale_factor, float min_size) {
         Matrix4f matrix2 = new Matrix4f();
         Vector3f vector = new Vector3f();
-        // Generate dummy bounding box vertices for culling (Radius + Height 15m)
-        float h = 15f;
-        final float[] tree_low_vertices = new float[]{
-                -radius, -radius, 0,
-                radius, -radius, 0,
-                radius, radius, 0,
-                -radius, radius, 0,
-                -radius, -radius, h,
-                radius, -radius, h,
-                radius, radius, h,
-                -radius, radius, h
-        };
-
         for (int[] coords : tree_positions) {
             final Matrix4f matrix = new Matrix4f();
             final int center_grid_x = coords[0];
@@ -112,18 +87,18 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
             matrix2.translate(tree_x, tree_y, world.getHeightMap().getNearestHeight(tree_x, tree_y));
             matrix2.mul(matrix, matrix);
 
-            insertTreeRecursive(this, world, tree_type, grid_size, radius, matrix, tree_low_vertices, tree_x, tree_y,
+            insertTreeRecursive(this, world, tree_type, grid_size, radius, matrix, tree_x, tree_y,
                     center_grid_x, center_grid_y, world.getHeightMap().getMetersPerWorld(), 0, 0);
         }
     }
 
     private void insertTreeRecursive(AbstractTreeGroup node, World world, TreeType tree_type,
-            int grid_size, float radius, Matrix4f matrix, float[] vertices, float tree_x,
+            int grid_size, float radius, Matrix4f matrix, float tree_x,
             float tree_y, int center_grid_x, int center_grid_y, int size, int x, int y) {
         switch (node) {
             case TreeLeaf leaf -> {
                 TreeSupply tree = new TreeSupply(world, leaf, tree_x, tree_y, center_grid_x, center_grid_y, grid_size,
-                        radius, matrix, tree_type, vertices);
+                        radius, matrix, tree_type);
                 leaf.insertTree(tree);
             }
             case TreeGroup group -> {
@@ -131,14 +106,14 @@ public abstract sealed class AbstractTreeGroup extends BoundingBox permits TreeG
                 int child_index = (tree_x < x + child_size ? 0 : 1) | (tree_y < y + child_size ? 0 : 2);
                 int next_x = x + (child_index & 1) * child_size;
                 int next_y = y + ((child_index >> 1) & 1) * child_size;
-                insertTreeRecursive(group.child(child_index), world, tree_type, grid_size, radius, matrix, vertices,
+                insertTreeRecursive(group.child(child_index), world, tree_type, grid_size, radius, matrix,
                         tree_x, tree_y, center_grid_x, center_grid_y, child_size, next_x, next_y);
             }
             case TreeSupply _ -> throw new IllegalStateException("Unexpected TreeSupply node in tree hierarchy");
         }
     }
 
-    protected boolean initBounds() {
+    public boolean initBounds() {
         return true;
     }
 }

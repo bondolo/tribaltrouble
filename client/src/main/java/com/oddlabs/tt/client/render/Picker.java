@@ -139,11 +139,16 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, this, true, sprite_sorter,
                 selection, audio);
         this.tree_renderer = new TreePicker(sprite_sorter, respond_manager);
+        TreePicker.initTreeBounds(local_player.getWorld().getTreeRoot(), tree_renderer.getTrees());
         this.landscape_renderer = landscape_renderer;
     }
 
     public RespondManager getRespondManager() {
         return respond_manager;
+    }
+
+    AnimationManager getAnimationManager() {
+        return manager;
     }
 
     private <T extends Target> @Nullable T getNearestPick(List<? extends T> pick_list, Class<

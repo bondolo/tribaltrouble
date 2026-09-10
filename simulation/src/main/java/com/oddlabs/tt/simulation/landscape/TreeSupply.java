@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
-import com.oddlabs.tt.base.animation.Animated;
-import com.oddlabs.tt.simulation.model.Shadowable;
+import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
@@ -12,14 +11,12 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
-
 /**
  * A harvestable tree resource in the game world.
  * Provides wood supplies when harvested by peon units.
  */
-public final class TreeSupply extends AbstractTreeGroup implements Supply, Target, Animated, Shadowable {
+public final class TreeSupply extends AbstractTreeGroup implements Supply, Target {
     private static final int INITIAL_SUPPLIES = 10;
-    private static final float SECOND_PER_TREEFALL = 3f;
 
     private final Matrix4f matrix;
     private final TreeType tree_type;
@@ -32,14 +29,10 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     private final World world;
 
     private int num_supplies = INITIAL_SUPPLIES;
-    private float animation_time;
-    private boolean hide = false;
-    private float scale = 1f;
     private int hit_counter = 0;
 
     public TreeSupply(World world, @Nullable AbstractTreeGroup parent, float x, float y, int grid_x,
-            int grid_y, int grid_size, float size, Matrix4f matrix, TreeType tree_type,
-            float[] vertices) {
+            int grid_y, int grid_size, float size, Matrix4f matrix, TreeType tree_type) {
         super(parent);
         this.world = world;
         this.x = x;
@@ -50,23 +43,38 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         this.size = size;
         this.tree_type = tree_type;
         this.matrix = matrix;
+        checkBoundsX(x - size);
+        checkBoundsX(x + size);
+        checkBoundsY(y - size);
+        checkBoundsY(y + size);
+        checkBoundsZ(matrix.m32());
+        checkBoundsZ(matrix.m32() + 15f);
+        if (world.getUnitGrid().getOccupant(grid_x, grid_y) == null)
+            occupyTree();
+        world.getSupplyManager(getSupplyType()).newSupply();
+    }
+
+    public void updateBounds(BoundingBox modelBounds) {
+        resetBounds();
         Vector4f src = new Vector4f();
         Vector4f dest = new Vector4f();
-        for (int i = 0; i < vertices.length; i += 3) {
-            src.set(vertices[i], vertices[i + 1], vertices[i + 2], 1f);
+        float[] corners = new float[]{
+                modelBounds.bmin_x, modelBounds.bmin_y, modelBounds.bmin_z,
+                modelBounds.bmax_x, modelBounds.bmin_y, modelBounds.bmin_z,
+                modelBounds.bmax_x, modelBounds.bmax_y, modelBounds.bmin_z,
+                modelBounds.bmin_x, modelBounds.bmax_y, modelBounds.bmin_z,
+                modelBounds.bmin_x, modelBounds.bmin_y, modelBounds.bmax_z,
+                modelBounds.bmax_x, modelBounds.bmin_y, modelBounds.bmax_z,
+                modelBounds.bmax_x, modelBounds.bmax_y, modelBounds.bmax_z,
+                modelBounds.bmin_x, modelBounds.bmax_y, modelBounds.bmax_z
+        };
+        for (int i = 0; i < corners.length; i += 3) {
+            src.set(corners[i], corners[i + 1], corners[i + 2], 1f);
             matrix.transform(src, dest);
             checkBoundsX(dest.x);
             checkBoundsY(dest.y);
             checkBoundsZ(dest.z);
         }
-        float r = getShadowDiameter() * 0.5f;
-        checkBoundsX(x - r);
-        checkBoundsX(x + r);
-        checkBoundsY(y - r);
-        checkBoundsY(y + r);
-        if (world.getUnitGrid().getOccupant(grid_x, grid_y) == null)
-            occupyTree();
-        world.getSupplyManager(getSupplyType()).newSupply();
     }
 
     @Override
@@ -79,30 +87,11 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         return world;
     }
 
-    public float getScale() {
-        return scale;
-    }
-
-    public float getTreeFallProgress() {
-        return animation_time / SECOND_PER_TREEFALL;
-    }
-
     @Override
     public TreeSupply respawn() {
         occupyTree();
-        hide = false;
         num_supplies = INITIAL_SUPPLIES;
         return this;
-    }
-
-    public void animateSpawn(float t, float progress) {
-        float inv = 1f - progress;
-        scale = 1f - inv * inv * inv * inv * inv * inv;
-    }
-
-    public void spawnComplete() {
-        scale = 1f;
-        animation_time = 0f;
     }
 
     @Override
@@ -135,23 +124,6 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         Region region = grid.getRegion(grid_x, grid_y);
         region.unregisterObject(TreeSupply.class, this);
         grid.freeGrid(grid_x, grid_y, this);
-    }
-
-    @Override
-    public float getShadowDiameter() {
-        float base_diameter = hide ? 0f : (tree_type.shadowDiameter * scale);
-        return isEmpty() ? base_diameter * Math.max(0f, 1f - getTreeFallProgress()) : base_diameter;
-    }
-
-    @Override
-    public float getShadowOpacity() {
-        float base_opacity = hide ? 0f : tree_type.shadowOpacity;
-        return isEmpty() ? base_opacity * (1.0f + 0.3f * getTreeFallProgress()) : base_opacity;
-    }
-
-    @Override
-    public float getShadowVerticalCenter() {
-        return tree_type.shadowVerticalCenter;
     }
 
     @Override
@@ -210,9 +182,7 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
         if (isEmpty()) {
             unoccupyTree();
             world.getSupplyManager(getSupplyType()).emptySupply(this);
-            world.getNotificationListener().treeFelled(tree_type, getCX(), getCY(), getCZ());
-            world.getAnimationManagerRealTime().registerAnimation(this);
-            animation_time = 0f;
+            world.getNotificationListener().treeFelled(this);
         }
     }
 
@@ -221,25 +191,12 @@ public final class TreeSupply extends AbstractTreeGroup implements Supply, Targe
     }
 
     @Override
-    protected boolean initBounds() {
+    public boolean initBounds() {
         super.initBounds();
         return true;
     }
 
-    @Override
-    public void animate(float dt) {
-        animation_time += dt;
-        if (animation_time >= SECOND_PER_TREEFALL) {
-            world.getAnimationManagerRealTime().removeAnimation(this);
-            hide = true;
-        }
-    }
-
     public Matrix4f getMatrix() {
         return matrix;
-    }
-
-    public boolean isHidden() {
-        return hide;
     }
 }

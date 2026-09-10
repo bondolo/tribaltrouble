@@ -37,7 +37,7 @@ public interface NotificationListener {
     default void playerGamespeedChanged() {
     }
 
-    default void treeFelled(AbstractTreeGroup.TreeType treeType, float x, float y, float z) {
+    default void treeFelled(TreeSupply tree) {
     }
 
     default void onHarvest(Model model, SupplyType supplyType) {

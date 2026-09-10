@@ -60,7 +60,7 @@ public final class AmbientAudio implements AutoCloseable {
                 case TreeLeaf leaf -> {
                     for (TreeSupply tree : leaf.getTrees()) {
                         if (currentCount >= threshold) break;
-                        if (!tree.isHidden()) {
+                        if (!tree.isDead()) {
                             float ddx = tree.getCX() - x;
                             float ddy = tree.getCY() - y;
                             if (ddx * ddx + ddy * ddy < radiusSq) {
@@ -70,7 +70,7 @@ public final class AmbientAudio implements AutoCloseable {
                     }
                 }
                 case TreeSupply tree -> {
-                    if (!tree.isHidden()) {
+                    if (!tree.isDead()) {
                         float ddx = tree.getCX() - x;
                         float ddy = tree.getCY() - y;
                         if (ddx * ddx + ddy * ddy < radiusSq) {

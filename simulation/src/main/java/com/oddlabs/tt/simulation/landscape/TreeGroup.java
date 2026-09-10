@@ -2,6 +2,9 @@ package com.oddlabs.tt.simulation.landscape;
 
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Quadtree branch node partitioning tree elements into quadrants.
+ */
 public final class TreeGroup extends AbstractTreeGroup {
     private static final int LANDSCAPE_TREES_MAX_LEVEL = 5;
 
@@ -41,7 +44,7 @@ public final class TreeGroup extends AbstractTreeGroup {
 
 
     @Override
-    protected boolean initBounds() {
+    public boolean initBounds() {
         boolean node_bounds = false;
         for (AbstractTreeGroup child : children) {
             boolean child_bounds = child.initBounds();

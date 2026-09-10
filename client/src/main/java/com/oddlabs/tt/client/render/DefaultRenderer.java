@@ -35,6 +35,7 @@ import com.oddlabs.tt.engine.util.DebugRender;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.gui.render.UIRenderer;
+import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Target;
@@ -93,7 +94,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.sprite_sorter = new SpriteSorter(GraphicsSettings.from(settings).graphic_detail);
         this.element_renderer = new ElementRenderer<>(local_player, render_queues, picker, false, sprite_sorter,
                 selection, audioManager);
-        this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer);
+        this.tree_renderer = new TreeRenderer(cheat, sprite_sorter, picker.getRespondManager(), treeSpriteRenderer,
+                picker.getAnimationManager());
         this.landscape_renderer = landscape_renderer;
         this.sky = new Sky(world.getHeightMap(), world_info.landscapeData().terrain(),
                 world_info.detail(), world_info.detailNormal());
@@ -192,8 +194,12 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         return picker.getCurrentToolTip();
     }
 
-    private TreeRenderer getTreeRenderer() {
-        return tree_renderer;
+    public void onTreeFelled(TreeSupply tree) {
+        tree_renderer.onTreeFelled(tree);
+    }
+
+    public void onTreeSpawned(TreeSupply tree) {
+        tree_renderer.onTreeSpawned(tree);
     }
 
     private void renderDebugElements(CameraState frustum_state) {

@@ -48,6 +48,7 @@ import com.oddlabs.tt.net.ServerMessageBundler;
 import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
+import com.oddlabs.tt.simulation.landscape.TreeSupply;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.DistributableTable;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
@@ -171,8 +172,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void treeFelled(AbstractTreeGroup.TreeType treeType, float x, float y, float z) {
-                audioManager.newAudio(x, y, z, AudioRegistry.TREE_FALL[treeType.ordinal() % 2]);
+            public void treeFelled(TreeSupply tree) {
+                audioManager.newAudio(tree.getCX(), tree.getCY(), tree.getCZ(),
+                        AudioRegistry.TREE_FALL[tree.getTreeType().ordinal() % 2]);
+                renderer.onTreeFelled(tree);
             }
 
             @Override
@@ -248,8 +251,12 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
             @Override
             public void registerTarget(Target target) {
-                if (initialized[0] && target instanceof SupplyModel supplyModel) {
-                    WorldViewer.this.renderer.getRenderState().onSupplySpawn(supplyModel);
+                if (initialized[0]) {
+                    if (target instanceof SupplyModel supplyModel) {
+                        WorldViewer.this.renderer.getRenderState().onSupplySpawn(supplyModel);
+                    } else if (target instanceof TreeSupply tree) {
+                        renderer.onTreeSpawned(tree);
+                    }
                 }
             }
 

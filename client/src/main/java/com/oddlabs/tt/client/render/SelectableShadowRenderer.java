@@ -59,6 +59,12 @@ public final class SelectableShadowRenderer extends ShadowListRenderer {
         }
     }
 
+    public void addToShadowList(Shadowable shadowable) {
+        if (DebugFlags.process_shadows) {
+            shadowed_list.add(shadowable);
+        }
+    }
+
     public void addToShadowList(Collection<? extends Shadowable> shadowable) {
         if (DebugFlags.process_shadows) {
             shadowed_list.addAll(shadowable);

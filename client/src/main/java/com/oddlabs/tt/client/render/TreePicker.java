@@ -74,11 +74,40 @@ class TreePicker {
                 CROWN_MIPMAP_CUTOFF, true, true, true, false));
 
         var trees = new EnumMap<TreeType, Tree>(TreeType.class);
-        trees.put(TreeType.JUNGLE, new Tree(jungle_trunk, jungle_crown));
-        trees.put(TreeType.PALM, new Tree(palm_trunk, palm_crown));
-        trees.put(TreeType.OAK, new Tree(oak_trunk, oak_crown));
-        trees.put(TreeType.PINE, new Tree(pine_trunk, pine_crown));
+        trees.put(TreeType.JUNGLE, new Tree(jungle_trunk, jungle_crown, 16.0f, 0.5f, 0.6f, 0.9f));
+        trees.put(TreeType.PALM, new Tree(palm_trunk, palm_crown, 20.0f, 0.3f, 1.0f, 0.95f));
+        trees.put(TreeType.OAK, new Tree(oak_trunk, oak_crown, 20.0f, 0.5f, 0.6f, 0.7f));
+        trees.put(TreeType.PINE, new Tree(pine_trunk, pine_crown, 12.0f, 0.6f, 0.3f, 0.65f));
         return Collections.unmodifiableMap(trees);
+    }
+
+    public static void initTreeBounds(AbstractTreeGroup root, Map<TreeType, Tree> visuals) {
+        updateSuppliesRecursive(root, visuals);
+        root.initBounds();
+    }
+
+    private static void updateSuppliesRecursive(AbstractTreeGroup node, Map<TreeType, Tree> visuals) {
+        switch (node) {
+            case TreeGroup group -> {
+                for (AbstractTreeGroup child : group.children()) {
+                    updateSuppliesRecursive(child, visuals);
+                }
+            }
+            case TreeLeaf leaf -> {
+                for (TreeSupply tree : leaf.getTrees()) {
+                    Tree visual = visuals.get(tree.getTreeType());
+                    if (visual != null) {
+                        tree.updateBounds(visual.modelBounds());
+                    }
+                }
+            }
+            case TreeSupply tree -> {
+                Tree visual = visuals.get(tree.getTreeType());
+                if (visual != null) {
+                    tree.updateBounds(visual.modelBounds());
+                }
+            }
+        }
     }
 
     final Map<TreeType, Tree> getTrees() {
@@ -151,10 +180,11 @@ class TreePicker {
     }
 
     private boolean pickingInFrustum(TreeSupply tree_supply, float[][] frustum) {
+        float heightScale = trees.get(tree_supply.getTreeType()).heightScale();
         picking_selection_box.setBounds(-SELECTION_RADIUS + tree_supply.getPositionX(), SELECTION_RADIUS + tree_supply
                 .getPositionX(), -SELECTION_RADIUS + tree_supply.getPositionY(), SELECTION_RADIUS + tree_supply
                         .getPositionY(), tree_supply.bmin_z, tree_supply.bmin_z + (tree_supply.bmax_z
-                                - tree_supply.bmin_z) * tree_supply.getTreeType().heightScale);
+                                - tree_supply.bmin_z) * heightScale);
         return RenderTools.inFrustum(picking_selection_box, frustum) != RenderTools.FrustumIntersection.ALL_OUTSIDE;
     }
 
@@ -172,7 +202,7 @@ class TreePicker {
     }
 
     private void visitTree(TreeSupply tree_supply) {
-        if (tree_supply.isHidden())
+        if (tree_supply.isEmpty() && !isFalling(tree_supply))
             return;
 
         boolean in_view;
@@ -184,6 +214,10 @@ class TreePicker {
         if (in_view) {
             addToRenderList(tree_supply, camera);
         }
+    }
+
+    protected boolean isFalling(TreeSupply tree_supply) {
+        return false;
     }
 
     boolean isPicking() {

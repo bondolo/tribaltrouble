@@ -123,6 +123,18 @@ public class BoundingBox {
         checkBoundsZ(other.bmax_z);
     }
 
+    public final void resetBounds() {
+        this.bmin_x = Float.POSITIVE_INFINITY;
+        this.bmin_y = Float.POSITIVE_INFINITY;
+        this.bmin_z = Float.POSITIVE_INFINITY;
+        this.bmax_x = Float.NEGATIVE_INFINITY;
+        this.bmax_y = Float.NEGATIVE_INFINITY;
+        this.bmax_z = Float.NEGATIVE_INFINITY;
+        this.cx = 0f;
+        this.cy = 0f;
+        this.cz = 0f;
+    }
+
     public final void setInfiniteBounds() {
         this.bmin_x = Float.NEGATIVE_INFINITY;
         this.bmax_x = Float.POSITIVE_INFINITY;
