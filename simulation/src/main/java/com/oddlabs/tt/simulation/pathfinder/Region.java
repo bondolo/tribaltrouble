@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;

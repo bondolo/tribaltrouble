@@ -3,6 +3,7 @@ package com.oddlabs.tt.simulation.behaviour;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 
+/** AttackController attacks a target until it is dead or the unit is no longer close enough to attack. */
 public final class AttackController extends Controller {
 
     private final Selectable<?> target;

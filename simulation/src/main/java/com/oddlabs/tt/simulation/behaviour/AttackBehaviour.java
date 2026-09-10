@@ -11,8 +11,8 @@ public final class AttackBehaviour implements Behaviour {
         RELEASED
     }
 
-    private final Selectable<?> target;
     private final Unit unit;
+    private final Selectable<?> target;
     private float anim_time;
     private AttackState state = AttackState.THROWING;
 
@@ -52,8 +52,8 @@ public final class AttackBehaviour implements Behaviour {
         };
     }
 
-    private void updateAttack(float t) {
-        anim_time -= t;
+    private void updateAttack(float dt) {
+        anim_time -= dt;
         unit.aimAtTarget(target);
     }
 

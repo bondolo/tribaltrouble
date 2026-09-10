@@ -22,8 +22,8 @@ public final class StunController extends Controller {
         return time;
     }
 
-    public boolean shouldSleep(float t) {
-        time -= t;
+    public boolean shouldSleep(float dt) {
+        time -= dt;
         return time > 0;
     }
 

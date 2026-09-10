@@ -177,8 +177,8 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         should_decide = false;
         if (current_behaviour != null) {
             current_behaviour.onCleanup();
+            current_behaviour = null;
         }
-        current_behaviour = null;
         getCurrentController().decide();
     }
 
@@ -223,7 +223,9 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
 
     public final Controller getPrimaryController() {
         assert !isDead();
-        return controller_stack.size() > 1 ? controller_stack.get(1) : controller_stack.getFirst(); // Jump over the default controller
+        return controller_stack.size() > 1
+               ? controller_stack.get(1)  // Jump over the default controller
+               : controller_stack.getFirst();
     }
 
     protected final void clearControllerStack() {
@@ -234,10 +236,10 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
 
     public final void initTarget(@Nullable Target target, Action action, boolean aggressive) {
         assert !isDead();
-        if (target == null)
-            return;
-        clearControllerStack();
-        setTarget(target, action, aggressive);
+        if (target != null) {
+            clearControllerStack();
+            setTarget(target, action, aggressive);
+        }
     }
 
     protected abstract void setTarget(Target target, Action action, boolean aggressive);

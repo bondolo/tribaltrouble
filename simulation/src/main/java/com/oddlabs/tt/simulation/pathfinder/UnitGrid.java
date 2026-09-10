@@ -8,9 +8,9 @@ import org.jspecify.annotations.Nullable;
  * Spatial grid partitioning the game world into regions, occupants, and height coordinates.
  */
 public final class UnitGrid {
+    private final HeightMap heightmap;
     private final @Nullable Region[][] regions;
     private final @Nullable Occupant[][] occupants;
-    private final HeightMap heightmap;
 
     public UnitGrid(HeightMap heightmap) {
         this.heightmap = heightmap;

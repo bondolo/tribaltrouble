@@ -12,7 +12,7 @@ public final class AttackScanFilter implements ScanFilter {
         ARMORY(1),
         TOWER(2),
         PEON(3),
-        WARRIOR(4);
+        WARRIOR(4); // also chieftain
 
         public final int value;
 

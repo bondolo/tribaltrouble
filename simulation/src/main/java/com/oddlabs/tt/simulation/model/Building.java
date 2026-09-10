@@ -513,8 +513,8 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
     protected void setTarget(Target target, Action action, boolean aggressive) {
         if (getAbilities().hasAbilities(Abilities.ATTACK)) {
             if (target != this && unit_container instanceof MountUnitContainer mountContainer) {
-                Unit unit = mountContainer.getUnit();
                 boolean kill_friendly = action == Action.ATTACK;
+                Unit unit = mountContainer.getUnit();
                 if (unit != null && unit.canAttack(target, kill_friendly))
                     unit.pushController(new AttackController(unit, (Selectable<?>) target));
             }

@@ -17,9 +17,8 @@ public final class WalkBehaviour implements Behaviour {
     private static final float MAX_WAIT_RETRY_DELAY = 5f;
 
     private final Unit unit;
-    private final TrackerAlgorithm tracker_algorithm;
-    private final AttackScanFilter scan_filter;
     private final boolean scan_attack;
+    private final AttackScanFilter scan_filter;
 
     private @Nullable Movable blocking_movable;
     private int blocker_x;
@@ -27,11 +26,10 @@ public final class WalkBehaviour implements Behaviour {
     private float retry_delay_counter;
     private float retry_delay;
 
-    private PathTracker.State state;
+    private PathTracker.State state = PathTracker.State.DONE;
 
     public WalkBehaviour(Unit unit, TrackerAlgorithm tracker_algorithm, boolean scan_attack) {
         this.unit = unit;
-        this.tracker_algorithm = tracker_algorithm;
         this.scan_attack = scan_attack;
         scan_filter = new AttackScanFilter(unit.getOwner(), AttackScanFilter.UNIT_RANGE);
         retry_delay = WAIT_RETRY_DELAY;
@@ -49,7 +47,7 @@ public final class WalkBehaviour implements Behaviour {
 
     public void appendToolTip(TextAppender tool_tip_box) {
         tool_tip_box.append("WalkBehaviour: state=");
-        tool_tip_box.append(state.toString());
+        tool_tip_box.append(state);
         tool_tip_box.append(" | retry_delay=");
         tool_tip_box.append((long) retry_delay);
         tool_tip_box.append("(");

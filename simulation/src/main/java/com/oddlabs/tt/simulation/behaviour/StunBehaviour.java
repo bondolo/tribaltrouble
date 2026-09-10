@@ -28,8 +28,4 @@ public final class StunBehaviour implements Behaviour {
     @Override
     public void forceInterrupted() {
     }
-
-    @Override
-    public void onCleanup() {
-    }
 }
