@@ -50,14 +50,16 @@ public final class NativeChieftainAI extends ChieftainAI {
     }
 
     private int getNumEnemyUnitsClose(Unit chieftain, float hit_radius) {
-        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
+        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius,
+                chieftain,
                 Unit.class, unit -> unit.isAlive() && chieftain.getOwner().isEnemy(unit.getOwner()));
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
         return filter.getCount();
     }
 
     private int getNumFriendlyUnitsClose(Unit chieftain, float hit_radius) {
-        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
+        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius,
+                chieftain,
                 Selectable.genericClass(), s -> s.isAlive() && !chieftain.getOwner().isEnemy(s.getOwner()));
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
         return filter.getCount();

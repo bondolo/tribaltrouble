@@ -2,6 +2,7 @@ package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.simulation.landscape.World;
 
+/** Triggers when a certain amount of time has passed */
 public final class TimeTrigger extends IntervalTrigger {
     private final Runnable runnable;
 

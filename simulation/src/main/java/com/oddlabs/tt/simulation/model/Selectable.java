@@ -224,8 +224,8 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
     public final Controller getPrimaryController() {
         assert !isDead();
         return controller_stack.size() > 1
-               ? controller_stack.get(1)  // Jump over the default controller
-               : controller_stack.getFirst();
+                ? controller_stack.get(1)  // Jump over the default controller
+                : controller_stack.getFirst();
     }
 
     protected final void clearControllerStack() {

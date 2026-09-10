@@ -5,8 +5,12 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Supply;
 import com.oddlabs.tt.simulation.behaviour.NullController;
+import com.oddlabs.tt.simulation.model.SupplyContainer;
 import com.oddlabs.tt.simulation.player.Player;
 
+/**
+ * Triggers when a player has gathered a specified amount of a supply type.
+ */
 public final class SupplyGatheredTrigger extends IntervalTrigger {
     private final Runnable runnable;
     private final Class<? extends Supply> type;
@@ -32,7 +36,8 @@ public final class SupplyGatheredTrigger extends IntervalTrigger {
             if (s.getPrimaryController() instanceof NullController) {
                 for (Selectable<?> building : selectable) {
                     if (building.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
-                        count += ((Building) building).getSupplyContainer(type).map(c -> c.getNumSupplies()).orElse(0);
+                        count += ((Building) building).getSupplyContainer(type).map(SupplyContainer::getNumSupplies)
+                                .orElse(0);
                     }
                 }
             }

@@ -3,7 +3,6 @@ package com.oddlabs.tt.simulation.pathfinder;
 import com.oddlabs.tt.simulation.model.Selectable;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**

@@ -7,7 +7,6 @@ import com.oddlabs.tt.simulation.pathfinder.FinderFilter;
 import com.oddlabs.tt.simulation.pathfinder.Occupant;
 import com.oddlabs.tt.simulation.pathfinder.Region;
 import com.oddlabs.tt.simulation.pathfinder.RegionBuilder;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -30,8 +29,7 @@ final class SupplyFinder<S extends Supply> implements FinderFilter<S> {
 
     @Override
     public Optional<S> getOccupantFromRegion(Region region, boolean one_region) {
-        @SuppressWarnings("unchecked")
-        Class<S> supplyClass = (Class<S>) supplyType.getSupplyClass();
+        @SuppressWarnings("unchecked") Class<S> supplyClass = (Class<S>) supplyType.getSupplyClass();
         Set<S> supplies = region.getObjects(supplyClass);
         if (one_region) {
             return findClosest(supplies);

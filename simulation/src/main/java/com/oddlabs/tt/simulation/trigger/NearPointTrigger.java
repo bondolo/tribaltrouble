@@ -2,6 +2,9 @@ package com.oddlabs.tt.simulation.trigger;
 
 import com.oddlabs.tt.simulation.model.Unit;
 
+/**
+ * Triggers when a unit is closer than a specified radius of a point.
+ */
 public final class NearPointTrigger extends IntervalTrigger {
     private final int grid_x;
     private final int grid_y;

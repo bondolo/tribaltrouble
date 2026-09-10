@@ -137,8 +137,7 @@ public final class AdvancedAI extends AI {
         nodeAttackWithWarriorsAndChieftain(numWarriors, numWarriors
                 >= params.numWarriorsForChieftain());
         nodeAssignIdlePeons();
-        getOwner().getChieftain().ifPresent(chieftain ->
-                getOwner().getRaceInfo().getChieftainAI().decide(chieftain));
+        getOwner().getChieftain().ifPresent(chieftain -> getOwner().getRaceInfo().getChieftainAI().decide(chieftain));
     }
 
     private void nodeDefendBase() {

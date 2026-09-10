@@ -51,14 +51,16 @@ public final class VikingChieftainAI extends ChieftainAI {
 
     private <S extends Selectable<?>> int getNumEnemyUnitsClose(Unit chieftain, float hit_radius, Class<
             S> type) {
-        CountOccupantScanFilter<S> filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(),
+        CountOccupantScanFilter<S> filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain
+                .getPositionY(),
                 hit_radius, chieftain, type, s -> s.isAlive() && chieftain.getOwner().isEnemy(s.getOwner()));
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
         return filter.getCount();
     }
 
     private int getNumFriendlyUnitsClose(Unit chieftain, float hit_radius) {
-        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius, chieftain,
+        var filter = new CountOccupantScanFilter<>(chieftain.getPositionX(), chieftain.getPositionY(), hit_radius,
+                chieftain,
                 Selectable.genericClass(), s -> s.isAlive() && !chieftain.getOwner().isEnemy(s.getOwner()));
         chieftain.getUnitGrid().scan(filter, chieftain.getGridX(), chieftain.getGridY());
         return filter.getCount();

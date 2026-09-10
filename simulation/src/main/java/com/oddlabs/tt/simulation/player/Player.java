@@ -277,7 +277,8 @@ public final class Player implements PlayerInterface {
                 getRaceInfo().getBuildingTemplate(building_type), 40);
         world.getUnitGrid().scan(filter, grid_x, grid_y);
         return filter.getSingleResult().map(t -> {
-            Building b = new Building(this, getRaceInfo().getBuildingTemplate(building_type), t.getGridX(), t.getGridY());
+            Building b = new Building(this, getRaceInfo().getBuildingTemplate(building_type), t.getGridX(), t
+                    .getGridY());
             b.place();
             b.repair(1000);
             return b;

@@ -35,8 +35,8 @@ public final class PassiveAI extends AI {
                     }
                 }
             }
-            getOwner().getChieftain().ifPresent(chieftain ->
-                    getOwner().getRaceInfo().getChieftainAI().decide(chieftain));
+            getOwner().getChieftain().ifPresent(chieftain -> getOwner().getRaceInfo().getChieftainAI().decide(
+                    chieftain));
         }
     }
 }

@@ -242,7 +242,8 @@ public final class PathTracker {
             GridPathNode patch_path = null;
             RegionNode search_next_region_node = next_region_node;
             for (int i = 0; i < REGION_SEARCH_TRIES; i++) {
-                patch_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), search_next_region_node, false).orElse(null);
+                patch_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), search_next_region_node, false)
+                        .orElse(null);
                 if (done(unit.getGridX(), unit.getGridY()))
                     return State.DONE;
                 if (patch_path != null || search_next_region_node == null)
@@ -291,7 +292,8 @@ public final class PathTracker {
             return State.DONE;
         }
         RegionNode next_region_node = (RegionNode) region_path.getParent();
-        Optional<GridPathNode> init_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), next_region_node, true);
+        Optional<GridPathNode> init_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), next_region_node,
+                true);
         if (done(unit.getGridX(), unit.getGridY()))
             return State.DONE;
         return init_path.map(ip -> {
