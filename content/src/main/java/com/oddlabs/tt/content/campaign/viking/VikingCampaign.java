@@ -1,8 +1,13 @@
-package com.oddlabs.tt.content.campaign;
+package com.oddlabs.tt.content.campaign.viking;
 
 
 import com.oddlabs.tt.client.viewer.WorldViewer;
 import com.oddlabs.tt.client.Peer;
+import com.oddlabs.tt.content.campaign.Campaign;
+import com.oddlabs.tt.content.campaign.CampaignDialogForm;
+import com.oddlabs.tt.content.campaign.CampaignIcons;
+import com.oddlabs.tt.content.campaign.CampaignState;
+import com.oddlabs.tt.content.campaign.Island;
 import com.oddlabs.tt.gui.Form;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
@@ -16,23 +21,6 @@ import java.util.stream.Stream;
 public final class VikingCampaign extends Campaign {
     public static final int MAX_UNITS = 46;
     private static final int[] INITIAL_STATES = new int[]{
-            /*
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE,
-            		CampaignState.ISLAND_AVAILABLE};
-            */
             CampaignState.ISLAND_AVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE,
             CampaignState.ISLAND_UNAVAILABLE,
@@ -56,6 +44,8 @@ public final class VikingCampaign extends Campaign {
             .map(c -> c.apply(this))
             .toArray(Island[]::new);
 
+    private transient final VikingCampaignIcons icons;
+
     public VikingCampaign(GUIRoot gui_root, Peer engine) {
         this(gui_root, new CampaignState(INITIAL_STATES), engine);
     }
@@ -64,6 +54,8 @@ public final class VikingCampaign extends Campaign {
             CampaignState campaign_state,
             Peer engine) {
         super(campaign_state, engine);
+        icons = new VikingCampaignIcons("/gui/viking_campaign.xml");
+
         if (getState().getCurrentIsland() == -1) {
             startIsland(gui_root, 0);
         }
@@ -71,7 +63,7 @@ public final class VikingCampaign extends Campaign {
 
     @Override
     public CampaignIcons getIcons() {
-        return VikingCampaignIcons.getIcons();
+        return icons;
     }
 
     @Override

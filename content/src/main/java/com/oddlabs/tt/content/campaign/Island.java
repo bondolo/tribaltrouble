@@ -119,11 +119,11 @@ public abstract class Island {
 
     protected abstract void start();
 
-    protected abstract CharSequence getHeader();
+    public abstract CharSequence getHeader();
 
-    protected abstract CharSequence getDescription();
+    public abstract CharSequence getDescription();
 
-    protected abstract CharSequence getCurrentObjective();
+    public abstract CharSequence getCurrentObjective();
 
     protected final @Nullable Unit changeOwner(Unit unit, Player owner) {
         float x = unit.getPositionX();

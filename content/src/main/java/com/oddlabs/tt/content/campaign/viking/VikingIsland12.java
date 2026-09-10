@@ -1,5 +1,10 @@
-package com.oddlabs.tt.content.campaign;
+package com.oddlabs.tt.content.campaign.viking;
 
+import com.oddlabs.tt.content.campaign.Campaign;
+import com.oddlabs.tt.content.campaign.CampaignDialogForm;
+import com.oddlabs.tt.content.campaign.CampaignState;
+import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
+import com.oddlabs.tt.content.campaign.Island;
 import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.tt.simulation.model.Difficulty;
@@ -21,15 +26,15 @@ import com.oddlabs.tt.base.util.Utils;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
-/** Campaign level setup for Viking Island 6. */
-public final class VikingIsland6 extends Island {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland6.class.getName());
+/** Campaign level setup for Viking Island 12. */
+public final class VikingIsland12 extends Island {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland12.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public VikingIsland6(Campaign campaign) {
+    public VikingIsland12(Campaign campaign) {
         super(campaign);
     }
 
@@ -39,8 +44,8 @@ public final class VikingIsland6 extends Island {
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(gui_root, 256, Terrain.NATIVE, .75f, 1f, .5f,
-                13462, 6, VikingCampaign.MAX_UNITS, ai_names);
+        GameNetwork game_network = startNewGame(gui_root, 256, Terrain.NATIVE, .5f, 1f, .57f,
+                67625656, 12, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
                 Race.VIKINGS.getValue(),
@@ -61,9 +66,9 @@ public final class VikingIsland6 extends Island {
                 PlayerSlot.AI_NEUTRAL_CAMPAIGN);
         game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY -> 1;
-            case Difficulty.NORMAL -> 3;
-            case Difficulty.HARD -> 15;
+            case Difficulty.EASY -> 10;
+            case Difficulty.NORMAL -> 20;
+            case Difficulty.HARD -> 40;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
@@ -114,18 +119,17 @@ public final class VikingIsland6 extends Island {
 
         // Winner prize
         final Runnable prize = () -> {
-            getCampaign().getState().setIslandState(6, CampaignState.ISLAND_COMPLETED);
-            getCampaign().getState().setIslandState(5, CampaignState.ISLAND_AVAILABLE);
-            getCampaign().getState().setIslandState(7, CampaignState.ISLAND_AVAILABLE);
+            getCampaign().getState().setIslandState(12, CampaignState.ISLAND_COMPLETED);
+            getCampaign().getState().setIslandState(11, CampaignState.ISLAND_AVAILABLE);
+            getCampaign().getState().setIslandState(13, CampaignState.ISLAND_AVAILABLE);
             getCampaign().getState().setNumPeons(getCampaign().getState().getNumPeons() + stranded
                     .getUnitCountContainer().getNumSupplies());
             getCampaign().victory(getViewer());
         };
         runnable = () -> {
-            String new_units_message = i18n("new_units", stranded.getUnitCountContainer().getNumSupplies());
-            String new_units_header = i18n("new_units_header");
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), new_units_header,
-                    new_units_message,
+            String new_units = i18n("new_units", stranded.getUnitCountContainer().getNumSupplies());
+            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("new_units_header"),
+                    new_units,
                     getCampaign().getIcons().getFaces()[0],
                     Origin.AT_START,
                     prize);

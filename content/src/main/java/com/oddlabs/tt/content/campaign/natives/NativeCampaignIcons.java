@@ -1,54 +1,56 @@
-package com.oddlabs.tt.content.campaign;
+package com.oddlabs.tt.content.campaign.natives;
 
+import com.oddlabs.tt.content.campaign.CampaignIcons;
+import com.oddlabs.tt.content.campaign.MapIslandData;
 import com.oddlabs.tt.gui.GUIErrorHandler;
 import com.oddlabs.tt.gui.GUIIcon;
 import com.oddlabs.tt.gui.IconAtlas;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
+import java.util.stream.IntStream;
+
 /**
  * Loads and provides icon resources for the Native campaign map.
  */
-final class NativeCampaignIcons implements CampaignIcons {
+public final class NativeCampaignIcons implements CampaignIcons {
+    private static final int NUM_FLAGS = 3;
+    private static final int NUM_BOATS = 3;
+    private static final int NUM_HIDDEN = 1;
+    private static final int NUM_FACES = 9;
     private static final int NUM_ISLANDS = 8;
 
-    private static final NativeCampaignIcons ICONS = new NativeCampaignIcons("/gui/native_campaign.xml");
-
     private final IconQuad map;
-    private final MapIslandData[] islands = new MapIslandData[NUM_ISLANDS];
-    private final IconQuad[] flags = new IconQuad[3];
-    private final IconQuad[] boats = new IconQuad[3];
-    private final GUIIcon[] hidden = new GUIIcon[1];
-    private final IconQuad[] faces = new IconQuad[9];
+    private final MapIslandData[] islands;
+    private final IconQuad[] flags;
+    private final IconQuad[] boats;
+    private final GUIIcon[] hidden;
+    private final IconQuad[] faces;
 
-    static NativeCampaignIcons getIcons() {
-        return ICONS;
-    }
-
-    private NativeCampaignIcons(String xml_file) {
+    NativeCampaignIcons(String xml_file) {
         IconAtlas atlas = IconAtlas.load(xml_file, new GUIErrorHandler());
 
-        flags[0] = atlas.getNamedIconQuad("flag0");
-        flags[1] = atlas.getNamedIconQuad("flag1");
-        flags[2] = atlas.getNamedIconQuad("flag2");
-        boats[0] = atlas.getNamedIconQuad("boat0");
-        boats[1] = atlas.getNamedIconQuad("boat1");
-        boats[2] = atlas.getNamedIconQuad("boat2");
-        hidden[0] = getNamedGUIIcon(atlas, "hidden0");
-        faces[0] = atlas.getNamedIconQuad("face0");
-        faces[1] = atlas.getNamedIconQuad("face1");
-        faces[2] = atlas.getNamedIconQuad("face2");
-        faces[3] = atlas.getNamedIconQuad("face3");
-        faces[4] = atlas.getNamedIconQuad("face4");
-        faces[5] = atlas.getNamedIconQuad("face5");
-        faces[6] = atlas.getNamedIconQuad("face6");
-        faces[7] = atlas.getNamedIconQuad("face7");
-        faces[8] = atlas.getNamedIconQuad("face8");
-
+        flags = IntStream.range(0, NUM_FLAGS)
+                .mapToObj(i -> "flag" + i)
+                .map(atlas::getNamedIconQuad)
+                .toArray(IconQuad[]::new);
+        boats = IntStream.range(0, NUM_BOATS)
+                .mapToObj(i -> "boat" + i)
+                .map(atlas::getNamedIconQuad)
+                .toArray(IconQuad[]::new);
+        hidden = IntStream.range(0, NUM_HIDDEN)
+                .mapToObj(i -> "hidden" + i)
+                .map(name -> getNamedGUIIcon(atlas, name))
+                .toArray(GUIIcon[]::new);
+        faces = IntStream.range(0, NUM_FACES)
+                .mapToObj(i -> "face" + i)
+                .map(atlas::getNamedIconQuad)
+                .toArray(IconQuad[]::new);
         map = atlas.getNamedIconQuad("map");
-        for (int i = 0; i < NUM_ISLANDS; i++) {
-            islands[i] = loadMapIslandData(atlas, "island" + i);
-        }
+        islands = IntStream.range(0, NUM_ISLANDS)
+                .mapToObj(i -> "island" + i)
+                .map(name -> loadMapIslandData(atlas, name))
+                .toArray(MapIslandData[]::new);
     }
 
     private MapIslandData loadMapIslandData(IconAtlas atlas, String name) {

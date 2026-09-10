@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.GUIRenderer;
 
+/** Draws a decorative icon */
 public class GUIIcon extends GUIObject {
     private final IconQuad icon;
 

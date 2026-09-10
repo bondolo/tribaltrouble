@@ -1,5 +1,7 @@
 package com.oddlabs.tt.content.campaign;
 
+import com.oddlabs.tt.content.campaign.natives.NativeCampaign;
+import com.oddlabs.tt.content.campaign.viking.VikingCampaign;
 import com.oddlabs.tt.gui.MessageForm;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.CancelButton;
@@ -40,7 +42,7 @@ public final class CampaignForm extends Form implements DeterministicSerializerL
     private final LoadCampaignBox load_campaign_box;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(CampaignForm.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 

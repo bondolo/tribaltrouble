@@ -1,5 +1,7 @@
 package com.oddlabs.tt.content.campaign;
 
+import com.oddlabs.tt.content.campaign.natives.NativeCampaign;
+import com.oddlabs.tt.content.campaign.viking.VikingCampaign;
 import com.oddlabs.tt.content.menu.Menu;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.Form;

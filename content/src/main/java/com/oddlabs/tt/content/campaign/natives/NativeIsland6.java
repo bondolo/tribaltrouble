@@ -1,34 +1,38 @@
-package com.oddlabs.tt.content.campaign;
+package com.oddlabs.tt.content.campaign.natives;
 
+import com.oddlabs.tt.content.campaign.Campaign;
+import com.oddlabs.tt.content.campaign.CampaignDialogForm;
+import com.oddlabs.tt.content.campaign.CampaignState;
+import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
+import com.oddlabs.tt.content.campaign.Island;
 import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.tt.simulation.model.Difficulty;
 
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.UnitType;
-
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
+import com.oddlabs.tt.simulation.trigger.PlayerEleminatedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
-/** Campaign level setup for Viking Island 11. */
-public final class VikingIsland11 extends Island {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland11.class.getName());
+/** Campaign level setup for Native Island 6. */
+public final class NativeIsland6 extends Island {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland6.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public VikingIsland11(Campaign campaign) {
+    public NativeIsland6(Campaign campaign) {
         super(campaign);
     }
 
@@ -38,11 +42,11 @@ public final class VikingIsland11 extends Island {
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(gui_root, 256, Terrain.NATIVE, .75f, 1f, .85f,
-                83493473, 11, VikingCampaign.MAX_UNITS, ai_names);
+        GameNetwork game_network = startNewGame(gui_root, 1024, Terrain.VIKING, .5f, .8f, .9f,
+                44, 6, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
-                Race.VIKINGS.getValue(),
+                Race.NATIVES.getValue(),
                 0,
                 true,
                 PlayerSlot.AI_NONE);
@@ -52,10 +56,18 @@ public final class VikingIsland11 extends Island {
                         getCampaign().getState().getNumRockWarriors(),
                         getCampaign().getState().getNumIronWarriors(),
                         getCampaign().getState().getNumRubberWarriors()));
+        game_network.getClient().getServerInterface().setPlayerSlot(1,
+                PlayerSlot.AI,
+                Race.NATIVES.getValue(),
+                0,
+                true,
+                PlayerSlot.AI_HARD);
+        game_network.getClient().setUnitInfo(1, new UnitInfo(true, true, 2, false, 1, 0, 2, 0));
+
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
             case Difficulty.EASY -> 10;
-            case Difficulty.NORMAL -> 25;
-            case Difficulty.HARD -> 40;
+            case Difficulty.NORMAL -> 20;
+            case Difficulty.HARD -> 35;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
@@ -64,61 +76,26 @@ public final class VikingIsland11 extends Island {
                 1,
                 true,
                 PlayerSlot.AI_HARD);
-        game_network.getClient().setUnitInfo(2, new UnitInfo(true, false, 0, false, ai_peons, 0, 2, 0));
+        game_network.getClient().setUnitInfo(2, new UnitInfo(true, false, 1, false, ai_peons, 0, 0, 1));
+        game_network.getClient().getServerInterface().setPlayerSlot(3,
+                PlayerSlot.AI,
+                Race.VIKINGS.getValue(),
+                1,
+                true,
+                PlayerSlot.AI_HARD);
+        game_network.getClient().setUnitInfo(3, new UnitInfo(true, false, 1, false, ai_peons, 0, 0, 1));
         game_network.getClient().getServerInterface().startServer();
     }
 
     @Override
     protected void start() {
         Runnable runnable;
-        final Player enemy = getViewer().getWorld().getPlayers().get(1);
-
         // Introduction
-        final Runnable dialog8 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header8"),
-                    i18n("dialog8"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START);
-            addModalForm(dialog);
-        };
-        final Runnable dialog7 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header7"),
-                    i18n("dialog7"),
-                    getCampaign().getIcons().getFaces()[3],
-                    Origin.AT_END,
-                    dialog8);
-            addModalForm(dialog);
-        };
-        final Runnable dialog6 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header6"),
-                    i18n("dialog6"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START,
-                    dialog7);
-            addModalForm(dialog);
-        };
-        final Runnable dialog5 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header5"),
-                    i18n("dialog5"),
-                    getCampaign().getIcons().getFaces()[6],
-                    Origin.AT_END,
-                    dialog6);
-            addModalForm(dialog);
-        };
-        final Runnable dialog4 = () -> {
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header4"),
-                    i18n("dialog4"),
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START,
-                    dialog5);
-            addModalForm(dialog);
-        };
         final Runnable dialog3 = () -> {
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header3"),
                     i18n("dialog3"),
-                    getCampaign().getIcons().getFaces()[6],
-                    Origin.AT_END,
-                    dialog4);
+                    getCampaign().getIcons().getFaces()[1],
+                    Origin.AT_END);
             addModalForm(dialog);
         };
         final Runnable dialog2 = () -> {
@@ -132,12 +109,12 @@ public final class VikingIsland11 extends Island {
         final Runnable dialog1 = () -> {
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header1"),
                     i18n("dialog1"),
-                    getCampaign().getIcons().getFaces()[6],
+                    getCampaign().getIcons().getFaces()[1],
                     Origin.AT_END,
                     dialog2);
             addModalForm(dialog);
         };
-        runnable = () -> {
+        final Runnable dialog0 = () -> {
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header0"),
                     i18n("dialog0"),
                     getCampaign().getIcons().getFaces()[0],
@@ -145,24 +122,38 @@ public final class VikingIsland11 extends Island {
                     dialog1);
             addModalForm(dialog);
         };
-        new GameStartedTrigger(getViewer().getWorld(), runnable);
+        new GameStartedTrigger(getViewer().getWorld(), dialog0);
 
         // Winner prize
-        runnable = () -> {
-            getCampaign().getState().setIslandState(11, CampaignState.ISLAND_COMPLETED);
-            getCampaign().getState().setIslandState(12, CampaignState.ISLAND_AVAILABLE);
+        final Runnable prize = () -> {
+            getCampaign().getState().setIslandState(6, CampaignState.ISLAND_COMPLETED);
+            getCampaign().getState().setIslandState(7, CampaignState.ISLAND_AVAILABLE);
             getCampaign().victory(getViewer());
         };
 
         // Winning condition
+        runnable = () -> {
+            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header4"),
+                    i18n("dialog4"),
+                    getCampaign().getIcons().getFaces()[4],
+                    Origin.AT_END,
+                    prize);
+            addModalForm(dialog);
+        };
         new VictoryTrigger(getViewer(), runnable);
 
-        // Tower
-        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 47, 22);
-        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 54, 36);
-        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 68, 36);
-        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 80, 36);
-        insertGuardTower(enemy, UnitType.WARRIOR_RUBBER, 94, 30);
+        // Put warrior in tower
+        final Player friend = getViewer().getWorld().getPlayers().get(1);
+        final Player enemy0 = getViewer().getWorld().getPlayers().get(2);
+        final Player enemy1 = getViewer().getWorld().getPlayers().get(3);
+
+        friend.getAI().ifPresent(ai -> ai.manTowers(2)); // TODO: replace with insertGuardTower()
+        enemy0.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+        enemy1.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+
+        // Defeat if friends eleminated
+        runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));
+        new PlayerEleminatedTrigger(runnable, friend);
     }
 
     @Override

@@ -1,5 +1,10 @@
-package com.oddlabs.tt.content.campaign;
+package com.oddlabs.tt.content.campaign.natives;
 
+import com.oddlabs.tt.content.campaign.Campaign;
+import com.oddlabs.tt.content.campaign.CampaignDialogForm;
+import com.oddlabs.tt.content.campaign.CampaignState;
+import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
+import com.oddlabs.tt.content.campaign.Island;
 import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.tt.simulation.model.Difficulty;
@@ -21,7 +26,6 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
@@ -41,7 +45,7 @@ import java.util.stream.IntStream;
 public final class NativeIsland0 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland0.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
@@ -56,7 +60,7 @@ public final class NativeIsland0 extends Island {
         String[] ai_names = IntStream.range(0, 6)
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
-        GameNetwork game_network = startNewGame(gui_root, 1024, Terrain.NATIVE, .75f, .65f, .85f,
+        var game_network = startNewGame(gui_root, 1024, Terrain.NATIVE, .75f, .65f, .85f,
                 25, 0, NativeCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,

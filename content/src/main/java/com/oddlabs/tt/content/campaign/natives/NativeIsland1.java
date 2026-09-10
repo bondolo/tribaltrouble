@@ -1,5 +1,10 @@
-package com.oddlabs.tt.content.campaign;
+package com.oddlabs.tt.content.campaign.natives;
 
+import com.oddlabs.tt.content.campaign.Campaign;
+import com.oddlabs.tt.content.campaign.CampaignDialogForm;
+import com.oddlabs.tt.content.campaign.CampaignState;
+import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
+import com.oddlabs.tt.content.campaign.Island;
 import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.tt.simulation.model.Difficulty;
@@ -38,7 +43,7 @@ public final class NativeIsland1 extends Island {
     private static final int NUM_CAPTIVES = 10;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland1.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 

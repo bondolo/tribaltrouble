@@ -1,14 +1,17 @@
-package com.oddlabs.tt.content.campaign;
+package com.oddlabs.tt.content.campaign.viking;
 
+import com.oddlabs.tt.content.campaign.Campaign;
+import com.oddlabs.tt.content.campaign.CampaignDialogForm;
+import com.oddlabs.tt.content.campaign.CampaignState;
+import com.oddlabs.tt.content.campaign.InGameCampaignDialogForm;
+import com.oddlabs.tt.content.campaign.Island;
 import com.oddlabs.tt.simulation.model.Race;
 
 import com.oddlabs.tt.simulation.model.Difficulty;
 
-import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.UnitType;
-
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
@@ -21,15 +24,15 @@ import com.oddlabs.tt.base.util.Utils;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
-/** Campaign level setup for Viking Island 12. */
-public final class VikingIsland12 extends Island {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland12.class.getName());
+/** Campaign level setup for Viking Island 5. */
+public final class VikingIsland5 extends Island {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland5.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public VikingIsland12(Campaign campaign) {
+    public VikingIsland5(Campaign campaign) {
         super(campaign);
     }
 
@@ -39,8 +42,8 @@ public final class VikingIsland12 extends Island {
                 .mapToObj(i -> i18n("name" + i))
                 .toArray(String[]::new);
         // gametype, owner, game, meters_per_world, hills, vegetation_amount, supplies_amount, seed, speed, map_code
-        GameNetwork game_network = startNewGame(gui_root, 256, Terrain.NATIVE, .5f, 1f, .57f,
-                67625656, 12, VikingCampaign.MAX_UNITS, ai_names);
+        GameNetwork game_network = startNewGame(gui_root, 512, Terrain.NATIVE, .85f, 1f, .9f,
+                89864, 5, VikingCampaign.MAX_UNITS, ai_names);
         game_network.getClient().getServerInterface().setPlayerSlot(0,
                 PlayerSlot.HUMAN,
                 Race.VIKINGS.getValue(),
@@ -58,12 +61,13 @@ public final class VikingIsland12 extends Island {
                 Race.VIKINGS.getValue(),
                 0,
                 true,
-                PlayerSlot.AI_NEUTRAL_CAMPAIGN);
-        game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 0, 0, 0, 0));
+                PlayerSlot.AI_HARD);
+        game_network.getClient().setUnitInfo(1, new UnitInfo(false, false, 0, false, 25, 5, 0, 0));
+
         int ai_peons = switch (getCampaign().getState().getDifficulty()) {
-            case Difficulty.EASY -> 10;
-            case Difficulty.NORMAL -> 20;
-            case Difficulty.HARD -> 40;
+            case Difficulty.EASY -> 5;
+            case Difficulty.NORMAL -> 10;
+            case Difficulty.HARD -> 25;
             default -> throw new IllegalArgumentException();
         };
         game_network.getClient().getServerInterface().setPlayerSlot(2,
@@ -72,16 +76,22 @@ public final class VikingIsland12 extends Island {
                 1,
                 true,
                 PlayerSlot.AI_HARD);
-        game_network.getClient().setUnitInfo(2, new UnitInfo(true, true, 0, true, ai_peons, 0, 0, 0));
+        game_network.getClient().setUnitInfo(2, new UnitInfo(true, false, 1, false, ai_peons, 0, 0, 1));
+        game_network.getClient().getServerInterface().setPlayerSlot(3,
+                PlayerSlot.AI,
+                Race.NATIVES.getValue(),
+                1,
+                true,
+                PlayerSlot.AI_HARD);
+        game_network.getClient().setUnitInfo(3, new UnitInfo(true, false, 1, false, ai_peons, 0, 0, 1));
         game_network.getClient().getServerInterface().startServer();
     }
 
     @Override
     protected void start() {
         Runnable runnable;
-        final Player local_player = getViewer().getLocalPlayer();
-        final Player stranded = getViewer().getWorld().getPlayers().get(1);
-        final Player enemy = getViewer().getWorld().getPlayers().get(2);
+        final Player enemy0 = getViewer().getWorld().getPlayers().get(2);
+        final Player enemy1 = getViewer().getWorld().getPlayers().get(3);
 
         // Introduction
         final Runnable answer = () -> {
@@ -94,45 +104,40 @@ public final class VikingIsland12 extends Island {
         runnable = () -> {
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header1"),
                     i18n("dialog1"),
-                    getCampaign().getIcons().getFaces()[2],
+                    getCampaign().getIcons().getFaces()[5],
                     Origin.AT_END,
                     answer);
             addModalForm(dialog);
         };
         new GameStartedTrigger(getViewer().getWorld(), runnable);
 
-        // Place prisoners
-        placePrisoners(stranded, local_player, 10, 0, 0, 0, false);
-
-        // Defeat if netrauls eleminated
-        runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));
-        new PlayerEleminatedTrigger(runnable, stranded);
-
-        // Put warrior in tower
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 39, 43);
-        insertGuardTower(enemy, UnitType.WARRIOR_IRON, 35, 53);
-
         // Winner prize
         final Runnable prize = () -> {
-            getCampaign().getState().setIslandState(12, CampaignState.ISLAND_COMPLETED);
-            getCampaign().getState().setIslandState(11, CampaignState.ISLAND_AVAILABLE);
-            getCampaign().getState().setIslandState(13, CampaignState.ISLAND_AVAILABLE);
-            getCampaign().getState().setNumPeons(getCampaign().getState().getNumPeons() + stranded
-                    .getUnitCountContainer().getNumSupplies());
+            getCampaign().getState().setIslandState(5, CampaignState.ISLAND_COMPLETED);
+            getCampaign().getState().setIslandState(4, CampaignState.ISLAND_AVAILABLE);
+            getCampaign().getState().setIslandState(6, CampaignState.ISLAND_AVAILABLE);
+            getCampaign().getState().setNumRockWarriors(getCampaign().getState().getNumRockWarriors() + 5);
             getCampaign().victory(getViewer());
-        };
-        runnable = () -> {
-            String new_units = i18n("new_units", stranded.getUnitCountContainer().getNumSupplies());
-            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("new_units_header"),
-                    new_units,
-                    getCampaign().getIcons().getFaces()[0],
-                    Origin.AT_START,
-                    prize);
-            addModalForm(dialog);
         };
 
         // Winning condition
+        runnable = () -> {
+            CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header2"),
+                    i18n("dialog2"),
+                    getCampaign().getIcons().getFaces()[5],
+                    Origin.AT_END,
+                    prize);
+            addModalForm(dialog);
+        };
         new VictoryTrigger(getViewer(), runnable);
+
+        // Put warrior in tower
+        enemy0.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+        enemy1.getAI().ifPresent(ai -> ai.manTowers(1)); // TODO: replace with insertGuardTower()
+
+        // Defeat if friends eleminated
+        runnable = () -> getCampaign().defeated(getViewer(), i18n("game_over"));
+        new PlayerEleminatedTrigger(runnable, getViewer().getWorld().getPlayers().get(1));
     }
 
     @Override

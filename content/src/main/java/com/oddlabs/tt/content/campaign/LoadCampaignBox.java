@@ -53,7 +53,7 @@ final class LoadCampaignBox extends GUIObject implements DeterministicSerializer
     private final Peer engine;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(LoadCampaignBox.class.getName());
 
-    private String i18n(String key, Object... args) {
+    private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
