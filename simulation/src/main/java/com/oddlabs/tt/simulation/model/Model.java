@@ -50,10 +50,6 @@ public abstract class Model extends Element<Model> implements Shadowable {
         return 0f;
     }
 
-    public float getNoDetailSize() {
-        return 0f;
-    }
-
     /** {@return the bounds of the model in the local coordinate system for each animation} */
     protected abstract BoundingBox @Nullable [] getLocalBounds();
 

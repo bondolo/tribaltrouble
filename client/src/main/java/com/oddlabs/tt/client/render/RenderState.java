@@ -132,10 +132,18 @@ public final class RenderState implements SceneContext {
             case Plants plants -> visitPlants(plants);
             case SceneryModel model -> visitSceneryModel(model);
             case DirectedThrowingWeapon weapon -> {
-                if (!picking) addToRenderList(getCachedState(directed_weapon_model_visitor, weapon));
+                if (!picking) {
+                    var state = getCachedState(directed_weapon_model_visitor, weapon);
+                    addToRenderList(state);
+                    visitAccessories(weapon, state);
+                }
             }
             case RotatingThrowingWeapon weapon -> {
-                if (!picking) addToRenderList(getCachedState(rotating_weapon_model_visitor, weapon));
+                if (!picking) {
+                    var state = getCachedState(rotating_weapon_model_visitor, weapon);
+                    addToRenderList(state);
+                    visitAccessories(weapon, state);
+                }
             }
             case SonicBlast blast -> visitSonicBlast(blast);
             case LightningCloud cloud -> visitLightningCloud(cloud);
@@ -338,14 +346,14 @@ public final class RenderState implements SceneContext {
         return (ElementSceneContext<M>) render_state_cache.get();
     }
 
-    private <M extends Model> ModelState<M> getCachedState(ModelVisitor<M> visitor,
+    private <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor,
             M model) {
         ElementSceneContext<M> state = doGetCachedState();
         state.setup(visitor, model);
         return state;
     }
 
-    private <M extends Model> ModelState<M> getCachedState(ModelVisitor<M> visitor, M model,
+    private <M extends Model> ElementSceneContext<M> getCachedState(ModelVisitor<M> visitor, M model,
             float dist_squared) {
         ElementSceneContext<M> state = doGetCachedState();
         state.setup(visitor, model, dist_squared);
@@ -702,17 +710,21 @@ public final class RenderState implements SceneContext {
                 @Override
                 public void getTransform(ElementSceneContext<DirectedThrowingWeapon> render_state,
                         Matrix4f dest) {
-                    DirectedThrowingWeapon model = render_state.getModel();
-                    float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-                    float pitchRad = (float) Math.toRadians(model.getAngle());
-                    dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
-                            .rotate(yawRad, 0f, 0f, 1f)
-                            .rotate(-pitchRad, 0f, 1f, 0f);
+                    if (render_state.sceneContext instanceof RenderState rs
+                            && rs.getOrCreateVisualModel(render_state
+                                    .getModel()) instanceof ThrowingWeaponVisualModel vm) {
+                        vm.getTransform(dest);
+                    }
                 }
 
                 @Override
                 public Color getTeamColor(ElementSceneContext<DirectedThrowingWeapon> render_state) {
                     return render_state.getModel().getSrc().getOwner().getColor();
+                }
+
+                @Override
+                public float getNoDetailSize(ElementSceneContext<DirectedThrowingWeapon> render_state) {
+                    return 0.5f;
                 }
             };
 
@@ -730,17 +742,21 @@ public final class RenderState implements SceneContext {
                 @Override
                 public void getTransform(ElementSceneContext<RotatingThrowingWeapon> render_state,
                         Matrix4f dest) {
-                    RotatingThrowingWeapon model = render_state.getModel();
-                    float yawRad = (float) Math.atan2(model.getDirectionY(), model.getDirectionX());
-                    float spinRad = (float) Math.toRadians(model.getAngle());
-                    dest.translation(model.getPositionX(), model.getPositionY(), model.getPositionZ())
-                            .rotate(yawRad, 0f, 0f, 1f)
-                            .rotate(spinRad, 0f, 1f, 0f);
+                    if (render_state.sceneContext instanceof RenderState rs
+                            && rs.getOrCreateVisualModel(render_state
+                                    .getModel()) instanceof ThrowingWeaponVisualModel vm) {
+                        vm.getTransform(dest);
+                    }
                 }
 
                 @Override
                 public Color getTeamColor(ElementSceneContext<RotatingThrowingWeapon> render_state) {
                     return render_state.getModel().getSrc().getOwner().getColor();
+                }
+
+                @Override
+                public float getNoDetailSize(ElementSceneContext<RotatingThrowingWeapon> render_state) {
+                    return 0.5f;
                 }
             };
 

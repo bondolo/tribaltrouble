@@ -71,6 +71,11 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
         return visitor.getPattern(this);
     }
 
+    @Override
+    public float getNoDetailSize() {
+        return visitor.getNoDetailSize(this);
+    }
+
     public void setup(ModelVisitor<M> visitor, M model, float f) {
         this.visitor = visitor;
         this.model = model;

@@ -118,7 +118,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         }
     }
 
-    private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier) implements Shadowable {
+    private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier) implements
+            Shadowable {
         @Override
         public float getPositionX() {
             return tree.getPositionX();

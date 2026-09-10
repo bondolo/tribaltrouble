@@ -99,7 +99,6 @@ public final class RaceData {
             Abilities abilities,
             float[] hitOffsetZ,
             float mountOffset,
-            float noDetailSize,
             float rallyX,
             float rallyY,
             float rallyZ,
@@ -134,7 +133,6 @@ public final class RaceData {
                 abilities,
                 hitOffsetZ,
                 mountOffset,
-                noDetailSize,
                 0f,
                 new Vector3f(rallyX, rallyY, rallyZ),
                 new Vector3f(chimneyX, chimneyY, chimneyZ),
@@ -155,7 +153,7 @@ public final class RaceData {
                 22f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
                 new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
-                new float[]{0f, 1f, 3f}, 0f, 6f,
+                new float[]{0f, 1f, 3f}, 0f,
                 3.65f, .25f, 8f,
                 0f, 0f, 0f,
                 i18n("quarters")
@@ -174,7 +172,7 @@ public final class RaceData {
                 new WorkerUnitContainerFactory(),
                 new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO
                         | Abilities.TARGET),
-                new float[]{0f, 1f, 3f}, 0f, 6f,
+                new float[]{0f, 1f, 3f}, 0f,
                 0f, 2.25f, 10f,
                 .25f, -2.8f, 13.1f,
                 i18n("armory")
@@ -192,7 +190,7 @@ public final class RaceData {
                 10f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
                 new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
-                new float[]{0f, 2f, 7.5f}, 9.55f, 2.5f,
+                new float[]{0f, 2f, 7.5f}, 9.55f,
                 .85f, .85f, 9.5f,
                 0f, 0f, 0f,
                 i18n("tower")
@@ -221,7 +219,7 @@ public final class RaceData {
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f, vikingWarriorRockWeapon, UnitVisualType.WARRIOR_ROCK,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
-                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, 1f, .5f,
+                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .5f,
                 i18n("rock_warrior"),
                 1, 0f, 0f, 2f, 3
         );
@@ -231,7 +229,7 @@ public final class RaceData {
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f, vikingWarriorIronWeapon, UnitVisualType.WARRIOR_IRON,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
-                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, 1f, .7f,
+                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("iron_warrior"),
                 1, 0f, 0f, 2f, 5
         );
@@ -241,7 +239,7 @@ public final class RaceData {
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f, vikingWarriorRubberWeapon, UnitVisualType.WARRIOR_RUBBER,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
-                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, 1f, .7f,
+                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("chicken_warrior"),
                 1, 0f, 0f, 2f, 10
         );
@@ -252,7 +250,7 @@ public final class RaceData {
                 5f, new InstantHitFactory(1 / 5f, 0f, 11f / 38f),
                 UnitVisualType.PEON, peonGeom.bounds(), peonGeom.animTypes(),
                 shadowDiameterPeon, new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
-                .25f, new float[]{.7f}, 1f, 0f,
+                .25f, new float[]{.7f}, 0f,
                 i18n("peon"),
                 1, .1f, 0f, 1.75f, 1
         );
@@ -263,7 +261,7 @@ public final class RaceData {
                 4f, new InstantHitFactory(3 / 4f, 0f, 75f / 119f),
                 UnitVisualType.CHIEFTAIN, chieftainGeom.bounds(), chieftainGeom.animTypes(),
                 shadowDiameterChieftain, null,
-                .15f, new float[]{1.7f}, 1f, 0.5f,
+                .15f, new float[]{1.7f}, 0.5f,
                 i18n("chieftain"),
                 VIKING_CHIEFTAIN_HIT_POINTS,
                 -.07f, .312f, 2.7f, 40
@@ -302,7 +300,7 @@ public final class RaceData {
                 16f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
                 new Abilities(Abilities.REPRODUCE | Abilities.RALLY_TO | Abilities.TARGET),
-                new float[]{0f, 1f, 3f}, 0f, 6f,
+                new float[]{0f, 1f, 3f}, 0f,
                 -1.15f, -.77f, 11f,
                 0f, 0f, 0f,
                 i18n("quarters")
@@ -321,7 +319,7 @@ public final class RaceData {
                 new WorkerUnitContainerFactory(),
                 new Abilities(Abilities.SUPPLY_CONTAINER | Abilities.BUILD_ARMIES | Abilities.RALLY_TO
                         | Abilities.TARGET),
-                new float[]{0f, 1f, 3f}, 0f, 6f,
+                new float[]{0f, 1f, 3f}, 0f,
                 0f, -.4f, 12f,
                 0f, -1f, 11.5f,
                 i18n("armory")
@@ -339,7 +337,7 @@ public final class RaceData {
                 5f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
                 new Abilities(Abilities.ATTACK | Abilities.RALLY_TO | Abilities.TARGET),
-                new float[]{0f, 11.5f, 11.5f}, 13f, 2.5f,
+                new float[]{0f, 11.5f, 11.5f}, 13f,
                 .95f, 0f, 13f,
                 0f, 0f, 0f,
                 i18n("tower")
@@ -368,7 +366,7 @@ public final class RaceData {
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f, nativeWarriorRockWeapon, UnitVisualType.WARRIOR_ROCK,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
-                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, 1f, .5f,
+                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .5f,
                 i18n("rock_warrior"),
                 1, 0f, 0f, 2f, 3
         );
@@ -378,7 +376,7 @@ public final class RaceData {
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f, nativeWarriorIronWeapon, UnitVisualType.WARRIOR_IRON,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
-                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, 1f, .7f,
+                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("iron_warrior"),
                 1, 0f, 0f, 2f, 5
         );
@@ -388,7 +386,7 @@ public final class RaceData {
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
                 4f, nativeWarriorRubberWeapon, UnitVisualType.WARRIOR_RUBBER,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
-                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, 1f, .7f,
+                shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("chicken_warrior"),
                 1, 0f, 0f, 2f, 10
         );
@@ -399,7 +397,7 @@ public final class RaceData {
                 5f, new InstantHitFactory(1 / 5f, 0f, 51f / 83f),
                 UnitVisualType.PEON, peonGeom.bounds(), peonGeom.animTypes(),
                 shadowDiameterPeon, new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
-                .25f, new float[]{.7f}, 1f, 0f,
+                .25f, new float[]{.7f}, 0f,
                 i18n("peon"),
                 1, 0f, 0f, 1.75f, 1
         );
@@ -410,7 +408,7 @@ public final class RaceData {
                 4f, new InstantHitFactory(3 / 4f, 0f, 75f / 129f),
                 UnitVisualType.CHIEFTAIN, chieftainGeom.bounds(), chieftainGeom.animTypes(),
                 shadowDiameterChieftain, null,
-                .15f, new float[]{1.7f}, 1f, 0.5f,
+                .15f, new float[]{1.7f}, 0.5f,
                 i18n("chieftain"),
                 NATIVE_CHIEFTAIN_HIT_POINTS,
                 .878f, .151f, 2.8f, 40

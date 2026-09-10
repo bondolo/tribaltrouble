@@ -11,13 +11,4 @@ public abstract sealed class DirectedThrowingWeapon extends ThrowingWeapon permi
     public DirectedThrowingWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(hit, src, target);
     }
-
-    public float getAngle() {
-        return (float) Math.toDegrees(Math.atan2(getZSpeed(), getMetersPerSecond()));
-    }
-
-    @Override
-    protected float getLoftFactor() {
-        return 1.05f;
-    }
 }

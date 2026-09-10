@@ -20,7 +20,7 @@ public final class IronSpearWeapon extends DirectedThrowingWeapon {
     }
 
     @Override
-    protected float getMetersPerSecond() {
+    public float getMetersPerSecond() {
         return METERS_PER_SECOND;
     }
 

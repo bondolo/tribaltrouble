@@ -102,4 +102,18 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
         if (!selectable.isDead())
             super.markDetailPoint(render_state);
     }
+
+    @Override
+    public float getNoDetailSize(ElementSceneContext<S> render_state) {
+        Selectable<?> selectable = render_state.getModel();
+        if (selectable instanceof Unit) {
+            return 1.0f;
+        } else if (selectable instanceof Building building) {
+            Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
+            BuildingType bvt = building.getTemplate().getBuildingType();
+            var visuals = AssetRegistry.getInstance().getBuildingVisuals(race, bvt);
+            return visuals != null ? visuals.noDetailSize() : 0f;
+        }
+        return 0f;
+    }
 }

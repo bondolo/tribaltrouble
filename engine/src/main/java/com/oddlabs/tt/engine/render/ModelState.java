@@ -24,6 +24,8 @@ public interface ModelState<M extends Model> extends LODObject {
 
     VisualPattern getPattern();
 
+    float getNoDetailSize();
+
     @Nullable
     M getModel();
 }

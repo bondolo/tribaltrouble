@@ -36,7 +36,6 @@ public final class UnitTemplate extends Template {
             @Nullable UnitSupplyContainerFactory supply_container_factory,
             float death_pitch,
             float[] hit_offset_z,
-            float no_detail_size,
             float defense_chance,
             String name,
             int max_hit_points,
@@ -44,7 +43,7 @@ public final class UnitTemplate extends Template {
             float stun_y,
             float stun_z,
             int status_value) {
-        super(abilities, shadow_diameter, hit_offset_z, no_detail_size, defense_chance, name);
+        super(abilities, shadow_diameter, hit_offset_z, defense_chance, name);
         this.selection_radius = selection_radius;
         this.selection_height = selection_height;
         this.meters_per_second = meters_per_second;

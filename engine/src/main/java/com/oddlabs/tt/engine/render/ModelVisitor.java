@@ -50,4 +50,8 @@ public abstract class ModelVisitor<M extends Model> {
     public abstract Color getSelectionColor(ElementSceneContext<M> render_state);
 
     public abstract VisualPattern getPattern(ElementSceneContext<M> render_state);
+ 
+    public float getNoDetailSize(ElementSceneContext<M> render_state) {
+        return 0f;
+    }
 }

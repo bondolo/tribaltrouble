@@ -93,6 +93,11 @@ public final class AttachedRenderState implements ModelState<Model> {
     }
 
     @Override
+    public float getNoDetailSize() {
+        return parentState != null ? parentState.getNoDetailSize() : 0f;
+    }
+
+    @Override
     public @Nullable Model getModel() {
         assert parentState != null;
         return parentState.model;

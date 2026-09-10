@@ -7,13 +7,13 @@ import com.oddlabs.tt.engine.render.SpriteList;
  * Visual definition of a tree, including meshes, shadow properties, and bounds.
  */
 record Tree(
-        SpriteList trunk,
-        SpriteList crown,
-        float shadowDiameter,
-        float shadowOpacity,
-        float shadowVerticalCenter,
-        float heightScale,
-        BoundingBox modelBounds
+            SpriteList trunk,
+            SpriteList crown,
+            float shadowDiameter,
+            float shadowOpacity,
+            float shadowVerticalCenter,
+            float heightScale,
+            BoundingBox modelBounds
 ) {
     Tree(SpriteList trunk, SpriteList crown, float shadowDiameter, float shadowOpacity,
             float shadowVerticalCenter, float heightScale) {

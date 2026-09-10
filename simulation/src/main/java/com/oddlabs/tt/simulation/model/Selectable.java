@@ -53,11 +53,6 @@ public abstract sealed class Selectable<T extends Template> extends Model implem
         return template.getDefenseChance();
     }
 
-    @Override
-    public final float getNoDetailSize() {
-        return template.getNoDetailSize();
-    }
-
     public abstract boolean isEnabled();
 
     public float getHitOffsetZ() {

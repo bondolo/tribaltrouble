@@ -173,7 +173,7 @@ public final class SpriteRenderer {
                 float x = model.getModel().getPositionX();
                 float y = model.getModel().getPositionY();
                 float z = model.getModel().getPositionZ();
-                float r = model.getModel().getNoDetailSize();
+                float r = model.getNoDetailSize();
                 tempMatrix.identity().translation(x, y, z + 0.1f).scale(r * 2);
                 // Quads don't have animation, so pass 0, 0f
                 // Disable depth test for no-detail sprites (overlays). Enable blend. No Depth Write.

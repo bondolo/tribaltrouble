@@ -8,30 +8,7 @@ import com.oddlabs.tt.simulation.model.Unit;
  */
 public abstract sealed class RotatingThrowingWeapon extends ThrowingWeapon permits
         RockAxeWeapon, IronAxeWeapon, RubberAxeWeapon {
-    private float angle = 0;
-
     public RotatingThrowingWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(hit, src, target);
-    }
-
-    private void setAngle(float angle) {
-        this.angle = angle;
-    }
-
-    public final float getAngle() {
-        return angle;
-    }
-
-    @Override
-    public final void animate(float dt) {
-        super.animate(dt);
-        setAngle(getAngle() + getAngleVelocity() * dt);
-    }
-
-    protected abstract float getAngleVelocity();
-
-    @Override
-    protected float getLoftFactor() {
-        return 1.01f;
     }
 }

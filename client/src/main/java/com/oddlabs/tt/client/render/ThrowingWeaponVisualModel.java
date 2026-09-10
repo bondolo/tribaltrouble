@@ -16,16 +16,32 @@ import org.jspecify.annotations.Nullable;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * {@link VisualModel} implementation for throwing weapons managing spatial flight audio.
+ * Visual model for throwing weapons managing spatial flight audio, rotation spin, and visual loft.
  */
 public final class ThrowingWeaponVisualModel extends AbstractVisualModel implements AnimatedAccessory {
+    private static final float GRAVITY_MAGNITUDE = 6.0f * 9.82f;
+    private static final float SPEAR_LOFT_FACTOR = 1.05f;
+    private static final float AXE_LOFT_FACTOR = 1.01f;
+
     private final ThrowingWeapon weapon;
     private final @Nullable AudioPlayer audioPlayer;
+    private final float loftFactor;
+    private final float angleVelocity;
 
     public ThrowingWeaponVisualModel(ThrowingWeapon weapon, AudioImplementation audio) {
         super(weapon);
         this.weapon = weapon;
-        var sound = weapon instanceof DirectedThrowingWeapon
+        boolean isDirected = weapon instanceof DirectedThrowingWeapon;
+        this.loftFactor = isDirected ? SPEAR_LOFT_FACTOR : AXE_LOFT_FACTOR;
+        float rotsPerSec = isDirected ? 0f : switch (weapon.getWeaponVisualType()) {
+            case ROCK -> 3f;
+            case IRON -> 6f;
+            case RUBBER -> 9f;
+            case SONIC_BLAST -> 0f;
+        };
+        this.angleVelocity = (float) (rotsPerSec * 2.0 * Math.PI);
+
+        var sound = isDirected
                 ? AudioRegistry.SFX_WEAPON_SPEAR
                 : AudioRegistry.SFX_WEAPON_AXE;
         var params = new AudioParameters(sound, AudioRegistry.AUDIO_RANK_WEAPON_ATTACK,
@@ -39,6 +55,33 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
     public void animate(float dt) {
         if (audioPlayer != null) {
             audioPlayer.setPosition(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ());
+        }
+    }
+
+    public void getTransform(Matrix4f dest) {
+        float t = weapon.getTime();
+        float totalTime = weapon.getTimeLimit();
+        float visualLoft = 0f;
+        float pitchRad;
+
+        if (totalTime > 0f && t < totalTime && loftFactor > 1.0f) {
+            float loftRatio = 1f - 1f / (loftFactor * loftFactor);
+            visualLoft = 0.5f * GRAVITY_MAGNITUDE * t * (totalTime - t) * loftRatio;
+            float extraZSpeed = 0.5f * GRAVITY_MAGNITUDE * (totalTime - 2f * t) * loftRatio;
+            float totalZSpeed = weapon.getZSpeed() + extraZSpeed;
+            pitchRad = (float) Math.atan2(totalZSpeed, weapon.getMetersPerSecond());
+        } else {
+            pitchRad = (float) Math.atan2(weapon.getZSpeed(), weapon.getMetersPerSecond());
+        }
+
+        float yawRad = (float) Math.atan2(weapon.getDirectionY(), weapon.getDirectionX());
+        dest.translation(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ() + visualLoft)
+                .rotate(yawRad, 0f, 0f, 1f);
+
+        if (weapon instanceof DirectedThrowingWeapon) {
+            dest.rotate(-pitchRad, 0f, 1f, 0f);
+        } else {
+            dest.rotate(angleVelocity * t, 0f, 1f, 0f);
         }
     }
 

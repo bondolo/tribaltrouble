@@ -10,8 +10,6 @@ import com.oddlabs.tt.simulation.player.Player;
  * A throwing axe weapon made of rubber.
  */
 public final class RubberAxeWeapon extends RotatingThrowingWeapon {
-    private static final float ROTS_PER_SECOND = 9;
-    private static final float ANGLE_DELTA = ROTS_PER_SECOND * 360f;
     private static final int MAX_BOUNDS_LENGTH = 3;
     private static final float METERS_PER_SECOND = 30; //multiplied by meters/second (in 2D)
     private static final float BOUNCING_METERS_PER_SECOND = 10; //multiplied by meters/second (in 2D)
@@ -20,11 +18,6 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
 
     public RubberAxeWeapon(boolean hit, Unit src, Selectable<?> target) {
         super(hit, src, target);
-    }
-
-    @Override
-    protected float getAngleVelocity() {
-        return ANGLE_DELTA;
     }
 
     @Override
@@ -47,7 +40,7 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
     }
 
     @Override
-    protected float getMetersPerSecond() {
+    public float getMetersPerSecond() {
         return bouncing ? BOUNCING_METERS_PER_SECOND : METERS_PER_SECOND;
     }
 

@@ -52,7 +52,8 @@ public final class RacesAssetsLoader {
             String built_name,
             String halfbuilt_name,
             String start_name,
-            float shadow_diameter
+            float shadow_diameter,
+            float no_detail_size
     ) {
         final float ring_mid = 0.445f;
         final float fadeout = 0.002f;
@@ -82,7 +83,8 @@ public final class RacesAssetsLoader {
         AssetRegistry.getInstance().registerBuilding(
                 race,
                 building_type,
-                new AssetRegistry.BuildingVisuals(startSprite, halfbuiltSprite, builtSprite, shadow_renderer)
+                new AssetRegistry.BuildingVisuals(startSprite, halfbuiltSprite, builtSprite, shadow_renderer,
+                        no_detail_size)
         );
     }
 
@@ -159,7 +161,7 @@ public final class RacesAssetsLoader {
                 "/geometry/vikings/quarters.binsprite",
                 "/geometry/vikings/quarters_halfbuilt.binsprite",
                 "/geometry/vikings/quarters_start.binsprite",
-                22f);
+                22f, 6f);
         ProgressListener.progress(1f / num_progress);
 
         registerBuildingVisuals(
@@ -167,14 +169,14 @@ public final class RacesAssetsLoader {
                 "/geometry/vikings/armory.binsprite",
                 "/geometry/vikings/armory_halfbuilt.binsprite",
                 "/geometry/vikings/armory_start.binsprite",
-                22f);
+                22f, 6f);
         ProgressListener.progress(1f / num_progress);
 
         registerBuildingVisuals(
                 queues, Race.VIKINGS, BuildingType.TOWER,
                 "/geometry/vikings/tower.binsprite",
                 "/geometry/vikings/tower_halfbuilt.binsprite",
-                "/geometry/vikings/tower_start.binsprite", 10f);
+                "/geometry/vikings/tower_start.binsprite", 10f, 2.5f);
         ProgressListener.progress(1f / num_progress);
 
         registerBuildingVisuals(
@@ -182,7 +184,7 @@ public final class RacesAssetsLoader {
                 "/geometry/natives/quarters.binsprite",
                 "/geometry/natives/quarters_halfbuilt.binsprite",
                 "/geometry/natives/quarters_start.binsprite",
-                16f);
+                16f, 6f);
         ProgressListener.progress(1f / num_progress);
 
         registerBuildingVisuals(
@@ -190,7 +192,7 @@ public final class RacesAssetsLoader {
                 "/geometry/natives/armory.binsprite",
                 "/geometry/natives/armory_halfbuilt.binsprite",
                 "/geometry/natives/armory_start.binsprite",
-                16f);
+                16f, 6f);
         ProgressListener.progress(1f / num_progress);
 
         registerBuildingVisuals(
@@ -198,7 +200,7 @@ public final class RacesAssetsLoader {
                 "/geometry/natives/tower.binsprite",
                 "/geometry/natives/tower_halfbuilt.binsprite",
                 "/geometry/natives/tower_start.binsprite",
-                5f);
+                5f, 2.5f);
         ProgressListener.progress(1f / num_progress);
         ProgressListener.progress(1f / num_progress);
 

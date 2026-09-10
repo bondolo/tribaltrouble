@@ -43,12 +43,11 @@ public final class BuildingTemplate extends Template {
             Abilities abilities,
             float[] hit_offset_z,
             float mount_offset,
-            float no_detail_size,
             float defense_chance,
             Vector3fc rally,
             Vector3fc chimney,
             String name) {
-        super(abilities, shadow_diameter, hit_offset_z, no_detail_size, defense_chance, name);
+        super(abilities, shadow_diameter, hit_offset_z, defense_chance, name);
         this.building_type = building_type;
         this.built_selection_radius = built_selection_radius;
         this.built_selection_height = built_selection_height;

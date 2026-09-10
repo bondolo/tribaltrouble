@@ -36,7 +36,8 @@ public final class AssetRegistry {
                                   SpriteKey start,
                                   SpriteKey halfbuilt,
                                   SpriteKey built,
-                                  ShadowListKey shadow
+                                  ShadowListKey shadow,
+                                  float noDetailSize
     ) {
     }
 

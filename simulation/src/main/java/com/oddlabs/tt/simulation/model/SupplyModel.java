@@ -97,11 +97,6 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
     }
 
     @Override
-    public final float getNoDetailSize() {
-        throw new IllegalStateException();
-    }
-
-    @Override
     public final float getSize() {
         return 2.0f;
     }

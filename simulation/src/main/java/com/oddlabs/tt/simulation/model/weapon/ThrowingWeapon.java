@@ -18,9 +18,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     /**
      * Multiplier for projectile arc exaggeration.
      */
-    private static final float GRAVITY_MULTIPLIER = 3.0f;
+    private static final float GRAVITY_MULTIPLIER = 6.0f;
     private static final float GRAVITY = -GRAVITY_MULTIPLIER * 9.82f;
-    private static final float NO_DETAIL_SIZE = .5f;
 
     private static final float OFFSET_X = 1.316f;
     private static final float OFFSET_Y = -.347f;
@@ -99,7 +98,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         float dx = end_x - start_x;
         float dy = end_y - start_y;
         float len = (float) Math.hypot(dx, dy);
-        time_limit = (len / getMetersPerSecond()) * getLoftFactor();
+        time_limit = len / getMetersPerSecond();
         time = 0;
         // current_z is already set to absolute start height
         float dest_z = getWorld().getHeightMap().getNearestHeight(end_x, end_y) + target.getHitOffsetZ();
@@ -107,9 +106,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         z_speed = (dest_vec_z) / time_limit - GRAVITY * time_limit / 2f;
     }
 
-    protected abstract float getMetersPerSecond();
-
-    protected abstract float getLoftFactor();
+    public abstract float getMetersPerSecond();
 
     private void updateTarget() {
         end_x = target.getPositionX();
@@ -187,8 +184,11 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         return z_speed;
     }
 
-    @Override
-    public final float getNoDetailSize() {
-        return NO_DETAIL_SIZE;
+    public final float getTime() {
+        return time;
+    }
+
+    public final float getTimeLimit() {
+        return time_limit;
     }
 }

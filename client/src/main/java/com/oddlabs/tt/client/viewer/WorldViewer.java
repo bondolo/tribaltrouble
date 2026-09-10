@@ -45,7 +45,6 @@ import com.oddlabs.tt.net.ChatSender;
 import com.oddlabs.tt.net.InGameChatHistory;
 import com.oddlabs.tt.net.PeerHub;
 import com.oddlabs.tt.net.ServerMessageBundler;
-import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
 import com.oddlabs.tt.simulation.landscape.LandscapeGeometry;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;

@@ -101,4 +101,9 @@ public final class ParticleModelState implements ModelState<Model> {
     public void markDetailPoint() {
         // No-op for particles
     }
+
+    @Override
+    public float getNoDetailSize() {
+        return 0f;
+    }
 }
