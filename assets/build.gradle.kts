@@ -245,6 +245,8 @@ tasks.processResources {
     from("widget") { into("widget") }
     from("schemas") { into("schemas") }
     from("font") { into("font") }
+    from("sfx") { into("sfx") }
+    from("music") { into("music") }
     
     // Everything else from repo, excluding legacy model/decal/gui folders
     from("textures") {

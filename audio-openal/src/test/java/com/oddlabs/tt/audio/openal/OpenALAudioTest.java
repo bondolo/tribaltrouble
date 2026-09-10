@@ -20,13 +20,13 @@ final class OpenALAudioTest {
     @Test
     void testDecodeAllOggFiles() throws Exception {
         List<File> oggFiles = new ArrayList<>();
-        File sfxDir = new File("../content/src/main/resources/sfx");
+        File sfxDir = new File("../assets/sfx");
         if (!sfxDir.exists()) {
-            sfxDir = new File("content/src/main/resources/sfx");
+            sfxDir = new File("assets/sfx");
         }
-        File musicDir = new File("../content/src/main/resources/music");
+        File musicDir = new File("../assets/music");
         if (!musicDir.exists()) {
-            musicDir = new File("content/src/main/resources/music");
+            musicDir = new File("assets/music");
         }
 
         File[] sfxList = sfxDir.listFiles((_, name) -> name.endsWith(".ogg"));
