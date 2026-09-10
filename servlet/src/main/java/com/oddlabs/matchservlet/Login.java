@@ -1,6 +1,5 @@
 package com.oddlabs.matchservlet;
 
-import com.oddlabs.registration.RegistrationKey;
 import com.oddlabs.util.CryptUtils;
 
 import javax.servlet.ServletException;
@@ -17,6 +16,9 @@ import java.security.Signature;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Authentication and registration servlet for matchmaking logins.
+ */
 public final class Login extends HttpServlet {
     private static final String SIGN_ALGORITHM = "SHA1WithRSA";
 
@@ -107,27 +109,27 @@ public final class Login extends HttpServlet {
     }
 
     private String normalizeKey(String key) {
-        return RegistrationKey.normalize(key);
+        return key != null ? key.trim().toUpperCase() : "";
     }
 
-    public void doPost(final HttpServletRequest req, final HttpServletResponse res) throws ServletException, IOException {
-        SQLTools.doSQL(res, new SQLAction() {
-            public void run() throws SQLException, ServletException, IOException {
-                String email = req.getParameter("email");
-                String username = req.getParameter("username");
-                createUser(normalizeKey(req.getParameter("reg_key")), username, req.getParameter("password"), email);
-                writeSigned(res, username);
-            }
+    @Override
+    public void doPost(final HttpServletRequest req, final HttpServletResponse res) throws ServletException,
+            IOException {
+        SQLTools.doSQL(res, () -> {
+            String email = req.getParameter("email");
+            String username = req.getParameter("username");
+            createUser(normalizeKey(req.getParameter("reg_key")), username, req.getParameter("password"), email);
+            writeSigned(res, username);
         });
     }
 
-    public void doGet(final HttpServletRequest req, final HttpServletResponse res) throws ServletException, IOException {
-        SQLTools.doSQL(res, new SQLAction() {
-            public void run() throws SQLException, ServletException, IOException {
-                String username = req.getParameter("username");
-                login(normalizeKey(req.getParameter("reg_key")), username, req.getParameter("password"));
-                writeSigned(res, username);
-            }
+    @Override
+    public void doGet(final HttpServletRequest req, final HttpServletResponse res) throws ServletException,
+            IOException {
+        SQLTools.doSQL(res, () -> {
+            String username = req.getParameter("username");
+            login(normalizeKey(req.getParameter("reg_key")), username, req.getParameter("password"));
+            writeSigned(res, username);
         });
     }
 }

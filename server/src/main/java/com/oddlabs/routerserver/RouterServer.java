@@ -2,9 +2,9 @@ package com.oddlabs.routerserver;
 
 import com.oddlabs.event.Deterministic;
 import com.oddlabs.event.NotDeterministic;
+import com.oddlabs.matchserver.DBUtils;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.router.Router;
-import com.oddlabs.util.DBUtils;
 
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -12,6 +12,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/**
+ * Standalone entry point running the network packet router server.
+ */
 public final class RouterServer {
     private static final Logger logger = Logger.getLogger("com.oddlabs.router.Router");
 
@@ -22,23 +25,23 @@ public final class RouterServer {
             logger.addHandler(fh);
             logger.setLevel(Level.ALL);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failed to configure file logger", e);
         }
     }
 
     private static void run() throws Exception {
         final Deterministic deterministic;
         deterministic = new NotDeterministic();
-/*		File log_file = new File("event.log");
-		if (log_file.exists())
-			deterministic = new LoadDeterministic(log_file, false);
-		else
-			deterministic = new SaveDeterministic(log_file);
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public final void run() {
-				deterministic.endLog();
-			}
-		});*/
+        /*		File log_file = new File("event.log");
+        		if (log_file.exists())
+        			deterministic = new LoadDeterministic(log_file, false);
+        		else
+        			deterministic = new SaveDeterministic(log_file);
+        		Runtime.getRuntime().addShutdownHook(new Thread() {
+        			public final void run() {
+        				deterministic.endLog();
+        			}
+        		});*/
         try {
             NetworkSelector network = new NetworkSelector(deterministic);
             Router router = new Router(network, logger);

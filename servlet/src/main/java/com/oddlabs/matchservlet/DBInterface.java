@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Database execution helpers for matchmaking servlets.
+ */
 final class DBInterface {
     private static void checkArguments(Object[] arguments) throws SQLException {
         for (int i = 0; i < arguments.length; i++)
@@ -43,7 +46,8 @@ final class DBInterface {
     }
 
     static String getSetting(Connection conn, String setting) throws SQLException {
-        return (String) executeQuery(conn, new GetFirstStringQuery(), "SELECT value FROM settings WHERE property = ?", setting);
+        return (String) executeQuery(conn, new GetFirstStringQuery(), "SELECT value FROM settings WHERE property = ?",
+                setting);
     }
 
     static int getIntSetting(DataSource source, String setting) throws SQLException {

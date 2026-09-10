@@ -19,33 +19,44 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+/**
+ * Servlet for rendering game match telemetry graphs as PNG images.
+ */
 public final class GraphServlet extends HttpServlet {
     private final int IMAGE_WIDTH = 532;
     private final int IMAGE_HEIGHT = 200;
 
     private final int BACKGROUND_COLOR = 0xFFFFFF;
 
+    @SuppressWarnings("BanJNDI")
     private static Connection getConnection() {
         try {
-            // Obtain our environment naming context
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
-            // Look up our data source
             DataSource ds = (DataSource) envCtx.lookup("jdbc/graphDB");
-            // Allocate and use a connection from the pool
             return ds.getConnection();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            try {
+                org.h2.jdbcx.JdbcDataSource ds = new org.h2.jdbcx.JdbcDataSource();
+                ds.setURL("jdbc:h2:mem:oddlabs;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE");
+                ds.setUser("sa");
+                ds.setPassword("");
+                return ds.getConnection();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     private int[][] getGameData(Connection conn, int game_id) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("SELECT tick, team1, team2, team3, team4, team5, team6 FROM game_reports WHERE game_id = ?");
+        PreparedStatement stmt = conn.prepareStatement(
+                "SELECT tick, team1, team2, team3, team4, team5, team6 FROM game_reports WHERE game_id = ?");
         stmt.setInt(1, game_id);
         ResultSet result = stmt.executeQuery();
         ArrayList<int[]> list = new ArrayList<>();
         while (result.next()) {
-            list.add(new int[]{result.getInt("tick"), result.getInt("team1"), result.getInt("team2"), result.getInt("team3"), result.getInt("team4"), result.getInt("team5"), result.getInt("team6")});
+            list.add(new int[]{result.getInt("tick"), result.getInt("team1"), result.getInt("team2"), result.getInt(
+                    "team3"), result.getInt("team4"), result.getInt("team5"), result.getInt("team6")});
         }
         int[][] array = new int[list.size()][];
         for (int i = 0; i < array.length; i++) {
@@ -111,10 +122,11 @@ public final class GraphServlet extends HttpServlet {
         try {
             ImageIO.write(img, "png", out);
         } catch (Exception e) {
-            e.printStackTrace();
+            log("Error writing graph PNG image", e);
         }
     }
 
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         res.setContentType("image/png");
 

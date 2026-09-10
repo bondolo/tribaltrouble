@@ -8,6 +8,9 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+/**
+ * Game session tracker recording start/end timestamps and participant outcomes.
+ */
 public final class TimestampedGameSession {
     private static final long JOIN_MAX_TIME = 3 * 60 * 1000;
     private static final long END_GAME_MIN_TIME = 1 * 60 * 1000; // replace with clients reporting back there end time
@@ -57,7 +60,8 @@ public final class TimestampedGameSession {
         String nicks = Arrays.stream(session.getParticipants())
                 .map(Participant::getNick)
                 .collect(Collectors.joining(" ", " ", " "));
-        MatchmakingServer.getLogger().info("Game " + database_id + " created. [" + nicks + "] " + getParticipantStates());
+        MatchmakingServer.getLogger().info("Game " + database_id + " created. [" + nicks + "] "
+                + getParticipantStates());
     }
 
     private String getParticipantStates() {
@@ -91,7 +95,8 @@ public final class TimestampedGameSession {
             if (num_joined == participant_state.length) {
                 start_timestamp = System.currentTimeMillis();
                 game_state = GAME_ALL_JOINED;
-                MatchmakingServer.getLogger().info("Game " + database_id + ": all joined game " + getParticipantStates());
+                MatchmakingServer.getLogger().info("Game " + database_id + ": all joined game "
+                        + getParticipantStates());
 
                 //saving rated player info (someone could lose and delete a profile before the game ends)
                 all_5_wins = true;
@@ -191,7 +196,8 @@ public final class TimestampedGameSession {
 
         if (!free_quit && !(participant_state[index] == PARTICIPANT_FREE_QUIT)) {
             game_state = GAME_INVALID;
-            MatchmakingServer.getLogger().warning("Game " + database_id + " is now invalid. " + client.getUsername() + " tried to free_quit. " + getParticipantStates());
+            MatchmakingServer.getLogger().warning("Game " + database_id + " is now invalid. " + client.getUsername()
+                    + " tried to free_quit. " + getParticipantStates());
         }
         gameDone(server, client, PARTICIPANT_QUIT, "quit");
     }
@@ -204,7 +210,8 @@ public final class TimestampedGameSession {
         int index = findIndex(server, client);
         if (participant_state[index] == PARTICIPANT_FREE_QUIT) {
             game_state = GAME_INVALID;
-            MatchmakingServer.getLogger().warning("Game " + database_id + " is now invalid. " + client.getUsername() + " tried to win while having free_quit. " + getParticipantStates());
+            MatchmakingServer.getLogger().warning("Game " + database_id + " is now invalid. " + client.getUsername()
+                    + " tried to win while having free_quit. " + getParticipantStates());
         }
         gameDone(server, client, PARTICIPANT_WON, "won");
     }
@@ -221,7 +228,8 @@ public final class TimestampedGameSession {
 
     private void gameDone(MatchmakingServer server, Client client, int result, String result_string) {
         participant_state[findIndex(server, client)] = result;
-        MatchmakingServer.getLogger().info("Game " + database_id + ": " + client.getUsername() + " finished. Result " + result_string + " " + getParticipantStates());
+        MatchmakingServer.getLogger().info("Game " + database_id + ": " + client.getUsername() + " finished. Result "
+                + result_string + " " + getParticipantStates());
         //if (game_state != GAME_STARTING)
         evaluateGame(server);
     }
@@ -269,7 +277,8 @@ public final class TimestampedGameSession {
         if (winning_teams > 1 || game_state == GAME_INVALID) {
             winning_team_index = getWinningTeamFromLastStatus();
             if (winning_team_index != -1) {
-                MatchmakingServer.getLogger().info("Game " + database_id + ". Team " + (winning_team_index + 1) + " won from status reports. " + getParticipantStates());
+                MatchmakingServer.getLogger().info("Game " + database_id + ". Team " + (winning_team_index + 1)
+                        + " won from status reports. " + getParticipantStates());
                 teams_lost = true;
                 for (int i = 0; i < team_result.length; i++)
                     if (i == winning_team_index)
@@ -280,13 +289,15 @@ public final class TimestampedGameSession {
                 // someone cheated - everyone gets an invalid_game
                 for (int i = 0; i < participants.length; i++) {
                     String nick = participants[i].getNick();
-                    MatchmakingServer.getLogger().warning("Game " + database_id + ". " + nick + " ended invalid game " + getParticipantStates());
+                    MatchmakingServer.getLogger().warning("Game " + database_id + ". " + nick + " ended invalid game "
+                            + getParticipantStates());
                     DBInterface.increaseInvalidGames(nick);
                     Client client = server.getClientFromID(participants[i].getMatchID());
                     if (client != null)
                         client.updateProfile();
                 }
-                MatchmakingServer.getLogger().warning("Game " + database_id + " was invalid. " + winning_teams + " winning teams. " + getParticipantStates());
+                MatchmakingServer.getLogger().warning("Game " + database_id + " was invalid. " + winning_teams
+                        + " winning teams. " + getParticipantStates());
                 DBInterface.endGame(this, end_time, -1);
                 game_ended = true;
                 return;
@@ -296,7 +307,8 @@ public final class TimestampedGameSession {
         if (teams_lost)
             teamWon(server, team_result);
         else {
-            MatchmakingServer.getLogger().warning("Game " + database_id + ". No one lost. Playing agains AI " + getParticipantStates());
+            MatchmakingServer.getLogger().warning("Game " + database_id + ". No one lost. Playing agains AI "
+                    + getParticipantStates());
             DBInterface.endGame(this, end_time, -1);
             game_ended = true;
             return;
@@ -304,11 +316,6 @@ public final class TimestampedGameSession {
 
         DBInterface.endGame(this, end_time, winning_team_index);
         game_ended = true;
-    }
-
-    protected void finalize() {
-        if (!game_ended)
-            DBInterface.endGame(this, System.currentTimeMillis(), -1);
     }
 
     private void teamWon(MatchmakingServer server, int[] team_result) {

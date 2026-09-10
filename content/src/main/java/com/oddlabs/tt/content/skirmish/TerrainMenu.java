@@ -4,7 +4,7 @@ import com.oddlabs.matchmaking.Game;
 import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
-import com.oddlabs.registration.RegistrationKey;
+import com.oddlabs.procedural.MapCode;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
@@ -534,14 +534,14 @@ public final class TerrainMenu extends Group {
             max_val = max_val.multiply(new BigInteger(new byte[]{TEAM_CARDINALITY}));
         }
 
-        String code = RegistrationKey.createString(result);
+        String code = MapCode.createString(result);
         label_mapcode.clear();
         label_mapcode.append(code);
     }
 
     public void parseMapcode(String text) {
         String code = text.toUpperCase();
-        BigInteger result = RegistrationKey.parseBits(code);
+        BigInteger result = MapCode.parseBits(code);
         parseBigInteger(result);
         label_mapcode.clear();
         label_mapcode.append(code);

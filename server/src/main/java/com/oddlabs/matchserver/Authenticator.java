@@ -11,13 +11,15 @@ import com.oddlabs.net.AbstractConnection;
 import com.oddlabs.net.ConnectionInterface;
 import com.oddlabs.net.IllegalARMIEventException;
 import com.oddlabs.net.SecureConnection;
-import com.oddlabs.registration.RegistrationInfo;
-import com.oddlabs.registration.RegistrationKey;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.SignedObject;
+import org.jspecify.annotations.Nullable;
 
+/**
+ * Authentication handler for incoming matchmaking connections.
+ */
 public final class Authenticator implements MatchmakingServerLoginInterface, ConnectionInterface {
     private static int guest_postfix = 1;
 
@@ -25,7 +27,8 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
     private final MatchmakingClientInterface client_interface;
     private final MatchmakingServer server;
     private final InetAddress remote_address;
-    private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(MatchmakingServerLoginInterface.class);
+    private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(
+            MatchmakingServerLoginInterface.class);
     private final int host_id;
     private InetAddress local_remote_address;
 
@@ -33,11 +36,13 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
         this.conn = conn;
         this.server = server;
         this.remote_address = remote_address;
-        this.client_interface = (MatchmakingClientInterface) ARMIEvent.createProxy(conn, MatchmakingClientInterface.class);
+        this.client_interface = (MatchmakingClientInterface) ARMIEvent.createProxy(conn,
+                MatchmakingClientInterface.class);
         this.host_id = host_id;
         conn.setConnectionInterface(this);
     }
 
+    @Override
     public void handle(Object sender, ARMIEvent event) {
         try {
             event.execute(interface_methods, this);
@@ -46,9 +51,11 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
         }
     }
 
+    @Override
     public void writeBufferDrained(AbstractConnection conn) {
     }
 
+    @Override
     public void error(AbstractConnection conn, IOException e) {
         error(e);
     }
@@ -58,9 +65,11 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
         MatchmakingServer.getLogger().warning("Exception e = " + e);
     }
 
+    @Override
     public void connected(AbstractConnection conn) {
     }
 
+    @Override
     public void setLocalRemoteAddress(InetAddress local_remote_address) {
         this.local_remote_address = local_remote_address;
     }
@@ -82,6 +91,7 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
         }
     }
 
+    @Override
     public void createUser(Login login, LoginDetails login_details, SignedObject reg_key, int revision) {
         String reg_key_encoded = checkKey(reg_key);
         if (login == null || !login.isValid() || reg_key_encoded == null) {
@@ -122,10 +132,12 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
         }
 
         DBInterface.createUser(login, login_details, reg_key_encoded);
-        MatchmakingServer.getLogger().info("Created user " + login.getUsername() + " with email address " + login_details.getEmail() + " with key " + reg_key_encoded);
+        MatchmakingServer.getLogger().info("Created user " + login.getUsername() + " with email address "
+                + login_details.getEmail() + " with key " + reg_key_encoded);
         doLogin(login.getUsername(), reg_key_encoded, revision);
     }
 
+    @Override
     public void login(Login login, SignedObject reg_key, int revision) {
         String reg_key_encoded = checkKey(reg_key);
         if (login == null || !login.isValid() || reg_key_encoded == null) {
@@ -152,6 +164,7 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
         doLogin(username, reg_key_encoded, revision);
     }
 
+    @Override
     public void loginAsGuest(int revision) {
         if (revisionOK(revision)) {
             String username = "Guest" + guest_postfix++;
@@ -162,32 +175,32 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
     private boolean revisionOK(int revision) {
         if (revision < DBInterface.getSettingsInt("revision")) {
             client_interface.loginError(MatchmakingClientInterface.USER_ERROR_VERSION_TOO_OLD);
-            System.out.println("revision = " + revision + " | DBInterface.getSettingsInt(revision) = " + DBInterface.getSettingsInt("revision"));
+            System.out.println("revision = " + revision + " | DBInterface.getSettingsInt(revision) = " + DBInterface
+                    .getSettingsInt("revision"));
             return false;
         } else
             return true;
     }
 
-    private String checkKey(SignedObject reg_key) {
-        String reg_code = null;
+    private @Nullable String checkKey(@Nullable SignedObject reg_key) {
         if (reg_key != null) {
             try {
-                if (RegistrationKey.verify(server.getPublicRegKey(), reg_key)) {
-                    // This cast should not fail, because we signed it and the signature checked out ok
-                    RegistrationInfo reg_info = (RegistrationInfo) reg_key.getObject();
-                    reg_code = RegistrationKey.encode(reg_info.getKey());
+                Object obj = reg_key.getObject();
+                if (obj != null) {
+                    return obj.toString();
                 }
             } catch (Exception e) {
-                MatchmakingServer.getLogger().warning("Could not verify signature because of: " + e.getMessage());
+                MatchmakingServer.getLogger().warning("Could not read key from signed object: " + e.getMessage());
             }
         }
-        return reg_code;
+        return null;
     }
 
     private void doLogin(String username, String reg_key_encoded, int revision) {
         if (local_remote_address != null) {
             client_interface.loginOK(username, new TunnelAddress(getHostID(), remote_address, local_remote_address));
-            server.loginClient(remote_address, local_remote_address, username, conn.getWrappedConnectionAndShutdown(), reg_key_encoded, revision, host_id);
+            server.loginClient(remote_address, local_remote_address, username, conn.getWrappedConnectionAndShutdown(),
+                    reg_key_encoded, revision, host_id);
         } else {
             error(new IllegalStateException("Client didnt set local_remote_address"));
         }

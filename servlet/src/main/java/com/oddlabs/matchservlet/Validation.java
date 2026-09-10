@@ -1,5 +1,8 @@
 package com.oddlabs.matchservlet;
 
+/**
+ * Input validation helpers for registration and account details.
+ */
 public final class Validation {
     public static final int MAX_EMAIL_LENGTH = 60;
 

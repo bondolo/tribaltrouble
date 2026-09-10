@@ -1,24 +1,11 @@
 plugins {
-    java
+    `java-library`
 }
 
 dependencies {
     implementation(project(":common"))
-    implementation(fileTree("../common/lib/java") { include("*.jar") })
-}
-
-tasks.register<Jar>("bugreporter") {
-    dependsOn("classes")
-    archiveFileName.set("bugreport.jar")
-    from(project(":common").sourceSets["main"].output) {
-        include("com/oddlabs/net/**/*class")
-        include("com/oddlabs/util/**/*class")
-        include("com/oddlabs/event/**/*class")
-        include("com/oddlabs/bugreport/**/*class")
-    }
-    from(sourceSets["main"].output) {
-        include("com/oddlabs/bugreportserver/**/*class")
-    }
+    implementation(libs.h2)
+    implementation(libs.mysql.connector)
 }
 
 tasks.register<Jar>("router") {
@@ -48,11 +35,8 @@ tasks.register<Jar>("matchmaker") {
     from(sourceSets["main"].output) {
         include("com/oddlabs/matchserver/**/*class")
     }
-    from("../common/static") {
-        include("public_reg_key")
-    }
 }
 
 tasks.register("all") {
-    dependsOn("router", "matchmaker", "bugreporter")
+    dependsOn("router", "matchmaker")
 }

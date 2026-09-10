@@ -9,13 +9,10 @@ import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
-import com.oddlabs.registration.RegistrationKey;
-import com.oddlabs.util.DBUtils;
 import com.oddlabs.util.KeyManager;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.security.PublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +22,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/**
+ * Server handling player matchmaking, chat rooms, and game coordination.
+ */
 public final class MatchmakingServer implements ConnectionListenerInterface {
     private static final Map<String, Client> online_users = new HashMap<>();
     private static int current_id = 1;
@@ -35,7 +35,6 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
 
     private final AbstractConnectionListener connection_listener;
     private final AlgorithmParameterSpec param_spec;
-    private final PublicKey public_reg_key;
     private final NetworkSelector network;
     private final Map<Integer, Client> client_map = new HashMap<>();
 
@@ -46,7 +45,7 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
             logger.addHandler(fh);
             logger.setLevel(Level.ALL);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Failed to configure file logger", e);
         }
     }
 
@@ -57,12 +56,11 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
         fh.setFormatter(new SimpleFormatter());
         chat_logger.addHandler(fh);
         chat_logger.setLevel(Level.ALL);
-
-        this.public_reg_key = RegistrationKey.loadPublicKey();
         DBUtils.initConnection("jdbc:mysql://localhost/oddlabs", "matchmaker", "U46TawOp");
         logger.info("Generating encryption keys.");
         this.param_spec = KeyManager.generateParameterSpec();
-        connection_listener = new ConnectionListener(network, null, MatchmakingServerInterface.MATCHMAKING_SERVER_PORT, this);
+        connection_listener = new ConnectionListener(network, null, MatchmakingServerInterface.MATCHMAKING_SERVER_PORT,
+                this);
         DBInterface.initDropGames();
         DBInterface.clearOnlineProfiles();
         logger.info("Matchmaking server started.");
@@ -78,14 +76,11 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
         return chat_logger;
     }
 
-    public PublicKey getPublicRegKey() {
-        return public_reg_key;
-    }
-
     public AlgorithmParameterSpec getSpec() {
         return param_spec;
     }
 
+    @Override
     public void incomingConnection(AbstractConnectionListener connection_listener, Object remote_address) {
         int id = current_id++;
         AbstractConnection conn = connection_listener.acceptConnection(null);
@@ -97,14 +92,16 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
 //		return online_keys.contains(key_encoded);
 //	}
 
-    public void loginClient(InetAddress remote_address, InetAddress local_remote_address, String username, AbstractConnection conn, String key_code_encoded, int revision, int host_id) {
+    public void loginClient(InetAddress remote_address, InetAddress local_remote_address, String username,
+            AbstractConnection conn, String key_code_encoded, int revision, int host_id) {
 //		online_keys.add(key_code_encoded);
         Client old_logged_in = online_users.remove(username.toLowerCase());
         if (old_logged_in != null) {
             old_logged_in.close();
             logger.info(username + " overtaked old login");
         }
-        Client client = new Client(this, conn, remote_address, local_remote_address, username, key_code_encoded == null, revision, host_id);
+        Client client = new Client(this, conn, remote_address, local_remote_address, username, key_code_encoded == null,
+                revision, host_id);
         online_users.put(username.toLowerCase(), client);
         client_map.put(client.getHostID(), client);
         logger.info(username + " logged in, with key " + key_code_encoded);
@@ -114,6 +111,7 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
         return client_map.get(host_id);
     }
 
+    @Override
     public void error(AbstractConnectionListener conn_id, IOException e) {
         logger.severe("Server socket failed!");
         throw new RuntimeException(e);

@@ -9,7 +9,6 @@ module com.oddlabs.common {
     exports com.oddlabs.matchmaking;
     exports com.oddlabs.net;
     exports com.oddlabs.procedural;
-    exports com.oddlabs.registration;
     exports com.oddlabs.router;
     exports com.oddlabs.util;
 }

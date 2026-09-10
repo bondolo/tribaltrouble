@@ -1,6 +1,6 @@
 package com.oddlabs.tt.content.skirmish;
 
-import com.oddlabs.registration.RegistrationKey;
+import com.oddlabs.procedural.MapCode;
 import com.oddlabs.tt.gui.CancelButton;
 import com.oddlabs.tt.gui.EditLine;
 import com.oddlabs.tt.gui.Form;
@@ -37,7 +37,7 @@ public final class MapcodeForm extends Form {
     public MapcodeForm(TerrainMenu menu) {
         this.menu = menu;
         Label label_seed = new Label(i18n("map_code"), Skin.getSkin().getEditFont());
-        editline_seed = new EditLine(200, 12, RegistrationKey.CHAR_TO_WORD + RegistrationKey.LOWER_CASE_CHARS,
+        editline_seed = new EditLine(200, 12, MapCode.CHAR_TO_WORD + MapCode.LOWER_CASE_CHARS,
                 Origin.AT_START) {
             @Override
             protected boolean insert(int index, int codepoint) {
@@ -92,7 +92,7 @@ public final class MapcodeForm extends Form {
         @Override
         public void mouseClicked(MouseButton button, int x, int y, int clicks) {
             BigInteger rand_int = new BigInteger(60, ThreadLocalRandom.current());
-            String rand_string = RegistrationKey.createString(rand_int);
+            String rand_string = MapCode.createString(rand_int);
             editline_seed.clear();
             editline_seed.append(rand_string);
         }

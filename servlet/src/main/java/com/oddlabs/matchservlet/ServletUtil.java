@@ -7,6 +7,9 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Servlet utility functions for binary response streams.
+ */
 final class ServletUtil {
     static void writeByteArray(DataOutput out, byte[] array) throws IOException {
         out.writeInt(array.length);
@@ -16,6 +19,7 @@ final class ServletUtil {
     static OutputStream createOutput(final HttpServletResponse res) {
         final ByteArrayOutputStream byte_out = new ByteArrayOutputStream();
         return new FilterOutputStream(byte_out) {
+            @Override
             public void close() throws IOException {
                 super.close();
                 res.setContentType("application/octet-stream");

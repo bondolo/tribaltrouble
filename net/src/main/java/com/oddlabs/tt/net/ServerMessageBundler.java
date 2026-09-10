@@ -1,7 +1,6 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.Game;
-import com.oddlabs.registration.RegistrationKeyFormatException;
 import com.oddlabs.tt.base.util.Utils;
 
 import java.util.ResourceBundle;
@@ -55,15 +54,6 @@ public final class ServerMessageBundler {
 
     public static String getSuppliesString(int index) {
         return (10 * index) + "%";
-    }
-
-    public static String getRegistrationKeyFormatExceptionMessage(RegistrationKeyFormatException e) {
-        return switch (e.getType()) {
-            case RegistrationKeyFormatException.TYPE_INVALID_CHAR -> i18n("invalid_char", e.getInvalidChar());
-            case RegistrationKeyFormatException.TYPE_INVALID_LENGTH -> i18n("invalid_length", e.getStrippedLength());
-            case RegistrationKeyFormatException.TYPE_INVALID_KEY -> i18n("invalid_key");
-            default -> throw new IllegalArgumentException("Unexpected exception type: " + e.getType());
-        };
     }
 
     private ServerMessageBundler() {
