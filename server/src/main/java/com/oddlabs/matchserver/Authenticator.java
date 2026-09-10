@@ -92,9 +92,8 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
     }
 
     @Override
-    public void createUser(Login login, LoginDetails login_details, SignedObject reg_key, int revision) {
-        String reg_key_encoded = checkKey(reg_key);
-        if (login == null || !login.isValid() || reg_key_encoded == null) {
+    public void createUser(Login login, LoginDetails login_details, @Nullable SignedObject reg_key, int revision) {
+        if (login == null || !login.isValid()) {
             close();
             return;
         }
@@ -116,31 +115,20 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
             return;
         }
 
-        try {
-            if (DBInterface.getRegKeyUsername(reg_key_encoded) != null) {
-                client_interface.loginError(MatchmakingClientInterface.USERNAME_ERROR_TOO_MANY);
-                return;
-            }
-        } catch (IllegalArgumentException e) {
-            close();
-            return;
-        }
-
         if (DBInterface.usernameExists(login.getUsername())) {
             client_interface.loginError(MatchmakingClientInterface.USERNAME_ERROR_ALREADY_EXISTS);
             return;
         }
 
-        DBInterface.createUser(login, login_details, reg_key_encoded);
+        DBInterface.createUser(login, login_details, null);
         MatchmakingServer.getLogger().info("Created user " + login.getUsername() + " with email address "
-                + login_details.getEmail() + " with key " + reg_key_encoded);
-        doLogin(login.getUsername(), reg_key_encoded, revision);
+                + login_details.getEmail());
+        doLogin(login.getUsername(), false, revision);
     }
 
     @Override
-    public void login(Login login, SignedObject reg_key, int revision) {
-        String reg_key_encoded = checkKey(reg_key);
-        if (login == null || !login.isValid() || reg_key_encoded == null) {
+    public void login(Login login, @Nullable SignedObject reg_key, int revision) {
+        if (login == null || !login.isValid()) {
             close();
             return;
         }
@@ -149,26 +137,20 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
             return;
         }
 
-        try {
-            DBInterface.getRegKeyUsername(reg_key_encoded);
-        } catch (IllegalArgumentException e) {
-            close();
-            return;
-        }
         String username = login.getUsername().trim();
         if (!DBInterface.queryUser(username, login.getPasswordDigest())) {
             client_interface.loginError(MatchmakingClientInterface.USER_ERROR_NO_SUCH_USER);
             return;
         }
 
-        doLogin(username, reg_key_encoded, revision);
+        doLogin(username, false, revision);
     }
 
     @Override
     public void loginAsGuest(int revision) {
         if (revisionOK(revision)) {
             String username = "Guest" + guest_postfix++;
-            doLogin(username, null, revision);
+            doLogin(username, true, revision);
         }
     }
 
@@ -182,25 +164,11 @@ public final class Authenticator implements MatchmakingServerLoginInterface, Con
             return true;
     }
 
-    private @Nullable String checkKey(@Nullable SignedObject reg_key) {
-        if (reg_key != null) {
-            try {
-                Object obj = reg_key.getObject();
-                if (obj != null) {
-                    return obj.toString();
-                }
-            } catch (Exception e) {
-                MatchmakingServer.getLogger().warning("Could not read key from signed object: " + e.getMessage());
-            }
-        }
-        return null;
-    }
-
-    private void doLogin(String username, String reg_key_encoded, int revision) {
+    private void doLogin(String username, boolean guest, int revision) {
         if (local_remote_address != null) {
             client_interface.loginOK(username, new TunnelAddress(getHostID(), remote_address, local_remote_address));
             server.loginClient(remote_address, local_remote_address, username, conn.getWrappedConnectionAndShutdown(),
-                    reg_key_encoded, revision, host_id);
+                    guest, revision, host_id);
         } else {
             error(new IllegalStateException("Client didnt set local_remote_address"));
         }

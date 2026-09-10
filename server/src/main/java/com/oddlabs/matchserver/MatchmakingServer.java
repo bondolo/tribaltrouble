@@ -88,23 +88,18 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
         Authenticator client = new Authenticator(this, secure_conn, (InetAddress) remote_address, id);
     }
 
-//	public final boolean isKeyOnline(String key_encoded) {
-//		return online_keys.contains(key_encoded);
-//	}
-
     public void loginClient(InetAddress remote_address, InetAddress local_remote_address, String username,
-            AbstractConnection conn, String key_code_encoded, int revision, int host_id) {
-//		online_keys.add(key_code_encoded);
+            AbstractConnection conn, boolean guest, int revision, int host_id) {
         Client old_logged_in = online_users.remove(username.toLowerCase());
         if (old_logged_in != null) {
             old_logged_in.close();
             logger.info(username + " overtaked old login");
         }
-        Client client = new Client(this, conn, remote_address, local_remote_address, username, key_code_encoded == null,
+        Client client = new Client(this, conn, remote_address, local_remote_address, username, guest,
                 revision, host_id);
         online_users.put(username.toLowerCase(), client);
         client_map.put(client.getHostID(), client);
-        logger.info(username + " logged in, with key " + key_code_encoded);
+        logger.info(username + " logged in");
     }
 
     public Client getClientFromID(int host_id) {

@@ -15,33 +15,12 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Database queries and persistence operations for matchmaking services.
  */
 public final class DBInterface {
-
-    public static String getRegKeyUsername(String reg_key) throws IllegalArgumentException {
-        try {
-            PreparedStatement stmt = DBUtils.createStatement(
-                    "SELECT username FROM registrations R WHERE R.reg_key = ? AND NOT R.disabled AND NOT R.banned");
-            try {
-                stmt.setString(1, reg_key);
-                ResultSet result = stmt.executeQuery();
-                try {
-                    result.next();
-                    return result.getString("username");
-                } finally {
-                    result.close();
-                }
-            } finally {
-                stmt.getConnection().close();
-            }
-        } catch (SQLException e) {
-            MatchmakingServer.getLogger().throwing(DBInterface.class.getName(), "getRegKeyUsername", e);
-            throw new IllegalArgumentException("key " + reg_key + " not i DB");
-        }
-    }
 
     public static boolean usernameExists(String username) {
         try {
@@ -65,15 +44,14 @@ public final class DBInterface {
         }
     }
 
-    public static void createUser(Login login, LoginDetails login_details, String reg_key) {
+    public static void createUser(Login login, LoginDetails login_details, @Nullable String reg_key) {
         try {
             PreparedStatement stmt = DBUtils.createStatement(
-                    "UPDATE registrations R SET username = ?, email = ?, password = ? WHERE R.reg_key = ? AND R.username IS NULL AND R.password IS NULL AND R.email IS NULL");
+                    "INSERT INTO registrations (username, email, password) VALUES (?, ?, ?)");
             try {
                 stmt.setString(1, login.getUsername());
                 stmt.setString(2, login_details.getEmail());
                 stmt.setString(3, CryptUtils.digest(login.getPasswordDigest()));
-                stmt.setString(4, reg_key);
                 int row_count = stmt.executeUpdate();
                 assert row_count == 1;
             } finally {

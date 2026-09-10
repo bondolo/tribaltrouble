@@ -23,7 +23,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.security.SignedObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -425,17 +424,14 @@ public final class MatchmakingClient implements MatchmakingClientInterface, Conn
 
     @Override
     public void connected(AbstractConnection connection) {
-        // FIXME replace registratration key.
-        SignedObject signed_key = null;
         Connection wrapped_connection = (Connection) conn.getWrappedConnection();
         matchmaking_login_interface.setLocalRemoteAddress(wrapped_connection.getLocalAddress());
         IO.println("wrapped_connection.getLocalAddress()	 = " + wrapped_connection.getLocalAddress());
         int revision = AppConfig.REVISION;
         if (login_details != null)
-            matchmaking_login_interface.createUser(login, login_details, signed_key, revision);
+            matchmaking_login_interface.createUser(login, login_details, null, revision);
         else
-            matchmaking_login_interface.login(login, signed_key, revision);
-        matchmaking_login_interface.login(login, signed_key, revision);
+            matchmaking_login_interface.login(login, null, revision);
     }
 
     @Override

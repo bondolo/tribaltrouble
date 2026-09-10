@@ -6,6 +6,15 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.h2)
     implementation(libs.mysql.connector)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter.params)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 tasks.register<Jar>("router") {

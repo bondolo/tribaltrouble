@@ -31,9 +31,16 @@ public final class Login extends HttpServlet {
     }
 
     private void login(String reg_key, String username, String password_digest) throws SQLException {
-        int num_matches = (Integer) DBInterface.executeQuery(getDataSource(), new GetFirstIntQuery(),
-                "SELECT COUNT(*) FROM match_valid_user U, match_valid_key K WHERE K.reg_key = ? AND LOWER(U.username) = LOWER(?) AND U.password = ?",
-                reg_key, username, CryptUtils.digest(password_digest));
+        int num_matches;
+        if (reg_key.isEmpty()) {
+            num_matches = (Integer) DBInterface.executeQuery(getDataSource(), new GetFirstIntQuery(),
+                    "SELECT COUNT(*) FROM match_user U WHERE LOWER(U.username) = LOWER(?) AND U.password = ?",
+                    username, CryptUtils.digest(password_digest));
+        } else {
+            num_matches = (Integer) DBInterface.executeQuery(getDataSource(), new GetFirstIntQuery(),
+                    "SELECT COUNT(*) FROM match_valid_user U, match_valid_key K WHERE K.reg_key = ? AND LOWER(U.username) = LOWER(?) AND U.password = ?",
+                    reg_key, username, CryptUtils.digest(password_digest));
+        }
         assert num_matches <= 1;
         if (num_matches == 0)
             throw new SQLException("USER_ERROR_NO_SUCH_USER");
@@ -66,10 +73,12 @@ public final class Login extends HttpServlet {
             if (!Validation.isValidEmail(email) || !checkChars(email, allowed_chars))
                 throw new SQLException("USER_ERROR_INVALID_EMAIL");
 
-            int too_many = (Integer) DBInterface.executeQuery(conn, new GetFirstIntQuery(),
-                    "SELECT COUNT(*) FROM match_user WHERE reg_key = ?", reg_key);
-            if (too_many > 0)
-                throw new SQLException("USERNAME_ERROR_TOO_MANY");
+            if (!reg_key.isEmpty()) {
+                int too_many = (Integer) DBInterface.executeQuery(conn, new GetFirstIntQuery(),
+                        "SELECT COUNT(*) FROM match_user WHERE reg_key = ?", reg_key);
+                if (too_many > 0)
+                    throw new SQLException("USERNAME_ERROR_TOO_MANY");
+            }
             int existing = (Integer) DBInterface.executeQuery(conn, new GetFirstIntQuery(),
                     "SELECT COUNT(*) FROM match_user WHERE username = ?", username);
             if (existing > 0)

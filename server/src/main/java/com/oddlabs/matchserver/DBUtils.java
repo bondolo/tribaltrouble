@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 public final class DBUtils {
     private static @Nullable DataSource dataSource;
     private static final String DEFAULT_H2_URL
-            = "jdbc:h2:mem:oddlabs;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE";
+            = "jdbc:h2:mem:oddlabs;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=VALUE";
 
     private DBUtils() {
     }
@@ -70,10 +70,10 @@ public final class DBUtils {
                     """
                                 CREATE TABLE IF NOT EXISTS registrations (
                                     id INT AUTO_INCREMENT PRIMARY KEY,
-                                    reg_key VARCHAR(20) NOT NULL UNIQUE,
+                                    reg_key VARCHAR(20) DEFAULT NULL,
                                     disabled BOOLEAN NOT NULL DEFAULT FALSE,
                                     banned BOOLEAN NOT NULL DEFAULT FALSE,
-                                    username VARCHAR(40),
+                                    username VARCHAR(40) NOT NULL UNIQUE,
                                     email VARCHAR(60),
                                     password VARCHAR(40),
                                     last_used_profile VARCHAR(40)
@@ -104,18 +104,35 @@ public final class DBUtils {
                                     id INT AUTO_INCREMENT PRIMARY KEY,
                                     player1_name VARCHAR(40),
                                     player1_id INT,
-                                    time_create BIGINT,
-                                    time_start BIGINT,
-                                    time_stop BIGINT,
+                                    player1_race VARCHAR(10),
+                                    player1_team VARCHAR(10),
+                                    player2_name VARCHAR(40),
+                                    player2_race VARCHAR(10),
+                                    player2_team VARCHAR(10),
+                                    player3_name VARCHAR(40),
+                                    player3_race VARCHAR(10),
+                                    player3_team VARCHAR(10),
+                                    player4_name VARCHAR(40),
+                                    player4_race VARCHAR(10),
+                                    player4_team VARCHAR(10),
+                                    player5_name VARCHAR(40),
+                                    player5_race VARCHAR(10),
+                                    player5_team VARCHAR(10),
+                                    player6_name VARCHAR(40),
+                                    player6_race VARCHAR(10),
+                                    player6_team VARCHAR(10),
+                                    time_create TIMESTAMP,
+                                    time_start TIMESTAMP,
+                                    time_stop TIMESTAMP,
                                     name VARCHAR(40),
-                                    rated BOOLEAN,
+                                    rated VARCHAR(5),
                                     speed INT,
                                     size INT,
                                     hills INT,
                                     trees INT,
                                     resources INT,
-                                    mapcode INT,
-                                    status INT,
+                                    mapcode VARCHAR(40),
+                                    status VARCHAR(20),
                                     winner INT
                                 );
                                 CREATE TABLE IF NOT EXISTS game_reports (
