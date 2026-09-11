@@ -10,8 +10,8 @@ import com.oddlabs.tt.simulation.behaviour.AttackBehaviour;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
@@ -58,18 +58,18 @@ final class WeaponAccessory implements StaticAccessory {
         this.localTransform = (race == Race.VIKINGS) ? VIKING_AXE_LOCAL : NATIVE_SPEAR_LOCAL;
     }
 
-    private @Nullable WeaponVisualType getWeaponVisualType() {
-        return switch (unit.getTemplate().getVisualType()) {
-            case WARRIOR_ROCK -> WeaponVisualType.ROCK;
-            case WARRIOR_IRON -> WeaponVisualType.IRON;
-            case WARRIOR_RUBBER -> WeaponVisualType.RUBBER;
+    private @Nullable SupplyType getWeaponMaterial() {
+        return switch (unit.getTemplate().getUnitType()) {
+            case WARRIOR_ROCK -> SupplyType.ROCK;
+            case WARRIOR_IRON -> SupplyType.IRON;
+            case WARRIOR_RUBBER -> SupplyType.RUBBER;
             default -> null;
         };
     }
 
     @Override
     public @Nullable SpriteKey getSpriteRenderer() {
-        WeaponVisualType visualType = getWeaponVisualType();
+        SupplyType visualType = getWeaponMaterial();
         if (visualType != null) {
             Race race = unit.getOwner().getPlayerInfo().getRace();
             return AssetRegistry.getInstance().getWeaponSprite(race, visualType);
@@ -92,13 +92,13 @@ final class WeaponAccessory implements StaticAccessory {
     }
 
     private float getSpearMetersPerSecond() {
-        WeaponVisualType type = getWeaponVisualType();
+        SupplyType type = getWeaponMaterial();
         if (type != null) {
             return switch (type) {
                 case ROCK -> 20f;
                 case IRON -> 25f;
                 case RUBBER -> 30f;
-                case SONIC_BLAST -> 20f;
+                default -> 20f;
             };
         }
         return 20f;

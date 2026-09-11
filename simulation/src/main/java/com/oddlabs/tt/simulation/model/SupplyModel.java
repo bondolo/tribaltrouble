@@ -117,10 +117,6 @@ public abstract sealed class SupplyModel extends Model implements Supply, Target
         this.grid_y = grid_y;
     }
 
-    public BoundsProvider getBoundsProvider() {
-        return boundsProvider;
-    }
-
     @Override
     protected BoundingBox[] getLocalBounds() {
         return boundsProvider.bounds();

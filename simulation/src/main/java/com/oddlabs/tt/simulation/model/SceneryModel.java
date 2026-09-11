@@ -13,7 +13,8 @@ import org.jspecify.annotations.Nullable;
  * A world entity that represents static or ambient environment detail (scenery).
  * Decoupled from rendering-bound keys; stores its bounding box array directly.
  */
-public sealed class SceneryModel extends Model implements Occupant, ModelToolTip, Animated permits Plants {
+public abstract sealed class SceneryModel extends Model implements Occupant, ModelToolTip, Animated
+        permits Plants, StatueScenery, CaptiveScenery, GodScenery, RallyPointScenery {
     private final BoundsProvider boundsProvider;
     private final float shadow_diameter;
     private final boolean occupy;
@@ -23,34 +24,34 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
     private float anim_time = 0;
     private boolean registeredTarget = false;
 
-    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
             BoundsProvider boundsProvider) {
         this(world, x, y, dir_x, dir_y, boundsProvider, 0f, false, null);
     }
 
-    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
             BoundingBox[] bounds) {
         this(world, x, y, dir_x, dir_y, () -> bounds, 0f, false, null);
     }
 
-    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
             BoundsProvider boundsProvider, float shadow_diameter, boolean occupy, @Nullable String name) {
         this(world, x, y, dir_x, dir_y, boundsProvider, shadow_diameter, occupy, name, -1, -1, 0);
     }
 
-    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
             BoundingBox[] bounds, float shadow_diameter, boolean occupy, @Nullable String name) {
         this(world, x, y, dir_x, dir_y, () -> bounds, shadow_diameter, occupy, name, -1, -1, 0);
     }
 
-    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
             BoundingBox[] bounds, float shadow_diameter, boolean occupy, @Nullable String name,
             int animation, float seconds_per_animation_cycle, float anim_offset) {
         this(world, x, y, dir_x, dir_y, () -> bounds, shadow_diameter, occupy, name, animation,
                 seconds_per_animation_cycle, anim_offset);
     }
 
-    public SceneryModel(World world, float x, float y, float dir_x, float dir_y,
+    protected SceneryModel(World world, float x, float y, float dir_x, float dir_y,
             BoundsProvider boundsProvider, float shadow_diameter, boolean occupy, @Nullable String name,
             int animation, float seconds_per_animation_cycle, float anim_offset) {
         super(world);
@@ -67,10 +68,6 @@ public sealed class SceneryModel extends Model implements Occupant, ModelToolTip
         if (occupy) {
             world.getUnitGrid().occupyGrid(getGridX(), getGridY(), this);
         }
-    }
-
-    public final BoundsProvider getBoundsProvider() {
-        return boundsProvider;
     }
 
     public final @Nullable String getName() {

@@ -29,7 +29,7 @@ class SelectableVisitor<S extends Selectable<?>> extends ModelVisitor<S> {
         Race race = selectable.getOwnerNoCheck().getRaceInfo().getRaceType();
         if (selectable instanceof Unit unit) {
             return AssetRegistry.getInstance().getUnitSprite(race, unit.getTemplate()
-                    .getVisualType());
+                    .getUnitType());
         } else if (selectable instanceof Building building) {
             BuildingType bvt = building.getTemplate().getBuildingType();
             var visuals = AssetRegistry.getInstance().getBuildingVisuals(race, bvt);

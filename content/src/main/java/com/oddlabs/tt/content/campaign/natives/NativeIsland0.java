@@ -22,8 +22,8 @@ import com.oddlabs.tt.client.camera.MapCamera;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.SceneryModel;
+import com.oddlabs.tt.simulation.model.StatueScenery;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -34,7 +34,6 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.NearArmyTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -247,42 +246,22 @@ public final class NativeIsland0 extends Island {
         });
 
         // Insert treasures
-        final SceneryModel[] scenery_models = new SceneryModel[14];
         float dir = (float) Math.sin(Math.PI / 4);
-        float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
-        float shadow_diameter = 4.5f;
-        var treasures = AssetRegistry.getInstance().getTreasures();
-        scenery_models[0] = new SceneryModel(getViewer().getWorld(), 163 * 2 + offset, 126 * 2 + offset, 0, 1,
-                treasures[0], shadow_diameter, true, i18n("statue"));
-
-        shadow_diameter = 2.6f;
-        scenery_models[1] = new SceneryModel(getViewer().getWorld(), 130 * 2 + offset, 124 * 2 + offset, -dir, -dir,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        scenery_models[2] = new SceneryModel(getViewer().getWorld(), 152 * 2 + offset, 138 * 2 + offset, dir, dir,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        scenery_models[3] = new SceneryModel(getViewer().getWorld(), 152 * 2 + offset, 144 * 2 + offset, 0, 1,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        scenery_models[4] = new SceneryModel(getViewer().getWorld(), 140 * 2 + offset, 140 * 2 + offset, 0, 1,
-                treasures[4], shadow_diameter, true, i18n("statue"));
-        scenery_models[5] = new SceneryModel(getViewer().getWorld(), 143 * 2 + offset, 116 * 2 + offset, 0, -1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        scenery_models[6] = new SceneryModel(getViewer().getWorld(), 142 * 2 + offset, 131 * 2 + offset, dir, -dir,
-                treasures[5], shadow_diameter, true, i18n("statue"));
-
-        scenery_models[7] = new SceneryModel(getViewer().getWorld(), 423 * 2 + offset, 174 * 2 + offset, 0, 1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        scenery_models[8] = new SceneryModel(getViewer().getWorld(), 408 * 2 + offset, 161 * 2 + offset, -1, 0,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        scenery_models[9] = new SceneryModel(getViewer().getWorld(), 426 * 2 + offset, 156 * 2 + offset, dir, -dir,
-                treasures[5], shadow_diameter, true, i18n("statue"));
-        scenery_models[10] = new SceneryModel(getViewer().getWorld(), 418 * 2 + offset, 165 * 2 + offset, 0, 1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        scenery_models[11] = new SceneryModel(getViewer().getWorld(), 430 * 2 + offset, 165 * 2 + offset, 1, 0,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        scenery_models[12] = new SceneryModel(getViewer().getWorld(), 419 * 2 + offset, 170 * 2 + offset, -dir, dir,
-                treasures[4], shadow_diameter, true, i18n("statue"));
-        scenery_models[13] = new SceneryModel(getViewer().getWorld(), 416 * 2 + offset, 156 * 2 + offset, 0, -1,
-                treasures[5], shadow_diameter, true, i18n("statue"));
+        final StatueScenery[] scenery_models = placeStatues(i18n("statue"),
+                StatuePlacement.atGrid(163, 126, 0, 1, 0, StatuePlacement.LARGE_SHADOW_DIAMETER),
+                StatuePlacement.atGrid(130, 124, -dir, -dir, 3),
+                StatuePlacement.atGrid(152, 138, dir, dir, 1),
+                StatuePlacement.atGrid(152, 144, 0, 1, 3),
+                StatuePlacement.atGrid(140, 140, 0, 1, 4),
+                StatuePlacement.atGrid(143, 116, 0, -1, 1),
+                StatuePlacement.atGrid(142, 131, dir, -dir, 5),
+                StatuePlacement.atGrid(423, 174, 0, 1, 1),
+                StatuePlacement.atGrid(408, 161, -1, 0, 3),
+                StatuePlacement.atGrid(426, 156, dir, -dir, 5),
+                StatuePlacement.atGrid(418, 165, 0, 1, 1),
+                StatuePlacement.atGrid(430, 165, 1, 0, 3),
+                StatuePlacement.atGrid(419, 170, -dir, dir, 4),
+                StatuePlacement.atGrid(416, 156, 0, -1, 5));
 
         final Runnable dialog4 = () -> {
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header4"),

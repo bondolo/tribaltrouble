@@ -30,7 +30,7 @@ public final class InstantHitFactory extends WeaponFactory {
         float dy = target.getPositionY() - src.getPositionY();
         float dir_len_inv = 1f / (float) Math.hypot(dx, dy);
         if (target instanceof Unit unitTarget) {
-            src.getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getVisualType(), unitTarget
+            src.getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getUnitType(), unitTarget
                     .getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(), target
                             .getPositionZ());
         }

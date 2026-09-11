@@ -37,12 +37,17 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Element;
 import com.oddlabs.tt.simulation.model.IronSupply;
+import com.oddlabs.tt.simulation.model.CaptiveScenery;
+import com.oddlabs.tt.simulation.model.GodScenery;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Plants;
 import com.oddlabs.tt.simulation.model.Race;
+import com.oddlabs.tt.simulation.model.RallyPointScenery;
 import com.oddlabs.tt.simulation.model.RockSupply;
 import com.oddlabs.tt.simulation.model.RubberSupply;
 import com.oddlabs.tt.simulation.model.SceneryModel;
+import com.oddlabs.tt.simulation.model.StatueScenery;
+import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Shadowable;
 import com.oddlabs.tt.simulation.model.SupplyModel;
@@ -642,9 +647,17 @@ public final class RenderState implements SceneContext {
 
     private static final ModelVisitor<SceneryModel> scenery_model_visitor = new WhiteModelVisitor<>() {
         @Override
-        public @Nullable SpriteKey getSpriteKey(ElementSceneContext<SceneryModel> render_state) {
-            return render_state.getModel().getBoundsProvider() instanceof SpriteKey spriteKey
-                    ? spriteKey : null;
+        public SpriteKey getSpriteKey(ElementSceneContext<SceneryModel> render_state) {
+            return switch (render_state.getModel()) {
+                case StatueScenery statue -> AssetRegistry.getInstance().getTreasures()[statue.getTreasureIndex()];
+                case CaptiveScenery captive -> AssetRegistry.getInstance().getUnitSprite(
+                        captive.getRace(), captive.getUnitType());
+                case GodScenery god -> AssetRegistry.getInstance().getUnitSprite(
+                        god.getRace(), UnitType.CHIEFTAIN);
+                case RallyPointScenery rally -> AssetRegistry.getInstance().getRallyPoint(rally.getRace());
+                case Plants plants -> AssetRegistry.getInstance().getPlantSprite(plants.getTerrain(), plants
+                        .getIndex());
+            };
         }
     };
 
@@ -704,7 +717,7 @@ public final class RenderState implements SceneContext {
                     DirectedThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
                     return AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getWeaponVisualType());
+                            .getSupplyType());
                 }
 
                 @Override
@@ -736,7 +749,7 @@ public final class RenderState implements SceneContext {
                     RotatingThrowingWeapon model = render_state.getModel();
                     Race race = model.getSrc().getOwner().getRaceInfo().getRaceType();
                     return AssetRegistry.getInstance().getWeaponSprite(race, model
-                            .getWeaponVisualType());
+                            .getSupplyType());
                 }
 
                 @Override

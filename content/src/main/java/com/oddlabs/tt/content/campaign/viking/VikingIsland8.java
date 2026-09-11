@@ -17,7 +17,7 @@ import com.oddlabs.tt.client.delegate.JumpDelegate;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.model.Action;
-import com.oddlabs.tt.simulation.model.SceneryModel;
+import com.oddlabs.tt.simulation.model.RallyPointScenery;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
@@ -140,8 +140,10 @@ public final class VikingIsland8 extends Island {
         });
 
         // Insert rally point
-        new SceneryModel(getViewer().getWorld(), 354 * 2, 478 * 2, 0, -1, AssetRegistry.getInstance().getRallyPoint(
-                local_player.getRaceInfo().getRaceType()));
+        var rallySprite = AssetRegistry.getInstance().getRallyPoint(
+                local_player.getRaceInfo().getRaceType());
+        new RallyPointScenery(getViewer().getWorld(), 354 * 2, 478 * 2, 0, -1,
+                local_player.getRaceInfo().getRaceType(), rallySprite.bounds());
 
         // Insert native towers
         insertGuardTower(enemy, UnitType.WARRIOR_IRON, 208, 210);

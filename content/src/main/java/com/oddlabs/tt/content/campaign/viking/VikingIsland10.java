@@ -18,8 +18,6 @@ import com.oddlabs.tt.simulation.model.MagicType;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -29,7 +27,6 @@ import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;
 import com.oddlabs.tt.simulation.trigger.NearPointTrigger;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -233,10 +230,8 @@ public final class VikingIsland10 extends Island {
         new NearPointTrigger(173, 153, 3, local_player.getChieftain().orElseThrow(), dialog1);
 
         // Insert statue
-        float shadow_diameter = 2.6f;
-        float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
-        new SceneryModel(getViewer().getWorld(), 173 * 2 + offset, 153 * 2 + offset, 0, 1,
-                AssetRegistry.getInstance().getTreasures()[2], shadow_diameter, true, i18n("statue"));
+        placeStatues(i18n("statue"),
+                StatuePlacement.atGrid(173, 153, 0, 1, 2));
 
         // Insert native towers
         insertGuardTower(enemy, UnitType.WARRIOR_IRON, 177, 159);//*

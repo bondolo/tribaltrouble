@@ -2,8 +2,8 @@ package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.AttackScanFilter;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import com.oddlabs.tt.simulation.player.Player;
 
 /**
@@ -35,8 +35,8 @@ public final class RubberAxeWeapon extends RotatingThrowingWeapon {
     }
 
     @Override
-    public WeaponVisualType getWeaponVisualType() {
-        return WeaponVisualType.RUBBER;
+    public SupplyType getSupplyType() {
+        return SupplyType.RUBBER;
     }
 
     @Override

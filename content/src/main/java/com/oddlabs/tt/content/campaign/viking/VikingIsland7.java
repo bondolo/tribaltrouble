@@ -14,8 +14,6 @@ import com.oddlabs.tt.simulation.model.UnitType;
 
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
-import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
@@ -23,7 +21,6 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
@@ -124,36 +121,20 @@ public final class VikingIsland7 extends Island {
         insertGuardTower(enemy1, UnitType.WARRIOR_IRON, 189, 74);
 
         // Insert treasures
-        float shadow_diameter = 2.6f;
-
-        float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
         float dir = (float) Math.sin(Math.PI / 4);
-        var treasures = AssetRegistry.getInstance().getTreasures();
-        new SceneryModel(getViewer().getWorld(), 67 * 2 + offset, 64 * 2 + offset, -1, 0, treasures[3], shadow_diameter,
-                true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 70 * 2 + offset, 52 * 2 + offset, -1, 0, treasures[4], shadow_diameter,
-                true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 77 * 2 + offset, 63 * 2 + offset, 0, 1, treasures[1], shadow_diameter,
-                true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 82 * 2 + offset, 52 * 2 + offset, dir, -dir, treasures[3],
-                shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 76 * 2 + offset, 75 * 2 + offset, dir, dir, treasures[4],
-                shadow_diameter, true, i18n("statue"));
-
-        new SceneryModel(getViewer().getWorld(), 205 * 2 + offset, 81 * 2 + offset, dir, dir, treasures[5],
-                shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 199 * 2 + offset, 42 * 2 + offset, dir, -dir, treasures[1],
-                shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 197 * 2 + offset, 69 * 2 + offset, dir, -dir, treasures[1],
-                shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 194 * 2 + offset, 77 * 2 + offset, 0, 1, treasures[3], shadow_diameter,
-                true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 187 * 2 + offset, 70 * 2 + offset, -1, 0, treasures[3],
-                shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 188 * 2 + offset, 77 * 2 + offset, -dir, dir, treasures[4],
-                shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 190 * 2 + offset, 65 * 2 + offset, 0, -1, treasures[5],
-                shadow_diameter, true, i18n("statue"));
+        placeStatues(i18n("statue"),
+                StatuePlacement.atGrid(67, 64, -1, 0, 3),
+                StatuePlacement.atGrid(70, 52, -1, 0, 4),
+                StatuePlacement.atGrid(77, 63, 0, 1, 1),
+                StatuePlacement.atGrid(82, 52, dir, -dir, 3),
+                StatuePlacement.atGrid(76, 75, dir, dir, 4),
+                StatuePlacement.atGrid(205, 81, dir, dir, 5),
+                StatuePlacement.atGrid(199, 42, dir, -dir, 1),
+                StatuePlacement.atGrid(197, 69, dir, -dir, 1),
+                StatuePlacement.atGrid(194, 77, 0, 1, 3),
+                StatuePlacement.atGrid(187, 70, -1, 0, 3),
+                StatuePlacement.atGrid(188, 77, -dir, dir, 4),
+                StatuePlacement.atGrid(190, 65, 0, -1, 5));
     }
 
     @Override

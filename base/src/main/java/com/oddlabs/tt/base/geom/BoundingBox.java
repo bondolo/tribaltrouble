@@ -19,6 +19,13 @@ public class BoundingBox {
     private float cy;
     private float cz;
 
+    public BoundingBox() {
+    }
+
+    public BoundingBox(float bmin_x, float bmax_x, float bmin_y, float bmax_y, float bmin_z, float bmax_z) {
+        setBounds(bmin_x, bmax_x, bmin_y, bmax_y, bmin_z, bmax_z);
+    }
+
     @Override
     public String toString() {
         return "bmx " + bmin_x + " bmy " + bmin_y + " bmz " + bmin_z + " bxx " + bmax_x + " bxy " + bmax_y + " bxz "

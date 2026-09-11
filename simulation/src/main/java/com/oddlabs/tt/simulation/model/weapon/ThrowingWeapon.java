@@ -4,8 +4,8 @@ import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.model.Model;
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.WeaponVisualType;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.base.event.StateChecksum;
 import org.jspecify.annotations.Nullable;
@@ -57,7 +57,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         return src;
     }
 
-    public abstract WeaponVisualType getWeaponVisualType();
+    public abstract SupplyType getSupplyType();
 
     @Override
     protected BoundingBox @Nullable [] getLocalBounds() {
@@ -146,7 +146,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     protected final void damageTarget(Selectable<?> target) {
         if (target instanceof Unit unitTarget) {
-            getSrc().getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getVisualType(),
+            getSrc().getWorld().getNotificationListener().onUnitAttack(unitTarget.getTemplate().getUnitType(),
                     unitTarget.getOwner().getRaceInfo().getRaceType(), target.getPositionX(), target.getPositionY(),
                     target.getPositionZ());
         }

@@ -6,7 +6,7 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.UnitVisualType;
+import com.oddlabs.tt.simulation.model.UnitType;
 
 /**
  * Listener interface for observing simulation events such as combat notifications,
@@ -49,10 +49,10 @@ public interface NotificationListener {
     default void onBuildingHit(float x, float y, float z) {
     }
 
-    default void onUnitDeath(Unit unit, UnitVisualType unitType, Race race) {
+    default void onUnitDeath(Unit unit, UnitType unitType, Race race) {
     }
 
-    default void onUnitAttack(UnitVisualType unitType, Race race, float x, float y, float z) {
+    default void onUnitAttack(UnitType unitType, Race race, float x, float y, float z) {
     }
 
     default void onChickenCluck(Model model) {

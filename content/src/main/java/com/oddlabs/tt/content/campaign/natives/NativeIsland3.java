@@ -20,13 +20,12 @@ import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Action;
-import com.oddlabs.tt.simulation.model.SceneryModel;
+import com.oddlabs.tt.simulation.model.GodScenery;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.MagicUsedTrigger;
 import com.oddlabs.tt.simulation.trigger.NearPointTrigger;
@@ -228,11 +227,9 @@ public final class NativeIsland3 extends Island {
         float shadow_diameter = 4.5f;
 
         float dir = (float) Math.sin(Math.PI / 4);
-        new SceneryModel(getViewer().getWorld(), thor_x, thor_y, dir, dir,
-                AssetRegistry.getInstance().getUnitSprite(
-                        enemy.getRaceInfo().getRaceType(),
-                        enemy.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN).getVisualType()
-                ),
+        var chieftainTemplate = enemy.getRaceInfo().getUnitTemplate(UnitType.CHIEFTAIN);
+        new GodScenery(getViewer().getWorld(), thor_x, thor_y, dir, dir,
+                enemy.getRaceInfo().getRaceType(), chieftainTemplate.getBounds(),
                 shadow_diameter, true, i18n("god"), Unit.Animation.THOR.ordinal(), -1f, 0f);
 
 

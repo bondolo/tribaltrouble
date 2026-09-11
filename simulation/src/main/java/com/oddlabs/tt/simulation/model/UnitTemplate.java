@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 public final class UnitTemplate extends Template {
     private final float meters_per_second;
     private final WeaponFactory weapon_factory;
-    private final UnitVisualType visual_type;
+    private final UnitType unit_type;
     private final BoundingBox[] bounds;
     private final AnimationInfo.AnimationType[] anim_types;
     private final @Nullable UnitSupplyContainerFactory supply_container_factory;
@@ -29,7 +29,7 @@ public final class UnitTemplate extends Template {
             Abilities abilities,
             float meters_per_second,
             WeaponFactory weapon_factory,
-            UnitVisualType visual_type,
+            UnitType unit_type,
             BoundingBox[] bounds,
             AnimationInfo.AnimationType[] anim_types,
             float shadow_diameter,
@@ -48,7 +48,7 @@ public final class UnitTemplate extends Template {
         this.selection_height = selection_height;
         this.meters_per_second = meters_per_second;
         this.weapon_factory = weapon_factory;
-        this.visual_type = visual_type;
+        this.unit_type = unit_type;
         this.bounds = bounds;
         this.anim_types = anim_types;
         this.supply_container_factory = supply_container_factory;
@@ -77,8 +77,8 @@ public final class UnitTemplate extends Template {
         return weapon_factory;
     }
 
-    public UnitVisualType getVisualType() {
-        return visual_type;
+    public UnitType getUnitType() {
+        return unit_type;
     }
 
     public BoundingBox[] getBounds() {

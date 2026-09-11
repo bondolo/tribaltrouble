@@ -25,8 +25,6 @@ import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.RaceData;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.UnitType;
-import com.oddlabs.tt.simulation.model.UnitVisualType;
-import com.oddlabs.tt.simulation.model.WeaponVisualType;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
@@ -234,23 +232,23 @@ public final class RacesAssetsLoader {
         ProgressListener.progress(1f / num_progress);
 
         AssetRegistry.getInstance().registerWeapon(
-                Race.VIKINGS, WeaponVisualType.ROCK,
+                Race.VIKINGS, SupplyType.ROCK,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_ROCK.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.VIKINGS, WeaponVisualType.IRON,
+                Race.VIKINGS, SupplyType.IRON,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_IRON.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.VIKINGS, WeaponVisualType.RUBBER,
+                Race.VIKINGS, SupplyType.RUBBER,
                 queues.register(viking_warrior_axe, UnitType.WARRIOR_RUBBER.getValue()));
 
         AssetRegistry.getInstance().registerWeapon(
-                Race.NATIVES, WeaponVisualType.ROCK,
+                Race.NATIVES, SupplyType.ROCK,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_ROCK.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.NATIVES, WeaponVisualType.IRON,
+                Race.NATIVES, SupplyType.IRON,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_IRON.getValue()));
         AssetRegistry.getInstance().registerWeapon(
-                Race.NATIVES, WeaponVisualType.RUBBER,
+                Race.NATIVES, SupplyType.RUBBER,
                 queues.register(native_warrior_spear, UnitType.WARRIOR_RUBBER.getValue())
         );
 
@@ -262,34 +260,34 @@ public final class RacesAssetsLoader {
         AssetRegistry.getInstance().registerDefaultUnitShadow(default_shadow_list);
 
         SpriteKey vRockSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_ROCK.getValue());
-        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_ROCK, vRockSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitType.WARRIOR_ROCK, vRockSprite);
 
         SpriteKey vIronSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_IRON.getValue());
-        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_IRON, vIronSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitType.WARRIOR_IRON, vIronSprite);
 
         SpriteKey vRubberSprite = queues.register(sprite_list_warrior, UnitType.WARRIOR_RUBBER.getValue());
-        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.WARRIOR_RUBBER, vRubberSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitType.WARRIOR_RUBBER, vRubberSprite);
 
         SpriteKey nRockSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_ROCK.getValue());
-        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_ROCK, nRockSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitType.WARRIOR_ROCK, nRockSprite);
 
         SpriteKey nIronSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_IRON.getValue());
-        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_IRON, nIronSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitType.WARRIOR_IRON, nIronSprite);
 
         SpriteKey nRubberSprite = queues.register(sprite_list_native_warrior, UnitType.WARRIOR_RUBBER.getValue());
-        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.WARRIOR_RUBBER, nRubberSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitType.WARRIOR_RUBBER, nRubberSprite);
 
         SpriteKey vPeonSprite = queues.register(sprite_list_peon);
-        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.PEON, vPeonSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitType.PEON, vPeonSprite);
 
         SpriteKey nPeonSprite = queues.register(sprite_list_native_peon);
-        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.PEON, nPeonSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitType.PEON, nPeonSprite);
 
         SpriteKey vChieftainSprite = queues.register(sprite_list_chieftain);
-        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitVisualType.CHIEFTAIN, vChieftainSprite);
+        AssetRegistry.getInstance().registerUnit(Race.VIKINGS, UnitType.CHIEFTAIN, vChieftainSprite);
 
         SpriteKey nChieftainSprite = queues.register(sprite_list_native_chieftain);
-        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitVisualType.CHIEFTAIN, nChieftainSprite);
+        AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitType.CHIEFTAIN, nChieftainSprite);
 
         ProgressListener.progress(1f / num_progress);
         GUIIcons icons = GUIIcons.getIcons();

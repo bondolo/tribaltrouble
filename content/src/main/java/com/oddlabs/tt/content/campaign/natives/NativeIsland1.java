@@ -17,22 +17,21 @@ import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.client.delegate.JumpDelegate;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
+import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Building;
-import com.oddlabs.tt.simulation.model.SceneryModel;
+import com.oddlabs.tt.simulation.model.CaptiveScenery;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.net.GameNetwork;
-import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
-import com.oddlabs.tt.engine.render.SpriteKey;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.simulation.trigger.DeathTrigger;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.simulation.trigger.TimeTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.base.util.Utils;
 
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
@@ -42,6 +41,12 @@ import java.util.stream.IntStream;
 public final class NativeIsland1 extends Island {
     private static final int NUM_CAPTIVES = 10;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland1.class.getName());
+
+    /**
+     * Placement specification for a captive scenery peon.
+     */
+    private record CaptivePlacement(int gridX, int gridY, float dirX, float dirY, float animOffset) {
+    }
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
@@ -133,36 +138,32 @@ public final class NativeIsland1 extends Island {
         // insert slaves
         final int captive_start_x = 48 * 2;
         final int captive_start_y = 96 * 2;
-        float shadow_diameter = local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getShadowDiameter();
-        SpriteKey sprite_renderer = AssetRegistry.getInstance().getUnitSprite(
-                local_player.getRaceInfo().getRaceType(),
-                local_player.getRaceInfo().getUnitTemplate(UnitType.PEON).getVisualType()
-        );
+        var peonTemplate = local_player.getRaceInfo().getUnitTemplate(UnitType.PEON);
+        float shadow_diameter = peonTemplate.getShadowDiameter();
+        var captiveBounds = peonTemplate.getBounds();
+        var captiveRace = local_player.getRaceInfo().getRaceType();
+        var captiveType = peonTemplate.getUnitType();
 
         final float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
         float dir = (float) Math.sin(Math.PI / 4);
 
-        final SceneryModel[] scenery_models = new SceneryModel[10];
-        scenery_models[0] = new SceneryModel(getViewer().getWorld(), 48 * 2 + offset, 96 * 2 + offset, 1, 0,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .1f);
-        scenery_models[1] = new SceneryModel(getViewer().getWorld(), 48 * 2 + offset, 95 * 2 + offset, dir, dir,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .15f);
-        scenery_models[2] = new SceneryModel(getViewer().getWorld(), 48 * 2 + offset, 98 * 2 + offset, dir, -dir,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .75f);
-        scenery_models[3] = new SceneryModel(getViewer().getWorld(), 49 * 2 + offset, 98 * 2 + offset, 0, -1,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .54f);
-        scenery_models[4] = new SceneryModel(getViewer().getWorld(), 50 * 2 + offset, 97 * 2 + offset, -1, 0,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .47f);
-        scenery_models[5] = new SceneryModel(getViewer().getWorld(), 51 * 2 + offset, 96 * 2 + offset, 0, -1,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .9f);
-        scenery_models[6] = new SceneryModel(getViewer().getWorld(), 51 * 2 + offset, 94 * 2 + offset, 0, 1,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .23f);
-        scenery_models[7] = new SceneryModel(getViewer().getWorld(), 52 * 2 + offset, 96 * 2 + offset, -dir, -dir,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .7f);
-        scenery_models[8] = new SceneryModel(getViewer().getWorld(), 52 * 2 + offset, 94 * 2 + offset, -dir, dir,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, 0f);
-        scenery_models[9] = new SceneryModel(getViewer().getWorld(), 50 * 2 + offset, 95 * 2 + offset, 1, 0,
-                sprite_renderer, shadow_diameter, true, i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, .34f);
+        final var captivePlacements = List.of(
+                new CaptivePlacement(48, 96, 1, 0, .1f),
+                new CaptivePlacement(48, 95, dir, dir, .15f),
+                new CaptivePlacement(48, 98, dir, -dir, .75f),
+                new CaptivePlacement(49, 98, 0, -1, .54f),
+                new CaptivePlacement(50, 97, -1, 0, .47f),
+                new CaptivePlacement(51, 96, 0, -1, .9f),
+                new CaptivePlacement(51, 94, 0, 1, .23f),
+                new CaptivePlacement(52, 96, -dir, -dir, .7f),
+                new CaptivePlacement(52, 94, -dir, dir, 0f),
+                new CaptivePlacement(50, 95, 1, 0, .34f));
+
+        final CaptiveScenery[] scenery_models = captivePlacements.stream()
+                .map(p -> new CaptiveScenery(getViewer().getWorld(), p.gridX() * 2 + offset, p.gridY() * 2 + offset,
+                        p.dirX(), p.dirY(), captiveRace, captiveType, captiveBounds, shadow_diameter, true,
+                        i18n("captive"), Unit.Animation.THROWING.ordinal(), 1, p.animOffset()))
+                .toArray(CaptiveScenery[]::new);
 
         // Insert guards
         new Unit(guards, 45 * 2, 98 * 2, null, guards.getRaceInfo().getUnitTemplate(UnitType.WARRIOR_IRON));
@@ -177,49 +178,15 @@ public final class NativeIsland1 extends Island {
         // free slaves
         final Runnable free_captives = () -> {
             changeObjective(1);
-            for (SceneryModel scenery_model : scenery_models) {
+            for (CaptiveScenery scenery_model : scenery_models) {
                 scenery_model.remove();
             }
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 48 * 2 + offset, 96 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 48 * 2 + offset, 95 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 48 * 2 + offset, 98 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 49 * 2 + offset, 98 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 50 * 2 + offset, 97 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 51 * 2 + offset, 96 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 51 * 2 + offset, 94 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 52 * 2 + offset, 96 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 52 * 2 + offset, 94 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
-            if (!local_player.getUnitCountContainer().isSupplyFull())
-                new Unit(local_player, 50 * 2 + offset, 95 * 2 + offset, null, local_player.getRaceInfo()
-                        .getUnitTemplate(
-                                UnitType.PEON));
+            var peonTemplateToSpawn = local_player.getRaceInfo().getUnitTemplate(UnitType.PEON);
+            for (CaptivePlacement p : captivePlacements) {
+                if (!local_player.getUnitCountContainer().isSupplyFull()) {
+                    new Unit(local_player, p.gridX() * 2 + offset, p.gridY() * 2 + offset, null, peonTemplateToSpawn);
+                }
+            }
         };
         final Runnable dialog5 = () -> {
             CampaignDialogForm dialog = new InGameCampaignDialogForm(getViewer(), i18n("header5"),

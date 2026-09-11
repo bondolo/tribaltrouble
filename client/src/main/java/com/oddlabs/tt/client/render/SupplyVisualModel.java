@@ -1,6 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.base.geom.BoundsProvider;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.simulation.model.SupplyModel;
 import com.oddlabs.util.Color;
@@ -65,11 +64,6 @@ public interface SupplyVisualModel extends VisualModel {
      * {@return the crack decal properties for rendering}
      */
     DecalProperties getDecalProperties();
-
-    /**
-     * {@return the bounds provider for LOD and collision/picking calculations}
-     */
-    BoundsProvider getBoundsProvider();
 
     /**
      * Updates the spawn progress ratio.

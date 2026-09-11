@@ -8,8 +8,7 @@ import com.oddlabs.tt.simulation.model.BuildingType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Terrain;
-import com.oddlabs.tt.simulation.model.UnitVisualType;
-import com.oddlabs.tt.simulation.model.WeaponVisualType;
+import com.oddlabs.tt.simulation.model.UnitType;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -51,9 +50,9 @@ public final class AssetRegistry {
     ) {
     }
 
-    private final EnumMap<Race, EnumMap<UnitVisualType, SpriteKey>> units = new EnumMap<>(Race.class);
+    private final EnumMap<Race, EnumMap<UnitType, SpriteKey>> units = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<BuildingType, BuildingVisuals>> buildings = new EnumMap<>(Race.class);
-    private final EnumMap<Race, EnumMap<WeaponVisualType, SpriteKey>> weapons = new EnumMap<>(Race.class);
+    private final EnumMap<Race, EnumMap<SupplyType, SpriteKey>> weapons = new EnumMap<>(Race.class);
     private final EnumMap<Race, EnumMap<SupplyType, SpriteKey>> carriedSupplies = new EnumMap<>(Race.class);
     private final EnumMap<EmojiType, SpriteKey> emojis = new EnumMap<>(EmojiType.class);
     private final EnumMap<Race, SpriteKey> rallyPoints = new EnumMap<>(Race.class);
@@ -75,9 +74,9 @@ public final class AssetRegistry {
 
     private AssetRegistry() {
         for (Race race : Race.values()) {
-            units.put(race, new EnumMap<>(UnitVisualType.class));
+            units.put(race, new EnumMap<>(UnitType.class));
             buildings.put(race, new EnumMap<>(BuildingType.class));
-            weapons.put(race, new EnumMap<>(WeaponVisualType.class));
+            weapons.put(race, new EnumMap<>(SupplyType.class));
             carriedSupplies.put(race, new EnumMap<>(SupplyType.class));
         }
     }
@@ -86,11 +85,11 @@ public final class AssetRegistry {
         this.chickenCluckSprites = sprites.clone();
     }
 
-    public void registerWeapon(Race race, WeaponVisualType type, SpriteKey sprite) {
+    public void registerWeapon(Race race, SupplyType type, SpriteKey sprite) {
         weapons.get(race).put(type, sprite);
     }
 
-    public SpriteKey getWeaponSprite(Race race, WeaponVisualType type) {
+    public SpriteKey getWeaponSprite(Race race, SupplyType type) {
         SpriteKey sprite = weapons.get(race).get(type);
         if (sprite == null) {
             throw new IllegalStateException("Weapon sprite not registered for race " + race + " and type " + type);
@@ -110,11 +109,11 @@ public final class AssetRegistry {
         return sprite;
     }
 
-    public void registerUnit(Race race, UnitVisualType type, SpriteKey sprite) {
+    public void registerUnit(Race race, UnitType type, SpriteKey sprite) {
         units.get(race).put(type, sprite);
     }
 
-    public SpriteKey getUnitSprite(Race race, UnitVisualType type) {
+    public SpriteKey getUnitSprite(Race race, UnitType type) {
         SpriteKey sprite = units.get(race).get(type);
         if (sprite == null) {
             throw new IllegalStateException("Unit sprite not registered for race " + race + " and type " + type);

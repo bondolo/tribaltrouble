@@ -36,11 +36,11 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
         boolean isDirected = weapon instanceof DirectedThrowingWeapon;
         float loft = isDirected ? SPEAR_LOFT_FACTOR : AXE_LOFT_FACTOR;
         this.effectiveGravity = GRAVITY_MAGNITUDE * loft * loft;
-        float rotsPerSec = isDirected ? 0f : switch (weapon.getWeaponVisualType()) {
+        float rotsPerSec = isDirected ? 0f : switch (weapon.getSupplyType()) {
             case ROCK -> 3f;
             case IRON -> 6f;
             case RUBBER -> 9f;
-            case SONIC_BLAST -> 0f;
+            default -> 0f;
         };
         this.angleVelocity = (float) (rotsPerSec * 2.0 * Math.PI);
 

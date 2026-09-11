@@ -1,8 +1,8 @@
 package com.oddlabs.tt.simulation.model.weapon;
 
 import com.oddlabs.tt.simulation.model.Selectable;
+import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
-import com.oddlabs.tt.simulation.model.WeaponVisualType;
 
 /**
  * A throwing spear weapon made of rock.
@@ -15,8 +15,8 @@ public final class RockSpearWeapon extends DirectedThrowingWeapon {
     }
 
     @Override
-    public WeaponVisualType getWeaponVisualType() {
-        return WeaponVisualType.ROCK;
+    public SupplyType getSupplyType() {
+        return SupplyType.ROCK;
     }
 
     @Override

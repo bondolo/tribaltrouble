@@ -1,6 +1,5 @@
 package com.oddlabs.tt.simulation.model;
 
-import com.oddlabs.tt.base.geom.SpriteGeometry;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.model.weapon.InstantHitFactory;
 import com.oddlabs.tt.simulation.model.weapon.IronAxeWeapon;
@@ -79,14 +78,11 @@ public final class RaceData {
 
     private static BuildingTemplate createBuildingTemplate(
             BuildingType buildingType,
-            Race race,
-            String builtSpriteLocation,
+            RaceGeometry.BuildingBounds bounds,
             float builtSelectionRadius,
             float builtSelectionHeight,
-            String halfbuiltSpriteLocation,
             float halfbuiltSelectionRadius,
             float halfbuiltSelectionHeight,
-            String startSpriteLocation,
             float startSelectionRadius,
             float startSelectionHeight,
             float shadowDiameter,
@@ -107,10 +103,6 @@ public final class RaceData {
             float chimneyZ,
             String name
     ) {
-        SpriteGeometry builtGeom = SpriteGeometry.load(builtSpriteLocation);
-        SpriteGeometry halfbuiltGeom = SpriteGeometry.load(halfbuiltSpriteLocation);
-        SpriteGeometry startGeom = SpriteGeometry.load(startSpriteLocation);
-
         assert hitOffsetZ.length == 3;
         return new BuildingTemplate(
                 buildingType,
@@ -119,13 +111,13 @@ public final class RaceData {
                 smokeHeight,
                 numFragments,
                 shadowDiameter,
-                builtGeom.bounds(),
+                bounds.built(),
                 builtSelectionRadius,
                 builtSelectionHeight,
-                halfbuiltGeom.bounds(),
+                bounds.halfbuilt(),
                 halfbuiltSelectionRadius,
                 halfbuiltSelectionHeight,
-                startGeom.bounds(),
+                bounds.start(),
                 startSelectionRadius,
                 startSelectionHeight,
                 maxHitPoints,
@@ -143,12 +135,9 @@ public final class RaceData {
     private static RaceInfo createVikingsRaceInfo() {
         BuildingTemplate vikingQuarters = createBuildingTemplate(
                 BuildingType.QUARTERS,
-                Race.VIKINGS,
-                "/geometry/vikings/quarters.binsprite",
+                RaceGeometry.VIKING_QUARTERS,
                 3.5f, 7f,
-                "/geometry/vikings/quarters_halfbuilt.binsprite",
                 3.5f, 6f,
-                "/geometry/vikings/quarters_start.binsprite",
                 5f, 1f,
                 22f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
@@ -161,12 +150,9 @@ public final class RaceData {
 
         BuildingTemplate vikingArmory = createBuildingTemplate(
                 BuildingType.ARMORY,
-                Race.VIKINGS,
-                "/geometry/vikings/armory.binsprite",
+                RaceGeometry.VIKING_ARMORY,
                 3.5f, 7f,
-                "/geometry/vikings/armory_halfbuilt.binsprite",
                 3.5f, 6f,
-                "/geometry/vikings/armory_start.binsprite",
                 5f, 1f,
                 22f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
@@ -180,12 +166,9 @@ public final class RaceData {
 
         BuildingTemplate vikingTower = createBuildingTemplate(
                 BuildingType.TOWER,
-                Race.VIKINGS,
-                "/geometry/vikings/tower.binsprite",
+                RaceGeometry.VIKING_TOWER,
                 1.25f, 11f,
-                "/geometry/vikings/tower_halfbuilt.binsprite",
                 2f, 7f,
-                "/geometry/vikings/tower_start.binsprite",
                 2.5f, 1f,
                 10f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
@@ -200,9 +183,9 @@ public final class RaceData {
         final float shadowDiameterPeon = 1.6f;
         final float shadowDiameterChieftain = 2.2f;
 
-        SpriteGeometry warriorGeom = SpriteGeometry.load("/geometry/vikings/warrior.binsprite");
-        SpriteGeometry peonGeom = SpriteGeometry.load("/geometry/vikings/peon.binsprite");
-        SpriteGeometry chieftainGeom = SpriteGeometry.load("/geometry/vikings/chieftain.binsprite");
+        RaceGeometry.UnitBounds warriorGeom = RaceGeometry.VIKING_WARRIOR;
+        RaceGeometry.UnitBounds peonGeom = RaceGeometry.VIKING_PEON;
+        RaceGeometry.UnitBounds chieftainGeom = RaceGeometry.VIKING_CHIEFTAIN;
 
         WeaponFactory vikingWarriorRockWeapon = new ThrowingFactory<>(
                 RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 27f / 58f
@@ -217,7 +200,7 @@ public final class RaceData {
         UnitTemplate vikingWarriorRock = new UnitTemplate(
                 .4f, 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f, vikingWarriorRockWeapon, UnitVisualType.WARRIOR_ROCK,
+                4f, vikingWarriorRockWeapon, UnitType.WARRIOR_ROCK,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
                 shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .5f,
                 i18n("rock_warrior"),
@@ -227,7 +210,7 @@ public final class RaceData {
         UnitTemplate vikingWarriorIron = new UnitTemplate(
                 .4f, 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f, vikingWarriorIronWeapon, UnitVisualType.WARRIOR_IRON,
+                4f, vikingWarriorIronWeapon, UnitType.WARRIOR_IRON,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
                 shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("iron_warrior"),
@@ -237,7 +220,7 @@ public final class RaceData {
         UnitTemplate vikingWarriorRubber = new UnitTemplate(
                 .4f, 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f, vikingWarriorRubberWeapon, UnitVisualType.WARRIOR_RUBBER,
+                4f, vikingWarriorRubberWeapon, UnitType.WARRIOR_RUBBER,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
                 shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("chicken_warrior"),
@@ -248,7 +231,7 @@ public final class RaceData {
                 .4f, 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f, new InstantHitFactory(1 / 5f, 0f, 11f / 38f),
-                UnitVisualType.PEON, peonGeom.bounds(), peonGeom.animTypes(),
+                UnitType.PEON, peonGeom.bounds(), peonGeom.animTypes(),
                 shadowDiameterPeon, new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
                 .25f, new float[]{.7f}, 0f,
                 i18n("peon"),
@@ -259,7 +242,7 @@ public final class RaceData {
                 .4f, 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f, new InstantHitFactory(3 / 4f, 0f, 75f / 119f),
-                UnitVisualType.CHIEFTAIN, chieftainGeom.bounds(), chieftainGeom.animTypes(),
+                UnitType.CHIEFTAIN, chieftainGeom.bounds(), chieftainGeom.animTypes(),
                 shadowDiameterChieftain, null,
                 .15f, new float[]{1.7f}, 0.5f,
                 i18n("chieftain"),
@@ -290,12 +273,9 @@ public final class RaceData {
     private static RaceInfo createNativesRaceInfo() {
         BuildingTemplate nativeQuarters = createBuildingTemplate(
                 BuildingType.QUARTERS,
-                Race.NATIVES,
-                "/geometry/natives/quarters.binsprite",
+                RaceGeometry.NATIVE_QUARTERS,
                 4f, 8f,
-                "/geometry/natives/quarters_halfbuilt.binsprite",
                 4f, 6f,
-                "/geometry/natives/quarters_start.binsprite",
                 5f, 1f,
                 16f, QUARTERS_SIZE, 6f, 9f, 30, QUARTERS_HIT_POINTS,
                 new ReproduceUnitContainerFactory(),
@@ -308,12 +288,9 @@ public final class RaceData {
 
         BuildingTemplate nativeArmory = createBuildingTemplate(
                 BuildingType.ARMORY,
-                Race.NATIVES,
-                "/geometry/natives/armory.binsprite",
+                RaceGeometry.NATIVE_ARMORY,
                 4f, 8f,
-                "/geometry/natives/armory_halfbuilt.binsprite",
                 4f, 6f,
-                "/geometry/natives/armory_start.binsprite",
                 5f, 1f,
                 16f, ARMORY_SIZE, 6f, 9f, 30, ARMORY_HIT_POINTS,
                 new WorkerUnitContainerFactory(),
@@ -327,12 +304,9 @@ public final class RaceData {
 
         BuildingTemplate nativeTower = createBuildingTemplate(
                 BuildingType.TOWER,
-                Race.NATIVES,
-                "/geometry/natives/tower.binsprite",
+                RaceGeometry.NATIVE_TOWER,
                 1f, 14f,
-                "/geometry/natives/tower_halfbuilt.binsprite",
                 1f, 14f,
-                "/geometry/natives/tower_start.binsprite",
                 1.5f, 2f,
                 5f, TOWER_SIZE, 3f, 12f, 20, TOWER_HIT_POINTS,
                 new MountUnitContainerFactory(),
@@ -347,9 +321,9 @@ public final class RaceData {
         final float shadowDiameterPeon = 1.6f;
         final float shadowDiameterChieftain = 2.2f;
 
-        SpriteGeometry warriorGeom = SpriteGeometry.load("/geometry/natives/warrior.binsprite");
-        SpriteGeometry peonGeom = SpriteGeometry.load("/geometry/natives/peon.binsprite");
-        SpriteGeometry chieftainGeom = SpriteGeometry.load("/geometry/natives/chieftain.binsprite");
+        RaceGeometry.UnitBounds warriorGeom = RaceGeometry.NATIVE_WARRIOR;
+        RaceGeometry.UnitBounds peonGeom = RaceGeometry.NATIVE_PEON;
+        RaceGeometry.UnitBounds chieftainGeom = RaceGeometry.NATIVE_CHIEFTAIN;
 
         WeaponFactory nativeWarriorRockWeapon = new ThrowingFactory<>(
                 RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, 44f / 100f
@@ -364,7 +338,7 @@ public final class RaceData {
         UnitTemplate nativeWarriorRock = new UnitTemplate(
                 .4f, 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f, nativeWarriorRockWeapon, UnitVisualType.WARRIOR_ROCK,
+                4f, nativeWarriorRockWeapon, UnitType.WARRIOR_ROCK,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
                 shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .5f,
                 i18n("rock_warrior"),
@@ -374,7 +348,7 @@ public final class RaceData {
         UnitTemplate nativeWarriorIron = new UnitTemplate(
                 .4f, 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f, nativeWarriorIronWeapon, UnitVisualType.WARRIOR_IRON,
+                4f, nativeWarriorIronWeapon, UnitType.WARRIOR_IRON,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
                 shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("iron_warrior"),
@@ -384,7 +358,7 @@ public final class RaceData {
         UnitTemplate nativeWarriorRubber = new UnitTemplate(
                 .4f, 1.2f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.THROW),
-                4f, nativeWarriorRubberWeapon, UnitVisualType.WARRIOR_RUBBER,
+                4f, nativeWarriorRubberWeapon, UnitType.WARRIOR_RUBBER,
                 warriorGeom.bounds(), warriorGeom.animTypes(),
                 shadowDiameterWarrior, null, .25f, new float[]{1.2f}, .7f,
                 i18n("chicken_warrior"),
@@ -395,7 +369,7 @@ public final class RaceData {
                 .4f, 1.1f,
                 new Abilities(Abilities.BUILD | Abilities.HARVEST | Abilities.ATTACK | Abilities.TARGET),
                 5f, new InstantHitFactory(1 / 5f, 0f, 51f / 83f),
-                UnitVisualType.PEON, peonGeom.bounds(), peonGeom.animTypes(),
+                UnitType.PEON, peonGeom.bounds(), peonGeom.animTypes(),
                 shadowDiameterPeon, new UnitSupplyContainerFactory(MAX_UNIT_RESOURCES),
                 .25f, new float[]{.7f}, 0f,
                 i18n("peon"),
@@ -406,7 +380,7 @@ public final class RaceData {
                 .4f, 1.4f,
                 new Abilities(Abilities.ATTACK | Abilities.TARGET | Abilities.MAGIC),
                 4f, new InstantHitFactory(3 / 4f, 0f, 75f / 129f),
-                UnitVisualType.CHIEFTAIN, chieftainGeom.bounds(), chieftainGeom.animTypes(),
+                UnitType.CHIEFTAIN, chieftainGeom.bounds(), chieftainGeom.animTypes(),
                 shadowDiameterChieftain, null,
                 .15f, new float[]{1.7f}, 0.5f,
                 i18n("chieftain"),

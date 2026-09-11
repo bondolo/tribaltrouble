@@ -26,11 +26,16 @@ import com.oddlabs.tt.simulation.player.AI;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.base.event.StateChecksum;
 import com.oddlabs.tt.simulation.model.Target;
+import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.client.viewer.InGameInfo;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.simulation.landscape.HeightMap;
+import com.oddlabs.tt.simulation.model.StatueScenery;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -209,6 +214,43 @@ public abstract class Island {
                 armory.fillSupplies(IronAxeWeapon.class, Integer.MAX_VALUE);
             });
         });
+    }
+
+    /**
+     * Placement specification for a campaign statue scenery object.
+     */
+    public record StatuePlacement(float x, float y, float dirX, float dirY, int treasureIndex, float shadowDiameter) {
+        public static final float DEFAULT_SHADOW_DIAMETER = 2.6f;
+        public static final float LARGE_SHADOW_DIAMETER = 4.5f;
+
+        public StatuePlacement(float x, float y, float dirX, float dirY, int treasureIndex) {
+            this(x, y, dirX, dirY, treasureIndex, DEFAULT_SHADOW_DIAMETER);
+        }
+
+        public static StatuePlacement atGrid(int gridX, int gridY, float dirX, float dirY, int treasureIndex) {
+            float offset = HeightMap.METERS_PER_UNIT_GRID * 0.5f;
+            return new StatuePlacement(gridX * 2 + offset, gridY * 2 + offset, dirX, dirY, treasureIndex,
+                    DEFAULT_SHADOW_DIAMETER);
+        }
+
+        public static StatuePlacement atGrid(int gridX, int gridY, float dirX, float dirY, int treasureIndex,
+                float shadowDiameter) {
+            float offset = HeightMap.METERS_PER_UNIT_GRID * 0.5f;
+            return new StatuePlacement(gridX * 2 + offset, gridY * 2 + offset, dirX, dirY, treasureIndex,
+                    shadowDiameter);
+        }
+    }
+
+    /**
+     * Instantiates and registers statue scenery objects according to the given placement specifications.
+     */
+    protected final StatueScenery[] placeStatues(String name, StatuePlacement... placements) {
+        var treasures = AssetRegistry.getInstance().getTreasures();
+        var world = Objects.requireNonNull(getViewer()).getWorld();
+        return Arrays.stream(placements)
+                .map(p -> new StatueScenery(world, p.x(), p.y(), p.dirX(), p.dirY(),
+                        p.treasureIndex(), treasures[p.treasureIndex()].bounds(), p.shadowDiameter(), true, name))
+                .toArray(StatueScenery[]::new);
     }
 
     public final void updateChecksum(StateChecksum checksum) {

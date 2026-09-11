@@ -73,7 +73,6 @@ import com.oddlabs.tt.audio.AudioFile;
 import com.oddlabs.tt.client.resource.EmojiType;
 import com.oddlabs.tt.simulation.model.Race;
 import com.oddlabs.tt.simulation.model.SupplyType;
-import com.oddlabs.tt.simulation.model.UnitVisualType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -197,7 +196,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onUnitDeath(Unit unit, UnitVisualType unitType, Race race) {
+            public void onUnitDeath(Unit unit, UnitType unitType, Race race) {
                 AudioFile deathSound = switch (unitType) {
                     case PEON -> AudioRegistry.SFX_DEATH_PEON;
                     case WARRIOR_ROCK -> (race == Race.VIKINGS)
@@ -214,9 +213,9 @@ public final class WorldViewer implements Animated, AutoCloseable {
             }
 
             @Override
-            public void onUnitAttack(UnitVisualType unitType, Race race, float x, float y, float z) {
+            public void onUnitAttack(UnitType unitType, Race race, float x, float y, float z) {
                 AudioFile sound;
-                if (unitType == UnitVisualType.CHIEFTAIN) {
+                if (unitType == UnitType.CHIEFTAIN) {
                     AudioFile[] hits = (race == Race.VIKINGS)
                             ? AudioRegistry.SFX_VIKING_CHIEFTAIN_HITS
                             : AudioRegistry.SFX_NATIVE_CHIEFTAIN_HITS;

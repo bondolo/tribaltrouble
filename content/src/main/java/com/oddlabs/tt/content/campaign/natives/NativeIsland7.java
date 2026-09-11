@@ -17,7 +17,6 @@ import com.oddlabs.tt.simulation.model.UnitType;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.Origin;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
-import com.oddlabs.tt.simulation.model.SceneryModel;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.net.GameNetwork;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
@@ -26,7 +25,6 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.tt.simulation.trigger.GameStartedTrigger;
 import com.oddlabs.tt.client.trigger.VictoryTrigger;
 import com.oddlabs.tt.base.util.Utils;
-import com.oddlabs.tt.client.resource.AssetRegistry;
 
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -133,90 +131,51 @@ public final class NativeIsland7 extends Island {
         insertGuardTower(enemy, UnitType.WARRIOR_IRON, 126, 117);
 
         // Insert treasures
-        var treasures = AssetRegistry.getInstance().getTreasures();
-        float shadow_diameter = 2.6f;
-
         float dir = (float) Math.sin(Math.PI / 4);
         Random r = new Random(42);
         float w = HeightMap.METERS_PER_UNIT_GRID;
-        // From VikingIsland3
-        new SceneryModel(getViewer().getWorld(), 98 * 2 + w * r.nextFloat(), 62 * 2 + w * r.nextFloat(), 0, -1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 83 * 2 + w * r.nextFloat(), 58 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), -1, 0,
-                treasures[5], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 97 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 84 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), dir, dir,
-                treasures[4], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 96 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), 1, 0,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 100 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), dir, -dir,
-                treasures[4], shadow_diameter, true, i18n("statue"));
+        placeStatues(i18n("statue"),
+                // From VikingIsland3
+                new StatuePlacement(98 * 2 + w * r.nextFloat(), 62 * 2 + w * r.nextFloat(), 0, -1, 1),
+                new StatuePlacement(94 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), 0, 1, 3),
+                new StatuePlacement(83 * 2 + w * r.nextFloat(), 58 * 2 + w * r.nextFloat(), 0, 1, 1),
+                new StatuePlacement(93 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), -1, 0, 5),
+                new StatuePlacement(97 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir, 3),
+                new StatuePlacement(84 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), dir, dir, 4),
+                new StatuePlacement(96 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), 1, 0, 1),
+                new StatuePlacement(100 * 2 + w * r.nextFloat(), 49 * 2 + w * r.nextFloat(), dir, -dir, 4),
 
-        // From VikingIsland7
-        new SceneryModel(getViewer().getWorld(), 84 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), -1, 0,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 83 * 2 + w * r.nextFloat(), 64 * 2 + w * r.nextFloat(), -1, 0,
-                treasures[4], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 95 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 91 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), dir, -dir,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 97 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), dir, dir,
-                treasures[4], shadow_diameter, true, i18n("statue"));
+                // From VikingIsland7
+                new StatuePlacement(84 * 2 + w * r.nextFloat(), 67 * 2 + w * r.nextFloat(), -1, 0, 3),
+                new StatuePlacement(83 * 2 + w * r.nextFloat(), 64 * 2 + w * r.nextFloat(), -1, 0, 4),
+                new StatuePlacement(95 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), 0, 1, 1),
+                new StatuePlacement(91 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), dir, -dir, 3),
+                new StatuePlacement(97 * 2 + w * r.nextFloat(), 50 * 2 + w * r.nextFloat(), dir, dir, 4),
+                new StatuePlacement(93 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), dir, dir, 5),
+                new StatuePlacement(93 * 2 + w * r.nextFloat(), 65 * 2 + w * r.nextFloat(), dir, -dir, 1),
+                new StatuePlacement(98 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 1),
+                new StatuePlacement(96 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), 0, 1, 3),
+                new StatuePlacement(96 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), -1, 0, 3),
+                new StatuePlacement(94 * 2 + w * r.nextFloat(), 52 * 2 + w * r.nextFloat(), -dir, dir, 4),
+                new StatuePlacement(97 * 2 + w * r.nextFloat(), 56 * 2 + w * r.nextFloat(), 0, -1, 5),
 
-        new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), dir, dir,
-                treasures[5], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 65 * 2 + w * r.nextFloat(), dir, -dir,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 98 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 96 * 2 + w * r.nextFloat(), 51 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 96 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), -1, 0,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 52 * 2 + w * r.nextFloat(), -dir, dir,
-                treasures[4], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 97 * 2 + w * r.nextFloat(), 56 * 2 + w * r.nextFloat(), 0, -1,
-                treasures[5], shadow_diameter, true, i18n("statue"));
+                // From VikingIsland14
+                new StatuePlacement(94 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir, 3),
+                new StatuePlacement(91 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), dir, dir, 1),
+                new StatuePlacement(88 * 2 + w * r.nextFloat(), 57 * 2 + w * r.nextFloat(), 0, 1, 3),
+                new StatuePlacement(93 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, 1, 4),
+                new StatuePlacement(94 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, -1, 1),
+                new StatuePlacement(90 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 5),
+                new StatuePlacement(91 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), 0, 1, 1),
+                new StatuePlacement(93 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), -1, 0, 3),
+                new StatuePlacement(93 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir, 5),
+                new StatuePlacement(94 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), 0, 1, 1),
+                new StatuePlacement(90 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 1, 0, 3),
+                new StatuePlacement(92 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), -dir, dir, 4),
+                new StatuePlacement(94 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 0, -1, 5),
 
-        // From VikingIsland14
-        new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 59 * 2 + w * r.nextFloat(), -dir, -dir,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 91 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), dir, dir,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 88 * 2 + w * r.nextFloat(), 57 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[4], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 53 * 2 + w * r.nextFloat(), 0, -1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 90 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir,
-                treasures[5], shadow_diameter, true, i18n("statue"));
-
-        new SceneryModel(getViewer().getWorld(), 91 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 61 * 2 + w * r.nextFloat(), -1, 0,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 93 * 2 + w * r.nextFloat(), 54 * 2 + w * r.nextFloat(), dir, -dir,
-                treasures[5], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 63 * 2 + w * r.nextFloat(), 0, 1,
-                treasures[1], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 90 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 1, 0,
-                treasures[3], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 92 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), -dir, dir,
-                treasures[4], shadow_diameter, true, i18n("statue"));
-        new SceneryModel(getViewer().getWorld(), 94 * 2 + w * r.nextFloat(), 55 * 2 + w * r.nextFloat(), 0, -1,
-                treasures[5], shadow_diameter, true, i18n("statue"));
-
-        shadow_diameter = 4.5f;
-        float offset = HeightMap.METERS_PER_UNIT_GRID / 2f;
-        new SceneryModel(getViewer().getWorld(), 91 * 2 + offset, 51 * 2 + offset, 0, 1, treasures[0], shadow_diameter,
-                true, i18n("statue"));
+                // Centerpiece
+                StatuePlacement.atGrid(91, 51, 0, 1, 0, StatuePlacement.LARGE_SHADOW_DIAMETER));
     }
 
     @Override
