@@ -2,6 +2,7 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.geometry.AnimationInfo;
+import com.oddlabs.geometry.BoundsData;
 import com.oddlabs.geometry.SkeletonData;
 import com.oddlabs.geometry.SpriteInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
@@ -20,7 +21,6 @@ import org.lwjgl.opengl.GL31;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * Manages a collection of 3D sprites and their associated shared OpenGL resources,
@@ -111,7 +111,12 @@ public final class SpriteList implements AutoCloseable {
         } else {
             this.initial_pose_matrices = null;
         }
-        bounds = Stream.generate(BoundingBox::new).limit(animation_infos.length).toArray(BoundingBox[]::new);
+        BoundsData[] bounds_data = (BoundsData[]) sprites_and_animations[3];
+        this.bounds = new BoundingBox[bounds_data.length];
+        for (int i = 0; i < bounds_data.length; i++) {
+            BoundsData bd = bounds_data[i];
+            this.bounds[i] = new BoundingBox(bd.minX(), bd.maxX(), bd.minY(), bd.maxY(), bd.minZ(), bd.maxZ());
+        }
 
         int total_indices = 0;
         int total_vertices = 0;

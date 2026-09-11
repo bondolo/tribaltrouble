@@ -9,16 +9,14 @@ import java.nio.ShortBuffer;
 import java.util.Arrays;
 import java.util.Map;
 
-public final class Optimizer {
+/**
+ * Optimizes vertex indices, geometry arrays, and skeleton animations for asset compilation.
+ */
+final class Optimizer {
     private static final float VERTEX_THRESHOLD = 0.000001f;
+    private static final int MAX_BONE_INFLUENCES = 4;
 
-    private static boolean shortsEquals(int index1, int index2, int size, short[] array1, short[] array2) {
-        for (int i = 0; i < size; i++) {
-            if (array1[index1 * size + i] != array2[index2 * size + i]) {
-                return false;
-            }
-        }
-        return true;
+    private Optimizer() {
     }
 
     private static boolean floatsEquals(int index1, int index2, int size, float[] array1, float[] array2) {
@@ -73,9 +71,69 @@ public final class Optimizer {
         return true;
     }
 
+    private static void clampAndNormalizeSkin(byte[][] skin_names, float[][] skin_weights, int vertexIndex) {
+        byte[] names = skin_names[vertexIndex];
+        float[] weights = skin_weights[vertexIndex];
+        int count = names.length;
+        if (count == 0) {
+            return;
+        }
+        if (count == 1) {
+            weights[0] = 1.0f;
+            return;
+        }
+
+        for (int i = 0; i < count - 1; i++) {
+            int maxIdx = i;
+            for (int j = i + 1; j < count; j++) {
+                if (weights[j] > weights[maxIdx] || (weights[j] == weights[maxIdx] && names[j] < names[maxIdx])) {
+                    maxIdx = j;
+                }
+            }
+            if (maxIdx != i) {
+                float tmpWeight = weights[i];
+                weights[i] = weights[maxIdx];
+                weights[maxIdx] = tmpWeight;
+
+                byte tmpName = names[i];
+                names[i] = names[maxIdx];
+                names[maxIdx] = tmpName;
+            }
+        }
+
+        int newCount = Math.min(count, MAX_BONE_INFLUENCES);
+        byte[] newNames = names.length == newCount ? names : new byte[newCount];
+        float[] newWeights = weights.length == newCount ? weights : new float[newCount];
+        float sum = 0f;
+        for (int i = 0; i < newCount; i++) {
+            newNames[i] = names[i];
+            newWeights[i] = weights[i];
+            sum += newWeights[i];
+        }
+
+        if (sum > 0f) {
+            float invSum = 1f / sum;
+            for (int i = 0; i < newCount; i++) {
+                newWeights[i] *= invSum;
+            }
+        } else {
+            newWeights[0] = 1.0f;
+            for (int i = 1; i < newCount; i++) {
+                newWeights[i] = 0f;
+            }
+        }
+
+        skin_names[vertexIndex] = newNames;
+        skin_weights[vertexIndex] = newWeights;
+    }
+
     static ModelInfo optimize(/*String tex_name, */int num_vertices, float[] vertices,
             float[] normals, float[] colors, float[] uvs, float[] uvs2,
             byte[][] skin_names, float[][] skin_weights) {
+        for (int i = 0; i < num_vertices; i++) {
+            clampAndNormalizeSkin(skin_names, skin_weights, i);
+        }
+
         short[] indices = new short[num_vertices];
         float[] r_vertices = new float[vertices.length];
         float[] r_colors = new float[colors.length];
@@ -157,7 +215,7 @@ public final class Optimizer {
                 .texcoords(), model_info.texcoords2(), model_info.skin_names(), model_info.skin_weights(), clear_color);
     }
 
-    public static AnimationInfo convertToAnimation(/*float[] skeleton_vertices,*/ Bone skeleton,
+    static AnimationInfo convertToAnimation(/*float[] skeleton_vertices,*/ Bone skeleton,
             Map<String, float[]> initial_pose, Map<String, float[]>[] anim_map,
             AnimationInfo.AnimationType type, float wpc, String name) {
         // animations format: [frames] [bones] [matrix]

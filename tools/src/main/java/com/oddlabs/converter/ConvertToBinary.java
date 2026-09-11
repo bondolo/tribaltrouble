@@ -3,6 +3,9 @@ package com.oddlabs.converter;
 import com.oddlabs.geometry.AnimationInfo;
 import com.oddlabs.geometry.SkeletonData;
 import com.oddlabs.geometry.SpriteInfo;
+import com.oddlabs.geometry.BoundsData;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -206,8 +209,84 @@ public final class ConvertToBinary {
                 sprite_models[i] = Optimizer.convertToSprite(current.getTextures(), model_info, current
                         .getClearColor());
             }
-            write(new Object[]{sprite_models, animations, skeleton_data}, build_file);
+            BoundsData[] bounds_data = computeBounds(sprite_models, animations);
+            write(new Object[]{sprite_models, animations, skeleton_data, bounds_data}, build_file);
         }
+    }
+
+    private static BoundsData[] computeBounds(SpriteInfo[] sprites, AnimationInfo[] animations) {
+        BoundsData[] bounds = new BoundsData[animations.length];
+        Vector4f v = new Vector4f();
+        Vector4f temp = new Vector4f();
+
+        for (int anim = 0; anim < animations.length; anim++) {
+            float minX = Float.POSITIVE_INFINITY;
+            float maxX = Float.NEGATIVE_INFINITY;
+            float minY = Float.POSITIVE_INFINITY;
+            float maxY = Float.NEGATIVE_INFINITY;
+            float minZ = Float.POSITIVE_INFINITY;
+            float maxZ = Float.NEGATIVE_INFINITY;
+
+            float[][] frames = animations[anim].getFrames();
+            for (float[] frame : frames) {
+                int numBones = frame.length / 12;
+                Matrix4f[] frameBones = new Matrix4f[numBones];
+                for (int b = 0; b < numBones; b++) {
+                    int offset = b * 12;
+                    frameBones[b] = new Matrix4f().set(
+                            frame[offset + 0], frame[offset + 4], frame[offset + 8], 0.0f,
+                            frame[offset + 1], frame[offset + 5], frame[offset + 9], 0.0f,
+                            frame[offset + 2], frame[offset + 6], frame[offset + 10], 0.0f,
+                            frame[offset + 3], frame[offset + 7], frame[offset + 11], 1.0f
+                    );
+                }
+
+                for (SpriteInfo sprite : sprites) {
+                    float[] vertices = sprite.getVertices();
+                    byte[][] skinNames = sprite.getSkinNames();
+                    float[][] skinWeights = sprite.getSkinWeights();
+                    int numVertices = vertices.length / 3;
+
+                    for (int vert = 0; vert < numVertices; vert++) {
+                        float vx = vertices[vert * 3 + 0];
+                        float vy = vertices[vert * 3 + 1];
+                        float vz = vertices[vert * 3 + 2];
+                        v.set(vx, vy, vz, 1.0f);
+
+                        byte[] vertSkinNames = skinNames[vert];
+                        float[] vertSkinWeights = skinWeights[vert];
+
+                        float rx = 0f;
+                        float ry = 0f;
+                        float rz = 0f;
+
+                        for (int b = 0; b < vertSkinNames.length; b++) {
+                            float weight = vertSkinWeights[b];
+                            int boneIdx = vertSkinNames[b] & 0xFF;
+                            if (boneIdx < frameBones.length) {
+                                frameBones[boneIdx].transform(v, temp);
+                                rx += temp.x * weight;
+                                ry += temp.y * weight;
+                                rz += temp.z * weight;
+                            } else {
+                                rx += vx * weight;
+                                ry += vy * weight;
+                                rz += vz * weight;
+                            }
+                        }
+
+                        if (rx < minX) minX = rx;
+                        if (rx > maxX) maxX = rx;
+                        if (ry < minY) minY = ry;
+                        if (ry > maxY) maxY = ry;
+                        if (rz < minZ) minZ = rz;
+                        if (rz > maxZ) maxZ = rz;
+                    }
+                }
+            }
+            bounds[anim] = new BoundsData(minX, maxX, minY, maxY, minZ, maxZ);
+        }
+        return bounds;
     }
 
     private static @Nullable ObjectInfo getSkeletonObjectInfo(Node n, Path src_dir) {
