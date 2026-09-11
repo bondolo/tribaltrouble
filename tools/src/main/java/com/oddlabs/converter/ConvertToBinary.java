@@ -1,6 +1,7 @@
 package com.oddlabs.converter;
 
 import com.oddlabs.geometry.AnimationInfo;
+import com.oddlabs.geometry.SkeletonData;
 import com.oddlabs.geometry.SpriteInfo;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
@@ -173,6 +174,7 @@ public final class ConvertToBinary {
                 scale = 1f;
             AnimationInfo[] animations;
             Map<String, Bone> name_to_bone_map;
+            SkeletonData skeleton_data;
             if (skeleton_info != null) {
                 Skeleton skeleton = SkeletonLoader.loadSkeleton(skeleton_info.getFile());
                 name_to_bone_map = skeleton.getNameToBoneMap();
@@ -184,11 +186,17 @@ public final class ConvertToBinary {
                     animations[i] = Optimizer.convertToAnimation(skeleton.getBoneRoot(), skeleton.getInitialPose(),
                             animation_map, current.getType(), current.getWPC(), current.getName());
                 }
+                String[] bone_names = new String[name_to_bone_map.size()];
+                for (Bone b : name_to_bone_map.values()) {
+                    bone_names[b.index() & 0xFF] = b.name();
+                }
+                skeleton_data = new SkeletonData(bone_names, skeleton.getInitialPose());
             } else {
                 float[][] identity_frame = {{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0}};
                 animations = new AnimationInfo[]{new AnimationInfo(identity_frame, AnimationInfo.AnimationType.LOOP, 1f,
                         "identity")};
                 name_to_bone_map = null;
+                skeleton_data = null;
             }
             SpriteInfo[] sprite_models = new SpriteInfo[model_object_infos.length];
             for (int i = 0; i < model_object_infos.length; i++) {
@@ -198,7 +206,7 @@ public final class ConvertToBinary {
                 sprite_models[i] = Optimizer.convertToSprite(current.getTextures(), model_info, current
                         .getClearColor());
             }
-            write(new Object[]{sprite_models, animations}, build_file);
+            write(new Object[]{sprite_models, animations, skeleton_data}, build_file);
         }
     }
 

@@ -14,6 +14,7 @@ import com.oddlabs.tt.gui.PulldownMenu;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.Slider;
 import com.oddlabs.tt.gui.TitledBorderGroup;
+import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.CVDMode;
 import com.oddlabs.util.Color;
 
@@ -22,7 +23,7 @@ import static com.oddlabs.tt.gui.Placement.RIGHT_MID;
 
 /**
  * Settings panel for accessibility features including UI scaling, cursor sizing,
- * high contrast modes, color vision deficiency (CVD) filters, and custom team colors.
+ * high contrast modes, color vision deficiency (CVD) filters, and custom player colors.
  */
 public final class AccessibilityPanel extends Panel {
     private static final int MAX_VALUE = 20;
@@ -172,19 +173,19 @@ public final class AccessibilityPanel extends Panel {
         group_cvd.compileCanvas();
 
         // Team Colours
-        TitledBorderGroup group_team_colours = new TitledBorderGroup(AbstractOptionsMenu.i18n("team_header"));
-        group_team_colours.setFixedWidth(GROUP_WIDTH);
-        addChild(group_team_colours);
+        TitledBorderGroup group_player_colours = new TitledBorderGroup(AbstractOptionsMenu.i18n("team_header"));
+        group_player_colours.setFixedWidth(GROUP_WIDTH);
+        addChild(group_player_colours);
 
-        PulldownMenu<Integer> pm_team = new PulldownMenu<>();
-        for (int i = 0; i < accessibility.team_colours.length; i++) {
+        PulldownMenu<Integer> pm_player = new PulldownMenu<>();
+        for (int i = 0; i < accessibility.player_colours.length; i++) {
             String player_str = AbstractOptionsMenu.i18n("player", Integer.toString(i + 1));
             PulldownItem<Integer> item = new PulldownItem<>(player_str, i);
-            item.setLabelColor(accessibility.team_colours[i]);
-            pm_team.addItem(item);
+            item.setLabelColor(accessibility.player_colours[i]);
+            pm_player.addItem(item);
         }
-        PulldownButton<Integer> pb_team = new PulldownButton<>(gui_root, pm_team, 0, 150);
-        group_team_colours.addChild(pb_team);
+        PulldownButton<Integer> pb_player = new PulldownButton<>(gui_root, pm_player, 0, 150);
+        group_player_colours.addChild(pb_player);
 
         // Colour Preview Box
         class ColourBox extends GUIObject {
@@ -204,63 +205,76 @@ public final class AccessibilityPanel extends Panel {
             }
         }
         ColourBox colourBox = new ColourBox();
-        group_team_colours.addChild(colourBox);
+        group_player_colours.addChild(colourBox);
 
         // Hue Slider (Colour Ramp)
         Slider slider_hue = new Slider(FULL_SLIDER_WIDTH, 0, 360, 0);
-        group_team_colours.addChild(slider_hue);
+        group_player_colours.addChild(slider_hue);
 
         // Reset Button
         HorizButton button_reset = new HorizButton(AbstractOptionsMenu.i18n("reset"), 100);
-        group_team_colours.addChild(button_reset);
+        group_player_colours.addChild(button_reset);
+
+        final boolean[] isRefreshing = new boolean[]{false};
 
         // Update logic
         Runnable updateColour = () -> {
-            int teamIndex = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+            if (isRefreshing[0]) {
+                return;
+            }
+            int playerIndex = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             float hue = slider_hue.getValue();
             var newColour = Color.Standard.hsbToRgb(hue / 360f, 1f, 1f);
-            accessibility.team_colours[teamIndex] = newColour;
+            accessibility.setPlayerColour(playerIndex, newColour);
+            World.updateAllPlayerColors(accessibility.linear_player_colours);
             colourBox.setColour(newColour);
 
             // Update the pulldown item colour
-            pm_team.getChosenItem().ifPresent(pi -> pi.setLabelColor(newColour));
-            pb_team.setLabelColor(newColour);
+            pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(newColour));
+            pb_player.setLabelColor(newColour);
         };
 
         Runnable refreshUI = () -> {
-            int index = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            var currentColour = accessibility.team_colours[index];
-            float[] hsb = Color.Standard.rgbToHsb(currentColour);
-            slider_hue.setValue((int) (hsb[0] * 360f));
-            colourBox.setColour(currentColour);
+            isRefreshing[0] = true;
+            try {
+                int index = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+                var currentColour = accessibility.player_colours[index];
+                float[] hsb = Color.Standard.rgbToHsb(currentColour);
+                slider_hue.setValue((int) (hsb[0] * 360f));
+                colourBox.setColour(currentColour);
+            } finally {
+                isRefreshing[0] = false;
+            }
         };
 
-        pm_team.addItemChosenListener((_, _) -> refreshUI.run());
+        pm_player.addItemChosenListener((_, _) -> refreshUI.run());
         refreshUI.run();
 
         slider_hue.addValueListener(_ -> updateColour.run());
 
         button_reset.addMouseClickListener((_, _, _, _) -> {
-            int index = pm_team.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            accessibility.team_colours[index] = new Color.Standard(
-                    AccessibilitySettings.DEFAULT_TEAM_COLOURS[index]);
+            int index = pm_player.getChosenItem().map(PulldownItem::getAttachment).orElse(0);
+            var resetColour = new Color.Standard(
+                    AccessibilitySettings.DEFAULT_PLAYER_COLOURS[index]);
+            accessibility.setPlayerColour(index, resetColour);
+            World.updateAllPlayerColors(accessibility.linear_player_colours);
             refreshUI.run();
-            pm_team.getChosenItem().ifPresent(pi -> pi.setLabelColor(accessibility.team_colours[index]));
-            pb_team.setLabelColor(accessibility.team_colours[index]);
+            pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(accessibility.player_colours[index]));
+            pb_player.setLabelColor(accessibility.player_colours[index]);
         });
 
         CheckBox cb_team_stencil = new CheckBox(accessibility.team_stencil, AbstractOptionsMenu
                 .i18n("team_stencil"), AbstractOptionsMenu.i18n("team_stencil_tip"));
         cb_team_stencil.addCheckBoxListener(marked -> accessibility.team_stencil = marked);
-        group_team_colours.addChild(cb_team_stencil);
+        group_player_colours.addChild(cb_team_stencil);
 
-        pb_team.place();
-        colourBox.place(pb_team, RIGHT_MID);
+        pb_player.place();
+        colourBox.place(pb_player, RIGHT_MID);
         button_reset.place(colourBox, RIGHT_MID);
-        slider_hue.place(pb_team, BOTTOM_LEFT);
+        slider_hue.place(pb_player, BOTTOM_LEFT);
         cb_team_stencil.place(slider_hue, BOTTOM_LEFT);
 
-        group_team_colours.compileCanvas();
+        group_player_colours.compileCanvas();
 
         // Placement
         GUIObject top_spacer = new GUIObject() {
@@ -272,7 +286,7 @@ public final class AccessibilityPanel extends Panel {
         top_spacer.place();
         group_contrast.place(top_spacer, BOTTOM_LEFT, 0);
         group_cvd.place(group_contrast, BOTTOM_LEFT, group_spacing);
-        group_team_colours.place(group_cvd, BOTTOM_LEFT, group_spacing);
+        group_player_colours.place(group_cvd, BOTTOM_LEFT, group_spacing);
 
         compileCanvas();
     }

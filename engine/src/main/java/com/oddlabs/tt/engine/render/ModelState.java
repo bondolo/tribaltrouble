@@ -28,4 +28,8 @@ public interface ModelState<M extends Model> extends LODObject {
 
     @Nullable
     M getModel();
+
+    default @Nullable SpriteList getSpriteList() {
+        return null;
+    }
 }

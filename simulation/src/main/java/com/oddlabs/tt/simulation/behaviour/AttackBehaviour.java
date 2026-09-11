@@ -57,6 +57,14 @@ public final class AttackBehaviour implements Behaviour {
         unit.aimAtTarget(target);
     }
 
+    public boolean isReleased() {
+        return state == AttackState.RELEASED;
+    }
+
+    public Selectable<?> getTarget() {
+        return target;
+    }
+
     @Override
     public void forceInterrupted() {
     }

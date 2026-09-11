@@ -112,4 +112,10 @@ public final class ElementSceneContext<M extends Model> implements ModelState<M>
     public SpriteRenderer getRenderer(SpriteKey key) {
         return sceneContext.getRenderQueues().getRenderer(key);
     }
+
+    @Override
+    public @Nullable SpriteList getSpriteList() {
+        SpriteKey key = visitor.getSpriteKey(this);
+        return key != null ? getRenderer(key).getSpriteList() : null;
+    }
 }

@@ -205,13 +205,13 @@ public final class RaceData {
         SpriteGeometry chieftainGeom = SpriteGeometry.load("/geometry/vikings/chieftain.binsprite");
 
         WeaponFactory vikingWarriorRockWeapon = new ThrowingFactory<>(
-                RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 29f / 58f
+                RockAxeWeapon.class, RockAxeWeapon::new, 0.5f, THROW_RANGE, 27f / 58f
         );
         WeaponFactory vikingWarriorIronWeapon = new ThrowingFactory<>(
-                IronAxeWeapon.class, IronAxeWeapon::new, 0.75f, THROW_RANGE, 29f / 58f
+                IronAxeWeapon.class, IronAxeWeapon::new, 0.75f, THROW_RANGE, 27f / 58f
         );
         WeaponFactory vikingWarriorRubberWeapon = new ThrowingFactory<>(
-                RubberAxeWeapon.class, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 29f / 58f
+                RubberAxeWeapon.class, RubberAxeWeapon::new, 0.95f, THROW_RANGE, 27f / 58f
         );
 
         UnitTemplate vikingWarriorRock = new UnitTemplate(
@@ -352,13 +352,13 @@ public final class RaceData {
         SpriteGeometry chieftainGeom = SpriteGeometry.load("/geometry/natives/chieftain.binsprite");
 
         WeaponFactory nativeWarriorRockWeapon = new ThrowingFactory<>(
-                RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, 46f / 100f
+                RockSpearWeapon.class, RockSpearWeapon::new, 0.5f, THROW_RANGE, 44f / 100f
         );
         WeaponFactory nativeWarriorIronWeapon = new ThrowingFactory<>(
-                IronSpearWeapon.class, IronSpearWeapon::new, 0.75f, THROW_RANGE, 46f / 100f
+                IronSpearWeapon.class, IronSpearWeapon::new, 0.75f, THROW_RANGE, 44f / 100f
         );
         WeaponFactory nativeWarriorRubberWeapon = new ThrowingFactory<>(
-                RubberSpearWeapon.class, RubberSpearWeapon::new, 0.95f, THROW_RANGE, 46f / 100f
+                RubberSpearWeapon.class, RubberSpearWeapon::new, 0.95f, THROW_RANGE, 44f / 100f
         );
 
         UnitTemplate nativeWarriorRock = new UnitTemplate(

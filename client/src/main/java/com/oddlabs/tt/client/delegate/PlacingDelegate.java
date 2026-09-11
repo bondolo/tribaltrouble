@@ -152,7 +152,8 @@ public final class PlacingDelegate extends ControllableCameraDelegate<GameCamera
         modelViewStack.push();
         modelViewStack.translate(center_x, center_y, z);
 
-        placingRenderer.renderGhost(context, sprite, built_renderer.getSpriteList(), placeColor, modelViewStack);
+        placingRenderer.renderGhost(context, sprite, built_renderer.getSpriteList(), placeColor,
+                getViewer().getLocalPlayer().getColor(), modelViewStack);
 
         modelViewStack.pop();
     }

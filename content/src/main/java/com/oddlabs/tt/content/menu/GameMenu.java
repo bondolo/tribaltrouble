@@ -479,7 +479,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             ratings[index].place(ready_mark, RIGHT_MID);
         }
         String player_str = i18n("player", Integer.toString(index + 1));
-        var color = AccessibilitySettings.from(engine.getSettings()).team_colours[index];
+        var color = AccessibilitySettings.from(engine.getSettings()).player_colours[index];
         Label label = new Label(player_str, Skin.getSkin().getEditFont()).setColor(color);
         group.addChild(label);
         label.place(pulldown_button, LEFT_MID);

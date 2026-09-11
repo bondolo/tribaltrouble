@@ -45,9 +45,7 @@ public final class Player implements PlayerInterface {
     private final SupplyContainer unit_count;
     private final SupplyContainer building_count = new SupplyContainer(MAX_BUILDING_COUNT);
 
-    private final Color.Linear color;
-
-//	private final String team_tip;
+    private Color.Linear color;
 
     private @Nullable AI ai = null;
 
@@ -387,6 +385,15 @@ public final class Player implements PlayerInterface {
 
     public Color.Linear getColor() {
         return color;
+    }
+
+    /**
+     * Sets the team color for this player.
+     *
+     * @param color the new team color
+     */
+    public void setColor(Color color) {
+        this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
     }
 
     @Override

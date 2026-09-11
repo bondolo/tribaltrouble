@@ -15,47 +15,32 @@ import org.jspecify.annotations.Nullable;
  */
 public abstract sealed class ThrowingWeapon extends Model implements Animated permits RotatingThrowingWeapon,
         DirectedThrowingWeapon {
-    /**
-     * Multiplier for projectile arc exaggeration.
-     */
-    private static final float GRAVITY_MULTIPLIER = 6.0f;
-    private static final float GRAVITY = -GRAVITY_MULTIPLIER * 9.82f;
-
-    private static final float OFFSET_X = 1.316f;
-    private static final float OFFSET_Y = -.347f;
-    private static final float OFFSET_Z = 1.382f;
-
     private final boolean hit;
     private final Unit src;
-    /** rendering offset */
-    private final float deterministic_z;
 
     /** the target of the weapon. Mutable because rubber weapons bounce and change targets **/
     private Selectable<?> target;
     private float start_x;
     private float start_y;
+    private final float start_z;
     private float end_x;
     private float end_y;
+    private float dest_z;
     private float dir_x;
     private float dir_y;
     private float time_limit;
     private float time;
-    private float z_speed;
 
-    /** absolute height in the world */
-    private float current_z;
-
-    public ThrowingWeapon(boolean hit, Unit src, Selectable<?> target) {
+    public ThrowingWeapon(boolean hit, Unit src, Selectable<?> target, float offsetX, float offsetY, float offsetZ) {
         super(src.getOwner().getWorld());
         this.src = src;
         this.hit = hit;
 
-        float x = src.getPositionX() + OFFSET_X * src.getDirectionX() - OFFSET_Y * src.getDirectionY();
-        float y = src.getPositionY() + OFFSET_X * src.getDirectionY() - OFFSET_Y * src.getDirectionX();
-        deterministic_z = OFFSET_Z + src.getMountOffset();
-        current_z = getWorld().getHeightMap().getNearestHeight(x, y) + deterministic_z;
+        float x = src.getPositionX() + offsetX * src.getDirectionX() - offsetY * src.getDirectionY();
+        float y = src.getPositionY() + offsetX * src.getDirectionY() + offsetY * src.getDirectionX();
+        start_z = src.getPositionZ() + offsetZ;
 
-        setPosition(x, y, current_z - deterministic_z);
+        setPosition(x, y, start_z);
 
         setTarget(target);
 
@@ -65,7 +50,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
         // stats
         src.getOwner().weaponThrown();
-        src.getOwner().getWorld().getNotificationListener().onWeaponThrow(x, y, current_z);
+        src.getOwner().getWorld().getNotificationListener().onWeaponThrow(x, y, start_z);
     }
 
     public final Unit getSrc() {
@@ -88,10 +73,10 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     protected final void setTarget(Selectable<?> target) {
         this.target = target;
         updateDirection();
-        calcNumUpdatesAndZSpeed();
+        calcNumUpdates();
     }
 
-    private void calcNumUpdatesAndZSpeed() {
+    private void calcNumUpdates() {
         start_x = getPositionX();
         start_y = getPositionY();
         updateTarget();
@@ -100,10 +85,6 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
         float len = (float) Math.hypot(dx, dy);
         time_limit = len / getMetersPerSecond();
         time = 0;
-        // current_z is already set to absolute start height
-        float dest_z = getWorld().getHeightMap().getNearestHeight(end_x, end_y) + target.getHitOffsetZ();
-        float dest_vec_z = dest_z - current_z;
-        z_speed = (dest_vec_z) / time_limit - GRAVITY * time_limit / 2f;
     }
 
     public abstract float getMetersPerSecond();
@@ -111,6 +92,7 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     private void updateTarget() {
         end_x = target.getPositionX();
         end_y = target.getPositionY();
+        dest_z = getWorld().getHeightMap().getNearestHeight(end_x, end_y) + target.getHitOffsetZ();
     }
 
     private void updateDirection() {
@@ -126,11 +108,6 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
     @Override
     public final void updateChecksum(StateChecksum checksum) {
         checksum.update(time);
-    }
-
-    @Override
-    public final float getOffsetZ() {
-        return deterministic_z;
     }
 
     @Override
@@ -156,10 +133,8 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
             y = end_y;
         }
 
-        current_z += z_speed * dt;
-        z_speed += GRAVITY * dt;
-
-        setPosition(x, y, current_z - deterministic_z);
+        float z = start_z + (dest_z - start_z) * Math.min(progress, 1f);
+        setPosition(x, y, z);
     }
 
     protected void hitTarget(boolean hit, Player owner, Selectable<?> target) {
@@ -180,8 +155,12 @@ public abstract sealed class ThrowingWeapon extends Model implements Animated pe
 
     protected abstract int getDamage();
 
-    public final float getZSpeed() {
-        return z_speed;
+    public final float getStartZ() {
+        return start_z;
+    }
+
+    public final float getDestZ() {
+        return dest_z;
     }
 
     public final float getTime() {

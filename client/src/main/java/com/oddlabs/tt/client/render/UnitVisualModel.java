@@ -26,6 +26,9 @@ public final class UnitVisualModel extends AbstractVisualModel {
         if (unit.getAbilities().hasAbilities(Abilities.BUILD)) {
             addAccessory(new CarriedResourceAccessory(unit));
         }
+        if (unit.getAbilities().hasAbilities(Abilities.THROW)) {
+            addAccessory(new WeaponAccessory(unit));
+        }
     }
 
     /**

@@ -112,9 +112,9 @@
 		<sprite name="axe">
 			<model r="90" g="60" b="30">
 				vikings/warrior/warrior_axe.xml
-				<texture name="viking_warrior_rock"/>
-				<texture name="viking_warrior_iron"/>
-				<texture name="viking_warrior_rubber"/>
+				<texture name="viking_warrior_rock" team="viking_warrior_rock_team"/>
+				<texture name="viking_warrior_iron" team="viking_warrior_iron_team"/>
+				<texture name="viking_warrior_rubber" team="viking_warrior_rubber_team"/>
 			</model>
 		</sprite>
 		<sprite name="quarters">
@@ -398,9 +398,9 @@
 		<sprite name="spear">
 			<model r="90" g="60" b="30">
 				natives/warrior/native_warrior_spear.xml
-				<texture name="native_warrior_rock"/>
-				<texture name="native_warrior_iron"/>
-				<texture name="native_warrior_rubber"/>
+				<texture name="native_warrior_rock" team="native_warrior_rock_team"/>
+				<texture name="native_warrior_iron" team="native_warrior_iron_team"/>
+				<texture name="native_warrior_rubber" team="native_warrior_rubber_team"/>
 			</model>
 		</sprite>
 	</group>

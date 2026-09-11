@@ -26,7 +26,7 @@ public final class PlacingRenderer implements AutoCloseable {
     private final Map<SpriteList, VertexArray> vaos = new WeakHashMap<>();
 
     public void renderGhost(RenderContext context, Sprite sprite, SpriteList spriteList,
-            Color.Linear color, MatrixStack modelViewStack) {
+            Color.Linear color, Color.Linear teamColor, MatrixStack modelViewStack) {
 
         VertexArray vao = vaos.computeIfAbsent(spriteList, list -> {
             VertexArray newVao = new VertexArray();
@@ -89,6 +89,7 @@ public final class PlacingRenderer implements AutoCloseable {
             shader.setUniform(PlacingShader.Uniforms.MODULATE_COLOR, true);
             shader.setUniform(PlacingShader.Uniforms.ALPHA_TEST_VALUE, 0.5f);
             shader.setUniform(PlacingShader.Uniforms.COLOR, color);
+            shader.setUniform(PlacingShader.Uniforms.DECAL_COLOR, teamColor);
             shader.setUniform(PlacingShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
 
             try (var _ = context.withCullMode(CullMode.BACK)) {

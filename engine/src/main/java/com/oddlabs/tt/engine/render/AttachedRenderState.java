@@ -26,7 +26,7 @@ public final class AttachedRenderState implements ModelState<Model> {
         assert accessory != null;
 
         parentState.getTransform(dest);
-        accessory.getRelativeTransform(dest, parentState.model);
+        accessory.getRelativeTransform(dest, parentState);
 
         if (accessory instanceof BillboardAccessory) {
             CameraState camera = parentState.sceneContext.getCamera();

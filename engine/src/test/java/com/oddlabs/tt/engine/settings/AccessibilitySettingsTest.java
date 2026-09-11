@@ -21,9 +21,9 @@ final class AccessibilitySettingsTest {
         assertEquals(0.5f, settings.contrast_intensity, 0.001f);
         assertFalse(settings.invert_colours);
         assertTrue(settings.sound_emojis);
-        assertNotNull(settings.team_colours);
-        assertEquals(AccessibilitySettings.DEFAULT_TEAM_COLOURS.length, settings.team_colours.length);
-        assertNotNull(settings.linear_team_colours);
+        assertNotNull(settings.player_colours);
+        assertEquals(AccessibilitySettings.DEFAULT_PLAYER_COLOURS.length, settings.player_colours.length);
+        assertNotNull(settings.linear_player_colours);
     }
 
     @Test
@@ -36,7 +36,7 @@ final class AccessibilitySettingsTest {
         settings.invert_colours = true;
         settings.team_stencil = true;
         settings.sound_emojis = false;
-        settings.team_colours[0] = new Color.Standard(0xFF_11_22_33);
+        settings.player_colours[0] = new Color.Standard(0xFF_11_22_33);
         settings.updateLinearColors();
 
         Properties props = new Properties();
@@ -52,7 +52,20 @@ final class AccessibilitySettingsTest {
         assertTrue(loaded.invert_colours);
         assertTrue(loaded.team_stencil);
         assertFalse(loaded.sound_emojis);
-        assertEquals(0xFF_11_22_33, loaded.team_colours[0].toInt());
-        assertEquals(Color.toLinear(loaded.team_colours[0].r()), loaded.linear_team_colours[0].r(), 0.001f);
+        assertEquals(0xFF_11_22_33, loaded.player_colours[0].toInt());
+        assertEquals(Color.toLinear(loaded.player_colours[0].r()), loaded.linear_player_colours[0].r(), 0.001f);
+    }
+
+    @Test
+    void testSetPlayerColourUpdatesLinearColours() {
+        AccessibilitySettings settings = new AccessibilitySettings();
+        Color.Linear[] initialLinear = settings.linear_player_colours;
+        Color.Standard customColor = new Color.Standard(0xFF_44_55_66);
+        settings.setPlayerColour(1, customColor);
+
+        assertEquals(customColor.toInt(), settings.player_colours[1].toInt());
+        assertEquals(Color.toLinear(customColor.r()), settings.linear_player_colours[1].r(), 0.001f);
+        // Verify array reference remains synchronized and updated in-place
+        assertEquals(initialLinear, settings.linear_player_colours);
     }
 }

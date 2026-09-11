@@ -436,7 +436,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
                 () -> World.newWorld(null, null,
                         new NotificationListener() {
                         }, world_params, world_info.landscapeData(), players,
-                        AccessibilitySettings.from(engine.getSettings()).linear_team_colours,
+                        AccessibilitySettings.from(engine.getSettings()).linear_player_colours,
                         RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
         AnimationManager menuAnimationManager = new AnimationManager();
         LandscapeRenderer landscape_renderer = new LandscapeRenderer(world, world_info, menuAnimationManager);

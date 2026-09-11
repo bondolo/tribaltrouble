@@ -17,7 +17,7 @@ import static com.oddlabs.tt.base.global.SettingsHelper.getInt;
 import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
 /**
- * Visual accessibility, color vision deficiency corrections, and team color settings.
+ * Visual accessibility, color vision deficiency corrections, and player color settings.
  */
 public final class AccessibilitySettings implements Serializable, PropertiesSerializer {
     @Serial
@@ -35,7 +35,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
 
     private static final Logger logger = Logger.getLogger(AccessibilitySettings.class.getName());
 
-    public static final Color.Standard[] DEFAULT_TEAM_COLOURS = {
+    public static final Color.Standard[] DEFAULT_PLAYER_COLOURS = {
             new Color.Standard(0xFFFFBF00), /* Orange */
             new Color.Standard(0xFF007FFF), /* Royal Blue */
             new Color.Standard(0xFFFF0040), /* Red */
@@ -54,17 +54,34 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
     public boolean team_stencil = false;
     public boolean sound_emojis = true;
 
-    public Color.Standard[] team_colours = Arrays.copyOf(DEFAULT_TEAM_COLOURS,
-            DEFAULT_TEAM_COLOURS.length);
+    public Color.Standard[] player_colours = Arrays.copyOf(DEFAULT_PLAYER_COLOURS,
+            DEFAULT_PLAYER_COLOURS.length);
 
-    public transient Color.Linear[] linear_team_colours = Arrays.stream(team_colours)
+    public transient Color.Linear[] linear_player_colours = Arrays.stream(player_colours)
             .map(Color.Linear::new)
             .toArray(Color.Linear[]::new);
 
+    /**
+     * Sets the player color at the specified index and updates linear player colors.
+     *
+     * @param index the player index
+     * @param colour the standard color
+     */
+    public void setPlayerColour(int index, Color.Standard colour) {
+        player_colours[index] = colour;
+        updateLinearColors();
+    }
+
+    /**
+     * Synchronizes linear player colors from current standard player colors.
+     */
     public void updateLinearColors() {
-        linear_team_colours = Arrays.stream(team_colours)
-                .map(Color.Linear::new)
-                .toArray(Color.Linear[]::new);
+        if (linear_player_colours == null || linear_player_colours.length != player_colours.length) {
+            linear_player_colours = new Color.Linear[player_colours.length];
+        }
+        for (int i = 0; i < player_colours.length; i++) {
+            linear_player_colours[i] = new Color.Linear(player_colours[i]);
+        }
     }
 
     @Override
@@ -79,7 +96,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
         setProperty(props, "contrast_clarity", contrast_clarity, defaults.contrast_clarity);
         setProperty(props, "team_stencil", team_stencil, defaults.team_stencil);
         setProperty(props, "sound_emojis", sound_emojis, defaults.sound_emojis);
-        setColoursProperty(props, "team_colours", team_colours, defaults.team_colours);
+        setColoursProperty(props, "team_colours", player_colours, defaults.player_colours);
     }
 
     @Override
@@ -93,7 +110,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
         contrast_clarity = getFloat(props, "contrast_clarity", contrast_clarity);
         team_stencil = getBoolean(props, "team_stencil", team_stencil);
         sound_emojis = getBoolean(props, "sound_emojis", sound_emojis);
-        team_colours = getColours(props, "team_colours", team_colours);
+        player_colours = getColours(props, "team_colours", player_colours);
         updateLinearColors();
     }
 
@@ -116,7 +133,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
         }
         try {
             String[] hexStrings = value.split(",");
-            Color.Standard[] result = new Color.Standard[DEFAULT_TEAM_COLOURS.length];
+            Color.Standard[] result = new Color.Standard[DEFAULT_PLAYER_COLOURS.length];
             Arrays.setAll(result, i -> {
                 if (i < hexStrings.length) {
                     try {
@@ -126,7 +143,7 @@ public final class AccessibilitySettings implements Serializable, PropertiesSeri
                         // ignore invalid color constants
                     }
                 }
-                return new Color.Standard(DEFAULT_TEAM_COLOURS[i]);
+                return new Color.Standard(DEFAULT_PLAYER_COLOURS[i]);
             });
             return result;
         } catch (Exception e) {

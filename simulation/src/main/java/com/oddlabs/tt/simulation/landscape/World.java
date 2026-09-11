@@ -72,10 +72,10 @@ public final class World implements SimulationClock {
             @Nullable LandscapeBoundsProvider landscape_resources,
             NotificationListener notification_listener, WorldParameters world_params,
             LandscapeData landscapeData, List<PlayerInfo> player_infos,
-            Color.Linear[] teamColors, boolean insertPlants) {
+            Color.Linear[] playerColors, boolean insertPlants) {
         ProgressListener.progress();
         World world = new World(races_resources, landscape_resources, notification_listener,
-                world_params, landscapeData, player_infos, teamColors, insertPlants);
+                world_params, landscapeData, player_infos, playerColors, insertPlants);
         ProgressListener.progress();
         ProgressListener.progress(1 / 5f);
         ProgressListener.progress();
@@ -151,7 +151,7 @@ public final class World implements SimulationClock {
             @Nullable LandscapeBoundsProvider landscape_resources,
             NotificationListener notification_listener,
             WorldParameters world_params, LandscapeData landscapeData,
-            List<PlayerInfo> player_infos, Color.Linear[] teamColors,
+            List<PlayerInfo> player_infos, Color.Linear[] playerColors,
             boolean insertPlants) {
         IO.println("****************** Generating landscape ********************");
         this.terrain = landscapeData.terrain();
@@ -169,7 +169,7 @@ public final class World implements SimulationClock {
         random = new Random(42);
 
         players = List.of(IntStream.range(0, player_infos.size())
-                .mapToObj(i -> new Player(this, player_infos.get(i), teamColors[i % teamColors.length])
+                .mapToObj(i -> new Player(this, player_infos.get(i), playerColors[i % playerColors.length])
                         .init(landscapeData.startingLocations()[i])
                 ).toArray(Player[]::new));
 
@@ -273,6 +273,33 @@ public final class World implements SimulationClock {
             World w = ref.get();
             if (w != null) {
                 w.setPlantsDetail(insertPlants);
+            } else {
+                activeWorlds.remove(ref);
+            }
+        }
+    }
+
+    /**
+     * Updates the player colors of all players in this world.
+     *
+     * @param playerColors the array of linear player colors
+     */
+    public void updatePlayerColors(Color.Linear[] playerColors) {
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).setColor(playerColors[i % playerColors.length]);
+        }
+    }
+
+    /**
+     * Updates the player colors across all active world instances.
+     *
+     * @param playerColors the array of linear player colors
+     */
+    public static void updateAllPlayerColors(Color.Linear[] playerColors) {
+        for (var ref : activeWorlds) {
+            World w = ref.get();
+            if (w != null) {
+                w.updatePlayerColors(playerColors);
             } else {
                 activeWorlds.remove(ref);
             }

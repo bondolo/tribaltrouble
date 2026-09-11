@@ -19,20 +19,23 @@ import java.util.concurrent.ThreadLocalRandom;
  * Visual model for throwing weapons managing spatial flight audio, rotation spin, and visual loft.
  */
 public final class ThrowingWeaponVisualModel extends AbstractVisualModel implements AnimatedAccessory {
-    private static final float GRAVITY_MAGNITUDE = 6.0f * 9.82f;
+    private static final float GRAVITY_MAGNITUDE = 3.0f * 9.82f;
     private static final float SPEAR_LOFT_FACTOR = 1.05f;
     private static final float AXE_LOFT_FACTOR = 1.01f;
+    private static final float INITIAL_AXE_ROTATION = (float) Math.toRadians(345.0);
+    private static final float SPEAR_ROLL = (float) Math.PI;
 
     private final ThrowingWeapon weapon;
     private final @Nullable AudioPlayer audioPlayer;
-    private final float loftFactor;
+    private final float effectiveGravity;
     private final float angleVelocity;
 
     public ThrowingWeaponVisualModel(ThrowingWeapon weapon, AudioImplementation audio) {
         super(weapon);
         this.weapon = weapon;
         boolean isDirected = weapon instanceof DirectedThrowingWeapon;
-        this.loftFactor = isDirected ? SPEAR_LOFT_FACTOR : AXE_LOFT_FACTOR;
+        float loft = isDirected ? SPEAR_LOFT_FACTOR : AXE_LOFT_FACTOR;
+        this.effectiveGravity = GRAVITY_MAGNITUDE * loft * loft;
         float rotsPerSec = isDirected ? 0f : switch (weapon.getWeaponVisualType()) {
             case ROCK -> 3f;
             case IRON -> 6f;
@@ -51,37 +54,47 @@ public final class ThrowingWeaponVisualModel extends AbstractVisualModel impleme
         this.audioPlayer = audio.newAudio(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ(), params);
     }
 
+    private float computeVisualZ() {
+        float t = weapon.getTime();
+        float totalTime = weapon.getTimeLimit();
+        if (totalTime > 0f && t < totalTime) {
+            return weapon.getPositionZ() + 0.5f * effectiveGravity * t * (totalTime - t);
+        }
+        return weapon.getPositionZ();
+    }
+
     @Override
     public void animate(float dt) {
         if (audioPlayer != null) {
-            audioPlayer.setPosition(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ());
+            audioPlayer.setPosition(weapon.getPositionX(), weapon.getPositionY(), computeVisualZ());
         }
     }
 
     public void getTransform(Matrix4f dest) {
         float t = weapon.getTime();
         float totalTime = weapon.getTimeLimit();
-        float visualLoft = 0f;
+        float visualZ;
         float pitchRad;
 
-        if (totalTime > 0f && t < totalTime && loftFactor > 1.0f) {
-            float loftRatio = 1f - 1f / (loftFactor * loftFactor);
-            visualLoft = 0.5f * GRAVITY_MAGNITUDE * t * (totalTime - t) * loftRatio;
-            float extraZSpeed = 0.5f * GRAVITY_MAGNITUDE * (totalTime - 2f * t) * loftRatio;
-            float totalZSpeed = weapon.getZSpeed() + extraZSpeed;
-            pitchRad = (float) Math.atan2(totalZSpeed, weapon.getMetersPerSecond());
+        float baselineVz = totalTime > 0f ? (weapon.getDestZ() - weapon.getStartZ()) / totalTime : 0f;
+        if (totalTime > 0f && t < totalTime) {
+            visualZ = weapon.getPositionZ() + 0.5f * effectiveGravity * t * (totalTime - t);
+            float loftVz = 0.5f * effectiveGravity * (totalTime - 2f * t);
+            pitchRad = (float) Math.atan2(baselineVz + loftVz, weapon.getMetersPerSecond());
         } else {
-            pitchRad = (float) Math.atan2(weapon.getZSpeed(), weapon.getMetersPerSecond());
+            visualZ = weapon.getPositionZ();
+            pitchRad = (float) Math.atan2(baselineVz, weapon.getMetersPerSecond());
         }
 
         float yawRad = (float) Math.atan2(weapon.getDirectionY(), weapon.getDirectionX());
-        dest.translation(weapon.getPositionX(), weapon.getPositionY(), weapon.getPositionZ() + visualLoft)
+        dest.translation(weapon.getPositionX(), weapon.getPositionY(), visualZ)
                 .rotate(yawRad, 0f, 0f, 1f);
 
         if (weapon instanceof DirectedThrowingWeapon) {
-            dest.rotate(-pitchRad, 0f, 1f, 0f);
+            dest.rotate(-pitchRad, 0f, 1f, 0f)
+                    .rotate(SPEAR_ROLL, 1f, 0f, 0f);
         } else {
-            dest.rotate(angleVelocity * t, 0f, 1f, 0f);
+            dest.rotate(INITIAL_AXE_ROTATION + angleVelocity * t, 0f, 1f, 0f);
         }
     }
 

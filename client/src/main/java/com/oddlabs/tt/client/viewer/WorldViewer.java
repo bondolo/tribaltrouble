@@ -307,7 +307,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.world = ProgressListener.subTask(0.10f,
                 () -> World.newWorld(races_resources, landscape_geometry, listener, world_params,
                         world_info.landscapeData(), player_infos, AccessibilitySettings.from(engine
-                                .getSettings()).linear_team_colours,
+                                .getSettings()).linear_player_colours,
                         RenderConfig.INSERT_PLANTS[GraphicsSettings.from(engine.getSettings()).graphic_detail]));
         initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);

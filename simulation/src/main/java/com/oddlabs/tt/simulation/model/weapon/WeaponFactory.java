@@ -29,6 +29,10 @@ public abstract sealed class WeaponFactory permits InstantHitFactory, ThrowingFa
         return range;
     }
 
+    public final float getReleaseRatio() {
+        return release_ratio;
+    }
+
     private static float computeTerrainBonus(HeightMap heightmap, Target src, Target dst) {
         float src_z = heightmap.getNearestHeight(src.getPositionX(), src.getPositionY());
         float dst_z = heightmap.getNearestHeight(dst.getPositionX(), dst.getPositionY());
