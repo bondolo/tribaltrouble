@@ -17,7 +17,7 @@ import static com.oddlabs.tt.base.global.SettingsHelper.getInt;
 import static com.oddlabs.tt.base.global.SettingsHelper.setProperty;
 
 /**
- * Visual accessibility, color vision deficiency corrections, and player color settings.
+ * Visual accessibility, colour vision deficiency corrections, and player colour settings.
  */
 public final class AccessibilitySettings implements Serializable, PropertiesSerializer {
     @Serial
