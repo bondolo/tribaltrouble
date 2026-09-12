@@ -8,7 +8,7 @@ import com.oddlabs.tt.simulation.model.Unit;
  * Logic for unit repairing behavior.
  * Manages units moving to damaged buildings and restoring their hit points.
  */
-public final class RepairBehaviour implements Behaviour {
+final class RepairBehaviour implements Behaviour {
     private static final int REPAIRS_PER_SUPPLY = 5;
     private static final float SECONDS_PER_ANIMATION_CYCLE = 1f;
     private final Building building;
@@ -18,7 +18,7 @@ public final class RepairBehaviour implements Behaviour {
     private int repairs;
     private boolean sound;
 
-    public RepairBehaviour(Unit unit, Building building) {
+    RepairBehaviour(Unit unit, Building building) {
         this.unit = unit;
         this.building = building;
         unit.aimAtTarget(building);

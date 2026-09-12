@@ -14,12 +14,12 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 
 /** PCM audio samples */
-public final class Wave {
+final class Wave {
     private final ByteBuffer data;
     private final int format;
     private final int sample_rate;
 
-    public Wave(URL file) throws UnsupportedAudioFileException, IOException {
+    Wave(URL file) throws UnsupportedAudioFileException, IOException {
         try (AudioInputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(file.openStream()))) {
             AudioFormat audio_format = ais.getFormat();
             format = getFormat(audio_format.getChannels(), audio_format.getSampleSizeInBits());
@@ -38,7 +38,7 @@ public final class Wave {
         }
     }
 
-    public Wave(ByteBuffer data, int channels, int bitrate, int sample_rate) {
+    Wave(ByteBuffer data, int channels, int bitrate, int sample_rate) {
         this.data = data;
         this.sample_rate = sample_rate;
         format = getFormat(channels, bitrate);

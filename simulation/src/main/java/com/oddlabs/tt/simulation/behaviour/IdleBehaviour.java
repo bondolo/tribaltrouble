@@ -2,11 +2,12 @@ package com.oddlabs.tt.simulation.behaviour;
 
 import com.oddlabs.tt.simulation.model.Unit;
 
-public final class IdleBehaviour implements Behaviour {
+/** Behaviour managing unit idle animations and sleep state. */
+final class IdleBehaviour implements Behaviour {
     private final IdleController controller;
     private final Unit unit;
 
-    public IdleBehaviour(IdleController controller, Unit unit) {
+    IdleBehaviour(IdleController controller, Unit unit) {
         this.controller = controller;
         this.unit = unit;
     }

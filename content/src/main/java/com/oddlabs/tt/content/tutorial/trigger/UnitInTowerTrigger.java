@@ -4,10 +4,11 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Building;
 
-public final class UnitInTowerTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for a unit to garrison inside a tower. */
+final class UnitInTowerTrigger extends TutorialTrigger {
     private final Building tower;
 
-    public UnitInTowerTrigger(Building tower) {
+    UnitInTowerTrigger(Building tower) {
         super(.1f, 0f, "unit_in_tower");
         this.tower = tower;
     }

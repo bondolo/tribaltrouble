@@ -5,7 +5,8 @@ import com.oddlabs.tt.simulation.model.weapon.Magic;
 import com.oddlabs.tt.simulation.model.weapon.MagicFactory;
 import org.jspecify.annotations.Nullable;
 
-public final class MagicBehaviour implements Behaviour {
+/** Behaviour managing spell preparation, casting, and animation timing for magic units. */
+final class MagicBehaviour implements Behaviour {
     private enum MagicState {
         PREPARING,
         CASTING,
@@ -20,7 +21,7 @@ public final class MagicBehaviour implements Behaviour {
     private float anim_time;
     private MagicState state = MagicState.PREPARING;
 
-    public MagicBehaviour(Unit unit, MagicFactory magic_factory,
+    MagicBehaviour(Unit unit, MagicFactory magic_factory,
             MagicController controller) {
         this.unit = unit;
         this.magic_factory = magic_factory;

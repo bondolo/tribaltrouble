@@ -2,6 +2,7 @@ module com.oddlabs.tt.client {
     requires transitive com.oddlabs.common;
     requires transitive com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
+    requires com.oddlabs.tt.procedural;
     requires transitive com.oddlabs.tt.net;
     requires transitive com.oddlabs.tt.window;
     requires transitive com.oddlabs.tt.audio;
@@ -22,15 +23,6 @@ module com.oddlabs.tt.client {
     exports com.oddlabs.tt.client.resource;
     exports com.oddlabs.tt.client.trigger;
     exports com.oddlabs.tt.client.viewer;
-
-    opens com.oddlabs.tt.client;
-    opens com.oddlabs.tt.client.camera;
-    opens com.oddlabs.tt.client.delegate;
-    opens com.oddlabs.tt.client.gui;
-    opens com.oddlabs.tt.client.render;
-    opens com.oddlabs.tt.client.resource;
-    opens com.oddlabs.tt.client.trigger;
-    opens com.oddlabs.tt.client.viewer;
 
     provides com.oddlabs.tt.base.global.PropertiesSerializer with
             com.oddlabs.tt.client.camera.CameraSettings,

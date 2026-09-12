@@ -5,10 +5,11 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 import com.oddlabs.tt.client.camera.GameCamera;
 import com.oddlabs.tt.client.viewer.WorldViewer;
 
-public final class ZoomTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for the player to zoom the camera in and out. */
+final class ZoomTrigger extends TutorialTrigger {
     private final boolean[] zoom_dirs = new boolean[2];
 
-    public ZoomTrigger(WorldViewer viewer) {
+    ZoomTrigger(WorldViewer viewer) {
         super(0f, 2f, "zoom");
         viewer.getCamera().resetLastZoomFactor();
     }

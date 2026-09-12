@@ -5,10 +5,11 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.model.Unit;
 
-public final class UnitCountTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for the local player's unit count to reach a target. */
+final class UnitCountTrigger extends TutorialTrigger {
     private final int target_count;
 
-    public UnitCountTrigger(int target_count) {
+    UnitCountTrigger(int target_count) {
         super(1f, 0f, "unit_count", new Object[]{target_count});
         this.target_count = target_count;
     }

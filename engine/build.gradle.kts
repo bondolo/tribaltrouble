@@ -19,11 +19,8 @@ dependencies {
     api(project(":base"))
     api(project(":common"))
     api(project(":simulation"))
-    api(project(":procedural"))
+    implementation(project(":procedural"))
     api(project(":window"))
-    api(project(":input"))
-    api(project(":audio"))
-    implementation(project(":audio-openal"))
     api(libs.joml)
     compileOnlyApi(libs.jspecify)
 

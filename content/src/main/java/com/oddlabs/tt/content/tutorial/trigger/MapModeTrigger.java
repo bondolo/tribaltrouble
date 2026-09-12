@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.client.camera.MapCamera;
 
-public final class MapModeTrigger extends TutorialTrigger {
-    public MapModeTrigger() {
+/** Tutorial trigger waiting for the player to enter map camera mode. */
+final class MapModeTrigger extends TutorialTrigger {
+    MapModeTrigger() {
         super(.1f, 1f, "map_mode");
     }
 

@@ -5,9 +5,10 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Unit;
 
-public final class ChieftainBuiltTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for a chieftain unit to be completed. */
+final class ChieftainBuiltTrigger extends TutorialTrigger {
 
-    public ChieftainBuiltTrigger() {
+    ChieftainBuiltTrigger() {
         super(.1f, 0f, "chieftain_built");
     }
 

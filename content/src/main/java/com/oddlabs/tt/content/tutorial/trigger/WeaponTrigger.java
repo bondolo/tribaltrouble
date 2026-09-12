@@ -6,10 +6,11 @@ import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.Player;
 
-public final class WeaponTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for a quota of weapons to be produced in an armory. */
+final class WeaponTrigger extends TutorialTrigger {
     private static final int WEAPONS = 10;
 
-    public WeaponTrigger(Player local_player) {
+    WeaponTrigger(Player local_player) {
         super(.5f, 0f, "weapon", new Object[]{WEAPONS});
         local_player.enableHarvesting(true);
     }

@@ -25,14 +25,14 @@ import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
 /** Campaign level setup for Native Island 6. */
-public final class NativeIsland6 extends Island {
+final class NativeIsland6 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland6.class.getName());
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public NativeIsland6(Campaign campaign) {
+    NativeIsland6(Campaign campaign) {
         super(campaign);
     }
 

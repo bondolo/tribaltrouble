@@ -14,13 +14,13 @@ import com.oddlabs.tt.simulation.player.Player;
  * Tutorial trigger that commands the AI player to attack the player's tower
  * to demonstrate battle mechanics and defense.
  */
-public final class AttackTowerTrigger extends TutorialTrigger {
+final class AttackTowerTrigger extends TutorialTrigger {
     private static final int NUM_UNITS = 12;
 
     private final Building tower;
     private final Player ai;
 
-    public AttackTowerTrigger(Building tower) {
+    AttackTowerTrigger(Building tower) {
         super(.1f, 0f, "attack_tower");
         this.ai = tower.getOwner().getWorld().getPlayers().get(1);
         this.tower = tower;

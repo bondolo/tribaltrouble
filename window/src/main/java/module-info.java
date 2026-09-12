@@ -4,7 +4,7 @@ module com.oddlabs.tt.window {
     requires transitive org.joml;
     requires static org.jspecify;
     requires java.logging;
-    requires transitive org.lwjgl;
+    requires org.lwjgl;
     requires org.lwjgl.sdl;
     requires org.lwjgl.opengl;
     requires org.lwjgl.stb;

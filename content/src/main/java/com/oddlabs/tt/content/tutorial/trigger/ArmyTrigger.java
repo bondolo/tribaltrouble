@@ -7,10 +7,11 @@ import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
 
-public final class ArmyTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for an army of a specified size to be assembled. */
+final class ArmyTrigger extends TutorialTrigger {
     private static final int ARMY_SIZE = 10;
 
-    public ArmyTrigger(Player local_player) {
+    ArmyTrigger(Player local_player) {
         super(1f, 0f, "army", new Object[]{ARMY_SIZE});
         local_player.enableMoving(true);
     }

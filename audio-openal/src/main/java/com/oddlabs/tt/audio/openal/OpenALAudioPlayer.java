@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
  */
 final class OpenALAudioPlayer extends AbstractAudioPlayer<OpenALManager, OpenALAudioSource> {
 
-    public OpenALAudioPlayer(OpenALManager manager, @Nullable OpenALAudioSource source,
+    OpenALAudioPlayer(OpenALManager manager, @Nullable OpenALAudioSource source,
             float x, float y, float z, AudioParameters params) {
         super(manager, source, x, y, z, params);
         if (this.source == null) {

@@ -26,14 +26,14 @@ import java.util.stream.IntStream;
 /**
  * Campaign level logic for Viking Island 3, containing objectives and triggers.
  */
-public final class VikingIsland3 extends Island {
+final class VikingIsland3 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland3.class.getName());
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public VikingIsland3(Campaign campaign) {
+    VikingIsland3(Campaign campaign) {
         super(campaign);
     }
 

@@ -38,7 +38,7 @@ import java.util.stream.IntStream;
 /**
  * Campaign level logic for Native Island 1, containing objectives and triggers.
  */
-public final class NativeIsland1 extends Island {
+final class NativeIsland1 extends Island {
     private static final int NUM_CAPTIVES = 10;
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland1.class.getName());
 
@@ -54,7 +54,7 @@ public final class NativeIsland1 extends Island {
 
     private int objective = 0;
 
-    public NativeIsland1(Campaign campaign) {
+    NativeIsland1(Campaign campaign) {
         super(campaign);
     }
 

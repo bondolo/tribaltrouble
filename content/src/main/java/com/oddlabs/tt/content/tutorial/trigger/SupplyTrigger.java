@@ -6,11 +6,12 @@ import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.player.Player;
 
-public final class SupplyTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for sufficient supplies (wood and rock) to be harvested. */
+final class SupplyTrigger extends TutorialTrigger {
     private static final int TREE = 20;
     private static final int ROCK = 10;
 
-    public SupplyTrigger(Player player) {
+    SupplyTrigger(Player player) {
         super(.5f, 0f, "supply", new Object[]{TREE, ROCK});
         player.enableHarvesting(true);
     }

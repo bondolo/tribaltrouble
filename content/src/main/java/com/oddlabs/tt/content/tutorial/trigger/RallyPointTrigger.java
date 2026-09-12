@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Building;
 
-public final class RallyPointTrigger extends TutorialTrigger {
-    public RallyPointTrigger() {
+/** Tutorial trigger waiting for the player to set a rally point for a building. */
+final class RallyPointTrigger extends TutorialTrigger {
+    RallyPointTrigger() {
         super(1f, 0f, "rally_point");
     }
 

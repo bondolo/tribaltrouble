@@ -15,7 +15,7 @@ lwjgl {
 }
 
 dependencies {
-    api(project(":audio"))
+    implementation(project(":audio"))
     implementation(libs.joml)
     compileOnlyApi(libs.jspecify)
 

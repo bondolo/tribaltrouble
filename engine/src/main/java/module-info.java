@@ -2,10 +2,8 @@ module com.oddlabs.tt.engine {
     requires transitive com.oddlabs.common;
     requires transitive com.oddlabs.tt.base;
     requires transitive com.oddlabs.tt.simulation;
-    requires transitive com.oddlabs.tt.procedural;
+    requires com.oddlabs.tt.procedural;
     requires transitive com.oddlabs.tt.window;
-    requires transitive com.oddlabs.tt.input;
-    requires transitive com.oddlabs.tt.audio;
     requires transitive org.joml;
     requires static org.jspecify;
     requires java.desktop;
@@ -27,8 +25,6 @@ module com.oddlabs.tt.engine {
     exports com.oddlabs.tt.engine.settings;
     exports com.oddlabs.tt.engine.util;
     exports com.oddlabs.tt.engine.vbo;
-
-    opens com.oddlabs.tt.engine.render to com.oddlabs.tt.base;
 
     provides com.oddlabs.tt.base.global.PropertiesSerializer with
             com.oddlabs.tt.engine.settings.AccessibilitySettings,

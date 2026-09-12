@@ -4,7 +4,7 @@ module com.oddlabs.tt.input {
     requires transitive com.oddlabs.tt.window;
     requires static org.jspecify;
     requires java.logging;
-    requires transitive org.lwjgl;
+    requires org.lwjgl;
     requires org.lwjgl.sdl;
 
     exports com.oddlabs.tt.input;

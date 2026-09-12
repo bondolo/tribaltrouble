@@ -26,14 +26,14 @@ import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
 /** Campaign level setup for Viking Island 11. */
-public final class VikingIsland11 extends Island {
+final class VikingIsland11 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland11.class.getName());
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public VikingIsland11(Campaign campaign) {
+    VikingIsland11(Campaign campaign) {
         super(campaign);
     }
 

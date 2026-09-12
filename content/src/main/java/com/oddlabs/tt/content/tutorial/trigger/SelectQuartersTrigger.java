@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Abilities;
 
-public final class SelectQuartersTrigger extends TutorialTrigger {
-    public SelectQuartersTrigger() {
+/** Tutorial trigger waiting for the player to select a quarters building. */
+final class SelectQuartersTrigger extends TutorialTrigger {
+    SelectQuartersTrigger() {
         super(.1f, 0f, "select_quarters");
     }
 

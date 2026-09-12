@@ -5,10 +5,11 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.model.Building;
 
-public final class EmptyTowerTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for a tower to be emptied of units. */
+final class EmptyTowerTrigger extends TutorialTrigger {
     private final Building tower;
 
-    public EmptyTowerTrigger(Building tower) {
+    EmptyTowerTrigger(Building tower) {
         super(.1f, 0f, "empty_tower");
         this.tower = tower;
         tower.getOwner().enableTowerExits(true);

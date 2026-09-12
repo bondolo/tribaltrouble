@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.player.Player;
 
-public final class BuildMenuTrigger extends TutorialTrigger {
-    public BuildMenuTrigger(Player local_player) {
+/** Tutorial trigger waiting for the player to open the build menu. */
+final class BuildMenuTrigger extends TutorialTrigger {
+    BuildMenuTrigger(Player local_player) {
         super(.1f, 0f, "build_menu");
         local_player.enableWeapons(true);
     }

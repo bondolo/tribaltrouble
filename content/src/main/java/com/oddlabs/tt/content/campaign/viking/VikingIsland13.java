@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 import java.util.stream.IntStream;
 
 /** Campaign level setup for Viking Island 13. */
-public final class VikingIsland13 extends Island {
+final class VikingIsland13 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland13.class.getName());
 
     private static String i18n(String key, Object... args) {
@@ -42,7 +42,7 @@ public final class VikingIsland13 extends Island {
 
     private boolean alive;
 
-    public VikingIsland13(Campaign campaign) {
+    VikingIsland13(Campaign campaign) {
         super(campaign);
     }
 

@@ -6,8 +6,9 @@ import com.oddlabs.tt.content.tutorial.TutorialForm;
 import com.oddlabs.tt.simulation.behaviour.WalkController;
 import com.oddlabs.tt.simulation.player.Player;
 
-public final class MoveUnitTrigger extends TutorialTrigger {
-    public MoveUnitTrigger(Player local_player) {
+/** Tutorial trigger waiting for the player to issue a move command to a unit. */
+final class MoveUnitTrigger extends TutorialTrigger {
+    MoveUnitTrigger(Player local_player) {
         super(1f, 2f, "move_unit");
         local_player.enableMoving(true);
     }

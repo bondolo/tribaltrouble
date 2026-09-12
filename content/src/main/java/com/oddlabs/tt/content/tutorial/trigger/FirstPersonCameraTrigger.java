@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.client.delegate.FirstPersonDelegate;
 
-public final class FirstPersonCameraTrigger extends TutorialTrigger {
-    public FirstPersonCameraTrigger() {
+/** Tutorial trigger waiting for the player to enter first-person camera mode. */
+final class FirstPersonCameraTrigger extends TutorialTrigger {
+    FirstPersonCameraTrigger() {
         super(.1f, 2f, "fpc");
     }
 

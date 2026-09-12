@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Unit;
 
-public final class UnitsInQuartersTrigger extends TutorialTrigger {
-    public UnitsInQuartersTrigger() {
+/** Tutorial trigger waiting for all units to enter the quarters building. */
+final class UnitsInQuartersTrigger extends TutorialTrigger {
+    UnitsInQuartersTrigger() {
         super(1f, 0f, "units_in_quarters");
     }
 

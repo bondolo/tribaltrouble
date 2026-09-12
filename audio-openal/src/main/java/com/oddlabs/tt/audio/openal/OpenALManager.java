@@ -45,7 +45,7 @@ import static org.lwjgl.openal.SOFTHRTF.alcResetDeviceSOFT;
 /**
  * Audio Manager implementation using OpenAL
  */
-public final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudioSource> {
+final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudioSource> {
     private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final Logger logger = Logger.getLogger(OpenALManager.class.getName());
     private static final int MAX_NUM_SOURCES = 32;
@@ -66,7 +66,7 @@ public final class OpenALManager extends AbstractAudioManager<OpenALManager, Ope
     // Queue for OpenAL cleanup tasks to be executed when this manager's context is current
     private final Queue<Runnable> alCleanupTasks = new ConcurrentLinkedQueue<>();
 
-    public OpenALManager(AudioSettings audioSettings, AnimationManager animationManager) {
+    OpenALManager(AudioSettings audioSettings, AnimationManager animationManager) {
         this(audioSettings, animationManager, initAL(audioSettings.headphone_mode));
     }
 

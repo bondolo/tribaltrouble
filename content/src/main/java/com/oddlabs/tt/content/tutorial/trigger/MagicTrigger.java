@@ -11,12 +11,12 @@ import java.util.EnumSet;
 /**
  * Tutorial trigger tracking when a chieftain successfully uses magic spells.
  */
-public final class MagicTrigger extends TutorialTrigger {
+final class MagicTrigger extends TutorialTrigger {
     private final EnumSet<MagicType> magic_used = EnumSet.noneOf(MagicType.class);
 
     private final Unit chieftain;
 
-    public MagicTrigger(Unit chieftain) {
+    MagicTrigger(Unit chieftain) {
         super(.1f, 20f, "magic");
         this.chieftain = chieftain;
     }

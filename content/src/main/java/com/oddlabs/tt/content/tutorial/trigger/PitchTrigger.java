@@ -4,10 +4,11 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.client.camera.GameCamera;
 
-public final class PitchTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for the player to pitch the camera up and down. */
+final class PitchTrigger extends TutorialTrigger {
     private final boolean[] pitch_dirs = new boolean[2];
 
-    public PitchTrigger() {
+    PitchTrigger() {
         super(.1f, 2f, "pitch");
     }
 

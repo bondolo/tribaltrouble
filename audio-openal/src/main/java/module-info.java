@@ -1,5 +1,5 @@
 module com.oddlabs.tt.audio.openal {
-    requires transitive com.oddlabs.tt.audio;
+    requires com.oddlabs.tt.audio;
     requires com.oddlabs.tt.base;
     requires com.oddlabs.common;
     requires org.joml;
@@ -9,8 +9,6 @@ module com.oddlabs.tt.audio.openal {
     requires org.lwjgl;
     requires org.lwjgl.openal;
     requires org.lwjgl.stb;
-
-    exports com.oddlabs.tt.audio.openal;
 
     provides com.oddlabs.tt.audio.AudioProvider with
             com.oddlabs.tt.audio.openal.OpenALAudioProvider;

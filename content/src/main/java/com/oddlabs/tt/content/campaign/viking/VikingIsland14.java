@@ -29,14 +29,14 @@ import java.util.stream.IntStream;
 /**
  * Campaign level logic for Viking Island 14, containing objectives and triggers.
  */
-public final class VikingIsland14 extends Island {
+final class VikingIsland14 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland14.class.getName());
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public VikingIsland14(Campaign campaign) {
+    VikingIsland14(Campaign campaign) {
         super(campaign);
     }
 

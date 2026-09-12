@@ -1,7 +1,8 @@
 package com.oddlabs.tt.simulation.behaviour;
 
 
-public final class NullBehaviour implements Behaviour {
+/** No-op behaviour used when no active behaviour is assigned. */
+final class NullBehaviour implements Behaviour {
     @Override
     public State animate(float dt) {
         return State.INTERRUPTIBLE;

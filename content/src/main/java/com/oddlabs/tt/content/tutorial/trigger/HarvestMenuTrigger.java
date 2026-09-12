@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.player.Player;
 
-public final class HarvestMenuTrigger extends TutorialTrigger {
-    public HarvestMenuTrigger(Player local_player) {
+/** Tutorial trigger waiting for the player to open the harvest menu. */
+final class HarvestMenuTrigger extends TutorialTrigger {
+    HarvestMenuTrigger(Player local_player) {
         super(.1f, 0f, "harvest_menu");
         local_player.enableHarvesting(true);
     }

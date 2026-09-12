@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
 /**
  * Campaign level logic for Viking Island 10, containing objectives and triggers.
  */
-public final class VikingIsland10 extends Island {
+final class VikingIsland10 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(VikingIsland10.class.getName());
 
     private static String i18n(String key, Object... args) {
@@ -43,7 +43,7 @@ public final class VikingIsland10 extends Island {
 
     private int objective = 0;
 
-    public VikingIsland10(Campaign campaign) {
+    VikingIsland10(Campaign campaign) {
         super(campaign);
     }
 

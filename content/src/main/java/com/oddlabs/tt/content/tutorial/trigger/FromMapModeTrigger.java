@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.client.camera.GameCamera;
 
-public final class FromMapModeTrigger extends TutorialTrigger {
-    public FromMapModeTrigger() {
+/** Tutorial trigger waiting for the player to exit map mode back to game camera. */
+final class FromMapModeTrigger extends TutorialTrigger {
+    FromMapModeTrigger() {
         super(.1f, 1f, "from_map_mode");
     }
 

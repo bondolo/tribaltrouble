@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":base"))
     implementation(project(":common"))
     implementation(project(":simulation"))
+    implementation(project(":procedural"))
     implementation(project(":net"))
     implementation(project(":window"))
     implementation(project(":input"))

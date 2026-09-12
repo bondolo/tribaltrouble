@@ -33,7 +33,7 @@ import static org.lwjgl.openal.EXTEfx.alGenEffects;
  * Manages OpenAL EFX extension features, including environmental reverb effects.
  * Handles initialization, blending between reverb presets, and cleanup of EFX resources.
  */
-public final class EFXManager implements AutoCloseable {
+final class EFXManager implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(EFXManager.class.getSimpleName());
 
     private int effectSlot;

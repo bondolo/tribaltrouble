@@ -33,14 +33,14 @@ import java.util.stream.IntStream;
 /**
  * Campaign level logic for Native Island 2, containing objectives and triggers.
  */
-public final class NativeIsland2 extends Island {
+final class NativeIsland2 extends Island {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(NativeIsland2.class.getName());
 
     private static String i18n(String key, Object... args) {
         return Utils.getBundleString(bundle, key, args);
     }
 
-    public NativeIsland2(Campaign campaign) {
+    NativeIsland2(Campaign campaign) {
         super(campaign);
     }
 

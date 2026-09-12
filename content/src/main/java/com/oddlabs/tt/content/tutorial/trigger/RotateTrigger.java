@@ -4,10 +4,11 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.client.camera.GameCamera;
 
-public final class RotateTrigger extends TutorialTrigger {
+/** Tutorial trigger waiting for the player to rotate the camera left and right. */
+final class RotateTrigger extends TutorialTrigger {
     private final boolean[] rotate_dirs = new boolean[2];
 
-    public RotateTrigger() {
+    RotateTrigger() {
         super(.1f, 2f, "rotate");
     }
 

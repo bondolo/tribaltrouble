@@ -17,6 +17,7 @@ dependencies {
     api(project(":engine"))
     compileOnlyApi(libs.jspecify)
 
+    testImplementation(project(":procedural"))
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter.params)

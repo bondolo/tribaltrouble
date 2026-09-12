@@ -7,14 +7,14 @@ import com.oddlabs.tt.simulation.model.Unit;
  * Logic for unit harvesting behavior.
  * Manages finding harvestable resources, moving to them, and returning resources to a collection point.
  */
-public final class HarvestBehaviour implements Behaviour {
+final class HarvestBehaviour implements Behaviour {
     private static final float SECONDS_PER_ANIMATION_CYCLE = 1f;
     private final Supply supply;
     private final Unit unit;
     private float anim_time;
     private boolean sound;
 
-    public HarvestBehaviour(Unit unit, Supply supply) {
+    HarvestBehaviour(Unit unit, Supply supply) {
         this.unit = unit;
         this.supply = supply;
         unit.aimAtTarget(supply);

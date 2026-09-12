@@ -5,11 +5,11 @@ import com.oddlabs.tt.simulation.model.Unit;
 /**
  * Behaviour that plays the idle animation and handles the stun duration.
  */
-public final class StunBehaviour implements Behaviour {
+final class StunBehaviour implements Behaviour {
     private final StunController controller;
     private final Unit unit;
 
-    public StunBehaviour(StunController controller, Unit unit) {
+    StunBehaviour(StunController controller, Unit unit) {
         this.controller = controller;
         this.unit = unit;
     }

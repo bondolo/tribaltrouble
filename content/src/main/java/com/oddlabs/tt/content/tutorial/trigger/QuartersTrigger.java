@@ -4,8 +4,9 @@ import com.oddlabs.tt.content.tutorial.Tutorial;
 
 import com.oddlabs.tt.simulation.model.Building;
 
-public final class QuartersTrigger extends TutorialTrigger {
-    public QuartersTrigger() {
+/** Tutorial trigger waiting for quarters building construction to start. */
+final class QuartersTrigger extends TutorialTrigger {
+    QuartersTrigger() {
         super(1f, 0f, "quarters");
     }
 
