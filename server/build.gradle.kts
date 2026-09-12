@@ -6,11 +6,25 @@ dependencies {
     implementation(project(":common"))
     implementation(libs.h2)
     implementation(libs.mysql.connector)
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.mysql)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter.params)
     testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir(project(":services").file("src/main/resources"))
+        }
+    }
+}
+
+tasks.named<JavaCompile>("compileJava") {
+    options.compilerArgs.addAll(listOf("--add-reads", "com.oddlabs.server=ALL-UNNAMED"))
 }
 
 tasks.withType<Test> {

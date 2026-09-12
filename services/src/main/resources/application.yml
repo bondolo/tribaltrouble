@@ -1,0 +1,19 @@
+micronaut:
+  application:
+    name: tt-services
+  server:
+    port: 8080
+
+datasources:
+  default:
+    url: ${DATASOURCES_DEFAULT_URL:`jdbc:h2:mem:oddlabs;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=VALUE`}
+    driver-class-name: ${DATASOURCES_DEFAULT_DRIVER:org.h2.Driver}
+    username: ${DATASOURCES_DEFAULT_USERNAME:sa}
+    password: ${DATASOURCES_DEFAULT_PASSWORD:}
+    schema-generate: NONE
+
+flyway:
+  datasources:
+    default:
+      enabled: ${FLYWAY_DATASOURCES_DEFAULT_ENABLED:true}
+      clean-schema: false
