@@ -143,6 +143,10 @@ public interface RenderContext {
 
     void applyDefaults(boolean enableMultisample);
 
+    void setMultisampleEnabled(boolean enabled);
+
+    boolean isMultisampleEnabled();
+
     /**
      * Verifies that the tracked state matches the actual OpenGL state.
      *

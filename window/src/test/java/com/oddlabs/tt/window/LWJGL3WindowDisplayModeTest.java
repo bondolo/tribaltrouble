@@ -71,4 +71,22 @@ final class LWJGL3WindowDisplayModeTest {
             assertTrue(mode.getFrequency() > 0);
         }
     }
+
+    @Test
+    void testWindowedDisplayModesWithinLimits() {
+        LWJGL3Window window;
+        try {
+            window = new LWJGL3Window();
+        } catch (IllegalStateException e) {
+            // Headless test environment without SDL video display
+            return;
+        }
+        List<SerializableDisplayMode> windowedModes = window.getWindowedDisplayModes();
+        assertFalse(windowedModes.isEmpty());
+        for (SerializableDisplayMode mode : windowedModes) {
+            assertTrue(mode.getWidth() >= SerializableDisplayMode.MIN_WIDTH);
+            assertTrue(mode.getHeight() >= SerializableDisplayMode.MIN_HEIGHT);
+            assertTrue(List.of(SerializableDisplayMode.WINDOWED_PRESETS).contains(mode));
+        }
+    }
 }

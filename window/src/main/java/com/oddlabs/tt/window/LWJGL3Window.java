@@ -74,6 +74,8 @@ public final class LWJGL3Window implements Window {
     private static long cgDisplayModeGetIOFlags = MemoryUtil.NULL;
     private static long cgDisplayModeGetPixelWidth = MemoryUtil.NULL;
     private static long cgDisplayModeGetPixelHeight = MemoryUtil.NULL;
+    private static long cgDisplayModeGetWidth = MemoryUtil.NULL;
+    private static long cgDisplayModeGetHeight = MemoryUtil.NULL;
     private static long cgDisplayModeGetRefreshRate = MemoryUtil.NULL;
     private static long cfArrayGetCount = MemoryUtil.NULL;
     private static long cfArrayGetValueAtIndex = MemoryUtil.NULL;
@@ -96,6 +98,8 @@ public final class LWJGL3Window implements Window {
                 cgDisplayModeGetIOFlags = cg.getFunctionAddress("CGDisplayModeGetIOFlags");
                 cgDisplayModeGetPixelWidth = cg.getFunctionAddress("CGDisplayModeGetPixelWidth");
                 cgDisplayModeGetPixelHeight = cg.getFunctionAddress("CGDisplayModeGetPixelHeight");
+                cgDisplayModeGetWidth = cg.getFunctionAddress("CGDisplayModeGetWidth");
+                cgDisplayModeGetHeight = cg.getFunctionAddress("CGDisplayModeGetHeight");
                 cgDisplayModeGetRefreshRate = cg.getFunctionAddress("CGDisplayModeGetRefreshRate");
 
                 var cf = MacOSXLibrary.create("/System/Library/Frameworks/CoreFoundation.framework");
@@ -158,6 +162,15 @@ public final class LWJGL3Window implements Window {
 
                 int w = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelWidth);
                 int h = (int) JNI.invokePJ(mode, cgDisplayModeGetPixelHeight);
+                int pointW = cgDisplayModeGetWidth != MemoryUtil.NULL ? (int) JNI.invokePJ(mode, cgDisplayModeGetWidth)
+                        : w;
+                int pointH = cgDisplayModeGetHeight != MemoryUtil.NULL ? (int) JNI.invokePJ(mode,
+                        cgDisplayModeGetHeight) : h;
+
+                // Option 2 in fullscreen exclusive mode: hide non-1.0 density modes
+                if (pointW != w || pointH != h) {
+                    continue;
+                }
 
                 if (nativeW > 0 && nativeH > 0 && (w > nativeW || h > nativeH)) {
                     continue;
@@ -268,8 +281,11 @@ public final class LWJGL3Window implements Window {
         int n = pb.remaining();
         for (int i = 0; i < n; i++) {
             SDL_DisplayMode mode = SDL_DisplayMode.create(pb.get(i));
-            int modePhysW = Math.round(mode.w() * mode.pixel_density());
-            int modePhysH = Math.round(mode.h() * mode.pixel_density());
+            if (Math.abs(mode.pixel_density() - 1.0f) > 0.01f) {
+                continue;
+            }
+            int modePhysW = mode.w();
+            int modePhysH = mode.h();
             if (modePhysW == targetW && modePhysH == targetH) {
                 if (bestMatch == null) {
                     bestMatch = mode;
@@ -315,20 +331,36 @@ public final class LWJGL3Window implements Window {
         if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
 
         SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
-        int maxW = desktop != null ? (int) (desktop.w() * desktop.pixel_density()) : 3840;
-        int maxH = desktop != null ? (int) (desktop.h() * desktop.pixel_density()) : 2160;
-
-        PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
-        if (pb != null) {
-            int n = pb.remaining();
-            for (int i = 0; i < n; i++) {
-                SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
-                int physW = (int) (dm.w() * dm.pixel_density());
-                int physH = (int) (dm.h() * dm.pixel_density());
-                if (physW > maxW) maxW = physW;
-                if (physH > maxH) maxH = physH;
+        int maxW = 3840;
+        int maxH = 2160;
+        if (!fullscreen) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                SDL_Rect rect = SDL_Rect.malloc(stack);
+                if (SDL_GetDisplayUsableBounds(displayID, rect)) {
+                    maxW = rect.w();
+                    maxH = rect.h();
+                } else if (desktop != null) {
+                    maxW = desktop.w();
+                    maxH = desktop.h();
+                }
             }
-            nSDL_free(pb.address());
+        } else {
+            if (desktop != null) {
+                maxW = desktop.w();
+                maxH = desktop.h();
+            }
+            PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
+            if (pb != null) {
+                int n = pb.remaining();
+                for (int i = 0; i < n; i++) {
+                    SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
+                    if (Math.abs(dm.pixel_density() - 1.0f) <= 0.01f) {
+                        if (dm.w() > maxW) maxW = dm.w();
+                        if (dm.h() > maxH) maxH = dm.h();
+                    }
+                }
+                nSDL_free(pb.address());
+            }
         }
 
         if (mode.getWidth() > maxW || mode.getHeight() > maxH) {
@@ -378,8 +410,7 @@ public final class LWJGL3Window implements Window {
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
         }
 
-        Vector2f logical = getLogicalSize(mode.getWidth(), mode.getHeight());
-        windowHandle = SDL_CreateWindow(title, (int) logical.x, (int) logical.y, flags);
+        windowHandle = SDL_CreateWindow(title, mode.getWidth(), mode.getHeight(), flags);
         if (windowHandle == MemoryUtil.NULL) {
             throw new IllegalStateException("Failed to create SDL window: " + SDL_GetError());
         }
@@ -696,8 +727,7 @@ public final class LWJGL3Window implements Window {
 
             if (!fullscreen) {
                 SDL_SetWindowBordered(windowHandle, true);
-                Vector2f logical = getLogicalSize(settings.view_width, settings.view_height);
-                SDL_SetWindowSize(windowHandle, (int) logical.x, (int) logical.y);
+                SDL_SetWindowSize(windowHandle, settings.view_width, settings.view_height);
                 SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
             }
 
@@ -715,30 +745,45 @@ public final class LWJGL3Window implements Window {
                 : SDL_GetPrimaryDisplay();
         if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
 
+        List<SerializableDisplayMode> modes = new ArrayList<>();
+
+        // Option 1 in non-exclusive fullscreen: include desktop mode presented as screen resolution
+        SDL_DisplayMode desktop = SDL_GetDesktopDisplayMode(displayID);
+        if (desktop != null) {
+            int deskW = desktop.w();
+            int deskH = desktop.h();
+            if (deskW >= SerializableDisplayMode.MIN_WIDTH && deskH >= SerializableDisplayMode.MIN_HEIGHT) {
+                modes.add(new SerializableDisplayMode(deskW, deskH, SDL_BITSPERPIXEL(desktop.format()),
+                        (int) desktop.refresh_rate()));
+            }
+        }
+
         List<SerializableDisplayMode> macNativeModes = getMacNativeDisplayModes();
         if (macNativeModes != null && !macNativeModes.isEmpty()) {
-            return filterAndSortModes(macNativeModes);
+            modes.addAll(macNativeModes);
+            return filterAndSortModes(modes);
         }
 
         PointerBuffer pb = SDL_GetFullscreenDisplayModes(displayID);
-        if (pb == null) {
-            return List.of();
-        }
+        if (pb != null) {
+            int n = pb.remaining();
+            for (int i = 0; i < n; i++) {
+                SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
+                float density = dm.pixel_density();
+                // Option 2 in fullscreen exclusive mode: hide non-1.0 density modes
+                if (Math.abs(density - 1.0f) > 0.01f) {
+                    continue;
+                }
+                int bpp = SDL_BITSPERPIXEL(dm.format());
+                int physW = dm.w();
+                int physH = dm.h();
 
-        List<SerializableDisplayMode> modes = new ArrayList<>();
-        int n = pb.remaining();
-        for (int i = 0; i < n; i++) {
-            SDL_DisplayMode dm = SDL_DisplayMode.create(pb.get(i));
-            int bpp = SDL_BITSPERPIXEL(dm.format());
-            float density = dm.pixel_density();
-            int physW = Math.round(dm.w() * density);
-            int physH = Math.round(dm.h() * density);
-
-            if (physW >= SerializableDisplayMode.MIN_WIDTH && physH >= SerializableDisplayMode.MIN_HEIGHT) {
-                modes.add(new SerializableDisplayMode(physW, physH, bpp, (int) dm.refresh_rate()));
+                if (physW >= SerializableDisplayMode.MIN_WIDTH && physH >= SerializableDisplayMode.MIN_HEIGHT) {
+                    modes.add(new SerializableDisplayMode(physW, physH, bpp, (int) dm.refresh_rate()));
+                }
             }
+            nSDL_free(pb.address());
         }
-        nSDL_free(pb.address());
 
         return filterAndSortModes(modes);
     }
@@ -780,9 +825,8 @@ public final class LWJGL3Window implements Window {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             SDL_Rect rect = SDL_Rect.malloc(stack);
             if (SDL_GetDisplayUsableBounds(displayID, rect)) {
-                float density = getPixelDensity();
-                maxW = (int) (rect.w() * density);
-                maxH = (int) (rect.h() * density);
+                maxW = rect.w();
+                maxH = rect.h();
             }
         }
 
@@ -800,7 +844,10 @@ public final class LWJGL3Window implements Window {
         if (lastCreatedMode != null) {
             return lastCreatedMode;
         }
-        return new SerializableDisplayMode(cachedWidth, cachedHeight, 32, 60);
+        if (isExclusiveFullscreen()) {
+            return new SerializableDisplayMode(cachedWidth, cachedHeight, 32, 60);
+        }
+        return new SerializableDisplayMode(cachedLogicalWidth, cachedLogicalHeight, 32, 60);
     }
 
     @Override
@@ -824,8 +871,7 @@ public final class LWJGL3Window implements Window {
                     logger.info("setDisplayMode: switched to borderless desktop fullscreen for mode " + mode);
                 }
             } else {
-                Vector2f logical = getLogicalSize(mode.getWidth(), mode.getHeight());
-                SDL_SetWindowSize(windowHandle, (int) logical.x, (int) logical.y);
+                SDL_SetWindowSize(windowHandle, mode.getWidth(), mode.getHeight());
                 SDL_SetWindowPosition(windowHandle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                 SDL_SyncWindow(windowHandle);
             }
@@ -990,10 +1036,5 @@ public final class LWJGL3Window implements Window {
                 callback.accept(null);
             }, MemoryUtil.NULL, windowHandle, filters, defaultLocation);
         }
-    }
-
-    private Vector2f getLogicalSize(int physW, int physH) {
-        float density = getPixelDensity();
-        return new Vector2f(physW / density, physH / density);
     }
 }

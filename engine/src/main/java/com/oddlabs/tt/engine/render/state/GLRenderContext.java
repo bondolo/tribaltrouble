@@ -54,6 +54,7 @@ final class GLRenderContext implements RenderContext {
     private GLState blendEnabled = GLState.UNKNOWN;
     private GLState cullFaceEnabled = GLState.UNKNOWN;
     private GLState framebufferSrgbEnabled = GLState.UNKNOWN;
+    private GLState multisampleEnabled = GLState.UNKNOWN;
 
     private GLState maskR = GLState.UNKNOWN;
     private GLState maskG = GLState.UNKNOWN;
@@ -147,6 +148,7 @@ final class GLRenderContext implements RenderContext {
         currentCullFaceMode = -1;
         sampleAlphaToCoverageEnabled = GLState.UNKNOWN;
         framebufferSrgbEnabled = GLState.UNKNOWN;
+        multisampleEnabled = GLState.UNKNOWN;
         maskState = GLState.UNKNOWN;
 
         viewX = -1;
@@ -185,11 +187,7 @@ final class GLRenderContext implements RenderContext {
         setDepthFunc(GL11.GL_LEQUAL);
 
         // Multisample
-        if (enableMultisample) {
-            GL13.glEnable(GL13.GL_MULTISAMPLE);
-        } else {
-            GL13.glDisable(GL13.GL_MULTISAMPLE);
-        }
+        setMultisampleEnabled(enableMultisample);
 
         // Blend
         setBlendMode(BlendMode.ALPHA);
@@ -366,6 +364,23 @@ final class GLRenderContext implements RenderContext {
             GL11.glDisable(GL13.GL_SAMPLE_ALPHA_TO_COVERAGE);
         }
         sampleAlphaToCoverageEnabled = state;
+    }
+
+    @Override
+    public void setMultisampleEnabled(boolean enabled) {
+        GLState state = GLState.from(enabled);
+        if (multisampleEnabled == state) return;
+        if (enabled) {
+            GL11.glEnable(GL13.GL_MULTISAMPLE);
+        } else {
+            GL11.glDisable(GL13.GL_MULTISAMPLE);
+        }
+        multisampleEnabled = state;
+    }
+
+    @Override
+    public boolean isMultisampleEnabled() {
+        return multisampleEnabled.isTrue();
     }
 
     @Override

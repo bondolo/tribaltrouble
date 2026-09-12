@@ -245,6 +245,7 @@ public final class InputBindingSettings implements Serializable, PropertiesSeria
         def(GameAction.DEBUG_START_RECORDING, Key.U);
         def(GameAction.DEBUG_TOGGLE_WATER, Key.W, Modifier.CONTROL);
         def(GameAction.DEBUG_TOGGLE_AI, Key.R, Modifier.CONTROL);
+        def(GameAction.DEBUG_TOGGLE_MSAA, Key.F8, Modifier.ALT);
     }
 
     private static void def(GameAction action, Key key, Modifier... modifiers) {

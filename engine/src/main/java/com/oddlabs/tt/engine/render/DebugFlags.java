@@ -21,6 +21,7 @@ public final class DebugFlags {
     public static boolean draw_light = true;
     public static boolean draw_plants = true;
     public static boolean draw_debug_maps = false;
+    public static boolean draw_msaa = true;
 
     public static boolean process_misc = true;
     public static boolean process_landscape = true;

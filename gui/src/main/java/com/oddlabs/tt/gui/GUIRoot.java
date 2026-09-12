@@ -470,6 +470,12 @@ public final class GUIRoot extends GUIObject {
                 logger.info("Texture.globalSize() = " + Texture.globalSize());
                 consumed = true;
             }
+            if (event.consumeAction(GameAction.DEBUG_TOGGLE_MSAA)) {
+                DebugFlags.draw_msaa = !DebugFlags.draw_msaa;
+                logger.info("DebugFlags.draw_msaa = " + DebugFlags.draw_msaa);
+                info_printer.print("MSAA: " + (DebugFlags.draw_msaa ? "enabled" : "disabled"));
+                consumed = true;
+            }
         }
 
         if (consumed) {

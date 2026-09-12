@@ -71,6 +71,10 @@ public final class Renderer implements AutoCloseable {
             lastDisplayH = h;
         }
         renderContext.setViewport(0, 0, w, h);
+        boolean enableMultisample = WindowSettings.from(settings).view_samples > 0
+                && window.getPixelDensity() <= 1.0f
+                && DebugFlags.draw_msaa;
+        renderContext.setMultisampleEnabled(enableMultisample);
 
         renderPass.run();
 
@@ -201,7 +205,9 @@ public final class Renderer implements AutoCloseable {
 
     private void initGL() {
         VBO.releaseAll();
-        boolean enableMultisample = WindowSettings.from(settings).view_samples > 0 && window.getPixelDensity() <= 1.0f;
+        boolean enableMultisample = WindowSettings.from(settings).view_samples > 0
+                && window.getPixelDensity() <= 1.0f
+                && DebugFlags.draw_msaa;
         renderContext.applyDefaults(enableMultisample);
         int w = window.getWidth();
         int h = window.getHeight();
