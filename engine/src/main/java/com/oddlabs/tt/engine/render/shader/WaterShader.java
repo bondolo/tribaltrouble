@@ -1,13 +1,12 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * A shader for rendering water surfaces.
+ * Renders water surfaces with dynamic wave animation, depth-based alpha blending, and sky reflections.
  */
 public final class WaterShader extends ShaderProgram implements FogShader, LitShader {
 
-    public interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0"; // Base water texture
         String TEXTURE_1 = "u_texture1"; // Detail water texture
         String ENABLE_DETAIL = "u_enableDetail";
@@ -21,9 +20,6 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
         String MAX_ALPHA = "u_maxAlpha";
         String SKY_COLOR = "u_skyColor";
 
-        // Fog Uniforms
-        String FOG_HEIGHT_FACTOR = FogShader.FOG_HEIGHT_FACTOR;
-
         // Fake sky reflection uniforms
         String CLOUD_TEXTURE_0 = "u_cloudTexture0";
         String CLOUD_TEXTURE_1 = "u_cloudTexture1";
@@ -31,11 +27,6 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
         String OUTER_OFFSET = "u_outerOffset";
         String INNER_CLOUD_DENSITY = "u_innerCloudDensity";
         String OUTER_CLOUD_DENSITY = "u_outerCloudDensity";
-    }
-
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
-        String INSTANCE_OFFSET = "in_InstanceOffset";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -227,8 +218,45 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     }
                     """;
 
+    public final int locModelViewMatrix;
+    public final int locTexture0;
+    public final int locTexture1;
+    public final int locEnableDetail;
+    public final int locCameraPos;
+    public final int locWaterHeight;
+    public final int locHeightMap;
+    public final int locWorldSize;
+    public final int locDepthScale;
+    public final int locMinAlpha;
+    public final int locMaxAlpha;
+    public final int locSkyColor;
+    public final int locCloudTexture0;
+    public final int locCloudTexture1;
+    public final int locInnerOffset;
+    public final int locOuterOffset;
+    public final int locInnerCloudDensity;
+    public final int locOuterCloudDensity;
+
     public WaterShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);
+        locTexture1 = getUniformLocation(Uniforms.TEXTURE_1);
+        locEnableDetail = getUniformLocation(Uniforms.ENABLE_DETAIL);
+        locCameraPos = getUniformLocation(Uniforms.CAMERA_POS);
+        locWaterHeight = getUniformLocation(Uniforms.WATER_HEIGHT);
+        locHeightMap = getUniformLocation(Uniforms.HEIGHT_MAP);
+        locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
+        locDepthScale = getUniformLocation(Uniforms.DEPTH_SCALE);
+        locMinAlpha = getUniformLocation(Uniforms.MIN_ALPHA);
+        locMaxAlpha = getUniformLocation(Uniforms.MAX_ALPHA);
+        locSkyColor = getUniformLocation(Uniforms.SKY_COLOR);
+        locCloudTexture0 = getUniformLocation(Uniforms.CLOUD_TEXTURE_0);
+        locCloudTexture1 = getUniformLocation(Uniforms.CLOUD_TEXTURE_1);
+        locInnerOffset = getUniformLocation(Uniforms.INNER_OFFSET);
+        locOuterOffset = getUniformLocation(Uniforms.OUTER_OFFSET);
+        locInnerCloudDensity = getUniformLocation(Uniforms.INNER_CLOUD_DENSITY);
+        locOuterCloudDensity = getUniformLocation(Uniforms.OUTER_CLOUD_DENSITY);
     }
 }

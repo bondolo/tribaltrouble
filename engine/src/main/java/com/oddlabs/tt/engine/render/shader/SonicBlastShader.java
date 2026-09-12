@@ -3,13 +3,12 @@ package com.oddlabs.tt.engine.render.shader;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Shader for rendering the expanding ring effect of a Sonic Blast magic attack.
+ * Renders the expanding ring effect of a Sonic Blast magic attack.
  */
 public final class SonicBlastShader extends ShaderProgram implements FogShader {
 
-    public interface Uniforms {
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0";
         String TIME = "u_time";
         String MAX_RADIUS = "u_maxRadius";
@@ -17,9 +16,9 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
         String COLOR = "u_color";
     }
 
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
-        String TEX_COORD = Shader.TEX_COORD;
+    private interface Attributes {
+        String POSITION = Shader.Attributes.POSITION;
+        String TEX_COORD = Shader.Attributes.TEX_COORD;
     }
 
     public enum Attribute implements VertexAttribute {
@@ -168,8 +167,21 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                     }
                     """;
 
+    public final int locModelViewMatrix;
+    public final int locTexture0;
+    public final int locTime;
+    public final int locMaxRadius;
+    public final int locExpansionSpeed;
+    public final int locColor;
+
     public SonicBlastShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);
+        locTime = getUniformLocation(Uniforms.TIME);
+        locMaxRadius = getUniformLocation(Uniforms.MAX_RADIUS);
+        locExpansionSpeed = getUniformLocation(Uniforms.EXPANSION_SPEED);
+        locColor = getUniformLocation(Uniforms.COLOR);
     }
 }

@@ -18,8 +18,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Specialized renderer for drawing the translucent "ghost" building preview during placement.
- * Encapsulates the multi-pass depth-prime technique to prevent self-overlapping transparency artifacts.
+ * Renders the translucent ghost building preview during placement.
  */
 public final class PlacingRenderer implements AutoCloseable {
     private final PlacingShader shader = new PlacingShader();
@@ -32,65 +31,55 @@ public final class PlacingRenderer implements AutoCloseable {
             VertexArray newVao = new VertexArray();
             newVao.bind();
 
-            int texCoordLoc = shader.getAttributeLocation(PlacingShader.Attributes.TEX_COORD);
-            int posLoc = shader.getAttributeLocation(PlacingShader.Attributes.POSITION);
-            int normLoc = shader.getAttributeLocation(PlacingShader.Attributes.NORMAL);
-
             list.getIndices().bind();
 
-            if (texCoordLoc >= 0) {
-                GL20.glEnableVertexAttribArray(texCoordLoc);
-            }
-            if (posLoc >= 0) {
-                GL20.glEnableVertexAttribArray(posLoc);
-            }
-            if (normLoc >= 0) {
-                GL20.glEnableVertexAttribArray(normLoc);
-            }
+            GL20.glEnableVertexAttribArray(shader.locTexCoord);
+            GL20.glEnableVertexAttribArray(shader.locPosition);
+            GL20.glEnableVertexAttribArray(shader.locNormal);
             newVao.unbind();
             return newVao;
         });
 
         try (var _ = shader.use()) {
-            shader.setUniform(PlacingShader.Uniforms.DESATURATE, 0.3f);
+            shader.setUniform(shader.locDesaturate, 0.3f);
 
             // Setup uniform state
             context.setTexture(0, sprite.textures[0][Sprite.TEXTURE_NORMAL]);
-            shader.setUniform(PlacingShader.Uniforms.TEXTURE_0, 0);
+            shader.setUniform(shader.locTexture0, 0);
 
             boolean useLighting = DebugFlags.draw_light && sprite.lighted;
-            shader.setUniform(PlacingShader.Uniforms.ENABLE_LIGHTING, useLighting);
-            shader.setUniform(PlacingShader.Uniforms.REPLACE_MODE, !useLighting && !sprite.modulate_color);
+            shader.setUniform(shader.locEnableLighting, useLighting);
+            shader.setUniform(shader.locReplaceMode, !useLighting && !sprite.modulate_color);
 
             if (sprite.modulate_color) {
-                shader.setUniform(PlacingShader.Uniforms.MODULATE_COLOR, true);
-                shader.setUniform(PlacingShader.Uniforms.ENABLE_TEAM_COLOR, false);
-                shader.setUniform(PlacingShader.Uniforms.ALPHA_TEST_VALUE, 0.0f);
+                shader.setUniform(shader.locModulateColor, true);
+                shader.setUniform(shader.locEnableTeamColor, false);
+                shader.setUniform(shader.locAlphaTestValue, 0.0f);
             } else {
-                shader.setUniform(PlacingShader.Uniforms.MODULATE_COLOR, false);
-                shader.setUniform(PlacingShader.Uniforms.ALPHA_TEST_VALUE, 0.3f);
+                shader.setUniform(shader.locModulateColor, false);
+                shader.setUniform(shader.locAlphaTestValue, 0.3f);
                 if (sprite.hasTeamDecal()) {
-                    shader.setUniform(PlacingShader.Uniforms.ENABLE_TEAM_COLOR, true);
+                    shader.setUniform(shader.locEnableTeamColor, true);
                     context.setTexture(1, sprite.textures[0][Sprite.TEXTURE_TEAM]);
-                    shader.setUniform(PlacingShader.Uniforms.TEXTURE_1, 1);
+                    shader.setUniform(shader.locTexture1, 1);
                 } else {
-                    shader.setUniform(PlacingShader.Uniforms.ENABLE_TEAM_COLOR, false);
+                    shader.setUniform(shader.locEnableTeamColor, false);
                 }
             }
 
             if (sprite.hasBumpMap(0)) {
-                shader.setUniform(PlacingShader.Uniforms.ENABLE_NORMAL_MAP, true);
+                shader.setUniform(shader.locEnableNormalMap, true);
                 context.setTexture(2, sprite.textures[0][Sprite.TEXTURE_BUMP]);
-                shader.setUniform(PlacingShader.Uniforms.NORMAL_MAP, 2);
+                shader.setUniform(shader.locNormalMap, 2);
             } else {
-                shader.setUniform(PlacingShader.Uniforms.ENABLE_NORMAL_MAP, false);
+                shader.setUniform(shader.locEnableNormalMap, false);
             }
 
-            shader.setUniform(PlacingShader.Uniforms.MODULATE_COLOR, true);
-            shader.setUniform(PlacingShader.Uniforms.ALPHA_TEST_VALUE, 0.5f);
-            shader.setUniform(PlacingShader.Uniforms.COLOR, color);
-            shader.setUniform(PlacingShader.Uniforms.DECAL_COLOR, teamColor);
-            shader.setUniform(PlacingShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
+            shader.setUniform(shader.locModulateColor, true);
+            shader.setUniform(shader.locAlphaTestValue, 0.5f);
+            shader.setUniform(shader.locColor, color);
+            shader.setUniform(shader.locDecalColor, teamColor);
+            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
 
             try (var _ = context.withCullMode(CullMode.BACK)) {
                 // Pass 1: Depth Prime (Write Depth, No Color)
@@ -105,34 +94,22 @@ public final class PlacingRenderer implements AutoCloseable {
                     drawSprite(sprite, spriteList, vao);
                 }
             } finally {
-                shader.setUniform(PlacingShader.Uniforms.DESATURATE, 0.0f);
-                shader.setUniform(PlacingShader.Uniforms.MODULATE_COLOR, false);
-                shader.setUniform(PlacingShader.Uniforms.ALPHA_TEST_VALUE, 0.3f);
+                shader.setUniform(shader.locDesaturate, 0.0f);
+                shader.setUniform(shader.locModulateColor, false);
+                shader.setUniform(shader.locAlphaTestValue, 0.3f);
             }
         }
     }
 
     private void drawSprite(Sprite sprite, SpriteList spriteList, VertexArray vao) {
-        int texCoordLoc = shader.getAttributeLocation(PlacingShader.Attributes.TEX_COORD);
-        int posLoc = shader.getAttributeLocation(PlacingShader.Attributes.POSITION);
-        int normLoc = shader.getAttributeLocation(PlacingShader.Attributes.NORMAL);
-
         vao.bind();
         try {
-            if (texCoordLoc >= 0) {
-                spriteList.getTexcoords().vertexAttribPointer(texCoordLoc, 2, 0,
-                        (long) sprite.texcoords_offset * Float.BYTES);
-            }
-
-            if (posLoc >= 0) {
-                spriteList.getPositions().vertexAttribPointer(posLoc, 3, 0,
-                        (long) sprite.vertices_offset * Float.BYTES);
-            }
-
-            if (normLoc >= 0) {
-                spriteList.getNormals().vertexAttribPointer(normLoc, 3, 0,
-                        (long) sprite.normals_offset * Float.BYTES);
-            }
+            spriteList.getTexcoords().vertexAttribPointer(shader.locTexCoord, 2, 0,
+                    (long) sprite.texcoords_offset * Float.BYTES);
+            spriteList.getPositions().vertexAttribPointer(shader.locPosition, 3, 0,
+                    (long) sprite.vertices_offset * Float.BYTES);
+            spriteList.getNormals().vertexAttribPointer(shader.locNormal, 3, 0,
+                    (long) sprite.normals_offset * Float.BYTES);
 
             spriteList.getIndices().drawElements(GL11.GL_TRIANGLES, sprite.getTriangleCount() * 3,
                     sprite.indices_offset);

@@ -237,24 +237,24 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         try (var _ = skyShader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.BACK)) {
 
-            skyShader.setUniform(SkyShader.Uniforms.MODEL_VIEW_MATRIX, modelView.current());
-            skyShader.setUniform(SkyShader.Uniforms.SKY_COLOR, skyColor);
+            skyShader.setUniform(skyShader.locModelViewMatrix, modelView.current());
+            skyShader.setUniform(skyShader.locSkyColor, skyColor);
 
-            skyShader.setUniform(SkyShader.Uniforms.FOG_FADE_START, 0.0f);
-            skyShader.setUniform(SkyShader.Uniforms.FOG_FADE_END, 0.1f);
+            skyShader.setUniform(skyShader.locFogFadeStart, 0.0f);
+            skyShader.setUniform(skyShader.locFogFadeEnd, 0.1f);
 
             context.setTexture(0, clouds[GeneratorClouds.INNER]);
-            skyShader.setUniform(SkyShader.Uniforms.TEXTURE_0, 0);
+            skyShader.setUniform(skyShader.locTexture0, 0);
 
             context.setTexture(1, clouds[GeneratorClouds.OUTER]);
-            skyShader.setUniform(SkyShader.Uniforms.TEXTURE_1, 1);
+            skyShader.setUniform(skyShader.locTexture1, 1);
 
             updateAnimation(currentTime);
 
-            skyShader.setUniform(SkyShader.Uniforms.INNER_OFFSET, innerOffset[0], innerOffset[1]);
-            skyShader.setUniform(SkyShader.Uniforms.OUTER_OFFSET, outerOffset[0], outerOffset[1]);
-            skyShader.setUniform(SkyShader.Uniforms.INNER_CLOUD_DENSITY, innerCloudDensity);
-            skyShader.setUniform(SkyShader.Uniforms.OUTER_CLOUD_DENSITY, outerCloudDensity);
+            skyShader.setUniform(skyShader.locInnerOffset, innerOffset[0], innerOffset[1]);
+            skyShader.setUniform(skyShader.locOuterOffset, outerOffset[0], outerOffset[1]);
+            skyShader.setUniform(skyShader.locInnerCloudDensity, innerCloudDensity);
+            skyShader.setUniform(skyShader.locOuterCloudDensity, outerCloudDensity);
 
             skyVAO.bind();
 
@@ -329,19 +329,19 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         try (var _ = seaBottomShader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context
                 .withDepthMode(DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.BACK)) {
 
-            seaBottomShader.setUniform(SeaBottomShader.Uniforms.MODEL_VIEW_MATRIX, modelView.current());
+            seaBottomShader.setUniform(seaBottomShader.locModelViewMatrix, modelView.current());
 
-            seaBottomShader.setUniform(SeaBottomShader.Uniforms.BASE_COLOR, seaBottomColor);
+            seaBottomShader.setUniform(seaBottomShader.locBaseColor, seaBottomColor);
 
             if (DebugFlags.draw_detail) {
                 context.setTexture(1, detail);
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_1, 1);
+                seaBottomShader.setUniform(seaBottomShader.locTexture1, 1);
                 context.setTexture(2, detailNormal);
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.TEXTURE_NORMAL, 2);
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE,
+                seaBottomShader.setUniform(seaBottomShader.locTextureNormal, 2);
+                seaBottomShader.setUniform(seaBottomShader.locDetailScale,
                         LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
             } else {
-                seaBottomShader.setUniform(SeaBottomShader.Uniforms.DETAIL_SCALE, 0f);
+                seaBottomShader.setUniform(seaBottomShader.locDetailScale, 0f);
             }
 
             seaBottomVAO.bind();

@@ -1,12 +1,12 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * Shader for rendering 3D sprites using hardware instancing and skeletal skinning.
+ * Renders 3D sprites using hardware instancing and skeletal skinning.
  * Supports GPU 4-bone linear blend skinning and a direct static path for rigid geometry.
  */
 public final class InstancedSpriteShader extends ShaderProgram implements FogShader, LitShader {
 
-    public interface Uniforms {
+    private interface Uniforms {
         String TEXTURE_0 = "u_texture0";
         String TEXTURE_1 = "u_texture1";
         String NORMAL_MAP = "u_normalMap";
@@ -176,9 +176,31 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                     }
                     """;
 
+    public final int locTexture0;
+    public final int locTexture1;
+    public final int locNormalMap;
+    public final int locBoneMatrixBuffer;
+    public final int locEnableLighting;
+    public final int locEnableTeamColor;
+    public final int locEnableNormalMap;
+    public final int locModulateColor;
+    public final int locReplaceMode;
+    public final int locDesaturate;
+    public final int locAlphaTestValue;
+
     public InstancedSpriteShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor");
         link();
+        locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);
+        locTexture1 = getUniformLocation(Uniforms.TEXTURE_1);
+        locNormalMap = getUniformLocation(Uniforms.NORMAL_MAP);
+        locBoneMatrixBuffer = getUniformLocation(Uniforms.BONE_MATRIX_BUFFER);
+        locEnableLighting = getUniformLocation(Uniforms.ENABLE_LIGHTING);
+        locEnableTeamColor = getUniformLocation(Uniforms.ENABLE_TEAM_COLOR);
+        locEnableNormalMap = getUniformLocation(Uniforms.ENABLE_NORMAL_MAP);
+        locModulateColor = getUniformLocation(Uniforms.MODULATE_COLOR);
+        locReplaceMode = getUniformLocation(Uniforms.REPLACE_MODE);
+        locDesaturate = getUniformLocation(Uniforms.DESATURATE);
+        locAlphaTestValue = getUniformLocation(Uniforms.ALPHA_TEST_VALUE);
     }
 }

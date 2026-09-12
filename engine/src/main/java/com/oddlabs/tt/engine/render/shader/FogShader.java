@@ -9,12 +9,6 @@ public interface FogShader extends Shader {
     int FOG_MODE_EXP2 = 2;
     int FOG_MODE_RADIAL = 3;
 
-    String FOG_COLOR = "u_fogColor";
-    String FOG_MODE = "u_fogMode";
-    String FOG_PARAMS = "u_fogParams";
-    String FOG_HEIGHT_FACTOR = "u_fogHeightFactor";
-    String CAMERA_HEIGHT = "u_cameraHeight";
-
     String FOG_FUNCTION = """
             float calculateFogFactor(
                 float dist,

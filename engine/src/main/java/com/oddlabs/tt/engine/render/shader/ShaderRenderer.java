@@ -15,9 +15,8 @@ public class ShaderRenderer implements AutoCloseable {
     private static final int FLOATS_PER_VERTEX = 12; // pos(3) + normal(3) + color(4) + uv(2)
     private static final int INITIAL_VERTEX_CAPACITY = 1024;
 
-    private final ShaderProgram shader;
+    private final DebugMeshShader shader;
     private final MatrixStack modelViewStack;
-    private final MatrixStack projectionStack;
     private final VertexArray vao = new VertexArray();
 
     private final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(
@@ -26,11 +25,10 @@ public class ShaderRenderer implements AutoCloseable {
     private int vertexCount = 0;
     private int mode = GL11.GL_TRIANGLES;
 
-    public ShaderRenderer(ShaderProgram shader, MatrixStack modelViewStack,
+    public ShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack,
             MatrixStack projectionStack) {
         this.shader = shader;
         this.modelViewStack = modelViewStack;
-        this.projectionStack = projectionStack;
 
         vao.bind();
         this.vboHandle = GL15.glGenBuffers();
@@ -48,7 +46,7 @@ public class ShaderRenderer implements AutoCloseable {
         vao.unbind();
     }
 
-    public ShaderProgram getShader() {
+    public DebugMeshShader getShader() {
         return shader;
     }
 
@@ -97,12 +95,12 @@ public class ShaderRenderer implements AutoCloseable {
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertexBuffer);
 
         try (var _ = shader.use()) {
-            shader.setUniform(DebugMeshShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
-            shader.setUniform(DebugMeshShader.Uniforms.ENABLE_LIGHTING, false);
-            shader.setUniform(DebugMeshShader.Uniforms.ENABLE_TEXTURE, false);
-            shader.setUniform(DebugMeshShader.Uniforms.ALPHA_CUTOFF, 0.0f);
-            shader.setUniform(DebugMeshShader.Uniforms.REPLACE_MODE, false);
-            shader.setUniform(DebugMeshShader.Uniforms.POINT_SIZE, pointSize);
+            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
+            shader.setUniform(shader.locEnableLighting, false);
+            shader.setUniform(shader.locEnableTexture, false);
+            shader.setUniform(shader.locAlphaCutoff, 0.0f);
+            shader.setUniform(shader.locReplaceMode, false);
+            shader.setUniform(shader.locPointSize, pointSize);
 
             vao.bind();
             GL11.glDrawArrays(mode, 0, vertexCount);

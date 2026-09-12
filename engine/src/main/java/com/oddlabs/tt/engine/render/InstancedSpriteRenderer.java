@@ -134,7 +134,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         try (var _ = shader.use()) {
-            shader.setUniform(InstancedSpriteShader.Uniforms.BONE_MATRIX_BUFFER, 5);
+            shader.setUniform(shader.locBoneMatrixBuffer, 5);
             context.setTexture(5, boneMatrixTboHandle, GL31.GL_TEXTURE_BUFFER);
             GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGBA32F, boneMatrixVBO.getHandle());
 
@@ -430,36 +430,36 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         private void setupTextures(RenderContext context, InstancedSpriteShader shader,
                 Sprite sprite, Texture whiteTexture) {
             context.setTexture(0, key.texture);
-            shader.setUniform(InstancedSpriteShader.Uniforms.TEXTURE_0, 0);
+            shader.setUniform(shader.locTexture0, 0);
 
             boolean useLighting = DebugFlags.draw_light && sprite.lighted;
-            shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_LIGHTING, useLighting);
-            shader.setUniform(InstancedSpriteShader.Uniforms.REPLACE_MODE, !useLighting && !sprite.modulate_color);
-            shader.setUniform(InstancedSpriteShader.Uniforms.DESATURATE, key.respond ? 0.5f : 0.0f);
+            shader.setUniform(shader.locEnableLighting, useLighting);
+            shader.setUniform(shader.locReplaceMode, !useLighting && !sprite.modulate_color);
+            shader.setUniform(shader.locDesaturate, key.respond ? 0.5f : 0.0f);
 
             if (sprite.modulate_color) {
-                shader.setUniform(InstancedSpriteShader.Uniforms.MODULATE_COLOR, true);
-                shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_TEAM_COLOR, false);
-                shader.setUniform(InstancedSpriteShader.Uniforms.ALPHA_TEST_VALUE, 0.0f);
+                shader.setUniform(shader.locModulateColor, true);
+                shader.setUniform(shader.locEnableTeamColor, false);
+                shader.setUniform(shader.locAlphaTestValue, 0.0f);
             } else {
-                shader.setUniform(InstancedSpriteShader.Uniforms.MODULATE_COLOR, false);
-                shader.setUniform(InstancedSpriteShader.Uniforms.ALPHA_TEST_VALUE, key.respond ? 0.5f : 0.1f);
+                shader.setUniform(shader.locModulateColor, false);
+                shader.setUniform(shader.locAlphaTestValue, key.respond ? 0.5f : 0.1f);
                 if (key.teamTexture != null || key.respond) {
-                    shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_TEAM_COLOR, true);
+                    shader.setUniform(shader.locEnableTeamColor, true);
                     Texture teamTexture = key.respond ? sprite.respond_texture : key.teamTexture;
                     context.setTexture(1, teamTexture);
-                    shader.setUniform(InstancedSpriteShader.Uniforms.TEXTURE_1, 1);
+                    shader.setUniform(shader.locTexture1, 1);
                 } else {
-                    shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_TEAM_COLOR, false);
+                    shader.setUniform(shader.locEnableTeamColor, false);
                 }
             }
 
             if (key.bumpTexture != null) {
-                shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_NORMAL_MAP, true);
+                shader.setUniform(shader.locEnableNormalMap, true);
                 context.setTexture(2, key.bumpTexture);
-                shader.setUniform(InstancedSpriteShader.Uniforms.NORMAL_MAP, 2);
+                shader.setUniform(shader.locNormalMap, 2);
             } else {
-                shader.setUniform(InstancedSpriteShader.Uniforms.ENABLE_NORMAL_MAP, false);
+                shader.setUniform(shader.locEnableNormalMap, false);
             }
         }
 

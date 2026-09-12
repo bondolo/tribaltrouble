@@ -1,13 +1,12 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * A shader for rendering the sky dome with two scrolling cloud layers and height-based fog.
+ * Renders the sky dome with two scrolling cloud layers and height-based fog.
  */
 public final class SkyShader extends ShaderProgram {
 
-    public interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0"; // Inner clouds
         String TEXTURE_1 = "u_texture1"; // Outer clouds
         String INNER_OFFSET = "u_innerOffset";
@@ -15,21 +14,8 @@ public final class SkyShader extends ShaderProgram {
         String SKY_COLOR = "u_skyColor";
         String INNER_CLOUD_DENSITY = "u_innerCloudDensity";
         String OUTER_CLOUD_DENSITY = "u_outerCloudDensity";
-
-        // Fog Uniforms
-        String FOG_COLOR = "u_fogColor";
-        String FOG_FADE_START = "u_fogFadeStart"; // The normal.z where fog is at maximum (horizon)
-        String FOG_FADE_END = "u_fogFadeEnd";   // The normal.z where fog is at zero (zenith)
-        String CAMERA_HEIGHT = "u_cameraHeight";
-        String FOG_HEIGHT_FACTOR = "u_fogHeightFactor";
-    }
-
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
-        String NORMAL = Shader.NORMAL;
-        String TEX_COORD_0 = "in_TexCoord0";
-        String TEX_COORD_1 = "in_TexCoord1";
-        String COLOR = Shader.COLOR;
+        String FOG_FADE_START = "u_fogFadeStart";
+        String FOG_FADE_END = "u_fogFadeEnd";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -111,9 +97,29 @@ public final class SkyShader extends ShaderProgram {
                     }
                     """;
 
+    public final int locModelViewMatrix;
+    public final int locTexture0;
+    public final int locTexture1;
+    public final int locInnerOffset;
+    public final int locOuterOffset;
+    public final int locSkyColor;
+    public final int locInnerCloudDensity;
+    public final int locOuterCloudDensity;
+    public final int locFogFadeStart;
+    public final int locFogFadeEnd;
+
     public SkyShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor");
         link();
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);
+        locTexture1 = getUniformLocation(Uniforms.TEXTURE_1);
+        locInnerOffset = getUniformLocation(Uniforms.INNER_OFFSET);
+        locOuterOffset = getUniformLocation(Uniforms.OUTER_OFFSET);
+        locSkyColor = getUniformLocation(Uniforms.SKY_COLOR);
+        locInnerCloudDensity = getUniformLocation(Uniforms.INNER_CLOUD_DENSITY);
+        locOuterCloudDensity = getUniformLocation(Uniforms.OUTER_CLOUD_DENSITY);
+        locFogFadeStart = getUniformLocation(Uniforms.FOG_FADE_START);
+        locFogFadeEnd = getUniformLocation(Uniforms.FOG_FADE_END);
     }
 }

@@ -30,7 +30,7 @@ import java.util.Deque;
 import java.util.Queue;
 
 /**
- * Specialized renderer for handling transient lightning effects.
+ * Renders transient lightning effects.
  */
 public final class LightningRenderer implements AutoCloseable {
     private static final int MAX_PARTICLES = 100;
@@ -96,9 +96,9 @@ public final class LightningRenderer implements AutoCloseable {
                 DepthMode.READ_ONLY); var _ = context.withCullMode(CullMode.NONE)) {
 
             Matrix4fc mv = modelViewStack.current();
-            shader.setUniform(LightningShader.Uniforms.MODEL_VIEW_MATRIX, mv);
+            shader.setUniform(shader.locModelViewMatrix, mv);
 
-            shader.setUniform(LightningShader.Uniforms.TEXTURE_0, 0);
+            shader.setUniform(shader.locTexture0, 0);
 
             vao.bind();
 

@@ -1,13 +1,11 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * A shader for rendering the dynamic 3D landscape with terrain texturing, normal mapping, and lighting.
+ * Renders the dynamic 3D landscape with terrain texturing, normal mapping, and lighting.
  */
 public final class LandscapeShader extends ShaderProgram implements FogShader, LitShader {
 
-    public interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
+    private interface Uniforms {
         String HEIGHT_MAP = "u_HeightMap";
         String DIFFUSE_MAP = "u_DiffuseMap";
         String NORMAL_MAP = "u_NormalMap";
@@ -16,11 +14,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
         String WORLD_SIZE = "u_WorldSize";
         String DETAIL_SCALE = "u_DetailScale";
         String SEA_BOTTOM_COLOR = "u_SeaBottomColor";
-    }
-
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
-        String INSTANCE_PATCH_OFFSET = "in_InstancePatchOffset";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -324,9 +317,25 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                     }
                     """;
 
+    public final int locHeightMap;
+    public final int locDiffuseMap;
+    public final int locNormalMap;
+    public final int locDetailMap;
+    public final int locDetailNormalMap;
+    public final int locWorldSize;
+    public final int locDetailScale;
+    public final int locSeaBottomColor;
+
     public LandscapeShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor");
         link();
+        locHeightMap = getUniformLocation(Uniforms.HEIGHT_MAP);
+        locDiffuseMap = getUniformLocation(Uniforms.DIFFUSE_MAP);
+        locNormalMap = getUniformLocation(Uniforms.NORMAL_MAP);
+        locDetailMap = getUniformLocation(Uniforms.DETAIL_MAP);
+        locDetailNormalMap = getUniformLocation(Uniforms.DETAIL_NORMAL_MAP);
+        locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
+        locDetailScale = getUniformLocation(Uniforms.DETAIL_SCALE);
+        locSeaBottomColor = getUniformLocation(Uniforms.SEA_BOTTOM_COLOR);
     }
 }

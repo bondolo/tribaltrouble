@@ -1,21 +1,16 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * A shader for rendering the sea bottom, including a detail texture, lighting, and fog.
+ * Renders the sea bottom with detail texturing, lighting, normal mapping, and water caustics.
  */
 public final class SeaBottomShader extends ShaderProgram implements FogShader, LitShader {
 
-    public interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_1 = "u_texture1"; // Detail texture
         String TEXTURE_NORMAL = "u_textureNormal"; // Detail normal texture
         String BASE_COLOR = "u_baseColor";
         String DETAIL_SCALE = "u_detailScale";
-    }
-
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -166,8 +161,19 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                     }
                     """;
 
+    public final int locModelViewMatrix;
+    public final int locTexture1;
+    public final int locTextureNormal;
+    public final int locBaseColor;
+    public final int locDetailScale;
+
     public SeaBottomShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTexture1 = getUniformLocation(Uniforms.TEXTURE_1);
+        locTextureNormal = getUniformLocation(Uniforms.TEXTURE_NORMAL);
+        locBaseColor = getUniformLocation(Uniforms.BASE_COLOR);
+        locDetailScale = getUniformLocation(Uniforms.DETAIL_SCALE);
     }
 }

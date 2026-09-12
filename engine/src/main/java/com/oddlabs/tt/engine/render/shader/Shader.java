@@ -14,22 +14,17 @@ public interface Shader {
             precision highp int;
             """;
 
-    // Standard Attribute Locations
-    int POSITION_LOC = 0;
-    int NORMAL_LOC = 1;
-    int TEX_COORD_LOC = 2;
-    int COLOR_LOC = 3;
+    interface Uniforms {
+        String MODEL_VIEW_MATRIX = "u_modelViewMatrix";
+        String PROJECTION_MATRIX = "u_projectionMatrix";
+    }
 
-    // Standard Uniform Names
-    String PROJECTION_MATRIX = "u_projectionMatrix";
-    String MODEL_VIEW_MATRIX = "u_modelViewMatrix";
-    String VIEW_MATRIX = "u_viewMatrix";
-
-    // Standard Attribute Names
-    String POSITION = "in_Position";
-    String NORMAL = "in_Normal";
-    String TEX_COORD = "in_TexCoord";
-    String COLOR = "in_Color";
+    interface Attributes {
+        String POSITION = "in_Position";
+        String NORMAL = "in_Normal";
+        String TEX_COORD = "in_TexCoord";
+        String COLOR = "in_Color";
+    }
 
     String GLOBAL_STATE_BLOCK = """
             layout(std140) uniform GlobalState {

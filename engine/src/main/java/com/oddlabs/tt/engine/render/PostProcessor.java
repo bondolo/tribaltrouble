@@ -19,15 +19,12 @@ import org.lwjgl.opengl.GL40;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 /**
- * Manages the full-screen post-processing pipeline.
- * Handles rendering the scene to an FBO and applying effects via PostProcessShader.
+ * Coordinates the full-screen post-processing pipeline, rendering the scene to an FBO and applying
+ * accessibility and visual filters via PostProcessShader.
  */
 public final class PostProcessor implements AutoCloseable {
-    private static final Logger logger = Logger.getLogger(PostProcessor.class.getSimpleName());
-
     private final PostProcessShader shader;
     private final VertexArray vao;
     private final FloatVBO quadVBO;
@@ -70,11 +67,8 @@ public final class PostProcessor implements AutoCloseable {
             ));
         }
 
-        int posLoc = shader.getAttributeLocation(PostProcessShader.Attributes.POSITION);
-        if (posLoc >= 0) {
-            GL20.glEnableVertexAttribArray(posLoc);
-            quadVBO.vertexAttribPointer(posLoc, 2, 0, 0);
-        }
+        GL20.glEnableVertexAttribArray(0);
+        quadVBO.vertexAttribPointer(0, 2, 0, 0);
 
         this.vao.unbind();
     }
@@ -155,14 +149,14 @@ public final class PostProcessor implements AutoCloseable {
 
             shader.setAccessibilityModes(accessibility.cvd_mode, accessibility.high_contrast);
 
-            shader.setUniform(PostProcessShader.Uniforms.CVD_INTENSITY, accessibility.cvd_intensity);
-            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_INTENSITY, accessibility.contrast_intensity);
-            shader.setUniform(PostProcessShader.Uniforms.INVERT_COLORS, accessibility.invert_colours);
-            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_BRIGHTNESS, accessibility.contrast_brightness);
-            shader.setUniform(PostProcessShader.Uniforms.CONTRAST_CLARITY, accessibility.contrast_clarity);
-            shader.setUniform(PostProcessShader.Uniforms.TEAM_STENCIL, accessibility.team_stencil);
-            shader.setUniform(PostProcessShader.Uniforms.SCENE_TEXTURE, 0);
-            shader.setUniform(PostProcessShader.Uniforms.MASK_TEXTURE, 1);
+            shader.setUniform(shader.locCvdIntensity, accessibility.cvd_intensity);
+            shader.setUniform(shader.locContrastIntensity, accessibility.contrast_intensity);
+            shader.setUniform(shader.locInvertColors, accessibility.invert_colours);
+            shader.setUniform(shader.locContrastBrightness, accessibility.contrast_brightness);
+            shader.setUniform(shader.locContrastClarity, accessibility.contrast_clarity);
+            shader.setUniform(shader.locTeamStencil, accessibility.team_stencil);
+            shader.setUniform(shader.locSceneTexture, 0);
+            shader.setUniform(shader.locMaskTexture, 1);
 
             context.setTexture(0, sceneFBO.getColorTexture());
             context.setTexture(1, sceneFBO.getMaskTexture());

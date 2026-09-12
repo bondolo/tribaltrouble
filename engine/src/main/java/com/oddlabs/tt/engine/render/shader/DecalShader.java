@@ -1,35 +1,16 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * Shader program for rendering instanced decals with optional fog and radial distortion.
+ * Renders instanced decals with optional fog and radial distortion.
  */
 public final class DecalShader extends ShaderProgram implements FogShader {
 
-    public static final class Uniforms {
-        public static final String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        public static final String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
-        public static final String TEXTURES = "u_textures";
-        public static final String HEIGHT_MAP = "u_HeightMap";
-        public static final String WORLD_SIZE = "u_WorldSize";
-        public static final String DEPTH_BIAS = "u_DepthBias";
-
-        private Uniforms() {
-        }
-    }
-
-    public static final class Attributes {
-        public static final String POSITION = Shader.POSITION;
-        public static final String INSTANCE_POS = "in_InstancePos";
-        public static final String INSTANCE_SIZE = "in_InstanceSize";
-        public static final String INSTANCE_COLOR = "in_InstanceColor";
-        public static final String INSTANCE_PATTERN = "in_InstancePattern";
-        public static final String INSTANCE_OFFSET_SCALE = "in_InstanceOffsetScale";
-        public static final String INSTANCE_TEX_SLOT = "in_InstanceTextureSlot";
-        public static final String INSTANCE_FLAGS = "in_InstanceFlags";
-        public static final String INSTANCE_SHADOW_OPACITY = "in_InstanceShadowOpacity";
-
-        private Attributes() {
-        }
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
+        String TEXTURES = "u_textures";
+        String HEIGHT_MAP = "u_HeightMap";
+        String WORLD_SIZE = "u_WorldSize";
+        String DEPTH_BIAS = "u_DepthBias";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -249,8 +230,19 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     }
                     """;
 
+    public final int locModelViewMatrix;
+    public final int locWorldSize;
+    public final int locDepthBias;
+    public final int locHeightMap;
+    public final int locTextures;
+
     public DecalShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
+        locDepthBias = getUniformLocation(Uniforms.DEPTH_BIAS);
+        locHeightMap = getUniformLocation(Uniforms.HEIGHT_MAP);
+        locTextures = getUniformLocation(Uniforms.TEXTURES);
     }
 }

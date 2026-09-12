@@ -45,6 +45,7 @@ public final class DecalRenderer implements AutoCloseable {
     private static final int GRID_SIZE = 32; // 32x32 grid
     private static final int VERTEX_COUNT = GRID_SIZE * GRID_SIZE;
     private static final int INDEX_COUNT = (GRID_SIZE - 1) * (GRID_SIZE - 1) * 6;
+    private static final int[] TEXTURE_UNITS = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
     public DecalRenderer() {
         this.vao = new VertexArray();
@@ -151,17 +152,15 @@ public final class DecalRenderer implements AutoCloseable {
         if (setupCount == 0) {
             shaderState = shader.use();
 
-            shader.setUniform(DecalShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
+            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
 
-            shader.setUniform(DecalShader.Uniforms.WORLD_SIZE, worldSize);
-            shader.setUniform(DecalShader.Uniforms.DEPTH_BIAS, 0.05f);
+            shader.setUniform(shader.locWorldSize, worldSize);
+            shader.setUniform(shader.locDepthBias, 0.05f);
 
             context.setTexture(1, heightTexture);
-            shader.setUniform(DecalShader.Uniforms.HEIGHT_MAP, 1);
+            shader.setUniform(shader.locHeightMap, 1);
 
-            int[] textureUnits = new int[14];
-            for (int i = 0; i < 14; i++) textureUnits[i] = i + 2; // Offset by 2 (0=DecalUnit, 1=HeightMap)
-            shader.setUniform(DecalShader.Uniforms.TEXTURES, textureUnits);
+            shader.setUniform(shader.locTextures, TEXTURE_UNITS);
             // Render State: Use Premultiplied blending for stable color/shadow combination.
             blendState = context.withBlendMode(BlendMode.PREMULTIPLIED);
             depthState = context.withDepthMode(DepthMode.READ_ONLY);

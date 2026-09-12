@@ -3,13 +3,11 @@ package com.oddlabs.tt.engine.render.shader;
 import org.lwjgl.opengl.GL11;
 
 /**
- * A shader for rendering particles using hardware instancing.
- * Billboard expansion is performed in the vertex shader using gl_VertexID.
+ * Renders particles using hardware instancing and vertex shader billboard expansion.
  */
 public final class ParticleShader extends ShaderProgram implements FogShader {
-    public interface Uniforms {
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_ARRAY = "u_textureArray";
         String DEPTH_MAP = "u_depthMap";
         String IS_ADDITIVE = "u_isAdditive";
@@ -18,10 +16,10 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
         String SOFT_RANGE = "u_softRange";
     }
 
-    public interface Attributes {
+    private interface Attributes {
         String CENTER_POSITION = "in_CenterPosition";
         String SIZE = "in_Size";
-        String COLOR = Shader.COLOR;
+        String COLOR = Shader.Attributes.COLOR;
         String UV_COORDS_1 = "in_UvCoords1"; // u1, v1, u2, v2
         String UV_COORDS_2 = "in_UvCoords2"; // u3, v3, u4, v4
         String TEX_SLOT = "in_TextureSlot";
@@ -192,9 +190,23 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     """;
 
 
+    public final int locModelViewMatrix;
+    public final int locTextureArray;
+    public final int locDepthMap;
+    public final int locIsAdditive;
+    public final int locFogEnabled;
+    public final int locNearFar;
+    public final int locSoftRange;
+
     public ParticleShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor");
         link();
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTextureArray = getUniformLocation(Uniforms.TEXTURE_ARRAY);
+        locDepthMap = getUniformLocation(Uniforms.DEPTH_MAP);
+        locIsAdditive = getUniformLocation(Uniforms.IS_ADDITIVE);
+        locFogEnabled = getUniformLocation(Uniforms.FOG_ENABLED);
+        locNearFar = getUniformLocation(Uniforms.NEAR_FAR);
+        locSoftRange = getUniformLocation(Uniforms.SOFT_RANGE);
     }
 }

@@ -3,9 +3,7 @@ package com.oddlabs.tt.engine.render.shader;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Defines the shader program for rendering the 2D user interface.
- * This shader handles basic model-view-projection transformation,
- * vertex colors, and texture modulation.
+ * Renders the 2D user interface with model-view-projection transformation, vertex colors, and texture modulation.
  */
 public final class GUIShader extends ShaderProgram {
 
@@ -96,30 +94,18 @@ public final class GUIShader extends ShaderProgram {
                     }
                     """;
 
-    /**
-     * Holds the names of the uniform variables used in the UI shader program.
-     */
-    public static final class Uniforms {
-        private Uniforms() {
-        }
-
-        public static final String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
-        public static final String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        public static final String TEXTURES = "u_textures";
+    private interface Uniforms {
+        String PROJECTION_MATRIX = Shader.Uniforms.PROJECTION_MATRIX;
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
+        String TEXTURES = "u_textures";
     }
 
-    /**
-     * Holds the names of the attribute variables used in the UI shader program.
-     */
-    static final class Attributes {
-        private Attributes() {
-        }
-
-        public static final String POSITION = Shader.POSITION;
-        public static final String COLOR = Shader.COLOR;
-        public static final String TEX_COORD = Shader.TEX_COORD;
-        public static final String TEX_INDEX = "in_TexIndex";
-        public static final String CLIP_RECT = "in_ClipRect";
+    private interface Attributes {
+        String POSITION = Shader.Attributes.POSITION;
+        String COLOR = Shader.Attributes.COLOR;
+        String TEX_COORD = Shader.Attributes.TEX_COORD;
+        String TEX_INDEX = "in_TexIndex";
+        String CLIP_RECT = "in_ClipRect";
     }
 
     public enum Attribute implements VertexAttribute {
@@ -166,9 +152,15 @@ public final class GUIShader extends ShaderProgram {
         }
     }
 
+    public final int locProjectionMatrix;
+    public final int locModelViewMatrix;
+    public final int locTextures;
+
     public GUIShader() {
         super(GUIShader.VERTEX_SHADER, GUIShader.FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor"); // Removed for GL 4.1 Core
         link();
+        locProjectionMatrix = getUniformLocation(Uniforms.PROJECTION_MATRIX);
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTextures = getUniformLocation(Uniforms.TEXTURES);
     }
 }

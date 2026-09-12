@@ -2,21 +2,20 @@ package com.oddlabs.tt.engine.render.shader;
 
 import org.lwjgl.opengl.GL11;
 
+/**
+ * Renders textured lightning bolts with additive blending and fog.
+ */
 public final class LightningShader extends ShaderProgram implements FogShader {
 
-    public interface Uniforms {
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0";
-
-        // Fog Uniforms
-        String FOG_HEIGHT_FACTOR = FogShader.FOG_HEIGHT_FACTOR;
     }
 
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
-        String TEX_COORD = Shader.TEX_COORD;
-        String COLOR = Shader.COLOR;
+    private interface Attributes {
+        String POSITION = Shader.Attributes.POSITION;
+        String TEX_COORD = Shader.Attributes.TEX_COORD;
+        String COLOR = Shader.Attributes.COLOR;
     }
 
     public enum Attribute implements VertexAttribute {
@@ -106,12 +105,13 @@ public final class LightningShader extends ShaderProgram implements FogShader {
                     }
                     """;
 
+    public final int locModelViewMatrix;
+    public final int locTexture0;
+
     public LightningShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
-        int blockIndex = org.lwjgl.opengl.GL31.glGetUniformBlockIndex(state.programId, "GlobalState");
-        if (blockIndex != -1) {
-            org.lwjgl.opengl.GL31.glUniformBlockBinding(state.programId, blockIndex, 0);
-        }
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);
     }
 }

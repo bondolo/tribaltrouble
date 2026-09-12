@@ -1,36 +1,49 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * Rendering of building placement.
- * Uses a two-pass rendering to render the ghost buildings.
+ * Shader program for building placement ghost rendering.
  */
 public final class PlacingShader extends ShaderProgram implements FogShader, LitShader {
 
-    public interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
+    private interface Attributes {
+        String POSITION = Shader.Attributes.POSITION;
+        String NORMAL = Shader.Attributes.NORMAL;
+        String TEX_COORD = Shader.Attributes.TEX_COORD;
+    }
+
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0";
         String TEXTURE_1 = "u_texture1";
         String NORMAL_MAP = "u_normalMap";
         String ENABLE_LIGHTING = "u_enableLighting";
-        String ENABLE_TEAM_COLOR = "u_enableTeamColor"; // Decal/Blend mode
+        String ENABLE_TEAM_COLOR = "u_enableTeamColor";
         String ENABLE_NORMAL_MAP = "u_enableNormalMap";
-        String MODULATE_COLOR = "u_modulateColor"; // Modulate mode
+        String MODULATE_COLOR = "u_modulateColor";
         String REPLACE_MODE = "u_replaceMode";
-        String COLOR = "u_color"; // Material/Diffuse color
-        String DECAL_COLOR = "u_decalColor"; // Team color
+        String COLOR = "u_color";
+        String DECAL_COLOR = "u_decalColor";
         String DESATURATE = "u_desaturate";
         String ALPHA_TEST_VALUE = "u_alphaTestValue";
-
-        // Fog Uniforms
-        String FOG_HEIGHT_FACTOR = FogShader.FOG_HEIGHT_FACTOR;
     }
 
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
-        String NORMAL = Shader.NORMAL;
-        String TEX_COORD = Shader.TEX_COORD;
-    }
+    public final int locPosition;
+    public final int locNormal;
+    public final int locTexCoord;
+
+    public final int locModelViewMatrix;
+    public final int locTexture0;
+    public final int locTexture1;
+    public final int locNormalMap;
+    public final int locEnableLighting;
+    public final int locEnableTeamColor;
+    public final int locEnableNormalMap;
+    public final int locModulateColor;
+    public final int locReplaceMode;
+    public final int locColor;
+    public final int locDecalColor;
+    public final int locDesaturate;
+    public final int locAlphaTestValue;
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
@@ -151,7 +164,30 @@ public final class PlacingShader extends ShaderProgram implements FogShader, Lit
 
     public PlacingShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor");
         link();
+
+        locPosition = getAttributeLocation(Attributes.POSITION);
+        locNormal = getAttributeLocation(Attributes.NORMAL);
+        locTexCoord = getAttributeLocation(Attributes.TEX_COORD);
+
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);
+        locTexture1 = getUniformLocation(Uniforms.TEXTURE_1);
+        locNormalMap = getUniformLocation(Uniforms.NORMAL_MAP);
+        locEnableLighting = getUniformLocation(Uniforms.ENABLE_LIGHTING);
+        locEnableTeamColor = getUniformLocation(Uniforms.ENABLE_TEAM_COLOR);
+        locEnableNormalMap = getUniformLocation(Uniforms.ENABLE_NORMAL_MAP);
+        locModulateColor = getUniformLocation(Uniforms.MODULATE_COLOR);
+        locReplaceMode = getUniformLocation(Uniforms.REPLACE_MODE);
+        locColor = getUniformLocation(Uniforms.COLOR);
+        locDecalColor = getUniformLocation(Uniforms.DECAL_COLOR);
+        locDesaturate = getUniformLocation(Uniforms.DESATURATE);
+        locAlphaTestValue = getUniformLocation(Uniforms.ALPHA_TEST_VALUE);
+
+        try (var _ = use()) {
+            setUniform(locTexture0, 0);
+            setUniform(locTexture1, 1);
+            setUniform(locNormalMap, 2);
+        }
     }
 }

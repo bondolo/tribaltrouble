@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Queue;
 
 /**
- * Specialized renderer for handling particle emitters.
+ * Renders instanced particle systems from particle emitters.
  */
 public final class EmitterRenderer implements AutoCloseable {
     private static final int MAX_PARTICLES = 50000;
@@ -115,19 +115,19 @@ public final class EmitterRenderer implements AutoCloseable {
         try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
                 DepthMode.READ_ONLY)) {
 
-            shader.setUniform(ParticleShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
+            shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
 
             // Bind global effect texture array to unit 2
             context.setTexture(2, render_queues.getEffectTextureArray().getHandle(),
                     render_queues.getEffectTextureArray().getTarget());
-            shader.setUniform(ParticleShader.Uniforms.TEXTURE_ARRAY, 2);
+            shader.setUniform(shader.locTextureArray, 2);
 
             context.setActiveTexture(1);
             context.setTexture(1, depthTexture.getHandle());
-            shader.setUniform(ParticleShader.Uniforms.DEPTH_MAP, 1);
+            shader.setUniform(shader.locDepthMap, 1);
 
-            shader.setUniform(ParticleShader.Uniforms.NEAR_FAR, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
-            shader.setUniform(ParticleShader.Uniforms.SOFT_RANGE, 2.0f); // Adjust default as needed
+            shader.setUniform(shader.locNearFar, RenderConfig.VIEW_MIN, RenderConfig.VIEW_MAX);
+            shader.setUniform(shader.locSoftRange, 2.0f); // Adjust default as needed
 
             flushBatches(context);
         } finally {
@@ -193,8 +193,8 @@ public final class EmitterRenderer implements AutoCloseable {
         for (var entry : batches.entrySet()) {
             BatchKey key = entry.getKey();
             context.setBlendFunc(key.srcBlend(), key.dstBlend());
-            shader.setUniform(ParticleShader.Uniforms.IS_ADDITIVE, key.dstBlend() == GL11.GL_ONE ? 1.0f : 0.0f);
-            shader.setUniform(ParticleShader.Uniforms.FOG_ENABLED, key.fogEnabled());
+            shader.setUniform(shader.locIsAdditive, key.dstBlend() == GL11.GL_ONE ? 1.0f : 0.0f);
+            shader.setUniform(shader.locFogEnabled, key.fogEnabled());
 
             var batchEntries = entry.getValue();
             particle_buffer.clear();

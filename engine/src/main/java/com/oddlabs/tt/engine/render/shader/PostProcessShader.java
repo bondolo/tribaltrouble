@@ -1,12 +1,11 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * Shader for full-screen post-processing effects.
- * Handles Color Vision Deficiency (CVD) correction and High Contrast Mode.
+ * Renders full-screen post-processing effects for Color Vision Deficiency (CVD) correction and High Contrast Mode.
  */
 public final class PostProcessShader extends ShaderProgram {
 
-    public interface Uniforms {
+    private interface Uniforms {
         String SCENE_TEXTURE = "u_sceneTexture";
         String MASK_TEXTURE = "u_maskTexture";
         String CVD_MODE = "u_cvdMode";
@@ -17,10 +16,6 @@ public final class PostProcessShader extends ShaderProgram {
         String CONTRAST_BRIGHTNESS = "u_contrastBrightness";
         String CONTRAST_CLARITY = "u_contrastClarity";
         String TEAM_STENCIL = "u_teamStencil";
-    }
-
-    public interface Attributes {
-        String POSITION = "in_Position";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -238,13 +233,34 @@ public final class PostProcessShader extends ShaderProgram {
                     }
                     """;
 
+    public final int locSceneTexture;
+    public final int locMaskTexture;
+    public final int locCvdMode;
+    public final int locCvdIntensity;
+    public final int locHighContrast;
+    public final int locContrastIntensity;
+    public final int locInvertColors;
+    public final int locContrastBrightness;
+    public final int locContrastClarity;
+    public final int locTeamStencil;
+
     public PostProcessShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
+        locSceneTexture = getUniformLocation(Uniforms.SCENE_TEXTURE);
+        locMaskTexture = getUniformLocation(Uniforms.MASK_TEXTURE);
+        locCvdMode = getUniformLocation(Uniforms.CVD_MODE);
+        locCvdIntensity = getUniformLocation(Uniforms.CVD_INTENSITY);
+        locHighContrast = getUniformLocation(Uniforms.HIGH_CONTRAST);
+        locContrastIntensity = getUniformLocation(Uniforms.CONTRAST_INTENSITY);
+        locInvertColors = getUniformLocation(Uniforms.INVERT_COLORS);
+        locContrastBrightness = getUniformLocation(Uniforms.CONTRAST_BRIGHTNESS);
+        locContrastClarity = getUniformLocation(Uniforms.CONTRAST_CLARITY);
+        locTeamStencil = getUniformLocation(Uniforms.TEAM_STENCIL);
     }
 
     public void setAccessibilityModes(int cvdMode, boolean highContrast) {
-        setUniform(Uniforms.CVD_MODE, cvdMode);
-        setUniform(Uniforms.HIGH_CONTRAST, highContrast);
+        setUniform(locCvdMode, cvdMode);
+        setUniform(locHighContrast, highContrast);
     }
 }

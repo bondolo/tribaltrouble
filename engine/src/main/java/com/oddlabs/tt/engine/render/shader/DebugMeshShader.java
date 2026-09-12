@@ -3,13 +3,12 @@ package com.oddlabs.tt.engine.render.shader;
 import org.lwjgl.opengl.GL11;
 
 /**
- * A shader that emulates the classic OpenGL fixed-function pipeline for immediate mode drawing.
+ * Emulates the classic OpenGL fixed-function pipeline for immediate mode debug drawing.
  */
 public final class DebugMeshShader extends ShaderProgram implements FogShader, LitShader {
 
-    public interface Uniforms {
-        String MODEL_VIEW_MATRIX = Shader.MODEL_VIEW_MATRIX;
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
+    private interface Uniforms {
+        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String ENABLE_LIGHTING = "u_enableLighting";
         String ENABLE_TEXTURE = "u_enableTexture";
         String TEXTURE_0 = "u_texture0";
@@ -18,12 +17,20 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
         String POINT_SIZE = "u_pointSize";
     }
 
-    public interface Attributes {
-        String POSITION = Shader.POSITION;
-        String NORMAL = Shader.NORMAL;
-        String COLOR = Shader.COLOR;
+    private interface Attributes {
+        String POSITION = Shader.Attributes.POSITION;
+        String NORMAL = Shader.Attributes.NORMAL;
+        String COLOR = Shader.Attributes.COLOR;
         String TEX_COORD_0 = "in_TexCoord0";
     }
+
+    public final int locModelViewMatrix;
+    public final int locEnableLighting;
+    public final int locEnableTexture;
+    public final int locTexture0;
+    public final int locAlphaCutoff;
+    public final int locReplaceMode;
+    public final int locPointSize;
 
     public enum Attribute implements VertexAttribute {
         POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
@@ -142,7 +149,18 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
 
     public DebugMeshShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
-        // bindFragDataLocation(0, "out_FragColor");
         link();
+
+        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
+        locEnableLighting = getUniformLocation(Uniforms.ENABLE_LIGHTING);
+        locEnableTexture = getUniformLocation(Uniforms.ENABLE_TEXTURE);
+        locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);
+        locAlphaCutoff = getUniformLocation(Uniforms.ALPHA_CUTOFF);
+        locReplaceMode = getUniformLocation(Uniforms.REPLACE_MODE);
+        locPointSize = getUniformLocation(Uniforms.POINT_SIZE);
+
+        try (var _ = use()) {
+            setUniform(locTexture0, 0);
+        }
     }
 }

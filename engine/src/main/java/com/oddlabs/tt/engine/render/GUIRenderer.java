@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.render.shader.GUIShader;
-import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
@@ -12,12 +11,12 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
+import com.oddlabs.tt.engine.render.shader.GUIShader;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
@@ -25,7 +24,7 @@ import java.util.Arrays;
 import java.util.Deque;
 
 /**
- * A renderer for drawing 2D GUI elements using a shader-based batching system.
+ * Renders 2D GUI elements using a shader-based multi-texture batching system.
  * Supports multi-texturing to batch draw calls across different textures.
  */
 public final class GUIRenderer {
@@ -34,8 +33,9 @@ public final class GUIRenderer {
     private static final int INDICES_PER_QUAD = 6;
     private static final int MAX_TEXTURES = 8;
     private static final Matrix4fc IDENTITY_MATRIX = new Matrix4f();
+    private static final int[] TEXTURE_UNITS = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
 
-    private final ShaderProgram shader;
+    private final GUIShader shader;
     private final MatrixStack matrixStack = new MatrixStack(); // No flush callback
     private final Matrix4f projectionMatrix = new Matrix4f();
     private final VertexLayout<GUIShader.Attribute> layout;
@@ -124,12 +124,8 @@ public final class GUIRenderer {
                 CullMode.NONE)) {
 
             projectionMatrix.identity().ortho(0, width, 0, height, -1, 1);
-            shader.setUniform(GUIShader.Uniforms.PROJECTION_MATRIX, projectionMatrix);
-
-            // Set texture unit indices [0, 1, ... 7]
-            int[] units = new int[MAX_TEXTURES];
-            for (int i = 0; i < MAX_TEXTURES; i++) units[i] = i;
-            GL20.glUniform1iv(shader.getUniformLocation(GUIShader.Uniforms.TEXTURES), units);
+            shader.setUniform(shader.locProjectionMatrix, projectionMatrix);
+            shader.setUniform(shader.locTextures, TEXTURE_UNITS);
 
             matrixStack.clear();
             modulationStack.clear();
@@ -259,7 +255,7 @@ public final class GUIRenderer {
     public void flush() {
         if (quadCount == 0) return;
 
-        shader.setUniform(GUIShader.Uniforms.MODEL_VIEW_MATRIX, IDENTITY_MATRIX);
+        shader.setUniform(shader.locModelViewMatrix, IDENTITY_MATRIX);
 
         // Bind all active textures and unbind unused units in the sampler array to avoid conflicts
         for (int i = 0; i < textureCount; i++) {

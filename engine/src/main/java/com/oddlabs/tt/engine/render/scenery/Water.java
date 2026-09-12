@@ -160,7 +160,7 @@ public final class Water implements AutoCloseable {
         this.modelViewStack = modelViewStack;
 
         skyWaterVao.bind();
-        setupWaterAttributes(sky.getWaterVertices(), waterShader);
+        setupWaterAttributes(sky.getWaterVertices());
         skyWaterVao.unbind();
 
         int patchesPerWorld = heightmap.getPatchesPerWorld();
@@ -220,11 +220,10 @@ public final class Water implements AutoCloseable {
         return waterShader;
     }
 
-    private void setupWaterAttributes(FloatVBO vbo, WaterShader shader) {
-        int posLoc = shader.getAttributeLocation(WaterShader.Attributes.POSITION);
+    private void setupWaterAttributes(FloatVBO vbo) {
         vbo.bind();
-        GL20.glEnableVertexAttribArray(posLoc);
-        GL20.glVertexAttribPointer(posLoc, 3, GL11.GL_FLOAT, false, 0, 0L);
+        GL20.glEnableVertexAttribArray(0);
+        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0L);
     }
 
 
@@ -237,25 +236,25 @@ public final class Water implements AutoCloseable {
 
             context.setBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-            waterShader.setUniform(WaterShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
+            waterShader.setUniform(waterShader.locModelViewMatrix, modelViewStack.current());
 
-            waterShader.setUniform(WaterShader.Uniforms.CAMERA_POS, state.getCurrentX(), state.getCurrentY(), state
+            waterShader.setUniform(waterShader.locCameraPos, state.getCurrentX(), state.getCurrentY(), state
                     .getCurrentZ());
 
             context.setTexture(0, ocean[0]);
-            waterShader.setUniform(WaterShader.Uniforms.TEXTURE_0, 0);
+            waterShader.setUniform(waterShader.locTexture0, 0);
 
             if (DebugFlags.draw_detail) {
                 context.setTexture(1, ocean[1]);
-                waterShader.setUniform(WaterShader.Uniforms.TEXTURE_1, 1);
-                waterShader.setUniform(WaterShader.Uniforms.ENABLE_DETAIL, true);
+                waterShader.setUniform(waterShader.locTexture1, 1);
+                waterShader.setUniform(waterShader.locEnableDetail, true);
             } else {
-                waterShader.setUniform(WaterShader.Uniforms.ENABLE_DETAIL, false);
+                waterShader.setUniform(waterShader.locEnableDetail, false);
             }
 
             context.setTexture(2, heightMapVisual.getHeightTexture());
-            waterShader.setUniform(WaterShader.Uniforms.HEIGHT_MAP, 2);
-            waterShader.setUniform(WaterShader.Uniforms.WORLD_SIZE, (float) heightMap.getMetersPerWorld());
+            waterShader.setUniform(waterShader.locHeightMap, 2);
+            waterShader.setUniform(waterShader.locWorldSize, (float) heightMap.getMetersPerWorld());
 
             float depthScale = switch (terrain) {
                 case NATIVE -> NATIVE_DEPTH_SCALE;
@@ -270,31 +269,31 @@ public final class Water implements AutoCloseable {
                 case VIKING -> VIKING_MAX_ALPHA;
             };
 
-            waterShader.setUniform(WaterShader.Uniforms.DEPTH_SCALE, depthScale);
-            waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, minAlpha);
-            waterShader.setUniform(WaterShader.Uniforms.MAX_ALPHA, maxAlpha);
-            waterShader.setUniformColor3(WaterShader.Uniforms.SKY_COLOR, sky.getSkyColor());
+            waterShader.setUniform(waterShader.locDepthScale, depthScale);
+            waterShader.setUniform(waterShader.locMinAlpha, minAlpha);
+            waterShader.setUniform(waterShader.locMaxAlpha, maxAlpha);
+            waterShader.setUniformColor3(waterShader.locSkyColor, sky.getSkyColor());
 
             // Upload cloud parameters and textures for fake sky reflection
-            waterShader.setUniform(WaterShader.Uniforms.INNER_OFFSET, sky.getInnerOffset()[0], sky.getInnerOffset()[1]);
-            waterShader.setUniform(WaterShader.Uniforms.OUTER_OFFSET, sky.getOuterOffset()[0], sky.getOuterOffset()[1]);
-            waterShader.setUniform(WaterShader.Uniforms.INNER_CLOUD_DENSITY, sky.getInnerCloudDensity());
-            waterShader.setUniform(WaterShader.Uniforms.OUTER_CLOUD_DENSITY, sky.getOuterCloudDensity());
+            waterShader.setUniform(waterShader.locInnerOffset, sky.getInnerOffset()[0], sky.getInnerOffset()[1]);
+            waterShader.setUniform(waterShader.locOuterOffset, sky.getOuterOffset()[0], sky.getOuterOffset()[1]);
+            waterShader.setUniform(waterShader.locInnerCloudDensity, sky.getInnerCloudDensity());
+            waterShader.setUniform(waterShader.locOuterCloudDensity, sky.getOuterCloudDensity());
 
             context.setTexture(3, sky.getClouds()[0]);
-            waterShader.setUniform(WaterShader.Uniforms.CLOUD_TEXTURE_0, 3);
+            waterShader.setUniform(waterShader.locCloudTexture0, 3);
             context.setTexture(4, sky.getClouds()[1]);
-            waterShader.setUniform(WaterShader.Uniforms.CLOUD_TEXTURE_1, 4);
+            waterShader.setUniform(waterShader.locCloudTexture1, 4);
 
             // Render Sky Water (Infinite Plane)
-            waterShader.setUniform(WaterShader.Uniforms.WATER_HEIGHT, 0.0f);
+            waterShader.setUniform(waterShader.locWaterHeight, 0.0f);
             skyWaterVao.bind();
             sky.getWaterIndices().drawElements(GL11.GL_TRIANGLES, sky.getWaterIndices().capacity(), 0);
             skyWaterVao.unbind();
 
             // Render Instanced Water Patches. u_waterHeight = seaLevel.
             if (!visiblePatches.isEmpty()) {
-                waterShader.setUniform(WaterShader.Uniforms.WATER_HEIGHT, heightMap.getSeaLevelMeters());
+                waterShader.setUniform(waterShader.locWaterHeight, heightMap.getSeaLevelMeters());
                 oceanInstanceBuffer.clear();
                 inlandInstanceBuffer.clear();
                 int oceanCount = 0;
@@ -319,12 +318,12 @@ public final class Water implements AutoCloseable {
                 }
 
                 if (oceanCount > 0) {
-                    waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, minAlpha);
+                    waterShader.setUniform(waterShader.locMinAlpha, minAlpha);
                     oceanInstanceVBO = uploadAndDraw(context, oceanCount, oceanInstanceBuffer, oceanInstanceVBO);
                 }
 
                 if (inlandCount > 0) {
-                    waterShader.setUniform(WaterShader.Uniforms.MIN_ALPHA, maxAlpha);
+                    waterShader.setUniform(waterShader.locMinAlpha, maxAlpha);
                     inlandInstanceVBO = uploadAndDraw(context, inlandCount, inlandInstanceBuffer, inlandInstanceVBO);
                 }
             }

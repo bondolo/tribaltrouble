@@ -7,13 +7,13 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import org.lwjgl.opengl.GL11;
 
 /**
- * Renders debug graphics
+ * Renders debug graphics.
  */
 public final class DebugShaderRenderer extends ShaderRenderer {
 
     private float pointSize = 1.0f;
 
-    public DebugShaderRenderer(ShaderProgram shader, MatrixStack modelViewStack, MatrixStack projectionStack) {
+    public DebugShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack, MatrixStack projectionStack) {
         super(shader, modelViewStack, projectionStack);
     }
 

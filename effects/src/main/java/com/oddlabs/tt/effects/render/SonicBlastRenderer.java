@@ -1,11 +1,13 @@
 package com.oddlabs.tt.effects.render;
 
 
-import com.oddlabs.tt.engine.render.*;
-
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.effects.particle.SonicBlastEffect;
 import com.oddlabs.tt.engine.procedural.GeneratorNoise;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.RenderTools;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.shader.SonicBlastShader;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
@@ -25,7 +27,7 @@ import java.util.Deque;
 import java.util.Queue;
 
 /**
- * Specialized renderer for the Sonic Blast expanding ring effect.
+ * Renders the Sonic Blast expanding ring effect.
  */
 public final class SonicBlastRenderer implements AutoCloseable {
     private static final Color.Linear BLAST_COLOR = new Color.Linear(0.7f, 0.85f, 1.0f, 1.0f);
@@ -79,7 +81,7 @@ public final class SonicBlastRenderer implements AutoCloseable {
 
             // Bind generated noise texture for ring turbulence
             context.setTexture(0, noiseTextures[0].getHandle());
-            shader.setUniform(SonicBlastShader.Uniforms.TEXTURE_0, 0);
+            shader.setUniform(shader.locTexture0, 0);
 
             vao.bind();
 
@@ -117,11 +119,11 @@ public final class SonicBlastRenderer implements AutoCloseable {
                 modelViewStack.current().rotateX(angleY);
                 modelViewStack.scale(r, r, 1.0f);
 
-                shader.setUniformColor3(SonicBlastShader.Uniforms.COLOR, effect.getColor());
-                shader.setUniform(SonicBlastShader.Uniforms.MODEL_VIEW_MATRIX, modelViewStack.current());
-                shader.setUniform(SonicBlastShader.Uniforms.TIME, effect.getTime());
-                shader.setUniform(SonicBlastShader.Uniforms.MAX_RADIUS, visualRadius);
-                shader.setUniform(SonicBlastShader.Uniforms.EXPANSION_SPEED, visualRadius / Math.max(effect
+                shader.setUniformColor3(shader.locColor, effect.getColor());
+                shader.setUniform(shader.locModelViewMatrix, modelViewStack.current());
+                shader.setUniform(shader.locTime, effect.getTime());
+                shader.setUniform(shader.locMaxRadius, visualRadius);
+                shader.setUniform(shader.locExpansionSpeed, visualRadius / Math.max(effect
                         .getDuration(), 0.001f));
 
                 GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);

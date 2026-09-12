@@ -125,26 +125,26 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {
 
             // Set VTF Uniforms
-            shader.setUniform(LandscapeShader.Uniforms.WORLD_SIZE, (float) world.getHeightMap().getMetersPerWorld());
-            shader.setUniform(LandscapeShader.Uniforms.DETAIL_SCALE, LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
+            shader.setUniform(shader.locWorldSize, (float) world.getHeightMap().getMetersPerWorld());
+            shader.setUniform(shader.locDetailScale, LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
 
             Color stdColor = Sky.SEA_BOTTOM_COLOR.get(world.getTerrainType());
-            shader.setUniformColor3(LandscapeShader.Uniforms.SEA_BOTTOM_COLOR, stdColor);
+            shader.setUniformColor3(shader.locSeaBottomColor, stdColor);
 
             context.setTexture(0, diffuseMap);
-            shader.setUniform(LandscapeShader.Uniforms.DIFFUSE_MAP, 0);
+            shader.setUniform(shader.locDiffuseMap, 0);
 
             context.setTexture(1, normalMap);
-            shader.setUniform(LandscapeShader.Uniforms.NORMAL_MAP, 1);
+            shader.setUniform(shader.locNormalMap, 1);
 
             context.setTexture(2, detailMap);
-            shader.setUniform(LandscapeShader.Uniforms.DETAIL_MAP, 2);
+            shader.setUniform(shader.locDetailMap, 2);
 
             context.setTexture(3, heightMapVisual.getHeightTexture());
-            shader.setUniform(LandscapeShader.Uniforms.HEIGHT_MAP, 3);
+            shader.setUniform(shader.locHeightMap, 3);
 
             context.setTexture(4, detailNormalMap);
-            shader.setUniform(LandscapeShader.Uniforms.DETAIL_NORMAL_MAP, 4);
+            shader.setUniform(shader.locDetailNormalMap, 4);
 
             if (DebugFlags.draw_landscape && !render_list.isEmpty()) {
                 int instanceCount = render_list.size();
