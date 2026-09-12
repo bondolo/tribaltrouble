@@ -41,6 +41,7 @@ import com.oddlabs.tt.simulation.model.Building;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.tt.simulation.player.Player;
+import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
@@ -107,7 +108,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.lightningRenderer = new LightningRenderer();
         this.sonicBlastRenderer = new SonicBlastRenderer();
         this.emitterRenderer = new EmitterRenderer();
-        this.postProcessor = new PostProcessor(AccessibilitySettings.from(settings), width, height);
+        this.postProcessor = new PostProcessor(AccessibilitySettings.from(settings), width, height,
+                WindowSettings.from(settings).view_samples);
         DebugRender.setShaderRenderer(new DebugShaderRenderer(
                 new DebugMeshShader(), modelViewStack, projectionStack
         ));

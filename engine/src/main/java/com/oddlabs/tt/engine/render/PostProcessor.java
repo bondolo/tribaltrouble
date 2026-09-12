@@ -2,6 +2,7 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
+import org.jspecify.annotations.Nullable;
 import com.oddlabs.tt.engine.render.shader.PostProcessShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
@@ -29,17 +30,25 @@ public final class PostProcessor implements AutoCloseable {
     private final VertexArray vao;
     private final FloatVBO quadVBO;
     private final FBO sceneFBO;
+    private final int samples;
+    private @Nullable FBO msaaSceneFBO;
     private final FBO depthCopyFBO;
     private final AccessibilitySettings accessibility;
     private int currentWidth;
     private int currentHeight;
 
     public PostProcessor(AccessibilitySettings accessibility, int width, int height) {
+        this(accessibility, width, height, 0);
+    }
+
+    public PostProcessor(AccessibilitySettings accessibility, int width, int height, int samples) {
         this.accessibility = accessibility;
         this.currentWidth = width;
         this.currentHeight = height;
         this.shader = new PostProcessShader();
         this.sceneFBO = FBO.createSceneFBO(width, height);
+        this.samples = samples;
+        this.msaaSceneFBO = null;
 
         // Depth Copy FBO (for Soft Particles)
         this.depthCopyFBO = new FBO(width, height);
@@ -73,11 +82,31 @@ public final class PostProcessor implements AutoCloseable {
         this.vao.unbind();
     }
 
+    private FBO getActiveSceneFBO() {
+        if (samples > 1 && RenderContext.current().isMultisampleEnabled()) {
+            if (msaaSceneFBO == null) {
+                msaaSceneFBO = FBO.createMultisampleSceneFBO(currentWidth, currentHeight, samples);
+            }
+            return msaaSceneFBO;
+        }
+        if (msaaSceneFBO != null) {
+            msaaSceneFBO.close();
+            msaaSceneFBO = null;
+        }
+        return sceneFBO;
+    }
+
     public boolean resize(int width, int height) {
         if (this.currentWidth == width && this.currentHeight == height) return false;
         this.currentWidth = width;
         this.currentHeight = height;
         sceneFBO.resize(width, height);
+        if (!RenderContext.current().isMultisampleEnabled() && msaaSceneFBO != null) {
+            msaaSceneFBO.close();
+            msaaSceneFBO = null;
+        } else if (msaaSceneFBO != null) {
+            msaaSceneFBO.resize(width, height);
+        }
 
         depthCopyFBO.resize(width, height);
         depthCopyFBO.bind();
@@ -91,7 +120,7 @@ public final class PostProcessor implements AutoCloseable {
     }
 
     public void copyDepthBuffer() {
-        sceneFBO.blitDepthTo(depthCopyFBO);
+        getActiveSceneFBO().blitDepthTo(depthCopyFBO);
     }
 
     public Texture getDepthCopyTexture() {
@@ -99,17 +128,24 @@ public final class PostProcessor implements AutoCloseable {
     }
 
     public void bindSceneFBO() {
-        sceneFBO.bind();
+        getActiveSceneFBO().bind();
     }
 
     public void unbindSceneFBO() {
-        sceneFBO.unbind();
+        getActiveSceneFBO().unbind();
     }
 
     public void renderComposite(RenderContext context, Consumer<
             RenderContext> guiRenderCallback) {
-        // 1. Render GUI into the Scene FBO (on top of the 3D scene)
-        bindSceneFBO();
+        FBO activeSceneFBO = getActiveSceneFBO();
+
+        // 1. If MSAA was used for 3D rendering, resolve activeSceneFBO to sceneFBO before GUI
+        if (activeSceneFBO != sceneFBO) {
+            activeSceneFBO.resolveTo(sceneFBO);
+        }
+
+        // 2. Render GUI directly into the single-sampled Scene FBO (on top of the resolved 3D scene)
+        sceneFBO.bind();
 
         // Ensure blending is enabled for the GUI pass.
         // Buffer 0 (Color): GL_ONE, GL_ONE_MINUS_SRC_ALPHA (Premultiplied Linear)
@@ -135,9 +171,9 @@ public final class PostProcessor implements AutoCloseable {
             }
         }
 
-        unbindSceneFBO();
+        sceneFBO.unbind();
 
-        // 2. Composite the FBO to the screen with Post-Processing (CVD, High Contrast, Team Stencil)
+        // 3. Composite the FBO to the screen with Post-Processing (CVD, High Contrast, Team Stencil)
         // Render to the default framebuffer (screen)
         context.bindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
         context.setViewport(0, 0, currentWidth, currentHeight);
@@ -176,6 +212,9 @@ public final class PostProcessor implements AutoCloseable {
     public void close() {
         shader.close();
         sceneFBO.close();
+        if (msaaSceneFBO != null) {
+            msaaSceneFBO.close();
+        }
         depthCopyFBO.close();
         vao.close();
         quadVBO.close();

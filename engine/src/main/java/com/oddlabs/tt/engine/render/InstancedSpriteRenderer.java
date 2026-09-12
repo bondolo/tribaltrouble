@@ -411,11 +411,13 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 if (key.blend) {
                     context.setBlendMode(BlendMode.ALPHA);
                     context.setSampleAlphaToCoverage(false);
+                    drawAll(context);
                 } else {
                     context.setBlendMode(BlendMode.NONE);
-                    context.setSampleAlphaToCoverage(true);
+                    try (var _ = context.withSampleAlphaToCoverage(true)) {
+                        drawAll(context);
+                    }
                 }
-                drawAll(context);
             }
         }
 

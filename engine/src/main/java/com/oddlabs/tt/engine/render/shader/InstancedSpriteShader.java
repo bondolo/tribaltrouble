@@ -168,11 +168,15 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                             }
                         }
 
-                        if (finalColor.a <= u_alphaTestValue) discard;
+                        float edgeAlpha = finalColor.a;
+                        if (u_alphaTestValue > 0.0) {
+                            edgeAlpha = clamp((finalColor.a - u_alphaTestValue) * 3.0, 0.0, 1.0);
+                            if (edgeAlpha <= 0.0) discard;
+                        }
 
                         float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
                         vec3 litColor = mix(u_fogColor.rgb, finalColor.rgb, fogFactor);
-                        out_FragColor = vec4(litColor, finalColor.a);
+                        out_FragColor = vec4(litColor, edgeAlpha);
                     }
                     """;
 
