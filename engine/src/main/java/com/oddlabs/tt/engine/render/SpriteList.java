@@ -12,6 +12,7 @@ import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Utils;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL15;
@@ -35,7 +36,7 @@ public final class SpriteList implements AutoCloseable {
     private final String[] animation_names;
     private final AnimationInfo @Nullable [] animation_infos;
     private final @Nullable SkeletonData skeleton_data;
-    private final Matrix4f @Nullable [] initial_pose_matrices;
+    private final Matrix4fc @Nullable [] initial_pose_matrices;
     private final float @Nullable [] cpw_array;
     private final int @Nullable [] animation_length_array;
 
@@ -101,7 +102,7 @@ public final class SpriteList implements AutoCloseable {
                 ? sd : null;
         if (this.skeleton_data != null) {
             String[] boneNames = this.skeleton_data.boneNames();
-            this.initial_pose_matrices = new Matrix4f[boneNames.length];
+            this.initial_pose_matrices = new Matrix4fc[boneNames.length];
             for (int i = 0; i < boneNames.length; i++) {
                 float[] ipd = this.skeleton_data.getInitialPose(i);
                 if (ipd != null) {
@@ -244,6 +245,15 @@ public final class SpriteList implements AutoCloseable {
     }
 
     /**
+     * Returns the number of bones in this sprite list's skeleton, or 0 if non-skeletal.
+     *
+     * @return the number of bones
+     */
+    public int getBoneCount() {
+        return skeleton_data != null ? skeleton_data.boneNames().length : 0;
+    }
+
+    /**
      * Resolves the bone index for a named socket.
      *
      * @param socketName the socket or bone name
@@ -251,6 +261,104 @@ public final class SpriteList implements AutoCloseable {
      */
     public int getSocketIndex(String socketName) {
         return skeleton_data != null ? skeleton_data.findBoneIndex(socketName) : -1;
+    }
+
+    /**
+     * Evaluates all bone skinning matrices for the given animation and frame ticks into the destination array.
+     *
+     * @param animationIndex the animation index
+     * @param animTicks the animation ticks
+     * @param dest the array of matrices to receive evaluated bone transforms
+     * @return true if successfully evaluated, false if animation or skeleton data is missing
+     */
+    public boolean evaluateSkeleton(int animationIndex, float animTicks, Matrix4f[] dest) {
+        if (initial_pose_matrices == null || animation_infos == null || cpw_array == null
+                || animation_length_array == null) {
+            return false;
+        }
+        if (animationIndex < 0 || animationIndex >= animation_infos.length) {
+            return false;
+        }
+
+        AnimationInfo animInfo = animation_infos[animationIndex];
+        float anim_position = animTicks * cpw_array[animationIndex];
+        int len = animation_length_array[animationIndex];
+        float exactFrame = anim_position * len;
+
+        int frame1 = (int) exactFrame;
+        int frame2 = frame1 + 1;
+        float tween = exactFrame - frame1;
+
+        if (type_array[animationIndex] == AnimationInfo.AnimationType.LOOP) {
+            frame1 %= len;
+            frame2 %= len;
+        } else {
+            frame1 = Math.min(frame1, len - 1);
+            frame2 = Math.min(frame2, len - 1);
+        }
+
+        float[] frame1Data = animInfo.getFrames()[frame1];
+        float[] frame2Data = animInfo.getFrames()[frame2];
+        float t0 = 1.0f - tween;
+        int numBones = Math.min(dest.length, initial_pose_matrices.length);
+
+        for (int bone = 0; bone < numBones; bone++) {
+            int offset = bone * 12;
+            dest[bone].set(
+                    frame1Data[offset + 0] * t0 + frame2Data[offset + 0] * tween,
+                    frame1Data[offset + 4] * t0 + frame2Data[offset + 4] * tween,
+                    frame1Data[offset + 8] * t0 + frame2Data[offset + 8] * tween,
+                    0.0f,
+                    frame1Data[offset + 1] * t0 + frame2Data[offset + 1] * tween,
+                    frame1Data[offset + 5] * t0 + frame2Data[offset + 5] * tween,
+                    frame1Data[offset + 9] * t0 + frame2Data[offset + 9] * tween,
+                    0.0f,
+                    frame1Data[offset + 2] * t0 + frame2Data[offset + 2] * tween,
+                    frame1Data[offset + 6] * t0 + frame2Data[offset + 6] * tween,
+                    frame1Data[offset + 10] * t0 + frame2Data[offset + 10] * tween,
+                    0.0f,
+                    frame1Data[offset + 3] * t0 + frame2Data[offset + 3] * tween,
+                    frame1Data[offset + 7] * t0 + frame2Data[offset + 7] * tween,
+                    frame1Data[offset + 11] * t0 + frame2Data[offset + 11] * tween,
+                    1.0f
+            );
+        }
+        return true;
+    }
+
+    /**
+     * Resolves the animated transform for a bone socket in sprite model space from pre-evaluated bone matrices.
+     *
+     * @param boneIndex the bone index
+     * @param evaluatedBones the pre-evaluated bone skinning matrices
+     * @param dest the matrix to receive the result
+     * @return true if successfully resolved, false if socket bone not found
+     */
+    public boolean getSocketTransform(int boneIndex, Matrix4fc[] evaluatedBones, Matrix4f dest) {
+        if (initial_pose_matrices == null || boneIndex < 0 || boneIndex >= initial_pose_matrices.length
+                || boneIndex >= evaluatedBones.length) {
+            return false;
+        }
+        Matrix4fc initPose = initial_pose_matrices[boneIndex];
+        if (initPose == null) {
+            return false;
+        }
+        dest.set(evaluatedBones[boneIndex]).mul(initPose);
+        return true;
+    }
+
+    /**
+     * Resolves the animated transform for a bone socket in sprite model space from pre-evaluated bone matrices by
+     * socket name.
+     *
+     * @param socketName the socket or bone name
+     * @param evaluatedBones the pre-evaluated bone skinning matrices
+     * @param dest the matrix to receive the result
+     * @return true if successfully resolved, false if socket not found
+     */
+    public boolean getSocketTransform(String socketName, Matrix4fc[] evaluatedBones, Matrix4f dest) {
+        int boneIndex = getSocketIndex(socketName);
+        return getSocketTransform(boneIndex, evaluatedBones, dest);
     }
 
     /**
@@ -285,7 +393,7 @@ public final class SpriteList implements AutoCloseable {
                 || animationIndex >= animation_infos.length) {
             return false;
         }
-        Matrix4f initPose = initial_pose_matrices[boneIndex];
+        Matrix4fc initPose = initial_pose_matrices[boneIndex];
         if (initPose == null) {
             return false;
         }

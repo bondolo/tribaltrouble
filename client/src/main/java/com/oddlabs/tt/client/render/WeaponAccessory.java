@@ -13,6 +13,9 @@ import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.model.SupplyType;
 import com.oddlabs.tt.simulation.model.Unit;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -21,14 +24,14 @@ import org.jspecify.annotations.Nullable;
 final class WeaponAccessory implements StaticAccessory {
     private static final String SOCKET_NAME = "Prop1";
 
-    private static final Matrix4f VIKING_AXE_LOCAL = new Matrix4f().set(
+    private static final Matrix4fc VIKING_AXE_LOCAL = new Matrix4f().set(
             -0.000430f, -0.969786f, 0.000022f, 0.000000f,
             0.897271f, 0.025162f, 0.000004f, 0.000000f,
             -0.003478f, 0.067121f, 0.999997f, 0.000000f,
             0.029143f, -0.393509f, 0.923507f, 1.000000f
     );
 
-    private static final Matrix4f NATIVE_SPEAR_LOCAL = new Matrix4f().set(
+    private static final Matrix4fc NATIVE_SPEAR_LOCAL = new Matrix4f().set(
             -0.019580f, 0.010967f, 0.999797f, 0.000000f,
             0.038799f, 0.997411f, -0.000292f, 0.000000f,
             -0.999036f, 0.038902f, -0.019998f, 0.000000f,
@@ -37,22 +40,22 @@ final class WeaponAccessory implements StaticAccessory {
 
     private static final float NATIVE_SPEAR_GRIP_OFFSET_X = 1.04f;
     private static final float NATIVE_SPEAR_LATERAL_OFFSET_Z = -0.137f;
-    private static final float PITCH_AXIS_X = -0.0348f;
-    private static final float PITCH_AXIS_Y = -0.2590f;
-    private static final float PITCH_AXIS_Z = -0.9652f;
+    private static final Vector3fc PITCH_AXIS = new Vector3f(-0.0348f, -0.2590f, -0.9652f);
     private static final float NATIVE_SPEAR_BASE_PITCH = (float) Math.toRadians(6.7f);
     private static final float NATIVE_SPEAR_PRE_RELEASE_START = 0.41f;
     private static final float DEFAULT_SPEAR_LAUNCH_PITCH = (float) Math.toRadians(22.0f);
 
     private final Unit unit;
+    private final UnitVisualModel visualModel;
     private final boolean isNativeWarrior;
     private final Matrix4f socketTransform = new Matrix4f();
-    private final Matrix4f localTransform;
+    private final Matrix4fc localTransform;
     private final Matrix4f adjustedTransform = new Matrix4f();
     private int socketBoneIndex = -1;
 
-    WeaponAccessory(Unit unit) {
+    WeaponAccessory(Unit unit, UnitVisualModel visualModel) {
         this.unit = unit;
+        this.visualModel = visualModel;
         Race race = unit.getOwner().getPlayerInfo().getRace();
         this.isNativeWarrior = (race == Race.NATIVES);
         this.localTransform = (race == Race.VIKINGS) ? VIKING_AXE_LOCAL : NATIVE_SPEAR_LOCAL;
@@ -130,27 +133,29 @@ final class WeaponAccessory implements StaticAccessory {
         if (socketBoneIndex < 0) {
             socketBoneIndex = spriteList.getSocketIndex(SOCKET_NAME);
         }
-        if (socketBoneIndex >= 0 && spriteList.getSocketTransform(socketBoneIndex, parentState.getAnimation(),
-                parentState
-                        .getAnimationTicks(), socketTransform)) {
-            if (isNativeWarrior && parentState.getAnimation() == Unit.Animation.THROWING.ordinal()) {
-                float ticks = parentState.getAnimationTicks();
-                float releaseRatio = unit.getWeaponFactory().getReleaseRatio();
-                if (ticks >= NATIVE_SPEAR_PRE_RELEASE_START) {
-                    float progress = Math.clamp((ticks - NATIVE_SPEAR_PRE_RELEASE_START) / (releaseRatio
-                            - NATIVE_SPEAR_PRE_RELEASE_START), 0f, 1f);
-                    float targetPitch = computeSpearTargetPitch();
-                    float pitchDiff = targetPitch - NATIVE_SPEAR_BASE_PITCH;
-                    float pitchAdjustment = progress * pitchDiff;
-                    adjustedTransform.set(localTransform)
-                            .translate(-NATIVE_SPEAR_GRIP_OFFSET_X, 0f, 0f)
-                            .rotate(-pitchAdjustment, PITCH_AXIS_X, PITCH_AXIS_Y, PITCH_AXIS_Z)
-                            .translate(NATIVE_SPEAR_GRIP_OFFSET_X, 0f, progress * NATIVE_SPEAR_LATERAL_OFFSET_Z);
-                    dest.mul(socketTransform).mul(adjustedTransform);
-                    return;
+        if (socketBoneIndex >= 0) {
+            Matrix4fc[] bones = visualModel.getEvaluatedBones(spriteList, parentState.getAnimation(),
+                    parentState.getAnimationTicks());
+            if (bones != null && spriteList.getSocketTransform(socketBoneIndex, bones, socketTransform)) {
+                if (isNativeWarrior && parentState.getAnimation() == Unit.Animation.THROWING.ordinal()) {
+                    float ticks = parentState.getAnimationTicks();
+                    float releaseRatio = unit.getWeaponFactory().getReleaseRatio();
+                    if (ticks >= NATIVE_SPEAR_PRE_RELEASE_START) {
+                        float progress = Math.clamp((ticks - NATIVE_SPEAR_PRE_RELEASE_START) / (releaseRatio
+                                - NATIVE_SPEAR_PRE_RELEASE_START), 0f, 1f);
+                        float targetPitch = computeSpearTargetPitch();
+                        float pitchDiff = targetPitch - NATIVE_SPEAR_BASE_PITCH;
+                        float pitchAdjustment = progress * pitchDiff;
+                        adjustedTransform.set(localTransform)
+                                .translate(-NATIVE_SPEAR_GRIP_OFFSET_X, 0f, 0f)
+                                .rotate(-pitchAdjustment, PITCH_AXIS)
+                                .translate(NATIVE_SPEAR_GRIP_OFFSET_X, 0f, progress * NATIVE_SPEAR_LATERAL_OFFSET_Z);
+                        dest.mul(socketTransform).mul(adjustedTransform);
+                        return;
+                    }
                 }
+                dest.mul(socketTransform).mul(localTransform);
             }
-            dest.mul(socketTransform).mul(localTransform);
         }
     }
 

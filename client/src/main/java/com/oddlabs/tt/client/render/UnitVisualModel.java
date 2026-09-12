@@ -5,12 +5,16 @@ import com.oddlabs.tt.effects.particle.StunFunction;
 import com.oddlabs.tt.effects.render.EmitterAttachedAccessory;
 import com.oddlabs.tt.engine.render.Accessory;
 import com.oddlabs.tt.client.resource.AssetRegistry;
+import com.oddlabs.tt.engine.render.SpriteList;
 import com.oddlabs.tt.simulation.behaviour.StunController;
 import com.oddlabs.tt.simulation.landscape.World;
 import com.oddlabs.tt.simulation.model.Abilities;
 import com.oddlabs.tt.simulation.model.Unit;
 import com.oddlabs.util.Color;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -19,6 +23,9 @@ import org.lwjgl.opengl.GL11;
  */
 public final class UnitVisualModel extends AbstractVisualModel {
     private final Unit unit;
+    private Matrix4f @Nullable [] evaluatedBones;
+    private int evaluatedAnimation = -1;
+    private float evaluatedTicks = -1f;
 
     public UnitVisualModel(Unit unit) {
         super(unit);
@@ -27,8 +34,38 @@ public final class UnitVisualModel extends AbstractVisualModel {
             addAccessory(new CarriedResourceAccessory(unit));
         }
         if (unit.getAbilities().hasAbilities(Abilities.THROW)) {
-            addAccessory(new WeaponAccessory(unit));
+            addAccessory(new WeaponAccessory(unit, this));
         }
+    }
+
+    /**
+     * Resolves the evaluated bone skinning matrices for the given animation and tick time, caching within the frame.
+     *
+     * @param spriteList the sprite list containing skeleton data
+     * @param animation the animation index
+     * @param ticks the animation tick position
+     * @return the evaluated bone matrices, or null if non-skeletal or invalid
+     */
+    public Matrix4fc @Nullable [] getEvaluatedBones(SpriteList spriteList, int animation, float ticks) {
+        int boneCount = spriteList.getBoneCount();
+        if (boneCount == 0) {
+            return null;
+        }
+        if (evaluatedBones == null || evaluatedBones.length != boneCount) {
+            evaluatedBones = new Matrix4f[boneCount];
+            for (int i = 0; i < boneCount; i++) {
+                evaluatedBones[i] = new Matrix4f();
+            }
+        }
+        if (animation != evaluatedAnimation || ticks != evaluatedTicks) {
+            if (spriteList.evaluateSkeleton(animation, ticks, evaluatedBones)) {
+                evaluatedAnimation = animation;
+                evaluatedTicks = ticks;
+            } else {
+                return null;
+            }
+        }
+        return evaluatedBones;
     }
 
     /**
