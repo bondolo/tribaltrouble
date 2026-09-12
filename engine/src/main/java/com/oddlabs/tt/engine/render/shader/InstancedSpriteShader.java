@@ -1,18 +1,16 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * Shader for rendering animated 3D sprites using hardware instancing.
- * Fetches per-frame vertex data from a Texture Buffer Object (TBO).
+ * Shader for rendering 3D sprites using hardware instancing and skeletal skinning.
+ * Supports GPU 4-bone linear blend skinning and a direct static path for rigid geometry.
  */
 public final class InstancedSpriteShader extends ShaderProgram implements FogShader, LitShader {
 
     public interface Uniforms {
-        String PROJECTION_MATRIX = Shader.PROJECTION_MATRIX;
-        String VIEW_MATRIX = Shader.VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0";
         String TEXTURE_1 = "u_texture1";
         String NORMAL_MAP = "u_normalMap";
-        String VERT_BUFFER = "u_VertBuffer";
+        String BONE_MATRIX_BUFFER = "u_BoneMatrixBuffer";
         String ENABLE_LIGHTING = "u_enableLighting";
         String ENABLE_TEAM_COLOR = "u_enableTeamColor";
         String ENABLE_NORMAL_MAP = "u_enableNormalMap";
@@ -22,39 +20,23 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
         String ALPHA_TEST_VALUE = "u_alphaTestValue";
     }
 
-    public interface Attributes {
-        // Per-vertex attributes (now fetched via TBO)
-        String TEX_COORD = Shader.TEX_COORD;
-
-        // Per-instance attributes
-        String INSTANCE_MODEL_MATRIX = "in_InstanceModelMatrix"; // Occupies 4 locations (4,5,6,7)
-        String INSTANCE_COLOR = "in_InstanceColor"; // Location 8
-        String INSTANCE_DECAL_COLOR = "in_InstanceDecalColor"; // Location 9
-
-        // Animation attributes
-        String INSTANCE_POS_1 = "in_Pos1"; // Location 10
-        String INSTANCE_NORM_1 = "in_Norm1"; // Location 11
-        String INSTANCE_POS_2 = "in_Pos2"; // Location 12
-        String INSTANCE_NORM_2 = "in_Norm2"; // Location 13
-        String INSTANCE_TWEEN = "in_Tween"; // Location 14
-    }
-
     private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             """
+                        layout(location = 0) in vec3 in_Position;
+                        layout(location = 1) in vec3 in_Normal;
                         layout(location = 2) in vec2 in_TexCoord;
+                        layout(location = 3) in uvec4 in_BoneIndices;
 
                         // Per-instance
                         layout(location = 4) in mat4 in_InstanceModelMatrix;
                         layout(location = 8) in vec4 in_InstanceColor;
                         layout(location = 9) in vec4 in_InstanceDecalColor;
-                        layout(location = 10) in float in_Pos1;
-                        layout(location = 11) in float in_Norm1;
-                        layout(location = 12) in float in_Pos2;
-                        layout(location = 13) in float in_Norm2;
-                        layout(location = 14) in float in_Tween;
+                        layout(location = 10) in float in_BoneBaseOffset;
 
-                        uniform samplerBuffer u_VertBuffer;
+                        layout(location = 11) in vec4 in_BoneWeights;
+
+                        uniform samplerBuffer u_BoneMatrixBuffer;
 
                         out VS_OUT {
                             vec2 texCoord0;
@@ -66,26 +48,34 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                             vec3 worldNormal;
                         } vs_out;
 
+                        mat4 fetchBoneMatrix(uint boneIndex) {
+                            int base = int(round(in_BoneBaseOffset)) + int(boneIndex) * 4;
+                            return mat4(
+                                texelFetch(u_BoneMatrixBuffer, base + 0),
+                                texelFetch(u_BoneMatrixBuffer, base + 1),
+                                texelFetch(u_BoneMatrixBuffer, base + 2),
+                                texelFetch(u_BoneMatrixBuffer, base + 3)
+                            );
+                        }
+
                         void main() {
-                            // Fetch vertex data for both frames
-                            // Layout: [Pos...][Norm...] per frame. TBO uses RGB32F (1 texel = 1 vec3).
+                            vec4 worldPosition;
+                            vec3 normal;
 
-                            int basePos1 = int(round(in_Pos1));
-                            int baseNorm1 = int(round(in_Norm1));
-                            int basePos2 = int(round(in_Pos2));
-                            int baseNorm2 = int(round(in_Norm2));
+                            if (in_BoneBaseOffset < 0.0) {
+                                worldPosition = in_InstanceModelMatrix * vec4(in_Position, 1.0);
+                                normal = in_Normal;
+                            } else {
+                                mat4 skinMatrix = in_BoneWeights.x * fetchBoneMatrix(in_BoneIndices.x) +
+                                                  in_BoneWeights.y * fetchBoneMatrix(in_BoneIndices.y) +
+                                                  in_BoneWeights.z * fetchBoneMatrix(in_BoneIndices.z) +
+                                                  in_BoneWeights.w * fetchBoneMatrix(in_BoneIndices.w);
 
-                            vec3 pos1 = texelFetch(u_VertBuffer, basePos1 + gl_VertexID).xyz;
-                            vec3 norm1 = texelFetch(u_VertBuffer, baseNorm1 + gl_VertexID).xyz;
+                                vec4 skinnedPos = skinMatrix * vec4(in_Position, 1.0);
+                                normal = normalize(mat3(skinMatrix) * in_Normal);
+                                worldPosition = in_InstanceModelMatrix * skinnedPos;
+                            }
 
-                            vec3 pos2 = texelFetch(u_VertBuffer, basePos2 + gl_VertexID).xyz;
-                            vec3 norm2 = texelFetch(u_VertBuffer, baseNorm2 + gl_VertexID).xyz;
-
-                            vec3 position = mix(pos1, pos2, in_Tween);
-                            vec3 normal = normalize(mix(norm1, norm2, in_Tween));
-
-                            // Use the instance matrix (Model Matrix) and global View Matrix
-                            vec4 worldPosition = in_InstanceModelMatrix * vec4(position, 1.0);
                             vec4 viewPosition = u_viewMatrix * worldPosition;
                             gl_Position = u_projectionMatrix * viewPosition;
 

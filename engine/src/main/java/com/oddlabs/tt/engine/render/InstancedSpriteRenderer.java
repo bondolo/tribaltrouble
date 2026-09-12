@@ -8,17 +8,20 @@ import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.vbo.ByteVBO;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
 
@@ -30,7 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Specialized renderer that handles high-performance 3D sprite rendering using hardware instancing.
+ * Specialized renderer that handles high-performance 3D sprite rendering using hardware instancing and skeletal
+ * skinning.
  * Batches sprites by texture and render state to minimize draw calls and state changes.
  */
 public final class InstancedSpriteRenderer implements AutoCloseable {
@@ -39,49 +43,110 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     private final Map<BatchKey, RenderBatch> batches = new HashMap<>();
     private final Texture whiteTexture;
 
+    private FloatVBO boneMatrixVBO;
+    private int boneMatrixTboHandle;
+    private FloatBuffer boneMatrixBuffer;
+    private int boneMatrixTexels = 0;
+    private final Matrix4f[] scratchBones = new Matrix4f[48];
+    private final Map<BoneKey, Integer> boneOffsetCache = new HashMap<>();
+
+    private record BoneKey(SpriteList spriteList, int animation, float animTicks) {
+    }
+
     public InstancedSpriteRenderer() {
         GLImage whiteImage = new GLIntImage(1, 1, GL11.GL_RGBA);
         whiteImage.putPixel(0, 0, Color.WHITE_INT);
         whiteTexture = new Texture(new GLImage[]{whiteImage}, GL11.GL_RGBA8, GL11.GL_NEAREST, GL11.GL_NEAREST,
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
+
+        int initialFloats = 65536;
+        boneMatrixBuffer = BufferUtils.createFloatBuffer(initialFloats);
+        boneMatrixVBO = new FloatVBO(GL15.GL_STREAM_DRAW, initialFloats);
+        boneMatrixTboHandle = GL11.glGenTextures();
+        GL11.glBindTexture(GL31.GL_TEXTURE_BUFFER, boneMatrixTboHandle);
+        GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGBA32F, boneMatrixVBO.getHandle());
+        GL11.glBindTexture(GL31.GL_TEXTURE_BUFFER, 0);
+
+        for (int i = 0; i < scratchBones.length; i++) {
+            scratchBones[i] = new Matrix4f();
+        }
     }
 
     Texture getWhiteTexture() {
         return whiteTexture;
     }
 
+    private void ensureBoneCapacity(int requiredFloats) {
+        if (requiredFloats > boneMatrixBuffer.capacity()) {
+            int newCapacity = Math.max(boneMatrixBuffer.capacity() * 2, requiredFloats);
+            FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity);
+            boneMatrixBuffer.position(0);
+            boneMatrixBuffer.limit(boneMatrixTexels * 4);
+            newBuffer.put(boneMatrixBuffer);
+            newBuffer.clear();
+            boneMatrixBuffer = newBuffer;
+
+            boneMatrixVBO.close();
+            boneMatrixVBO = new FloatVBO(GL15.GL_STREAM_DRAW, newCapacity);
+        }
+    }
+
     public void add(SpriteList spriteList, int spriteIndex, int animation, float animTicks,
             Texture texture, @Nullable Texture teamTexture, @Nullable Texture bumpTexture,
-            boolean respond, boolean blend, boolean depthWrite, boolean depthTest, Matrix4f modelMatrix,
+            boolean respond, boolean blend, boolean depthWrite, boolean depthTest, Matrix4fc modelMatrix,
             Color color, Color decalColor) {
-        Sprite sprite = spriteList.getSprite(spriteIndex);
-        Sprite.FrameState frameState = sprite.getAnimationState(animation, animTicks);
+        int boneBaseOffset = -1;
+        if (spriteList.isSkeletal()) {
+            int boneCount = spriteList.getBoneCount();
+            if (boneCount > 0) {
+                BoneKey key = new BoneKey(spriteList, animation, animTicks);
+                Integer cached = boneOffsetCache.get(key);
+                if (cached != null) {
+                    boneBaseOffset = cached;
+                } else {
+                    spriteList.evaluateSkeleton(animation, animTicks, scratchBones);
+                    boneBaseOffset = boneMatrixTexels;
+                    int neededFloats = boneCount * 16;
+                    ensureBoneCapacity(boneMatrixTexels * 4 + neededFloats);
+                    for (int b = 0; b < boneCount; b++) {
+                        scratchBones[b].get(boneMatrixTexels * 4 + b * 16, boneMatrixBuffer);
+                    }
+                    boneMatrixTexels += boneCount * 4;
+                    boneOffsetCache.put(key, boneBaseOffset);
+                }
+            }
+        }
 
         BatchKey key = new BatchKey(spriteList, texture, teamTexture, bumpTexture, respond, blend,
                 depthWrite, depthTest);
         RenderBatch batch = batches.computeIfAbsent(key, RenderBatch::new);
-        batch.addInstance(spriteIndex, frameState.pos1(), frameState.norm1(), frameState.pos2(), frameState.norm2(),
-                frameState
-                        .tween(), modelMatrix, color, decalColor);
+        batch.addInstance(spriteIndex, boneBaseOffset, modelMatrix, color, decalColor);
     }
 
     public void renderAll(RenderContext context, CameraState cameraState,
             MatrixStack projectionStack) {
         if (batches.isEmpty()) return;
 
-        try (var _ = shader.use()) {
-            // Set TBO texture unit
-            shader.setUniform(InstancedSpriteShader.Uniforms.VERT_BUFFER, 5);
+        if (boneMatrixTexels > 0) {
+            boneMatrixVBO.bind();
+            boneMatrixBuffer.limit(boneMatrixTexels * 4).position(0);
+            GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, boneMatrixBuffer);
+        }
 
-            RenderState state = new RenderState();
+        try (var _ = shader.use()) {
+            shader.setUniform(InstancedSpriteShader.Uniforms.BONE_MATRIX_BUFFER, 5);
+            context.setTexture(5, boneMatrixTboHandle, GL31.GL_TEXTURE_BUFFER);
+            GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGBA32F, boneMatrixVBO.getHandle());
+
             List<RenderBatch> sortedBatches = new ArrayList<>(batches.values());
             sortedBatches.sort(RenderBatch.COMPARATOR);
 
             for (RenderBatch batch : sortedBatches) {
-                batch.render(context, shader, whiteTexture, state);
+                batch.render(context, shader, whiteTexture);
             }
         } finally {
             // Restore default state to prevent leakage to other renderers (Sky, Landscape, etc.)
+            context.setTexture(5, 0, GL31.GL_TEXTURE_BUFFER);
             context.bindVertexArray(0);
             context.setDepthMode(DepthMode.READ_WRITE);
             context.setBlendMode(BlendMode.NONE);
@@ -97,6 +162,9 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         for (RenderBatch batch : batches.values()) {
             batch.clear();
         }
+        boneMatrixTexels = 0;
+        boneMatrixBuffer.clear();
+        boneOffsetCache.clear();
     }
 
     @Override
@@ -107,6 +175,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         batches.clear();
         shader.close();
         whiteTexture.close();
+        boneMatrixVBO.close();
+        GL11.glDeleteTextures(boneMatrixTboHandle);
     }
 
     private record BatchKey(SpriteList spriteList, Texture texture,
@@ -114,16 +184,12 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                             boolean blend, boolean depthWrite, boolean depthTest) {
     }
 
-    private static class RenderState {
-        int boundTBO = -1;
-    }
-
     private static class RenderBatch implements AutoCloseable {
         private final BatchKey key;
         private final Map<Integer, InstanceGroup> groups = new HashMap<>();
 
-        // mat4 (16) + color (4) + decalColor (4) + pos1(1) + norm1(1) + pos2(1) + norm2(1) + tween (1)
-        private static final int FLOATS_PER_INSTANCE = 16 + 4 + 4 + 1 + 1 + 1 + 1 + 1;
+        // mat4 (16) + color (4) + decalColor (4) + boneBaseOffset (1)
+        private static final int FLOATS_PER_INSTANCE = 16 + 4 + 4 + 1;
 
         private static class InstanceGroup implements AutoCloseable {
             private final int spriteIndex;
@@ -144,14 +210,45 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 vao.bind();
 
                 ShortVBO ibo = spriteList.getIndices();
+                FloatVBO positionsVBO = spriteList.getPositions();
+                FloatVBO normalsVBO = spriteList.getNormals();
                 FloatVBO texCoordVBO = spriteList.getTexcoords();
 
                 ibo.bind();
-                texCoordVBO.bind();
 
-                GL20.glEnableVertexAttribArray(2); // TexCoord
+                // Position (Location 0)
+                positionsVBO.bind();
+                GL20.glEnableVertexAttribArray(0);
                 Sprite sprite = spriteList.getSprite(spriteIndex);
-                GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, 0, sprite.texcoords_offset * 4L);
+                GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, (long) sprite.vertices_offset * Float.BYTES);
+
+                // Normal (Location 1)
+                normalsVBO.bind();
+                GL20.glEnableVertexAttribArray(1);
+                GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, 0, (long) sprite.normals_offset * Float.BYTES);
+
+                // TexCoord (Location 2)
+                texCoordVBO.bind();
+                GL20.glEnableVertexAttribArray(2);
+                GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, 0, (long) sprite.texcoords_offset * Float.BYTES);
+
+                // If skeletal: Bone Indices (Location 3) and Bone Weights (Location 11)
+                if (spriteList.isSkeletal()) {
+                    ByteVBO boneIndicesVBO = spriteList.getBoneIndices();
+                    FloatVBO boneWeightsVBO = spriteList.getBoneWeights();
+
+                    if (boneIndicesVBO != null) {
+                        boneIndicesVBO.bind();
+                        GL20.glEnableVertexAttribArray(3);
+                        GL30.glVertexAttribIPointer(3, 4, GL11.GL_UNSIGNED_BYTE, 0, (long) sprite.bone_indices_offset);
+                    }
+                    if (boneWeightsVBO != null) {
+                        boneWeightsVBO.bind();
+                        GL20.glEnableVertexAttribArray(11);
+                        GL20.glVertexAttribPointer(11, 4, GL11.GL_FLOAT, false, 0,
+                                (long) sprite.bone_weights_offset * Float.BYTES);
+                    }
+                }
 
                 setupInstanceAttributes();
 
@@ -183,35 +280,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 GL20.glVertexAttribPointer(decalColorLoc, 4, GL11.GL_FLOAT, false, instanceStride, 20 * Float.BYTES);
                 GL33.glVertexAttribDivisor(decalColorLoc, 1);
 
-                // Animation Offsets & Tween (Locations 10, 11, 12, 13, 14)
-                int pos1Loc = 10;
-                GL20.glEnableVertexAttribArray(pos1Loc);
-                GL20.glVertexAttribPointer(pos1Loc, 1, GL11.GL_FLOAT, false, instanceStride, 24 * Float.BYTES);
-                GL33.glVertexAttribDivisor(pos1Loc, 1);
-
-                int norm1Loc = 11;
-                GL20.glEnableVertexAttribArray(norm1Loc);
-                GL20.glVertexAttribPointer(norm1Loc, 1, GL11.GL_FLOAT, false, instanceStride, 25 * Float.BYTES);
-                GL33.glVertexAttribDivisor(norm1Loc, 1);
-
-                int pos2Loc = 12;
-                GL20.glEnableVertexAttribArray(pos2Loc);
-                GL20.glVertexAttribPointer(pos2Loc, 1, GL11.GL_FLOAT, false, instanceStride, 26 * Float.BYTES);
-                GL33.glVertexAttribDivisor(pos2Loc, 1);
-
-                int norm2Loc = 13;
-                GL20.glEnableVertexAttribArray(norm2Loc);
-                GL20.glVertexAttribPointer(norm2Loc, 1, GL11.GL_FLOAT, false, instanceStride, 27 * Float.BYTES);
-                GL33.glVertexAttribDivisor(norm2Loc, 1);
-
-                int tweenLoc = 14;
-                GL20.glEnableVertexAttribArray(tweenLoc);
-                GL20.glVertexAttribPointer(tweenLoc, 1, GL11.GL_FLOAT, false, instanceStride, 28 * Float.BYTES);
-                GL33.glVertexAttribDivisor(tweenLoc, 1);
+                // Bone Base Offset (Location 10)
+                int boneOffsetLoc = 10;
+                GL20.glEnableVertexAttribArray(boneOffsetLoc);
+                GL20.glVertexAttribPointer(boneOffsetLoc, 1, GL11.GL_FLOAT, false, instanceStride, 24 * Float.BYTES);
+                GL33.glVertexAttribDivisor(boneOffsetLoc, 1);
             }
 
-            void add(int pos1, int norm1, int pos2, int norm2, float tween, Matrix4f modelMatrix,
-                    Color color, Color decalColor) {
+            void add(int boneBaseOffset, Matrix4fc modelMatrix, Color color, Color decalColor) {
                 if (count >= capacity) {
                     int newCapacity = capacity * 2;
                     FloatBuffer newBuffer = BufferUtils.createFloatBuffer(newCapacity * FLOATS_PER_INSTANCE);
@@ -235,12 +311,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 modelMatrix.get(base, buffer);
                 color.get(base + 16, buffer);
                 decalColor.get(base + 20, buffer);
-
-                buffer.put(base + 24, (float) pos1);
-                buffer.put(base + 25, (float) norm1);
-                buffer.put(base + 26, (float) pos2);
-                buffer.put(base + 27, (float) norm2);
-                buffer.put(base + 28, tween);
+                buffer.put(base + 24, (float) boneBaseOffset);
 
                 count++;
             }
@@ -275,7 +346,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         private static final Comparator<RenderBatch> COMPARATOR = Comparator
                 .comparing((RenderBatch b) -> b.key.blend)
                 .thenComparingInt(b -> b.key.texture.getHandle())
-                .thenComparingInt(b -> b.key.spriteList.getTBOTextureHandle())
+                .thenComparingInt(b -> System.identityHashCode(b.key.spriteList))
                 .thenComparingInt(b -> b.key.teamTexture != null ? b.key.teamTexture.getHandle() : 0)
                 .thenComparingInt(b -> b.key.bumpTexture != null ? b.key.bumpTexture.getHandle() : 0);
 
@@ -283,15 +354,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             this.key = key;
         }
 
-        void addInstance(int spriteIndex, int pos1, int norm1, int pos2, int norm2, float tween,
-                Matrix4f modelMatrix, Color color, Color decalColor) {
+        void addInstance(int spriteIndex, int boneBaseOffset, Matrix4fc modelMatrix, Color color,
+                Color decalColor) {
             InstanceGroup group = groups.computeIfAbsent(spriteIndex, k -> new InstanceGroup(k, key,
                     FLOATS_PER_INSTANCE));
-            group.add(pos1, norm1, pos2, norm2, tween, modelMatrix, color, decalColor);
+            group.add(boneBaseOffset, modelMatrix, color, decalColor);
         }
 
-        void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,
-                RenderState state) {
+        void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture) {
             boolean hasInstances = false;
             for (InstanceGroup group : groups.values()) {
                 if (group.count > 0) {
@@ -312,12 +382,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
             SpriteList spriteList = key.spriteList;
             Sprite representativeSprite = spriteList.getSprite(representativeGroup.spriteIndex);
-            setupTextures(context, shader, representativeSprite, whiteTexture, state);
-
-            if (state.boundTBO != spriteList.getTBOTextureHandle()) {
-                context.setTexture(5, spriteList.getTBOTextureHandle(), GL31.GL_TEXTURE_BUFFER);
-                state.boundTBO = spriteList.getTBOTextureHandle();
-            }
+            setupTextures(context, shader, representativeSprite, whiteTexture);
 
             for (InstanceGroup group : groups.values()) {
                 if (group.count > 0) {
@@ -363,7 +428,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         private void setupTextures(RenderContext context, InstancedSpriteShader shader,
-                Sprite sprite, Texture whiteTexture, RenderState state) {
+                Sprite sprite, Texture whiteTexture) {
             context.setTexture(0, key.texture);
             shader.setUniform(InstancedSpriteShader.Uniforms.TEXTURE_0, 0);
 

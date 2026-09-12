@@ -7,6 +7,7 @@ import com.oddlabs.geometry.SkeletonData;
 import com.oddlabs.geometry.SpriteInfo;
 import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.engine.resource.SpriteFile;
+import com.oddlabs.tt.engine.vbo.ByteVBO;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
@@ -16,16 +17,14 @@ import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.Arrays;
 
 /**
  * Manages a collection of 3D sprites and their associated shared OpenGL resources,
- * including index buffers, vertex attributes, and TBO textures.
+ * including index buffers, vertex attributes, and skeletal VBOs.
  */
 public final class SpriteList implements AutoCloseable {
     private static final SpriteList QUAD_INSTANCE = new SpriteList(new float[]{0, 0, 1, 0, 1, 1, 0, 1});
@@ -41,10 +40,12 @@ public final class SpriteList implements AutoCloseable {
     private final int @Nullable [] animation_length_array;
 
     private final ShortVBO indices;
-    private final FloatVBO vertices_and_normals;
+    private final FloatVBO positions;
+    private final FloatVBO normals;
     private final FloatVBO texcoords;
+    private final @Nullable ByteVBO bone_indices;
+    private final @Nullable FloatVBO bone_weights;
     private @Nullable VertexArray vao;
-    private int tboTextureHandle;
 
     public static SpriteList getQuadInstance() {
         return QUAD_INSTANCE;
@@ -74,11 +75,13 @@ public final class SpriteList implements AutoCloseable {
         float[] quad_normals = {0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1};
         short[] quad_indices = {0, 1, 2, 0, 2, 3};
 
-        FloatBuffer vertAndNormBuf = BufferUtils.createFloatBuffer(quad_vertices.length + quad_normals.length);
-        vertAndNormBuf.put(quad_vertices);
-        vertAndNormBuf.put(quad_normals);
-        vertAndNormBuf.flip();
-        this.vertices_and_normals = new FloatVBO(GL15.GL_STATIC_DRAW, vertAndNormBuf);
+        FloatBuffer posBuf = BufferUtils.createFloatBuffer(quad_vertices.length).put(quad_vertices);
+        posBuf.flip();
+        this.positions = new FloatVBO(GL15.GL_STATIC_DRAW, posBuf);
+
+        FloatBuffer normBuf = BufferUtils.createFloatBuffer(quad_normals.length).put(quad_normals);
+        normBuf.flip();
+        this.normals = new FloatVBO(GL15.GL_STATIC_DRAW, normBuf);
 
         FloatBuffer texCoordBuf = BufferUtils.createFloatBuffer(quad_texcoords.length).put(quad_texcoords);
         texCoordBuf.flip();
@@ -88,9 +91,10 @@ public final class SpriteList implements AutoCloseable {
         indexBuf.flip();
         this.indices = new ShortVBO(GL15.GL_STATIC_DRAW, indexBuf);
 
-        this.sprites = new Sprite[]{new Sprite(4, 2, 0, true)};
+        this.bone_indices = null;
+        this.bone_weights = null;
 
-        initTBO();
+        this.sprites = new Sprite[]{new Sprite(4, 2, 0, 0, 0, 0, 0, 0, true)};
     }
 
     public SpriteList(SpriteFile sprite_file) {
@@ -127,20 +131,13 @@ public final class SpriteList implements AutoCloseable {
         }
 
         ShortBuffer all_indices = BufferUtils.createShortBuffer(total_indices);
+        FloatBuffer all_positions = BufferUtils.createFloatBuffer(total_vertices * 3);
+        FloatBuffer all_normals = BufferUtils.createFloatBuffer(total_vertices * 3);
         FloatBuffer all_texcoords = BufferUtils.createFloatBuffer(total_vertices * 2);
-
-        int vert_and_normal_buffer_size = 0;
-        for (SpriteInfo sprite_info : sprite_infos) {
-            int num_vertices = sprite_info.getTexCoords().length / 2;
-            int frame_size = num_vertices * 3 * 2; // pos(3) + norm(3)
-            for (AnimationInfo animationInfo : animation_infos) {
-                int num_frames = animationInfo.getFrames().length;
-                vert_and_normal_buffer_size += num_frames * frame_size;
-            }
-        }
-
-        FloatBuffer all_vertices_and_normals = BufferUtils.createFloatBuffer(
-                vert_and_normal_buffer_size);
+        ByteBuffer all_bone_indices = this.skeleton_data != null
+                ? BufferUtils.createByteBuffer(total_vertices * 4) : null;
+        FloatBuffer all_bone_weights = this.skeleton_data != null
+                ? BufferUtils.createFloatBuffer(total_vertices * 4) : null;
 
         this.cpw_array = new float[animation_infos.length];
         type_array = new AnimationInfo.AnimationType[animation_infos.length];
@@ -152,41 +149,74 @@ public final class SpriteList implements AutoCloseable {
             animation_names[i] = animation_infos[i].getName();
             animation_length_array[i] = animation_infos[i].getFrames().length;
         }
-        sprites = Arrays.stream(sprite_infos)
-                .map(info -> new Sprite(info, animation_infos,
-                        sprite_file.hasAlpha(), sprite_file.isLighted(), sprite_file.isCulled(),
-                        sprite_file.hasModulateColor(), sprite_file.hasMaxAlpha(), sprite_file.getMipmapCutoff(),
-                        bounds, cpw_array, type_array, animation_length_array,
-                        all_indices, all_texcoords, all_vertices_and_normals)
-                ).toArray(Sprite[]::new);
+
+        sprites = new Sprite[sprite_infos.length];
+        for (int s = 0; s < sprite_infos.length; s++) {
+            SpriteInfo info = sprite_infos[s];
+            int idxOffset = all_indices.position();
+            int vertOffset = all_positions.position();
+            int normOffset = all_normals.position();
+            int texOffset = all_texcoords.position();
+            int boneIdxOffset = all_bone_indices != null ? all_bone_indices.position() : 0;
+            int boneWeightOffset = all_bone_weights != null ? all_bone_weights.position() : 0;
+
+            all_indices.put(info.getIndices());
+            all_positions.put(info.getVertices());
+            all_normals.put(info.getNormals());
+            all_texcoords.put(info.getTexCoords());
+
+            if (all_bone_indices != null && all_bone_weights != null) {
+                byte[][] skinNames = info.getSkinNames();
+                float[][] skinWeights = info.getSkinWeights();
+                int vCount = info.getTexCoords().length / 2;
+                for (int v = 0; v < vCount; v++) {
+                    byte[] bones = (skinNames != null && v < skinNames.length) ? skinNames[v] : null;
+                    float[] weights = (skinWeights != null && v < skinWeights.length) ? skinWeights[v] : null;
+                    int bLen = bones != null ? bones.length : 0;
+                    for (int i = 0; i < 4; i++) {
+                        if (i < bLen) {
+                            all_bone_indices.put(bones[i]);
+                            all_bone_weights.put(weights[i]);
+                        } else {
+                            all_bone_indices.put((byte) 0);
+                            all_bone_weights.put(0.0f);
+                        }
+                    }
+                }
+            }
+
+            sprites[s] = new Sprite(info, sprite_file.hasAlpha(), sprite_file.isLighted(),
+                    sprite_file.isCulled(), sprite_file.hasModulateColor(), sprite_file.hasMaxAlpha(),
+                    sprite_file.getMipmapCutoff(), idxOffset, texOffset, vertOffset, normOffset,
+                    boneIdxOffset, boneWeightOffset);
+        }
 
         all_indices.flip();
-        indices = new ShortVBO(GL15.GL_STATIC_DRAW, all_indices.remaining());
-        indices.put(all_indices);
+        indices = new ShortVBO(GL15.GL_STATIC_DRAW, all_indices);
+
+        all_positions.flip();
+        positions = new FloatVBO(GL15.GL_STATIC_DRAW, all_positions);
+
+        all_normals.flip();
+        normals = new FloatVBO(GL15.GL_STATIC_DRAW, all_normals);
 
         all_texcoords.flip();
-        texcoords = new FloatVBO(GL15.GL_STATIC_DRAW, all_texcoords.remaining());
-        texcoords.put(all_texcoords);
+        texcoords = new FloatVBO(GL15.GL_STATIC_DRAW, all_texcoords);
 
-        all_vertices_and_normals.flip();
-        vertices_and_normals = new FloatVBO(GL15.GL_STATIC_DRAW, all_vertices_and_normals.remaining());
-        vertices_and_normals.put(all_vertices_and_normals);
+        if (all_bone_indices != null && all_bone_weights != null) {
+            all_bone_indices.flip();
+            bone_indices = new ByteVBO(GL15.GL_STATIC_DRAW, all_bone_indices);
+
+            all_bone_weights.flip();
+            bone_weights = new FloatVBO(GL15.GL_STATIC_DRAW, all_bone_weights);
+        } else {
+            bone_indices = null;
+            bone_weights = null;
+        }
 
         for (BoundingBox bound : bounds) {
             bound.maximizeXYPlane();
         }
-
-        initTBO();
-    }
-
-    private void initTBO() {
-        tboTextureHandle = org.lwjgl.opengl.GL11.glGenTextures();
-        org.lwjgl.opengl.GL11.glBindTexture(GL31.GL_TEXTURE_BUFFER, tboTextureHandle);
-        GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGB32F, vertices_and_normals.getHandle());
-    }
-
-    int getTBOTextureHandle() {
-        return tboTextureHandle;
     }
 
     public float[] getClearColor() {
@@ -226,12 +256,28 @@ public final class SpriteList implements AutoCloseable {
         return indices;
     }
 
-    public FloatVBO getVerticesAndNormals() {
-        return vertices_and_normals;
+    public FloatVBO getPositions() {
+        return positions;
+    }
+
+    public FloatVBO getNormals() {
+        return normals;
     }
 
     public FloatVBO getTexcoords() {
         return texcoords;
+    }
+
+    public @Nullable ByteVBO getBoneIndices() {
+        return bone_indices;
+    }
+
+    public @Nullable FloatVBO getBoneWeights() {
+        return bone_weights;
+    }
+
+    public boolean isSkeletal() {
+        return skeleton_data != null && getBoneCount() > 0;
     }
 
     /**
@@ -445,16 +491,19 @@ public final class SpriteList implements AutoCloseable {
 
     @Override
     public void close() {
-        if (tboTextureHandle != 0) {
-            org.lwjgl.opengl.GL11.glDeleteTextures(tboTextureHandle);
-            tboTextureHandle = 0;
-        }
         if (vao != null) {
             vao.close();
             vao = null;
         }
         indices.close();
-        vertices_and_normals.close();
+        positions.close();
+        normals.close();
         texcoords.close();
+        if (bone_indices != null) {
+            bone_indices.close();
+        }
+        if (bone_weights != null) {
+            bone_weights.close();
+        }
     }
 }
