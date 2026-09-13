@@ -3,6 +3,7 @@ package com.oddlabs.tt.gui;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.animation.TimerAnimation;
 import com.oddlabs.tt.base.event.LocalEventQueue;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.GUIRenderer;
@@ -400,7 +401,7 @@ public final class GUIRoot extends GUIObject {
         }
 
         boolean consumed = false;
-        if (gui.getLocalInput().inDeveloperMode()) {
+        if (AppConfig.DEVELOPER_MODE) {
             if (event.consumeAction(GameAction.DEBUG_TOGGLE_LIGHT)) {
                 DebugFlags.draw_light = !DebugFlags.draw_light;
                 consumed = true;

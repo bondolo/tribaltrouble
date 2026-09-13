@@ -3,7 +3,6 @@ package com.oddlabs.tt;
 import com.oddlabs.tt.audio.AudioProvider;
 import com.oddlabs.tt.audio.AudioSettings;
 import com.oddlabs.tt.base.event.LocalEventQueue;
-import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.input.InputBindingSettings;
 import com.oddlabs.tt.base.util.Utils;
@@ -100,7 +99,7 @@ public final class Main {
                             InputManager inputManager = new InputManager(InputBindingSettings.from(settings));
                             LocalInput localInput = new LocalInput(
                                     clientEngine.getWindow(), inputManager,
-                                    eventQueue.getDeterministic(), () -> AppConfig.DEVELOPER_MODE,
+                                    eventQueue.getDeterministic(),
                                     clientEngine::shutdown,
                                     clientEngine.getFramePacer()
                             );
@@ -117,22 +116,18 @@ public final class Main {
                                     settings,
                                     clientEngine::shutdown,
                                     clientEngine::updateProgress,
-                                    () -> clientEngine.getFPS()
+                                    clientEngine::getFPS
                             );
                             gui.setMovieRecordingStarter(clientEngine::startMovieRecording);
                             gui.setCloseHandler(() -> {
                                 if (gui.getGUIRoot().isShowingModalForm(QuitForm.class)) {
                                     clientEngine.shutdown();
                                 } else {
-                                    gui.getGUIRoot().addModalForm(new QuitForm(
-                                            clientEngine::shutdown));
+                                    gui.getGUIRoot().addModalForm(new QuitForm(clientEngine::shutdown));
                                 }
                             });
-                            Runnable loadTask = gui.callWithSkin(() -> Menu.setupMainMenu(
-                                    clientEngine,
-                                    gui,
-                                    firstProgress
-                            ));
+                            Runnable loadTask = gui.callWithSkin(
+                                    () -> Menu.setupMainMenu(clientEngine, gui, firstProgress));
                             return new ClientStartup.Session(gui, loadTask);
                         }, args
                 );

@@ -273,8 +273,8 @@ public abstract class AI implements Animated {
                 MIN_SLEEP_SECONDS + SLEEP_SECONDS);
     }
 
-    protected final boolean shouldDoAction(float time) {
-        sleep_time -= time;
+    protected final boolean shouldDoAction(float dt) {
+        sleep_time -= dt;
         if (!run_ai || sleep_time >= 0)
             return false;
         reset();

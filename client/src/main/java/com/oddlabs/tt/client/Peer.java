@@ -8,6 +8,7 @@ import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.base.global.LocaleSettings;
+import com.oddlabs.tt.simulation.pathfinder.PathFinder;
 import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.gui.GUI;
@@ -257,9 +258,8 @@ public final class Peer implements AutoCloseable {
                     window.setCloseRequested(false);
                     gui.onCloseRequested();
                 }
-                framePacer.pathfindsPerTick.updateAbsolute(
-                        com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame);
-                com.oddlabs.tt.simulation.pathfinder.PathFinder.stat_pathfinder_per_frame = 0;
+                framePacer.pathfindsPerTick.updateAbsolute(PathFinder.stat_pathfinder_per_frame);
+                PathFinder.stat_pathfinder_per_frame = 0;
                 event_queue.tickLowPrecision(AnimationManager.ANIMATION_SECONDS_PER_TICK);
                 framePacer.addExecutionTime(-AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
                 framePacer.addChecksumMillisecondCounter(AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);

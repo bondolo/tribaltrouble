@@ -1,6 +1,7 @@
 package com.oddlabs.tt.gui;
 
 import com.oddlabs.event.Deterministic;
+import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.engine.render.FramePacer;
 import com.oddlabs.tt.input.InputProvider;
 import com.oddlabs.tt.input.Key;
@@ -173,7 +174,7 @@ public final class KeyboardInput {
                 // They are processed into the actions set below.
             }
 
-            if (checkMagicKey(event_key_down, event_key, localInput.inDeveloperMode(), false, repeat_event,
+            if (checkMagicKey(event_key_down, event_key, AppConfig.DEVELOPER_MODE, false, repeat_event,
                     localInput::shutdown))
                 continue;
 

@@ -24,9 +24,6 @@ import java.util.logging.Logger;
 public final class LocalInput implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(LocalInput.class.getName());
 
-    public static final int CURSOR_ONE_BIT_TRANSPARENCY = 1;
-    public static final int CURSOR_8_BIT_ALPHA = 2;
-
     private int mouse_x;
     private int mouse_y;
 
@@ -34,7 +31,6 @@ public final class LocalInput implements AutoCloseable {
     private final InputProvider<?> inputProvider;
     private final InputManager inputManager;
     private final Deterministic deterministic;
-    private final BooleanSupplier developerModeSupplier;
     private final Runnable shutdownAction;
     private final @Nullable FramePacer framePacer;
     private final KeyboardInput keyboardInput;
@@ -44,12 +40,11 @@ public final class LocalInput implements AutoCloseable {
     private final Set<Modifier> global_modifiers = EnumSet.noneOf(Modifier.class);
 
     public LocalInput(Window lwjglWindow, InputManager inputManager,
-            Deterministic deterministic, BooleanSupplier developerModeSupplier,
+            Deterministic deterministic,
             Runnable shutdownAction, @Nullable FramePacer framePacer) {
         this.window = lwjglWindow;
         this.inputManager = inputManager;
         this.deterministic = deterministic;
-        this.developerModeSupplier = developerModeSupplier;
         this.shutdownAction = shutdownAction;
         this.framePacer = framePacer;
         this.keyboardInput = new KeyboardInput(framePacer);
@@ -66,17 +61,12 @@ public final class LocalInput implements AutoCloseable {
     public LocalInput(Window lwjglWindow, InputManager inputManager,
             Deterministic deterministic, BooleanSupplier developerModeSupplier,
             Runnable shutdownAction) {
-        this(lwjglWindow, inputManager, deterministic, developerModeSupplier, shutdownAction, null);
+        this(lwjglWindow, inputManager, deterministic, shutdownAction, null);
     }
 
-    public LocalInput(Window lwjglWindow, InputManager inputManager,
-            Deterministic deterministic) {
-        this(lwjglWindow, inputManager, deterministic, () -> false, () -> {
+    public LocalInput(Window lwjglWindow, InputManager inputManager, Deterministic deterministic) {
+        this(lwjglWindow, inputManager, deterministic, () -> {
         }, null);
-    }
-
-    public boolean inDeveloperMode() {
-        return developerModeSupplier.getAsBoolean();
     }
 
     public void shutdown() {
