@@ -32,7 +32,6 @@ public final class LocalInput implements AutoCloseable {
     private final InputManager inputManager;
     private final Deterministic deterministic;
     private final Runnable shutdownAction;
-    private final @Nullable FramePacer framePacer;
     private final KeyboardInput keyboardInput;
     private final PointerInput pointerInput;
 
@@ -46,7 +45,6 @@ public final class LocalInput implements AutoCloseable {
         this.inputManager = inputManager;
         this.deterministic = deterministic;
         this.shutdownAction = shutdownAction;
-        this.framePacer = framePacer;
         this.keyboardInput = new KeyboardInput(framePacer);
         if (lwjglWindow instanceof LWJGL3Window win) {
             LWJGL3InputProvider p = new LWJGL3InputProvider(win);

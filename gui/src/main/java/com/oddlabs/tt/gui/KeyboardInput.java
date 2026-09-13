@@ -36,10 +36,6 @@ public final class KeyboardInput {
         this.framePacer = framePacer;
     }
 
-    public KeyboardInput() {
-        this(null);
-    }
-
     public void reset(InputProvider<?> input) {
         while (input != null && input.nextKeyboardEvent())
             ;
@@ -78,21 +74,15 @@ public final class KeyboardInput {
         if (event_key_down && (keys_enabled || playback)) {
             // check for special events that shouldn't generate events
             switch (event_key) {
-                case RIGHT -> {
+                case RIGHT, UP, PAGE_UP -> {
                     if (framePacer != null) {
-                        framePacer.warpTime(LITTLE_WARP);
-                    }
-                    return true;
-                }
-                case UP -> {
-                    if (framePacer != null) {
-                        framePacer.warpTime(MEDIUM_WARP);
-                    }
-                    return true;
-                }
-                case PAGE_UP -> {
-                    if (framePacer != null) {
-                        framePacer.warpTime(LARGE_WARP);
+                        var amount = switch(event_key) {
+                            case RIGHT -> LITTLE_WARP;
+                            case UP -> MEDIUM_WARP;
+                            case PAGE_UP -> LARGE_WARP;
+                            default -> 0;
+                        };
+                        framePacer.warpTime(amount);
                     }
                     return true;
                 }
