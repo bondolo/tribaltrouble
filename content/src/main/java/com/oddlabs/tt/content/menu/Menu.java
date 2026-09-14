@@ -37,7 +37,7 @@ import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.engine.settings.AccessibilitySettings;
 import com.oddlabs.tt.client.resource.AudioRegistry;
-import com.oddlabs.tt.client.render.IslandGenerator;
+import com.oddlabs.tt.procedural.IslandGenerator;
 import com.oddlabs.tt.engine.resource.WorldInfo;
 import com.oddlabs.tt.gui.FocusDirection;
 import com.oddlabs.tt.gui.Form;

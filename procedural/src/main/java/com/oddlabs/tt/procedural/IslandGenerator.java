@@ -1,12 +1,9 @@
-package com.oddlabs.tt.client.render;
+package com.oddlabs.tt.procedural;
 
-import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.util.ProgressListener;
-import com.oddlabs.tt.procedural.GeneratedLandscapeData;
-import com.oddlabs.tt.procedural.Landscape;
-import com.oddlabs.tt.procedural.LandscapeConfig;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
+import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.time.Duration;
@@ -24,17 +21,13 @@ public final class IslandGenerator implements WorldGenerator<GeneratedLandscapeD
     private static final int IDEAL_TEXELS_PER_DETAIL = 256;
     private static final float IDEAL_DETAIL_ALPHA = .15f;
 
-    private final IslandConfig config;
+    private final @NonNull IslandConfig config;
 
-    public IslandGenerator(IslandConfig config) {
-        this(config, AppConfig.DEFAULT_TEXELS_PER_GRID_UNIT);
-    }
-
-    public IslandGenerator(IslandConfig config, int texels_per_grid_unit) {
+    public IslandGenerator(@NonNull IslandConfig config) {
         this.config = config;
     }
 
-    public IslandConfig getConfig() {
+    public @NonNull IslandConfig getConfig() {
         return config;
     }
 
