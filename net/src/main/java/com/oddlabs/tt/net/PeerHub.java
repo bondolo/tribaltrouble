@@ -51,7 +51,8 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     private static final int TICKS_PER_STATUS_UPDATE = (int) (20 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
     private static final int TICKS_PER_CHECKSUM = (int) (10 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
 
-    private static boolean waiting_for_ack = false;
+    public static final ScopedValue<PeerHub> CURRENT = ScopedValue.newInstance();
+    private boolean waiting_for_ack;
 
     private final ARMIInterfaceMethods interface_methods = new ARMIInterfaceMethods(PeerHubInterface.class);
     private final StateChecksum checksum = new StateChecksum();
@@ -85,12 +86,33 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
             @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
             StallHandler stall_handler) {
+        this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
+                beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
+                stall_handler, null, -1, false);
+    }
+
+    public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
+            Player local_player, PlayerSlot[] player_slots, NetworkSelector network,
+            @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
+            @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
+            StallHandler stall_handler, @Nullable String router_address, int router_port) {
+        this(manager, is_multiplayer, is_rated, local_player, player_slots, network,
+                beacon_listener, matchmaking_client, chat_hub, distributable_table, session_id,
+                stall_handler, router_address, router_port, false);
+    }
+
+    public PeerHub(AnimationManager manager, boolean is_multiplayer, boolean is_rated,
+            Player local_player, PlayerSlot[] player_slots, NetworkSelector network,
+            @Nullable BeaconListener beacon_listener, @Nullable MatchmakingClient matchmaking_client,
+            @Nullable ChatHub chat_hub, DistributableTable distributable_table, SessionID session_id,
+            StallHandler stall_handler, @Nullable String router_address, int router_port,
+            boolean allow_ai_peers) {
         this.stall_handler = stall_handler;
         this.is_rated = is_rated;
         this.local_player = local_player;
         this.network = network;
         if (matchmaking_client != null) {
-            matchmaking_client.setGameWonAckListener(PeerHub::receivedAck);
+            matchmaking_client.setGameWonAckListener(this::receivedAck);
         }
         this.beacon_listener = beacon_listener;
         this.matchmaking_client = matchmaking_client;
@@ -102,7 +124,11 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         List<Peer> peer_index_to_peer_list = new ArrayList<>();
         List<Player> players = local_player.getWorld().getPlayers();
         int local_peer_index = -1;
-        if (!is_multiplayer) {
+        if (router_port > 0) {
+            this.router = null;
+            String host = router_address != null ? router_address : ROUTER_ADDRESS;
+            this.router_client = new RouterClient(network, host, router_port, this);
+        } else if (!is_multiplayer) {
             this.router = new Router(network, com.oddlabs.util.Utils.getLoopbackAddress(), 0, Logger
                     .getAnonymousLogger(), (IOException e) -> {
                         throw new IllegalStateException("Local router failed", e);
@@ -114,7 +140,9 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         }
         for (short i = 0; i < players.size(); i++) {
             Player player = players.get(i);
-            if (player_slots[i].getType() != PlayerSlot.HUMAN) {
+            boolean is_peer = player_slots[i].getType() == PlayerSlot.HUMAN ||
+                    (allow_ai_peers && player_slots[i].getType() == PlayerSlot.AI);
+            if (!is_peer) {
                 nonhuman_players.add(player);
                 continue;
             }
@@ -222,6 +250,10 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         is_synchronized = true;
     }
 
+    public boolean isSynchronized() {
+        return is_synchronized;
+    }
+
     private Peer locatePeerFromPlayer(Player player) {
         return player_to_peer.get(player);
     }
@@ -252,6 +284,10 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
 
     @Override
     public void animate(float dt) {
+        ScopedValue.where(CURRENT, this).run(() -> doAnimate(dt));
+    }
+
+    private void doAnimate(float dt) {
         if (router != null)
             router.process();
         int server_tick = millisToTick(server_millis);
@@ -453,11 +489,11 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         }
     }
 
-    public static void receivedAck() {
+    public void receivedAck() {
         waiting_for_ack = false;
     }
 
     public static boolean isWaitingForAck() {
-        return waiting_for_ack;
+        return CURRENT.isBound() && CURRENT.get().waiting_for_ack;
     }
 }

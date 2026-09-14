@@ -373,7 +373,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     @Override
     public void animate(float dt) {
-        animation_manager_local.runAnimations(dt);
+        ScopedValue.where(PeerHub.CURRENT, peerhub).run(() -> animation_manager_local.runAnimations(dt));
     }
 
     @Override

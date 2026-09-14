@@ -35,6 +35,12 @@ public final class RouterClient implements ConnectionInterface {
         this.game_interface = (GameInterface) ARMIEvent.createProxy(connection, GameInterface.class);
     }
 
+    public RouterClient(NetworkSelector network, String address, int port, RouterHandler router_handler) {
+        this.router_handler = router_handler;
+        this.connection = new Connection(network, address, port, this);
+        this.game_interface = (GameInterface) ARMIEvent.createProxy(connection, GameInterface.class);
+    }
+
     public void connect(SessionID session_id, SessionInfo session_info, int client_id) {
         RouterInterface router_interface = (RouterInterface) ARMIEvent.createProxy(connection, RouterInterface.class);
         router_interface.login(session_id, session_info, client_id);
