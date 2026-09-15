@@ -205,7 +205,7 @@ public final class World implements SimulationClock {
         return unit_grid;
     }
 
-    public @Nullable SupplyManager getSupplyManager(SupplyType type) {
+    public SupplyManager getSupplyManager(SupplyType type) {
         return supply_managers.getSupplyManager(type);
     }
 

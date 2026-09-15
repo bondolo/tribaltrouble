@@ -25,7 +25,7 @@ public class SupplyManagers {
         supply_managers = map;
     }
 
-    public final @Nullable SupplyManager getSupplyManager(SupplyType type) {
+    public final SupplyManager getSupplyManager(SupplyType type) {
         return supply_managers.get(type);
     }
 }
