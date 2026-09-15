@@ -323,11 +323,11 @@ public abstract class Emitter<P extends Particle> implements Animated {
     }
 
     /**
-     * Core spawning loop. Should be called in {@link #animate(float t)}.
+     * Core spawning loop. Should be called in {@link #animate(float dt)}.
      */
-    protected final void updateSpawning(float t) {
+    protected final void updateSpawning(float dt) {
         if (started)
-            particle_counter += particles_per_second * t;
+            particle_counter += particles_per_second * dt;
 
         while (particle_counter >= 1 && (remaining_particles == -1 || remaining_particles != 0) && started) {
             int initiated = initParticles(1);

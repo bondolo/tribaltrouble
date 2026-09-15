@@ -43,9 +43,9 @@ public final class MenuCamera extends Camera {
     }
 
     @Override
-    public void doAnimate(float t) {
-        updatePos(t);
-        world.tick(t);
-        manager.runAnimations(t);
+    public void doAnimate(float dt) {
+        updatePos(dt);
+        world.tick(dt);
+        manager.runAnimations(dt);
     }
 }

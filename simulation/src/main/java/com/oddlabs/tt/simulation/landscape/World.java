@@ -136,10 +136,10 @@ public final class World implements SimulationClock {
         }
     }
 
-    public void tick(float t) {
-        getAnimationManagerGameTime().runAnimations(getSecondsPerTick() * t
+    public void tick(float dt) {
+        getAnimationManagerGameTime().runAnimations(getSecondsPerTick() * dt
                 / AnimationManager.ANIMATION_SECONDS_PER_TICK);
-        getAnimationManagerRealTime().runAnimations(t/*AnimationManager.ANIMATION_SECONDS_PER_TICK*/);
+        getAnimationManagerRealTime().runAnimations(dt/*AnimationManager.ANIMATION_SECONDS_PER_TICK*/);
     }
 
     @Override
@@ -280,7 +280,7 @@ public final class World implements SimulationClock {
     }
 
     /**
-     * Updates the player colors of all players in this world.
+     * Updates the player colours of all players in this world.
      *
      * @param playerColors the array of linear player colors
      */

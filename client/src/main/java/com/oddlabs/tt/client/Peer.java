@@ -7,7 +7,7 @@ import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
-import com.oddlabs.tt.base.global.LocaleSettings;
+import com.oddlabs.tt.gui.LocaleSettings;
 import com.oddlabs.tt.simulation.pathfinder.PathFinder;
 import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.tt.engine.render.DebugFlags;

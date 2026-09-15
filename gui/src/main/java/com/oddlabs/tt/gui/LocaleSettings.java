@@ -1,4 +1,8 @@
-package com.oddlabs.tt.base.global;
+package com.oddlabs.tt.gui;
+
+import com.oddlabs.tt.base.global.PropertiesSerializer;
+import com.oddlabs.tt.base.global.SettingsHelper;
+import com.oddlabs.tt.base.global.SettingsRegistry;
 
 import java.io.Serial;
 import java.io.Serializable;

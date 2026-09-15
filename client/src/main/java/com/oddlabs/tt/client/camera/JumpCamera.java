@@ -64,7 +64,7 @@ public final class JumpCamera extends Camera {
     }
 
     @Override
-    public void doAnimate(float t) {
+    public void doAnimate(float dt) {
         if (seconds <= 0f) {
             getState().setTargetX(dst_x);
             getState().setTargetY(dst_y);
@@ -72,12 +72,12 @@ public final class JumpCamera extends Camera {
             delegate.pop();
             return;
         }
-        seconds -= t;
-        getState().setTargetX(getState().getTargetX() + dx * factor * t);
-        getState().setTargetY(getState().getTargetY() + dy * factor * t);
-        temp_z += z_speed * t;
+        seconds -= dt;
+        getState().setTargetX(getState().getTargetX() + dx * factor * dt);
+        getState().setTargetY(getState().getTargetY() + dy * factor * dt);
+        temp_z += z_speed * dt;
         getState().setTargetZ(temp_z);
-        z_speed += z_accel * t;
+        z_speed += z_accel * dt;
         bounce(getState().getTargetX(), getState().getTargetY(), getState().getTargetZ(), delegate.getGUIRoot()
                 .getWidth(), delegate.getGUIRoot().getHeight());
     }

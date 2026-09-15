@@ -9,6 +9,6 @@ public class StaticCamera extends Camera {
     }
 
     @Override
-    public void doAnimate(float t) {
+    public void doAnimate(float dt) {
     }
 }

@@ -76,9 +76,10 @@ public final class MapCamera extends Camera {
     }
 
     @Override
-    public void doAnimate(float t) {
+    public void doAnimate(float dt) {
         float mapmodeDelay = CameraSettings.from(delegate.getGUIRoot().getGUI().getSettings()).mapmode_delay;
-        float factor = t * 1000f / Math.max(t * 1000f, mapmodeDelay
+        float factor = dt * 1000f / Math.max(
+                dt * 1000f, mapmodeDelay
                 * MAP_TIME_FACTOR);
         float dx;
         float dy;
@@ -111,7 +112,7 @@ public final class MapCamera extends Camera {
                 : 1f;
 
         // Base organic fog pulse (sum of sines for non-predictable period)
-        fogTime += t;
+        fogTime += dt;
         float pulse = (float) (Math.sin(fogTime * 0.4125f) * 0.5 +
                 Math.sin(fogTime * 0.8625f) * 0.3 +
                 Math.sin(fogTime * 1.7625f) * 0.2);

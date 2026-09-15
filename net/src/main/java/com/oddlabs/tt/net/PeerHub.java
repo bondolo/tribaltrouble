@@ -160,8 +160,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
             peer_to_player.put(peer, player);
             player_to_peer.put(player, peer);
         }
-        this.peer_index_to_peer = new Peer[peer_index_to_peer_list.size()];
-        peer_index_to_peer_list.toArray(peer_index_to_peer);
+        this.peer_index_to_peer = peer_index_to_peer_list.toArray(Peer[]::new);
         this.num_participants = peer_index_to_peer.length;
         ARMIEventWriter game_router_handler = router_client.getInterface()::relayGameStateEvent;
         this.player_interface = (PlayerInterface) ARMIEvent.createProxy(game_router_handler, new GameArgumentWriter(
@@ -308,7 +307,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         return local_player.getWorld().getTick();
     }
 
-    private void doTick(float t) {
+    private void doTick(float dt) {
         stall_handler.stopStall();
         if (getFreeQuitTicksLeft(local_player.getWorld()) == 0 && matchmaking_client != null && matchmaking_client
                 .isConnected())
@@ -326,7 +325,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
                 }
             }
         }
-        local_player.getWorld().tick(t);
+        local_player.getWorld().tick(dt);
         if (getTick() % TICKS_PER_CHECKSUM == 0)
             sendChecksum();
     }

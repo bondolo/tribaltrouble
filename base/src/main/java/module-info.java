@@ -11,7 +11,4 @@ module com.oddlabs.tt.base {
     exports com.oddlabs.tt.base.util;
 
     uses com.oddlabs.tt.base.global.PropertiesSerializer;
-
-    provides com.oddlabs.tt.base.global.PropertiesSerializer with
-            com.oddlabs.tt.base.global.LocaleSettings;
 }

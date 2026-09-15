@@ -292,11 +292,11 @@ public final class GameCamera extends Camera {
     }
 
     @Override
-    public void doAnimate(float t) {
-        doZoom(t);
-        doScroll(t);
-        doPitch(t);
-        doRotate(t);
+    public void doAnimate(float dt) {
+        doZoom(dt);
+        doScroll(dt);
+        doPitch(dt);
+        doRotate(dt);
         updateDirection();
     }
 

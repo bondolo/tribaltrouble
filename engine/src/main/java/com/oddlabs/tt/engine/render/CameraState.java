@@ -116,16 +116,16 @@ public final class CameraState {
         return fog;
     }
 
-    public void animate(float delta_t, float smoothness_factor) {
-        camera_x = animateValue(delta_t, camera_x, target_camera_x, smoothness_factor);
-        camera_y = animateValue(delta_t, camera_y, target_camera_y, smoothness_factor);
-        camera_z = animateValue(delta_t, camera_z, target_camera_z, smoothness_factor);
-        vert_angle = animateValue(delta_t, vert_angle, target_vert_angle, smoothness_factor);
-        horiz_angle = animateValue(delta_t, horiz_angle, target_horiz_angle, smoothness_factor);
+    public void animate(float dt, float smoothness_factor) {
+        camera_x = animateValue(dt, camera_x, target_camera_x, smoothness_factor);
+        camera_y = animateValue(dt, camera_y, target_camera_y, smoothness_factor);
+        camera_z = animateValue(dt, camera_z, target_camera_z, smoothness_factor);
+        vert_angle = animateValue(dt, vert_angle, target_vert_angle, smoothness_factor);
+        horiz_angle = animateValue(dt, horiz_angle, target_horiz_angle, smoothness_factor);
     }
 
-    private float animateValue(float delta_t, float current, float target, float smoothness_factor) {
-        return current + (target - current) * Math.min(delta_t * smoothness_factor, 1f);
+    private float animateValue(float dt, float current, float target, float smoothness_factor) {
+        return current + (target - current) * Math.min(dt * smoothness_factor, 1f);
     }
 
     public void setTargetZ(float z) {

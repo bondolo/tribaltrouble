@@ -1,4 +1,4 @@
-package com.oddlabs.tt.base.global;
+package com.oddlabs.tt.gui;
 
 import org.junit.jupiter.api.Test;
 

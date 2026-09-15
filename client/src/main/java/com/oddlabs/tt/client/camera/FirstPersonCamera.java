@@ -25,7 +25,7 @@ public final class FirstPersonCamera extends Camera {
     }
 
     @Override
-    public void doAnimate(float t) {
+    public void doAnimate(float dt) {
         float dir_x = (float) Math.cos(getState().getTargetHorizAngle());
         float dir_y = (float) Math.sin(getState().getTargetHorizAngle());
         float left_dir_x = -dir_y;
@@ -45,7 +45,7 @@ public final class FirstPersonCamera extends Camera {
         else if (inputManager.isActive(GameAction.CAMERA_PAN_UP) && !inputManager.isActive(GameAction.CAMERA_PAN_DOWN))
             scrolling_y = 1f;
 
-        float scroll_factor = getState().getTargetZ() * t;
+        float scroll_factor = getState().getTargetZ() * dt;
         float new_x = getState().getTargetX() - (scrolling_x * left_dir_x + scrolling_y * -left_dir_y) * scroll_factor;
         float new_y = getState().getTargetY() - (scrolling_x * left_dir_y + scrolling_y * left_dir_x) * scroll_factor;
 

@@ -74,7 +74,7 @@ public abstract class Camera implements Animated {
         state.animate(dt, smoothness_factor);
     }
 
-    protected abstract void doAnimate(float delta_t);
+    protected abstract void doAnimate(float dt);
 
     protected final void checkPosition() {
         assert landscapeEnvironment != null;

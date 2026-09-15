@@ -3,7 +3,6 @@ package com.oddlabs.tt.procedural;
 import com.oddlabs.tt.base.util.ProgressListener;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
-import org.jspecify.annotations.NonNull;
 
 import java.io.Serial;
 import java.time.Duration;
@@ -21,13 +20,13 @@ public final class IslandGenerator implements WorldGenerator<GeneratedLandscapeD
     private static final int IDEAL_TEXELS_PER_DETAIL = 256;
     private static final float IDEAL_DETAIL_ALPHA = .15f;
 
-    private final @NonNull IslandConfig config;
+    private final IslandConfig config;
 
-    public IslandGenerator(@NonNull IslandConfig config) {
+    public IslandGenerator(IslandConfig config) {
         this.config = config;
     }
 
-    public @NonNull IslandConfig getConfig() {
+    public IslandConfig getConfig() {
         return config;
     }
 

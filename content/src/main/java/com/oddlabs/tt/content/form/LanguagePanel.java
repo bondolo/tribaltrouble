@@ -13,7 +13,7 @@ import com.oddlabs.tt.gui.Panel;
 import com.oddlabs.tt.gui.Row;
 import com.oddlabs.tt.gui.Skin;
 import com.oddlabs.tt.gui.event.RowListener;
-import com.oddlabs.tt.base.global.LocaleSettings;
+import com.oddlabs.tt.gui.LocaleSettings;
 import com.oddlabs.tt.client.Peer;
 
 import java.util.List;

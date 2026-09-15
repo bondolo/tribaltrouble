@@ -127,10 +127,6 @@ public abstract class Menu extends CameraDelegate<Camera> {
         return engine.getNetwork().getSelector();
     }
 
-    public final AudioManager getAudioManager() {
-        return engine.getAudioManager();
-    }
-
     private void init() {
         clearChildren();
         int screen_width = getGUIRoot().getWidth();

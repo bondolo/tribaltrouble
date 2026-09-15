@@ -50,10 +50,6 @@ public final class RaceData {
 
     private final EnumMap<Race, RaceInfo> raceInfos;
 
-    public static boolean isValidRace(int race) {
-        return race >= 0 && race < Race.values().length;
-    }
-
     public static String getRaceName(Race race) {
         return switch (race) {
             case NATIVES -> i18n("natives");
