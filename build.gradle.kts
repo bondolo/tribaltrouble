@@ -37,8 +37,8 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_26
-        targetCompatibility = JavaVersion.VERSION_26
+        sourceCompatibility = JavaVersion.VERSION_27
+        targetCompatibility = JavaVersion.VERSION_27
         modularity.inferModulePath.set(true)
     }
 
