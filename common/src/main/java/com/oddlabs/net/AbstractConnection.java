@@ -9,7 +9,7 @@ import java.util.List;
 public abstract class AbstractConnection implements ARMIEventWriter {
     private final List<ARMIEvent> event_backlog = new ArrayList<>();
     private @Nullable ConnectionInterface connection_interface;
-    private IOException error_flag;
+    private @Nullable IOException error_flag;
     private boolean connected_flag;
     private boolean connected_signaled;
 

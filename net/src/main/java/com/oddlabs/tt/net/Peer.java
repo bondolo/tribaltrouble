@@ -35,7 +35,7 @@ public final class Peer implements PeerHubInterface {
 
     @Override
     public String toString() {
-        return "player: " + player.toString();
+        return "player: " + player;
     }
 
     public void addEvent(int tick, ARMIEvent event) {
