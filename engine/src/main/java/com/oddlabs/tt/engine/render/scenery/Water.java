@@ -1,6 +1,9 @@
 package com.oddlabs.tt.engine.render.scenery;
 
-import com.oddlabs.tt.engine.procedural.GeneratorOcean;
+import com.oddlabs.procedural.Channel;
+import com.oddlabs.procedural.Layer;
+import com.oddlabs.tt.engine.image.GLImage;
+import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.HeightMapVisual;
@@ -15,7 +18,10 @@ import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
-import com.oddlabs.tt.procedural.LandscapeConfig;
+import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
+import com.oddlabs.tt.procedural.noise.Midpoint;
+import com.oddlabs.tt.procedural.noise.Perlin;
+import com.oddlabs.tt.procedural.noise.Voronoi;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.model.Terrain;
@@ -31,6 +37,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 /**
  * Water surface renderer for oceans and inland water.
@@ -49,6 +56,8 @@ public final class Water implements AutoCloseable {
     private static final float VIKING_MIN_ALPHA = 0.35f;
     /** Maximum alpha (transparency) of Viking water in deep ocean. */
     private static final float VIKING_MAX_ALPHA = 0.60f;
+
+    private static final int OCEAN_TEXTURE_SIZE = 512;
 
     public static final int WAVE_COUNT = 3;
     public static final float WAVE_AMPLITUDE_BASE = 0.15f;
@@ -154,7 +163,7 @@ public final class Water implements AutoCloseable {
             case VIKING -> VIKING_WAVE_SPEED;
             case NATIVE -> NATIVE_WAVE_SPEED;
         };
-        ocean = Resources.findResource(new GeneratorOcean(terrain));
+        this.ocean = Resources.findResource(new OceanTextures(terrain));
 
         this.sky = sky;
         this.modelViewStack = modelViewStack;
@@ -465,6 +474,71 @@ public final class Water implements AutoCloseable {
         buffer.putFloat(LandscapeConfig.WATER_REPEAT_RATE);
         buffer.putFloat(LandscapeConfig.WATER_DETAIL_REPEAT_RATE);
         buffer.putFloat(0f); // _pad2
+    }
+
+    private record OceanTextures(Terrain terrain) implements Supplier<Texture[]> {
+        @Override
+        public Texture[] get() {
+            int seed = LandscapeConfig.LANDSCAPE_SEED + 1;
+
+            // water1
+            Channel perlin2 = new Perlin(OCEAN_TEXTURE_SIZE, OCEAN_TEXTURE_SIZE, 4, 4, 0.5f, 1, seed,
+                    Perlin.Interpolation.CUBIC, Perlin.Summation.NORMAL).toChannel();
+            Channel perlin4 = new Perlin(OCEAN_TEXTURE_SIZE, OCEAN_TEXTURE_SIZE, 4, 4, 0.5f, 3, seed,
+                    Perlin.Interpolation.CUBIC, Perlin.Summation.NORMAL).toChannel();
+            Channel perlin32 = new Perlin(OCEAN_TEXTURE_SIZE, OCEAN_TEXTURE_SIZE, 32, 32, 0.5f, 2, seed,
+                    Perlin.Interpolation.CUBIC, Perlin.Summation.NORMAL).toChannel();
+            Channel perlin64 = new Perlin(OCEAN_TEXTURE_SIZE, OCEAN_TEXTURE_SIZE, 64, 64, 0.5f, 2, seed,
+                    Perlin.Interpolation.CUBIC, Perlin.Summation.NORMAL).toChannel();
+            Channel noise32 = perlin32.copy().abs().dynamicRange().gamma8().gamma2().invert().perturb(
+                    perlin4.copy().rotate(90), 0.05f).perturb(perlin2, 0.05f);
+            Channel noise64 = perlin64.copy().abs().dynamicRange().gamma2().invert().channelMultiply(
+                    perlin32.copy().rotate(90).contrast(2f)).perturb(perlin4.copy().rotate(180), 0.05f).perturb(
+                            perlin2.copy().rotate(90), 0.05f);
+            Channel highlight = noise32.channelBrightest(noise64);
+            Layer water1 = new Layer(new Channel(OCEAN_TEXTURE_SIZE, OCEAN_TEXTURE_SIZE),
+                    perlin4.copy().dynamicRange(0.5f, 0.8f).rotate(180),
+                    perlin4.copy().rotate(270).dynamicRange(0.6f, 0.9f));
+            water1.layerAdd(highlight.multiply(0.2f).toLayer());
+            water1.addAlpha();
+            water1.a.fill(0.5f);
+            if (terrain == Terrain.VIKING) {
+                water1.multiply(0.4f);
+                water1.a.addClip(0.1f);
+            }
+
+            // water2
+            Channel voronoi12 = new Voronoi(OCEAN_TEXTURE_SIZE, 12, 12, 1, 1f, seed).getDistance(1f, 0f, 0f);
+            Channel voronoi24 = new Voronoi(OCEAN_TEXTURE_SIZE, 24, 24, 1, 1f, seed).getDistance(1f, 0f, 0f);
+            Channel perturb = new Midpoint(OCEAN_TEXTURE_SIZE, 4, 0.4f, 42).toChannel();
+            voronoi12.channelAverage(voronoi24);
+            voronoi12.perturb(perturb, 0.025f);
+            Layer water2 = new Layer(voronoi12.copy(), voronoi12.copy(), voronoi12.copy(),
+                    voronoi12.copy().gamma(1.5f));
+            water2.bump(voronoi12, 3.5f, 0f, 0.5f, 0.5f, 0.8f, 1f, 0f, 0f, 0f);
+
+            switch (terrain) {
+                case NATIVE -> {
+                    water2.r.dynamicRange(0f, 0.4f);
+                    water2.g.dynamicRange(0.6f, 1f);
+                    water2.b.dynamicRange(0.9f, 1f);
+                }
+                case VIKING -> {
+                    water2.r.dynamicRange(0.5f, 1f);
+                    water2.g.dynamicRange(0.7f, 1f);
+                    water2.b.dynamicRange(0.8f, 1f);
+                    water2.a.gamma(0.5f).dynamicRange(0f, 0.2f);
+                }
+                default -> throw new IllegalArgumentException("Illegal terrain: " + terrain);
+            }
+
+            Texture[] textures = new Texture[2];
+            textures[0] = new Texture(new GLImage[]{new GLIntImage(water1)}, GL11.GL_RGBA8,
+                    GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+            textures[1] = new Texture(new GLImage[]{new GLIntImage(water2)}, GL11.GL_RGBA8,
+                    GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT);
+            return textures;
+        }
     }
 
     @Override

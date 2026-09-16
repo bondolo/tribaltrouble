@@ -1,39 +1,23 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
 import com.oddlabs.tt.engine.image.GLIntImage;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.resource.TextureGenerator;
-import com.oddlabs.tt.procedural.Gradient;
-import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.image.LightningProcedural;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Procedural texture generator for lightning strike bolt effects.
  */
 public final class GeneratorLightning extends TextureGenerator {
-    private static final int TEXTURE_SIZE = 128;
-
     @Override
     public Texture[] generate() {
-        Channel gradient = new Gradient(TEXTURE_SIZE, TEXTURE_SIZE, new float[][]{{0f, 0f}, {.47f, .25f}, {.5f, 1f}, {
-                .53f, .25f},
-                {1f, 0f}}, Gradient.Orientation.HORIZONTAL, Gradient.Interpolation.SMOOTH).toChannel();
-        Layer layer = new Layer(new Channel(TEXTURE_SIZE, TEXTURE_SIZE).fill(1f), new Channel(TEXTURE_SIZE,
-                TEXTURE_SIZE).fill(1f), gradient
-                        .copy(), gradient.copy());
+        Layer layer = LightningProcedural.generate();
         GLIntImage img = new GLIntImage(layer);
-
-        if (Landscape.DEBUG) img.saveAsPNG("generator_lightning");
         return new Texture[]{
                 new Texture(img, GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR,
                         GL11.GL_REPEAT, GL11.GL_REPEAT),
         };
-    }
-
-    @Override
-    public int hashCode() {
-        return TEXTURE_SIZE + 3346;
     }
 }

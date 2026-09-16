@@ -16,4 +16,5 @@ module com.oddlabs.tt {
     requires org.lwjgl.sdl;
 
     uses com.oddlabs.tt.base.global.PropertiesSerializer;
+    uses com.oddlabs.tt.engine.resource.TextureGenerator;
 }

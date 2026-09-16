@@ -2,13 +2,10 @@ package com.oddlabs.tt.engine.render;
 
 
 import com.oddlabs.geometry.SpriteInfo;
-import com.oddlabs.tt.engine.procedural.GeneratorRespond;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.resource.TextureFile;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
 import org.jspecify.annotations.Nullable;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.function.Supplier;
 
 /**
  * Represents a single 3D animated sprite, including its textures, vertex data, and animation offsets.
@@ -27,7 +24,6 @@ public final class Sprite {
     public final boolean lighted;
     public final boolean culled;
     public final boolean modulate_color;
-    public final @Nullable Texture respond_texture;
     public final int indices_offset;
     public final int texcoords_offset;
     public final int vertices_offset;
@@ -55,7 +51,6 @@ public final class Sprite {
         this.lighted = false;
         this.culled = false;
         this.modulate_color = modulate_color;
-        this.respond_texture = null;
     }
 
     public Sprite(SpriteInfo sprite_info, boolean alpha, boolean lighted, boolean culled,
@@ -95,7 +90,6 @@ public final class Sprite {
                             max_alpha)[0]
                     : null;
         }
-        this.respond_texture = Resources.findResource(new GeneratorRespond())[0];
     }
 
     public boolean modulateColor() {
@@ -109,27 +103,12 @@ public final class Sprite {
     private static Texture[] getTextureForName(String texture_name, TextureFile.Format color_format,
             int mipmap_cutoff, boolean max_alpha) {
         if (texture_name.startsWith(GENERATOR_STRING)) {
-            String generator_class_name = texture_name.substring(GENERATOR_STRING.length());
-            try {
-                Class<?> generator_class;
-                try {
-                    generator_class = Class.forName(generator_class_name);
-                } catch (ClassNotFoundException e) {
-                    if (generator_class_name.startsWith("com.oddlabs.tt.procedural.")) {
-                        String fallback_class_name = "com.oddlabs.tt.engine.procedural."
-                                + generator_class_name.substring("com.oddlabs.tt.procedural.".length());
-                        generator_class = Class.forName(fallback_class_name);
-                    } else {
-                        throw e;
-                    }
-                }
-                @SuppressWarnings("unchecked") Supplier<Texture[]> descriptor = (Supplier<Texture[]>) generator_class
-                        .getDeclaredConstructor().newInstance();
-                return Resources.findResource(descriptor);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
-                     | InvocationTargetException e) {
-                throw new IllegalStateException("Failed to instantiate texture generator: " + generator_class_name, e);
+            String generator_name = texture_name.substring(GENERATOR_STRING.length());
+            TextureGenerator generator = TextureGenerator.findNamed(generator_name);
+            if (generator != null) {
+                return Resources.findResource(generator);
             }
+            throw new IllegalStateException("Unknown texture generator: " + generator_name);
         } else {
             String lowerName = texture_name.toLowerCase();
             boolean clampEdges = lowerName.contains("leaf") || lowerName.contains("plant") || lowerName.contains(

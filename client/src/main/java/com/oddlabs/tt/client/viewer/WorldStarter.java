@@ -7,7 +7,7 @@ import com.oddlabs.tt.base.util.LoadCallback;
 import com.oddlabs.tt.client.Peer;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.gui.render.UIRenderer;
-import com.oddlabs.tt.procedural.GeneratedLandscapeData;
+import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
 import com.oddlabs.tt.simulation.player.Player;

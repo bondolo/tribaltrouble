@@ -29,4 +29,10 @@ module com.oddlabs.tt.engine {
     provides com.oddlabs.tt.base.global.PropertiesSerializer with
             com.oddlabs.tt.engine.settings.AccessibilitySettings,
             com.oddlabs.tt.engine.settings.GraphicsSettings;
+
+    uses com.oddlabs.tt.engine.resource.TextureGenerator;
+
+    provides com.oddlabs.tt.engine.resource.TextureGenerator with
+            com.oddlabs.tt.engine.procedural.GeneratorRock,
+            com.oddlabs.tt.engine.procedural.GeneratorIron;
 }

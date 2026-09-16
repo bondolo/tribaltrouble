@@ -1,6 +1,7 @@
 package com.oddlabs.tt.engine.render.scenery;
 
-import com.oddlabs.tt.engine.procedural.GeneratorClouds;
+import com.oddlabs.procedural.Channel;
+import com.oddlabs.tt.engine.image.GLByteImage;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.MatrixStack;
@@ -13,13 +14,13 @@ import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.resource.Resources;
-import com.oddlabs.tt.engine.resource.TextureGenerator;
 import com.oddlabs.tt.engine.util.Stitcher;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.ShortVBO;
 import com.oddlabs.tt.engine.vbo.VBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
-import com.oddlabs.tt.procedural.LandscapeConfig;
+import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
+import com.oddlabs.tt.procedural.noise.Midpoint;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.simulation.model.Terrain;
@@ -28,6 +29,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
@@ -37,6 +39,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -49,6 +52,9 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private static final int SKYDOME_GRADIENT_LENGTH = 20;
     private static final int SKYDOME_DEFAULT_COLOR = 8;
     private static final int FLOATS_PER_VERTEX = 13;
+    private static final int CLOUD_TEXTURE_SIZE = 512;
+    private static final int CLOUD_INNER = 0;
+    private static final int CLOUD_OUTER = 1;
 
     private static final Map<Terrain, Color> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
             Terrain.NATIVE, new Color.Standard(0xFF_E5_F2_FF),
@@ -154,8 +160,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         this.subdiv_height = subdiv_height;
         this.skyColor = TEX_ENV_COLOR.get(terrain);
         this.seaBottomColor = SEA_BOTTOM_COLOR.get(terrain);
-        TextureGenerator clouds_desc = new GeneratorClouds(terrain);
-        clouds = Resources.findResource(clouds_desc);
+        this.clouds = Resources.findResource(new CloudTextures(terrain));
 
         // Create interleaved VBO for the sky
         int num_vertices_sky = subdiv_axis * (subdiv_height - 1) + 1;
@@ -243,10 +248,10 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             skyShader.setUniform(skyShader.locFogFadeStart, 0.0f);
             skyShader.setUniform(skyShader.locFogFadeEnd, 0.1f);
 
-            context.setTexture(0, clouds[GeneratorClouds.INNER]);
+            context.setTexture(0, clouds[CLOUD_INNER]);
             skyShader.setUniform(skyShader.locTexture0, 0);
 
-            context.setTexture(1, clouds[GeneratorClouds.OUTER]);
+            context.setTexture(1, clouds[CLOUD_OUTER]);
             skyShader.setUniform(skyShader.locTexture1, 1);
 
             updateAnimation(currentTime);
@@ -608,6 +613,31 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         @Override
         public final int compareTo(SkyStitchVertex o) {
             return -Float.compare(theta, o.theta);
+        }
+    }
+
+    private record CloudTextures(Terrain terrain) implements Supplier<Texture[]> {
+        @Override
+        public Texture[] get() {
+            int seed = LandscapeConfig.LANDSCAPE_SEED;
+            Channel clouds1 = new Midpoint(CLOUD_TEXTURE_SIZE, 3, 0.55f, seed).toChannel();
+            Channel clouds2 = new Midpoint(CLOUD_TEXTURE_SIZE, 2, 0.4f, seed).toChannel();
+
+            List<Channel> channels = switch (terrain) {
+                case NATIVE -> List.of(
+                        clouds1.dynamicRange(0.5f, 1f, 0f, 1f).gamma(0.75f).brightness(0.5f),
+                        clouds2.dynamicRange(0.25f, 1f, 0f, 1f).gamma(0.5f).brightness(0.33f));
+                case VIKING -> List.of(
+                        clouds1.dynamicRange(0.5f, 1f, 0f, 0.75f),
+                        clouds2.dynamicRange(0.5f, 1f, 0f, 0.75f));
+            };
+
+            return channels.stream()
+                    .map(Channel::toLinear)
+                    .map(cloud -> new GLByteImage(cloud, GL11.GL_RED))
+                    .map(image -> new Texture(image, GL30.GL_R8, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                            GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT))
+                    .toArray(Texture[]::new);
         }
     }
 

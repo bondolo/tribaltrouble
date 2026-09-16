@@ -42,6 +42,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     private final InstancedSpriteShader shader = new InstancedSpriteShader();
     private final Map<BatchKey, RenderBatch> batches = new HashMap<>();
     private final Texture whiteTexture;
+    private final Texture respondTexture;
 
     private FloatVBO boneMatrixVBO;
     private int boneMatrixTboHandle;
@@ -58,6 +59,11 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         whiteImage.putPixel(0, 0, Color.WHITE_INT);
         whiteTexture = new Texture(new GLImage[]{whiteImage}, GL11.GL_RGBA8, GL11.GL_NEAREST, GL11.GL_NEAREST,
                 GL12.GL_CLAMP_TO_EDGE, GL12.GL_CLAMP_TO_EDGE);
+
+        GLImage respondImage = new GLIntImage(1, 1, GL11.GL_RGBA);
+        respondImage.putPixel(0, 0, 0x80808080);
+        respondTexture = new Texture(new GLImage[]{respondImage}, GL11.GL_RGBA8, GL11.GL_NEAREST, GL11.GL_NEAREST,
+                GL11.GL_REPEAT, GL11.GL_REPEAT);
 
         int initialFloats = 65536;
         boneMatrixBuffer = BufferUtils.createFloatBuffer(initialFloats);
@@ -142,7 +148,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             sortedBatches.sort(RenderBatch.COMPARATOR);
 
             for (RenderBatch batch : sortedBatches) {
-                batch.render(context, shader, whiteTexture);
+                batch.render(context, shader, whiteTexture, respondTexture);
             }
         } finally {
             // Restore default state to prevent leakage to other renderers (Sky, Landscape, etc.)
@@ -175,6 +181,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         batches.clear();
         shader.close();
         whiteTexture.close();
+        respondTexture.close();
         boneMatrixVBO.close();
         GL11.glDeleteTextures(boneMatrixTboHandle);
     }
@@ -361,7 +368,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             group.add(boneBaseOffset, modelMatrix, color, decalColor);
         }
 
-        void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture) {
+        void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,
+                Texture respondTexture) {
             boolean hasInstances = false;
             for (InstanceGroup group : groups.values()) {
                 if (group.count > 0) {
@@ -382,7 +390,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
             SpriteList spriteList = key.spriteList;
             Sprite representativeSprite = spriteList.getSprite(representativeGroup.spriteIndex);
-            setupTextures(context, shader, representativeSprite, whiteTexture);
+            setupTextures(context, shader, representativeSprite, whiteTexture, respondTexture);
 
             for (InstanceGroup group : groups.values()) {
                 if (group.count > 0) {
@@ -430,7 +438,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         private void setupTextures(RenderContext context, InstancedSpriteShader shader,
-                Sprite sprite, Texture whiteTexture) {
+                Sprite sprite, Texture whiteTexture, Texture respondTexture) {
             context.setTexture(0, key.texture);
             shader.setUniform(shader.locTexture0, 0);
 
@@ -448,7 +456,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
                 shader.setUniform(shader.locAlphaTestValue, key.respond ? 0.5f : 0.1f);
                 if (key.teamTexture != null || key.respond) {
                     shader.setUniform(shader.locEnableTeamColor, true);
-                    Texture teamTexture = key.respond ? sprite.respond_texture : key.teamTexture;
+                    Texture teamTexture = key.respond ? respondTexture : key.teamTexture;
                     context.setTexture(1, teamTexture);
                     shader.setUniform(shader.locTexture1, 1);
                 } else {

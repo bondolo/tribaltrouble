@@ -1,11 +1,11 @@
 package com.oddlabs.tt.engine.procedural;
 
-import com.oddlabs.tt.engine.resource.TextureGenerator;
-
 import com.oddlabs.procedural.Layer;
-import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import com.oddlabs.tt.procedural.Perlin;
+import com.oddlabs.tt.engine.render.Texture;
+import com.oddlabs.tt.engine.resource.TextureGenerator;
+import com.oddlabs.tt.procedural.image.NoiseProcedural;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -23,10 +23,7 @@ public final class GeneratorNoise extends TextureGenerator {
 
     @Override
     public Texture[] generate() {
-        Perlin perlin = new Perlin(size, size, 4, 4, 0.5f, 4, seed, Perlin.Interpolation.SMOOTH,
-                Perlin.Summation.NORMAL);
-        Layer layer = perlin.toLayer();
-
+        Layer layer = NoiseProcedural.generate(size, seed);
         return new Texture[]{
                 new Texture(new GLIntImage(layer), GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT,
                         GL11.GL_REPEAT),
@@ -36,5 +33,10 @@ public final class GeneratorNoise extends TextureGenerator {
     @Override
     public int hashCode() {
         return size + (int) seed;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        return o instanceof GeneratorNoise other && size == other.size && seed == other.seed;
     }
 }

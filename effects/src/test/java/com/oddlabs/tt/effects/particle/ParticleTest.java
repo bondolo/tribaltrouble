@@ -1,7 +1,7 @@
 package com.oddlabs.tt.effects.particle;
 
-import com.oddlabs.tt.procedural.GeneratedLandscapeData;
-import com.oddlabs.tt.procedural.Landscape;
+import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
+import com.oddlabs.tt.procedural.landscape.Landscape;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.NotificationListener;
