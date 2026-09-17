@@ -80,7 +80,7 @@ public final class MapCamera extends Camera {
         float mapmodeDelay = CameraSettings.from(delegate.getGUIRoot().getGUI().getSettings()).mapmode_delay;
         float factor = dt * 1000f / Math.max(
                 dt * 1000f, mapmodeDelay
-                * MAP_TIME_FACTOR);
+                        * MAP_TIME_FACTOR);
         float dx;
         float dy;
         float dz;

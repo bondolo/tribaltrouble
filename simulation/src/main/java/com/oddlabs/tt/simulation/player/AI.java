@@ -23,7 +23,8 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Random;
+import java.util.SplittableRandom;
+import java.util.random.RandomGenerator;
 
 /**
  * Base abstract class for artificial intelligence players controlling units and building construction.
@@ -43,6 +44,7 @@ public abstract class AI implements Animated {
 
     private final Player owner;
     private final PlayerInterface playerInterface;
+    private final RandomGenerator aiRandom;
     private int INDEX_IDLE_PEONS;
     private int INDEX_IDLE_CHIEFTAINS;
     private int INDEX_IDLE_WARRIORS;
@@ -66,6 +68,10 @@ public abstract class AI implements Animated {
     public AI(Player owner, PlayerInterface playerInterface, @Nullable UnitInfo unit_info) {
         this.owner = owner;
         this.playerInterface = playerInterface;
+        int playerIndex = owner.getWorld().getPlayers().indexOf(owner);
+        long mapSeed = owner.getWorld().getWorldParameters().mapCode().hashCode();
+        long seed = (mapSeed ^ 0x9E3779B97F4A7C15L) + 10007L * (playerIndex >= 0 ? playerIndex : 0);
+        this.aiRandom = new SplittableRandom(seed);
         reset();
 
         if (unit_info != null) {
@@ -86,7 +92,7 @@ public abstract class AI implements Animated {
                 int ty = (int) (grid_start_y + 10f * dy * inv_dist);
                 owner.buildBuilding(BuildingType.TOWER, tx, ty);
             }
-            Random random = new Random(42);
+            RandomGenerator random = new SplittableRandom(42L);
             if (unit_info.hasChieftain()) {
                 Target t = getTarget(random);
                 Unit chieftain = new Unit(owner, t.getPositionX(), t.getPositionY(), null, owner.getRaceInfo()
@@ -274,8 +280,12 @@ public abstract class AI implements Animated {
     }
 
     private void reset() {
-        sleep_time = owner.getWorld().getRandom().nextFloat(MIN_SLEEP_SECONDS,
+        sleep_time = aiRandom.nextFloat(MIN_SLEEP_SECONDS,
                 MIN_SLEEP_SECONDS + SLEEP_SECONDS);
+    }
+
+    protected final RandomGenerator getAIRandom() {
+        return aiRandom;
     }
 
     protected final boolean shouldDoAction(float dt) {
@@ -333,7 +343,7 @@ public abstract class AI implements Animated {
         return null;
     }
 
-    protected final Target getTarget(Random random) {
+    protected final Target getTarget(RandomGenerator random) {
         float RADIUS = 30;
         float target_x = owner.getStartX() + random.nextFloat(-RADIUS, RADIUS);
         float target_y = owner.getStartY() + random.nextFloat(-RADIUS, RADIUS);

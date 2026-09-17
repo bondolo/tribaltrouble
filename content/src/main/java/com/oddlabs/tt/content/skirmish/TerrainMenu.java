@@ -5,6 +5,8 @@ import com.oddlabs.matchmaking.GameSession;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.procedural.MapCode;
+import com.oddlabs.procedural.MapParameters;
+import java.util.List;
 import com.oddlabs.tt.audio.AudioManager;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.client.viewer.InGameInfo;
@@ -66,15 +68,6 @@ public final class TerrainMenu extends Group {
     private static final int SLIDER_LENGTH = 250;
     private static final int BUTTON_WIDTH = 100;
     private static final int SLIDER_MAX_VALUE = 10;
-
-    private static final String SEED_CARDINALITY = "40000";
-    private static final int SLIDER_CARDINALITY = 11;
-    private static final int TERRAIN_TYPE_CARDINALITY = 2;
-    private static final int SIZE_CARDINALITY = 3;
-    private static final int DIFFICULTY_CARDINALITY = 4;
-    private static final int RACE_CARDINALITY = 2;
-    private static final int TEAM_CARDINALITY = 6;
-    private static final BigInteger MAX_VALUE;
 
     private enum SlotDifficultyOption {
         CLOSED(0, PlayerSlot.AI_NONE),
@@ -139,24 +132,6 @@ public final class TerrainMenu extends Group {
     private final GUIRoot gui_root;
     private final NetworkSelector network;
     private int seed;
-
-    static {
-        BigInteger max = BigInteger.ONE;
-        max = max.multiply(new BigInteger(SEED_CARDINALITY));
-        max = max.multiply(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
-        max = max.multiply(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
-        max = max.multiply(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
-        max = max.multiply(new BigInteger(new byte[]{TERRAIN_TYPE_CARDINALITY}));
-        max = max.multiply(new BigInteger(new byte[]{SIZE_CARDINALITY}));
-        max = max.multiply(new BigInteger(new byte[]{RACE_CARDINALITY}));
-        max = max.multiply(new BigInteger(new byte[]{TEAM_CARDINALITY}));
-        for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
-            max = max.multiply(new BigInteger(new byte[]{DIFFICULTY_CARDINALITY}));
-            max = max.multiply(new BigInteger(new byte[]{RACE_CARDINALITY}));
-            max = max.multiply(new BigInteger(new byte[]{TEAM_CARDINALITY}));
-        }
-        MAX_VALUE = max;
-    }
 
     @SuppressWarnings("unchecked")
     public TerrainMenu(GUIRoot gui_root, Peer engine,
@@ -494,74 +469,57 @@ public final class TerrainMenu extends Group {
     }
 
     private void setMapcode() {
-        BigInteger max_val = BigInteger.ONE;
-        BigInteger result = BigInteger.ZERO;
-        result = result.add((new BigInteger("" + seed)).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(SEED_CARDINALITY));
         int hills = slider_hills.getValue();
-        result = result.add((new BigInteger(new byte[]{(byte) hills})).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
         int vegetation_amount = slider_vegetation.getValue();
-        result = result.add((new BigInteger(new byte[]{(byte) vegetation_amount})).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
         int supplies_amount = slider_supplies.getValue();
-        result = result.add((new BigInteger(new byte[]{(byte) supplies_amount})).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
         int terrain_type = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).map(Terrain::getValue).orElse(0);
-        result = result.add((new BigInteger(new byte[]{(byte) terrain_type})).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(new byte[]{TERRAIN_TYPE_CARDINALITY}));
         int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
-        result = result.add((new BigInteger(new byte[]{(byte) size})).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(new byte[]{SIZE_CARDINALITY}));
-        int player_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal)
-                .orElse(0);
-        result = result.add((new BigInteger(new byte[]{(byte) player_race})).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(new byte[]{RACE_CARDINALITY}));
+        int player_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal).orElse(0);
         int player_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-        result = result.add((new BigInteger(new byte[]{(byte) player_team})).multiply(max_val));
-        max_val = max_val.multiply(new BigInteger(new byte[]{TEAM_CARDINALITY}));
+
+        List<MapParameters.SlotSetting> otherSlots = new java.util.ArrayList<>();
         for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
             SlotDifficultyOption option = difficulty_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment)
                     .orElse(SlotDifficultyOption.CLOSED);
-            result = result.add((new BigInteger(new byte[]{(byte) option.getIndex()})).multiply(max_val));
-            max_val = max_val.multiply(new BigInteger(new byte[]{DIFFICULTY_CARDINALITY}));
-            int race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal)
-                    .orElse(0);
-            result = result.add((new BigInteger(new byte[]{(byte) race})).multiply(max_val));
-            max_val = max_val.multiply(new BigInteger(new byte[]{RACE_CARDINALITY}));
+            int race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal).orElse(0);
             int team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
-            result = result.add((new BigInteger(new byte[]{(byte) team})).multiply(max_val));
-            max_val = max_val.multiply(new BigInteger(new byte[]{TEAM_CARDINALITY}));
+            otherSlots.add(new MapParameters.SlotSetting(option.getIndex(), race, team));
         }
 
-        String code = MapCode.createString(result);
+        MapParameters params = new MapParameters(
+                seed,
+                hills,
+                vegetation_amount,
+                supplies_amount,
+                terrain_type,
+                size,
+                player_race,
+                player_team,
+                otherSlots
+        );
+
+        String code = MapCode.encode(params);
         label_mapcode.clear();
         label_mapcode.append(code);
     }
 
     public void parseMapcode(String text) {
         String code = text.toUpperCase();
-        BigInteger result = MapCode.parseBits(code);
-        parseBigInteger(result);
+        MapParameters params = MapCode.decode(code);
+        populateFromMapParameters(params);
         label_mapcode.clear();
         label_mapcode.append(code);
     }
 
-    private void parseBigInteger(BigInteger result) {
-        BigInteger max_val = MAX_VALUE;
-        for (int i = MatchmakingServerInterface.MAX_PLAYERS - 1; i >= 1; i--) {
-            result = result.mod(max_val);
-            max_val = max_val.divide(new BigInteger(new byte[]{TEAM_CARDINALITY}));
-            int team = result.divide(max_val).intValue();
-            team_pulldown_menus[i].chooseItem(team);
-            result = result.mod(max_val);
-            max_val = max_val.divide(new BigInteger(new byte[]{RACE_CARDINALITY}));
-            int race = result.divide(max_val).intValue();
-            race_pulldown_menus[i].chooseItem(race);
-            result = result.mod(max_val);
-            max_val = max_val.divide(new BigInteger(new byte[]{DIFFICULTY_CARDINALITY}));
-            int difficulty = result.divide(max_val).intValue();
-            SlotDifficultyOption option = SlotDifficultyOption.fromIndex(difficulty);
+    private void populateFromMapParameters(MapParameters params) {
+        for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
+            MapParameters.SlotSetting setting = (i - 1 < params.otherSlots().size())
+                    ? params.otherSlots().get(i - 1)
+                    : new MapParameters.SlotSetting(0, 0, 0);
+
+            team_pulldown_menus[i].chooseItem(setting.team());
+            race_pulldown_menus[i].chooseItem(setting.race());
+            SlotDifficultyOption option = SlotDifficultyOption.fromIndex(setting.difficulty());
             difficulty_pulldown_menus[i].chooseItem(option.getIndex());
             if (option == SlotDifficultyOption.CLOSED) {
                 labels_players[i].setDisabled(true);
@@ -573,39 +531,15 @@ public final class TerrainMenu extends Group {
                 team_pulldown_buttons[i].setDisabled(false);
             }
         }
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(new byte[]{TEAM_CARDINALITY}));
-        int player_team = result.divide(max_val).intValue();
-        team_pulldown_menus[0].chooseItem(player_team);
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(new byte[]{RACE_CARDINALITY}));
-        int player_race = result.divide(max_val).intValue();
-        race_pulldown_menus[0].chooseItem(player_race);
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(new byte[]{SIZE_CARDINALITY}));
-        int size = result.divide(max_val).intValue();
-        pulldown_size.chooseItem(size);
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(new byte[]{TERRAIN_TYPE_CARDINALITY}));
-        int terrain_type = result.divide(max_val).intValue();
-        pm_terrain.chooseItem(terrain_type);
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
-        int supplies_amount = result.divide(max_val).intValue();
-        slider_supplies.setValue(supplies_amount);
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
-        int vegetation_amount = result.divide(max_val).intValue();
-        slider_vegetation.setValue(vegetation_amount);
 
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(new byte[]{SLIDER_CARDINALITY}));
-        int hills = result.divide(max_val).intValue();
-        slider_hills.setValue(hills);
-
-        result = result.mod(max_val);
-        max_val = max_val.divide(new BigInteger(SEED_CARDINALITY));
-        seed = result.divide(max_val).intValue();
+        team_pulldown_menus[0].chooseItem(params.player0Team());
+        race_pulldown_menus[0].chooseItem(params.player0Race());
+        pulldown_size.chooseItem(params.size());
+        pm_terrain.chooseItem(params.terrainType());
+        slider_supplies.setValue(params.supplies());
+        slider_vegetation.setValue(params.vegetation());
+        slider_hills.setValue(params.hills());
+        this.seed = params.seed();
     }
 
     public void setSeed(int seed) {
@@ -627,7 +561,8 @@ public final class TerrainMenu extends Group {
         var random = ThreadLocalRandom.current();
         random.nextInt();
         BigInteger rand_int = new BigInteger(100, random);
-        parseBigInteger(rand_int);
+        MapParameters params = MapCode.decode(rand_int);
+        populateFromMapParameters(params);
         setMapcode();
     }
 

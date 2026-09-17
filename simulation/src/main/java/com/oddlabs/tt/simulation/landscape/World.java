@@ -57,6 +57,7 @@ public final class World implements SimulationClock {
     private final PatchGroup patch_root;
     private final AbstractTreeGroup tree_root;
     private final AbstractElementNode<?> element_root;
+    private final WorldParameters worldParameters;
     private final @Nullable RaceData races_resources;
     private final LandscapeBoundsProvider landscape_resources;
     private final Terrain terrain;
@@ -161,6 +162,7 @@ public final class World implements SimulationClock {
         this.max_unit_count = world_params.maxUnitCount();
         this.notification_listener = notification_listener;
         this.gamespeed = world_params.initialGameSpeed();
+        this.worldParameters = world_params;
         long time_start = System.currentTimeMillis();
 
         world = new HeightMap(this, landscapeData);
@@ -219,6 +221,10 @@ public final class World implements SimulationClock {
 
     public NotificationListener getNotificationListener() {
         return notification_listener;
+    }
+
+    public WorldParameters getWorldParameters() {
+        return worldParameters;
     }
 
     public HeightMap getHeightMap() {

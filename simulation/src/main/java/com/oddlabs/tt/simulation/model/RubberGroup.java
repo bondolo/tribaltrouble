@@ -42,6 +42,9 @@ public final class RubberGroup {
 
     private int @Nullable [] getGroupPosition() {
         List<int[]> tree_positions = world.getHeightMap().getTrees();
+        if (tree_positions.isEmpty()) {
+            return null;
+        }
         int start_index = world.getRandom().nextInt(tree_positions.size());
         int index = (start_index + 1) % tree_positions.size();
         while (index != start_index) {

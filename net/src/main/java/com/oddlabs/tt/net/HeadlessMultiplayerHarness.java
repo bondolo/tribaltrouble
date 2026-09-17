@@ -2,6 +2,7 @@ package com.oddlabs.tt.net;
 
 import com.oddlabs.event.NotDeterministic;
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.net.TimeManager;
 import com.oddlabs.router.Router;
 import com.oddlabs.router.SessionID;
@@ -44,6 +45,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
 
     /**
      * Creates a new multiplayer harness with an ephemeral local router and instances for each player.
+     * Uses {@link TimeManager#DEFAULT} for real-time wall-clock pacing.
      */
     public static HeadlessMultiplayerHarness create(
             LandscapeData landscapeData,
@@ -51,6 +53,18 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos) {
         return create(landscapeData, worldParams, playerSlots, unitInfos, TimeManager.DEFAULT, true);
+    }
+
+    /**
+     * Creates a new multiplayer harness running on a deterministic virtual tick clock
+     * for accelerated headless simulation and automated testing.
+     */
+    public static HeadlessMultiplayerHarness createVirtual(
+            LandscapeData landscapeData,
+            WorldParameters worldParams,
+            PlayerSlot[] playerSlots,
+            UnitInfo[] unitInfos) {
+        return create(landscapeData, worldParams, playerSlots, unitInfos, new TickTimeManager(), true);
     }
 
     /**
@@ -167,6 +181,9 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
      * Steps the simulation forward by the given delta time.
      */
     public void step(float dt) {
+        if (network.getTimeManager() instanceof TickTimeManager tickTimeManager) {
+            tickTimeManager.advance();
+        }
         pumpNetwork();
         for (HeadlessSimulationInstance instance : instances) {
             instance.animate(dt);
@@ -179,6 +196,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
      */
     public void runUntilTick(int targetTick, Duration timeout) throws TimeoutException, InterruptedException {
         Instant deadline = Instant.now().plus(timeout);
+        boolean isVirtualClock = network.getTimeManager() instanceof TickTimeManager;
         while (true) {
             boolean allReached = true;
             for (HeadlessSimulationInstance instance : instances) {
@@ -204,8 +222,26 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
                 throw new TimeoutException("Timed out waiting for instances to reach tick " + targetTick);
             }
             step();
-            Thread.sleep(2);
+            if (!isVirtualClock) {
+                Thread.sleep(2);
+            }
         }
+    }
+
+    /**
+     * Returns true if all instances are currently synchronized at the exact same tick.
+     */
+    public boolean areTicksAligned() {
+        if (instances.isEmpty()) {
+            return true;
+        }
+        int firstTick = instances.getFirst().getTick();
+        for (int i = 1; i < instances.size(); i++) {
+            if (instances.get(i).getTick() != firstTick) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

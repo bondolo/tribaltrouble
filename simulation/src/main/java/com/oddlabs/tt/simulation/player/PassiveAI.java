@@ -29,9 +29,9 @@ public final class PassiveAI extends AI {
                 Selectable<?> s = list[0];
                 if (s.getPrimaryController() instanceof IdleController) {
                     for (Selectable<?> thrower : list) {
-                        float r = getOwner().getWorld().getRandom().nextFloat();
+                        float r = getAIRandom().nextFloat();
                         if (r < .2) {
-                            Target walkable_target = getTarget(getOwner().getWorld().getRandom());
+                            Target walkable_target = getTarget(getAIRandom());
                             getPlayerInterface().setTarget(Selectable.newArray(thrower), walkable_target, Action.ATTACK,
                                     true);
                         }
