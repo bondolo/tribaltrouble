@@ -72,7 +72,7 @@ public final class Main {
                 HeadlessMatchConfig.DEFAULT_CHECKSUM_INTERVAL);
     }
 
-    public static void main(String[] args) throws Exception {
+    static void main(String[] args) throws Exception {
         int seed = new Random().nextInt();
         int maxTicks = HeadlessMatchConfig.DEFAULT_MAX_TICKS;
         Terrain terrain = Terrain.NATIVE;
@@ -154,11 +154,11 @@ public final class Main {
         HeadlessMatchRunner runner = new HeadlessMatchRunner();
         HeadlessMatchResult result = runner.run(config);
 
-        System.out.println("Match concluded:");
-        System.out.println("  Victory: " + result.victory());
-        System.out.println("  Winning Team: " + result.winningTeam());
-        System.out.println("  Final Tick: " + result.finalTick());
-        System.out.println("  Checksum: " + result.finalChecksum());
-        System.out.println("  Surviving Players: " + result.survivingPlayerIndices());
+        IO.println("Match concluded:");
+        IO.println("  Victory: " + result.victory());
+        IO.println("  Winning Team: " + result.winningTeam());
+        IO.println("  Final Tick: " + result.finalTick());
+        IO.println("  Checksum: " + result.finalChecksum());
+        IO.println("  Surviving Players: " + result.survivingPlayerIndices());
     }
 }

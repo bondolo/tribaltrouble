@@ -4,6 +4,7 @@ import com.oddlabs.tt.net.HeadlessMultiplayerHarness;
 import com.oddlabs.tt.net.HeadlessSimulationInstance;
 import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.procedural.landscape.IslandGenerator;
+import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
@@ -67,6 +68,9 @@ public final class HeadlessMatchRunner {
             int initialTick = harness.getInstances().getFirst().getTick();
             int maxTicks = config.maxTicks();
             int checksumInterval = config.checksumIntervalTicks();
+            final int progressIntervalTicks = 5_000;
+            long lastProgressTimeNanos = System.nanoTime();
+            int lastProgressTick = initialTick;
 
             while (true) {
                 harness.step();
@@ -78,6 +82,30 @@ public final class HeadlessMatchRunner {
 
                 if (checksumInterval > 0 && currentTick % checksumInterval == 0) {
                     harness.verifyChecksums();
+                }
+
+                if (elapsedTicks > 0 && elapsedTicks % progressIntervalTicks == 0) {
+                    long nowNanos = System.nanoTime();
+                    double seconds = (nowNanos - lastProgressTimeNanos) / 1_000_000_000.0;
+                    double ticksPerSec = seconds > 0.0 ? (currentTick - lastProgressTick) / seconds : 0.0;
+                    lastProgressTimeNanos = nowNanos;
+                    lastProgressTick = currentTick;
+
+                    StringBuilder progress = new StringBuilder();
+                    progress.append(String.format("Tick %d (+%d/%d, %.1f ticks/s):", currentTick, elapsedTicks,
+                            maxTicks, ticksPerSec));
+                    for (HeadlessSimulationInstance instance : harness.getInstances()) {
+                        Player player = instance.getLocalPlayer();
+                        int units = player.getUnitCountContainer().getNumSupplies();
+                        int buildings = player.getBuildingCountContainer().getNumSupplies();
+                        progress.append(String.format(" [%s(T%d): %d units, %d bldgs, alive=%b]",
+                                player.getPlayerInfo().getName(),
+                                player.getPlayerInfo().getTeam(),
+                                units,
+                                buildings,
+                                instance.isAlive()));
+                    }
+                    IO.println(progress);
                 }
 
                 Set<Integer> aliveTeams = new HashSet<>();
