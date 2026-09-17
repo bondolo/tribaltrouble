@@ -1,6 +1,8 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.event.NotDeterministic;
+import com.oddlabs.net.JitterConfig;
+import com.oddlabs.net.JitterTimeManager;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.net.TimeManager;
@@ -65,6 +67,19 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos) {
         return create(landscapeData, worldParams, playerSlots, unitInfos, new TickTimeManager(), true);
+    }
+
+    /**
+     * Creates a new multiplayer harness running on a jittered clock source
+     * for testing network synchronization under synthetic delay and burst conditions.
+     */
+    public static HeadlessMultiplayerHarness createJittered(
+            LandscapeData landscapeData,
+            WorldParameters worldParams,
+            PlayerSlot[] playerSlots,
+            UnitInfo[] unitInfos,
+            JitterConfig jitterConfig) {
+        return create(landscapeData, worldParams, playerSlots, unitInfos, new JitterTimeManager(jitterConfig), true);
     }
 
     /**
@@ -183,6 +198,8 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     public void step(float dt) {
         if (network.getTimeManager() instanceof TickTimeManager tickTimeManager) {
             tickTimeManager.advance();
+        } else if (network.getTimeManager() instanceof JitterTimeManager jitterTimeManager) {
+            jitterTimeManager.advance();
         }
         pumpNetwork();
         for (HeadlessSimulationInstance instance : instances) {
@@ -196,7 +213,9 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
      */
     public void runUntilTick(int targetTick, Duration timeout) throws TimeoutException, InterruptedException {
         Instant deadline = Instant.now().plus(timeout);
-        boolean isVirtualClock = network.getTimeManager() instanceof TickTimeManager;
+        boolean isVirtualClock = network.getTimeManager() instanceof TickTimeManager
+                || (network.getTimeManager() instanceof JitterTimeManager jtm
+                        && jtm.getConfig().baseClock() instanceof TickTimeManager);
         while (true) {
             boolean allReached = true;
             for (HeadlessSimulationInstance instance : instances) {

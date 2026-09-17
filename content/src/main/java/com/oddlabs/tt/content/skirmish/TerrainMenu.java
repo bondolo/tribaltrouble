@@ -474,14 +474,16 @@ public final class TerrainMenu extends Group {
         int supplies_amount = slider_supplies.getValue();
         int terrain_type = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).map(Terrain::getValue).orElse(0);
         int size = pulldown_size.getChosenItem().map(PulldownItem::getAttachment).orElse(1);
-        int player_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal).orElse(0);
+        int player_race = race_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal)
+                .orElse(0);
         int player_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
 
         List<MapParameters.SlotSetting> otherSlots = new java.util.ArrayList<>();
         for (int i = 1; i < MatchmakingServerInterface.MAX_PLAYERS; i++) {
             SlotDifficultyOption option = difficulty_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment)
                     .orElse(SlotDifficultyOption.CLOSED);
-            int race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal).orElse(0);
+            int race = race_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).map(Race::ordinal)
+                    .orElse(0);
             int team = team_pulldown_menus[i].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             otherSlots.add(new MapParameters.SlotSetting(option.getIndex(), race, team));
         }

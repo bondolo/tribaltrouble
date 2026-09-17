@@ -24,6 +24,18 @@ dependencies {
     testRuntimeOnly(project(":assets"))
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("integration")
+    }
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform {
+        includeTags("integration")
+    }
 }

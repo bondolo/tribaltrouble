@@ -1,6 +1,8 @@
 package com.oddlabs.tt.net;
 
 import com.oddlabs.matchmaking.Game;
+import com.oddlabs.net.JitterConfig;
+import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeData;
 import com.oddlabs.tt.simulation.landscape.WorldParameters;
@@ -211,6 +213,104 @@ class HeadlessMultiplayerHarnessTest {
             harness.verifyChecksums();
             assertEquals(bot0.getChecksum(), bot1.getChecksum(),
                     "Checksums must match after autonomous AI decisions and lockstep execution");
+        }
+    }
+
+    @Test
+    void testMultiInstanceHeadlessSessionWithJitter() throws Exception {
+        int gridSize = 32;
+        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+
+        PlayerSlot[] playerSlots = new PlayerSlot[2];
+        playerSlots[0] = new PlayerSlot(0);
+        playerSlots[0].setType(PlayerSlot.AI);
+        playerSlots[0].setAIDifficulty(PlayerSlot.AI_NORMAL);
+        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingJitter0"));
+
+        playerSlots[1] = new PlayerSlot(1);
+        playerSlots[1].setType(PlayerSlot.AI);
+        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
+        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeJitter1"));
+
+        UnitInfo[] unitInfos = new UnitInfo[2];
+        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+
+        TickTimeManager baseClock = new TickTimeManager();
+        JitterConfig jitterConfig = JitterConfig.heavy(baseClock, 777L);
+
+        try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.createJittered(
+                landscapeData,
+                worldParams,
+                playerSlots,
+                unitInfos,
+                jitterConfig)) {
+
+            assertEquals(2, harness.getInstances().size());
+            HeadlessSimulationInstance instance0 = harness.getInstance(0);
+            HeadlessSimulationInstance instance1 = harness.getInstance(1);
+
+            assertEquals(instance0.getChecksum(), instance1.getChecksum());
+
+            harness.awaitSynchronized(Duration.ofSeconds(5));
+            assertTrue(instance0.isSynchronized());
+            assertTrue(instance1.isSynchronized());
+
+            harness.runUntilTick(40, Duration.ofSeconds(10));
+            harness.verifyChecksums();
+
+            instance0.getPlayerInterface().setPreferredGamespeed(Game.GAMESPEED_NORMAL);
+
+            harness.runUntilTick(80, Duration.ofSeconds(10));
+            harness.verifyChecksums();
+            assertEquals(instance0.getChecksum(), instance1.getChecksum());
+        }
+    }
+
+    @Test
+    void testAiPeerHeadlessSessionWithLaggyJitter() throws Exception {
+        int gridSize = 32;
+        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+
+        PlayerSlot[] playerSlots = new PlayerSlot[2];
+        playerSlots[0] = new PlayerSlot(0);
+        playerSlots[0].setType(PlayerSlot.AI);
+        playerSlots[0].setAIDifficulty(PlayerSlot.AI_EASY);
+        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingLagBot"));
+
+        playerSlots[1] = new PlayerSlot(1);
+        playerSlots[1].setType(PlayerSlot.AI);
+        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
+        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeLagBot"));
+
+        UnitInfo[] unitInfos = new UnitInfo[2];
+        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+
+        TickTimeManager baseClock = new TickTimeManager();
+        JitterConfig laggyConfig = JitterConfig.laggy(baseClock, 10101L);
+
+        try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.createJittered(
+                landscapeData,
+                worldParams,
+                playerSlots,
+                unitInfos,
+                laggyConfig)) {
+
+            assertEquals(2, harness.getInstances().size());
+            HeadlessSimulationInstance bot0 = harness.getInstance(0);
+            HeadlessSimulationInstance bot1 = harness.getInstance(1);
+
+            harness.awaitSynchronized(Duration.ofSeconds(5));
+            assertTrue(bot0.isSynchronized());
+            assertTrue(bot1.isSynchronized());
+
+            harness.runUntilTick(140, Duration.ofSeconds(15));
+            harness.verifyChecksums();
+            assertEquals(bot0.getChecksum(), bot1.getChecksum(),
+                    "Checksums must match under laggy network jitter conditions");
         }
     }
 }

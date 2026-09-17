@@ -8,6 +8,9 @@ import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
+import com.oddlabs.net.JitterConfig;
+import com.oddlabs.net.JitterTimeManager;
+import com.oddlabs.net.TickTimeManager;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -62,6 +65,57 @@ class FullGameSimulationTest {
         HeadlessMatchResult result = runner.run(config);
 
         assertTrue(result.victory(), "Match should conclude in victory");
+        assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
+        assertFalse(result.survivingPlayerIndices().isEmpty(), "Winning team must have surviving players");
+        for (int playerIndex : result.survivingPlayerIndices()) {
+            assertEquals(result.winningTeam(), players.get(playerIndex).team(),
+                    "All surviving players must belong to the winning team");
+        }
+    }
+
+    @Test
+    void test1v1BattleWithJitterClockRunToVictory() throws Exception {
+        int seed = new Random().nextInt();
+        IslandConfig islandConfig = new IslandConfig(
+                Terrain.NATIVE,
+                256 * HeightMap.METERS_PER_UNIT_GRID,
+                0.5f,
+                0.5f,
+                0.5f,
+                seed
+        );
+
+        WorldParameters worldParameters = new WorldParameters(
+                1,
+                "headless_jitter_1v1_" + seed,
+                Player.INITIAL_UNIT_COUNT,
+                100
+        );
+
+        UnitInfo battleUnits = new UnitInfo(true, true, 0, false, Player.INITIAL_UNIT_COUNT, 0, 0, 0);
+
+        List<HeadlessMatchConfig.PlayerConfig> players = List.of(
+                new HeadlessMatchConfig.PlayerConfig(0, Race.VIKINGS, PlayerSlot.AI_HARD, "VikingArmy", battleUnits),
+                new HeadlessMatchConfig.PlayerConfig(1, Race.NATIVES, PlayerSlot.AI_HARD, "NativeArmy", battleUnits)
+        );
+
+        TickTimeManager baseClock = new TickTimeManager();
+        JitterConfig jitterConfig = JitterConfig.mild(baseClock, seed);
+        JitterTimeManager jitterClock = new JitterTimeManager(jitterConfig);
+
+        HeadlessMatchConfig config = new HeadlessMatchConfig(
+                islandConfig,
+                worldParameters,
+                players,
+                300_000,
+                50,
+                jitterClock
+        );
+
+        HeadlessMatchRunner runner = new HeadlessMatchRunner();
+        HeadlessMatchResult result = runner.run(config);
+
+        assertTrue(result.victory(), "Match under jitter clock should conclude in victory");
         assertTrue(result.winningTeam() == 0 || result.winningTeam() == 1, "Winning team must be valid");
         assertFalse(result.survivingPlayerIndices().isEmpty(), "Winning team must have surviving players");
         for (int playerIndex : result.survivingPlayerIndices()) {
