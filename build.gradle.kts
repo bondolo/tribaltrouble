@@ -24,7 +24,7 @@ subprojects {
             ratchetFrom("origin/master")
             target("src/**/*.java")
             eclipse().configFile(rootProject.file("intellij-java-style.xml"))
-            removeUnusedImports()
+            removeUnusedImports("cleanthat-javaparser-unnecessaryimport")
             trimTrailingWhitespace()
             endWithNewline()
         }
@@ -34,6 +34,11 @@ subprojects {
         implementation(rootProject.libs.jspecify)
         "errorprone"(rootProject.libs.errorprone.core)
         "errorprone"(rootProject.libs.nullaway)
+
+        testImplementation(platform(rootProject.libs.junit.bom))
+        testImplementation(rootProject.libs.junit.jupiter)
+        testImplementation(rootProject.libs.junit.jupiter.params)
+        testRuntimeOnly(rootProject.libs.junit.platform.launcher)
     }
 
     java {
@@ -43,6 +48,7 @@ subprojects {
     }
 
     tasks.withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8"
         options.errorprone {
             option("NullAway:AnnotatedPackages", "com.oddlabs")
             disableAllChecks = false
@@ -59,5 +65,9 @@ subprojects {
                 "StatementSwitchToExpressionSwitch",
                 "ArrayRecordComponent", "StringSplitter" )
         }
+    }
+
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
     }
 }

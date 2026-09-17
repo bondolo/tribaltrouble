@@ -28,21 +28,12 @@ dependencies {
     implementation(libs.mysql.connector)
     implementation(libs.snakeyaml)
 
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
-    testRuntimeOnly(libs.junit.platform.launcher)
-
     testImplementation(platform(libs.micronaut.platform))
     testAnnotationProcessor(platform(libs.micronaut.platform))
     testAnnotationProcessor(libs.micronaut.inject.java)
     testAnnotationProcessor(libs.micronaut.serde.processor)
     testImplementation(libs.micronaut.test.junit5)
     testImplementation(libs.micronaut.http.client)
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 tasks.register<Jar>("fatJar") {

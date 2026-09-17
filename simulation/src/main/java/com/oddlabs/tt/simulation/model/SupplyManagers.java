@@ -1,7 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 import com.oddlabs.tt.simulation.landscape.World;
-import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;

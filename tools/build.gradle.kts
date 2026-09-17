@@ -1,6 +1,7 @@
 import com.smushytaco.lwjgl_gradle.Module
 
 plugins {
+    `java-library`
     alias(libs.plugins.lwjgl3)
 }
 
@@ -16,5 +17,5 @@ lwjgl {
 }
 
 dependencies {
-    implementation(project(":common"))
+    api(project(":common"))
 }

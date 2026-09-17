@@ -8,11 +8,6 @@ dependencies {
     implementation(libs.mysql.connector)
     implementation(libs.flyway.core)
     implementation(libs.flyway.mysql)
-
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
-    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 sourceSets {
@@ -25,10 +20,6 @@ sourceSets {
 
 tasks.named<JavaCompile>("compileJava") {
     options.compilerArgs.addAll(listOf("--add-reads", "com.oddlabs.server=ALL-UNNAMED"))
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 tasks.register<Jar>("router") {

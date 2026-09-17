@@ -19,7 +19,6 @@ lwjgl {
 // Configuration for running internal tools
 val converter = configurations.create("converter")
 dependencies {
-    converter(project(":common"))
     converter(project(":tools"))
 }
 
@@ -35,6 +34,7 @@ val downloadAssets = tasks.register("downloadAssets") {
     val modelsZip = outputDir.get().file("models.zip")
     val texturesZip = outputDir.get().file("textures.zip")
 
+    inputs.properties(assets)
     outputs.dir(outputDir)
     
     doLast {
@@ -73,11 +73,9 @@ val basisuPath: String? by lazy {
     val cmd = if (os.isWindows) "basisu.exe" else "basisu"
     
     // Check project property first, then PATH
-    project.findProperty("basisuPath")?.toString() ?: try {
-        val process = ProcessBuilder(if (os.isWindows) listOf("where", cmd) else listOf("which", cmd)).start()
-        process.inputStream.bufferedReader().readLine()?.trim()
-    } catch (e: Exception) {
-        null
+    project.findProperty("basisuPath")?.toString() ?: run {
+        val pathDirs = System.getenv("PATH")?.split(File.pathSeparator) ?: emptyList()
+        pathDirs.map { File(it, cmd) }.firstOrNull { it.isFile && it.canExecute() }?.absolutePath
     }
 }
 
@@ -137,16 +135,16 @@ val convertExternalModels = convertBatch("convertExternalModels",
 convertExternalModels.configure { dependsOn(downloadAssets) }
 
 val convertExternalDecals = convertBatch("convertExternalDecals",
-    layout.buildDirectory.dir("external_source/textures/textures/teamdecals"), "models",
+    layout.buildDirectory.dir("external_source/textures/textures/teamdecals"), "teamdecals",
     "-color", "-half", "-flip", "-mipmaps", "-format", "dds")
 convertExternalDecals.configure { dependsOn(downloadAssets) }
 
 // 2. GUI Textures
 val convertGui = convertBatch("convertGui", "textures/gui", "gui", "-color", "-flip", "-stb", "-format", "dds")
-val convertPixelPerfect = convertBatch("convertPixelPerfect", "textures/pixelperfect", "gui", "-color", "-flip", "-stb", "-format", "dds")
+val convertPixelPerfect = convertBatch("convertPixelPerfect", "textures/pixelperfect", "pixelperfect", "-color", "-flip", "-stb", "-format", "dds")
 
 // 3. Fonts
-val fontInfoDir = layout.buildDirectory.dir("resources/font")
+val fontInfoDir = layout.buildDirectory.dir("font_metadata")
 val fontTexClasspath = "/textures/font"
 
 // Extra glyphs to bake into the font atlases beyond the base codepoint range.
@@ -235,7 +233,9 @@ tasks.processResources {
     from(fontInfoDir) { into("font") }
     from(layout.buildDirectory.dir("textures/font")) { into("textures/font") }
     from(layout.buildDirectory.dir("textures/models")) { into("textures/models") }
+    from(layout.buildDirectory.dir("textures/teamdecals")) { into("textures/models") }
     from(layout.buildDirectory.dir("textures/gui")) { into("textures/gui") }
+    from(layout.buildDirectory.dir("textures/pixelperfect")) { into("textures/gui") }
     
     // RAW PNGs for Cursors (required by PointerInput)
     from("textures/pointer") { into("textures/gui") }

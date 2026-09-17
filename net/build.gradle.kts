@@ -8,13 +8,5 @@ dependencies {
     implementation(project(":common"))
     compileOnlyApi(libs.jspecify)
 
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
-    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(project(":assets"))
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }

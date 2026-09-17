@@ -18,13 +18,5 @@ dependencies {
     compileOnlyApi(libs.jspecify)
 
     testImplementation(project(":procedural"))
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
     testRuntimeOnly(project(":assets"))
-    testRuntimeOnly(libs.junit.platform.launcher)
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }

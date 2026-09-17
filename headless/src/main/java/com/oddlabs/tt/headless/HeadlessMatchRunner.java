@@ -64,6 +64,7 @@ public final class HeadlessMatchRunner {
             harness.awaitSynchronized(Duration.ofSeconds(10));
             harness.verifyChecksums();
 
+            int initialTick = harness.getInstances().getFirst().getTick();
             int maxTicks = config.maxTicks();
             int checksumInterval = config.checksumIntervalTicks();
 
@@ -73,6 +74,7 @@ public final class HeadlessMatchRunner {
                     continue;
                 }
                 int currentTick = harness.getInstances().getFirst().getTick();
+                int elapsedTicks = currentTick - initialTick;
 
                 if (checksumInterval > 0 && currentTick % checksumInterval == 0) {
                     harness.verifyChecksums();
@@ -115,9 +117,10 @@ public final class HeadlessMatchRunner {
                     );
                 }
 
-                if (currentTick >= maxTicks) {
+                if (elapsedTicks >= maxTicks) {
                     harness.verifyChecksums();
-                    logger.info(() -> "Match reached maximum tick limit " + maxTicks);
+                    logger.info(() -> "Match reached maximum tick limit " + maxTicks + " (elapsed ticks: "
+                            + elapsedTicks + ")");
                     return new HeadlessMatchResult(
                             -1,
                             false,

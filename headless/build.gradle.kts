@@ -16,11 +16,6 @@ dependencies {
     compileOnlyApi(libs.jspecify)
 
     runtimeOnly(project(":assets"))
-
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
-    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(project(":assets"))
 }
 

@@ -52,15 +52,6 @@ dependencies {
     implementation(project(":client"))
     implementation(project(":content"))
     implementation(project(":assets"))
-
-    testImplementation(platform(libs.junit.bom))
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
-    testRuntimeOnly(libs.junit.platform.launcher)
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 val revision = tasks.register("revision") {
