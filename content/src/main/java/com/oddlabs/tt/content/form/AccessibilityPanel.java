@@ -187,19 +187,13 @@ public final class AccessibilityPanel extends Panel {
         label_cvd_mode.setDim(label_area_width, label_cvd_mode.getHeight());
         group_cvd.addChild(label_cvd_mode);
 
-        PulldownButton<CVDMode> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, accessibility.cvd_mode,
-                contrast_slider_width);
-        group_cvd.addChild(pb_cvd);
-
         Label label_cvd_intensity = new Label(AbstractOptionsMenu.i18n("cvd_intensity"), Skin.getSkin().getEditFont());
         label_cvd_intensity.setDim(label_area_width, label_cvd_intensity.getHeight());
-        label_cvd_intensity.setDisabled(accessibility.cvd_mode == 0);
         group_cvd.addChild(label_cvd_intensity);
 
         // Support up to 2.0 intensity (40 steps)
         Slider slider_cvd = new Slider(contrast_slider_width, 0, 2 * MAX_VALUE, (int) (accessibility.cvd_intensity
                 * MAX_VALUE));
-        slider_cvd.setDisabled(accessibility.cvd_mode == 0);
         group_cvd.addChild(slider_cvd);
 
         pm_cvd.addItemChosenListener((_, _) -> {
@@ -208,6 +202,12 @@ public final class AccessibilityPanel extends Panel {
             slider_cvd.setDisabled(mode == CVDMode.NONE);
             label_cvd_intensity.setDisabled(mode == CVDMode.NONE);
         });
+
+        int initial_cvd_mode = Math.clamp(accessibility.cvd_mode, 0, pm_cvd.getSize() - 1);
+        PulldownButton<CVDMode> pb_cvd = new PulldownButton<>(gui_root, pm_cvd, initial_cvd_mode,
+                contrast_slider_width);
+        group_cvd.addChild(pb_cvd);
+
         slider_cvd.addValueListener(value -> accessibility.cvd_intensity = (float) value
                 / MAX_VALUE);
 

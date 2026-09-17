@@ -12,7 +12,6 @@ public final class PulldownButton<T> extends GUIObject {
     private final PulldownMenu<T> menu;
     private final Label label;
     private final GUIRoot gui_root;
-    private boolean menu_active;
 
     public PulldownButton(GUIRoot gui_root, PulldownMenu<T> menu, int width) {
         this.menu = menu;
@@ -60,7 +59,7 @@ public final class PulldownButton<T> extends GUIObject {
 
     @Override
     protected void mousePressed(MouseButton button, int x, int y) {
-        if (menu_active) {
+        if (isMenuOpen()) {
             deactivateMenu();
         } else {
             activateMenu();
@@ -68,25 +67,34 @@ public final class PulldownButton<T> extends GUIObject {
     }
 
     @Override
-    protected void mouseEntered() {
-        menu_active = menu.isActive();
-    }
-
-    @Override
     protected void mouseReleased(MouseButton button, int x, int y) {
-        if (!menu.isActive())
+        if (isMenuOpen()) {
             menu.getChosenItem().ifPresent(GUIObject::setFocus);
+        }
         menu.clickItem(button, x, y, 1);
     }
 
+    private boolean isMenuOpen() {
+        return menu.getParent() != null;
+    }
+
     private void activateMenu() {
-        menu_active = true;
-        menu.setPos((int) (getRootX() + getWidth() - menu.getWidth()), (int) (getRootY() - menu.getHeight()));
-        gui_root.addChild(menu);
+        int menu_x = (int) (getRootX() + getWidth() - menu.getWidth());
+        int menu_y = (int) (getRootY() - menu.getHeight());
+        if (menu_y < 0) {
+            menu_y = (int) (getRootY() + getHeight());
+        }
+        menu.setPos(menu_x, menu_y);
+        var modal_delegate = gui_root.getModalDelegate();
+        if (modal_delegate != null) {
+            modal_delegate.addChild(menu);
+        } else {
+            gui_root.addChild(menu);
+        }
+        menu.getChosenItem().ifPresentOrElse(GUIObject::setFocus, menu::setFocus);
     }
 
     private void deactivateMenu() {
-        menu_active = false;
         setFocus();
         menu.remove();
     }
@@ -98,8 +106,9 @@ public final class PulldownButton<T> extends GUIObject {
     @Override
     protected void doRemove() {
         super.doRemove();
-        if (!menu.isActive())
+        if (isMenuOpen()) {
             menu.remove();
+        }
     }
 
     public void setLabelColor(Color color) {
@@ -110,8 +119,9 @@ public final class PulldownButton<T> extends GUIObject {
         menu.getItem(item_index).ifPresent(item -> {
             label.set(item.getLabelString());
             label.setColor(item.getLabelColor());
-            if (menu.isActive())
+            if (isMenuOpen()) {
                 deactivateMenu();
+            }
         });
     }
 }

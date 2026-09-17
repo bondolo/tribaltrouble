@@ -115,6 +115,15 @@ public final class PulldownMenu<T> extends Group {
     }
 
     @Override
+    public void setFocus(FocusDirection direction) {
+        if (getChosenItem().isPresent()) {
+            getChosenItem().get().setFocus(direction);
+        } else {
+            super.setFocus(direction);
+        }
+    }
+
+    @Override
     protected void focusNotify(boolean focus) {
         if (!focus) {
             remove();
