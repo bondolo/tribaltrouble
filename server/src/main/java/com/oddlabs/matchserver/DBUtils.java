@@ -1,27 +1,26 @@
 package com.oddlabs.matchserver;
 
-import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
-import org.h2.jdbcx.JdbcDataSource;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.sqlite.SQLiteDataSource;
 
 /**
  * Database access utilities and connection management.
  */
 @NullMarked
 public final class DBUtils {
+    public static final String DEFAULT_SQLITE_URL = "jdbc:sqlite:file:oddlabs?mode=memory&cache=shared";
+
+    private static final Logger logger = Logger.getLogger(DBUtils.class.getName());
     private static @Nullable DataSource dataSource;
-    private static final String DEFAULT_H2_URL
-            = "jdbc:h2:mem:oddlabs;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=VALUE";
+    private static @Nullable Connection keepAliveConnection;
 
     private DBUtils() {
     }
@@ -30,20 +29,22 @@ public final class DBUtils {
         dataSource = ds;
     }
 
-    public static synchronized void initConnection(String address, String user, String password) {
+    public static synchronized void initConnection(String address, @Nullable String user, @Nullable String password) {
         String dbUrl = System.getProperty("tribaltrouble.db.url", address);
-        if (dbUrl.startsWith("jdbc:h2:") || "h2".equalsIgnoreCase(System.getProperty("tribaltrouble.db.type", "h2"))) {
+        if (dbUrl.isEmpty() || dbUrl.contains(":memory:") || "memory".equalsIgnoreCase(System.getProperty(
+                "tribaltrouble.db.type"))) {
             initInMemoryDatabase();
             return;
         }
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection c = DriverManager.getConnection(dbUrl, user, password)) {
-                // Connection successful
+            SQLiteDataSource sqliteDs = new SQLiteDataSource();
+            sqliteDs.setUrl(dbUrl);
+            try (Connection c = sqliteDs.getConnection()) {
+                // Verify connection
             }
-            dataSource = new DriverManagerDataSource(dbUrl, user, password);
+            dataSource = sqliteDs;
+            createDefaultSchema(sqliteDs);
         } catch (Exception e) {
-            // Fall back to in-memory H2 database for local development and testing
             initInMemoryDatabase();
         }
     }
@@ -56,12 +57,24 @@ public final class DBUtils {
     }
 
     public static synchronized void initInMemoryDatabase() {
-        JdbcDataSource h2Ds = new JdbcDataSource();
-        h2Ds.setURL(DEFAULT_H2_URL);
-        h2Ds.setUser("sa");
-        h2Ds.setPassword("");
-        dataSource = h2Ds;
-        createDefaultSchema(h2Ds);
+        if (keepAliveConnection != null) {
+            try {
+                keepAliveConnection.close();
+            } catch (SQLException e) {
+                logger.finer(() -> "Previous keep-alive connection close exception: " + e);
+            }
+            keepAliveConnection = null;
+        }
+        SQLiteDataSource sqliteDs = new SQLiteDataSource();
+        sqliteDs.setUrl(DEFAULT_SQLITE_URL);
+        try {
+            // Keep a persistent connection open so SQLite doesn't discard shared in-memory state
+            keepAliveConnection = sqliteDs.getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to open SQLite in-memory keep-alive connection", e);
+        }
+        dataSource = sqliteDs;
+        createDefaultSchema(sqliteDs);
     }
 
     private static void createDefaultSchema(DataSource ds) {
@@ -85,63 +98,6 @@ public final class DBUtils {
                 "INSERT INTO messages (time, message) VALUES (CURRENT_TIMESTAMP, ?)")) {
             stmt.setString(1, message);
             stmt.executeUpdate();
-        }
-    }
-
-    private static final class DriverManagerDataSource implements DataSource {
-        private final String url;
-        private final String user;
-        private final String password;
-
-        private DriverManagerDataSource(String url, String user, String password) {
-            this.url = url;
-            this.user = user;
-            this.password = password;
-        }
-
-        @Override
-        public Connection getConnection() throws SQLException {
-            return DriverManager.getConnection(url, user, password);
-        }
-
-        @Override
-        public Connection getConnection(String username, String password) throws SQLException {
-            return DriverManager.getConnection(url, username, password);
-        }
-
-        @Override
-        public PrintWriter getLogWriter() {
-            return DriverManager.getLogWriter();
-        }
-
-        @Override
-        public void setLogWriter(PrintWriter out) {
-            DriverManager.setLogWriter(out);
-        }
-
-        @Override
-        public void setLoginTimeout(int seconds) {
-            DriverManager.setLoginTimeout(seconds);
-        }
-
-        @Override
-        public int getLoginTimeout() {
-            return DriverManager.getLoginTimeout();
-        }
-
-        @Override
-        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-            throw new SQLFeatureNotSupportedException();
-        }
-
-        @Override
-        public <T> T unwrap(Class<T> iface) throws SQLException {
-            throw new SQLException("Cannot unwrap " + iface);
-        }
-
-        @Override
-        public boolean isWrapperFor(Class<?> iface) {
-            return false;
         }
     }
 }

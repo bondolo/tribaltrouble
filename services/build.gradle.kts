@@ -23,9 +23,7 @@ dependencies {
     implementation(libs.micronaut.jdbc.hikari)
     implementation(libs.micronaut.flyway)
     implementation(libs.flyway.core)
-    implementation(libs.flyway.mysql)
-    implementation(libs.h2)
-    implementation(libs.mysql.connector)
+    implementation(libs.sqlite)
     implementation(libs.snakeyaml)
 
     testImplementation(platform(libs.micronaut.platform))

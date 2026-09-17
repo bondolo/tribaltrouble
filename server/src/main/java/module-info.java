@@ -7,7 +7,7 @@ module com.oddlabs.server {
     requires java.naming;
     requires java.logging;
     requires static org.jspecify;
-    requires com.h2database;
+    requires org.xerial.sqlitejdbc;
 
     exports com.oddlabs.matchserver;
     exports com.oddlabs.routerserver;

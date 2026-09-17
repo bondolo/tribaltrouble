@@ -4,10 +4,8 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
-    implementation(libs.h2)
-    implementation(libs.mysql.connector)
+    implementation(libs.sqlite)
     implementation(libs.flyway.core)
-    implementation(libs.flyway.mysql)
 }
 
 sourceSets {

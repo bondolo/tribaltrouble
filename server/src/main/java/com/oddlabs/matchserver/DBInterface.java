@@ -30,7 +30,7 @@ public final class DBInterface {
                 stmt.setString(1, username);
                 ResultSet result = stmt.executeQuery();
                 try {
-                    boolean user_exists = result.first();
+                    boolean user_exists = result.next();
                     return user_exists;
                 } finally {
                     result.close();
@@ -72,7 +72,7 @@ public final class DBInterface {
                 stmt.setString(2, CryptUtils.digest(password));
                 ResultSet result = stmt.executeQuery();
                 try {
-                    boolean user_exists = result.first();
+                    boolean user_exists = result.next();
                     return user_exists;
                 } finally {
                     result.close();
@@ -130,12 +130,14 @@ public final class DBInterface {
                 stmt.setString(2, nick);
                 ResultSet result = stmt.executeQuery();
                 try {
-                    result.next();
-                    int rating = result.getInt("rating");
-                    int wins = result.getInt("wins");
-                    int losses = result.getInt("losses");
-                    int invalid = result.getInt("invalid");
-                    return new Profile(nick, rating, wins, losses, invalid, revision);
+                    if (result.next()) {
+                        int rating = result.getInt("rating");
+                        int wins = result.getInt("wins");
+                        int losses = result.getInt("losses");
+                        int invalid = result.getInt("invalid");
+                        return new Profile(nick, rating, wins, losses, invalid, revision);
+                    }
+                    return null;
                 } finally {
                     result.close();
                 }
@@ -150,7 +152,7 @@ public final class DBInterface {
     public static void setLastUsedProfile(String username, String nick) {
         try {
             PreparedStatement stmt = DBUtils.createStatement(
-                    "UPDATE registrations R SET last_used_profile = ? WHERE R.username = ?");
+                    "UPDATE registrations SET last_used_profile = ? WHERE username = ?");
             try {
                 stmt.setString(1, nick);
                 stmt.setString(2, username);
@@ -218,7 +220,7 @@ public final class DBInterface {
                 stmt.setString(1, nick);
                 ResultSet result = stmt.executeQuery();
                 try {
-                    boolean nick_exists = result.first();
+                    boolean nick_exists = result.next();
                     return nick_exists;
                 } finally {
                     result.close();
@@ -351,8 +353,8 @@ public final class DBInterface {
 
     public static void increaseField(String field, String nick) {
         try {
-            PreparedStatement stmt = DBUtils.createStatement("UPDATE profiles P SET " + field + " = " + field
-                    + " + 1 WHERE P.nick = ?");
+            PreparedStatement stmt = DBUtils.createStatement("UPDATE profiles SET " + field + " = " + field
+                    + " + 1 WHERE nick = ?");
             try {
                 stmt.setString(1, nick);
                 int result = stmt.executeUpdate();
@@ -367,7 +369,7 @@ public final class DBInterface {
     public static void updateRating(String nick, int rating_delta) {
         try {
             PreparedStatement stmt = DBUtils.createStatement(
-                    "UPDATE profiles P SET rating = rating + ? WHERE P.nick = ?");
+                    "UPDATE profiles SET rating = rating + ? WHERE nick = ?");
             try {
                 stmt.setInt(1, rating_delta);
                 stmt.setString(2, nick);
@@ -532,7 +534,7 @@ public final class DBInterface {
 
     public static void initDropGames() {
         try {
-            PreparedStatement stmt = DBUtils.createStatement("UPDATE games G SET status = ? WHERE G.status = ?");
+            PreparedStatement stmt = DBUtils.createStatement("UPDATE games SET status = ? WHERE status = ?");
             try {
                 stmt.setString(1, "dropped");
                 stmt.setString(2, "created");
@@ -548,7 +550,7 @@ public final class DBInterface {
     public static void dropGame(String nick) {
         try {
             PreparedStatement stmt = DBUtils.createStatement(
-                    "UPDATE games G SET status = ? WHERE G.player1_name = ? AND G.status = ?");
+                    "UPDATE games SET status = ? WHERE player1_name = ? AND status = ?");
             try {
                 stmt.setString(1, "dropped");
                 stmt.setString(2, nick);
@@ -567,19 +569,23 @@ public final class DBInterface {
         Participant[] participants = session.getParticipants();
         String participant_sql = "";
         for (int i = 0; i < participants.length; i++)
-            participant_sql = participant_sql + "G.player" + (i + 1) + "_name = ?, G.player" + (i + 1)
-                    + "_race = ?, G.player" + (i + 1) + "_team = ?, ";
+            participant_sql = participant_sql + "player" + (i + 1) + "_name = ?, player" + (i + 1)
+                    + "_race = ?, player" + (i + 1) + "_team = ?, ";
 
         try {
-            PreparedStatement stmt = DBUtils.createStatement("UPDATE games G SET " + participant_sql
-                    + "G.time_start = ?, G.status = ? WHERE G.id = ?");
+            PreparedStatement stmt = DBUtils.createStatement("UPDATE games SET " + participant_sql
+                    + "time_start = ?, status = ? WHERE id = ?");
             try {
                 int index = 1;
                 for (int i = 0; i < participants.length; i++) {
                     String nick = "Unknown";
                     Client client = server.getClientFromID(participants[i].getMatchID());
-                    if (client != null)
-                        nick = client.getProfile().getNick();
+                    if (client != null) {
+                        Profile profile = client.getProfile();
+                        if (profile != null) {
+                            nick = profile.getNick();
+                        }
+                    }
                     stmt.setString(index++, nick);
                     if (participants[i].getRace() == 0)
                         stmt.setString(index++, "N");
@@ -606,7 +612,7 @@ public final class DBInterface {
 
         try {
             PreparedStatement stmt = DBUtils.createStatement(
-                    "UPDATE games G SET G.time_stop = ?, G.status = ?, G.winner = ? WHERE G.id = ?");
+                    "UPDATE games SET time_stop = ?, status = ?, winner = ? WHERE id = ?");
             try {
                 stmt.setTimestamp(1, new Timestamp(end_time));
                 stmt.setString(2, "completed");
@@ -655,7 +661,7 @@ public final class DBInterface {
     public static void profileSetGame(String nick, int game_id) {
         try {
             PreparedStatement stmt = DBUtils.createStatement(
-                    "UPDATE online_profiles O SET O.game_id = ? WHERE O.nick = ?");
+                    "UPDATE online_profiles SET game_id = ? WHERE nick = ?");
             try {
                 stmt.setInt(1, game_id);
                 stmt.setString(2, nick);
@@ -671,7 +677,7 @@ public final class DBInterface {
 
     public static void clearOnlineProfiles() {
         try {
-            PreparedStatement stmt = DBUtils.createStatement("TRUNCATE TABLE online_profiles");
+            PreparedStatement stmt = DBUtils.createStatement("DELETE FROM online_profiles");
             try {
                 int row_count = stmt.executeUpdate();
             } finally {

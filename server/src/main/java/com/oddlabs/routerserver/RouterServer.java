@@ -60,7 +60,7 @@ public final class RouterServer {
 
     private static void postPanic() {
         try {
-            DBUtils.initConnection("jdbc:mysql://localhost/oddlabs", "matchmaker", "U46TawOp");
+            DBUtils.initConnection(DBUtils.DEFAULT_SQLITE_URL, null, null);
             DBUtils.postHermesMessage("elias, xar, jacob, thufir: Router crashed!");
         } catch (Throwable t) {
             logger.throwing("Router", "postPanic", t);
