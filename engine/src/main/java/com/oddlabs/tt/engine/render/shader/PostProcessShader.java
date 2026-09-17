@@ -48,71 +48,56 @@ public final class PostProcessShader extends ShaderProgram {
                     in vec2 v_texCoord;
                     layout(location = 0) out vec4 out_FragColor;
 
-                    // --- CVD Logic ---
-                    // Matrices must be defined in column-major order for GLSL
+                    // --- CVD Daltonization Logic ---
+                    // Linear RGB simulation matrices (T_inv * S * T) using Hunt-Pointer-Estevez LMS.
+                    // Constructed column-major: mat3(col0, col1, col2)
 
-                    // RGB to LMS
-                    const mat3 RGB_to_LMS = mat3(
-                        17.8824, 43.5161, 4.11935,    // Column 1 (R)
-                        3.45565, 27.1554, 3.86714,    // Column 2 (G)
-                        0.0299566, 0.184309, 1.46709  // Column 3 (B)
+                    // Protanopia simulation (L-cone deficiency)
+                    const mat3 PROTANOPIA_SIM = mat3(
+                        vec3(0.170557, 0.170557, -0.004517),
+                        vec3(0.829443, 0.829443,  0.004517),
+                        vec3(0.0,      0.0,       1.0)
                     );
 
-                    // LMS to RGB
-                    const mat3 LMS_to_RGB = mat3(
-                        0.0809, -0.1305, 0.1167,      // Column 1 (L)
-                        -0.0102, 0.0540, -0.1136,     // Column 2 (M)
-                        -0.0003, -0.0041, 0.6935      // Column 3 (S)
+                    // Deuteranopia simulation (M-cone deficiency)
+                    const mat3 DEUTERANOPIA_SIM = mat3(
+                        vec3(0.330660, 0.330660, -0.027855),
+                        vec3(0.669340, 0.669340,  0.027855),
+                        vec3(0.0,      0.0,       1.0)
                     );
 
-                    // Simulation Matrices
-                    const mat3 Protanopia_Sim = mat3(
-                        0.0, 2.02344, -2.52581,       // Column 1
-                        0.0, 1.0, 0.0,                // Column 2
-                        0.0, 0.0, 1.0                 // Column 3
-                    );
-
-                    const mat3 Deuteranopia_Sim = mat3(
-                        1.0, 0.0, 0.0,                // Column 1
-                        0.494207, 0.0, 1.24827,       // Column 2
-                        0.0, 0.0, 1.0                 // Column 3
-                    );
-
-                    const mat3 Tritanopia_Sim = mat3(
-                        1.0, 0.0, 0.0,                // Column 1
-                        0.0, 1.0, 0.0,                // Column 2
-                        -0.395913, 0.801109, 0.0      // Column 3
+                    // Tritanopia simulation (S-cone deficiency)
+                    const mat3 TRITANOPIA_SIM = mat3(
+                        vec3( 1.0,       0.0,       0.0),
+                        vec3( 0.127399,  0.873909,  0.873909),
+                        vec3(-0.127399,  0.126091,  0.126091)
                     );
 
                     vec3 applyCvdFilter(vec3 color) {
                         if (u_cvdMode == 0) {
                             return color;
                         }
-                        vec3 lms = RGB_to_LMS * color;
-                        vec3 error;
+                        vec3 simulated;
                         vec3 correction;
                         if (u_cvdMode == 1) {
-                            // Protanopia (Red weak): Shift red error to green and blue
-                            vec3 simulatedLMS = Protanopia_Sim * lms;
-                            vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
-                            error = color - simulatedRGB;
-                            correction = vec3(0.0, error.r * 0.7, error.r * 0.7);
+                            // Protanopia: shift lost red error into green and blue channels
+                            simulated = PROTANOPIA_SIM * color;
+                            vec3 error = color - simulated;
+                            correction = vec3(0.0, 0.7 * error.r + error.g, 0.7 * error.r + error.b);
                         } else if (u_cvdMode == 2) {
-                            // Deuteranopia (Green weak): Shift green error to red and blue
-                            vec3 simulatedLMS = Deuteranopia_Sim * lms;
-                            vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
-                            error = color - simulatedRGB;
-                            correction = vec3(error.g * 0.7, 0.0, error.g * 0.7);
+                            // Deuteranopia: shift lost green error into red and blue channels
+                            simulated = DEUTERANOPIA_SIM * color;
+                            vec3 error = color - simulated;
+                            correction = vec3(error.r + 0.7 * error.g, 0.0, 0.7 * error.g + error.b);
                         } else if (u_cvdMode == 3) {
-                            // Tritanopia (Blue weak): Shift B error to Red/Green channels
-                            vec3 simulatedLMS = Tritanopia_Sim * lms;
-                            vec3 simulatedRGB = LMS_to_RGB * simulatedLMS;
-                            error = color - simulatedRGB;
-                            correction = vec3(error.b * 0.7, error.b * 0.7, 0.0);
+                            // Tritanopia: shift lost blue error into red and green channels
+                            simulated = TRITANOPIA_SIM * color;
+                            vec3 error = color - simulated;
+                            correction = vec3(error.r + 0.7 * error.b, error.g + 0.7 * error.b, 0.0);
                         } else {
                             return color;
                         }
-                        return color + correction * u_cvdIntensity;
+                        return clamp(color + correction * u_cvdIntensity, 0.0, 1.0);
                     }
 
                     // --- High Contrast & Accessibility Logic ---
