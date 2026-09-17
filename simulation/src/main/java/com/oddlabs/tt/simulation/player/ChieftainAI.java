@@ -7,7 +7,7 @@ import com.oddlabs.tt.simulation.model.Unit;
  * Chieftain AI, implementing base decision-making capabilities and utility computations for player chieftains.
  */
 public abstract sealed class ChieftainAI permits NativeChieftainAI, VikingChieftainAI {
-    public abstract void decide(Unit chieftain);
+    public abstract void decide(Unit chieftain, PlayerInterface playerInterface);
 
     protected final int numEnemyUnits(Player owner) {
         return owner.getWorld().getPlayers().stream()

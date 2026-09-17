@@ -4,6 +4,7 @@ import com.oddlabs.tt.simulation.model.Action;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.behaviour.IdleController;
 import com.oddlabs.tt.simulation.model.Target;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Basic artificial intelligence controller for passive or idle units and chieftains.
@@ -11,8 +12,9 @@ import com.oddlabs.tt.simulation.model.Target;
 public final class PassiveAI extends AI {
     private final boolean walk_around;
 
-    public PassiveAI(Player owner, UnitInfo unit_info, boolean walk_around) {
-        super(owner, unit_info);
+    public PassiveAI(Player owner, PlayerInterface playerInterface, @Nullable UnitInfo unit_info,
+            boolean walk_around) {
+        super(owner, playerInterface, unit_info);
         this.walk_around = walk_around;
     }
 
@@ -30,13 +32,14 @@ public final class PassiveAI extends AI {
                         float r = getOwner().getWorld().getRandom().nextFloat();
                         if (r < .2) {
                             Target walkable_target = getTarget(getOwner().getWorld().getRandom());
-                            getOwner().setTarget(Selectable.newArray(thrower), walkable_target, Action.ATTACK, true);
+                            getPlayerInterface().setTarget(Selectable.newArray(thrower), walkable_target, Action.ATTACK,
+                                    true);
                         }
                     }
                 }
             }
             getOwner().getChieftain().ifPresent(chieftain -> getOwner().getRaceInfo().getChieftainAI().decide(
-                    chieftain));
+                    chieftain, getPlayerInterface()));
         }
     }
 }

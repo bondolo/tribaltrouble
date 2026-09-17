@@ -104,11 +104,13 @@ class HeadlessMultiplayerHarnessTest {
 
         PlayerSlot[] playerSlots = new PlayerSlot[2];
         playerSlots[0] = new PlayerSlot(0);
-        playerSlots[0].setType(PlayerSlot.HUMAN);
+        playerSlots[0].setType(PlayerSlot.AI);
+        playerSlots[0].setAIDifficulty(PlayerSlot.AI_NORMAL);
         playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingPlayer"));
 
         playerSlots[1] = new PlayerSlot(1);
-        playerSlots[1].setType(PlayerSlot.HUMAN);
+        playerSlots[1].setType(PlayerSlot.AI);
+        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
         playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativePlayer"));
 
         UnitInfo[] unitInfos = new UnitInfo[2];
@@ -129,6 +131,8 @@ class HeadlessMultiplayerHarnessTest {
             assertNotNull(instance1.getWorld());
             assertEquals(0, instance0.getPlayerIndex());
             assertEquals(1, instance1.getPlayerIndex());
+            assertNotNull(instance0.getAI());
+            assertNotNull(instance1.getAI());
 
             // Validate that both instances start with equal initial checksums
             assertEquals(instance0.getChecksum(), instance1.getChecksum(), "Initial checksums should match");
@@ -170,13 +174,14 @@ class HeadlessMultiplayerHarnessTest {
 
         PlayerSlot[] playerSlots = new PlayerSlot[2];
         playerSlots[0] = new PlayerSlot(0);
-        playerSlots[0].setType(PlayerSlot.HUMAN);
-        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingHuman"));
+        playerSlots[0].setType(PlayerSlot.AI);
+        playerSlots[0].setAIDifficulty(PlayerSlot.AI_EASY);
+        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingBot1"));
 
         playerSlots[1] = new PlayerSlot(1);
         playerSlots[1].setType(PlayerSlot.AI);
         playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
-        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeBot"));
+        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeBot2"));
 
         UnitInfo[] unitInfos = new UnitInfo[2];
         unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
@@ -191,16 +196,21 @@ class HeadlessMultiplayerHarnessTest {
                 true)) {
 
             assertEquals(2, harness.getInstances().size());
-            HeadlessSimulationInstance humanInstance = harness.getInstance(0);
-            HeadlessSimulationInstance botInstance = harness.getInstance(1);
+            HeadlessSimulationInstance bot0 = harness.getInstance(0);
+            HeadlessSimulationInstance bot1 = harness.getInstance(1);
+
+            assertTrue(bot0.getAI() instanceof com.oddlabs.tt.simulation.player.AdvancedAI);
+            assertTrue(bot1.getAI() instanceof com.oddlabs.tt.simulation.player.AdvancedAI);
 
             harness.awaitSynchronized(Duration.ofSeconds(5));
-            assertTrue(humanInstance.isSynchronized());
-            assertTrue(botInstance.isSynchronized());
+            assertTrue(bot0.isSynchronized());
+            assertTrue(bot1.isSynchronized());
 
-            harness.runUntilTick(50, Duration.ofSeconds(10));
+            // Run past the initial AI decision threshold (sleep_time is ~2-4s, i.e. 100-200 ticks at 50Hz)
+            harness.runUntilTick(180, Duration.ofSeconds(15));
             harness.verifyChecksums();
-            assertEquals(humanInstance.getChecksum(), botInstance.getChecksum());
+            assertEquals(bot0.getChecksum(), bot1.getChecksum(),
+                    "Checksums must match after autonomous AI decisions and lockstep execution");
         }
     }
 }

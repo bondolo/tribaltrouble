@@ -13,12 +13,12 @@ public final class VikingChieftainAI extends ChieftainAI {
     private static final int NUM_UNITS_FOR_BLAST = 7;
 
     @Override
-    public void decide(Unit chieftain) {
-        nodeBlast(chieftain);
-        nodeStun(chieftain);
+    public void decide(Unit chieftain, PlayerInterface playerInterface) {
+        nodeBlast(chieftain, playerInterface);
+        nodeStun(chieftain, playerInterface);
     }
 
-    private void nodeStun(Unit chieftain) {
+    private void nodeStun(Unit chieftain, PlayerInterface playerInterface) {
         if (chieftain.getMagicProgress(MagicType.STUN) < 1)
             return;
 
@@ -28,11 +28,11 @@ public final class VikingChieftainAI extends ChieftainAI {
         if (num_enemy_units_close >= NUM_UNITS_FOR_STUN
                 || (num_enemy_units < NUM_UNITS_FOR_STUN && num_enemy_units_close > 1)
                 || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1)) {
-            chieftain.doMagic(MagicType.STUN, false);
+            playerInterface.doMagic(chieftain, MagicType.STUN);
         }
     }
 
-    private void nodeBlast(Unit chieftain) {
+    private void nodeBlast(Unit chieftain, PlayerInterface playerInterface) {
         if (chieftain.getMagicProgress(MagicType.SONIC_BLAST) < 1)
             return;
 
@@ -45,7 +45,7 @@ public final class VikingChieftainAI extends ChieftainAI {
                 && (num_enemy_units_close >= NUM_UNITS_FOR_BLAST
                         || (num_enemy_units < NUM_UNITS_FOR_BLAST && num_enemy_units_close > 1)
                         || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
-            chieftain.doMagic(MagicType.SONIC_BLAST, false);
+            playerInterface.doMagic(chieftain, MagicType.SONIC_BLAST);
         }
     }
 

@@ -16,6 +16,10 @@ import com.oddlabs.tt.simulation.player.PlayerInfo;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
+import com.oddlabs.tt.simulation.model.Difficulty;
+import com.oddlabs.tt.simulation.player.AI;
+import com.oddlabs.tt.simulation.player.AdvancedAI;
+import com.oddlabs.tt.simulation.player.PassiveAI;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
@@ -39,17 +43,20 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
     private final int playerIndex;
     private final World world;
     private final Player localPlayer;
+    private final AI ai;
     private final AnimationManager animationManager;
     private final PeerHub peerHub;
 
     public HeadlessSimulationInstance(
             int playerIndex,
             World world,
+            AI ai,
             AnimationManager animationManager,
             PeerHub peerHub) {
         this.playerIndex = playerIndex;
         this.world = world;
         this.localPlayer = world.getPlayers().get(playerIndex);
+        this.ai = ai;
         this.animationManager = animationManager;
         this.peerHub = peerHub;
     }
@@ -133,7 +140,30 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
                 allowAiPeers
         );
 
-        return new HeadlessSimulationInstance(playerIndex, world, animManager, peerHub);
+        PlayerSlot localSlot = playerSlots[playerIndex];
+        if (localSlot.getType() != PlayerSlot.AI) {
+            throw new IllegalArgumentException(
+                    "Headless simulation instances require PlayerSlot.AI for the local slot (got "
+                            + localSlot.getType() + " for player " + playerIndex + ")");
+        }
+
+        AI ai = switch (localSlot.getAIDifficulty()) {
+            case PlayerSlot.AI_NORMAL -> new AdvancedAI(localPlayer, peerHub.getPlayerInterface(), null,
+                    Difficulty.NORMAL);
+            case PlayerSlot.AI_HARD -> new AdvancedAI(localPlayer, peerHub.getPlayerInterface(), null,
+                    Difficulty.HARD);
+            case PlayerSlot.AI_EASY -> new AdvancedAI(localPlayer, peerHub.getPlayerInterface(), null,
+                    Difficulty.EASY);
+            case PlayerSlot.AI_BATTLE_TUTORIAL, PlayerSlot.AI_PASSIVE_CAMPAIGN ->
+                new PassiveAI(localPlayer, peerHub.getPlayerInterface(), null, true);
+            case PlayerSlot.AI_NEUTRAL_CAMPAIGN ->
+                new PassiveAI(localPlayer, peerHub.getPlayerInterface(), null, false);
+            default -> throw new IllegalArgumentException("unexpected difficulty: " + localSlot.getAIDifficulty());
+        };
+        localPlayer.setAI(ai);
+        animManager.registerAnimation(ai);
+
+        return new HeadlessSimulationInstance(playerIndex, world, ai, animManager, peerHub);
     }
 
     /**
@@ -186,6 +216,10 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
 
     public Player getLocalPlayer() {
         return localPlayer;
+    }
+
+    public AI getAI() {
+        return ai;
     }
 
     public PeerHub getPeerHub() {

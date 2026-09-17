@@ -50,7 +50,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             WorldParameters worldParams,
             PlayerSlot[] playerSlots,
             UnitInfo[] unitInfos) {
-        return create(landscapeData, worldParams, playerSlots, unitInfos, TimeManager.DEFAULT, false);
+        return create(landscapeData, worldParams, playerSlots, unitInfos, TimeManager.DEFAULT, true);
     }
 
     /**
@@ -77,8 +77,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         List<HeadlessSimulationInstance> instanceList = new ArrayList<>();
 
         for (int i = 0; i < playerSlots.length; i++) {
-            boolean isParticipant = playerSlots[i].getType() == PlayerSlot.HUMAN ||
-                    (allowAiPeers && playerSlots[i].getType() == PlayerSlot.AI);
+            boolean isParticipant = allowAiPeers && playerSlots[i].getType() == PlayerSlot.AI;
             if (!isParticipant) {
                 continue;
             }

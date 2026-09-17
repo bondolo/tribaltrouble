@@ -415,10 +415,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
             Player player, UnitInfo unit_info, int initial_gamespeed) {
         if (slot.getType() == PlayerSlot.AI) {
             AI ai = switch (slot.getAIDifficulty()) {
-                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, unit_info, Difficulty.NORMAL);
-                case PlayerSlot.AI_HARD -> new AdvancedAI(player, unit_info, Difficulty.HARD);
-                case PlayerSlot.AI_EASY -> new AdvancedAI(player, unit_info, Difficulty.EASY);
-                case PlayerSlot.AI_BATTLE_TUTORIAL -> new PassiveAI(player, unit_info, true);
+                case PlayerSlot.AI_NORMAL -> new AdvancedAI(player, player, unit_info, Difficulty.NORMAL);
+                case PlayerSlot.AI_HARD -> new AdvancedAI(player, player, unit_info, Difficulty.HARD);
+                case PlayerSlot.AI_EASY -> new AdvancedAI(player, player, unit_info, Difficulty.EASY);
+                case PlayerSlot.AI_BATTLE_TUTORIAL -> new PassiveAI(player, player, unit_info, true);
                 case PlayerSlot.AI_TOWER_TUTORIAL -> null;
                 case PlayerSlot.AI_CHIEFTAIN_TUTORIAL -> {
                     new Unit(player, 100, 100, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
@@ -426,11 +426,14 @@ public final class WorldViewer implements Animated, AutoCloseable {
                     new Unit(player, 40, 200, null, player.getRaceInfo().getUnitTemplate(UnitType.PEON));
                     yield null;
                 }
-                case PlayerSlot.AI_PASSIVE_CAMPAIGN -> new PassiveAI(player, unit_info, true);
-                case PlayerSlot.AI_NEUTRAL_CAMPAIGN -> new PassiveAI(player, unit_info, false);
+                case PlayerSlot.AI_PASSIVE_CAMPAIGN -> new PassiveAI(player, player, unit_info, true);
+                case PlayerSlot.AI_NEUTRAL_CAMPAIGN -> new PassiveAI(player, player, unit_info, false);
                 default -> throw new IllegalArgumentException("unexpected difficulty: " + slot.getAIDifficulty());
             };
-            player.setAI(ai);
+            if (ai != null) {
+                player.setAI(ai);
+                world.getAnimationManagerRealTime().registerAnimation(ai);
+            }
         } else {
             player.setPreferredGamespeed(initial_gamespeed);
             int i = 0;

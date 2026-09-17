@@ -54,60 +54,58 @@ public final class AdvancedAI extends AI {
                                     int numWarriorsDefault,
                                     int numWarriorsIncrease,
                                     int numWarriorsMax,
-                                    int numWarriorsForChieftain
-    ) {
+                                    int numWarriorsForChieftain) {
     }
 
     private static final EnumMap<Difficulty, DifficultyParams> PARAMS = new EnumMap<>(Map.of(
             Difficulty.EASY, new DifficultyParams(
-                    1f,    // defenseFactor
-                    0,     // minUnitsBuildingWeapons
-                    10,    // minWeaponsInStock
-                    0,     // minUnitsReproducing
-                    2,     // maxUnitsGatheringTree
-                    1,     // maxUnitsGatheringRock
-                    1,     // maxUnitsGatheringIron
-                    0,     // maxUnitsGatheringRubber
-                    1000,  // unitsPerTower1
-                    1000,  // unitsPerTower2
-                    3,     // numWarriorsDefault
-                    1,     // numWarriorsIncrease
-                    10,    // numWarriorsMax
-                    1000   // numWarriorsForChieftain
+                    1f, // defenseFactor
+                    0, // minUnitsBuildingWeapons
+                    10, // minWeaponsInStock
+                    0, // minUnitsReproducing
+                    2, // maxUnitsGatheringTree
+                    1, // maxUnitsGatheringRock
+                    1, // maxUnitsGatheringIron
+                    0, // maxUnitsGatheringRubber
+                    1000, // unitsPerTower1
+                    1000, // unitsPerTower2
+                    3, // numWarriorsDefault
+                    1, // numWarriorsIncrease
+                    10, // numWarriorsMax
+                    1000 // numWarriorsForChieftain
             ),
             Difficulty.NORMAL, new DifficultyParams(
-                    1.5f,  // defenseFactor
-                    3,     // minUnitsBuildingWeapons
-                    5,     // minWeaponsInStock
-                    5,     // minUnitsReproducing
-                    5,     // maxUnitsGatheringTree
-                    3,     // maxUnitsGatheringRock
-                    3,     // maxUnitsGatheringIron
-                    0,     // maxUnitsGatheringRubber
-                    100,   // unitsPerTower1
-                    130,   // unitsPerTower2
-                    7,     // numWarriorsDefault
-                    3,     // numWarriorsIncrease
-                    25,    // numWarriorsMax
-                    20     // numWarriorsForChieftain
+                    1.5f, // defenseFactor
+                    3, // minUnitsBuildingWeapons
+                    5, // minWeaponsInStock
+                    5, // minUnitsReproducing
+                    5, // maxUnitsGatheringTree
+                    3, // maxUnitsGatheringRock
+                    3, // maxUnitsGatheringIron
+                    0, // maxUnitsGatheringRubber
+                    100, // unitsPerTower1
+                    130, // unitsPerTower2
+                    7, // numWarriorsDefault
+                    3, // numWarriorsIncrease
+                    25, // numWarriorsMax
+                    20 // numWarriorsForChieftain
             ),
             Difficulty.HARD, new DifficultyParams(
-                    2f,    // defenseFactor
-                    8,     // minUnitsBuildingWeapons
-                    0,     // minWeaponsInStock
-                    20,    // minUnitsReproducing
-                    15,    // maxUnitsGatheringTree
-                    9,     // maxUnitsGatheringRock
-                    10,    // maxUnitsGatheringIron
-                    3,     // maxUnitsGatheringRubber
-                    90,    // unitsPerTower1
-                    120,   // unitsPerTower2
-                    10,    // numWarriorsDefault
-                    5,     // numWarriorsIncrease
-                    40,    // numWarriorsMax
-                    15     // numWarriorsForChieftain
-            )
-    ));
+                    2f, // defenseFactor
+                    8, // minUnitsBuildingWeapons
+                    0, // minWeaponsInStock
+                    20, // minUnitsReproducing
+                    15, // maxUnitsGatheringTree
+                    9, // maxUnitsGatheringRock
+                    10, // maxUnitsGatheringIron
+                    3, // maxUnitsGatheringRubber
+                    90, // unitsPerTower1
+                    120, // unitsPerTower2
+                    10, // numWarriorsDefault
+                    5, // numWarriorsIncrease
+                    40, // numWarriorsMax
+                    15 // numWarriorsForChieftain
+            )));
 
     private final DifficultyParams params;
 
@@ -115,8 +113,9 @@ public final class AdvancedAI extends AI {
 
     private @Nullable LandscapeTarget defense_target = null;
 
-    public AdvancedAI(Player owner, UnitInfo unit_info, Difficulty difficulty) {
-        super(owner, unit_info);
+    public AdvancedAI(Player owner, PlayerInterface playerInterface, @Nullable UnitInfo unit_info,
+            Difficulty difficulty) {
+        super(owner, playerInterface, unit_info);
         this.params = PARAMS.get(difficulty);
         this.numWarriors = params.numWarriorsDefault();
     }
@@ -137,7 +136,8 @@ public final class AdvancedAI extends AI {
         nodeAttackWithWarriorsAndChieftain(numWarriors, numWarriors
                 >= params.numWarriorsForChieftain());
         nodeAssignIdlePeons();
-        getOwner().getChieftain().ifPresent(chieftain -> getOwner().getRaceInfo().getChieftainAI().decide(chieftain));
+        getOwner().getChieftain().ifPresent(chieftain -> getOwner().getRaceInfo().getChieftainAI().decide(chieftain,
+                getPlayerInterface()));
     }
 
     private void nodeDefendBase() {
@@ -177,23 +177,18 @@ public final class AdvancedAI extends AI {
             int num_rock_units = Math.min(num_warriors - num_rubber_units - num_iron_units, armory.getSupplyContainer(
                     RockAxeWeapon.class).orElseThrow().getNumSupplies());
             if (num_rubber_units > 0) {
-                getOwner().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
-//				deployed += num_rubber_units*SCORE_WARRIOR_RUBBER;
+                getPlayerInterface().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
             }
             if (num_iron_units > 0) {
-                getOwner().deployUnits(armory, DeployType.IRON_WARRIOR, num_iron_units);
-//				deployed += num_iron_units*SCORE_WARRIOR_IRON;
+                getPlayerInterface().deployUnits(armory, DeployType.IRON_WARRIOR, num_iron_units);
             }
             if (num_rock_units > 0) {
-                getOwner().deployUnits(armory, DeployType.ROCK_WARRIOR, num_rock_units);
-//				deployed += num_rock_units*SCORE_WARRIOR_ROCK;
+                getPlayerInterface().deployUnits(armory, DeployType.ROCK_WARRIOR, num_rock_units);
             }
             num_units = armory.getUnitContainer().orElseThrow().getNumSupplies();
             if (num_units > 0) {
-                getOwner().deployUnits(armory, DeployType.PEON, num_units);
-//				deployed += num_units*SCORE_PEON;
+                getPlayerInterface().deployUnits(armory, DeployType.PEON, num_units);
             }
-//			result += deployed;
         }
     }
 
@@ -223,8 +218,8 @@ public final class AdvancedAI extends AI {
         if (result > 0) {
             Unit[] units = new Unit[unit_list.size()];
             unit_list.toArray(units);
-            getOwner().setLandscapeTarget(units, defense_target.getGridX(), defense_target.getGridY(), Action.DEFEND,
-                    true);
+            getPlayerInterface().setLandscapeTarget(units, defense_target.getGridX(), defense_target.getGridY(),
+                    Action.DEFEND, true);
         }
     }
 
@@ -282,8 +277,8 @@ public final class AdvancedAI extends AI {
                 if (!((Building) getTowers()[i]).getUnitContainer().orElseThrow().isSupplyFull() && getIdleWarriors()
                         != null
                         && getIdleWarriors().length > i) {
-                    getOwner().setTarget(Selectable.newArray(getIdleWarriors()[i]), getTowers()[i], Action.DEFAULT,
-                            false);
+                    getPlayerInterface().setTarget(Selectable.newArray(getIdleWarriors()[i]), getTowers()[i],
+                            Action.DEFAULT, false);
                     nodeDeployUnitsInArmory(1);
                 }
             }
@@ -313,25 +308,18 @@ public final class AdvancedAI extends AI {
     private void nodeAssignIdlePeons() {
         if (getIdlePeons() != null) {
             if (quartersUnderConstruction() && getConstructionSites() != null) {
-                getOwner().setTarget(getIdlePeons(), getConstructionSites()[0], Action.DEFAULT, false);
+                getPlayerInterface().setTarget(getIdlePeons(), getConstructionSites()[0], Action.DEFAULT, false);
             } else if (armoryUnderConstruction() && getConstructionSites() != null) {
-                getOwner().setTarget(getIdlePeons(), getConstructionSites()[0], Action.DEFAULT, false);
+                getPlayerInterface().setTarget(getIdlePeons(), getConstructionSites()[0], Action.DEFAULT, false);
             } else if (towerUnderConstruction() && getConstructionSites() != null) {
-                getOwner().setTarget(getIdlePeons(), getConstructionSites()[0], Action.DEFAULT, false);
+                getPlayerInterface().setTarget(getIdlePeons(), getConstructionSites()[0], Action.DEFAULT, false);
             } else if (getQuarters() != null && !getQuarters()[0].isDead()) {
-                getOwner().setTarget(getIdlePeons(), getQuarters()[0], Action.DEFAULT, false);
+                getPlayerInterface().setTarget(getIdlePeons(), getQuarters()[0], Action.DEFAULT, false);
             }
         }
     }
 
     private void nodeAttackWithWarriorsAndChieftain(int num_warriors, boolean use_chieftain) {
-        /*
-        System.out.print("nodeAttackWithWarriorsAndChieftain");
-        if (getIdleWarriors() == null)
-        	System.out.println(" | no idling warriors");
-        else
-        	System.out.println(" | " + getIdleWarriors().length + " idling warriors");
-        */
         if (getIdleWarriors() != null && getIdleWarriors().length >= num_warriors
                 && (!use_chieftain || getOwner().hasActiveChieftain())) {
             boolean idle_chieftain = getIdleChieftains() != null && getIdleChieftains().length >= 1;
@@ -346,7 +334,8 @@ public final class AdvancedAI extends AI {
             System.arraycopy(getIdleWarriors(), 0, warriors, 0, num_warriors);
             Target target = findTarget(warriors[0].getGridX(), warriors[0].getGridY());
             if (target != null) {
-                getOwner().setLandscapeTarget(warriors, target.getGridX(), target.getGridY(), Action.ATTACK, true);
+                getPlayerInterface().setLandscapeTarget(warriors, target.getGridX(), target.getGridY(), Action.ATTACK,
+                        true);
                 if (numWarriors < params.numWarriorsMax())
                     numWarriors += params.numWarriorsIncrease();
             }
@@ -364,7 +353,7 @@ public final class AdvancedAI extends AI {
     private void nodeTrainChieftain() {
         if (!getOwner().hasActiveChieftain() && !getOwner().isTrainingChieftain()) {
             if (getQuarters() != null) {
-                getOwner().trainChieftain((Building) getQuarters()[0], true);
+                getPlayerInterface().trainChieftain((Building) getQuarters()[0], true);
             }
         }
     }
@@ -388,11 +377,11 @@ public final class AdvancedAI extends AI {
                     int num_rock_units = Math.min(num_warriors - num_rubber_units - num_iron_units, armory
                             .getSupplyContainer(RockAxeWeapon.class).orElseThrow().getNumSupplies());
                     if (num_rubber_units > 0)
-                        getOwner().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
+                        getPlayerInterface().deployUnits(armory, DeployType.RUBBER_WARRIOR, num_rubber_units);
                     if (num_iron_units > 0)
-                        getOwner().deployUnits(armory, DeployType.IRON_WARRIOR, num_iron_units);
+                        getPlayerInterface().deployUnits(armory, DeployType.IRON_WARRIOR, num_iron_units);
                     if (num_rock_units > 0)
-                        getOwner().deployUnits(armory, DeployType.ROCK_WARRIOR, num_rock_units);
+                        getPlayerInterface().deployUnits(armory, DeployType.ROCK_WARRIOR, num_rock_units);
                 } else {
                     if (num_units < num_warriors) {
                         nodeTransferUnits(num_warriors - num_units, armory);
@@ -437,25 +426,26 @@ public final class AdvancedAI extends AI {
             if (num_units > 0 && tree < params.maxUnitsGatheringTree() && tree <= rock && tree <= iron
                     && tree
                             <= rubber) {
-                getOwner().deployUnits(armory, DeployType.PEON_HARVEST_TREE, 1);
+                getPlayerInterface().deployUnits(armory, DeployType.PEON_HARVEST_TREE, 1);
                 deployed = true;
                 tree++;
             } else if (num_units > 0 && rock < params.maxUnitsGatheringRock() && rock <= tree && rock
                     <= iron
                     && rock <= rubber) {
-                        getOwner().deployUnits(armory, DeployType.PEON_HARVEST_ROCK, 1);
+                        getPlayerInterface().deployUnits(armory, DeployType.PEON_HARVEST_ROCK, 1);
                         deployed = true;
                         rock++;
                     } else if (num_units > 0 && iron < params.maxUnitsGatheringIron() && iron <= tree
                             && iron
                                     <= rock && iron <= rubber) {
-                                        getOwner().deployUnits(armory, DeployType.PEON_HARVEST_IRON, 1);
+                                        getPlayerInterface().deployUnits(armory, DeployType.PEON_HARVEST_IRON, 1);
                                         deployed = true;
                                         iron++;
                                     } else if (num_units > 0 && rubber < params.maxUnitsGatheringRubber()
                                             && rubber
                                                     <= tree && rubber <= rock && rubber <= iron) {
-                                                        getOwner().deployUnits(armory, DeployType.PEON_HARVEST_RUBBER,
+                                                        getPlayerInterface().deployUnits(armory,
+                                                                DeployType.PEON_HARVEST_RUBBER,
                                                                 1);
                                                         deployed = true;
                                                         rubber++;
@@ -471,11 +461,11 @@ public final class AdvancedAI extends AI {
         }
         if (quarters != null) {
             if (!quarters.isDead()) {
-                quarters.setRallyPoint(armory);
+                getPlayerInterface().setRallyPoint(quarters, armory);
                 if (quarters.getUnitContainer().orElseThrow().getNumSupplies() > params.minUnitsReproducing()) {
                     int units = Math.min(num_units, quarters.getUnitContainer().orElseThrow().getNumSupplies()
                             - params.minUnitsReproducing());
-                    getOwner().deployUnits(quarters, DeployType.PEON, units);
+                    getPlayerInterface().deployUnits(quarters, DeployType.PEON, units);
                 }
             }
         } else {
@@ -497,7 +487,7 @@ public final class AdvancedAI extends AI {
             if (builders.length < 20) {
                 if (quarters != null && !quarters.isDead() && quarters.getUnitContainer().orElseThrow().getNumSupplies()
                         >= 20)
-                    getOwner().deployUnits(quarters, DeployType.PEON, 20);
+                    getPlayerInterface().deployUnits(quarters, DeployType.PEON, 20);
             }
             if (builders.length == 0)
                 return;
@@ -579,7 +569,7 @@ public final class AdvancedAI extends AI {
                 .getBuildingTemplate(building_type), 40);
         getUnitGrid().scan(filter, grid_x, grid_y);
         return filter.getSingleResult().map(target -> {
-            getOwner().placeBuilding(selection, building_type, target.getGridX(), target.getGridY());
+            getPlayerInterface().placeBuilding(selection, building_type, target.getGridX(), target.getGridY());
             return true;
         }).orElse(false);
     }

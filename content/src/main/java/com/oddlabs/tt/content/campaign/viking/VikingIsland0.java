@@ -137,7 +137,7 @@ final class VikingIsland0 extends Island {
             if (armory != null && !armory.isDead()) {
                 enemy.getArmory().filter(a -> !a.isDead()).ifPresent(a -> {
                     enemy.deployUnits(a, DeployType.IRON_WARRIOR, num_units);
-                    AI.attackLandscape(enemy, armory, num_units);
+                    AI.attackLandscape(enemy, enemy, armory, num_units);
                 });
             }
         };

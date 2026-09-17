@@ -42,6 +42,7 @@ public abstract class AI implements Animated {
     }
 
     private final Player owner;
+    private final PlayerInterface playerInterface;
     private int INDEX_IDLE_PEONS;
     private int INDEX_IDLE_CHIEFTAINS;
     private int INDEX_IDLE_WARRIORS;
@@ -62,9 +63,9 @@ public abstract class AI implements Animated {
     private boolean tower_under_construction = false;
     private float sleep_time;
 
-    public AI(Player owner, @Nullable UnitInfo unit_info) {
+    public AI(Player owner, PlayerInterface playerInterface, @Nullable UnitInfo unit_info) {
         this.owner = owner;
-        owner.getWorld().getAnimationManagerRealTime().registerAnimation(this);
+        this.playerInterface = playerInterface;
         reset();
 
         if (unit_info != null) {
@@ -121,6 +122,10 @@ public abstract class AI implements Animated {
 
     protected final Player getOwner() {
         return owner;
+    }
+
+    public final PlayerInterface getPlayerInterface() {
+        return playerInterface;
     }
 
     protected final void reclassify() {
@@ -220,9 +225,9 @@ public abstract class AI implements Animated {
                 if (s.getAbilities().hasAbilities(Abilities.BUILD_ARMIES)) {
                     INDEX_ARMORY = i;
                     armory_under_construction = false;
-                    getOwner().buildRockWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
-                    getOwner().buildIronWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
-                    getOwner().buildRubberWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
+                    playerInterface.buildRockWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
+                    playerInterface.buildIronWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
+                    playerInterface.buildRubberWeapons((Building) s, BuildProductionContainer.INFINITE_LIMIT, true);
                 } else if (s.getAbilities().hasAbilities(Abilities.REPRODUCE)) {
                     INDEX_QUARTERS = i;
                     quarters_under_construction = false;
@@ -290,11 +295,11 @@ public abstract class AI implements Animated {
 
         int length = Math.min(idle_warriors.length, towers.length);
         for (int i = 0; i < length; i++) {
-            owner.setTarget(Selectable.newArray(idle_warriors[i]), towers[i], Action.DEFAULT, false);
+            playerInterface.setTarget(Selectable.newArray(idle_warriors[i]), towers[i], Action.DEFAULT, false);
         }
     }
 
-    public static int attackLandscape(Player owner, Target target, int num_warriors) {
+    public static int attackLandscape(Player owner, PlayerInterface playerInterface, Target target, int num_warriors) {
         int ordered = 0;
         Selectable<?>[][] lists = owner.classifyUnits();
         for (Selectable<?>[] list : lists) {
@@ -303,7 +308,8 @@ public abstract class AI implements Animated {
                     .getPrimaryController()).isAgressive())) {
                 for (Selectable<?> thrower : list) {
                     if (unit.getAbilities().hasAbilities(Abilities.THROW)) {
-                        owner.setLandscapeTarget(Selectable.newArray(thrower), target.getGridX(), target.getGridY(),
+                        playerInterface.setLandscapeTarget(Selectable.newArray(thrower), target.getGridX(), target
+                                .getGridY(),
                                 Action.ATTACK, true);
                         ordered++;
                         if (ordered == num_warriors) {

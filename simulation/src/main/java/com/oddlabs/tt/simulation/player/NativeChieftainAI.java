@@ -13,12 +13,12 @@ public final class NativeChieftainAI extends ChieftainAI {
     private static final int NUM_UNITS_FOR_POISON = 5;
 
     @Override
-    public void decide(Unit chieftain) {
-        nodeLightningCloud(chieftain);
-        nodePoisonFog(chieftain);
+    public void decide(Unit chieftain, PlayerInterface playerInterface) {
+        nodeLightningCloud(chieftain, playerInterface);
+        nodePoisonFog(chieftain, playerInterface);
     }
 
-    private void nodeLightningCloud(Unit chieftain) {
+    private void nodeLightningCloud(Unit chieftain, PlayerInterface playerInterface) {
         if (chieftain.getMagicProgress(MagicType.LIGHTNING_CLOUD) < 1)
             return;
 
@@ -28,11 +28,11 @@ public final class NativeChieftainAI extends ChieftainAI {
         if (num_enemy_units_close >= NUM_UNITS_FOR_LIGHTNING
                 || (num_enemy_units < NUM_UNITS_FOR_LIGHTNING && num_enemy_units_close > 1)
                 || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1)) {
-            chieftain.doMagic(MagicType.LIGHTNING_CLOUD, false);
+            playerInterface.doMagic(chieftain, MagicType.LIGHTNING_CLOUD);
         }
     }
 
-    private void nodePoisonFog(Unit chieftain) {
+    private void nodePoisonFog(Unit chieftain, PlayerInterface playerInterface) {
         if (chieftain.getMagicProgress(MagicType.POISON_FOG) < 1)
             return;
 
@@ -45,7 +45,7 @@ public final class NativeChieftainAI extends ChieftainAI {
                 && (num_enemy_units_close >= NUM_UNITS_FOR_POISON
                         || (num_enemy_units < NUM_UNITS_FOR_POISON && num_enemy_units_close > 1)
                         || (chieftain.getHitPoints() <= 2 && num_enemy_units_close > 1))) {
-            chieftain.doMagic(MagicType.POISON_FOG, false);
+            playerInterface.doMagic(chieftain, MagicType.POISON_FOG);
         }
     }
 
