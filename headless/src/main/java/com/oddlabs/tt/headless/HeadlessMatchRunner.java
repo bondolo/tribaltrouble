@@ -71,14 +71,30 @@ public final class HeadlessMatchRunner {
             final int progressIntervalTicks = 5_000;
             long lastProgressTimeNanos = System.nanoTime();
             int lastProgressTick = initialTick;
+            long lastTickAdvanceNanos = System.nanoTime();
+            int lastObservedTick = initialTick;
+            Duration stallTimeout = config.stallTimeout();
+            long stallTimeoutNanos = stallTimeout != null ? stallTimeout.toNanos() : 0L;
 
             while (true) {
                 harness.stepConcurrent();
                 if (!harness.areTicksAligned()) {
+                    if (stallTimeoutNanos > 0L && System.nanoTime() - lastTickAdvanceNanos > stallTimeoutNanos) {
+                        throw new TimeoutException("Simulation stalled: instance ticks failed to align within "
+                                + stallTimeout);
+                    }
                     continue;
                 }
                 int currentTick = harness.getInstances().getFirst().getTick();
                 int elapsedTicks = currentTick - initialTick;
+
+                if (currentTick != lastObservedTick) {
+                    lastObservedTick = currentTick;
+                    lastTickAdvanceNanos = System.nanoTime();
+                } else if (stallTimeoutNanos > 0L && System.nanoTime() - lastTickAdvanceNanos > stallTimeoutNanos) {
+                    throw new TimeoutException("Simulation stalled: tick " + currentTick + " has not advanced for "
+                            + stallTimeout);
+                }
 
                 if (checksumInterval > 0 && currentTick % checksumInterval == 0) {
                     harness.verifyChecksums();

@@ -14,13 +14,16 @@ import java.nio.channels.ClosedChannelException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public final class TunnelledConnectionListener extends AbstractConnectionListener {
+/**
+ * Connection listener for incoming matchmaking tunnel connections.
+ */
+public final class TunnelledConnectionListener extends AbstractConnectionListener<TunnelIdentifier> {
     private final Deque<TunnelledConnection> incoming_connections = new ArrayDeque<>();
     private final MatchmakingClient matchmaking_client;
     private boolean open = true;
 
     public TunnelledConnectionListener(MatchmakingClient matchmaking_client,
-            ConnectionListenerInterface listener_interface) {
+            ConnectionListenerInterface<? super TunnelIdentifier> listener_interface) {
         super(listener_interface);
         this.matchmaking_client = matchmaking_client;
         matchmaking_client.registerTunnelledListener(this);
@@ -39,7 +42,7 @@ public final class TunnelledConnectionListener extends AbstractConnectionListene
     }
 
     @Override
-    protected AbstractConnection doAcceptConnection(@Nullable ConnectionInterface connection_interface) {
+    public AbstractConnection acceptConnection(@Nullable ConnectionInterface connection_interface) {
         TunnelledConnection conn = getNextTunnel();
         conn.setConnectionInterface(connection_interface);
         conn.accept();

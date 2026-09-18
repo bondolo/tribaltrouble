@@ -1,5 +1,6 @@
 package com.oddlabs.tt.headless;
 
+import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.procedural.MapCode;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
@@ -10,6 +11,7 @@ import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -78,6 +80,7 @@ public final class Main {
         Terrain terrain = Terrain.NATIVE;
         int difficulty = PlayerSlot.AI_NORMAL;
         String mapKey = null;
+        Duration stallTimeout = HeadlessMatchConfig.DEFAULT_STALL_TIMEOUT;
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
@@ -94,6 +97,12 @@ public final class Main {
                 case "--max-ticks", "-t" -> {
                     if (i + 1 < args.length) {
                         maxTicks = Integer.parseInt(args[++i]);
+                    }
+                }
+                case "--stall-timeout" -> {
+                    if (i + 1 < args.length) {
+                        long seconds = Long.parseLong(args[++i]);
+                        stallTimeout = seconds > 0 ? Duration.ofSeconds(seconds) : null;
                     }
                 }
                 case "--terrain" -> {
@@ -117,7 +126,16 @@ public final class Main {
 
         HeadlessMatchConfig config;
         if (mapKey != null) {
-            config = parseMapKey(mapKey, maxTicks);
+            HeadlessMatchConfig parsed = parseMapKey(mapKey, maxTicks);
+            config = new HeadlessMatchConfig(
+                    parsed.islandConfig(),
+                    parsed.worldParameters(),
+                    parsed.players(),
+                    parsed.maxTicks(),
+                    parsed.checksumIntervalTicks(),
+                    parsed.timeManager(),
+                    stallTimeout
+            );
         } else {
             IslandConfig islandConfig = new IslandConfig(
                     terrain,
@@ -147,7 +165,9 @@ public final class Main {
                     worldParameters,
                     players,
                     maxTicks,
-                    HeadlessMatchConfig.DEFAULT_CHECKSUM_INTERVAL
+                    HeadlessMatchConfig.DEFAULT_CHECKSUM_INTERVAL,
+                    new TickTimeManager(),
+                    stallTimeout
             );
         }
 

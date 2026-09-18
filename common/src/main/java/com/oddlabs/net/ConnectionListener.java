@@ -1,165 +1,27 @@
 package com.oddlabs.net;
 
+import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+/**
+ * Listens for incoming network connections and manages their lifecycle.
+ */
+public interface ConnectionListener extends AutoCloseable {
+    /**
+     * Accepts an incoming connection and binds the given connection interface to it.
+     *
+     * @param connection_interface interface to receive connection lifecycle and message events
+     * @return the accepted connection instance
+     */
+    AbstractConnection acceptConnection(@Nullable ConnectionInterface connection_interface);
 
+    /**
+     * Rejects the pending incoming connection.
+     */
+    void rejectConnection();
 
-public final class ConnectionListener extends AbstractConnectionListener implements Handler {
-    private static final Logger logger = Logger.getLogger(ConnectionListener.class.getSimpleName());
-
-    private final NetworkSelector network;
-    private SelectionKey key;
-
-    private final Deque<SocketChannel> incoming_connections = new ArrayDeque<>();
-
-    private static SelectionKey createServerSocket(NetworkSelector network, InetAddress ip, int port)
-            throws IOException {
-        ServerSocketChannel server_channel = ServerSocketChannel.open();
-        server_channel.configureBlocking(false);
-        SocketAddress address = new InetSocketAddress(ip, port);
-        server_channel.socket().setReuseAddress(true);
-        server_channel.socket().bind(address);
-        SelectionKey key = server_channel.register(network.getSelector(), SelectionKey.OP_ACCEPT);
-        return key;
-    }
-
-    public ConnectionListener(NetworkSelector network, InetAddress ip, int port,
-            ConnectionListenerInterface connection_listener_interface) {
-        super(connection_listener_interface);
-        this.network = network;
-        IOException exception;
-        try {
-            if (!network.getDeterministic().isPlayback()) {
-                key = createServerSocket(network, ip, port);
-            }
-            exception = null;
-        } catch (IOException e) {
-            exception = e;
-        }
-        if (network.getDeterministic().log(exception != null))
-            error(network.getDeterministic().log(exception));
-        else
-            network.attachToKey(key, this);
-    }
-
-    public int getPort() {
-        return network.getDeterministic().log(key != null ? ((ServerSocketChannel) key.channel()).socket()
-                .getLocalPort() : -1);
-    }
-
+    /**
+     * Closes this connection listener and releases underlying network resources.
+     */
     @Override
-    public void handle() throws IOException {
-        IOException exception = null;
-        SocketChannel channel = null;
-        if (!network.getDeterministic().isPlayback()) {
-            ServerSocketChannel server_channel = (ServerSocketChannel) key.channel();
-            channel = server_channel.accept();
-            try {
-                Connection.configureChannel(channel);
-            } catch (IOException e) {
-                try {
-                    channel.close();
-                } catch (IOException e2) {
-                    logger.log(Level.WARNING, "Failed to close channel after connection error", e2);
-                }
-                exception = e;
-            }
-        }
-        if (network.getDeterministic().log(exception != null))
-            throw network.getDeterministic().log(exception);
-        incoming_connections.add(channel);
-        notifyIncomingConnection();
-    }
-
-    public void error(IOException e) {
-        notifyError(e);
-    }
-
-    public void incoming(InetAddress remote_address) {
-        notifyIncomingConnection(remote_address);
-    }
-
-    private void notifyIncomingConnection() {
-        InetAddress remote_inet_address = null;
-        if (!network.getDeterministic().isPlayback()) {
-            SocketChannel channel = incoming_connections.getFirst();
-            SocketAddress remote_address = channel.socket().getRemoteSocketAddress();
-            remote_inet_address = ((InetSocketAddress) remote_address).getAddress();
-        }
-        incoming(network.getDeterministic().log(remote_inet_address));
-    }
-
-    private SocketChannel removeNextChannel() {
-        return incoming_connections.removeFirst();
-    }
-
-    private SocketChannel getNextConnection() {
-        SocketChannel channel = removeNextChannel();
-        if (!incoming_connections.isEmpty())
-            notifyIncomingConnection();
-        return channel;
-    }
-
-    private SelectionKey getNextConnectionKey() {
-        try {
-            SocketChannel channel = getNextConnection();
-            SelectionKey socket_key = channel.register(network.getSelector(), SelectionKey.OP_READ);
-            return socket_key;
-        } catch (ClosedChannelException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    @Override
-    protected AbstractConnection doAcceptConnection(ConnectionInterface conn_interface) {
-        SelectionKey socket_key;
-        if (!network.getDeterministic().isPlayback())
-            socket_key = getNextConnectionKey();
-        else
-            socket_key = null;
-        return new Connection(network, socket_key, conn_interface);
-    }
-
-    @Override
-    public void rejectConnection() {
-        try {
-            SocketChannel channel = getNextConnection();
-            if (!network.getDeterministic().isPlayback())
-                channel.close();
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Error while rejecting connection", e);
-        }
-    }
-
-    @Override
-    public void close() {
-        if (key != null && key.isValid()) {
-            try {
-                key.channel().close();
-                while (!incoming_connections.isEmpty())
-                    removeNextChannel().close();
-            } catch (IOException e) {
-                logger.log(Level.WARNING, "Error while closing listener", e);
-            }
-        }
-        if (network.getDeterministic().log(key != null))
-            network.cancelKey(key, this);
-    }
-
-    @Override
-    public void handleError(IOException e) throws IOException {
-        error(e);
-    }
+    void close();
 }

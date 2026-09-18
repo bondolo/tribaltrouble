@@ -6,10 +6,10 @@ import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.matchmaking.Profile;
 import com.oddlabs.matchmaking.TunnelAddress;
 import com.oddlabs.net.AbstractConnection;
-import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
+import com.oddlabs.net.SocketConnectionListener;
 import com.oddlabs.tt.base.util.Utils;
 import com.oddlabs.tt.simulation.landscape.WorldGenerator;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ import com.oddlabs.tt.simulation.player.PlayerSlotHandler;
 import java.util.stream.IntStream;
 
 /** Network server host managing client connections and slot allocation. */
-public final class Server implements ConnectionListenerInterface {
+public final class Server implements ConnectionListenerInterface<Object> {
     private static final int NEGOTIATING = 1;
     private static final int SYNCHRONIZING = 2;
     private static final int CLOSED = 3;
@@ -36,11 +37,11 @@ public final class Server implements ConnectionListenerInterface {
     private final String[] ai_names;
     private final WorldGenerator<?> generator;
     private final Game game;
-    private final AbstractConnectionListener local_listener;
+    private final ConnectionListener local_listener;
     private final Map<AbstractConnection, ClientConnection> connection_to_client = new LinkedHashMap<>();
     private final Random random;
     private final @Nullable MatchmakingClient matchmaking_client;
-    private AbstractConnectionListener tunnelled_listener;
+    private @Nullable ConnectionListener tunnelled_listener;
 
     private int state = NEGOTIATING;
     private final boolean register_server;
@@ -60,7 +61,8 @@ public final class Server implements ConnectionListenerInterface {
             PlayerSlotHandler slot_handler) {
         this.slot_handler = slot_handler;
         this.player_info_factory = player_info_factory;
-        this.local_listener = new ConnectionListener(network, ip, NetConfig.DEFAULT_NET_PORT, this);
+        this.local_listener = new SocketConnectionListener(network,
+                new InetSocketAddress(ip, NetConfig.DEFAULT_NET_PORT), this);
         this.matchmaking_client = matchmaking_client;
         this.game = game;
         this.generator = generator;
@@ -123,7 +125,7 @@ public final class Server implements ConnectionListenerInterface {
     }
 
     @Override
-    public void error(AbstractConnectionListener listener, IOException e) {
+    public void error(ConnectionListener listener, IOException e) {
         IO.println("Listener failed: " + e);
         close();
     }
@@ -262,7 +264,7 @@ public final class Server implements ConnectionListenerInterface {
     }
 
     @Override
-    public void incomingConnection(AbstractConnectionListener connection_listener, Object remote_address) {
+    public void incomingConnection(ConnectionListener connection_listener, Object remote_address) {
         IO.println("Incoming host connection from " + remote_address);
         short available_slot = locateAvailableSlot();
         if (state != NEGOTIATING || available_slot == -1 ||

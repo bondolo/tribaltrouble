@@ -8,6 +8,7 @@ import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.net.TickTimeManager;
 import com.oddlabs.net.TimeManager;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -19,6 +20,7 @@ import java.util.List;
  * @param maxTicks maximum simulation ticks before match termination
  * @param checksumIntervalTicks frequency of deterministic state checksum validations
  * @param timeManager clock manager driving session networking and pace
+ * @param stallTimeout maximum elapsed real time allowed without simulation tick progress before failing
  */
 public record HeadlessMatchConfig(
                                   IslandConfig islandConfig,
@@ -26,10 +28,12 @@ public record HeadlessMatchConfig(
                                   List<PlayerConfig> players,
                                   int maxTicks,
                                   int checksumIntervalTicks,
-                                  TimeManager timeManager) {
+                                  TimeManager timeManager,
+                                  Duration stallTimeout) {
 
     public static final int DEFAULT_MAX_TICKS = 200_000;
     public static final int DEFAULT_CHECKSUM_INTERVAL = 50;
+    public static final Duration DEFAULT_STALL_TIMEOUT = Duration.ofSeconds(15);
 
     public HeadlessMatchConfig(
             IslandConfig islandConfig,
@@ -37,7 +41,19 @@ public record HeadlessMatchConfig(
             List<PlayerConfig> players,
             int maxTicks,
             int checksumIntervalTicks) {
-        this(islandConfig, worldParameters, players, maxTicks, checksumIntervalTicks, new TickTimeManager());
+        this(islandConfig, worldParameters, players, maxTicks, checksumIntervalTicks, new TickTimeManager(),
+                DEFAULT_STALL_TIMEOUT);
+    }
+
+    public HeadlessMatchConfig(
+            IslandConfig islandConfig,
+            WorldParameters worldParameters,
+            List<PlayerConfig> players,
+            int maxTicks,
+            int checksumIntervalTicks,
+            TimeManager timeManager) {
+        this(islandConfig, worldParameters, players, maxTicks, checksumIntervalTicks, timeManager,
+                DEFAULT_STALL_TIMEOUT);
     }
 
     /**

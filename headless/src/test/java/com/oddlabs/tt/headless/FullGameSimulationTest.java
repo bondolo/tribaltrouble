@@ -230,5 +230,23 @@ class FullGameSimulationTest {
         assertFalse(config.players().isEmpty());
         assertTrue(config.players().size() >= 2);
         assertTrue(config.islandConfig().metersPerWorld() > 0);
+        assertEquals(HeadlessMatchConfig.DEFAULT_STALL_TIMEOUT, config.stallTimeout());
+    }
+
+    @Test
+    void testWatchdogStallTimeoutConfiguration() {
+        String testMapKey = "4Y4SDR388K";
+        HeadlessMatchConfig baseConfig = Main.parseMapKey(testMapKey, 10_000);
+        HeadlessMatchConfig configWithTimeout = new HeadlessMatchConfig(
+                baseConfig.islandConfig(),
+                baseConfig.worldParameters(),
+                baseConfig.players(),
+                baseConfig.maxTicks(),
+                baseConfig.checksumIntervalTicks(),
+                baseConfig.timeManager(),
+                java.time.Duration.ofMillis(50)
+        );
+
+        assertEquals(java.time.Duration.ofMillis(50), configWithTimeout.stallTimeout());
     }
 }

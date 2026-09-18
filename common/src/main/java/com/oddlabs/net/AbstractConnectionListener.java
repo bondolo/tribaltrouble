@@ -1,25 +1,31 @@
 package com.oddlabs.net;
 
+import org.jspecify.annotations.Nullable;
+
 import java.io.IOException;
 
-public abstract class AbstractConnectionListener {
-    private final ConnectionListenerInterface listener_interface;
+/**
+ * Skeletal implementation of a {@link ConnectionListener} delegating lifecycle callbacks.
+ *
+ * @param <A> the type of address or connection identifier emitted on incoming connections
+ */
+public abstract class AbstractConnectionListener<A> implements ConnectionListener {
+    private final ConnectionListenerInterface<? super A> listener_interface;
 
-    protected AbstractConnectionListener(ConnectionListenerInterface connection_listener) {
+    protected AbstractConnectionListener(ConnectionListenerInterface<? super A> connection_listener) {
         this.listener_interface = connection_listener;
     }
 
+    @Override
     public abstract void close();
 
-    public AbstractConnection acceptConnection(ConnectionInterface connection_interface) {
-        return doAcceptConnection(connection_interface);
-    }
+    @Override
+    public abstract AbstractConnection acceptConnection(@Nullable ConnectionInterface connection_interface);
 
-    protected abstract AbstractConnection doAcceptConnection(ConnectionInterface conn_interface);
-
+    @Override
     public abstract void rejectConnection();
 
-    protected final void notifyIncomingConnection(Object address) {
+    protected final void notifyIncomingConnection(A address) {
         listener_interface.incomingConnection(this, address);
     }
 

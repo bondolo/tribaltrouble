@@ -359,6 +359,11 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         } catch (Exception e) {
             logger.warning("Error closing router: " + e);
         }
+        try {
+            network.close();
+        } catch (Exception e) {
+            logger.warning("Error closing network selector: " + e);
+        }
         virtualExecutor.shutdown();
     }
 }

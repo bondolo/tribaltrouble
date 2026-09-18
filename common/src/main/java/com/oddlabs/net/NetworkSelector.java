@@ -14,7 +14,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public final class NetworkSelector {
+/**
+ * Manages non-blocking network I/O multiplexing and ping/timeout scheduling.
+ */
+public final class NetworkSelector implements AutoCloseable {
     private static final long PING_TIMEOUT = TimeUnit.MINUTES.toMillis(4);
     private static final long PING_DELAY = PING_TIMEOUT / 2;
 
@@ -203,5 +206,35 @@ public final class NetworkSelector {
                 cancelKey(key, handler);
             }
         }
+    }
+
+    @Override
+    public void close() {
+        if (task_thread != null) {
+            task_thread.close();
+            task_thread = null;
+        }
+        if (selector != null) {
+            if (selector.isOpen()) {
+                for (SelectionKey key : selector.keys()) {
+                    try {
+                        key.channel().close();
+                    } catch (IOException e) {
+                        java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
+                                .log(java.util.logging.Level.FINE, "Error closing channel", e);
+                    }
+                }
+                try {
+                    selector.close();
+                } catch (IOException e) {
+                    java.util.logging.Logger.getLogger(NetworkSelector.class.getName())
+                            .log(java.util.logging.Level.FINE, "Error closing selector", e);
+                }
+            }
+            selector = null;
+        }
+        handler_map.clear();
+        ping_connections.clear();
+        ping_timeouts.clear();
     }
 }

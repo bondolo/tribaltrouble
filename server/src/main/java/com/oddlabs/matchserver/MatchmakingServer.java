@@ -4,15 +4,16 @@ import com.oddlabs.event.Deterministic;
 import com.oddlabs.event.NotDeterministic;
 import com.oddlabs.matchmaking.MatchmakingServerInterface;
 import com.oddlabs.net.AbstractConnection;
-import com.oddlabs.net.AbstractConnectionListener;
 import com.oddlabs.net.ConnectionListener;
 import com.oddlabs.net.ConnectionListenerInterface;
 import com.oddlabs.net.NetworkSelector;
 import com.oddlabs.net.SecureConnection;
+import com.oddlabs.net.SocketConnectionListener;
 import com.oddlabs.util.KeyManager;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.logging.SimpleFormatter;
 /**
  * Server handling player matchmaking, chat rooms, and game coordination.
  */
-public final class MatchmakingServer implements ConnectionListenerInterface {
+public final class MatchmakingServer implements ConnectionListenerInterface<InetAddress> {
     private static final Map<String, Client> online_users = new HashMap<>();
     private static int current_id = 1;
 
@@ -33,7 +34,7 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
 
     private final Logger chat_logger = Logger.getLogger("chatlog");
 
-    private final AbstractConnectionListener connection_listener;
+    private final ConnectionListener connection_listener;
     private final AlgorithmParameterSpec param_spec;
     private final NetworkSelector network;
     private final Map<Integer, Client> client_map = new HashMap<>();
@@ -59,8 +60,8 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
         DBUtils.initConnection(DBUtils.DEFAULT_SQLITE_URL, null, null);
         logger.info("Generating encryption keys.");
         this.param_spec = KeyManager.generateParameterSpec();
-        connection_listener = new ConnectionListener(network, null, MatchmakingServerInterface.MATCHMAKING_SERVER_PORT,
-                this);
+        connection_listener = new SocketConnectionListener(network,
+                new InetSocketAddress(MatchmakingServerInterface.MATCHMAKING_SERVER_PORT), this);
         DBInterface.initDropGames();
         DBInterface.clearOnlineProfiles();
         logger.info("Matchmaking server started.");
@@ -81,11 +82,11 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
     }
 
     @Override
-    public void incomingConnection(AbstractConnectionListener connection_listener, Object remote_address) {
+    public void incomingConnection(ConnectionListener connection_listener, InetAddress remote_address) {
         int id = current_id++;
         AbstractConnection conn = connection_listener.acceptConnection(null);
         SecureConnection secure_conn = new SecureConnection(network.getDeterministic(), conn, param_spec);
-        Authenticator client = new Authenticator(this, secure_conn, (InetAddress) remote_address, id);
+        Authenticator client = new Authenticator(this, secure_conn, remote_address, id);
     }
 
     public void loginClient(InetAddress remote_address, InetAddress local_remote_address, String username,
@@ -107,7 +108,7 @@ public final class MatchmakingServer implements ConnectionListenerInterface {
     }
 
     @Override
-    public void error(AbstractConnectionListener conn_id, IOException e) {
+    public void error(ConnectionListener conn_id, IOException e) {
         logger.severe("Server socket failed!");
         throw new RuntimeException(e);
     }
