@@ -166,6 +166,11 @@ public final class Building extends Selectable<BuildingTemplate> implements Occu
         return Optional.ofNullable(resource_containers.get(key));
     }
 
+    public @Nullable SupplyContainer getSupplyContainerDirect(SupplyType key) {
+        assert !isDead();
+        return resource_containers.get(key);
+    }
+
     public Optional<BuildSupplyContainer> getBuildSupplyContainer(Class<?> key) {
         assert !isDead();
         return Optional.ofNullable(build_containers.get(key));

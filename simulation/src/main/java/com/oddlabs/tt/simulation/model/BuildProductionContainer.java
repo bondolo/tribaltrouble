@@ -1,8 +1,8 @@
 package com.oddlabs.tt.simulation.model;
 
-
-import java.util.Map;
-
+/**
+ * Manages production and resource consumption for manufactured goods in a building.
+ */
 public class BuildProductionContainer extends BuildSupplyContainer {
     public static final int INFINITE_LIMIT = 30;
 
@@ -35,9 +35,14 @@ public class BuildProductionContainer extends BuildSupplyContainer {
     }
 
     public final boolean hasEnoughSupplies() {
-        for (Map.Entry<SupplyType, Integer> entry : cost.costs().entrySet()) {
-            if (building.getSupplyContainer(entry.getKey()).orElseThrow().getNumSupplies() < entry.getValue()) {
-                return false;
+        SupplyType[] types = SupplyType.getValues();
+        for (SupplyType type : types) {
+            int needed = cost.getCost(type);
+            if (needed > 0) {
+                SupplyContainer sc = building.getSupplyContainerDirect(type);
+                if (sc == null || sc.getNumSupplies() < needed) {
+                    return false;
+                }
             }
         }
         return true;
@@ -48,9 +53,12 @@ public class BuildProductionContainer extends BuildSupplyContainer {
         if (man_seconds >= man_seconds_per_production) {
             man_seconds = 0;
             if (!dest_container.isSupplyFull()) {
-                for (Map.Entry<SupplyType, Integer> entry : cost.costs().entrySet()) {
-                    building.getSupplyContainer(entry.getKey()).orElseThrow().increaseSupply(-entry.getValue());
-                }
+                cost.forEachCost((type, amount) -> {
+                    SupplyContainer sc = building.getSupplyContainerDirect(type);
+                    if (sc != null) {
+                        sc.increaseSupply(-amount);
+                    }
+                });
                 if (!infinite)
                     increaseSupply(-1);
                 dest_container.increaseSupply(1);

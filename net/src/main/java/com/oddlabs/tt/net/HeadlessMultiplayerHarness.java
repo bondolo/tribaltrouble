@@ -15,14 +15,15 @@ import com.oddlabs.tt.simulation.player.PlayerSlot;
 import com.oddlabs.tt.simulation.player.UnitInfo;
 import com.oddlabs.util.Utils;
 
+import org.jspecify.annotations.Nullable;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Phaser;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
@@ -36,7 +37,10 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     private final Router router;
     private final SessionID sessionId;
     private final List<HeadlessSimulationInstance> instances;
-    private final ExecutorService virtualExecutor;
+    private final @Nullable CyclicBarrier startBarrier;
+    private final @Nullable CyclicBarrier doneBarrier;
+    private final List<InstanceWorker> workers;
+    private final List<Thread> workerThreads;
 
     public HeadlessMultiplayerHarness(
             NetworkSelector network,
@@ -47,7 +51,29 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         this.router = router;
         this.sessionId = sessionId;
         this.instances = List.copyOf(instances);
-        this.virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        if (this.instances.size() > 1) {
+            int count = this.instances.size();
+            this.startBarrier = new CyclicBarrier(count + 1);
+            this.doneBarrier = new CyclicBarrier(count + 1);
+            List<InstanceWorker> workerList = new ArrayList<>(count);
+            List<Thread> threadList = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                InstanceWorker worker = new InstanceWorker(this.instances.get(i), startBarrier, doneBarrier);
+                workerList.add(worker);
+                Thread thread = Thread.ofPlatform()
+                        .name("headless-sim-worker-" + i)
+                        .daemon(true)
+                        .start(worker);
+                threadList.add(thread);
+            }
+            this.workers = List.copyOf(workerList);
+            this.workerThreads = List.copyOf(threadList);
+        } else {
+            this.startBarrier = null;
+            this.doneBarrier = null;
+            this.workers = List.of();
+            this.workerThreads = List.of();
+        }
     }
 
     /**
@@ -236,19 +262,40 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
                 instance.animate(dt);
             }
         } else {
-            Phaser phaser = new Phaser(instances.size() + 1);
-            for (HeadlessSimulationInstance instance : instances) {
-                virtualExecutor.execute(() -> {
-                    try {
-                        instance.animate(dt);
-                    } finally {
-                        phaser.arriveAndDeregister();
-                    }
-                });
-            }
-            phaser.arriveAndAwaitAdvance();
+            dispatchConcurrent(dt);
         }
         pumpNetwork();
+    }
+
+    private void dispatchConcurrent(float dt) {
+        if (startBarrier == null || doneBarrier == null) {
+            return;
+        }
+        for (InstanceWorker worker : workers) {
+            worker.currentDt = dt;
+        }
+        try {
+            startBarrier.await();
+            doneBarrier.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Simulation tick interrupted", e);
+        } catch (BrokenBarrierException e) {
+            throw new RuntimeException("Simulation barrier broken", e);
+        }
+        for (InstanceWorker worker : workers) {
+            Throwable t = worker.failure;
+            if (t != null) {
+                worker.failure = null;
+                if (t instanceof RuntimeException re) {
+                    throw re;
+                }
+                if (t instanceof Error err) {
+                    throw err;
+                }
+                throw new RuntimeException(t);
+            }
+        }
     }
 
     /**
@@ -364,6 +411,64 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         } catch (Exception e) {
             logger.warning("Error closing network selector: " + e);
         }
-        virtualExecutor.shutdown();
+        for (InstanceWorker worker : workers) {
+            worker.stop();
+        }
+        if (startBarrier != null) {
+            startBarrier.reset();
+        }
+        for (Thread thread : workerThreads) {
+            thread.interrupt();
+            try {
+                thread.join(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
+    /**
+     * Dedicated worker executing simulation animation ticks for a single instance.
+     */
+    private static final class InstanceWorker implements Runnable {
+        private final HeadlessSimulationInstance instance;
+        private final CyclicBarrier startBarrier;
+        private final CyclicBarrier doneBarrier;
+        private volatile float currentDt;
+        private volatile boolean running = true;
+        private volatile @Nullable Throwable failure;
+
+        InstanceWorker(HeadlessSimulationInstance instance, CyclicBarrier startBarrier, CyclicBarrier doneBarrier) {
+            this.instance = instance;
+            this.startBarrier = startBarrier;
+            this.doneBarrier = doneBarrier;
+        }
+
+        void stop() {
+            running = false;
+        }
+
+        @Override
+        public void run() {
+            ScopedValue.where(PeerHub.CURRENT, instance.getPeerHub()).run(() -> {
+                while (running) {
+                    try {
+                        startBarrier.await();
+                        if (!running) {
+                            break;
+                        }
+                        try {
+                            instance.animate(currentDt);
+                        } catch (Throwable t) {
+                            failure = t;
+                        }
+                        doneBarrier.await();
+                    } catch (InterruptedException | BrokenBarrierException e) {
+                        break;
+                    }
+                }
+            });
+        }
     }
 }

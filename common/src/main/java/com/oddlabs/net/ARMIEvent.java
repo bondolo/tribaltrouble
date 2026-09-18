@@ -59,11 +59,15 @@ public final class ARMIEvent implements Serializable {
         return new ARMIEvent(method_id, command_stream);
     }
 
-    private static byte[] createByteArrayFromCommand(ARMIArgumentWriter writer, Class<
+    private static final ThreadLocal<ByteBufferOutputStream> THREAD_LOCAL_STREAM = ThreadLocal.withInitial(
+            () -> new ByteBufferOutputStream(false));
+
+    private static byte @Nullable [] createByteArrayFromCommand(ARMIArgumentWriter writer, Class<
             ?>[] method_parameter_types, Object @Nullable [] args) {
         if (args != null) {
             try {
-                ByteBufferOutputStream byte_stream = new ByteBufferOutputStream(false);
+                ByteBufferOutputStream byte_stream = THREAD_LOCAL_STREAM.get();
+                byte_stream.reset();
                 for (int i = 0; i < args.length; i++) {
                     Object arg = args[i];
                     Class<?> type = method_parameter_types[i];

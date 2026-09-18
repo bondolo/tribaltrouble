@@ -12,6 +12,8 @@ public enum SupplyType {
     IRON(IronSupply.class),
     RUBBER(RubberSupply.class);
 
+    private static final SupplyType[] VALUES = values();
+
     private final Class<? extends Supply> supplyClass;
 
     SupplyType(Class<? extends Supply> supplyClass) {
@@ -20,6 +22,11 @@ public enum SupplyType {
 
     public Class<? extends Supply> getSupplyClass() {
         return supplyClass;
+    }
+
+    /** {@return array of all supply types without allocating a new array} */
+    public static SupplyType[] getValues() {
+        return VALUES;
     }
 
     public static @Nullable SupplyType fromClass(Class<?> cl) {

@@ -251,7 +251,11 @@ public final class HeadlessSimulationInstance implements AutoCloseable {
     }
 
     public void animate(float dt) {
-        ScopedValue.where(PeerHub.CURRENT, peerHub).run(() -> animationManager.runAnimations(dt));
+        if (PeerHub.CURRENT.isBound() && PeerHub.CURRENT.get() == peerHub) {
+            animationManager.runAnimations(dt);
+        } else {
+            ScopedValue.where(PeerHub.CURRENT, peerHub).run(() -> animationManager.runAnimations(dt));
+        }
     }
 
     /**
