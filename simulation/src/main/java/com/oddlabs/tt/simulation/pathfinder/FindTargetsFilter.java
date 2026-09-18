@@ -4,14 +4,17 @@ import com.oddlabs.tt.simulation.landscape.LandscapeTarget;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
-public final class FindTargetsFilter implements ScanFilter {
+/**
+ * Filter that collects open landscape coordinates for target discovery.
+ */
+final class FindTargetsFilter implements ScanFilter {
 
     private final int max_radius;
     private final @Nullable Target[] result;
     private final boolean grid_targets_only;
     private int index;
 
-    public FindTargetsFilter(int num_targets, int max_radius, boolean grid_targets_only) {
+    FindTargetsFilter(int num_targets, int max_radius, boolean grid_targets_only) {
         result = new Target[num_targets];
         this.max_radius = max_radius;
         this.grid_targets_only = grid_targets_only;

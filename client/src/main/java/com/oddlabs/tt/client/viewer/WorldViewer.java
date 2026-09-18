@@ -311,6 +311,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
         initialized[0] = true;
         this.local_player = world.getPlayers().get(player_slot);
         this.selection = new Selection(local_player);
+        engine.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
                 selection, audioManager);
@@ -378,6 +379,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     @Override
     public void close() {
+        engine.setPathfindCountSupplier(null);
         engine.getNetwork().getChatHub().removeListener(in_game_chat_history);
         engine.getNetwork().getChatHub().removeListener(chat_listener);
         gui_root.getAnimationManager().removeAnimation(this);

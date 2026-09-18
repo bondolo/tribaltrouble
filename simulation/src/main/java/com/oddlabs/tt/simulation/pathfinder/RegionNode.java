@@ -1,20 +1,12 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-public final class RegionNode implements PathNode {
-    private final RegionNode parent;
-    private final Region region;
+import org.jspecify.annotations.Nullable;
 
-    public RegionNode(RegionNode parent, Region region) {
-        this.parent = parent;
-        this.region = region;
-    }
-
-    public Region getRegion() {
-        return region;
-    }
-
-    @Override
-    public PathNode getParent() {
-        return parent;
-    }
+/**
+ * Immutable linked node representing a step along a region path.
+ *
+ * @param parent previous node along the path
+ * @param region region represented by this node
+ */
+public record RegionNode(@Nullable RegionNode parent, Region region) implements PathNode<RegionNode> {
 }

@@ -313,4 +313,49 @@ class HeadlessMultiplayerHarnessTest {
                     "Checksums must match under laggy network jitter conditions");
         }
     }
+
+    @Test
+    void testMultiInstanceConcurrentVirtualThreadStepping() throws Exception {
+        int gridSize = 32;
+        LandscapeData landscapeData = TestLandscapeData.create(gridSize);
+        WorldParameters worldParams = new WorldParameters(Game.GAMESPEED_FAST, "1", 5, 20);
+
+        PlayerSlot[] playerSlots = new PlayerSlot[2];
+        playerSlots[0] = new PlayerSlot(0);
+        playerSlots[0].setType(PlayerSlot.AI);
+        playerSlots[0].setAIDifficulty(PlayerSlot.AI_NORMAL);
+        playerSlots[0].setInfo(new PlayerInfo(0, Race.VIKINGS, "VikingConcurrent0"));
+
+        playerSlots[1] = new PlayerSlot(1);
+        playerSlots[1].setType(PlayerSlot.AI);
+        playerSlots[1].setAIDifficulty(PlayerSlot.AI_NORMAL);
+        playerSlots[1].setInfo(new PlayerInfo(1, Race.NATIVES, "NativeConcurrent1"));
+
+        UnitInfo[] unitInfos = new UnitInfo[2];
+        unitInfos[0] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+        unitInfos[1] = new UnitInfo(false, false, 0, false, 5, 0, 0, 0);
+
+        try (HeadlessMultiplayerHarness harness = HeadlessMultiplayerHarness.createVirtual(
+                landscapeData,
+                worldParams,
+                playerSlots,
+                unitInfos)) {
+
+            assertEquals(2, harness.getInstances().size());
+            HeadlessSimulationInstance instance0 = harness.getInstance(0);
+            HeadlessSimulationInstance instance1 = harness.getInstance(1);
+
+            harness.awaitSynchronized(Duration.ofSeconds(5));
+            assertTrue(instance0.isSynchronized());
+            assertTrue(instance1.isSynchronized());
+
+            harness.runUntilTickConcurrent(100, Duration.ofSeconds(10));
+            assertTrue(instance0.getTick() >= 100);
+            assertTrue(instance1.getTick() >= 100);
+            assertTrue(harness.areTicksAligned());
+            harness.verifyChecksums();
+            assertEquals(instance0.getChecksum(), instance1.getChecksum(),
+                    "State checksums must match after concurrent virtual thread stepping");
+        }
+    }
 }

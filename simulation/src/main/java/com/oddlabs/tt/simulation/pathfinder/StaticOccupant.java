@@ -1,6 +1,9 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-public final class StaticOccupant implements Occupant {
+/**
+ * Static impassable occupant used during region graph building.
+ */
+final class StaticOccupant implements Occupant {
     @Override
     public int getPenalty() {
         return Occupant.STATIC;

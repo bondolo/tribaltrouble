@@ -33,9 +33,7 @@ public final class TargetTrackerAlgorithm implements TrackerAlgorithm {
     public Optional<Region> findPathRegion(int src_x, int src_y) {
         return target.isDead()
                 ? Optional.empty()
-                : PathFinder.findPathRegion(unit_grid,
-                        unit_grid.getRegion(src_x, src_y),
-                        unit_grid.getRegion(target.getGridX(), target.getGridY()));
+                : unit_grid.findPathRegion(src_x, src_y, target.getGridX(), target.getGridY());
     }
 
     @Override
@@ -43,7 +41,7 @@ public final class TargetTrackerAlgorithm implements TrackerAlgorithm {
             int src_y, boolean allow_secondary_targets) {
         return target.isDead()
                 ? Optional.empty()
-                : PathFinder.findPathGrid(unit_grid, next_region, null,
+                : unit_grid.findPathGrid(next_region, null,
                         src_x, src_y,
                         target.getGridX(), target.getGridY(),
                         target, max_dist, allow_secondary_targets);

@@ -1,20 +1,12 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-public final class GridPathNode implements PathNode {
-    private final GridPathNode parent;
-    private final DirectionNode dir;
+import org.jspecify.annotations.Nullable;
 
-    public GridPathNode(GridPathNode parent, DirectionNode dir) {
-        this.parent = parent;
-        this.dir = dir;
-    }
-
-    public DirectionNode getDirection() {
-        return dir;
-    }
-
-    @Override
-    public PathNode getParent() {
-        return parent;
-    }
+/**
+ * Immutable linked node representing a step along a grid path.
+ *
+ * @param parent previous node along the path
+ * @param direction direction from previous node to this node
+ */
+public record GridPathNode(@Nullable GridPathNode parent, DirectionNode direction) implements PathNode<GridPathNode> {
 }

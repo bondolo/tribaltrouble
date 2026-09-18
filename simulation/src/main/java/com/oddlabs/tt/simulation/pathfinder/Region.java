@@ -40,7 +40,7 @@ public final class Region extends Node {
     }
 
     @Override
-    public PathNode newPath() {
+    public RegionNode newPath() {
         Node graph_node = this;
         assert graph_node != null;
         RegionNode current_node = null;
@@ -81,8 +81,9 @@ public final class Region extends Node {
     public boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid) {
         for (Region neighbour : neighbours) {
             if (!neighbour.isVisited())
-                PathFinder.addToOpenList(finder, neighbour, this, estimateCost(neighbour.getGridX(), neighbour
-                        .getGridY()));
+                unit_grid.pathFinder().addToOpenList(finder, neighbour, this, estimateCost(neighbour.getGridX(),
+                        neighbour
+                                .getGridY()));
         }
         return false;
     }

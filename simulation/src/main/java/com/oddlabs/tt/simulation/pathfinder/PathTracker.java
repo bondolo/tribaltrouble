@@ -187,30 +187,27 @@ public final class PathTracker {
             initial_path = true;
             return;
         }
-        DirectionNode dir_node = grid_path.getDirection();
-        grid_path = (GridPathNode) grid_path.getParent();
-        next_unit_grid_x += dir_node.getDirectionX();
-        next_unit_grid_y += dir_node.getDirectionY();
+        DirectionNode dir_node = grid_path.direction();
+        grid_path = (GridPathNode) grid_path.parent();
+        next_unit_grid_x += dir_node.directionX();
+        next_unit_grid_y += dir_node.directionY();
         float next_node_x = UnitGrid.coordinateFromGrid(next_unit_grid_x);
         float next_node_y = UnitGrid.coordinateFromGrid(next_unit_grid_y);
-        bezier_path.nextPoint(dir_node.getInvLength(), next_node_x, next_node_y);
+        bezier_path.nextPoint(dir_node.invLength(), next_node_x, next_node_y);
     }
 
     private void checkRegionPath(int src_x, int src_y) {
         Region current_region = unit_grid.getRegion(src_x, src_y);
         if (target_region != null && tracker_algorithm.acceptRegion(target_region)) {
             while (region_path != null) {
-                Region region_path_region = region_path.getRegion();
+                Region region_path_region = region_path.region();
                 if (current_region == region_path_region)
                     return;
-                region_path = (RegionNode) region_path.getParent();
+                region_path = (RegionNode) region_path.parent();
             }
         }
         target_region = tracker_algorithm.findPathRegion(src_x, src_y).orElse(null);
-        if (target_region != null)
-            region_path = (RegionNode) target_region.newPath();
-        else
-            region_path = null;
+        region_path = target_region != null ? target_region.newPath() : null;
     }
 
     private Optional<GridPathNode> findPathToNextRegion(int src_x, int src_y, @Nullable RegionNode next_region_node,
@@ -218,13 +215,13 @@ public final class PathTracker {
         Region next_region = null;
         Region next_next_region;
         if (next_region_node != null) {
-            next_region = next_region_node.getRegion();
-            RegionNode next_next_region_node = (RegionNode) next_region_node.getParent();
+            next_region = next_region_node.region();
+            RegionNode next_next_region_node = (RegionNode) next_region_node.parent();
             if (next_next_region_node != null) {
-                next_next_region = next_next_region_node.getRegion();
+                next_next_region = next_next_region_node.region();
                 int region_x = next_next_region.getGridX();
                 int region_y = next_next_region.getGridY();
-                return PathFinder.findPathGrid(unit_grid, next_region, next_next_region, src_x, src_y, region_x,
+                return unit_grid.findPathGrid(next_region, next_next_region, src_x, src_y, region_x,
                         region_y, null, 0, allow_secondary_targets);
             }
         }
@@ -236,7 +233,7 @@ public final class PathTracker {
         if (region_path == null) {
             return State.DONE;
         }
-        RegionNode next_region_node = (RegionNode) region_path.getParent();
+        RegionNode next_region_node = (RegionNode) region_path.parent();
         Occupant occupant = getNextOccupant();
         if (occupant != null) {
             GridPathNode patch_path = null;
@@ -248,12 +245,12 @@ public final class PathTracker {
                     return State.DONE;
                 if (patch_path != null || search_next_region_node == null)
                     break;
-                search_next_region_node = (RegionNode) search_next_region_node.getParent();
+                search_next_region_node = (RegionNode) search_next_region_node.parent();
             }
 
             if (patch_path != null) {
-                initBezierPath(patch_path.getDirection());
-                grid_path = (GridPathNode) patch_path.getParent();
+                initBezierPath(patch_path.direction());
+                grid_path = (GridPathNode) patch_path.parent();
                 occupant = getNextOccupant();
             }
 
@@ -271,11 +268,11 @@ public final class PathTracker {
     }
 
     private void initBezierPath(DirectionNode dir_node) {
-        next_unit_grid_x = unit.getGridX() + dir_node.getDirectionX();
-        next_unit_grid_y = unit.getGridY() + dir_node.getDirectionY();
+        next_unit_grid_x = unit.getGridX() + dir_node.directionX();
+        next_unit_grid_y = unit.getGridY() + dir_node.directionY();
         float next_node_x = UnitGrid.coordinateFromGrid(next_unit_grid_x);
         float next_node_y = UnitGrid.coordinateFromGrid(next_unit_grid_y);
-        bezier_path.init(dir_node.getInvLength(), unit.getPositionX(), unit.getPositionY(), next_node_x, next_node_y);
+        bezier_path.init(dir_node.invLength(), unit.getPositionX(), unit.getPositionY(), next_node_x, next_node_y);
     }
 
     public void setTarget(TrackerAlgorithm tracker_algorithm) {
@@ -291,14 +288,14 @@ public final class PathTracker {
         if (region_path == null) {
             return State.DONE;
         }
-        RegionNode next_region_node = (RegionNode) region_path.getParent();
+        RegionNode next_region_node = (RegionNode) region_path.parent();
         Optional<GridPathNode> init_path = findPathToNextRegion(unit.getGridX(), unit.getGridY(), next_region_node,
                 true);
         if (done(unit.getGridX(), unit.getGridY()))
             return State.DONE;
         return init_path.map(ip -> {
-            initBezierPath(ip.getDirection());
-            grid_path = (GridPathNode) ip.getParent();
+            initBezierPath(ip.direction());
+            grid_path = (GridPathNode) ip.parent();
             return State.OK;
         }).orElse(State.BLOCKED);
     }

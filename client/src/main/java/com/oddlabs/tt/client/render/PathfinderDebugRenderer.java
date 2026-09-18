@@ -42,21 +42,21 @@ public final class PathfinderDebugRenderer {
 
         GridPathNode node = tracker.getGridPath();
         while (node != null) {
-            float next_x = prev_x + HeightMap.METERS_PER_UNIT_GRID * node.getDirection().getDirectionX();
-            float next_y = prev_y + HeightMap.METERS_PER_UNIT_GRID * node.getDirection().getDirectionY();
+            float next_x = prev_x + HeightMap.METERS_PER_UNIT_GRID * node.direction().directionX();
+            float next_y = prev_y + HeightMap.METERS_PER_UNIT_GRID * node.direction().directionY();
             float z = heightmap.getNearestHeight(next_x, next_y) + PATH_OFFSET;
             DebugRender.drawLine(prev_x, prev_y, prev_z, next_x, next_y, z, 1f, 0f, 0f);
             prev_x = next_x;
             prev_y = next_y;
             prev_z = z;
-            node = (GridPathNode) node.getParent();
+            node = (GridPathNode) node.parent();
         }
 
         RegionNode region_node = tracker.getRegionPath();
         boolean first = true;
         while (region_node != null) {
-            float x = UnitGrid.coordinateFromGrid(region_node.getRegion().getGridX());
-            float y = UnitGrid.coordinateFromGrid(region_node.getRegion().getGridY());
+            float x = UnitGrid.coordinateFromGrid(region_node.region().getGridX());
+            float y = UnitGrid.coordinateFromGrid(region_node.region().getGridY());
             float z = heightmap.getNearestHeight(x, y) + PATH_OFFSET;
             if (!first) {
                 DebugRender.drawLine(prev_x, prev_y, prev_z, x, y, z, 0f, 0f, 1f);
@@ -65,7 +65,7 @@ public final class PathfinderDebugRenderer {
             prev_y = y;
             prev_z = z;
             first = false;
-            region_node = (RegionNode) region_node.getParent();
+            region_node = (RegionNode) region_node.parent();
         }
     }
 

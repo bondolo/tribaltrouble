@@ -20,6 +20,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
@@ -33,6 +36,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     private final Router router;
     private final SessionID sessionId;
     private final List<HeadlessSimulationInstance> instances;
+    private final ExecutorService virtualExecutor;
 
     public HeadlessMultiplayerHarness(
             NetworkSelector network,
@@ -43,6 +47,7 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         this.router = router;
         this.sessionId = sessionId;
         this.instances = List.copyOf(instances);
+        this.virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
     /**
@@ -193,7 +198,14 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     }
 
     /**
-     * Steps the simulation forward by the given delta time.
+     * Steps the simulation forward concurrently across virtual threads by the standard tick duration.
+     */
+    public void stepConcurrent() {
+        stepConcurrent(AnimationManager.ANIMATION_SECONDS_PER_TICK);
+    }
+
+    /**
+     * Steps the simulation forward by the given delta time sequentially.
      */
     public void step(float dt) {
         if (network.getTimeManager() instanceof TickTimeManager tickTimeManager) {
@@ -209,9 +221,53 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
     }
 
     /**
-     * Runs the harness until all instances reach at least the target tick count.
+     * Steps the simulation forward by the given delta time concurrently across virtual threads.
+     * Lockstep phases are coordinated using a {@link Phaser}.
+     */
+    public void stepConcurrent(float dt) {
+        if (network.getTimeManager() instanceof TickTimeManager tickTimeManager) {
+            tickTimeManager.advance();
+        } else if (network.getTimeManager() instanceof JitterTimeManager jitterTimeManager) {
+            jitterTimeManager.advance();
+        }
+        pumpNetwork();
+        if (instances.size() <= 1) {
+            for (HeadlessSimulationInstance instance : instances) {
+                instance.animate(dt);
+            }
+        } else {
+            Phaser phaser = new Phaser(instances.size() + 1);
+            for (HeadlessSimulationInstance instance : instances) {
+                virtualExecutor.execute(() -> {
+                    try {
+                        instance.animate(dt);
+                    } finally {
+                        phaser.arriveAndDeregister();
+                    }
+                });
+            }
+            phaser.arriveAndAwaitAdvance();
+        }
+        pumpNetwork();
+    }
+
+    /**
+     * Runs the harness until all instances reach at least the target tick count using sequential stepping.
      */
     public void runUntilTick(int targetTick, Duration timeout) throws TimeoutException, InterruptedException {
+        runUntilTick(targetTick, timeout, false);
+    }
+
+    /**
+     * Runs the harness until all instances reach at least the target tick count using concurrent virtual thread
+     * stepping.
+     */
+    public void runUntilTickConcurrent(int targetTick, Duration timeout) throws TimeoutException, InterruptedException {
+        runUntilTick(targetTick, timeout, true);
+    }
+
+    private void runUntilTick(int targetTick, Duration timeout, boolean concurrent)
+            throws TimeoutException, InterruptedException {
         Instant deadline = Instant.now().plus(timeout);
         boolean isVirtualClock = network.getTimeManager() instanceof TickTimeManager
                 || (network.getTimeManager() instanceof JitterTimeManager jtm
@@ -240,7 +296,11 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
             if (Instant.now().isAfter(deadline)) {
                 throw new TimeoutException("Timed out waiting for instances to reach tick " + targetTick);
             }
-            step();
+            if (concurrent) {
+                stepConcurrent();
+            } else {
+                step();
+            }
             if (!isVirtualClock) {
                 Thread.sleep(2);
             }
@@ -299,5 +359,6 @@ public final class HeadlessMultiplayerHarness implements AutoCloseable {
         } catch (Exception e) {
             logger.warning("Error closing router: " + e);
         }
+        virtualExecutor.shutdown();
     }
 }

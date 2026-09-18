@@ -73,7 +73,7 @@ public final class HeadlessMatchRunner {
             int lastProgressTick = initialTick;
 
             while (true) {
-                harness.step();
+                harness.stepConcurrent();
                 if (!harness.areTicksAligned()) {
                     continue;
                 }

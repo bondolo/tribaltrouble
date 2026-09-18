@@ -14,7 +14,7 @@ abstract class Node {
         }
 
         @Override
-        public @Nullable PathNode newPath() {
+        public @Nullable PathNode<?> newPath() {
             return null;
         }
 
@@ -116,7 +116,7 @@ abstract class Node {
 
     public abstract boolean addNeighbours(PathFinderAlgorithm finder, UnitGrid unit_grid);
 
-    public abstract @Nullable PathNode newPath();
+    public abstract @Nullable PathNode<?> newPath();
 
     public abstract int getGridX();
 

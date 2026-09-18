@@ -1,11 +1,12 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
+import org.jspecify.annotations.Nullable;
 
 abstract class GridPathFinder extends AStarAlgorithm {
     private final Node dst_region;
-    private final Node dst_region2;
+    private final @Nullable Node dst_region2;
 
-    public GridPathFinder(UnitGrid unit_grid, Node dst_region, Node dst_region2, int dst_x, int dst_y,
+    GridPathFinder(UnitGrid unit_grid, Node dst_region, @Nullable Node dst_region2, int dst_x, int dst_y,
             boolean allow_second_best) {
         super(unit_grid, dst_x, dst_y, allow_second_best);
         this.dst_region = dst_region;

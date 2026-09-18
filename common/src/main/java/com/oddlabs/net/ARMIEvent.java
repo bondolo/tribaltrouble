@@ -11,11 +11,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.ByteBuffer;
 
+/**
+ * Represents a serialized ARMI remote method invocation event.
+ */
 public final class ARMIEvent implements Serializable {
     @Serial
     private static final long serialVersionUID = 1;
 
-    private static final ByteBufferOutputStream static_byte_stream = new ByteBufferOutputStream(false);
     private static final short HEADER_SIZE = 1;
     private static final ARMIArgumentWriter default_writer = new DefaultARMIArgumentWriter();
     private static final ARMIArgumentReader default_reader = new DefaultARMIArgumentReader();
@@ -61,13 +63,13 @@ public final class ARMIEvent implements Serializable {
             ?>[] method_parameter_types, Object @Nullable [] args) {
         if (args != null) {
             try {
-                static_byte_stream.reset();
+                ByteBufferOutputStream byte_stream = new ByteBufferOutputStream(false);
                 for (int i = 0; i < args.length; i++) {
                     Object arg = args[i];
                     Class<?> type = method_parameter_types[i];
-                    writer.writeArgument(type, arg, static_byte_stream);
+                    writer.writeArgument(type, arg, byte_stream);
                 }
-                return static_byte_stream.toByteArray();
+                return byte_stream.toByteArray();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

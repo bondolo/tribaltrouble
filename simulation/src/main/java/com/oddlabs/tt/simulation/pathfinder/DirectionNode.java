@@ -1,25 +1,11 @@
 package com.oddlabs.tt.simulation.pathfinder;
 
-public final class DirectionNode {
-    private final float inv_length;
-    private final int direction_x;
-    private final int direction_y;
-
-    public DirectionNode(float inv_length, int direction_x, int direction_y) {
-        this.inv_length = inv_length;
-        this.direction_x = direction_x;
-        this.direction_y = direction_y;
-    }
-
-    public float getInvLength() {
-        return inv_length;
-    }
-
-    public int getDirectionX() {
-        return direction_x;
-    }
-
-    public int getDirectionY() {
-        return direction_y;
-    }
+/**
+ * Directional transition vector and inverse length between adjacent grid path nodes.
+ *
+ * @param invLength inverse length of the directional step
+ * @param directionX delta X along the grid (-1, 0, or 1)
+ * @param directionY delta Y along the grid (-1, 0, or 1)
+ */
+public record DirectionNode(float invLength, int directionX, int directionY) {
 }

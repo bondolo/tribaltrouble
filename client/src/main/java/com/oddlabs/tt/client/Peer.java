@@ -8,7 +8,6 @@ import com.oddlabs.tt.base.event.LocalEventQueue;
 import com.oddlabs.tt.base.global.AppConfig;
 import com.oddlabs.tt.base.global.GamePaths;
 import com.oddlabs.tt.gui.LocaleSettings;
-import com.oddlabs.tt.simulation.pathfinder.PathFinder;
 import com.oddlabs.tt.window.WindowSettings;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.gui.GUI;
@@ -20,6 +19,7 @@ import com.oddlabs.tt.net.Network;
 import com.oddlabs.tt.window.LWJGL3Window;
 import com.oddlabs.tt.window.SerializableDisplayMode;
 import com.oddlabs.tt.window.Window;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import java.io.File;
@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
+import java.util.function.IntSupplier;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -61,6 +62,7 @@ public final class Peer implements AutoCloseable {
     private final AudioManager audioManager;
     private final FramePacer framePacer = new FramePacer();
     private final Renderer renderer;
+    private @Nullable IntSupplier pathfindCountSupplier;
 
     private boolean movie_recording_started = false;
 
@@ -125,6 +127,10 @@ public final class Peer implements AutoCloseable {
 
     public FramePacer getFramePacer() {
         return framePacer;
+    }
+
+    public void setPathfindCountSupplier(@Nullable IntSupplier supplier) {
+        this.pathfindCountSupplier = supplier;
     }
 
     public void updateProgress(GUI gui) {
@@ -258,8 +264,8 @@ public final class Peer implements AutoCloseable {
                     window.setCloseRequested(false);
                     gui.onCloseRequested();
                 }
-                framePacer.pathfindsPerTick.updateAbsolute(PathFinder.stat_pathfinder_per_frame);
-                PathFinder.stat_pathfinder_per_frame = 0;
+                int pathfinds = pathfindCountSupplier != null ? pathfindCountSupplier.getAsInt() : 0;
+                framePacer.pathfindsPerTick.updateAbsolute(pathfinds);
                 event_queue.tickLowPrecision(AnimationManager.ANIMATION_SECONDS_PER_TICK);
                 framePacer.addExecutionTime(-AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);
                 framePacer.addChecksumMillisecondCounter(AnimationManager.ANIMATION_MILLISECONDS_PER_TICK);

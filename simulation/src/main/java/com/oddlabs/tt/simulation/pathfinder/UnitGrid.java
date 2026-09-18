@@ -4,6 +4,8 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.model.Target;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Optional;
+
 /**
  * Spatial grid partitioning the game world into regions, occupants, and height coordinates.
  */
@@ -11,6 +13,7 @@ public final class UnitGrid {
     private final HeightMap heightmap;
     private final @Nullable Region[][] regions;
     private final @Nullable Occupant[][] occupants;
+    private final PathFinder pathFinder = new PathFinder(this);
 
     public UnitGrid(HeightMap heightmap) {
         this.heightmap = heightmap;
@@ -99,5 +102,42 @@ public final class UnitGrid {
 
     public HeightMap getHeightMap() {
         return heightmap;
+    }
+
+    public Optional<Region> findPathRegion(int srcX, int srcY, int dstX, int dstY) {
+        Region srcRegion = getRegion(srcX, srcY);
+        Region dstRegion = getRegion(dstX, dstY);
+        if (srcRegion == null || dstRegion == null) {
+            return Optional.empty();
+        }
+        return pathFinder.findPathRegion(srcRegion, dstRegion);
+    }
+
+    Optional<Region> findPathRegion(PathFinderAlgorithm finder, int srcX, int srcY) {
+        Region srcRegion = getRegion(srcX, srcY);
+        if (srcRegion == null) {
+            return Optional.empty();
+        }
+        return pathFinder.findPathRegion(finder, srcRegion);
+    }
+
+    Optional<GridPathNode> findPathGrid(PathFinderAlgorithm finder, int srcX, int srcY) {
+        return pathFinder.findPathGrid(finder, srcX, srcY);
+    }
+
+    public Optional<GridPathNode> findPathGrid(Region dstRegion, @Nullable Region dstRegion2,
+            int srcX, int srcY, int dstX, int dstY,
+            @Nullable Target target, float maxDist, boolean allowSecondBest) {
+        return pathFinder.findPathGrid(dstRegion, dstRegion2, srcX, srcY, dstX, dstY, target, maxDist, allowSecondBest);
+    }
+
+    public int getAndResetPathfindCount() {
+        int count = pathFinder.getStatPathfinderPerFrame();
+        pathFinder.resetStatPathfinderPerFrame();
+        return count;
+    }
+
+    PathFinder pathFinder() {
+        return pathFinder;
     }
 }
