@@ -19,8 +19,6 @@ final class ElementRenderer<T extends Element<T>> implements AutoCloseable {
     private final boolean picking;
     private CameraState camera;
 
-    private boolean visible_override;
-
     ElementRenderer(Player local_player, RenderQueues render_queues, Picker picker,
             boolean picking, SpriteSorter sprite_sorter, Selection selection,
             AudioImplementation audio) {
@@ -47,24 +45,28 @@ final class ElementRenderer<T extends Element<T>> implements AutoCloseable {
     }
 
     public void visit(AbstractElementNode<T> node) {
-        RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
-                ? RenderTools.FrustumIntersection.ALL_INSIDE // Force all in frustum for map mode
-                : RenderTools.inFrustum(node, camera.getFrustum());
+        visit(node, camera.inNoDetailMode());
+    }
 
-        if (visible_override || frustum_state != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-            boolean old_override = visible_override;
-            visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
+    private void visit(AbstractElementNode<T> node, boolean visible_override) {
+        RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
+        if (visible_override || (frustum_state = RenderTools.inFrustum(node, camera.getFrustum()))
+                != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+            boolean next_visible_override = visible_override
+                    || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
+            boolean old_state_override = render_state.overrideVisibility();
+            render_state.setVisibleOverride(next_visible_override);
 
             for (T element = node.getModels().getFirst(); element != null; element = element.getNext()) {
                 render_state.visit(element);
             }
             if (node instanceof ElementNode<T> elementNode) {
                 for (AbstractElementNode<T> child : elementNode.children()) {
-                    visit(child);
+                    visit(child, next_visible_override);
                 }
             }
 
-            visible_override = old_override;
+            render_state.setVisibleOverride(old_state_override);
         }
     }
 }

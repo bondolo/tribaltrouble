@@ -45,8 +45,6 @@ class TreePicker {
     private final RespondManager respond_manager;
     private CameraState camera;
 
-    private boolean visible_override;
-
     TreePicker(SpriteSorter sprite_sorter, RespondManager respond_manager) {
         this.respond_manager = respond_manager;
         this.sprite_sorter = sprite_sorter;
@@ -153,29 +151,29 @@ class TreePicker {
     }
 
     public final void visit(AbstractTreeGroup node) {
-        RenderTools.FrustumIntersection frustum_state = camera.inNoDetailMode()
-                ? RenderTools.FrustumIntersection.ALL_INSIDE
-                : RenderTools.inFrustum(node, camera.getFrustum());
+        visit(node, camera.inNoDetailMode());
+    }
 
-        if (visible_override || frustum_state != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-            boolean old_override = visible_override;
-            visible_override = visible_override || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
+    private void visit(AbstractTreeGroup node, boolean visible_override) {
+        RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
+        if (visible_override || (frustum_state = RenderTools.inFrustum(node, camera.getFrustum()))
+                != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+            boolean next_visible_override = visible_override
+                    || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
 
             switch (node) {
                 case TreeGroup group -> {
                     for (AbstractTreeGroup child : group.children()) {
-                        visit(child);
+                        visit(child, next_visible_override);
                     }
                 }
                 case TreeLeaf leaf -> {
                     for (TreeSupply tree : leaf.getTrees()) {
-                        visitTree(tree);
+                        visitTree(tree, next_visible_override);
                     }
                 }
-                case TreeSupply tree -> visitTree(tree);
+                case TreeSupply tree -> visitTree(tree, next_visible_override);
             }
-
-            visible_override = old_override;
         }
     }
 
@@ -201,7 +199,7 @@ class TreePicker {
         return render_state;
     }
 
-    private void visitTree(TreeSupply tree_supply) {
+    private void visitTree(TreeSupply tree_supply, boolean visible_override) {
         if (tree_supply.isEmpty() && !isFalling(tree_supply))
             return;
 
