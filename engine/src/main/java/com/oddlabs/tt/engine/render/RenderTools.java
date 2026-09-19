@@ -39,42 +39,32 @@ public final class RenderTools {
         boolean all_corners_in_all_planes = true;
 
         for (int f = 0; f < 6; f++) {
-            boolean any_corner_in_this_plane = false;
-
-            // Cache plane components for current plane
             float planeA = frustum[f][0];
             float planeB = frustum[f][1];
             float planeC = frustum[f][2];
             float planeD = frustum[f][3];
 
-            // Check each corner against the current plane
-            for (int corners_x = 0; corners_x <= 1; corners_x++) {
-                float x = 0 == corners_x ? box.bmin_x : box.bmax_x;
-                for (int corners_y = 0; corners_y <= 1; corners_y++) {
-                    float y = 0 == corners_y ? box.bmin_y : box.bmax_y;
-                    for (int corners_z = 0; corners_z <= 1; corners_z++) {
-                        float z = 0 == corners_z ? box.bmin_z : box.bmax_z;
-                        // Calculate signed distance from corner to plane
-                        float distance = planeA * x + planeB * y + planeC * z + planeD;
+            // P-vertex: corner with the maximum signed distance along the plane normal
+            float px = planeA >= 0 ? box.bmax_x : box.bmin_x;
+            float py = planeB >= 0 ? box.bmax_y : box.bmin_y;
+            float pz = planeC >= 0 ? box.bmax_z : box.bmin_z;
 
-                        if (distance > 0) { // If this corner is inside the plane
-                            any_corner_in_this_plane = true;
-                        } else { // If this corner is outside the plane
-                            all_corners_in_all_planes = false; // At least one corner is outside at least one plane
-                        }
-                    }
-                }
+            if (planeA * px + planeB * py + planeC * pz + planeD <= 0) {
+                return FrustumIntersection.ALL_OUTSIDE;
             }
 
-            // If no corner was inside this plane, then the entire box is outside this plane.
-            // Therefore, the box is not in the frustum.
-            if (!any_corner_in_this_plane) {
-                return FrustumIntersection.ALL_OUTSIDE;
+            // N-vertex: corner with the minimum signed distance along the plane normal
+            if (all_corners_in_all_planes) {
+                float nx = planeA >= 0 ? box.bmin_x : box.bmax_x;
+                float ny = planeB >= 0 ? box.bmin_y : box.bmax_y;
+                float nz = planeC >= 0 ? box.bmin_z : box.bmax_z;
+
+                if (planeA * nx + planeB * ny + planeC * nz + planeD <= 0) {
+                    all_corners_in_all_planes = false;
+                }
             }
         }
 
-        // If we reach here, the box is not entirely outside any single frustum plane.
-        // Now, determine if it's fully inside or intersecting.
         return all_corners_in_all_planes ? FrustumIntersection.ALL_INSIDE : FrustumIntersection.INTERSECTING;
     }
 
