@@ -35,9 +35,8 @@ final class TreeRenderState implements LODObject {
 
     @Override
     public int getTriangleCount(PolyDetail level) {
-        int index = level.ordinal();
         Tree tree = tree_renderer.getTrees().get(tree_supply.getTreeType());
-        return switch (PolyDetail.values()[index]) {
+        return switch (level) {
             case HIGH_POLY ->
                 tree.trunk().getSprite(0).getTriangleCount() + tree.crown().getSprite(0).getTriangleCount();
             case LOW_POLY -> 0;

@@ -66,6 +66,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.stream.Stream;
 
 /**
  * Manages the rendering state and visit logic for world entities and their accessories.
@@ -238,12 +239,8 @@ public final class RenderState implements SceneContext {
             float gameSpeedFactor = local_player.getWorld().getSecondsPerTick()
                     / AnimationManager.ANIMATION_SECONDS_PER_TICK;
             float gameDt = dt * gameSpeedFactor;
-            for (VisualModel vm : visualModels.values()) {
-                vm.update(gameDt);
-            }
-            for (VisualModel vm : detachedVisualModels) {
-                vm.update(gameDt);
-            }
+            visualModels.values().forEach(vm -> vm.update(gameDt));
+            detachedVisualModels.forEach(vm -> vm.update(gameDt));
             detachedVisualModels.removeIf(vm -> {
                 if (vm.isExpired()) {
                     vm.close();
@@ -256,43 +253,28 @@ public final class RenderState implements SceneContext {
             lastFrameTime = currentTime;
         }
         prepareTargetResponds();
-        prepareActiveLightnings();
-        prepareActiveSonicBlasts();
+        prepareEffects();
         prepareDetachedVisualEffects();
     }
 
-    private void prepareActiveLightnings() {
+    private void prepareEffects() {
         if (picking) return;
-        for (VisualModel vm : visualModels.values()) {
-            if (vm instanceof LightningCloudVisualModel lca) {
-                lightning_queue.addAll(lca.getActiveLightnings());
-            }
-        }
-        for (VisualModel vm : detachedVisualModels) {
-            if (vm instanceof LightningCloudVisualModel lca) {
-                lightning_queue.addAll(lca.getActiveLightnings());
-            }
-        }
-    }
-
-    private void prepareActiveSonicBlasts() {
-        if (picking) return;
-        for (VisualModel vm : visualModels.values()) {
-            if (vm instanceof SonicBlastVisualModel sba) {
-                SonicBlastEffect effect = sba.getEffect();
-                if (effect != null && !effect.isDead()) {
-                    sonic_blast_queue.add(effect);
-                }
-            }
-        }
-        for (VisualModel vm : detachedVisualModels) {
-            if (vm instanceof SonicBlastVisualModel sba) {
-                SonicBlastEffect effect = sba.getEffect();
-                if (effect != null && !effect.isDead()) {
-                    sonic_blast_queue.add(effect);
-                }
-            }
-        }
+        Stream.concat(visualModels.values().stream(), detachedVisualModels.stream())
+                .forEach(vm -> {
+                    switch (vm) {
+                        case LightningCloudVisualModel lca:
+                            lightning_queue.addAll(lca.getActiveLightnings());
+                            break;
+                        case SonicBlastVisualModel sbv:
+                            SonicBlastEffect effect = sbv.getEffect();
+                            if (effect != null && !effect.isDead()) {
+                                sonic_blast_queue.add(effect);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                });
     }
 
     private void prepareDetachedVisualEffects() {
@@ -833,13 +815,9 @@ public final class RenderState implements SceneContext {
     }
 
     public void close() {
-        for (VisualModel vm : visualModels.values()) {
-            vm.close();
-        }
+        visualModels.values().forEach(VisualModel::close);
         visualModels.clear();
-        for (VisualModel vm : detachedVisualModels) {
-            vm.close();
-        }
+        detachedVisualModels.forEach(VisualModel::close);
         detachedVisualModels.clear();
     }
 }
