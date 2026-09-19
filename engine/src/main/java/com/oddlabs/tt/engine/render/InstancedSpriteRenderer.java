@@ -41,6 +41,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
     private final InstancedSpriteShader shader = new InstancedSpriteShader();
     private final Map<BatchKey, RenderBatch> batches = new HashMap<>();
+    private final List<RenderBatch> sortedBatches = new ArrayList<>();
     private final Texture whiteTexture;
     private final Texture respondTexture;
 
@@ -51,7 +52,14 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     private final Matrix4f[] scratchBones = new Matrix4f[48];
     private final Map<BoneKey, Integer> boneOffsetCache = new HashMap<>();
 
+    /** Cache key for evaluated skeletal bone matrix offsets. */
     private record BoneKey(SpriteList spriteList, int animation, float animTicks) {
+    }
+
+    /** Unique batch key identifying a shared sprite list, textures, and render states. */
+    private record BatchKey(SpriteList spriteList, Texture texture,
+                            @Nullable Texture teamTexture, @Nullable Texture bumpTexture, boolean respond,
+                            boolean blend, boolean depthWrite, boolean depthTest) {
     }
 
     public InstancedSpriteRenderer() {
@@ -97,35 +105,47 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
     }
 
+    public RenderBatch getBatch(SpriteList spriteList, Texture texture, @Nullable Texture teamTexture,
+            @Nullable Texture bumpTexture, boolean respond, boolean blend, boolean depthWrite, boolean depthTest) {
+        BatchKey key = new BatchKey(spriteList, texture, teamTexture, bumpTexture, respond, blend, depthWrite,
+                depthTest);
+        return batches.computeIfAbsent(key, RenderBatch::new);
+    }
+
+    public int getOrEvaluateBoneOffset(SpriteList spriteList, int animation, float animTicks) {
+        if (!spriteList.isSkeletal()) {
+            return -1;
+        }
+        int boneCount = spriteList.getBoneCount();
+        if (boneCount <= 0) {
+            return -1;
+        }
+
+        BoneKey key = new BoneKey(spriteList, animation, animTicks);
+        Integer cached = boneOffsetCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+
+        spriteList.evaluateSkeleton(animation, animTicks, scratchBones);
+        int boneBaseOffset = boneMatrixTexels;
+        int neededFloats = boneCount * 16;
+        ensureBoneCapacity(boneMatrixTexels * 4 + neededFloats);
+        for (int b = 0; b < boneCount; b++) {
+            scratchBones[b].get(boneMatrixTexels * 4 + b * 16, boneMatrixBuffer);
+        }
+        boneMatrixTexels += boneCount * 4;
+        boneOffsetCache.put(key, boneBaseOffset);
+        return boneBaseOffset;
+    }
+
     public void add(SpriteList spriteList, int spriteIndex, int animation, float animTicks,
             Texture texture, @Nullable Texture teamTexture, @Nullable Texture bumpTexture,
             boolean respond, boolean blend, boolean depthWrite, boolean depthTest, Matrix4fc modelMatrix,
             Color color, Color decalColor) {
-        int boneBaseOffset = -1;
-        if (spriteList.isSkeletal()) {
-            int boneCount = spriteList.getBoneCount();
-            if (boneCount > 0) {
-                BoneKey key = new BoneKey(spriteList, animation, animTicks);
-                Integer cached = boneOffsetCache.get(key);
-                if (cached != null) {
-                    boneBaseOffset = cached;
-                } else {
-                    spriteList.evaluateSkeleton(animation, animTicks, scratchBones);
-                    boneBaseOffset = boneMatrixTexels;
-                    int neededFloats = boneCount * 16;
-                    ensureBoneCapacity(boneMatrixTexels * 4 + neededFloats);
-                    for (int b = 0; b < boneCount; b++) {
-                        scratchBones[b].get(boneMatrixTexels * 4 + b * 16, boneMatrixBuffer);
-                    }
-                    boneMatrixTexels += boneCount * 4;
-                    boneOffsetCache.put(key, boneBaseOffset);
-                }
-            }
-        }
-
-        BatchKey key = new BatchKey(spriteList, texture, teamTexture, bumpTexture, respond, blend,
-                depthWrite, depthTest);
-        RenderBatch batch = batches.computeIfAbsent(key, RenderBatch::new);
+        int boneBaseOffset = getOrEvaluateBoneOffset(spriteList, animation, animTicks);
+        RenderBatch batch = getBatch(spriteList, texture, teamTexture, bumpTexture, respond, blend, depthWrite,
+                depthTest);
         batch.addInstance(spriteIndex, boneBaseOffset, modelMatrix, color, decalColor);
     }
 
@@ -144,7 +164,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             context.setTexture(5, boneMatrixTboHandle, GL31.GL_TEXTURE_BUFFER);
             GL31.glTexBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_RGBA32F, boneMatrixVBO.getHandle());
 
-            List<RenderBatch> sortedBatches = new ArrayList<>(batches.values());
+            sortedBatches.clear();
+            sortedBatches.addAll(batches.values());
             sortedBatches.sort(RenderBatch.COMPARATOR);
 
             for (RenderBatch batch : sortedBatches) {
@@ -179,6 +200,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             batch.close();
         }
         batches.clear();
+        sortedBatches.clear();
         shader.close();
         whiteTexture.close();
         respondTexture.close();
@@ -186,12 +208,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         GL11.glDeleteTextures(boneMatrixTboHandle);
     }
 
-    private record BatchKey(SpriteList spriteList, Texture texture,
-                            @Nullable Texture teamTexture, @Nullable Texture bumpTexture, boolean respond,
-                            boolean blend, boolean depthWrite, boolean depthTest) {
-    }
-
-    private static class RenderBatch implements AutoCloseable {
+    /** Manages grouped instance buffer data and draw call submission for identical batch keys. */
+    public static final class RenderBatch implements AutoCloseable {
         private final BatchKey key;
         private final Map<Integer, InstanceGroup> groups = new HashMap<>();
 
@@ -352,20 +370,24 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
         private static final Comparator<RenderBatch> COMPARATOR = Comparator
                 .comparing((RenderBatch b) -> b.key.blend)
-                .thenComparingInt(b -> b.key.texture.getHandle())
+                .thenComparingInt(b -> b.key.texture != null ? b.key.texture.getHandle() : 0)
                 .thenComparingInt(b -> System.identityHashCode(b.key.spriteList))
                 .thenComparingInt(b -> b.key.teamTexture != null ? b.key.teamTexture.getHandle() : 0)
                 .thenComparingInt(b -> b.key.bumpTexture != null ? b.key.bumpTexture.getHandle() : 0);
 
-        RenderBatch(BatchKey key) {
+        private RenderBatch(BatchKey key) {
             this.key = key;
         }
 
-        void addInstance(int spriteIndex, int boneBaseOffset, Matrix4fc modelMatrix, Color color,
+        public void addInstance(int spriteIndex, int boneBaseOffset, Matrix4fc modelMatrix, Color color,
                 Color decalColor) {
             InstanceGroup group = groups.computeIfAbsent(spriteIndex, k -> new InstanceGroup(k, key,
                     FLOATS_PER_INSTANCE));
             group.add(boneBaseOffset, modelMatrix, color, decalColor);
+        }
+
+        public void addInstance(int spriteIndex, Matrix4fc modelMatrix, Color color, Color decalColor) {
+            addInstance(spriteIndex, -1, modelMatrix, color, decalColor);
         }
 
         void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,

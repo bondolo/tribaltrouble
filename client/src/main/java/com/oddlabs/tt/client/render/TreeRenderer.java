@@ -210,14 +210,17 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         Texture trunkTeam = trunkSprite.textures[0][Sprite.TEXTURE_TEAM];
         Texture trunkBump = trunkSprite.hasBumpMap(0) ? trunkSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
 
+        var crownBatch = instancedSpriteRenderer.getBatch(crownList, crownTexture, crownTeam, crownBump, respond,
+                false, true, true);
+        var trunkBatch = instancedSpriteRenderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, respond,
+                false, true, true);
+
         for (TreeSupply supply : render_list) {
             prepareMatrix(supply);
             // Render Crown (Sprite 0). Blend = false, DepthWrite = true for opaque trees.
-            instancedSpriteRenderer.add(crownList, 0, 0, 0f, crownTexture, crownTeam, crownBump, respond, false,
-                    true, true, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
+            crownBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
             // Render Trunk (Sprite 0). Blend = false, DepthWrite = true.
-            instancedSpriteRenderer.add(trunkList, 0, 0, 0f, trunkTexture, trunkTeam, trunkBump, respond, false,
-                    true, true, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
+            trunkBatch.addInstance(0, tempMatrix, Color.Standard.WHITE, Color.Standard.WHITE);
         }
         render_list.clear();
     }

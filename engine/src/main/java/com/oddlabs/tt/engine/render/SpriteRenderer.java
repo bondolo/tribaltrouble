@@ -136,28 +136,39 @@ public final class SpriteRenderer {
         List<ModelState<?>> render_list = render_lists[index];
         boolean modulate = sprite_list.getSprite(index).modulateColor();
 
-        for (ModelState<?> modelState : render_list) {
-            if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-                RenderTools.draw(modelState.getModel());
+        if (!render_list.isEmpty()) {
+            var batch = instancedSpriteRenderer.getBatch(sprite_list, texture, teamTexture, bumpTexture, false,
+                    modulate, !modulate, true);
+            boolean skeletal = sprite_list.isSkeletal();
+            for (ModelState<?> modelState : render_list) {
+                if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
+                    RenderTools.draw(modelState.getModel());
+                }
+                int boneBaseOffset = skeletal
+                        ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, modelState.getAnimation(),
+                                modelState.getAnimationTicks())
+                        : -1;
+                batch.addInstance(index, boneBaseOffset, modelState.getTransform(tempMatrix), modelState.getColor(),
+                        modelState.getTeamColor());
             }
-            // Standard sprites: If modulate, use Blend. If opaque/alpha, use A2C (Blend=False).
-            // Depth Write = !modulate (Opaque writes depth, Effects don't).
-            instancedSpriteRenderer.add(sprite_list, index, modelState.getAnimation(),
-                    modelState.getAnimationTicks(), texture, teamTexture, bumpTexture, false, modulate,
-                    !modulate, true, modelState.getTransform(tempMatrix), modelState.getColor(), modelState
-                            .getTeamColor());
+            render_list.clear();
         }
-        render_list.clear();
 
         render_list = respond_render_lists[index];
         if (!render_list.isEmpty()) {
+            var batch = instancedSpriteRenderer.getBatch(sprite_list, texture, teamTexture, bumpTexture, true, true,
+                    false, true);
+            boolean skeletal = sprite_list.isSkeletal();
             for (ModelState<?> model : render_list) {
                 if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
                     RenderTools.draw(model.getModel());
                 }
-                instancedSpriteRenderer.add(sprite_list, index, model.getAnimation(),
-                        model.getAnimationTicks(), texture, teamTexture, bumpTexture, true, true, false,
-                        true, model.getTransform(tempMatrix), Color.Linear.WHITE, Color.Linear.WHITE);
+                int boneBaseOffset = skeletal
+                        ? instancedSpriteRenderer.getOrEvaluateBoneOffset(sprite_list, model.getAnimation(),
+                                model.getAnimationTicks())
+                        : -1;
+                batch.addInstance(index, boneBaseOffset, model.getTransform(tempMatrix), Color.Linear.WHITE,
+                        Color.Linear.WHITE);
             }
             render_list.clear();
         }
@@ -166,6 +177,8 @@ public final class SpriteRenderer {
     void renderNoDetail() {
         if (DebugFlags.draw_misc && !no_detail_render_list.isEmpty()) {
             SpriteList quadList = SpriteList.getQuadInstance();
+            var batch = instancedSpriteRenderer.getBatch(quadList, instancedSpriteRenderer.getWhiteTexture(), null,
+                    null, false, true, false, false);
             for (var model : no_detail_render_list) {
                 if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
                     RenderTools.draw(model.getModel());
@@ -175,10 +188,9 @@ public final class SpriteRenderer {
                 float z = model.getModel().getPositionZ();
                 float r = model.getNoDetailSize();
                 tempMatrix.identity().translation(x, y, z + 0.1f).scale(r * 2);
-                // Quads don't have animation, so pass 0, 0f
+                // Quads don't have animation, so pass -1
                 // Disable depth test for no-detail sprites (overlays). Enable blend. No Depth Write.
-                instancedSpriteRenderer.add(quadList, 0, 0, 0f, instancedSpriteRenderer.getWhiteTexture(), null,
-                        null, false, true, false, false, tempMatrix, model.getTeamColor(), Color.Linear.TRANSPARENT);
+                batch.addInstance(0, -1, tempMatrix, model.getTeamColor(), Color.Linear.TRANSPARENT);
             }
         }
         clearRenderLists();
