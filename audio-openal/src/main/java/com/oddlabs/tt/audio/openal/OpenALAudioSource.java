@@ -55,10 +55,8 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
                     AL10.alSourceStop(sourceId);
                     checkALError("alSourceStop before deleting source");
 
-                    // Explicitly detach any buffers (static or queued) from the source.
-                    // This is required before deleting the buffers.
-                    AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
-                    checkALError("alSourcei AL_BUFFER AL_NONE before deleting source");
+                    // Explicitly unqueue and detach any buffers (static or queued) from the source.
+                    detachBuffers(sourceId);
 
                     // Reset any auxiliary sends to free up effect slots
                     AL11.alSource3i(sourceId, AL_AUXILIARY_SEND_FILTER, 0, 0, 0);
@@ -305,18 +303,36 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
             AL10.alGetError(); // clear any previous error
             int sourceId = getSource();
             if (AL10.alIsSource(sourceId)) {
+                if (AL10.alGetSourcei(sourceId, AL10.AL_SOURCE_STATE) == AL10.AL_PLAYING) {
+                    AL10.alSourcef(sourceId, AL10.AL_GAIN, 0f);
+                }
+                AL10.alSourcei(sourceId, AL10.AL_LOOPING, AL10.AL_FALSE);
                 AL10.alSourceStop(sourceId);
                 checkALError("alSourceStop");
-
-                // Detach any buffers (static or queued) from the source.
-                // This is required before deleting the buffers.
-                AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
-                checkALError("alSourcei AL_BUFFER AL_NONE");
 
                 AL10.alSourceRewind(sourceId);
                 checkALError("alSourceRewind");
             }
         }
+    }
+
+    static void detachBuffers(int sourceId) {
+        if (ALC10.alcGetCurrentContext() == 0 || !AL10.alIsSource(sourceId)) return;
+        int state = AL10.alGetSourcei(sourceId, AL10.AL_SOURCE_STATE);
+        if (state == AL10.AL_PLAYING || state == AL10.AL_PAUSED) {
+            AL10.alSourceStop(sourceId);
+            checkALError("alSourceStop in detachBuffers");
+        }
+        int processed = AL10.alGetSourcei(sourceId, AL10.AL_BUFFERS_PROCESSED);
+        if (processed > 0) {
+            try (var stack = MemoryStack.stackPush()) {
+                IntBuffer unqueueBuf = stack.mallocInt(processed);
+                AL10.alSourceUnqueueBuffers(sourceId, unqueueBuf);
+                checkALError("alSourceUnqueueBuffers in detachBuffers");
+            }
+        }
+        AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
+        checkALError("alSourcei AL_BUFFER AL_NONE in detachBuffers");
     }
 
     @Override
@@ -408,7 +424,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
 
     @Override
     public void setAudioPlayer(@Nullable AudioPlayer audio_player) {
-        if (this.audio_player != null)
+        if (this.audio_player != null && this.audio_player != audio_player && this.audio_player.isPlaying())
             this.audio_player.stop();
         this.audio_player = audio_player;
     }

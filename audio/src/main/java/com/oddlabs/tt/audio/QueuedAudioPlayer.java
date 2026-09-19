@@ -55,9 +55,9 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
             int rate = stream.getRate();
 
             // Calculate the sleep interval based on total queued time across all buffers.
-            // We wait for approximately half of the total buffers to be empty before waking up.
+            // We wake up when approximately a quarter of the total buffers are empty to avoid starvation.
             long totalSamplesPerChannel = (long) PCM_SAMPLES * getBufferCount() / channels;
-            long sleepInterval = Math.max(10, (TimeUnit.SECONDS.toMillis(1) * totalSamplesPerChannel / rate) / 2);
+            long sleepInterval = Math.max(10, (TimeUnit.SECONDS.toMillis(1) * totalSamplesPerChannel / rate) / 4);
 
             synchronized (this) {
                 while (isPlaying()) {
@@ -108,6 +108,13 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
             // End of ogg stream reached, but we are looping.
             stream.seek(0);
             shortsRead = stream.read(pcmBuffer);
+        } else if (shortsRead > 0 && looping && pcmBuffer.hasRemaining()) {
+            // Reached end of stream with partial buffer; wrap to beginning to fill remainder
+            stream.seek(0);
+            int more = stream.read(pcmBuffer);
+            if (more > 0) {
+                shortsRead += more;
+            }
         }
 
         // Explicitly set the buffer's position and limit for OpenAL.
@@ -122,6 +129,9 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
     public QueuedAudioPlayer<AM, AS> stop() {
         if (manager.removeQueuedPlayer(this)) {
             super.stop(); // Sets playing = false and stops the source.
+            synchronized (this) {
+                notifyAll(); // Wake up refiller thread immediately so it can clean up
+            }
         }
 
         return this;

@@ -822,4 +822,15 @@ public final class RenderState implements SceneContext {
             }
         }
     }
+
+    public void close() {
+        for (VisualModel vm : visualModels.values()) {
+            vm.close();
+        }
+        visualModels.clear();
+        for (VisualModel vm : detachedVisualModels) {
+            vm.close();
+        }
+        detachedVisualModels.clear();
+    }
 }

@@ -346,16 +346,23 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
     @Override
     public AM stopSources() {
-        if (sound_play_counter.decrementAndGet() == 0) {
+        if (sound_play_counter.decrementAndGet() <= 0) {
+            sound_play_counter.set(0);
             for (AS source : getSources()) {
                 int rank = source.getRank();
                 switch (rank) {
                     case AudioParameters.RANK_MUSIC, AudioParameters.RANK_AMBIENT -> source.pause();
-                    default -> source.stop();
+                    default -> {
+                        var player = source.getAudioPlayer();
+                        if (player != null) {
+                            player.stop();
+                        } else {
+                            source.stop();
+                        }
+                    }
                 }
             }
         }
-        if (sound_play_counter.intValue() < 0) sound_play_counter.set(0);
 
         return self();
     }
@@ -387,6 +394,23 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         fading_players.add(player);
     }
 
+    private boolean isProtected(AS source, AudioParameters params) {
+        if (params.ambient()) {
+            return ambients.contains(source)
+                    || (currentMusicPlayer != null && currentMusicPlayer.getSource() == source);
+        }
+        if (params.rank() == AudioParameters.RANK_MUSIC) {
+            return ambients.contains(source);
+        }
+        return isProtected(source);
+    }
+
+    private boolean isProtected(AS source) {
+        return ambients.contains(source)
+                || (currentMusicPlayer != null && currentMusicPlayer.getSource() == source)
+                || source.getRank() >= AudioParameters.RANK_MUSIC;
+    }
+
     private @Nullable AS findSource(float x, float y, float z, AudioParameters params) {
         float lowest_perceived_gain = Float.MAX_VALUE;
         int lowest_rank = Integer.MAX_VALUE;
@@ -394,12 +418,19 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
         AS best_candidate = null;
         for (AS source : getSources()) {
+            if (isProtected(source, params)) {
+                continue;
+            }
+
             var sourceState = source.getState();
-            if ((sourceState == AudioSource.State.INITIAL || sourceState == AudioSource.State.STOPPED) && source
-                    .getRank() < AudioParameters.RANK_AMBIENT) {
+            if (sourceState == AudioSource.State.INITIAL || sourceState == AudioSource.State.STOPPED) {
                 if (source.getAudioPlayer() != null)
                     source.getAudioPlayer().stop();
                 return source;
+            }
+
+            if (isProtected(source)) {
+                continue;
             }
 
             int sourceRank = source.getRank();
@@ -417,10 +448,16 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
             }
         }
 
-        // Steal source if it's lower priority OR same priority but quieter
-        if (best_candidate != null && (params.rank() > lowest_rank || (params.rank() == lowest_rank
-                && calculatePerceivedGain(x, y, z, params, listenerPosition) > lowest_perceived_gain))) {
-            return best_candidate;
+        // Steal source if new sound has strictly higher priority, or if same priority
+        // but the candidate is virtually inaudible and quieter than the incoming sound.
+        if (best_candidate != null) {
+            float newSoundGain = calculatePerceivedGain(x, y, z, params, listenerPosition);
+            if (params.rank() > lowest_rank
+                    || (params.rank() == lowest_rank
+                            && lowest_perceived_gain < AbstractAudioPlayer.SILENCE_THRESHOLD
+                            && newSoundGain > lowest_perceived_gain)) {
+                return best_candidate;
+            }
         }
 
         return null;
@@ -461,15 +498,13 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     private synchronized @Nullable AudioSource getSource(float x, float y, float z, AudioParameters params) {
         if (closed) return null;
         AudioSource best_source = findSource(x, y, z, params);
-        stopSource(best_source);
-        return best_source;
-    }
-
-    private static void stopSource(@Nullable AudioSource source) {
-        AudioPlayer player;
-        if (source != null && (player = source.getAudioPlayer()) != null) {
-            player.stop();
+        if (best_source != null) {
+            var player = best_source.getAudioPlayer();
+            if (player != null && player.isPlaying()) {
+                player.stop();
+            }
         }
+        return best_source;
     }
 
     /**

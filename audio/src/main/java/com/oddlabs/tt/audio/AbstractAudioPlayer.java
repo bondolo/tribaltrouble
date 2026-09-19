@@ -128,13 +128,16 @@ public abstract class AbstractAudioPlayer<AM extends AbstractAudioManager<AM, AS
     @Override
     public AudioPlayer stop() {
         if (playing) {
+            playing = false;
             if (source != null) {
                 source.stop();
+                if (source.getAudioPlayer() == this) {
+                    source.setAudioPlayer(null);
+                }
             }
             if (parameters.ambient()) {
                 manager.removeAmbient(this);
             }
-            playing = false;
         }
 
         return this;

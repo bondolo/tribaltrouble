@@ -44,17 +44,6 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
     }
 
     @Override
-    public OpenALQueuedAudioPlayer stop() {
-        super.stop();
-        synchronized (this) {
-            this.notifyAll(); // Wake up the filler thread.
-            // The filler thread will see playing == false and exit, running its finally block to cleanup.
-        }
-
-        return this;
-    }
-
-    @Override
     protected @Nullable OpenALAudio initAsync(OGGStream stream) {
         if (this.source == null || !isPlaying()) {
             return null;
@@ -158,6 +147,10 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
         synchronized (manager) {
             if (manager.isClosed()) {
                 return;
+            }
+            if (source != null) {
+                OpenALAudioSource.detachBuffers(source.getSource());
+                source.stop();
             }
             if (audio instanceof AutoCloseable toClose) {
                 toClose.close();

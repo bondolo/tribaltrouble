@@ -388,6 +388,8 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
     public void close() {
         if (!closed) {
             closed = true;
+            ambient.close();
+            element_renderer.close();
             lightningRenderer.close();
             sonicBlastRenderer.close();
             emitterRenderer.close();

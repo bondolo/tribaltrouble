@@ -13,7 +13,7 @@ import com.oddlabs.tt.simulation.player.Player;
 /**
  * Traverses element spatial hierarchy and dispatches visible entities to {@link RenderState}.
  */
-final class ElementRenderer<T extends Element<T>> {
+final class ElementRenderer<T extends Element<T>> implements AutoCloseable {
 
     private final RenderState render_state;
     private final boolean picking;
@@ -39,6 +39,11 @@ final class ElementRenderer<T extends Element<T>> {
     void setup(CameraState camera_state, float currentTime) {
         this.camera = camera_state;
         render_state.setup(picking, camera, currentTime);
+    }
+
+    @Override
+    public void close() {
+        render_state.close();
     }
 
     public void visit(AbstractElementNode<T> node) {
