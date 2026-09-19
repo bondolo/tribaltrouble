@@ -1,5 +1,6 @@
 package com.oddlabs.tt.simulation.landscape;
 
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -19,6 +20,7 @@ public final class HeightMap implements LandscapeEnvironment {
     private final float inv_meters_per_grid_unit;
 
     private final LandscapeLeaf[][] landscape_leaves;
+    private final BitSet below_sea_level;
 
     public HeightMap(World world_instance, LandscapeData landscapeData) {
         this.world_instance = world_instance;
@@ -30,6 +32,14 @@ public final class HeightMap implements LandscapeEnvironment {
         inv_meters_per_grid_unit = 1f / METERS_PER_UNIT_GRID;
 
         landscape_leaves = new LandscapeLeaf[patches_per_world][patches_per_world];
+        below_sea_level = new BitSet(patches_per_world * patches_per_world);
+        for (int y = 0; y < patches_per_world; y++) {
+            for (int x = 0; x < patches_per_world; x++) {
+                if (checkBelowSeaLevel(x, y)) {
+                    below_sea_level.set(y * patches_per_world + x);
+                }
+            }
+        }
     }
 
 
@@ -101,8 +111,7 @@ public final class HeightMap implements LandscapeEnvironment {
     }
 
 
-    @Override
-    public boolean isBelowSeaLevel(int patch_x, int patch_y) {
+    private boolean checkBelowSeaLevel(int patch_x, int patch_y) {
         int offset_x = patch_x * getGridUnitsPerPatch();
         int offset_y = patch_y * getGridUnitsPerPatch();
         for (int y = 0; y <= getGridUnitsPerPatch(); y++) {
@@ -113,6 +122,11 @@ public final class HeightMap implements LandscapeEnvironment {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isBelowSeaLevel(int patch_x, int patch_y) {
+        return below_sea_level.get(patch_y * patches_per_world + patch_x);
     }
 
     public LandscapeLeaf getLeafFromCoordinates(float x_f, float y_f) {
