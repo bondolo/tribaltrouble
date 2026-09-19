@@ -36,6 +36,8 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
     private static final Color.Linear IRON_COLOR_LANDING = new Color.Linear(2.0f, 1.0f, 0.2f, 1.0f);
     private static final Color.Linear IRON_COLOR_HOT = new Color.Linear(2.0f, 0.2f, 0.1f, 1.0f);
     private static final Color.Linear IRON_COLOR_COOLING = new Color.Standard(0xFF_6B_6B_7A).linear();
+    private static final Color.Linear IRON_COLOR_COOLED = IRON_COLOR_COOLING.mul(0.35f);
+    private static final Color.Linear IRON_START_TINT = IRON_COLOR_COOLING.mul(0.9f);
     private static final Color.Linear IRON_COLOR_DECAL_COOLED = Color.Linear.BLACK;
 
     private final IronSupply ironSupply;
@@ -85,11 +87,10 @@ public final class IronSupplyVisualModel extends AbstractSupplyVisualModel<IronS
             return IRON_COLOR_HOT.lerp(IRON_COLOR_COOLING, factor);
         } else if (coolProgress < 0.9f) {
             float factor = (coolProgress - 0.8f) / 0.1f;
-            return IRON_COLOR_COOLING.lerp(IRON_COLOR_COOLING.mul(0.35f), factor);
+            return IRON_COLOR_COOLING.lerp(IRON_COLOR_COOLED, factor);
         } else if (coolProgress < 1.0f) {
             float factor = (coolProgress - 0.9f) / 0.1f;
-            Color.Linear ironStartTint = IRON_COLOR_COOLING.mul(0.9f);
-            return ironStartTint.lerp(Color.Linear.WHITE, factor);
+            return IRON_START_TINT.lerp(Color.Linear.WHITE, factor);
         } else {
             return null;
         }

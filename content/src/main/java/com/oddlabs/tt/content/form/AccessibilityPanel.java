@@ -226,7 +226,7 @@ public final class AccessibilityPanel extends Panel {
         for (int i = 0; i < accessibility.player_colours.length; i++) {
             String player_str = AbstractOptionsMenu.i18n("player", Integer.toString(i + 1));
             PulldownItem<Integer> item = new PulldownItem<>(player_str, i);
-            item.setLabelColor(accessibility.player_colours[i]);
+            item.setLabelColor(accessibility.linear_player_colours[i]);
             pm_player.addItem(item);
         }
         PulldownButton<Integer> pb_player = new PulldownButton<>(gui_root, pm_player, 0, 150);
@@ -304,8 +304,8 @@ public final class AccessibilityPanel extends Panel {
             accessibility.setPlayerColour(index, resetColour);
             World.updateAllPlayerColors(accessibility.linear_player_colours);
             refreshUI.run();
-            pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(accessibility.player_colours[index]));
-            pb_player.setLabelColor(accessibility.player_colours[index]);
+            pm_player.getChosenItem().ifPresent(pi -> pi.setLabelColor(accessibility.linear_player_colours[index]));
+            pb_player.setLabelColor(accessibility.linear_player_colours[index]);
         });
 
         CheckBox cb_team_stencil = new CheckBox(accessibility.team_stencil, AbstractOptionsMenu

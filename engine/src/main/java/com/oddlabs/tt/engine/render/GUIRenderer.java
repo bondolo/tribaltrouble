@@ -149,7 +149,7 @@ public final class GUIRenderer {
             flush();
         }
         // Use -1 for "no texture"
-        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color);
+        putQuad(x, y, w, h, -1, -1, -1, -1, -1f, color.r(), color.g(), color.b(), color.a());
     }
 
     public void drawModeIcon(ModeIconQuads iconQuad, ModeIconQuads.Mode skinMode, float x, float y) {
@@ -166,6 +166,11 @@ public final class GUIRenderer {
                 .getV1(), iconQuad.getU2(), iconQuad.getV2(), tint);
     }
 
+    public void drawIcon(IconQuad iconQuad, float x, float y, Color.Linear tint) {
+        drawTexture(iconQuad.getTexture(), x, y, iconQuad.getWidth(), iconQuad.getHeight(), iconQuad.getU1(), iconQuad
+                .getV1(), iconQuad.getU2(), iconQuad.getV2(), tint);
+    }
+
     public void drawIcon(IconQuad iconQuad, float x, float y, float w, float h) {
         drawTexture(iconQuad.getTexture(), x, y, w, h, iconQuad.getU1(), iconQuad.getV1(), iconQuad.getU2(), iconQuad
                 .getV2(), Color.Linear.WHITE);
@@ -178,8 +183,29 @@ public final class GUIRenderer {
         }
 
         float texIndex = getTextureIndex(texture);
-        putQuad(x, y, w, h, u1, v1, u2, v2, texIndex, tint instanceof Color.Linear linear ? linear : new Color.Linear(
-                tint));
+        float r;
+        float g;
+        float b;
+        if (tint instanceof Color.Linear linear) {
+            r = linear.r();
+            g = linear.g();
+            b = linear.b();
+        } else {
+            r = Color.toLinear(tint.r());
+            g = Color.toLinear(tint.g());
+            b = Color.toLinear(tint.b());
+        }
+        putQuad(x, y, w, h, u1, v1, u2, v2, texIndex, r, g, b, tint.a());
+    }
+
+    public void drawTexture(Texture texture, float x, float y, float w, float h, float u1, float v1, float u2,
+            float v2, Color.Linear tint) {
+        if (quadCount >= MAX_QUADS) {
+            flush();
+        }
+
+        float texIndex = getTextureIndex(texture);
+        putQuad(x, y, w, h, u1, v1, u2, v2, texIndex, tint.r(), tint.g(), tint.b(), tint.a());
     }
 
     private float getTextureIndex(Texture texture) {
@@ -198,18 +224,14 @@ public final class GUIRenderer {
         return (float) textureCount++;
     }
 
-    /**
-     * @param tint Assumed to be a linear color.
-     */
     private void putQuad(float x, float y, float w, float h, float u1, float v1, float u2, float v2, float texIndex,
-            Color tint) {
-        assert tint instanceof Color.Linear : "Tint must be linear not " + tint.getClass().getSimpleName();
+            float tintR, float tintG, float tintB, float tintA) {
         Matrix4f mat = matrixStack.current();
 
-        float r = tint.r() * currentModulation.r();
-        float g = tint.g() * currentModulation.g();
-        float b = tint.b() * currentModulation.b();
-        float a = tint.a() * currentModulation.a();
+        float r = tintR * currentModulation.r();
+        float g = tintG * currentModulation.g();
+        float b = tintB * currentModulation.b();
+        float a = tintA * currentModulation.a();
 
         // Transform vertices on CPU
         float x1 = x;

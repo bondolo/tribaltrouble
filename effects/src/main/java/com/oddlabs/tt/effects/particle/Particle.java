@@ -21,8 +21,14 @@ public class Particle {
     private float angularVelocity = 0f;
 
     private final Vector3f position = new Vector3f();
-    private Color.Linear color = Color.Linear.TRANSPARENT;
-    private Color.LinearDelta deltaColor = Color.LinearDelta.ZERO;
+    private float colorR = 0f;
+    private float colorG = 0f;
+    private float colorB = 0f;
+    private float colorA = 0f;
+    private float deltaR = 0f;
+    private float deltaG = 0f;
+    private float deltaB = 0f;
+    private float deltaA = 0f;
     private final Vector3f growthRate = new Vector3f();
     private final Vector3f radius = new Vector3f();
 
@@ -99,7 +105,10 @@ public class Particle {
     }
 
     public void update(float t) {
-        color = color.add(deltaColor.mul(t));
+        colorR += deltaR * t;
+        colorG += deltaG * t;
+        colorB += deltaB * t;
+        colorA += deltaA * t;
         radius.add(growthRate.x() * t, growthRate.y() * t, growthRate.z() * t);
         angle += angularVelocity * t;
         energy -= t;
@@ -130,35 +139,48 @@ public class Particle {
     }
 
     final void setColor(Color.Linear color) {
-        this.color = color;
+        this.colorR = color.r();
+        this.colorG = color.g();
+        this.colorB = color.b();
+        this.colorA = color.a();
+    }
+
+    public final void addColor(Color.LinearDelta delta) {
+        this.colorR += delta.r();
+        this.colorG += delta.g();
+        this.colorB += delta.b();
+        this.colorA += delta.a();
     }
 
     public final Color.Linear getColor() {
-        return color;
+        return new Color.Linear(colorR, colorG, colorB, colorA);
     }
 
     public float getColorR() {
-        return color.r();
+        return colorR;
     }
 
     public float getColorG() {
-        return color.g();
+        return colorG;
     }
 
     public float getColorB() {
-        return color.b();
+        return colorB;
     }
 
     public final float getColorA() {
-        return color.a();
+        return colorA;
     }
 
     public final Color.LinearDelta getDeltaColor() {
-        return deltaColor;
+        return new Color.LinearDelta(deltaR, deltaG, deltaB, deltaA);
     }
 
     public final void setDeltaColor(Color.LinearDelta delta) {
-        this.deltaColor = delta;
+        this.deltaR = delta.r();
+        this.deltaG = delta.g();
+        this.deltaB = delta.b();
+        this.deltaA = delta.a();
     }
 
     public final void setEnergy(float energy) {

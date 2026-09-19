@@ -273,8 +273,12 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
     @Override
     public void setUniform(int loc, Color value) {
         if (loc == -1) return;
-        var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
-        GL20.glUniform4f(loc, linearColor.r(), linearColor.g(), linearColor.b(), linearColor.a());
+        if (value instanceof Color.Linear linear) {
+            GL20.glUniform4f(loc, linear.r(), linear.g(), linear.b(), linear.a());
+        } else {
+            GL20.glUniform4f(loc, Color.toLinear(value.r()), Color.toLinear(value.g()), Color.toLinear(value.b()),
+                    value.a());
+        }
     }
 
     public void setUniformColor3(String name, Color value) {
@@ -283,8 +287,11 @@ public abstract class ShaderProgram extends NativeResource<ShaderProgram.Program
 
     public void setUniformColor3(int loc, Color value) {
         if (loc == -1) return;
-        var linearColor = value instanceof Color.Linear linear ? linear : new Color.Linear(value);
-        GL20.glUniform3f(loc, linearColor.r(), linearColor.g(), linearColor.b());
+        if (value instanceof Color.Linear linear) {
+            GL20.glUniform3f(loc, linear.r(), linear.g(), linear.b());
+        } else {
+            GL20.glUniform3f(loc, Color.toLinear(value.r()), Color.toLinear(value.g()), Color.toLinear(value.b()));
+        }
     }
 
     @Override

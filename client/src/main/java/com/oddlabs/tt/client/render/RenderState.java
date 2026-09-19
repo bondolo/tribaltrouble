@@ -675,6 +675,14 @@ public final class RenderState implements SceneContext {
     }
 
     private static final float PLANTS_CUT_DIST = 200;
+    private static final int PLANT_FADE_STEPS = 256;
+    private static final Color.Linear[] PLANT_FADE_COLORS = new Color.Linear[PLANT_FADE_STEPS];
+    static {
+        for (int i = 0; i < PLANT_FADE_STEPS; i++) {
+            PLANT_FADE_COLORS[i] = new Color.Linear(1f, 1f, 1f, i / 255.0f);
+        }
+    }
+
     private static final ModelVisitor<Plants> plants_model_visitor = new WhiteModelVisitor<>() {
         private static final float START_FADE_DIST = 100;
 
@@ -695,7 +703,8 @@ public final class RenderState implements SceneContext {
             if (dist_squared > START_FADE_DIST * START_FADE_DIST) {
                 float camera_dist = (float) Math.sqrt(dist_squared);
                 float alpha = 1f - ((camera_dist - START_FADE_DIST) / (PLANTS_CUT_DIST - START_FADE_DIST));
-                render_state.setColor(new Color.Linear(1f, 1f, 1f, alpha));
+                int index = Math.clamp(Math.round(alpha * 255f), 0, 255);
+                render_state.setColor(PLANT_FADE_COLORS[index]);
             }
         }
     };

@@ -276,7 +276,7 @@ public abstract class Emitter<P extends Particle> implements Animated {
     public final void adjustColor(Color.LinearDelta delta) {
         Arrays.stream(particles)
                 .flatMap(Collection::stream)
-                .forEach(p -> p.setColor(p.getColor().add(delta)));
+                .forEach(p -> p.addColor(delta));
     }
 
     public final void start() {
