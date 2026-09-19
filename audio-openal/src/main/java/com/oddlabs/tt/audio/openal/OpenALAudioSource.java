@@ -183,6 +183,10 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         int sourceId = getSource();
         if (AL10.alIsSource(sourceId)) {
             assert al_buffers.remaining() > 0 : "al_buffers is empty";
+            if (AL10.alGetSourcei(sourceId, AL10.AL_BUFFER) != 0) {
+                AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
+                checkALError("alSourcei AL_BUFFER AL_NONE before queue");
+            }
             AL10.alSourceQueueBuffers(sourceId, al_buffers);
             checkALError("alSourceQueueBuffers");
         }
