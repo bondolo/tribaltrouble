@@ -40,8 +40,8 @@ public final class Skin {
     private final FormData form_data;
     private final Box edit_box;
     private final Box background_box;
-    private final ModeIconQuads check_box_marked;
-    private final ModeIconQuads check_box_unmarked;
+    private final ModeIconQuads check_box_checked;
+    private final ModeIconQuads check_box_unchecked;
     private final ModeIconQuads radio_button_marked;
     private final ModeIconQuads radio_button_unmarked;
     private final GroupData group_data;
@@ -81,8 +81,8 @@ public final class Skin {
         accept_button = getNamedIconQuads(root, "accept_button", texture);
         cancel_button = getNamedIconQuads(root, "cancel_button", texture);
         back_button = getNamedIconQuads(root, "back_button", texture);
-        check_box_marked = parseCheckBoxMarked(root, texture);
-        check_box_unmarked = parseCheckBoxUnmarked(root, texture);
+        check_box_checked = parseCheckBoxMarked(root, texture);
+        check_box_unchecked = parseCheckBoxUnchecked(root, texture);
         radio_button_marked = parseRadioButtonMarked(root, texture);
         radio_button_unmarked = parseRadioButtonUnmarked(root, texture);
         horiz_button_pressed = parseHorizButtonPressed(root, texture);
@@ -196,18 +196,18 @@ public final class Skin {
         return getIconQuads(node, texture);
     }
 
-    public ModeIconQuads getCheckBoxMarked() {
-        return check_box_marked;
+    public ModeIconQuads getCheckBoxChecked() {
+        return check_box_checked;
     }
 
-    private ModeIconQuads parseCheckBoxUnmarked(Node n, Texture texture) {
+    private ModeIconQuads parseCheckBoxUnchecked(Node n, Texture texture) {
         Node node = getNodeByName("checkbox", n);
         node = getNodeByName("unmarked", node);
         return getIconQuads(node, texture);
     }
 
-    public ModeIconQuads getCheckBoxUnmarked() {
-        return check_box_unmarked;
+    public ModeIconQuads getCheckBoxUnchecked() {
+        return check_box_unchecked;
     }
 
     private ModeIconQuads parseRadioButtonMarked(Node n, Texture texture) {

@@ -83,6 +83,7 @@ public final class Main {
             logger.info("Starting game....");
             GamePaths gamePaths = new GamePaths();
             Settings settings = new Settings(gamePaths.dataDir());
+            settings.load();
             AudioSettings audioSettings = AudioSettings.from(settings);
             try (var window = new LWJGL3Window(); var eventQueue = new LocalEventQueue(); var audioManager
                     = AudioProvider.load(audioSettings, eventQueue.getManager())) {

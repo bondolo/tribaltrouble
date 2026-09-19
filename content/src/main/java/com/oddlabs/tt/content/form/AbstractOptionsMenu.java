@@ -30,8 +30,10 @@ public abstract class AbstractOptionsMenu extends Form {
 
     private final GeneralPanel generalPanel;
     private final GraphicsPanel graphicsPanel;
+    private final Peer engine;
 
     AbstractOptionsMenu(GUIRoot gui_root, Peer engine) {
+        this.engine = engine;
         Label label_headline = new Label(i18n("options_caption"), Skin.getSkin().getHeadlineFont());
         addChild(label_headline);
 
@@ -89,5 +91,10 @@ public abstract class AbstractOptionsMenu extends Form {
 
     protected void changeGamespeed(int index) {
         setPreferredGamespeed(index);
+    }
+
+    @Override
+    protected void closed() {
+        engine.getSettings().save();
     }
 }

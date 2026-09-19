@@ -16,50 +16,60 @@ public final class SettingsHelper {
     }
 
     /**
-     * Stores a string property if different from default value.
+     * Stores a string property if different from default value, or removes it if equal.
      */
     public static void setProperty(Properties props, String key, String value,
             String defaultValue) {
         if (!value.equals(defaultValue)) {
             props.setProperty(key, value);
+        } else {
+            props.remove(key);
         }
     }
 
     /**
-     * Stores an integer property if different from default value.
+     * Stores an integer property if different from default value, or removes it if equal.
      */
     public static void setProperty(Properties props, String key, int value, int defaultValue) {
         if (value != defaultValue) {
             props.setProperty(key, String.valueOf(value));
+        } else {
+            props.remove(key);
         }
     }
 
     /**
-     * Stores a float property if different from default value.
+     * Stores a float property if different from default value, or removes it if equal.
      */
     public static void setProperty(Properties props, String key, float value, float defaultValue) {
         if (value != defaultValue) {
             props.setProperty(key, String.valueOf(value));
+        } else {
+            props.remove(key);
         }
     }
 
     /**
-     * Stores a boolean property if different from default value.
+     * Stores a boolean property if different from default value, or removes it if equal.
      */
     public static void setProperty(Properties props, String key, boolean value,
             boolean defaultValue) {
         if (value != defaultValue) {
             props.setProperty(key, String.valueOf(value));
+        } else {
+            props.remove(key);
         }
     }
 
     /**
-     * Stores a path property if different from default value.
+     * Stores a path property if different from default value, or removes it if equal.
      */
     public static void setProperty(Properties props, String key, Path value,
             Path defaultValue) {
         if (!value.equals(defaultValue)) {
             props.setProperty(key, value.toString());
+        } else {
+            props.remove(key);
         }
     }
 

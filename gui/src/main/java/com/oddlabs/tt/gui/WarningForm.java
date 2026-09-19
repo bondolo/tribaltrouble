@@ -49,7 +49,7 @@ public final class WarningForm extends Form {
         addChild(ok_button);
         ok_button.addMouseClickListener((_, _, _, _) -> {
             if (onDismiss != null) {
-                onDismiss.accept(show_next_time.isMarked());
+                onDismiss.accept(show_next_time.isChecked());
             }
             remove();
         });

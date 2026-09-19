@@ -320,8 +320,6 @@ public final class Peer implements AutoCloseable {
             }
         }
 
-        settings.load();
-
         if (eventload || grab_frames) {
             Path last_event_log_path = settings.last_event_log_dir.resolve(zipped ? "event.log.gz" : "event.log");
             logger.info("last_event_log_path = " + last_event_log_path);

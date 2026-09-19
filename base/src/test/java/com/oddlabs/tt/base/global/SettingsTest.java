@@ -93,4 +93,23 @@ final class SettingsTest {
         loaded.loadFromProperties(props);
         org.junit.jupiter.api.Assertions.assertTrue(loaded.hasNativeCampaign());
     }
+
+    @Test
+    void testPurgeDefaultPropertyOverwritesStaleLoadedProperties() {
+        Properties initialProps = new Properties();
+        initialProps.setProperty("crashed", "true");
+
+        Settings settings = new Settings();
+        settings.loadFromProperties(initialProps);
+        assertEquals(true, settings.crashed);
+
+        // Reset to default value (false)
+        settings.crashed = false;
+
+        Properties savedProps = new Properties();
+        settings.saveToProperties(savedProps);
+
+        // "crashed" should have been removed because it matches the default, rather than preserved from initialProps
+        org.junit.jupiter.api.Assertions.assertNull(savedProps.getProperty("crashed"));
+    }
 }

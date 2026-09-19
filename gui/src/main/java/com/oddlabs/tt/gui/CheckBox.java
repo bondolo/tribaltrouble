@@ -9,44 +9,44 @@ import java.util.List;
 public final class CheckBox extends GUIObject {
     private final List<CheckBoxListener> event_listeners = new java.util.ArrayList<>();
 
-    private boolean marked;
+    private boolean checked;
     private boolean pressed = false;
 
-    public CheckBox(boolean marked, String text) {
-        this(marked, text, "");
+    public CheckBox(boolean checked, String text) {
+        this(checked, text, "");
     }
 
-    public CheckBox(boolean marked, String text, String tool_tip) {
-        super(tool_tip != null && !tool_tip.isEmpty() ? () -> tool_tip : null);
-        this.marked = marked;
+    public CheckBox(boolean checked, String text, String tool_tip) {
+        super(!tool_tip.isEmpty() ? () -> tool_tip : null);
+        this.checked = checked;
         Label label = new Label(text, Skin.getSkin().getEditFont());
         addChild(label);
-        label.setPos(Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getWidth(), (Skin.getSkin()
-                .getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);
-        setDim(Skin.getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), Skin
-                .getSkin().getCheckBoxMarked().quad(ModeIconQuads.Mode.NORMAL).getHeight());
+        label.setPos(Skin.getSkin().getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getWidth(), (Skin.getSkin()
+                .getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getHeight() - label.getHeight()) / 2);
+        setDim(Skin.getSkin().getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getWidth() + label.getWidth(), Skin
+                .getSkin().getCheckBoxChecked().quad(ModeIconQuads.Mode.NORMAL).getHeight());
         setCanFocus(true);
     }
 
-    public boolean isMarked() {
-        return marked;
+    public boolean isChecked() {
+        return checked;
     }
 
-    public void setMarked(boolean marked) {
-        if (marked != this.marked) {
-            this.marked = marked;
-            checkedAll(marked);
+    public void setChecked(boolean checked) {
+        if (checked != this.checked) {
+            this.checked = checked;
+            checkedAll(checked);
         }
     }
 
-    private void toggleMarked() {
-        marked = !marked;
-        checkedAll(marked);
+    private void toggleChecked() {
+        checked = !checked;
+        checkedAll(checked);
     }
 
     @Override
     protected void mouseClicked(MouseButton button, int x, int y, int clicks) {
-        toggleMarked();
+        toggleChecked();
     }
 
     @Override
@@ -67,31 +67,31 @@ public final class CheckBox extends GUIObject {
                         ? ModeIconQuads.Mode.ACTIVE
                 : ModeIconQuads.Mode.NORMAL;
 
-        // When marked, active, pressed, and hovered, it should show the unmarked state
-        // When unmarked, active, pressed, and hovered, it should show the marked state
-        ModeIconQuads quad_to_render = isMarked()
+        // When checked, active, pressed, and hovered, it should show the unchecked state
+        // When unchecked, active, pressed, and hovered, it should show the checked state
+        ModeIconQuads quad_to_render = isChecked()
                 ? (skinMode == ModeIconQuads.Mode.ACTIVE && pressed && isHovered()
-                        ? Skin.getSkin().getCheckBoxUnmarked()
-                        : Skin.getSkin().getCheckBoxMarked())
+                        ? Skin.getSkin().getCheckBoxUnchecked()
+                        : Skin.getSkin().getCheckBoxChecked())
                 : (skinMode == ModeIconQuads.Mode.ACTIVE && pressed && isHovered()
-                        ? Skin.getSkin().getCheckBoxMarked()
-                        : Skin.getSkin().getCheckBoxUnmarked());
+                        ? Skin.getSkin().getCheckBoxChecked()
+                        : Skin.getSkin().getCheckBoxUnchecked());
 
         renderer.drawModeIcon(quad_to_render, skinMode, 0, 0);
     }
 
-    public void checkedAll(boolean marked) {
-        checked(marked);
+    public void checkedAll(boolean checked) {
+        checked(checked);
         for (var listener : event_listeners) {
-            listener.checked(marked);
+            listener.checked(checked);
         }
     }
 
-    void checked(boolean marked) {
+    void checked(boolean checked) {
         /*
         		GUIObject parent = (GUIObject)getParent();
         		if (parent != null)
-        			parent.checkedAll(marked);
+        			parent.checkedAll(checked);
         */
     }
 

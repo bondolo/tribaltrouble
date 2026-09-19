@@ -637,7 +637,7 @@ public final class TerrainMenu extends Group {
         int supplies_amount = slider_supplies.getValue();
         Terrain terrain = pm_terrain.getChosenItem().map(PulldownItem::getAttachment).orElse(Terrain.NATIVE);
         Game game;
-        boolean rated = cb_rated.isMarked();
+        boolean rated = cb_rated.isChecked();
         if (rated) {
             int first_team = team_pulldown_menus[0].getChosenItem().map(PulldownItem::getAttachment).orElse(0);
             team_pulldown_menus[0].chooseItem(first_team % 2);

@@ -522,19 +522,21 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
     @Override
     public void toggleMusic() {
-        audioSettings.play_music = !audioSettings.play_music;
-        if (audioSettings.play_music) {
-            initMusicPlayer();
-        } else if (currentMusicPlayer != null) {
-            currentMusicPlayer.stop(DEFAULT_MUSIC_FADE_OUT);
-            currentMusicPlayer = null;
-        }
+        setMusicEnabled(!audioSettings.play_music);
     }
 
     @Override
     public void setMusicEnabled(boolean enabled) {
-        if (audioSettings.play_music != enabled) {
-            toggleMusic();
+        if (audioSettings.play_music == enabled && (enabled == (currentMusicPlayer != null && currentMusicPlayer
+                .isPlaying()))) {
+            return;
+        }
+        audioSettings.play_music = enabled;
+        if (enabled) {
+            initMusicPlayer();
+        } else if (currentMusicPlayer != null) {
+            currentMusicPlayer.stop(DEFAULT_MUSIC_FADE_OUT);
+            currentMusicPlayer = null;
         }
     }
 

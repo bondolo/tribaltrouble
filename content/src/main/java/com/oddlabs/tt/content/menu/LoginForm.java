@@ -139,7 +139,7 @@ public final class LoginForm extends Form {
         if (!login.isValid())
             gui_root.addModalForm(new MessageForm(i18n("invalid_login")));
         else
-            doLogin(username, password, login, remember_checkbox.isMarked());
+            doLogin(username, password, login, remember_checkbox.isChecked());
     }
 
     private void doLogin(String username, String password, Login login, boolean remember_login) {

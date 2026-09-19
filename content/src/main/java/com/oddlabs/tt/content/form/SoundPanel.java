@@ -54,15 +54,13 @@ public class SoundPanel extends Panel {
         group_music.addChild(label_music);
 
         Slider slider_music = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (audioSettings.music_gain * MAX_VALUE));
-        slider_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !cb_music.isMarked());
+        slider_music.setDisabled(TEMPORARILY_DISABLE_MUSIC_CONTROLS || !cb_music.isChecked());
         group_music.addChild(slider_music);
 
         cb_music.addCheckBoxListener(marked -> {
-            if (audioSettings.play_music != marked) {
-                audioManager.toggleMusic();
-            }
-            slider_music.setDisabled(!marked);
             audioSettings.play_music = marked;
+            audioManager.setMusicEnabled(marked);
+            slider_music.setDisabled(!marked);
         });
         slider_music.addValueListener(value -> {
             float music_gain = (float) value / MAX_VALUE;
@@ -90,13 +88,13 @@ public class SoundPanel extends Panel {
         group_sound.addChild(label_sound);
 
         Slider slider_sound = new Slider(SLIDER_WIDTH, 0, MAX_VALUE, (int) (audioSettings.sound_gain * MAX_VALUE));
-        slider_sound.setDisabled(!cb_sound.isMarked());
+        slider_sound.setDisabled(!cb_sound.isChecked());
         group_sound.addChild(slider_sound);
 
-        cb_sound.addCheckBoxListener(marked -> {
-            audioSettings.play_sfx = marked;
-            audioManager.setSfxEnabled(marked);
-            slider_sound.setDisabled(!marked);
+        cb_sound.addCheckBoxListener(checked -> {
+            audioSettings.play_sfx = checked;
+            audioManager.setSfxEnabled(checked);
+            slider_sound.setDisabled(!checked);
         });
         slider_sound.addValueListener(value -> {
             float sound_gain = (float) value / MAX_VALUE;
