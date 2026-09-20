@@ -25,9 +25,11 @@ import org.jspecify.annotations.Nullable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 /**
@@ -77,20 +79,24 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     @Override
     public void animate(float dt) {
         if (!fallingTrees.isEmpty()) {
-            for (var entry : fallingTrees.entrySet()) {
+            var eachFalling = fallingTrees.entrySet().iterator();
+            while (eachFalling.hasNext()) {
+                var entry = eachFalling.next();
                 float progress = entry.getValue() + dt / TREE_FALL_DURATION;
                 if (!entry.getKey().isEmpty() || progress >= 1.0f) {
-                    fallingTrees.remove(entry.getKey());
+                    eachFalling.remove();
                 } else {
                     entry.setValue(progress);
                 }
             }
         }
         if (!spawningTrees.isEmpty()) {
-            for (var entry : spawningTrees.entrySet()) {
+            var eachSpawing = spawningTrees.entrySet().iterator();
+            while (eachSpawing.hasNext()) {
+                var entry = eachSpawing.next();
                 float progress = entry.getValue() + dt / TREE_SPAWN_DURATION;
                 if (entry.getKey().isEmpty() || progress >= 1.0f) {
-                    spawningTrees.remove(entry.getKey());
+                    eachSpawing.remove();
                 } else {
                     entry.setValue(progress);
                 }
