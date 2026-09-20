@@ -22,6 +22,9 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,8 +44,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     private final @Nullable Cheat cheat;
     private final Matrix4f tempMatrix = new Matrix4f();
     private final AnimationManager animationManager;
-    private final Map<TreeSupply, Float> fallingTrees = new ConcurrentHashMap<>();
-    private final Map<TreeSupply, Float> spawningTrees = new ConcurrentHashMap<>();
+    private final Map<TreeSupply, Float> fallingTrees = new HashMap<>();
+    private final Map<TreeSupply, Float> spawningTrees = new HashMap<>();
 
     TreeRenderer(@Nullable Cheat cheat, SpriteSorter sprite_sorter,
             RespondManager respond_manager,
@@ -96,9 +99,9 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     }
 
     public void renderShadows(SelectableShadowRenderer shadowRenderer) {
-        for (List<TreeSupply> list : getRenderLists()) {
-            for (TreeSupply tree : list) {
-                Tree visual = getTrees().get(tree.getTreeType());
+        getRenderLists().forEach((type, list) -> {
+            Tree visual = getTrees().get(type);
+            list.forEach(tree -> {
                 Float fallProgress = fallingTrees.get(tree);
                 if (fallProgress != null) {
                     float scale = Math.max(0f, 1f - fallProgress);
@@ -114,8 +117,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
                         shadowRenderer.addToShadowList(new TreeShadow(tree, visual, 1.0f, 1.0f));
                     }
                 }
-            }
-        }
+            });
+        });
     }
 
     private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier) implements
@@ -158,23 +161,15 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
             return;
         }
 
-        List<TreeSupply>[] render_lists = getRenderLists();
-        List<TreeSupply>[] respond_render_lists = getRespondRenderLists();
-
-        AbstractTreeGroup.TreeType[] ordinals = AbstractTreeGroup.TreeType.values();
-
-        for (int i = 0; i < render_lists.length; i++) {
-            renderList(getTrees().get(ordinals[i]), render_lists[i], false);
-        }
-        for (int i = 0; i < respond_render_lists.length; i++) {
-            if (!respond_render_lists[i].isEmpty())
-                renderList(getTrees().get(ordinals[i]), respond_render_lists[i], true);
-        }
+        getRenderLists().forEach( (type, list) -> renderList(getTrees().get(type), list, false));
+        getRespondRenderLists().forEach( (type, list) -> {
+            if (!list.isEmpty()) renderList(getTrees().get(type), list, true);
+        });
     }
 
     private void clearLists() {
-        for (List<TreeSupply> list : getRenderLists()) list.clear();
-        for (List<TreeSupply> list : getRespondRenderLists()) list.clear();
+        getRenderLists().values().forEach(List::clear);
+        getRespondRenderLists().values().forEach(List::clear);
     }
 
     private void prepareMatrix(TreeSupply tree) {
@@ -225,19 +220,10 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         render_list.clear();
     }
 
-    public void debugRender(List<TreeSupply>[] render_lists, List<
-            TreeSupply>[] respond_render_lists) {
+    public void debugRender(EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> render_lists, EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> respond_render_lists) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-            for (List<TreeSupply> render_list : render_lists) {
-                for (TreeSupply group : render_list) {
-                    RenderTools.draw(group);
-                }
-            }
-            for (List<TreeSupply> respond_render_list : respond_render_lists) {
-                for (TreeSupply group : respond_render_list) {
-                    RenderTools.draw(group);
-                }
-            }
+            render_lists.values().forEach(list -> list.forEach(RenderTools::draw));
+            respond_render_lists.values().forEach(list -> list.forEach(RenderTools::draw));
         }
     }
 

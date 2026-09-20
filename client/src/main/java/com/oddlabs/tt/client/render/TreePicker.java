@@ -30,13 +30,16 @@ class TreePicker {
     private static final int CROWN_MIPMAP_CUTOFF = RenderConfig.NO_MIPMAP_CUTOFF;
     private static final float SELECTION_RADIUS = 1.5f;
 
-    @SuppressWarnings("unchecked")
-    private final List<TreeSupply>[] render_lists = (List<TreeSupply>[]) new List[]{new ArrayList<>(),
-            new ArrayList<>(), new ArrayList<>(), new ArrayList<>()};
-    @SuppressWarnings("unchecked")
-    private final List<TreeSupply>[] respond_render_lists = (List<TreeSupply>[]) new List<?>[]{
-            new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()};
-
+    private final EnumMap<TreeType, List<TreeSupply>> render_lists = new EnumMap<>(
+            Map.of(
+                    TreeType.OAK, new ArrayList<>(), TreeType.PINE, new ArrayList<>(), TreeType.JUNGLE,
+                    new ArrayList<>(), TreeType.PALM, new ArrayList<>()
+            ));
+    private final EnumMap<TreeType, List<TreeSupply>> respond_render_lists = new EnumMap<>(
+            Map.of(
+                    TreeType.OAK, new ArrayList<>(), TreeType.PINE, new ArrayList<>(), TreeType.JUNGLE,
+                    new ArrayList<>(), TreeType.PALM, new ArrayList<>()
+            ));
     private final BoundingBox picking_selection_box = new BoundingBox();
     private final SpriteSorter sprite_sorter;
     private final RenderStateCache<TreeRenderState> render_state_cache
@@ -112,36 +115,32 @@ class TreePicker {
         return trees;
     }
 
-    public final List<TreeSupply>[] getRenderLists() {
+    public final EnumMap<TreeType, List<TreeSupply>> getRenderLists() {
         return render_lists;
     }
 
-    public final List<TreeSupply>[] getRespondRenderLists() {
+    public final EnumMap<TreeType, List<TreeSupply>> getRespondRenderLists() {
         return respond_render_lists;
     }
 
     public final void getAllPicks(List<TreeSupply> pick_list) {
-        for (List<TreeSupply> render_list : render_lists) {
+        render_lists.values().forEach(render_list -> {
             pick_list.addAll(render_list);
             render_list.clear();
-        }
-        for (List<TreeSupply> respond_render_list : respond_render_lists) {
+        });
+        respond_render_lists.values().forEach(respond_render_list -> {
             pick_list.addAll(respond_render_list);
             respond_render_list.clear();
-        }
+        });
     }
 
-    private void addToHighDetailList(int index, TreeSupply tree, boolean respond) {
-        if (respond) {
-            respond_render_lists[index].add(tree);
-        } else {
-            render_lists[index].add(tree);
-        }
+    private void addToHighDetailList(TreeType type, TreeSupply tree, boolean respond) {
+        (respond ? respond_render_lists : render_lists).get(type).add(tree);
     }
 
     final void markDetailPolygon(TreeSupply tree_supply, PolyDetail level) {
         // Always render high detail (Instanced Sprites)
-        addToHighDetailList(tree_supply.getTreeType().ordinal(), tree_supply, respond_manager.isResponding(
+        addToHighDetailList(tree_supply.getTreeType(), tree_supply, respond_manager.isResponding(
                 tree_supply));
     }
 
