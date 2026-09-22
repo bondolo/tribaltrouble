@@ -57,12 +57,11 @@ public final class NativeCampaignIcons implements CampaignIcons {
         IconAtlas.Element node = atlas.getElement(name);
         ModeIconQuads quads = node.getNamedIconQuads("island");
         IconAtlas.Element n = node.getElement("island");
-        int texHeight = atlas.getTexture().getHeight();
         int x = n.getInt("x");
-        int y = texHeight - n.getInt("y");
+        int y = n.getInt("y");
         int pin_index = n.getInt("pin_index");
         int pin_x = n.getInt("pin_x");
-        int pin_y = texHeight - n.getInt("pin_y");
+        int pin_y = n.getInt("pin_y");
         return new MapIslandData(quads, x, y, flags[pin_index], boats[pin_index], pin_x, pin_y);
     }
 
@@ -70,7 +69,7 @@ public final class NativeCampaignIcons implements CampaignIcons {
         IconQuad temp = atlas.getNamedIconQuad(name);
         IconAtlas.Element n = atlas.getElement(name);
         int x = n.getInt("x");
-        int y = atlas.getTexture().getHeight() - n.getInt("y");
+        int y = n.getInt("y");
         GUIIcon gui_icon = new GUIIcon(temp);
         gui_icon.setPos(x, y);
         return gui_icon;

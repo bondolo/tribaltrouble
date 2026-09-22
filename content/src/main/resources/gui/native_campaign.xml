@@ -81,10 +81,10 @@
 
 <native_campaign texture="/textures/gui/native_campaign">
 	<map offset_x="50" offset_y="50" width="700" height="500">
-		<quad left="0" top="424" right="800" bottom="1024"/>
+		<quad left="0" top="848" right="1600" bottom="2048"/>
 	</map>
 	<island0>
-		<island x="0" y="0" pin_index="0" pin_x="0" pin_y="0">
+		<island x="0" y="1024" pin_index="0" pin_x="0" pin_y="1024">
 			<normal>
 				<quad left="0" top="0" right="0" bottom="0"/>
 			</normal>
@@ -97,142 +97,142 @@
 		</island>
 	</island0>
 	<island1>
-		<island x="348" y="899" pin_index="1" pin_x="332" pin_y="869">
+		<island x="348" y="125" pin_index="1" pin_x="332" pin_y="155">
 			<normal>
-				<quad left="216" top="0" right="294" bottom="67"/>
+				<quad left="432" top="0" right="588" bottom="134"/>
 			</normal>
 			<active>
-				<quad left="216" top="67" right="294" bottom="134"/>
+				<quad left="432" top="134" right="588" bottom="268"/>
 			</active>
 			<disabled>
-				<quad left="216" top="134" right="294" bottom="201"/>
+				<quad left="432" top="268" right="588" bottom="402"/>
 			</disabled>
 		</island>
 	</island1>
 	<island2>
-		<island x="601" y="735" pin_index="0" pin_x="571" pin_y="699">
+		<island x="601" y="289" pin_index="0" pin_x="571" pin_y="325">
 			<normal>
-				<quad left="294" top="0" right="372" bottom="67"/>
+				<quad left="588" top="0" right="744" bottom="134"/>
 			</normal>
 			<active>
-				<quad left="294" top="67" right="372" bottom="134"/>
+				<quad left="588" top="134" right="744" bottom="268"/>
 			</active>
 			<disabled>
-				<quad left="294" top="134" right="372" bottom="201"/>
+				<quad left="588" top="268" right="744" bottom="402"/>
 			</disabled>
 		</island>
 	</island2>
 	<island3>
-		<island x="510" y="644" pin_index="0" pin_x="512" pin_y="592">
+		<island x="510" y="380" pin_index="0" pin_x="512" pin_y="432">
 			<normal>
-				<quad left="372" top="0" right="495" bottom="89"/>
+				<quad left="744" top="0" right="990" bottom="178"/>
 			</normal>
 			<active>
-				<quad left="372" top="89" right="495" bottom="178"/>
+				<quad left="744" top="178" right="990" bottom="356"/>
 			</active>
 			<disabled>
-				<quad left="372" top="178" right="495" bottom="267"/>
+				<quad left="744" top="356" right="990" bottom="534"/>
 			</disabled>
 		</island>
 	</island3>
 	<island4>
-		<island x="299" y="607" pin_index="1" pin_x="303" pin_y="566">
+		<island x="299" y="417" pin_index="1" pin_x="303" pin_y="458">
 			<normal>
-				<quad left="495" top="0" right="618" bottom="89"/>
+				<quad left="990" top="0" right="1236" bottom="178"/>
 			</normal>
 			<active>
-				<quad left="495" top="89" right="618" bottom="178"/>
+				<quad left="990" top="178" right="1236" bottom="356"/>
 			</active>
 			<disabled>
-				<quad left="495" top="178" right="618" bottom="267"/>
+				<quad left="990" top="356" right="1236" bottom="534"/>
 			</disabled>
 		</island>
 	</island4>
 	<island5>
-		<island x="363" y="734" pin_index="1" pin_x="365" pin_y="695">
+		<island x="363" y="290" pin_index="1" pin_x="365" pin_y="329">
 			<normal>
-				<quad left="618" top="0" right="741" bottom="89"/>
+				<quad left="1236" top="0" right="1482" bottom="178"/>
 			</normal>
 			<active>
-				<quad left="618" top="89" right="741" bottom="178"/>
+				<quad left="1236" top="178" right="1482" bottom="356"/>
 			</active>
 			<disabled>
-				<quad left="618" top="178" right="741" bottom="267"/>
+				<quad left="1236" top="356" right="1482" bottom="534"/>
 			</disabled>
 		</island>
 	</island5>
 	<island6>
-		<island x="113" y="808" pin_index="2" pin_x="127" pin_y="748">
+		<island x="113" y="216" pin_index="2" pin_x="127" pin_y="276">
 			<normal>
-				<quad left="864" top="0" right="1024" bottom="111"/>
+				<quad left="1728" top="0" right="2048" bottom="222"/>
 			</normal>
 			<active>
-				<quad left="864" top="111" right="1024" bottom="222"/>
+				<quad left="1728" top="222" right="2048" bottom="444"/>
 			</active>
 			<disabled>
-				<quad left="864" top="222" right="1024" bottom="333"/>
+				<quad left="1728" top="444" right="2048" bottom="666"/>
 			</disabled>
 		</island>
 	</island6>
 	<island7>
-		<island x="112" y="668" pin_index="2" pin_x="102" pin_y="622">
+		<island x="112" y="356" pin_index="2" pin_x="102" pin_y="402">
 			<normal>
-				<quad left="741" top="0" right="864" bottom="89"/>
+				<quad left="1482" top="0" right="1728" bottom="178"/>
 			</normal>
 			<active>
-				<quad left="741" top="89" right="864" bottom="178"/>
+				<quad left="1482" top="178" right="1728" bottom="356"/>
 			</active>
 			<disabled>
-				<quad left="741" top="178" right="864" bottom="267"/>
+				<quad left="1482" top="356" right="1728" bottom="534"/>
 			</disabled>
 		</island>
 	</island7>
 	<flag0>
-		<quad left="834" top="781" right="929" bottom="862"/>
+		<quad left="1668" top="1562" right="1858" bottom="1724"/>
 	</flag0>
 	<flag1>
-		<quad left="834" top="862" right="929" bottom="943"/>
+		<quad left="1668" top="1724" right="1858" bottom="1886"/>
 	</flag1>
 	<flag2>
-		<quad left="834" top="943" right="929" bottom="1024"/>
+		<quad left="1668" top="1886" right="1858" bottom="2048"/>
 	</flag2>
 	<boat0>
-		<quad left="929" top="781" right="1024" bottom="862"/>
+		<quad left="1858" top="1562" right="2048" bottom="1724"/>
 	</boat0>
 	<boat1>
-		<quad left="929" top="862" right="1024" bottom="943"/>
+		<quad left="1858" top="1724" right="2048" bottom="1886"/>
 	</boat1>
 	<boat2>
-		<quad left="929" top="943" right="1024" bottom="1024"/>
+		<quad left="1858" top="1886" right="2048" bottom="2048"/>
 	</boat2>
-	<hidden0 x="103" y="706">
-		<quad left="83" top="0" right="216" bottom="134"/>
+	<hidden0 x="103" y="318">
+		<quad left="166" top="0" right="432" bottom="268"/>
 	</hidden0>
 	<face0>
-		<quad left="0" top="288" right="79" bottom="424"/>
+		<quad left="0" top="576" right="158" bottom="848"/>
 	</face0>
 	<face1>
-		<quad left="79" top="288" right="202" bottom="424"/>
+		<quad left="158" top="576" right="404" bottom="848"/>
 	</face1>
 	<face2>
-		<quad left="202" top="288" right="276" bottom="424"/>
+		<quad left="404" top="576" right="552" bottom="848"/>
 	</face2>
 	<face3>
-		<quad left="276" top="288" right="326" bottom="424"/>
+		<quad left="552" top="576" right="652" bottom="848"/>
 	</face3>
 	<face4>
-		<quad left="326" top="288" right="405" bottom="424"/>
+		<quad left="652" top="576" right="810" bottom="848"/>
 	</face4>
 	<face5>
-		<quad left="405" top="288" right="531" bottom="424"/>
+		<quad left="810" top="576" right="1062" bottom="848"/>
 	</face5>
 	<face6>
-		<quad left="531" top="288" right="657" bottom="424"/>
+		<quad left="1062" top="576" right="1314" bottom="848"/>
 	</face6>
 	<face7>
-		<quad left="657" top="288" right="780" bottom="424"/>
+		<quad left="1314" top="576" right="1560" bottom="848"/>
 	</face7>
 	<face8>
-		<quad left="0" top="152" right="121" bottom="288"/>
+		<quad left="0" top="304" right="242" bottom="576"/>
 	</face8>
 </native_campaign>

@@ -113,7 +113,7 @@ public final class Icons {
         float u2 = (right - insetU) / texW;
         float v2 = 1f - (top + insetV) / texH;
 
-        return new IconQuad(u1, v1, u2, v2, right - left, bottom - top, texture);
+        return new IconQuad(u1, v1, u2, v2, (right - left) / 2, (bottom - top) / 2, texture);
     }
 
     static Color.Linear getNamedColor(Node n, String name) {
