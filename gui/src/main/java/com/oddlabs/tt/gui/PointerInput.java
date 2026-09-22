@@ -61,7 +61,7 @@ public final class PointerInput {
         lastHeight = h;
         this.current_scale = scale;
         this.current_pixel_density = pixelDensity;
-        float imageScale = scale;
+        float imageScale = scale / 2f;
         if (IS_MAC) {
             // MacOS will scale the cursor in retina mode so reuse the scale.
             imageScale /= pixelDensity;
@@ -78,11 +78,11 @@ public final class PointerInput {
         }
         cursors.clear();
 
-        debug_cursor = new CursorFile("/textures/gui/pointer_clientload_32_8.png", 2, 2, imageScale).get();
-        cursors.put(CursorType.NORMAL, new CursorFile("/textures/gui/pointer_32_8.png", 2, 2, imageScale).get());
-        cursors.put(CursorType.TARGET, new CursorFile("/textures/gui/pointer_target_32_8.png", 14, 14, imageScale)
+        debug_cursor = new CursorFile("/textures/gui/pointer_clientload_32_8.png", 4, 4, imageScale).get();
+        cursors.put(CursorType.NORMAL, new CursorFile("/textures/gui/pointer_32_8.png", 4, 4, imageScale).get());
+        cursors.put(CursorType.TARGET, new CursorFile("/textures/gui/pointer_target_32_8.png", 28, 28, imageScale)
                 .get());
-        cursors.put(CursorType.TEXT, new CursorFile("/textures/gui/pointer_text_32_8.png", 6, 11, imageScale).get());
+        cursors.put(CursorType.TEXT, new CursorFile("/textures/gui/pointer_text_32_8.png", 12, 22, imageScale).get());
         cursors.put(CursorType.DEBUG, debug_cursor);
         cursors.put(CursorType.NULL, Cursor.NULL_CURSOR);
 
