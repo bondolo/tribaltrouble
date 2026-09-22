@@ -90,7 +90,7 @@ fun convertBatch(name: String, pngDir: Any, outSubdir: String, vararg convertArg
         val outDir = layout.buildDirectory.dir("textures/$outSubdir").get().asFile.absolutePath
         
         args(inDir, *convertArgs, outDir)
-        jvmArgs("-esa", "-ea", "-Xmx512m", "-Djava.awt.headless=true", "--enable-native-access=ALL-UNNAMED")
+        jvmArgs("-esa", "-ea", "-Xmx4g", "-Djava.awt.headless=true", "--enable-native-access=ALL-UNNAMED")
         if (basisuPath != null) {
             jvmArgs("-Dbasisu.path=$basisuPath")
         }
@@ -119,7 +119,7 @@ fun convertTexture(name: String, png: Any, outSubdir: String, vararg convertArgs
         val outFile = File(outDir, "$inFileName.dds")
         
         args(inFile, *convertArgs, outFile.absolutePath)
-        jvmArgs("-esa", "-ea", "-Xmx512m", "-Djava.awt.headless=true", "--enable-native-access=ALL-UNNAMED")
+        jvmArgs("-esa", "-ea", "-Xmx4g", "-Djava.awt.headless=true", "--enable-native-access=ALL-UNNAMED")
         if (basisuPath != null) {
             jvmArgs("-Dbasisu.path=$basisuPath")
         }
@@ -128,16 +128,17 @@ fun convertTexture(name: String, png: Any, outSubdir: String, vararg convertArgs
         outputs.file(outFile)
     }
 
-// 1. External Model Textures
-val convertExternalModels = convertBatch("convertExternalModels", 
-    layout.buildDirectory.dir("external_source/textures/textures/models"), "models",
+// 1. Model and decal textures sourced from in-repo upscaled images.
+// FIXME: Once an updated upstream asset release is published containing the upscaled images,
+//        revert these two tasks to source from the downloaded external_source and remove
+//        assets/textures/models and assets/textures/teamdecals from the repo.
+val convertExternalModels = convertBatch("convertExternalModels",
+    "textures/models", "models",
     "-color", "-flip", "-mipmaps", "-format", "dds")
-convertExternalModels.configure { dependsOn(downloadAssets) }
 
 val convertExternalDecals = convertBatch("convertExternalDecals",
-    layout.buildDirectory.dir("external_source/textures/textures/teamdecals"), "teamdecals",
+    "textures/teamdecals", "teamdecals",
     "-color", "-half", "-flip", "-mipmaps", "-format", "dds")
-convertExternalDecals.configure { dependsOn(downloadAssets) }
 
 // 2. GUI Textures
 val convertGui = convertBatch("convertGui", "textures/gui", "gui", "-color", "-flip", "-stb", "-format", "dds")
