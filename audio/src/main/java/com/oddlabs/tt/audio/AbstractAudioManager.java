@@ -218,13 +218,13 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public final synchronized void update(float t) {
+    public final synchronized void update(float dt) {
         processCleanupTasks();
-        if (closed || t == 0f) {
+        if (closed || dt == 0f) {
             return;
         }
 
-        updateTime += t;
+        updateTime += dt;
         if (updateTime >= AMBIENT_UPDATE_INTERVAL) {
             updateTime -= AMBIENT_UPDATE_INTERVAL;
             if (sfxEnabled) {
@@ -235,13 +235,11 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         // We only want to play ambient sounds around us at the moment...
         if (sfxEnabled) {
             for (AmbientAudioSource anActive_ambient : active_ambient) {
-                anActive_ambient.update(t);
+                anActive_ambient.update(dt);
             }
         }
 
-        fading_players.removeIf(player -> {
-            return !player.updateFade(t);
-        });
+        fading_players.removeIf(player -> !player.updateFade(dt));
     }
 
     private void updateAmbientSources() {
@@ -250,15 +248,21 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         // Mark all current slots as "potential removals" by setting target to 0
         active_ambient.forEach(a -> a.setGainTarget(0f));
 
-        float max_dist_sq = AudioParameters.DISTANCE_AMBIENT * AudioParameters.DISTANCE_AMBIENT;
-
         for (AS ambientSource : ambients) {
             var player = ambientSource.getAudioPlayer();
             if (player != null && player.isPlaying()) {
-                Vector3fc position = ambientSource.getPosition();
-                float dist_sq = position.distanceSquared(listenerPos);
+                var params = player.getParameters();
+                float maxDist = params.distance();
+                boolean inRange;
+                if (params.relative() || Float.isInfinite(maxDist) || maxDist >= Float.MAX_VALUE) {
+                    inRange = true;
+                } else {
+                    Vector3fc position = ambientSource.getPosition();
+                    float dist_sq = position.distanceSquared(listenerPos);
+                    inRange = dist_sq < (maxDist * maxDist);
+                }
 
-                if (dist_sq < max_dist_sq) {
+                if (inRange) {
                     active_ambient.stream()
                             .filter(a -> a.isUsing(ambientSource))
                             .findFirst()
