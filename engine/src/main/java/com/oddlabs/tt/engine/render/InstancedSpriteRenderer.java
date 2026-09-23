@@ -392,33 +392,18 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
         void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,
                 Texture respondTexture) {
-            boolean hasInstances = false;
-            for (InstanceGroup group : groups.values()) {
-                if (group.count > 0) {
-                    hasInstances = true;
-                    break;
-                }
-            }
-            if (!hasInstances) return;
-
-            InstanceGroup representativeGroup = null;
-            for (InstanceGroup group : groups.values()) {
-                if (group.count > 0) {
-                    representativeGroup = group;
-                    break;
-                }
-            }
+            InstanceGroup representativeGroup = groups.values().stream()
+                    .filter(group -> group.count > 0)
+                    .findFirst().orElse(null);
             if (representativeGroup == null) return;
 
             SpriteList spriteList = key.spriteList;
             Sprite representativeSprite = spriteList.getSprite(representativeGroup.spriteIndex);
             setupTextures(context, shader, representativeSprite, whiteTexture, respondTexture);
 
-            for (InstanceGroup group : groups.values()) {
-                if (group.count > 0) {
-                    group.upload(context);
-                }
-            }
+            groups.values().stream()
+                    .filter(group -> group.count > 0)
+                    .forEach(group -> group.upload(context));
 
             if (key.respond) {
                 try (var _ = context.withColorMask(false, false, false, false); var _ = context.withDepthMode(
@@ -452,11 +437,9 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         private void drawAll(RenderContext context) {
-            for (InstanceGroup group : groups.values()) {
-                if (group.count > 0) {
-                    group.draw(context);
-                }
-            }
+            groups.values().stream()
+                    .filter(group -> group.count > 0)
+                    .forEach(group ->  group.draw(context));
         }
 
         private void setupTextures(RenderContext context, InstancedSpriteShader shader,
