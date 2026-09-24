@@ -64,7 +64,8 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
     @Override
     protected int initParticle(ParametricFunction function,
             float velocity_u, float velocity_v,
-            Color.Linear color, Color.LinearDelta delta_color,
+            float colorR, float colorG, float colorB, float colorA,
+            float deltaR, float deltaG, float deltaB, float deltaA,
             Vector3fc particle_radius, Vector3fc growth_rate,
             float energy) {
 
@@ -74,8 +75,8 @@ public final class BalancedParametricEmitter extends ParametricEmitter {
             ParametricParticle particle = new ParametricParticle(function, u, v, 0f, 0f, 0f);
             Vector3f offset = randomOffset(margin_u, margin_v, 0f);
             particle.setVelocity(velocity_u + offset.x(), velocity_v + offset.y());
-            particle.setColor(color);
-            particle.setDeltaColor(delta_color);
+            particle.setColor(colorR, colorG, colorB, colorA);
+            particle.setDeltaColor(deltaR, deltaG, deltaB, deltaA);
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
             particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
             particle.setEnergy(energy);

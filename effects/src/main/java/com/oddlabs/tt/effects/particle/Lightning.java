@@ -99,8 +99,8 @@ public final class Lightning implements Animated, BoundsProvider {
 
     private void initParticle(StretchParticle particle) {
         particle.setSrcWidth(width);
-        particle.setColor(color);
-        particle.setDeltaColor(delta_color);
+        particle.setColor(color.r(), color.g(), color.b(), color.a());
+        particle.setDeltaColor(delta_color.r(), delta_color.g(), delta_color.b(), delta_color.a());
         particle.setRadius(0f, 0f, 0f);
         particle.setGrowthRate(0f, 0f, 0f);
         particle.setEnergy(energy);

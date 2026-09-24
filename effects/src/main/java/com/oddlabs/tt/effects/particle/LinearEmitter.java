@@ -195,23 +195,46 @@ public abstract class LinearEmitter extends Emitter<LinearParticle> {
     @Override
     protected int initParticles(int count) {
         int initiated = 0;
+        var clusterColor = getClusterColor();
         for (int i = 0; i < count; i++) {
-            Color.Linear particleColor = nextParticleColor(color);
+            var particleColor = nextParticleColor(clusterColor, color);
             float particleEnergy = minEnergy > 0f && maxEnergy >= minEnergy
                     ? ThreadLocalRandom.current().nextFloat(minEnergy, maxEnergy)
                     : energy;
             float baseFadeRate = particleEnergy > 0f ? -particleColor.a() / particleEnergy : 0f;
             float multiplier = ThreadLocalRandom.current().nextFloat(0.85f, 1.15f);
-            Color.LinearDelta particleDeltaColor = delta_color.alpha(baseFadeRate * multiplier);
-            initiated += initParticle(getPosition(), velocity, acceleration, particleColor, particleDeltaColor,
+            float particleDeltaAlpha = baseFadeRate * multiplier;
+            initiated += initParticle(getPosition(), velocity, acceleration,
+                    particleColor.r(), particleColor.g(), particleColor.b(), particleColor.a(),
+                    delta_color.r(), delta_color.g(), delta_color.b(), particleDeltaAlpha,
                     particle_radius, growth_rate, particleEnergy);
         }
         return initiated;
     }
 
+    /**
+     * Initializes and adds a linear particle using discrete color and delta components in linear RGB space.
+     *
+     * @param position base position
+     * @param velocity initial velocity vector
+     * @param acceleration acceleration vector
+     * @param colorR linear red channel
+     * @param colorG linear green channel
+     * @param colorB linear blue channel
+     * @param colorA alpha channel
+     * @param deltaR linear red delta per second
+     * @param deltaG linear green delta per second
+     * @param deltaB linear blue delta per second
+     * @param deltaA alpha delta per second
+     * @param particle_radius particle radius dimensions
+     * @param growth_rate particle radius growth rate
+     * @param energy particle lifetime/energy
+     * @return number of particles initiated
+     */
     protected abstract int initParticle(Vector3f position,
             Vector3fc velocity, Vector3fc acceleration,
-            Color.Linear color, Color.LinearDelta delta_color,
+            float colorR, float colorG, float colorB, float colorA,
+            float deltaR, float deltaG, float deltaB, float deltaA,
             Vector3fc particle_radius, Vector3fc growth_rate,
             float energy);
 

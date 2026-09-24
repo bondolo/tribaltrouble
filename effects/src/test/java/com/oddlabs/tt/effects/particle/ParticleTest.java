@@ -54,8 +54,8 @@ class ParticleTest {
         particle.setVelocity(1f, 2f, 3f);
         particle.setAcceleration(0.5f, -0.5f, 0f);
         particle.setEnergy(5f);
-        particle.setColor(new Color.Linear(1f, 1f, 1f, 1f));
-        particle.setDeltaColor(new Color.LinearDelta(-0.1f, -0.1f, -0.1f, -0.1f));
+        particle.setColor(1f, 1f, 1f, 1f);
+        particle.setDeltaColor(-0.1f, -0.1f, -0.1f, -0.1f);
 
         particle.update(1.0f);
 

@@ -170,8 +170,14 @@ public abstract class Emitter<P extends Particle> implements Animated {
         return colorSpectrum.getColor(current_spectrum, base_color).add(cluster_rgb);
     }
 
-    protected final Color.Linear nextParticleColor(Color.Linear templateColor) {
-        Color.Linear clusterColor = getClusterColor();
+    /**
+     * Resolves the next particle color in linear RGB space with jitter and template modulation.
+     *
+     * @param clusterColor base cluster color in linear RGB space
+     * @param templateColor emitter template color in linear RGB space
+     * @return jittered and modulated particle color in linear RGB space
+     */
+    protected final Color.Linear nextParticleColor(Color.Linear clusterColor, Color.Linear templateColor) {
         float jitter = (float) ThreadLocalRandom.current().nextGaussian() * jitter_intensity;
         float r = Math.clamp(clusterColor.r() + jitter, 0, 1);
         float g = Math.clamp(clusterColor.g() + jitter, 0, 1);

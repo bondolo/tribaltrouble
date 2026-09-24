@@ -138,11 +138,19 @@ public class Particle {
         return position.z();
     }
 
-    final void setColor(Color.Linear color) {
-        this.colorR = color.r();
-        this.colorG = color.g();
-        this.colorB = color.b();
-        this.colorA = color.a();
+    /**
+     * Sets the particle colour components in linear RGB space.
+     *
+     * @param r linear red channel
+     * @param g linear green channel
+     * @param b linear blue channel
+     * @param a alpha channel
+     */
+    final void setColor(float r, float g, float b, float a) {
+        this.colorR = r;
+        this.colorG = g;
+        this.colorB = b;
+        this.colorA = a;
     }
 
     public final void addColor(Color.LinearDelta delta) {
@@ -172,15 +180,19 @@ public class Particle {
         return colorA;
     }
 
-    public final Color.LinearDelta getDeltaColor() {
-        return new Color.LinearDelta(deltaR, deltaG, deltaB, deltaA);
-    }
-
-    public final void setDeltaColor(Color.LinearDelta delta) {
-        this.deltaR = delta.r();
-        this.deltaG = delta.g();
-        this.deltaB = delta.b();
-        this.deltaA = delta.a();
+    /**
+     * Sets the per-second rate of color change in linear RGB space.
+     *
+     * @param r linear red delta per second
+     * @param g linear green delta per second
+     * @param b linear blue delta per second
+     * @param a alpha delta per second
+     */
+    public final void setDeltaColor(float r, float g, float b, float a) {
+        this.deltaR = r;
+        this.deltaG = g;
+        this.deltaB = b;
+        this.deltaA = a;
     }
 
     public final void setEnergy(float energy) {

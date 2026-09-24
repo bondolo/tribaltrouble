@@ -145,17 +145,40 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
     @Override
     protected int initParticles(int count) {
         int initiated = 0;
+        var clusterColor = getClusterColor();
         for (int i = 0; i < count; i++) {
-            Color.Linear particleColor = nextParticleColor(color);
-            initiated += initParticle(function, velocity_u, velocity_v, particleColor, delta_color,
+            var particleColor = nextParticleColor(clusterColor, color);
+            initiated += initParticle(function, velocity_u, velocity_v,
+                    particleColor.r(), particleColor.g(), particleColor.b(), particleColor.a(),
+                    delta_color.r(), delta_color.g(), delta_color.b(), delta_color.a(),
                     particle_radius, growth_rate, energy);
         }
         return initiated;
     }
 
+    /**
+     * Initializes and adds a parametric particle using discrete color and delta components in linear RGB space.
+     *
+     * @param function parametric function defining trajectory
+     * @param velocity_u initial u velocity
+     * @param velocity_v initial v velocity
+     * @param colorR linear red channel
+     * @param colorG linear green channel
+     * @param colorB linear blue channel
+     * @param colorA alpha channel
+     * @param deltaR linear red delta per second
+     * @param deltaG linear green delta per second
+     * @param deltaB linear blue delta per second
+     * @param deltaA alpha delta per second
+     * @param particle_radius particle radius dimensions
+     * @param growth_rate particle radius growth rate
+     * @param energy particle lifetime/energy
+     * @return number of particles initiated
+     */
     protected int initParticle(ParametricFunction function,
             float velocity_u, float velocity_v,
-            Color.Linear color, Color.LinearDelta delta_color,
+            float colorR, float colorG, float colorB, float colorA,
+            float deltaR, float deltaG, float deltaB, float deltaA,
             Vector3fc particle_radius, Vector3fc growth_rate,
             float energy) {
 
@@ -167,8 +190,8 @@ public class ParametricEmitter extends Emitter<ParametricParticle> {
                 offset.x(), offset.y(), offset.z());
         offset = randomOffset(velocity_random_margin, velocity_random_margin, 0f);
         particle.setVelocity(velocity_u + offset.x(), velocity_v + offset.y());
-        particle.setColor(color);
-        particle.setDeltaColor(delta_color);
+        particle.setColor(colorR, colorG, colorB, colorA);
+        particle.setDeltaColor(deltaR, deltaG, deltaB, deltaA);
         float scale = 1.0f;
         if (randomizeScale) {
             scale = ThreadLocalRandom.current().nextFloat(0.5f, 1.5f);

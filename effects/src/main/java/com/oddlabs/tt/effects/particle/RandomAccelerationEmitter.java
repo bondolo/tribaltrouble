@@ -113,7 +113,8 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
 
     @Override
     protected int initParticle(Vector3f position, Vector3fc velocity, Vector3fc acceleration,
-            Color.Linear color, Color.LinearDelta delta_color,
+            float colorR, float colorG, float colorB, float colorA,
+            float deltaR, float deltaG, float deltaB, float deltaA,
             Vector3fc particle_radius, Vector3fc growth_rate, float energy) {
         randomizeAcceleration();
 
@@ -126,8 +127,8 @@ public final class RandomAccelerationEmitter extends LinearEmitter {
         float vz = velocity.z() + random.nextFloat(-0.1f, 0.1f);
         particle.setVelocity(vx, vy, vz);
         particle.setAcceleration(current_acceleration.x(), current_acceleration.y(), current_acceleration.z());
-        particle.setColor(color);
-        particle.setDeltaColor(delta_color);
+        particle.setColor(colorR, colorG, colorB, colorA);
+        particle.setDeltaColor(deltaR, deltaG, deltaB, deltaA);
         particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
         particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
         particle.setEnergy(energy);

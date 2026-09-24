@@ -68,9 +68,11 @@ public final class RingEmitter extends LinearEmitter {
 
     @Override
     protected int initParticle(Vector3f position, Vector3fc velocity, Vector3fc acceleration,
-            Color.Linear templateColor, Color.LinearDelta templateDeltaColor,
+            float templateColorR, float templateColorG, float templateColorB, float templateColorA,
+            float deltaR, float deltaG, float deltaB, float deltaA,
             Vector3fc particle_radius, Vector3fc growth_rate, float energy) {
         float baseAngle = 2 * (float) Math.PI / num_particles;
+        var clusterColor = getClusterColor();
         for (int i = 0; i < num_particles; i++) {
             LinearParticle particle = new LinearParticle();
             Vector3f pos = position;
@@ -81,11 +83,11 @@ public final class RingEmitter extends LinearEmitter {
             float energyMultiplier = ThreadLocalRandom.current().nextFloat(0.4f, 1.6f);
 
             // Per-particle color (called per-particle for individual variation within the ring)
-            Color.Linear particleColor = nextParticleColor(this.color);
+            var particleColor = nextParticleColor(clusterColor, this.color);
             float actualEnergy = energy * energyMultiplier;
             float baseFadeRate = actualEnergy > 0f ? -particleColor.a() / actualEnergy : 0f;
             float fadeMultiplier = ThreadLocalRandom.current().nextFloat(0.8f, 1.2f);
-            Color.LinearDelta particleDeltaColor = templateDeltaColor.alpha(baseFadeRate * fadeMultiplier);
+            float particleDeltaA = baseFadeRate * fadeMultiplier;
 
             // Jitter the angle to break up perfect rings
             float angle = baseAngle * i + ThreadLocalRandom.current().nextFloat(-0.1f, 0.1f);
@@ -95,8 +97,8 @@ public final class RingEmitter extends LinearEmitter {
                     velocity.z() * velocityMultiplier * (float) Math.sin(angle),
                     0);
             particle.setAcceleration(acceleration.x(), acceleration.y(), acceleration.z());
-            particle.setColor(particleColor);
-            particle.setDeltaColor(particleDeltaColor);
+            particle.setColor(particleColor.r(), particleColor.g(), particleColor.b(), particleColor.a());
+            particle.setDeltaColor(deltaR, deltaG, deltaB, particleDeltaA);
             particle.setRadius(particle_radius.x(), particle_radius.y(), particle_radius.z());
             particle.setGrowthRate(growth_rate.x(), growth_rate.y(), growth_rate.z());
             particle.setEnergy(energy * energyMultiplier);
