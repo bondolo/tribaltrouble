@@ -1,9 +1,6 @@
 package com.oddlabs.tt.simulation.model;
 
 
-import java.util.EnumSet;
-import java.util.Set;
-
 /**
  * Playable races in the game.
  */
@@ -12,8 +9,6 @@ public enum Race {
     VIKINGS(1);
 
     private final int value;
-
-    private static final Set<Race> VALUES = EnumSet.allOf(Race.class);
 
     Race(int value) {
         this.value = value;
@@ -37,11 +32,10 @@ public enum Race {
      * @throws IllegalArgumentException if the legacy value is unrecognized
      */
     public static Race fromValue(int value) {
-        for (Race type : VALUES) {
-            if (type.value == value) {
-                return type;
-            }
-        }
-        throw new IllegalArgumentException("Unknown legacy race value: " + value);
+        return switch (value) {
+            case 0 -> NATIVES;
+            case 1 -> VIKINGS;
+            default -> throw new IllegalArgumentException("Unknown race value: " + value);
+        };
     }
 }

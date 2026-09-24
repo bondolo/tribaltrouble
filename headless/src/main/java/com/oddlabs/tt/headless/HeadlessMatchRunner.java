@@ -115,8 +115,8 @@ public final class HeadlessMatchRunner {
                         int units = player.getUnitCountContainer().getNumSupplies();
                         int buildings = player.getBuildingCountContainer().getNumSupplies();
                         progress.append(String.format(" [%s(T%d): %d units, %d bldgs, alive=%b]",
-                                player.getPlayerInfo().getName(),
-                                player.getPlayerInfo().getTeam(),
+                                player.getPlayerInfo().name(),
+                                player.getPlayerInfo().team(),
                                 units,
                                 buildings,
                                 instance.isAlive()));
@@ -129,7 +129,7 @@ public final class HeadlessMatchRunner {
                 for (HeadlessSimulationInstance instance : harness.getInstances()) {
                     if (instance.isAlive()) {
                         survivingPlayers.add(instance.getPlayerIndex());
-                        int team = instance.getLocalPlayer().getPlayerInfo().getTeam();
+                        int team = instance.getLocalPlayer().getPlayerInfo().team();
                         if (team != PlayerInfo.TEAM_NEUTRAL) {
                             aliveTeams.add(team);
                         }

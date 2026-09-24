@@ -321,7 +321,7 @@ public final class Player implements PlayerInterface {
 
     public @Nullable RaceInfo getRaceInfo() {
         var res = getWorld().getRaceData();
-        return res != null ? res.getRaceInfo(player_info.getRace()) : null;
+        return res != null ? res.getRaceInfo(player_info.race()) : null;
     }
 
     public SupplyContainer getUnitCountContainer() {
@@ -520,16 +520,16 @@ public final class Player implements PlayerInterface {
     }
 
     public boolean isEnemy(Player other_player) {
-        if (other_player.player_info.getTeam() == PlayerInfo.TEAM_NEUTRAL
-                || this.player_info.getTeam() == PlayerInfo.TEAM_NEUTRAL) {
+        if (other_player.player_info.team() == PlayerInfo.TEAM_NEUTRAL
+                || this.player_info.team() == PlayerInfo.TEAM_NEUTRAL) {
             return false;
         }
-        return other_player.player_info.getTeam() != this.player_info.getTeam();
+        return other_player.player_info.team() != this.player_info.team();
     }
 
     public boolean teamHasBuilding() {
         for (Player player : world.getPlayers()) {
-            if (player.getPlayerInfo().getTeam() == player_info.getTeam() && player.getBuildingCountContainer()
+            if (player.getPlayerInfo().team() == player_info.team() && player.getBuildingCountContainer()
                     .getNumSupplies() > 0) {
                 return true;
             }

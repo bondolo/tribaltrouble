@@ -229,7 +229,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     }
 
     private void peerChecksumError(Peer peer) {
-        System.out.println("Disconnecting peer because of checksum mismatch: " + peer.getPlayerInfo().getName());
+        System.out.println("Disconnecting peer because of checksum mismatch: " + peer.getPlayerInfo().name());
         peerDisconnected(peer, "Checksum error");
     }
 
@@ -392,11 +392,11 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
         player_to_peer.remove(player);
         int peer_index = peer.getPeerIndex();
         removePeerFromActiveList(peer);
-        String left_game_message = i18n("left_game", peer.getPlayerInfo().getName(), reason);
+        String left_game_message = i18n("left_game", peer.getPlayerInfo().name(), reason);
         receiveChat(SYSTEM_NAME, left_game_message, false);
         if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0 && matchmaking_client != null && matchmaking_client
                 .isConnected())
-            matchmaking_client.getInterface().gameQuitNotify(peer.getPlayerInfo().getName());
+            matchmaking_client.getInterface().gameQuitNotify(peer.getPlayerInfo().name());
     }
 
     @Override
@@ -406,10 +406,10 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
 
     public void sendChat(String text, boolean team_only) {
         Iterator<Peer> it = getPeerIterator();
-        int local_team = local_player.getPlayerInfo().getTeam();
+        int local_team = local_player.getPlayerInfo().team();
         while (it.hasNext()) {
             Peer peer = it.next();
-            int peer_team = peer.getPlayerInfo().getTeam();
+            int peer_team = peer.getPlayerInfo().team();
             if (!team_only || local_team == peer_team)
                 peer.getPeerHubInterface().chat(text, team_only);
         }
@@ -417,10 +417,10 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
 
     public void sendBeacon(float x, float y) {
         Iterator<Peer> it = getPeerIterator();
-        int local_team = local_player.getPlayerInfo().getTeam();
+        int local_team = local_player.getPlayerInfo().team();
         while (it.hasNext()) {
             Peer peer = it.next();
-            int peer_team = peer.getPlayerInfo().getTeam();
+            int peer_team = peer.getPlayerInfo().team();
             if (local_team == peer_team)
                 peer.getPeerHubInterface().beacon(x, y);
         }
@@ -474,7 +474,7 @@ public final class PeerHub implements Animated, RouterHandler, ChatSender {
     public void leaveGame() {
         if (matchmaking_client != null && matchmaking_client.isConnected()) {
             if (getFreeQuitTicksLeft(local_player.getWorld()) >= 0) {
-                matchmaking_client.getInterface().gameQuitNotify(local_player.getPlayerInfo().getName());
+                matchmaking_client.getInterface().gameQuitNotify(local_player.getPlayerInfo().name());
             } else {
                 matchmaking_client.getInterface().gameLostNotify();
             }

@@ -25,7 +25,7 @@ final class AttackNotification extends Notification {
         super(local_player.getWorld().getHeightMap(), audio, gui_root, center.getPositionX(), center.getPositionY(),
                 manager,
                 Color.Standard.RED,
-                AssetRegistry.getInstance().getAttackNotificationAudio(local_player.getPlayerInfo().getRace()), false,
+                AssetRegistry.getInstance().getAttackNotificationAudio(local_player.getPlayerInfo().race()), false,
                 animation_manager);
     }
 

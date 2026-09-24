@@ -56,7 +56,7 @@ public final class GameStatsDelegate extends CameraDelegate<StaticCamera> implem
         ColumnInfo[] score_infos = new ColumnInfo[players.size() + 1];
         score_infos[0] = new ColumnInfo(i18n("type"), 160);
         for (int i = 0; i < players.size(); i++) {
-            score_infos[i + 1] = new ColumnInfo(players.get(i).getPlayerInfo().getName(), PLAYER_COLUMN_WIDTH);
+            score_infos[i + 1] = new ColumnInfo(players.get(i).getPlayerInfo().name(), PLAYER_COLUMN_WIDTH);
         }
 
         MultiColumnComboBox<Void> score_box = new MultiColumnComboBox<>(viewer.getGUIRoot(), score_infos, 200);

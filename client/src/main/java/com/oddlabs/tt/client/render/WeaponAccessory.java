@@ -56,7 +56,7 @@ final class WeaponAccessory implements StaticAccessory {
     WeaponAccessory(Unit unit, UnitVisualModel visualModel) {
         this.unit = unit;
         this.visualModel = visualModel;
-        Race race = unit.getOwner().getPlayerInfo().getRace();
+        Race race = unit.getOwner().getPlayerInfo().race();
         this.isNativeWarrior = (race == Race.NATIVES);
         this.localTransform = (race == Race.VIKINGS) ? VIKING_AXE_LOCAL : NATIVE_SPEAR_LOCAL;
     }
@@ -74,7 +74,7 @@ final class WeaponAccessory implements StaticAccessory {
     public @Nullable SpriteKey getSpriteRenderer() {
         SupplyType visualType = getWeaponMaterial();
         if (visualType != null) {
-            Race race = unit.getOwner().getPlayerInfo().getRace();
+            Race race = unit.getOwner().getPlayerInfo().race();
             return AssetRegistry.getInstance().getWeaponSprite(race, visualType);
         }
         return null;

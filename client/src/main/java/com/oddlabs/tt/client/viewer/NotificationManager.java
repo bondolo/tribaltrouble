@@ -56,7 +56,7 @@ public final class NotificationManager implements BeaconListener {
 
     private void newNotification(AnimationManager manager, Player local_player, float x, float y,
             Color color, boolean show_always) {
-        var params = AssetRegistry.getInstance().getBuildingNotificationAudio(local_player.getPlayerInfo().getRace());
+        var params = AssetRegistry.getInstance().getBuildingNotificationAudio(local_player.getPlayerInfo().race());
         var notification = new Notification(local_player.getWorld().getHeightMap(), audio, gui_root, x, y, this,
                 color, params, show_always, manager);
         addNotification(notification, notifies);

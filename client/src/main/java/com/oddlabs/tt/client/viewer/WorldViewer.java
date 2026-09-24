@@ -148,7 +148,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
             public void playerGamespeedChanged() {
                 String result = world.getPlayers().stream()
                         .filter(p -> World.isValidGamespeed(p.getPreferredGamespeed()))
-                        .map(p -> p.getPlayerInfo().getName() + ": " + ServerMessageBundler.getGamespeedString(p
+                        .map(p -> p.getPlayerInfo().name() + ": " + ServerMessageBundler.getGamespeedString(p
                                 .getPreferredGamespeed()))
                         .collect(Collectors.joining(", "));
                 if (!result.isEmpty() && isMultiplayer())

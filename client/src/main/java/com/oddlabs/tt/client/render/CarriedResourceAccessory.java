@@ -29,7 +29,7 @@ public final class CarriedResourceAccessory implements StaticAccessory {
         if (supply_container != null) {
             return supply_container.getSupplyType()
                     .map(type -> AssetRegistry.getInstance().getCarriedSupplySprite(unit
-                            .getOwner().getPlayerInfo().getRace(), type)
+                            .getOwner().getPlayerInfo().race(), type)
                     ).orElse(null);
         }
         return null;

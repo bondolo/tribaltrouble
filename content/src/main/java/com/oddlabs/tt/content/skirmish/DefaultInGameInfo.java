@@ -105,12 +105,12 @@ public class DefaultInGameInfo implements InGameInfo, InGameMenuHook {
             var player_color = player.getColor();
             var display_color = viewer.getPeerHub().isAlive(player) ? player_color : player_color.desaturate(0.3f)
                     .alpha(0.8f);
-            Label name = new Label(player_info.getName(), Skin.getSkin().getHeadlineFont())
+            Label name = new Label(player_info.name(), Skin.getSkin().getHeadlineFont())
                     .setColor(display_color);
-            String race_str = RaceData.getRaceName(player_info.getRace());
+            String race_str = RaceData.getRaceName(player_info.race());
             Label race = new Label(race_str, Skin.getSkin().getHeadlineFont())
                     .setColor(display_color);
-            String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.getTeam()
+            String team_str = Utils.getBundleString(terrain_menu_bundle, "team", Integer.toString(player_info.team()
                     + 1));
             Label team = new Label(team_str, Skin.getSkin().getHeadlineFont())
                     .setColor(display_color);

@@ -51,7 +51,7 @@ public final class GameOverTrigger implements Animated {
                         return;
                     } else {
                         dead_tribes[i] = true;
-                        String defeat_message = i18n("defeat_message", current.getPlayerInfo().getName());
+                        String defeat_message = i18n("defeat_message", current.getPlayerInfo().name());
                         viewer.getPeerHub().receiveChat(PeerHub.SYSTEM_NAME, defeat_message, false);
                     }
                 } else if (local_player.isEnemy(current)) {
@@ -74,8 +74,8 @@ public final class GameOverTrigger implements Animated {
         }
 
         for (Player current : players) {
-            if (viewer.getPeerHub().isAlive(current) && current.getPlayerInfo().getTeam() != PlayerInfo.TEAM_NEUTRAL)
-                teams[current.getPlayerInfo().getTeam()]++;
+            if (viewer.getPeerHub().isAlive(current) && current.getPlayerInfo().team() != PlayerInfo.TEAM_NEUTRAL)
+                teams[current.getPlayerInfo().team()]++;
         }
 
         int team_count = 0;

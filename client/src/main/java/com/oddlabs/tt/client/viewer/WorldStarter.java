@@ -91,8 +91,8 @@ public final class WorldStarter implements LoadCallback<GUIRoot, UIRenderer> {
                 host_id = player_slots[i].getAddress().getHostID();
             else
                 host_id = -1;
-            Participant p = new Participant(host_id, player.getPlayerInfo().getName(), player.getPlayerInfo().getTeam(),
-                    player.getPlayerInfo().getRace().getValue());
+            Participant p = new Participant(host_id, player.getPlayerInfo().name(), player.getPlayerInfo().team(),
+                    player.getPlayerInfo().race().getValue());
             participant_list.add(p);
         }
         Participant[] participants = new Participant[participant_list.size()];

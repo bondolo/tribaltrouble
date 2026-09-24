@@ -74,7 +74,7 @@ public final class Tutorial {
         var audioManager = viewer.getAudioManager();
         audioManager.newAudio(0f, 0f, 0f,
                 AssetRegistry.getInstance().getBuildingNotificationAudio(viewer.getLocalPlayer().getPlayerInfo()
-                        .getRace()));
+                        .race()));
         timer = new TimerAnimation(viewer.getAnimationManagerLocal(), _ -> trigger.run(Tutorial.this), trigger
                 .getCheckInterval());
         timer.start();

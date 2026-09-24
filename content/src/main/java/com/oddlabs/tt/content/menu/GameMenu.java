@@ -226,8 +226,8 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
                 Race.NATIVES);
         int team = team_buttons[player_slot].getMenu().getChosenItem().map(PulldownItem::getAttachment).orElse(0);
         PlayerInfo info = (PlayerInfo) player.getInfo();
-        boolean race_changed = info == null || race.getValue() != info.getRace().getValue();
-        boolean team_changed = info == null || team != info.getTeam();
+        boolean race_changed = info == null || race != info.race();
+        boolean team_changed = info == null || team != info.team();
         boolean ready_changed = ready != player.isReady();
         boolean difficulty_changed = info == null || player.getAIDifficulty() != option.getAIDifficulty();
         PulldownButton<?> slot_button = slot_buttons[player_slot];
@@ -312,8 +312,8 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
             Diode ready_mark = ready_marks[i];
             ready_mark.setLit(player.isReady());
             PlayerInfo info = (PlayerInfo) player.getInfo();
-            race_button.getMenu().chooseItem(info != null ? info.getRace().getValue() : 0);
-            team_button.getMenu().chooseItem(info != null ? info.getTeam() : 0);
+            race_button.getMenu().chooseItem(info != null ? info.race().getValue() : 0);
+            team_button.getMenu().chooseItem(info != null ? info.team() : 0);
             if (player.getType() != PlayerSlot.CLOSED) {
                 slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(i18n(
                         "open")));
@@ -334,7 +334,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
                         team_button.setDisabled(!canControlSlot(i));
                     }
                     case PlayerSlot.HUMAN -> {
-                        String player_name = player_info.getName();
+                        String player_name = player_info.name();
                         new_human_names.add(player_name);
                         slot_button.getMenu().getItem(SlotOption.OPEN.ordinal()).ifPresent(pi -> pi.setLabelString(
                                 player_name));
@@ -343,7 +343,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
                         team_button.setDisabled(i != local_player_slot);
                         player_slots[human_index] = i;
                         player_ratings[human_index] = player.getRating();
-                        player_teams[human_index] = player_info.getTeam();
+                        player_teams[human_index] = player_info.team();
                         human_index++;
                     }
                     default -> throw new IllegalArgumentException("Unknown Player type: " + player.getType());
@@ -594,7 +594,7 @@ public final class GameMenu extends Panel implements ConfigurationListener<GUIRo
         for (PlayerSlot current : players) {
             PlayerInfo info = (PlayerInfo) current.getInfo();
             if (info != null)
-                teams.add(info.getTeam());
+                teams.add(info.team());
         }
         return teams.size();
     }

@@ -34,7 +34,7 @@ public final class ToolTipAdapter implements ToolTip {
     }
 
     private void visitPlayer(ToolTipBox tool_tip, Player player) {
-        tool_tip.append(player.getPlayerInfo().getName());
+        tool_tip.append(player.getPlayerInfo().name());
         tool_tip.append(" - ");
     }
 

@@ -299,7 +299,7 @@ public abstract class Menu extends CameraDelegate<Camera> {
     public static void completeGameSetupHack(WorldViewer world_viewer) {
         world_viewer.getGUIRoot().pushDelegate(world_viewer.getDelegate());
         world_viewer.getAudioManager().setMusic(AssetRegistry.getInstance().getMusic(world_viewer.getLocalPlayer()
-                .getPlayerInfo().getRace()), 10f);
+                .getPlayerInfo().race()), 10f);
     }
 
     public static final class DefaultWorldInitAction implements WorldInitAction {

@@ -54,12 +54,12 @@ public final class Peer implements PeerHubInterface {
 
     @Override
     public void chat(String text, boolean team) {
-        peer_hub.receiveChat(player.getPlayerInfo().getName(), text, team);
+        peer_hub.receiveChat(player.getPlayerInfo().name(), text, team);
     }
 
     @Override
     public void beacon(float x, float y) {
-        peer_hub.receiveBeacon(x, y, player.getPlayerInfo().getName());
+        peer_hub.receiveBeacon(x, y, player.getPlayerInfo().name());
     }
 
     public PeerHubInterface getPeerHubInterface() {
