@@ -1,7 +1,7 @@
 package com.oddlabs.tt.engine.render.shader;
 
 /**
- * Renders the sky dome with two scrolling cloud layers and height-based fog.
+ * Renders the sky dome with two scrolling cloud layers.
  */
 public final class SkyShader extends ShaderProgram {
 

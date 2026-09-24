@@ -590,7 +590,6 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             };
 
             return channels.stream()
-                    .map(Channel::toLinear)
                     .map(cloud -> new GLByteImage(cloud, GL11.GL_RED))
                     .map(image -> new Texture(image, GL30.GL_R8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                             GL11.GL_LINEAR, GL11.GL_REPEAT, GL11.GL_REPEAT))
