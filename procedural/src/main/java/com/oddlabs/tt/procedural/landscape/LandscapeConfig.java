@@ -14,7 +14,7 @@ public final class LandscapeConfig {
     public static final float LANDSCAPE_RESOURCES = 0.0f;
     public static final int LANDSCAPE_SEED = 1;
 
-    public static final float LANDSCAPE_TEXTURE_SCALE = 1.0f / 16.0f;
+    public static final float LANDSCAPE_TEXTURE_SCALE = 1.0f / 64.0f;
     public static final float LANDSCAPE_DETAIL_REPEAT_RATE = 0.25f;
     public static final float WATER_REPEAT_RATE = 0.001f;
     public static final float WATER_DETAIL_REPEAT_RATE = 0.01f;

@@ -9,6 +9,9 @@ import org.lwjgl.opengl.GL13;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Manages raw image pixel buffers and provides mipmap generation routines for OpenGL textures.
+ */
 public abstract class GLImage {
     private final int width;
     private final int height;
@@ -233,10 +236,6 @@ public abstract class GLImage {
 
         if (current_level >= base_fadeout_level) {
             a_acc = Math.round(a_acc * fadeout_factor);
-            // Don't fade color, only alpha? Original faded color too.
-            // If we fade color towards black, it becomes anemic.
-            // Usually distance fadeout only affects Alpha.
-            // But original code faded R,G,B too.
             r_avg = Math.round(r_avg * fadeout_factor);
             g_avg = Math.round(g_avg * fadeout_factor);
             b_avg = Math.round(b_avg * fadeout_factor);

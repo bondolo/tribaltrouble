@@ -3,6 +3,7 @@ package com.oddlabs.tt.engine.render.state;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.ByteBuffer;

@@ -121,14 +121,14 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
     @Override
     public void render(RenderContext context, CameraState state, MatrixStack modelViewStack,
             MatrixStack projectionStack) {
-        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.ALPHA); var _ = context.withDepthMode(
+        try (var _ = shader.use(); var _ = context.withBlendMode(BlendMode.NONE); var _ = context.withDepthMode(
                 DepthMode.READ_WRITE); var _ = context.withCullMode(CullMode.NONE)) {
 
             // Set VTF Uniforms
             shader.setUniform(shader.locWorldSize, (float) world.getHeightMap().getMetersPerWorld());
             shader.setUniform(shader.locDetailScale, LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
 
-            Color stdColor = Sky.SEA_BOTTOM_COLOR.get(world.getTerrainType());
+            Color.Linear stdColor = Sky.SEA_BOTTOM_COLOR.get(world.getTerrainType());
             shader.setUniformColor3(shader.locSeaBottomColor, stdColor);
 
             context.setTexture(0, diffuseMap);

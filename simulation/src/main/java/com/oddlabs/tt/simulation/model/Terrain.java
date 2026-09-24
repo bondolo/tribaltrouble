@@ -9,8 +9,8 @@ public enum Terrain {
     NATIVE(0),
     VIKING(1);
 
-    private static final Color NATIVE_SAND_COLOR = new Color.Standard(0xFF_FF_E6_CC);
-    private static final Color VIKING_SOIL_COLOR = new Color.Standard(0xFF_A6_80_59);
+    private static final Color.Linear NATIVE_SAND_COLOR = new Color.Standard(0xFF_FF_E6_CC).linear();
+    private static final Color.Linear VIKING_SOIL_COLOR = new Color.Standard(0xFF_A6_80_59).linear();
 
     private final int value;
 
@@ -23,14 +23,14 @@ public enum Terrain {
     }
 
     /**
-     * Returns the baseline dust color for this terrain type.
+     * Returns the baseline dust colour for this terrain type.
      *
-     * @return the linear color representing the terrain dust/soil
+     * @return the linear colour representing the terrain dust/soil
      */
     public Color.Linear getDustColor() {
         return switch (this) {
-            case NATIVE -> new Color.Linear(NATIVE_SAND_COLOR);
-            case VIKING -> new Color.Linear(VIKING_SOIL_COLOR);
+            case NATIVE -> NATIVE_SAND_COLOR;
+            case VIKING -> VIKING_SOIL_COLOR;
         };
     }
 

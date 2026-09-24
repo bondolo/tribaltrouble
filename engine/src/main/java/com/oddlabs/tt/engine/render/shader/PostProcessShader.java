@@ -32,7 +32,6 @@ public final class PostProcessShader extends ShaderProgram {
                     """;
 
     private static final String FRAGMENT_SHADER = SHADER_HEADER +
-            COLOR_SPACE_FUNCTIONS +
             """
                     uniform sampler2D u_sceneTexture;
                     uniform sampler2D u_maskTexture;
@@ -213,7 +212,6 @@ public final class PostProcessShader extends ShaderProgram {
                         finalColor = applyCvdFilter(finalColor);
 
                         // 5. Final Output (Opaque)
-                        // GL_FRAMEBUFFER_SRGB handles the conversion to sRGB for the backbuffer.
                         out_FragColor = vec4(finalColor, 1.0);
                     }
                     """;

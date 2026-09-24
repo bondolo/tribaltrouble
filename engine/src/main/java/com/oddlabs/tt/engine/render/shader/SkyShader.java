@@ -84,16 +84,7 @@ public final class SkyShader extends ShaderProgram {
                         vec3 color0 = mix(fs_in.color.rgb, u_skyColor.rgb, cloud0);
                         vec3 color1 = mix(color0, u_skyColor.rgb, cloud1);
 
-                        vec4 finalColor = vec4(color1, 1.0);
-
-                        float fogFactor = 1.0 - smoothstep(u_fogFadeStart, u_fogFadeEnd, fs_in.normal.z);
-
-                        if (u_fogHeightFactor > 0.0) {
-                            fogFactor *= (1.0 - clamp(u_cameraHeight / u_fogHeightFactor, 0.0, 1.0));
-                        }
-
-                        out_FragColor.rgb = mix(finalColor.rgb, u_fogColor.rgb, fogFactor * 0.25);
-                        out_FragColor.a = finalColor.a;
+                        out_FragColor = vec4(color1, 1.0);
                     }
                     """;
 

@@ -83,6 +83,10 @@ public final class GUIShader extends ShaderProgram {
                             color = fs_in.Color * texColor;
                         }
 
+                        if (color.a < 0.001) {
+                            discard;
+                        }
+
                         out_FragColor = vec4(color.rgb * color.a, color.a);
 
                         // Write a special marker to the mask alpha channel to indicate "GUI Pixel".

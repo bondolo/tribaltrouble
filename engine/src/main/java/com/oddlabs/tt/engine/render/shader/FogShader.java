@@ -41,5 +41,10 @@ public interface FogShader extends Shader {
                 }
                 return clamp(fogFactor, 0.0, 1.0);
             }
+
+            vec3 applyFog(vec3 color, float dist, vec2 fragCoord) {
+                float fogFactor = calculateFogFactor(dist, fragCoord);
+                return mix(u_fogColor.rgb, color, fogFactor);
+            }
             """;
 }

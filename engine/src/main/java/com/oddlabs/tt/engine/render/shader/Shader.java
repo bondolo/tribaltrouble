@@ -54,21 +54,6 @@ public interface Shader {
             };
             """;
 
-    String COLOR_SPACE_FUNCTIONS = """
-            vec3 toLinear(vec3 srgb) {
-                return mix(srgb / 12.92, pow((srgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), srgb));
-            }
-            vec4 toLinear(vec4 srgb) {
-                return vec4(toLinear(srgb.rgb), srgb.a);
-            }
-            vec3 toSRGB(vec3 linear) {
-                return mix(linear * 12.92, 1.055 * pow(linear, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), linear));
-            }
-            vec4 toSRGB(vec4 linear) {
-                return vec4(toSRGB(linear.rgb), linear.a);
-            }
-            """;
-
     boolean inUse();
 
     int getAttributeLocation(String name);

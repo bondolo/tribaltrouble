@@ -56,7 +56,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     private static final int CLOUD_INNER = 0;
     private static final int CLOUD_OUTER = 1;
 
-    private static final Map<Terrain, Color> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
+    private static final Map<Terrain, Color.Standard> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
             Terrain.NATIVE, new Color.Standard(0xFF_E5_F2_FF),
             Terrain.VIKING, new Color.Standard(0xFF_FF_E5_A5)
     ));
@@ -212,7 +212,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         all_indices.flip();
         water_indices = new ShortVBO(GL15.GL_STATIC_DRAW, all_indices);
         water_vertices = toVBO(all_vertices, heightMap.getSeaLevelMeters());
-        bottom_vertices = toBottomVBO(all_vertices, heightMap);
+        bottom_vertices = toVBO(all_vertices, 0);
 
         this.skyVAO = new VertexArray();
         skyVAO.bind();
@@ -371,48 +371,6 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         return new FloatVBO(GL15.GL_STATIC_DRAW, vertex_buffer);
     }
 
-    private static FloatVBO toBottomVBO(SkyStitchVertex[] vertices,
-            LandscapeEnvironment heightmap) {
-        float metersPerWorld = heightmap.getMetersPerWorld();
-        float cx = metersPerWorld * 0.5f;
-        float cy = metersPerWorld * 0.5f;
-        FloatBuffer vertex_buffer = BufferUtils.createFloatBuffer(vertices.length * 3);
-        for (SkyStitchVertex vertex : vertices) {
-            float x = vertex.x;
-            float y = vertex.y;
-            float dx = x - cx;
-            float dy = y - cy;
-            float maxDist = Math.max(Math.abs(dx), Math.abs(dy));
-            float bx;
-            float by;
-            if (maxDist < 1e-5f) {
-                bx = cx;
-                by = cy;
-            } else {
-                float t = cx / maxDist;
-                bx = Math.clamp(cx + t * dx, 0f, metersPerWorld);
-                by = Math.clamp(cy + t * dy, 0f, metersPerWorld);
-            }
-            float boundaryHeight = heightmap.getHeight(bx, by);
-            float z = (boundaryHeight * (NUM_WATER_RINGS - vertex.getSide())) / NUM_WATER_RINGS;
-
-            if (vertex.getSide() == 0) {
-                float dxCenter = cx - x;
-                float dyCenter = cy - y;
-                float distToCenter = (float) Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
-                if (distToCenter > 1e-5f) {
-                    float overlap = 1.0f;
-                    x += (dxCenter / distToCenter) * overlap;
-                    y += (dyCenter / distToCenter) * overlap;
-                }
-            }
-
-            vertex_buffer.put(x).put(y).put(z);
-        }
-        vertex_buffer.flip();
-        return new FloatVBO(GL15.GL_STATIC_DRAW, vertex_buffer);
-    }
-
     public FloatVBO getWaterVertices() {
         return water_vertices;
     }
@@ -455,7 +413,6 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         float a_angle_inc = (float) Math.PI * 2 / subdiv_axis;
         float offset_angle = a_angle_inc / 2f;
 
-        // skydome_default_color is authored to be darker in the original game (sRGB space)
         Color.Standard skydome_gradient_const = SKYDOME_GRADIENT.get(terrain);
         Color.Linear skydome_default_linear = new Color.Standard(
                 (float) Math.pow(skydome_gradient_const.r(), SKYDOME_DEFAULT_COLOR),
@@ -475,7 +432,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         for (int i = 1; i < SKYDOME_GRADIENT_LENGTH; i++) {
             alpha = (float) i / (SKYDOME_GRADIENT_LENGTH - 1);
 
-            // Interpolation and multiplication now happen in linear space
+            // Interpolation and multiplication happen in linear space
             Color.Linear currentLinear = new Color.Linear(
                     alpha * skydome_default_linear.r() + (1f - alpha) * prevLinear.r() * skydome_gradient_const_linear
                             .r(),
@@ -508,7 +465,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
                         * outer_vtile) + 0.5f); // TexCoord0
                 buffer.put(x * height_coeff / (radius * inner_utile) + 0.5f).put(y * height_coeff / (radius
                         * inner_vtile) + 0.5f); // TexCoord1
-                Color colorVal = i < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[i] : skydome_default_linear;
+                Color.Linear colorVal = i < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[i] : skydome_default_linear;
                 buffer.put(colorVal.r()).put(colorVal.g()).put(colorVal.b()); // Color
             }
         }
@@ -516,7 +473,7 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         buffer.put(0).put(0).put(1); // Normal
         buffer.put(0.5f).put(0.5f); // TexCoord0
         buffer.put(0.5f).put(0.5f); // TexCoord1
-        Color colorVal = subdiv_height - 1 < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[subdiv_height - 1]
+        Color.Linear colorVal = subdiv_height - 1 < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[subdiv_height - 1]
                 : skydome_default_linear;
         buffer.put(colorVal.r()).put(colorVal.g()).put(colorVal.b()); // Color
     }

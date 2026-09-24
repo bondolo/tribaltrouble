@@ -111,7 +111,7 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
 
                         float scaleFix = 4.0;
                         vs_out.texCoord0 = (worldPos.xy * u_waterRepeatRate * scaleFix) + u_scrollOffsets.xy;
-                        vs_out.texCoord1 = (worldPos.xy * u_waterRepeatRate * scaleFix * 1.3) + u_scrollOffsets.zw;
+                        vs_out.texCoord1 = (worldPos.xy * u_waterDetailRepeatRate * scaleFix) + u_scrollOffsets.zw;
                         vs_out.texCoordHeightmap = (worldPos.xy + 1.0) / u_WorldSize;
 
                         vs_out.fogDist = length(viewPosition.xyz);
@@ -156,13 +156,14 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                     void main() {
                         vec4 baseColor = texture(u_texture0, fs_in.texCoord0);
 
-                        // Depth-based transparency: sample heightmap at closest point to determine water depth continuously
+                        // Transparency: use authored base texture alpha (0.5 Native, 0.6 Viking)
+                        // with a gentle shoreline contact fade to prevent hard geometric clipping
                         vec2 closestPoint = clamp(fs_in.texCoordHeightmap.xy, 0.0, 1.0);
                         float terrainHeight = texture(u_HeightMap, closestPoint).r;
                         float distInMeters = distance(fs_in.texCoordHeightmap.xy, closestPoint) * u_WorldSize;
                         float depth = fs_in.worldPos.z - terrainHeight + distInMeters;
-                        float depthFade = smoothstep(0.0, 1.0, clamp(depth / u_depthScale, 0.0, 1.0));
-                        float finalAlpha = mix(u_minAlpha, u_maxAlpha, depthFade);
+                        float edgeFade = smoothstep(0.0, 0.08, depth);
+                        float finalAlpha = baseColor.a * edgeFade;
 
                         vec3 normal = normalize(fs_in.normal);
                         vec3 lightDir = normalize(u_lightDirection.xyz);
@@ -170,47 +171,17 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         vec3 halfDir = normalize(lightDir + viewDir);
 
                         float specAngle = max(dot(normal, halfDir), 0.0);
-                        float specular = pow(specAngle, 64.0);
+                        float specular = pow(specAngle, 128.0) * 0.10;
 
-                        float F0 = 0.02;
-                        float F = F0 + (1.0 - F0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
-
-                        // Calculate reflection vector in world space to dynamically sample sky gradient and clouds
-                        vec3 reflectDir = reflect(-viewDir, normal);
-                        float horizonFactor = clamp(reflectDir.z, 0.0, 1.0);
-                        vec3 reflectionColor = mix(u_fogColor.rgb, u_skyColor, horizonFactor);
-
-                        vec3 reflectedSky = reflectionColor;
-                        if (reflectDir.z > 0.0) {
-                            vec2 reflectUV0 = reflectDir.xy * 0.2 + u_innerOffset;
-                            vec2 reflectUV1 = reflectDir.xy * 0.2 + u_outerOffset;
-
-                            vec4 tex0 = texture(u_cloudTexture0, reflectUV0);
-                            vec4 tex1 = texture(u_cloudTexture1, reflectUV1);
-
-                            float exp0 = exp(-u_innerCloudDensity * 2.0);
-                            float exp1 = exp(-u_outerCloudDensity * 2.0);
-
-                            float cloud0 = pow(tex0.r, exp0);
-                            float cloud1 = pow(tex1.r, exp1);
-
-                            // Blend clouds subtly into the reflection color, fading out near the horizon
-                            float cloudFactor = clamp(reflectDir.z * 1.5, 0.0, 1.0);
-                            reflectedSky = mix(reflectedSky, u_skyColor, (cloud0 * 0.25 + cloud1 * 0.15) * cloudFactor);
-                        }
-
-                        vec3 waterColor = baseColor.rgb * 0.7;
-
-                        vec3 finalRGB = mix(waterColor, reflectedSky, F * 0.6);
-                        finalRGB += vec3(specular) * 0.5;
-
+                        vec3 waterColor = baseColor.rgb;
                         if (u_enableDetail) {
-                             vec4 detail = texture(u_texture1, fs_in.texCoord0 * 2.0);
-                             finalRGB = mix(finalRGB, detail.rgb, 0.05);
+                            vec4 detail = texture(u_texture1, fs_in.texCoord1);
+                            waterColor = mix(waterColor, detail.rgb, detail.a);
                         }
 
-                        float fogFactor = calculateFogFactor(fs_in.fogDist, gl_FragCoord.xy);
-                        out_FragColor = vec4(mix(u_fogColor.rgb, finalRGB, fogFactor), finalAlpha);
+                        waterColor += vec3(specular);
+                        vec3 finalColor = applyFog(waterColor, fs_in.fogDist, gl_FragCoord.xy);
+                        out_FragColor = vec4(finalColor, finalAlpha);
 
                         // Write water marker to mask buffer (alpha = 0.1)
                         // This identifies water pixels in the post-processing shader.

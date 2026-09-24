@@ -42,7 +42,6 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
     private static final String FRAGMENT_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
             FOG_FUNCTION +
-            COLOR_SPACE_FUNCTIONS +
             """
                     uniform sampler2D u_texture1; // Detail texture
                     uniform sampler2D u_textureNormal; // Detail normal texture
@@ -99,42 +98,19 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                             vec4 detail = texture(u_texture1, v_texCoordDetail);
                             vec4 detailNormal = texture(u_textureNormal, v_texCoordDetail);
 
-                            // Match LandscapeShader's flat slope detail modulation underwater
                             float detailFade = clamp(detail.a / 0.15, 0.0, 1.0);
-                            float detailStrength = 0.15 * normalMapStrength * detailFade;
-                            float detailOffset = 1.0 - detailStrength * 0.5;
-                            vec3 srgbColor = toSRGB(color.rgb);
-                            srgbColor *= (detail.rgb * detailStrength + detailOffset);
-                            color.rgb = toLinear(srgbColor);
-
-                            // Perturb normal using detail map to match LandscapeShader's detail normal mapping in wet areas
-                            normal = normalize(normal + (detailNormal.rgb - vec3(0.5)) * (0.01 * normalMapStrength * detailFade));
+                            float grain = (detail.r - 0.5) * 0.35;
+                            color.rgb = clamp(color.rgb * (1.0 + grain * detailFade), 0.0, 1.0);
                         }
-
-                        // Apply wet surface darkening to match the wet landscape
-                        color.rgb *= 0.55;
 
                         vec3 viewDir = normalize(-v_viewPosition);
                         vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection.xyz, 0.0)).xyz);
                         vec3 halfDir = normalize(lightDir + viewDir);
-                        float diff = dot(normal, lightDir) * 0.5 + 0.5;
-                        diff = diff * diff;
-
-                        // Hemispheric Ambient (flat Z=1.0 for horizontal sea bottom)
-                        float skyWeight = 1.0;
-                        vec3 ambient = mix(u_groundAmbient.rgb, u_globalAmbient.rgb, skyWeight);
-
-                        float rim = 1.0 - max(dot(viewDir, normal), 0.0);
-                        rim = smoothstep(0.8, 1.0, rim);
-                        vec3 rimLight = rim * u_globalAmbient.rgb * 0.05;
-
                         // Add wet specular highlight to match the wet landscape
                         float spec = pow(max(dot(normal, halfDir), 0.0), 80.0);
                         vec3 specular = 0.05 * spec * vec3(1.0);
 
-                        float exposure = 1.1;
-                        vec3 lightFactor = (ambient + diff * vec3(1.0) + rimLight) * exposure;
-                        vec3 litColor = color.rgb * lightFactor + specular * exposure;
+                        vec3 litColor = color.rgb + specular * 1.1;
 
                         // --- Underwater Caustics ---
                         float causticsTime = u_waveTime * 0.15;
@@ -146,7 +122,7 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
 
                         // Stable refraction model with robust intensity
                         float c = 1.0 - abs(h1 - h2);
-                        float caustic = pow(max(0.0, c), 20.0) * 0.4;
+                        float caustic = pow(max(0.0, c), 20.0) * 0.15;
 
                         // Viewing angle dependency: fade out straight down
                         float vdn = dot(viewDir, normal);
@@ -156,8 +132,8 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
                         vec3 causticColor = vec3(0.95, 0.98, 1.0) * caustic * depthFade * angleFade;
                         litColor += causticColor;
 
-                        float fogFactor = calculateFogFactor(v_fogDist, gl_FragCoord.xy);
-                        out_FragColor = vec4(mix(u_fogColor.rgb, litColor, fogFactor), color.a);
+                        vec3 finalColor = applyFog(litColor, v_fogDist, gl_FragCoord.xy);
+                        out_FragColor = vec4(finalColor, color.a);
                     }
                     """;
 

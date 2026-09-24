@@ -20,6 +20,7 @@ import com.oddlabs.tt.procedural.landscape.StructureBlend;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
 import org.jspecify.annotations.Nullable;
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -53,93 +54,54 @@ public final class LandscapeBaker {
             }
             """;
 
-    private static final String FRAGMENT_SHADER = """
-            #version 410 core
-            uniform sampler2D u_BaseDiffuse;
-            uniform sampler2D u_LayerDiffuse;
-            uniform sampler2D u_BaseNormal;
-            uniform sampler2D u_LayerNormal;
-            uniform sampler2D u_AlphaMap;
-            uniform sampler2D u_HeightMap;
-            uniform int u_Mode; // 0 = Blend, 1 = Light, 2 = Occlusion
-            uniform float u_TextureScale;
-            uniform float u_WorldSize;
-            uniform vec3 u_Color;
+    private static final String FRAGMENT_SHADER
+            = """
+                    #version 410 core
+                    uniform sampler2D u_BaseDiffuse;
+                    uniform sampler2D u_LayerDiffuse;
+                    uniform sampler2D u_BaseNormal;
+                    uniform sampler2D u_LayerNormal;
+                    uniform sampler2D u_AlphaMap;
+                    uniform sampler2D u_HeightMap;
+                    uniform int u_Mode; // 0 = Blend, 1 = Light, 2 = Occlusion
+                    uniform float u_TextureScale;
+                    uniform float u_WorldSize;
+                    uniform vec3 u_Color;
 
-            in vec2 v_texCoord;
+                    in vec2 v_texCoord;
 
-            layout(location = 0) out vec4 out_Diffuse;
-            layout(location = 1) out vec4 out_Normal;
+                    layout(location = 0) out vec4 out_Diffuse;
+                    layout(location = 1) out vec4 out_Normal;
 
-            void main() {
-                // Fetch base values (Hardware de-gamma from sRGB textures to Linear)
-                vec4 baseDiff = texture(u_BaseDiffuse, v_texCoord);
-                vec4 baseNorm = texture(u_BaseNormal, v_texCoord);
-                float alpha = texture(u_AlphaMap, v_texCoord).r;
+                    void main() {
+                        vec4 baseDiff = texture(u_BaseDiffuse, v_texCoord);
+                        vec4 baseNorm = texture(u_BaseNormal, v_texCoord);
+                        float alpha = texture(u_AlphaMap, v_texCoord).r;
 
-                if (u_Mode == 0) { // Structure Blend
-                    // Fetch source textures with triplanar mapping for steep slopes
-                    // Alignment: Add half-texel offset to match vertex-centered heightmap
-                    vec2 hUV = (v_texCoord * u_WorldSize + 1.0) / u_WorldSize;
-                    float h = texture(u_HeightMap, hUV).r;
+                        if (u_Mode == 0) { // Structure Blend
+                            vec2 coord = v_texCoord * u_TextureScale;
+                            vec4 layerDiff = texture(u_LayerDiffuse, coord);
+                            vec4 layerNorm = texture(u_LayerNormal, coord);
 
-                    // Compute world normal from heightmap (matching LandscapeShader logic)
-                    float h_plus_x = textureOffset(u_HeightMap, hUV, ivec2(1, 0)).r;
-                    float h_minus_x = textureOffset(u_HeightMap, hUV, ivec2(-1, 0)).r;
-                    float h_plus_y = textureOffset(u_HeightMap, hUV, ivec2(0, 1)).r;
-                    float h_minus_y = textureOffset(u_HeightMap, hUV, ivec2(0, -1)).r;
-                    vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
+                            // IMPORTANT: To match legacy visual look, we must blend in sRGB space.
+                            // Samples are already de-gammaed by hardware to Linear.
+                            vec3 srgbBase = pow(baseDiff.rgb, vec3(1.0 / 2.2));
+                            vec3 srgbLayer = pow(layerDiff.rgb, vec3(1.0 / 2.2));
+                            vec3 srgbMixed = mix(srgbBase, srgbLayer, alpha);
 
-                    // Triplanar weights (Soft power of 4.0 for smooth transitions)
-                    vec3 blendWeights = pow(abs(worldNormal), vec3(4.0));
-                    blendWeights /= (blendWeights.x + blendWeights.y + blendWeights.z);
-
-                    // Use uniform texture scale for tiling
-                    vec3 coord = vec3(v_texCoord, h / u_WorldSize) * u_TextureScale;
-
-                    vec4 layerDiff = texture(u_LayerDiffuse, coord.xy) * blendWeights.z +
-                                     texture(u_LayerDiffuse, coord.yz) * blendWeights.x +
-                                     texture(u_LayerDiffuse, coord.xz) * blendWeights.y;
-
-                    vec4 layerNorm;
-                    // Decode input tangent normals [0, 1] -> [-1, 1]
-                    vec3 nXY = texture(u_LayerNormal, coord.xy).rgb * 2.0 - 1.0;
-                    vec3 nYZ = texture(u_LayerNormal, coord.yz).rgb * 2.0 - 1.0;
-                    vec3 nXZ = texture(u_LayerNormal, coord.xz).rgb * 2.0 - 1.0;
-
-                    // Swizzle side normals to world space based on face direction
-                    // XY (Top): n.xyz
-                    // YZ (Side X): (n.z * sign(worldNormal.x), n.x, n.y)
-                    // XZ (Side Y): (n.x, n.z * sign(worldNormal.y), n.y)
-                    vec3 worldN = normalize(nXY * blendWeights.z +
-                                            vec3(nYZ.z * sign(worldNormal.x), nYZ.x, nYZ.y) * blendWeights.x +
-                                            vec3(nXZ.x, nXZ.z * sign(worldNormal.y), nXZ.y) * blendWeights.y);
-
-                    // Re-encode to [0, 1] using legacy formula (127-based)
-                    layerNorm.rgb = (worldN * 127.0 + 128.0) / 255.0;
-                    layerNorm.a = texture(u_LayerNormal, coord.xy).a * blendWeights.z +
-                                  texture(u_LayerNormal, coord.yz).a * blendWeights.x +
-                                  texture(u_LayerNormal, coord.xz).a * blendWeights.y;
-
-                    // IMPORTANT: To match legacy visual look, we must blend in sRGB space.
-                    // Samples are already de-gammaed by hardware to Linear.
-                    vec3 srgbBase = pow(baseDiff.rgb, vec3(1.0 / 2.2));
-                    vec3 srgbLayer = pow(layerDiff.rgb, vec3(1.0 / 2.2));
-                    vec3 srgbMixed = mix(srgbBase, srgbLayer, alpha);
-
-                    // Convert back to linear for the HDR output
-                    out_Diffuse = vec4(pow(srgbMixed, vec3(2.2)), mix(baseDiff.a, layerDiff.a, alpha));
-                    out_Normal = mix(baseNorm, layerNorm, alpha);
-                } else if (u_Mode == 1) { // Lighting Blend
-                    out_Diffuse = baseDiff + vec4(u_Color * alpha, 0.0);
-                    out_Normal = baseNorm;
-                } else { // Occlusion Blend (u_Mode == 2)
-                    vec3 occluded = baseDiff.rgb * mix(vec3(1.0), u_Color, alpha);
-                    out_Diffuse = vec4(occluded, baseDiff.a);
-                    out_Normal = baseNorm;
-                }
-            }
-            """;
+                            // Convert back to linear for the HDR output
+                            out_Diffuse = vec4(pow(srgbMixed, vec3(2.2)), mix(baseDiff.a, layerDiff.a, alpha));
+                            out_Normal = mix(baseNorm, layerNorm, alpha);
+                        } else if (u_Mode == 1) { // Lighting Blend
+                            out_Diffuse = baseDiff + vec4(u_Color * alpha, 0.0);
+                            out_Normal = baseNorm;
+                        } else { // Occlusion Blend (u_Mode == 2)
+                            vec3 occluded = baseDiff.rgb * mix(vec3(1.0), u_Color, alpha);
+                            out_Diffuse = vec4(occluded, baseDiff.a);
+                            out_Normal = baseNorm;
+                        }
+                    }
+                    """;
 
     private static class BlendShader extends ShaderProgram {
         BlendShader() {
@@ -207,7 +169,8 @@ public final class LandscapeBaker {
 
         Instant time_before = Instant.now();
         BlendInfo[] blend_infos = landscape.getBlendInfos();
-        Texture detail = createDetail(new GLIntImage(landscape.getDetail()), 1);
+        Texture detail = createDetail(new GLIntImage(landscape.getDetail()),
+                LandscapeConfig.LANDSCAPE_DETAIL_FADEOUT_BASE_LEVEL);
         Texture detailNormal = createDetailNormal(new GLIntImage(landscape.getDetailNormal()));
 
         int grid_units = config.metersPerWorld() / HeightMap.METERS_PER_UNIT_GRID;
@@ -363,10 +326,20 @@ public final class LandscapeBaker {
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, diffuse[current].getHandle());
                 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+                if (GL.getCapabilities().GL_EXT_texture_filter_anisotropic) {
+                    float maxAniso = GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                    GL11.glTexParameterf(GL11.GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                            maxAniso);
+                }
 
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, normal[current].getHandle());
                 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+                if (GL.getCapabilities().GL_EXT_texture_filter_anisotropic) {
+                    float maxAniso = GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+                    GL11.glTexParameterf(GL11.GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT,
+                            maxAniso);
+                }
 
                 // Detach textures from FBO before returning them
                 // This prevents GL_INVALID_OPERATION when they are later bound as source textures (feedback loop).

@@ -46,7 +46,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     private final Texture respondTexture;
 
     private FloatVBO boneMatrixVBO;
-    private int boneMatrixTboHandle;
+    private final int boneMatrixTboHandle;
     private FloatBuffer boneMatrixBuffer;
     private int boneMatrixTexels = 0;
     private final Matrix4f[] scratchBones = new Matrix4f[48];

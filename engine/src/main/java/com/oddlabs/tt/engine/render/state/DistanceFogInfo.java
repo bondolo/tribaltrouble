@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public final class DistanceFogInfo extends FogInfo {
 
-    private static final Map<Terrain, Color> FOG_COLOR = new EnumMap<>(Map.of(
-            Terrain.NATIVE, new Color.Standard(0xFF_A5_BF_FF),
-            Terrain.VIKING, new Color.Standard(0xFF_33_66_8C)
+    private static final Map<Terrain, Color.Linear> FOG_COLOR = new EnumMap<>(Map.of(
+            Terrain.NATIVE, new Color.Standard(0xFF_A5_BF_FF).linear(),
+            Terrain.VIKING, new Color.Standard(0xFF_33_66_8C).linear()
     ));
     private static final float NATIVE_FOG_DENSITY = 0.001f;
     private static final float VIKING_FOG_DENSITY = 0.0015f;
