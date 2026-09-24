@@ -211,7 +211,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     /** Manages grouped instance buffer data and draw call submission for identical batch keys. */
     public static final class RenderBatch implements AutoCloseable {
         private final BatchKey key;
-        private final Map<Integer, InstanceGroup> groups = new HashMap<>();
+        private final InstanceGroup[] groups;
 
         // mat4 (16) + color (4) + decalColor (4) + boneBaseOffset (1)
         private static final int FLOATS_PER_INSTANCE = 16 + 4 + 4 + 1;
@@ -368,21 +368,44 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             }
         }
 
-        private static final Comparator<RenderBatch> COMPARATOR = Comparator
-                .comparing((RenderBatch b) -> b.key.blend)
-                .thenComparingInt(b -> b.key.texture != null ? b.key.texture.getHandle() : 0)
-                .thenComparingInt(b -> System.identityHashCode(b.key.spriteList))
-                .thenComparingInt(b -> b.key.teamTexture != null ? b.key.teamTexture.getHandle() : 0)
-                .thenComparingInt(b -> b.key.bumpTexture != null ? b.key.bumpTexture.getHandle() : 0);
+        private static final Comparator<RenderBatch> COMPARATOR = (b1, b2) -> {
+            BatchKey k1 = b1.key;
+            BatchKey k2 = b2.key;
+            if (k1.blend != k2.blend) {
+                return k1.blend ? 1 : -1;
+            }
+            int t1 = k1.texture != null ? k1.texture.getHandle() : 0;
+            int t2 = k2.texture != null ? k2.texture.getHandle() : 0;
+            if (t1 != t2) {
+                return Integer.compare(t1, t2);
+            }
+            int s1 = System.identityHashCode(k1.spriteList);
+            int s2 = System.identityHashCode(k2.spriteList);
+            if (s1 != s2) {
+                return Integer.compare(s1, s2);
+            }
+            int tm1 = k1.teamTexture != null ? k1.teamTexture.getHandle() : 0;
+            int tm2 = k2.teamTexture != null ? k2.teamTexture.getHandle() : 0;
+            if (tm1 != tm2) {
+                return Integer.compare(tm1, tm2);
+            }
+            int bp1 = k1.bumpTexture != null ? k1.bumpTexture.getHandle() : 0;
+            int bp2 = k2.bumpTexture != null ? k2.bumpTexture.getHandle() : 0;
+            return Integer.compare(bp1, bp2);
+        };
 
         private RenderBatch(BatchKey key) {
             this.key = key;
+            this.groups = new InstanceGroup[key.spriteList.getNumSprites()];
         }
 
         public void addInstance(int spriteIndex, int boneBaseOffset, Matrix4fc modelMatrix, Color color,
                 Color decalColor) {
-            InstanceGroup group = groups.computeIfAbsent(spriteIndex, k -> new InstanceGroup(k, key,
-                    FLOATS_PER_INSTANCE));
+            InstanceGroup group = groups[spriteIndex];
+            if (group == null) {
+                group = new InstanceGroup(spriteIndex, key, FLOATS_PER_INSTANCE);
+                groups[spriteIndex] = group;
+            }
             group.add(boneBaseOffset, modelMatrix, color, decalColor);
         }
 
@@ -392,18 +415,24 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
 
         void render(RenderContext context, InstancedSpriteShader shader, Texture whiteTexture,
                 Texture respondTexture) {
-            InstanceGroup representativeGroup = groups.values().stream()
-                    .filter(group -> group.count > 0)
-                    .findFirst().orElse(null);
+            InstanceGroup representativeGroup = null;
+            for (InstanceGroup group : groups) {
+                if (group != null && group.count > 0) {
+                    representativeGroup = group;
+                    break;
+                }
+            }
             if (representativeGroup == null) return;
 
             SpriteList spriteList = key.spriteList;
             Sprite representativeSprite = spriteList.getSprite(representativeGroup.spriteIndex);
             setupTextures(context, shader, representativeSprite, whiteTexture, respondTexture);
 
-            groups.values().stream()
-                    .filter(group -> group.count > 0)
-                    .forEach(group -> group.upload(context));
+            for (InstanceGroup group : groups) {
+                if (group != null && group.count > 0) {
+                    group.upload(context);
+                }
+            }
 
             if (key.respond) {
                 try (var _ = context.withColorMask(false, false, false, false); var _ = context.withDepthMode(
@@ -437,9 +466,11 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         private void drawAll(RenderContext context) {
-            groups.values().stream()
-                    .filter(group -> group.count > 0)
-                    .forEach(group ->  group.draw(context));
+            for (InstanceGroup group : groups) {
+                if (group != null && group.count > 0) {
+                    group.draw(context);
+                }
+            }
         }
 
         private void setupTextures(RenderContext context, InstancedSpriteShader shader,
@@ -479,13 +510,21 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
         }
 
         void clear() {
-            groups.values().forEach(InstanceGroup::clear);
+            for (InstanceGroup group : groups) {
+                if (group != null) {
+                    group.clear();
+                }
+            }
         }
 
         @Override
         public void close() {
-            groups.values().forEach(InstanceGroup::close);
-            groups.clear();
+            for (int i = 0; i < groups.length; i++) {
+                if (groups[i] != null) {
+                    groups[i].close();
+                    groups[i] = null;
+                }
+            }
         }
     }
 }
