@@ -107,7 +107,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection.xyz, 0.0)).xyz);
 
                         vec4 diffuseColor = texture(u_DiffuseMap, fs_in.texCoordColormap);
-                        vec4 normalMapVal = texture(u_NormalMap, fs_in.texCoordColormap);
                         vec4 detailColor;
 
                         // Surface roughness metadata baked into diffuse alpha (1.0 = rough, 0.0 = smooth)
@@ -126,14 +125,6 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
 
                         // Calculate static depth (below sea level) for caustics and light attenuation
                         float depthStatic = u_seaLevel - fs_in.height;
-                        float normalMapStrength;
-                        if (depthStatic < 0.0) {
-                            float t = clamp((depthStatic + 0.25) / 0.25, 0.0, 1.0);
-                            normalMapStrength = mix(1.0, 0.50, t);
-                        } else {
-                            float t = clamp(depthStatic / 1.0, 0.0, 1.0);
-                            normalMapStrength = mix(0.50, 0.25, t);
-                        }
 
                         // Compute view-space normal from heightmap slope
                         float h_plus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(1, 0)).r;
@@ -141,18 +132,18 @@ public final class LandscapeShader extends ShaderProgram implements FogShader, L
                         float h_plus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, 1)).r;
                         float h_minus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, -1)).r;
 
-                        // Calculate mathematically accurate normal for triplanar mapping and specular
-                        vec3 worldNormalGeom = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 4.0));
+                        // Calculate normal for specular and caustics
                         vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
 
                         // Sample detail map using planar coordinates (matching legacy)
                         detailColor = texture(u_DetailMap, fs_in.texCoord1);
 
-                        // Multiplicative detail modulation matching legacy subtle surface grain
-                        // Preserves 100% of underlying saturation while eliminating harsh crumpled paper creases
-                        float detailFade = clamp(detailColor.a / 0.15, 0.0, 1.0);
-                        float grain = (detailColor.r - 0.5) * 0.35;
-                        diffuseColor.rgb = clamp(diffuseColor.rgb * (1.0 + grain * detailFade), 0.0, 1.0);
+                        // Decal blending in display/sRGB space matching legacy GL_DECAL contract.
+                        // Blending in sRGB prevents linear saturation wash-out, and using raw detailColor.a
+                        // preserves the natural trilinear mipmap distance fadeout without crumpled paper creases.
+                        vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
+                        vec3 srgbMixed = mix(srgbDiffuse, detailColor.rgb, detailColor.a);
+                        diffuseColor.rgb = pow(srgbMixed, vec3(2.2));
 
                         vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
                         vec3 normal = viewNormal;

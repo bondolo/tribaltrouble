@@ -85,22 +85,14 @@ public final class SeaBottomShader extends ShaderProgram implements FogShader, L
 
                         float u_seaLevel = u_fogParams.w;
                         float depth = u_seaLevel - v_height;
-                        float normalMapStrength;
-                        if (depth < 0.0) {
-                            float t = clamp((depth + 0.25) / 0.25, 0.0, 1.0);
-                            normalMapStrength = mix(1.0, 0.50, t);
-                        } else {
-                            float t = clamp(depth / 1.0, 0.0, 1.0);
-                            normalMapStrength = mix(0.50, 0.25, t);
-                        }
 
                         if (u_detailScale > 0.0001) {
                             vec4 detail = texture(u_texture1, v_texCoordDetail);
-                            vec4 detailNormal = texture(u_textureNormal, v_texCoordDetail);
 
-                            float detailFade = clamp(detail.a / 0.15, 0.0, 1.0);
-                            float grain = (detail.r - 0.5) * 0.35;
-                            color.rgb = clamp(color.rgb * (1.0 + grain * detailFade), 0.0, 1.0);
+                            // Decal blending in display/sRGB space matching legacy GL_DECAL contract.
+                            vec3 srgbColor = pow(color.rgb, vec3(1.0 / 2.2));
+                            vec3 srgbMixed = mix(srgbColor, detail.rgb, detail.a);
+                            color.rgb = pow(srgbMixed, vec3(2.2));
                         }
 
                         vec3 viewDir = normalize(-v_viewPosition);
