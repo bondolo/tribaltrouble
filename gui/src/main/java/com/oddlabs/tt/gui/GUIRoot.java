@@ -21,7 +21,9 @@ import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -39,7 +41,7 @@ public final class GUIRoot extends GUIObject {
 
     private static final int CURSOR_OFFSET_Y = 27;
 
-    private final Deque<InputDelegate> delegate_stack = new ArrayDeque<>();
+    private final List<InputDelegate> delegate_stack = new ArrayList<>();
     private final Deque<ModalDelegate> modal_delegate_stack = new ArrayDeque<>();
     private final Deque<GUIObject> focus_backup_stack = new ArrayDeque<>();
 
@@ -206,7 +208,7 @@ public final class GUIRoot extends GUIObject {
             }
         }
         assert !delegate_stack.contains(delegate);
-        delegate_stack.push(delegate);
+        delegate_stack.addFirst(delegate);
         if (delegate instanceof GUIObject obj) {
             addChild(obj);
         }
@@ -233,7 +235,7 @@ public final class GUIRoot extends GUIObject {
     }
 
     public InputDelegate getDelegate() {
-        return delegate_stack.element();
+        return delegate_stack.getFirst();
     }
 
     private void pushModalDelegate(ModalDelegate delegate) {
@@ -554,11 +556,9 @@ public final class GUIRoot extends GUIObject {
         getDelegate().render2D(renderer);
 
         // render forced delegates
-        boolean initial = true; // Skip the first element which is the current delegate
-        for (InputDelegate delegate : delegate_stack) {
-            if (initial) {
-                initial = false;
-            } else if (delegate.forceRender() && delegate instanceof GUIObject obj) {
+        for (int i = 1, size = delegate_stack.size(); i < size; i++) {
+            var delegate = delegate_stack.get(i);
+            if (delegate.forceRender() && delegate instanceof GUIObject obj) {
                 obj.render(renderer);
             }
         }
