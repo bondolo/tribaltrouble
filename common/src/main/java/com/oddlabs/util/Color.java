@@ -87,11 +87,19 @@ public sealed interface Color extends Serializable permits Color.Linear, Color.S
         }
 
         public Linear add(Color.LinearDelta delta) {
-            return new Linear(r + delta.r(), g + delta.g(), b + delta.b(), a + delta.a());
+            return add(delta.r(), delta.g(), delta.b(), delta.a());
+        }
+
+        public Linear add(float dr, float dg, float db, float da) {
+            return new Linear(r + dr, g + dg, b + db, a + da);
         }
 
         public Linear sub(Color.LinearDelta delta) {
-            return new Linear(r - delta.r(), g - delta.g(), b - delta.b(), a - delta.a());
+            return sub(delta.r(), delta.g(), delta.b(), delta.a());
+        }
+
+        public Linear sub(float dr, float dg, float db, float da) {
+            return new Linear(r - dr, g - dg, b - db, a - da);
         }
 
         public Linear mul(float factor) {

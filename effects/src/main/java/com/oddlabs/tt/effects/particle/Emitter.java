@@ -45,7 +45,10 @@ public abstract class Emitter<P extends Particle> implements Animated {
     private boolean fog_enabled = true;
 
     // Relative Clustering Logic
-    private Color.LinearDelta cluster_rgb = Color.LinearDelta.ZERO;
+    private float cluster_r = 0.0f;
+    private float cluster_g = 0.0f;
+    private float cluster_b = 0.0f;
+    private float cluster_a = 0.0f;
 
     private float spectrum_min = 0.0f;
     private float spectrum_max = 1.0f;
@@ -159,15 +162,15 @@ public abstract class Emitter<P extends Particle> implements Animated {
         }
 
         float drift = random.nextFloat(-0.01f, 0.01f);
-        float cr = Math.clamp(cluster_rgb.r() + drift, -0.15f, 0.15f);
-        float cg = Math.clamp(cluster_rgb.g() + drift, -0.15f, 0.15f);
-        float cb = Math.clamp(cluster_rgb.b() + drift, -0.15f, 0.15f);
-        float ca = Math.clamp(cluster_rgb.a() + random.nextFloat(-0.005f, 0.005f), -0.1f, 0.1f);
-        cluster_rgb = new Color.LinearDelta(cr, cg, cb, ca);
+        cluster_r = Math.clamp(cluster_r + drift, -0.15f, 0.15f);
+        cluster_g = Math.clamp(cluster_g + drift, -0.15f, 0.15f);
+        cluster_b = Math.clamp(cluster_b + drift, -0.15f, 0.15f);
+        cluster_a = Math.clamp(cluster_a + random.nextFloat(-0.005f, 0.005f), -0.1f, 0.1f);
     }
 
     protected final Color.Linear getClusterColor() {
-        return colorSpectrum.getColor(current_spectrum, base_color).add(cluster_rgb);
+        return colorSpectrum.getColor(current_spectrum, base_color)
+                .add(cluster_r, cluster_g, cluster_b, cluster_a);
     }
 
     /**
