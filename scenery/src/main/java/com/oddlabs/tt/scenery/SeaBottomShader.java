@@ -56,11 +56,18 @@ final class SeaBottomShader extends ShaderProgram implements FogShader {
 
                         if (u_detailScale > 0.0001) {
                             vec4 detail = texture(u_texture1, v_texCoordDetail);
+                            vec4 detailNorm = texture(u_textureNormal, v_texCoordDetail);
 
                             // Decal blending in display/sRGB space matching legacy GL_DECAL contract.
                             vec3 srgbColor = pow(color.rgb, vec3(1.0 / 2.2));
                             vec3 srgbMixed = mix(srgbColor, detail.rgb, detail.a);
                             color.rgb = pow(srgbMixed, vec3(2.2));
+
+                            // Subtle micro-normal modulation under directional sun in world space
+                            vec3 lightDir = normalize(u_lightDirection.xyz);
+                            vec3 N = normalize(vec3((detailNorm.xy - 0.5) * 2.0, detailNorm.z));
+                            float diffuseMod = 1.0 + 0.30 * (dot(N, lightDir) - lightDir.z);
+                            color.rgb *= mix(1.0, diffuseMod, detailNorm.a * 0.4);
                         }
 
                         vec3 finalColor = applyFog(color.rgb, v_fogDist, gl_FragCoord.xy);
