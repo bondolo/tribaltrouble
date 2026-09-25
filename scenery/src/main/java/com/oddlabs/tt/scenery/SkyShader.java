@@ -124,17 +124,17 @@ final class SkyShader extends ShaderProgram {
                     }
                     """;
 
-    public final int locModelViewMatrix;
-    public final int locTexture0;
-    public final int locTexture1;
-    public final int locOuterOffset;
-    public final int locInnerOffset;
-    public final int locSkyColor;
-    public final int locDomeCenter;
-    public final int locCloudShadow;
-    public final int locHorizonCloudFade;
+    final int locModelViewMatrix;
+    final int locTexture0;
+    final int locTexture1;
+    final int locOuterOffset;
+    final int locInnerOffset;
+    final int locSkyColor;
+    final int locDomeCenter;
+    final int locCloudShadow;
+    final int locHorizonCloudFade;
 
-    public SkyShader() {
+    SkyShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);

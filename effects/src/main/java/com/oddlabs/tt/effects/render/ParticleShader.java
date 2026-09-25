@@ -1,11 +1,15 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.effects.render;
 
+import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.engine.render.shader.Shader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
+import com.oddlabs.tt.engine.render.shader.VertexAttribute;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Renders particles using hardware instancing and vertex shader billboard expansion.
  */
-public final class ParticleShader extends ShaderProgram implements FogShader {
+final class ParticleShader extends ShaderProgram implements FogShader {
     private interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_ARRAY = "u_textureArray";
@@ -25,7 +29,7 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
         String TEX_SLOT = "in_TextureSlot";
     }
 
-    public enum Attribute implements VertexAttribute {
+    enum Attribute implements VertexAttribute {
         CENTER_POSITION(Attributes.CENTER_POSITION, 3, GL11.GL_FLOAT),
         SIZE(Attributes.SIZE, 3, GL11.GL_FLOAT), // radius_x, radius_y, radius_z
         COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT),
@@ -190,15 +194,15 @@ public final class ParticleShader extends ShaderProgram implements FogShader {
                     """;
 
 
-    public final int locModelViewMatrix;
-    public final int locTextureArray;
-    public final int locDepthMap;
-    public final int locIsAdditive;
-    public final int locFogEnabled;
-    public final int locNearFar;
-    public final int locSoftRange;
+    final int locModelViewMatrix;
+    final int locTextureArray;
+    final int locDepthMap;
+    final int locIsAdditive;
+    final int locFogEnabled;
+    final int locNearFar;
+    final int locSoftRange;
 
-    public ParticleShader() {
+    ParticleShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);

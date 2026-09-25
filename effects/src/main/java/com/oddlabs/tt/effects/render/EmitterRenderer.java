@@ -15,7 +15,6 @@ import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.TextureKey;
-import com.oddlabs.tt.engine.render.shader.ParticleShader;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;

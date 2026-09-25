@@ -9,7 +9,6 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.RenderTools;
-import com.oddlabs.tt.engine.render.shader.LightningShader;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;

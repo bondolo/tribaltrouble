@@ -18,7 +18,6 @@ import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.SpriteRenderer;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.render.shader.DebugMeshShader;
 import com.oddlabs.tt.engine.render.shader.DebugShaderRenderer;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.state.GlobalUniforms;
@@ -114,7 +113,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
         this.postProcessor = new PostProcessor(AccessibilitySettings.from(settings), width, height,
                 WindowSettings.from(settings).view_samples);
         DebugRender.setShaderRenderer(new DebugShaderRenderer(
-                new DebugMeshShader(), modelViewStack, projectionStack
+                modelViewStack, projectionStack
         ));
     }
 

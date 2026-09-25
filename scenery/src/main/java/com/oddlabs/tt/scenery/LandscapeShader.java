@@ -208,16 +208,16 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                     }
                     """;
 
-    public final int locHeightMap;
-    public final int locDiffuseMap;
-    public final int locNormalMap;
-    public final int locDetailMap;
-    public final int locDetailNormalMap;
-    public final int locWorldSize;
-    public final int locDetailScale;
-    public final int locSeaBottomColor;
+    final int locHeightMap;
+    final int locDiffuseMap;
+    final int locNormalMap;
+    final int locDetailMap;
+    final int locDetailNormalMap;
+    final int locWorldSize;
+    final int locDetailScale;
+    final int locSeaBottomColor;
 
-    public LandscapeShader() {
+    LandscapeShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locHeightMap = getUniformLocation(Uniforms.HEIGHT_MAP);

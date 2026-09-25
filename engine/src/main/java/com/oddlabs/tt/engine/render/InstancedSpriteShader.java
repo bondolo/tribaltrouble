@@ -1,10 +1,14 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.engine.render;
+
+import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.engine.render.shader.LitShader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
 /**
  * Renders 3D sprites using hardware instancing and skeletal skinning.
  * Supports GPU 4-bone linear blend skinning and a direct static path for rigid geometry.
  */
-public final class InstancedSpriteShader extends ShaderProgram implements FogShader, LitShader {
+final class InstancedSpriteShader extends ShaderProgram implements FogShader, LitShader {
 
     private interface Uniforms {
         String TEXTURE_0 = "u_texture0";
@@ -179,19 +183,19 @@ public final class InstancedSpriteShader extends ShaderProgram implements FogSha
                     }
                     """;
 
-    public final int locTexture0;
-    public final int locTexture1;
-    public final int locNormalMap;
-    public final int locBoneMatrixBuffer;
-    public final int locEnableLighting;
-    public final int locEnableTeamColor;
-    public final int locEnableNormalMap;
-    public final int locModulateColor;
-    public final int locReplaceMode;
-    public final int locDesaturate;
-    public final int locAlphaTestValue;
+    final int locTexture0;
+    final int locTexture1;
+    final int locNormalMap;
+    final int locBoneMatrixBuffer;
+    final int locEnableLighting;
+    final int locEnableTeamColor;
+    final int locEnableNormalMap;
+    final int locModulateColor;
+    final int locReplaceMode;
+    final int locDesaturate;
+    final int locAlphaTestValue;
 
-    public InstancedSpriteShader() {
+    InstancedSpriteShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locTexture0 = getUniformLocation(Uniforms.TEXTURE_0);

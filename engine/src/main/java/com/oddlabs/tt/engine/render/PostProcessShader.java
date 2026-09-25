@@ -1,9 +1,11 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.engine.render;
+
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
 /**
  * Renders full-screen post-processing effects for Color Vision Deficiency (CVD) correction and High Contrast Mode.
  */
-public final class PostProcessShader extends ShaderProgram {
+final class PostProcessShader extends ShaderProgram {
 
     private interface Uniforms {
         String SCENE_TEXTURE = "u_sceneTexture";
@@ -216,18 +218,18 @@ public final class PostProcessShader extends ShaderProgram {
                     }
                     """;
 
-    public final int locSceneTexture;
-    public final int locMaskTexture;
-    public final int locCvdMode;
-    public final int locCvdIntensity;
-    public final int locHighContrast;
-    public final int locContrastIntensity;
-    public final int locInvertColors;
-    public final int locContrastBrightness;
-    public final int locContrastClarity;
-    public final int locTeamStencil;
+    final int locSceneTexture;
+    final int locMaskTexture;
+    final int locCvdMode;
+    final int locCvdIntensity;
+    final int locHighContrast;
+    final int locContrastIntensity;
+    final int locInvertColors;
+    final int locContrastBrightness;
+    final int locContrastClarity;
+    final int locTeamStencil;
 
-    public PostProcessShader() {
+    PostProcessShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locSceneTexture = getUniformLocation(Uniforms.SCENE_TEXTURE);
@@ -242,7 +244,7 @@ public final class PostProcessShader extends ShaderProgram {
         locTeamStencil = getUniformLocation(Uniforms.TEAM_STENCIL);
     }
 
-    public void setAccessibilityModes(int cvdMode, boolean highContrast) {
+    void setAccessibilityModes(int cvdMode, boolean highContrast) {
         setUniform(locCvdMode, cvdMode);
         setUniform(locHighContrast, highContrast);
     }

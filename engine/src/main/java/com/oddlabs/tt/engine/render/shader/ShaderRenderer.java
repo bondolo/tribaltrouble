@@ -25,7 +25,7 @@ public class ShaderRenderer implements AutoCloseable {
     private int vertexCount = 0;
     private int mode = GL11.GL_TRIANGLES;
 
-    public ShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack,
+    ShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack,
             MatrixStack projectionStack) {
         this.shader = shader;
         this.modelViewStack = modelViewStack;
@@ -44,10 +44,6 @@ public class ShaderRenderer implements AutoCloseable {
         layout.bind(shader);
 
         vao.unbind();
-    }
-
-    public DebugMeshShader getShader() {
-        return shader;
     }
 
     protected final MatrixStack getModelViewStack() {

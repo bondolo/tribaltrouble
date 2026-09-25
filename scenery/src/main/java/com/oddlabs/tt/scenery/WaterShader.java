@@ -186,26 +186,26 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                     }
                     """;
 
-    public final int locModelViewMatrix;
-    public final int locTexture0;
-    public final int locTexture1;
-    public final int locEnableDetail;
-    public final int locCameraPos;
-    public final int locWaterHeight;
-    public final int locHeightMap;
-    public final int locWorldSize;
-    public final int locDepthScale;
-    public final int locMinAlpha;
-    public final int locMaxAlpha;
-    public final int locSkyColor;
-    public final int locCloudTexture0;
-    public final int locCloudTexture1;
-    public final int locInnerOffset;
-    public final int locOuterOffset;
-    public final int locInnerCloudDensity;
-    public final int locOuterCloudDensity;
+    final int locModelViewMatrix;
+    final int locTexture0;
+    final int locTexture1;
+    final int locEnableDetail;
+    final int locCameraPos;
+    final int locWaterHeight;
+    final int locHeightMap;
+    final int locWorldSize;
+    final int locDepthScale;
+    final int locMinAlpha;
+    final int locMaxAlpha;
+    final int locSkyColor;
+    final int locCloudTexture0;
+    final int locCloudTexture1;
+    final int locInnerOffset;
+    final int locOuterOffset;
+    final int locInnerCloudDensity;
+    final int locOuterCloudDensity;
 
-    public WaterShader() {
+    WaterShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);

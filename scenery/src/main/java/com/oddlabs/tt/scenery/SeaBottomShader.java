@@ -68,13 +68,13 @@ final class SeaBottomShader extends ShaderProgram implements FogShader {
                     }
                     """;
 
-    public final int locModelViewMatrix;
-    public final int locTexture1;
-    public final int locTextureNormal;
-    public final int locBaseColor;
-    public final int locDetailScale;
+    final int locModelViewMatrix;
+    final int locTexture1;
+    final int locTextureNormal;
+    final int locBaseColor;
+    final int locDetailScale;
 
-    public SeaBottomShader() {
+    SeaBottomShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);

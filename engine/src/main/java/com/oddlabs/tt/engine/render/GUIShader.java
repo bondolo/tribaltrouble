@@ -1,11 +1,14 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.engine.render;
 
+import com.oddlabs.tt.engine.render.shader.Shader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
+import com.oddlabs.tt.engine.render.shader.VertexAttribute;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Renders the 2D user interface with model-view-projection transformation, vertex colors, and texture modulation.
  */
-public final class GUIShader extends ShaderProgram {
+final class GUIShader extends ShaderProgram {
 
     /**
      * The vertex shader source code for UI rendering.
@@ -112,7 +115,7 @@ public final class GUIShader extends ShaderProgram {
         String CLIP_RECT = "in_ClipRect";
     }
 
-    public enum Attribute implements VertexAttribute {
+    enum Attribute implements VertexAttribute {
         POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
         COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT, false),
         TEX_COORD(Attributes.TEX_COORD, 2, GL11.GL_FLOAT),
@@ -156,11 +159,11 @@ public final class GUIShader extends ShaderProgram {
         }
     }
 
-    public final int locProjectionMatrix;
-    public final int locModelViewMatrix;
-    public final int locTextures;
+    final int locProjectionMatrix;
+    final int locModelViewMatrix;
+    final int locTextures;
 
-    public GUIShader() {
+    GUIShader() {
         super(GUIShader.VERTEX_SHADER, GUIShader.FRAGMENT_SHADER);
         link();
         locProjectionMatrix = getUniformLocation(Uniforms.PROJECTION_MATRIX);

@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-import com.oddlabs.tt.engine.render.shader.GUIShader;
 import com.oddlabs.tt.engine.render.shader.VertexLayout;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
@@ -11,7 +10,6 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
-import com.oddlabs.tt.engine.render.shader.GUIShader;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;

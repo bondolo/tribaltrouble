@@ -1,7 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-
-import com.oddlabs.tt.engine.render.shader.DecalShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;

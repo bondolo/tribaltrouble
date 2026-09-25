@@ -1,11 +1,15 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.effects.render;
 
+import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.engine.render.shader.Shader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
+import com.oddlabs.tt.engine.render.shader.VertexAttribute;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Renders the expanding ring effect of a Sonic Blast magic attack.
  */
-public final class SonicBlastShader extends ShaderProgram implements FogShader {
+final class SonicBlastShader extends ShaderProgram implements FogShader {
 
     private interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
@@ -21,7 +25,7 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
         String TEX_COORD = Shader.Attributes.TEX_COORD;
     }
 
-    public enum Attribute implements VertexAttribute {
+    enum Attribute implements VertexAttribute {
         POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
         TEX_COORD(Attributes.TEX_COORD, 2, GL11.GL_FLOAT);
 
@@ -167,14 +171,14 @@ public final class SonicBlastShader extends ShaderProgram implements FogShader {
                     }
                     """;
 
-    public final int locModelViewMatrix;
-    public final int locTexture0;
-    public final int locTime;
-    public final int locMaxRadius;
-    public final int locExpansionSpeed;
-    public final int locColor;
+    final int locModelViewMatrix;
+    final int locTexture0;
+    final int locTime;
+    final int locMaxRadius;
+    final int locExpansionSpeed;
+    final int locColor;
 
-    public SonicBlastShader() {
+    SonicBlastShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);

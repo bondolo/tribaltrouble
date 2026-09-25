@@ -1,9 +1,13 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.engine.render;
+
+import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.engine.render.shader.Shader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
 /**
  * Renders instanced decals with optional fog and radial distortion.
  */
-public final class DecalShader extends ShaderProgram implements FogShader {
+final class DecalShader extends ShaderProgram implements FogShader {
 
     private interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
@@ -230,13 +234,13 @@ public final class DecalShader extends ShaderProgram implements FogShader {
                     }
                     """;
 
-    public final int locModelViewMatrix;
-    public final int locWorldSize;
-    public final int locDepthBias;
-    public final int locHeightMap;
-    public final int locTextures;
+    final int locModelViewMatrix;
+    final int locWorldSize;
+    final int locDepthBias;
+    final int locHeightMap;
+    final int locTextures;
 
-    public DecalShader() {
+    DecalShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
         locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);

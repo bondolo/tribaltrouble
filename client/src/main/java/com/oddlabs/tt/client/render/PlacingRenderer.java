@@ -4,7 +4,6 @@ import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.Sprite;
 import com.oddlabs.tt.engine.render.SpriteList;
-import com.oddlabs.tt.engine.render.shader.PlacingShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;

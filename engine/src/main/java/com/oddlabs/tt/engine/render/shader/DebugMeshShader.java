@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 /**
  * Emulates the classic OpenGL fixed-function pipeline for immediate mode debug drawing.
  */
-public final class DebugMeshShader extends ShaderProgram implements FogShader, LitShader {
+final class DebugMeshShader extends ShaderProgram implements FogShader, LitShader {
 
     private interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
@@ -24,15 +24,15 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
         String TEX_COORD_0 = "in_TexCoord0";
     }
 
-    public final int locModelViewMatrix;
-    public final int locEnableLighting;
-    public final int locEnableTexture;
-    public final int locTexture0;
-    public final int locAlphaCutoff;
-    public final int locReplaceMode;
-    public final int locPointSize;
+    final int locModelViewMatrix;
+    final int locEnableLighting;
+    final int locEnableTexture;
+    final int locTexture0;
+    final int locAlphaCutoff;
+    final int locReplaceMode;
+    final int locPointSize;
 
-    public enum Attribute implements VertexAttribute {
+    enum Attribute implements VertexAttribute {
         POSITION(Attributes.POSITION, 3, GL11.GL_FLOAT),
         NORMAL(Attributes.NORMAL, 3, GL11.GL_FLOAT),
         COLOR(Attributes.COLOR, 4, GL11.GL_FLOAT),
@@ -147,7 +147,7 @@ public final class DebugMeshShader extends ShaderProgram implements FogShader, L
                     }
                     """;
 
-    public DebugMeshShader() {
+    DebugMeshShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
 

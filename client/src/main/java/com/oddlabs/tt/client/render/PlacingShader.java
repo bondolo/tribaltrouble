@@ -1,9 +1,14 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.client.render;
+
+import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.engine.render.shader.LitShader;
+import com.oddlabs.tt.engine.render.shader.Shader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
 /**
  * Shader program for building placement ghost rendering.
  */
-public final class PlacingShader extends ShaderProgram implements FogShader, LitShader {
+final class PlacingShader extends ShaderProgram implements FogShader, LitShader {
 
     private interface Attributes {
         String POSITION = Shader.Attributes.POSITION;
@@ -27,23 +32,23 @@ public final class PlacingShader extends ShaderProgram implements FogShader, Lit
         String ALPHA_TEST_VALUE = "u_alphaTestValue";
     }
 
-    public final int locPosition;
-    public final int locNormal;
-    public final int locTexCoord;
+    final int locPosition;
+    final int locNormal;
+    final int locTexCoord;
 
-    public final int locModelViewMatrix;
-    public final int locTexture0;
-    public final int locTexture1;
-    public final int locNormalMap;
-    public final int locEnableLighting;
-    public final int locEnableTeamColor;
-    public final int locEnableNormalMap;
-    public final int locModulateColor;
-    public final int locReplaceMode;
-    public final int locColor;
-    public final int locDecalColor;
-    public final int locDesaturate;
-    public final int locAlphaTestValue;
+    final int locModelViewMatrix;
+    final int locTexture0;
+    final int locTexture1;
+    final int locNormalMap;
+    final int locEnableLighting;
+    final int locEnableTeamColor;
+    final int locEnableNormalMap;
+    final int locModulateColor;
+    final int locReplaceMode;
+    final int locColor;
+    final int locDecalColor;
+    final int locDesaturate;
+    final int locAlphaTestValue;
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
             GLOBAL_STATE_BLOCK +
@@ -162,7 +167,7 @@ public final class PlacingShader extends ShaderProgram implements FogShader, Lit
                     }
                     """;
 
-    public PlacingShader() {
+    PlacingShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
         link();
 

@@ -13,7 +13,11 @@ public final class DebugShaderRenderer extends ShaderRenderer {
 
     private float pointSize = 1.0f;
 
-    public DebugShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack, MatrixStack projectionStack) {
+    public DebugShaderRenderer(MatrixStack modelViewStack, MatrixStack projectionStack) {
+        this(new DebugMeshShader(), modelViewStack, projectionStack);
+    }
+
+    DebugShaderRenderer(DebugMeshShader shader, MatrixStack modelViewStack, MatrixStack projectionStack) {
         super(shader, modelViewStack, projectionStack);
     }
 

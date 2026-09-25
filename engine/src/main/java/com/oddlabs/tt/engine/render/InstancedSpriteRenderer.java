@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render;
 
 import com.oddlabs.tt.engine.image.GLImage;
 import com.oddlabs.tt.engine.image.GLIntImage;
-import com.oddlabs.tt.engine.render.shader.InstancedSpriteShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;

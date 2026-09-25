@@ -59,9 +59,6 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
         return heightMapVisual;
     }
 
-    public LandscapeShader getShader() {
-        return shader;
-    }
 
     public void setWater(Water water) {
         this.water = water;

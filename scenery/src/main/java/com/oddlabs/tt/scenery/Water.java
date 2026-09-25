@@ -225,9 +225,6 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
         }
     }
 
-    WaterShader getShader() {
-        return waterShader;
-    }
 
     private void setupWaterAttributes(FloatVBO vbo) {
         vbo.bind();
