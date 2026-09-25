@@ -5,14 +5,14 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 /**
  * Maintains a stack of transformation matrix that are applied to the drawing.
  */
 public final class MatrixStack {
-    private final Deque<Matrix4f> stack = new ArrayDeque<>();
+    private static final int DEFAULT_CAPACITY = 32;
+
+    private Matrix4f[] stack = new Matrix4f[DEFAULT_CAPACITY];
+    private int top = 0;
 
     public interface TopListener {
         void topChanging(Matrix4fc matrix);
@@ -25,40 +25,58 @@ public final class MatrixStack {
     }
 
     public MatrixStack(@Nullable TopListener topListener) {
-        clear();
+        for (int i = 0; i < stack.length; i++) {
+            stack[i] = new Matrix4f();
+        }
         this.topListener = topListener;
     }
 
     public Matrix4f push() {
-        Matrix4f copy = new Matrix4f(current());
-        stack.push(copy);
-        if (null != topListener) {
-            topListener.topChanging(current());
+        ensureCapacity(top + 2);
+        top++;
+        stack[top].set(stack[top - 1]);
+        if (topListener != null) {
+            topListener.topChanging(stack[top]);
         }
-        return current();
+        return stack[top];
     }
 
     public Matrix4f pop() {
-        if (null != topListener) {
-            topListener.topChanging(current());
-        }
-        if (stack.size() > 1) {
-            stack.pop();
+        if (top > 0) {
+            top--;
         } else {
             clear();
         }
-        return current();
+        if (topListener != null) {
+            topListener.topChanging(stack[top]);
+        }
+        return stack[top];
     }
 
     public Matrix4f current() {
-        return stack.element();
+        return stack[top];
     }
 
     public Matrix4f clear() {
-        stack.clear();
-        stack.push(new Matrix4f());
+        top = 0;
+        stack[0].identity();
+        return stack[0];
+    }
 
-        return current();
+    public int size() {
+        return top + 1;
+    }
+
+    private void ensureCapacity(int minCapacity) {
+        if (minCapacity > stack.length) {
+            int newCapacity = stack.length * 2;
+            Matrix4f[] newStack = new Matrix4f[newCapacity];
+            System.arraycopy(stack, 0, newStack, 0, stack.length);
+            for (int i = stack.length; i < newCapacity; i++) {
+                newStack[i] = new Matrix4f();
+            }
+            stack = newStack;
+        }
     }
 
     public MatrixStack translate(float x, float y, float z) {
