@@ -194,10 +194,6 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         float specular = pow(specAngle, 64.0) * 0.40;
                         finalRGB += vec3(specular);
 
-                        // Additive Shoreline Surf Foam (breaking gently at the water's edge)
-                        float shoreFoam = (1.0 - smoothstep(0.0, 0.20, depth)) * fs_in.waveScale;
-                        finalRGB += vec3(0.92, 0.96, 1.0) * (shoreFoam * 0.50);
-
                         vec3 finalColor = applyFog(finalRGB, fs_in.fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, finalAlpha);
 

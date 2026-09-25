@@ -173,6 +173,13 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         // Terrain lighting is fully baked into the colormap texture (BlendLighting sun highlights
                         // and shadowcasting). Avoiding redundant runtime Half-Lambert/ambient modulation preserves
                         // the vibrant legacy color aesthetic and prevents faceted heightmap creases.
+                        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.55, wetness);
+
+                        // --- Dynamic Shoreline "Wet Line" (Wash/Foam) ---
+                        // Brighten the leading edge of the water to simulate foam and bubbles
+                        float wash = smoothstep(0.0, 0.08, depth) * (1.0 - smoothstep(0.12, 0.25, depth));
+                        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb + vec3(0.15, 0.2, 0.25), wash * 0.6 * fs_in.waveScale);
+
                         vec3 litColor = diffuseColor.rgb + specular * 1.1;
 
                         vec3 finalColor = applyFog(litColor, fs_in.fogDist, gl_FragCoord.xy);
