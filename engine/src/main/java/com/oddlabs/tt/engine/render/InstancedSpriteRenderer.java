@@ -50,11 +50,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
     private FloatBuffer boneMatrixBuffer;
     private int boneMatrixTexels = 0;
     private final Matrix4f[] scratchBones = new Matrix4f[48];
-    private final Map<BoneKey, Integer> boneOffsetCache = new HashMap<>();
-
-    /** Cache key for evaluated skeletal bone matrix offsets. */
-    private record BoneKey(SpriteList spriteList, int animation, float animTicks) {
-    }
+    private final BoneOffsetCache boneOffsetCache = new BoneOffsetCache(512);
 
     /** Unique batch key identifying a shared sprite list, textures, and render states. */
     private record BatchKey(SpriteList spriteList, Texture texture,
@@ -121,9 +117,8 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             return -1;
         }
 
-        BoneKey key = new BoneKey(spriteList, animation, animTicks);
-        Integer cached = boneOffsetCache.get(key);
-        if (cached != null) {
+        int cached = boneOffsetCache.get(spriteList, animation, animTicks);
+        if (cached != -1) {
             return cached;
         }
 
@@ -135,7 +130,7 @@ public final class InstancedSpriteRenderer implements AutoCloseable {
             scratchBones[b].get(boneMatrixTexels * 4 + b * 16, boneMatrixBuffer);
         }
         boneMatrixTexels += boneCount * 4;
-        boneOffsetCache.put(key, boneBaseOffset);
+        boneOffsetCache.put(spriteList, animation, animTicks, boneBaseOffset);
         return boneBaseOffset;
     }
 
