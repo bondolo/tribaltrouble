@@ -243,14 +243,6 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         return outerOffset;
     }
 
-    public float getInnerCloudDensity() {
-        return 0f;
-    }
-
-    public float getOuterCloudDensity() {
-        return 0f;
-    }
-
     public Texture[] getClouds() {
         return clouds;
     }

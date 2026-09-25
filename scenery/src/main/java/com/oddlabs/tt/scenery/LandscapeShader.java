@@ -121,14 +121,11 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float waveHeight = getWaveHeight(worldPos) * fs_in.waveScale;
                         float u_seaLevel = u_fogParams.w;
 
-                        // Add a slow tide oscillation to the water height for the wash effect
-                        float tide = sin(u_waveTime * 0.25) * 0.15;
+                        // Add a slow tide oscillation to the water height for the ocean wash effect
+                        float tide = sin(u_waveTime * 0.25) * 0.15 * fs_in.waveScale;
                         float waterHeight = u_seaLevel + waveHeight + tide;
                         float depth = waterHeight - fs_in.height;
                         float wetness = clamp((depth + 0.10) / 0.30, 0.0, 1.0);
-
-                        // Calculate static depth (below sea level) for caustics and light attenuation
-                        float depthStatic = u_seaLevel - fs_in.height;
 
                         // Compute view-space normal from heightmap slope
                         float h_plus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(1, 0)).r;
@@ -136,7 +133,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float h_plus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, 1)).r;
                         float h_minus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, -1)).r;
 
-                        // Calculate normal for specular and caustics
+                        // Calculate normal for specular highlights
                         vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
 
                         // Sample detail map using planar coordinates (matching legacy)
@@ -177,31 +174,6 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         // and shadowcasting). Avoiding redundant runtime Half-Lambert/ambient modulation preserves
                         // the vibrant legacy color aesthetic and prevents faceted heightmap creases.
                         vec3 litColor = diffuseColor.rgb + specular * 1.1;
-
-                        // --- Underwater Caustics ---
-                        if (depth > 0.0) {
-                            // Project caustics by sampling overlapping waves at different frequencies
-                            float causticsTime = u_waveTime * 0.15;
-                            vec2 uv1 = worldPos * 0.4 + vec2(causticsTime * 0.1, causticsTime * 0.07);
-                            vec2 uv2 = worldPos * 0.3 - vec2(causticsTime * 0.08, causticsTime * 0.13);
-
-                            float h1 = getWaveHeight(uv1);
-                            float h2 = getWaveHeight(uv2);
-
-                            float c = 1.0 - abs(h1 - h2);
-                            float caustic = pow(max(0.0, c), 20.0) * 0.15;
-
-                            // Viewing angle dependency: caustics fade out when looking straight down (realistic refraction)
-                            float vdn = dot(viewDir, normal);
-                            float angleFade = smoothstep(0.1, 0.5, 1.0 - vdn);
-
-                            // Attenuate caustics with dynamic depth and surface roughness
-                            float depthFade = smoothstep(0.0, 0.1, depth) * clamp(1.0 - depthStatic / 4.0, 0.0, 1.0);
-
-                            // Near-white cyan highlights
-                            vec3 causticColor = vec3(0.95, 0.98, 1.0) * caustic * depthFade * angleFade * (1.0 - roughness * 0.5);
-                            litColor += causticColor;
-                        }
 
                         vec3 finalColor = applyFog(litColor, fs_in.fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, 1.0);

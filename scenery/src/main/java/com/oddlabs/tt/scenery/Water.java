@@ -27,8 +27,10 @@ import com.oddlabs.tt.simulation.landscape.LandscapeLeaf;
 import com.oddlabs.tt.simulation.model.Terrain;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL33;
 
 import java.nio.FloatBuffer;
@@ -43,20 +45,6 @@ import java.util.function.Supplier;
  * Water surface renderer for oceans and inland water.
  */
 public final class Water implements WaterUniformsProvider, AutoCloseable {
-    /** Depth scale (in meters) over which Native (Tropical) water alpha transitions. */
-    private static final float NATIVE_DEPTH_SCALE = 3.0f;
-    /** Minimum alpha (transparency) of Native water at the shoreline. */
-    private static final float NATIVE_MIN_ALPHA = 0.2f;
-    /** Maximum alpha (transparency) of Native water in deep ocean. */
-    private static final float NATIVE_MAX_ALPHA = 0.60f;
-
-    /** Depth scale (in meters) over which Viking (Northern) water alpha transitions. */
-    private static final float VIKING_DEPTH_SCALE = 6.0f;
-    /** Minimum alpha (transparency) of Viking water at the shoreline. */
-    private static final float VIKING_MIN_ALPHA = 0.35f;
-    /** Maximum alpha (transparency) of Viking water in deep ocean. */
-    private static final float VIKING_MAX_ALPHA = 0.60f;
-
     private static final int OCEAN_TEXTURE_SIZE = 512;
 
     public static final int WAVE_COUNT = 3;
@@ -103,12 +91,11 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
     private final PatchMesh patchMesh = new PatchMesh();
 
     private final BitSet oceanPatches;
+    private final Texture oceanMaskTexture;
 
     // Non-final to allow resizing
-    private FloatVBO oceanInstanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2 * Float.BYTES);
-    private FloatBuffer oceanInstanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
-    private FloatVBO inlandInstanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 2 * Float.BYTES);
-    private FloatBuffer inlandInstanceBuffer = BufferUtils.createFloatBuffer(1024 * 2);
+    private FloatVBO instanceVBO = new FloatVBO(GL15.GL_STREAM_DRAW, 1024 * 3);
+    private FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(1024 * 3);
 
     private final float[] scrollOffset0 = new float[2];
     private final float[] scrollOffset1 = new float[2];
@@ -172,57 +159,87 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
         setupWaterAttributes(sky.getWaterVertices());
         skyWaterVao.unbind();
 
-        int patchesPerWorld = heightmap.getPatchesPerWorld();
-        this.oceanPatches = new BitSet(patchesPerWorld * patchesPerWorld);
+        int gridUnits = heightmap.getGridUnitsPerWorld();
+        float seaLevel = heightmap.getSeaLevelMeters();
+        BitSet oceanGrid = new BitSet(gridUnits * gridUnits);
         Queue<int[]> queue = new ArrayDeque<>();
 
-        for (int x = 0; x < patchesPerWorld; x++) {
-            if (heightmap.isBelowSeaLevel(x, 0)) {
-                int index = x; // y is 0
-                oceanPatches.set(index);
+        for (int x = 0; x < gridUnits; x++) {
+            if (heightmap.getWrappedHeight(x, 0) < seaLevel) {
+                oceanGrid.set(x);
                 queue.add(new int[]{x, 0});
             }
-            if (heightmap.isBelowSeaLevel(x, patchesPerWorld - 1)) {
-                int index = (patchesPerWorld - 1) * patchesPerWorld + x;
-                oceanPatches.set(index);
-                queue.add(new int[]{x, patchesPerWorld - 1});
+            if (heightmap.getWrappedHeight(x, gridUnits - 1) < seaLevel) {
+                int index = (gridUnits - 1) * gridUnits + x;
+                oceanGrid.set(index);
+                queue.add(new int[]{x, gridUnits - 1});
             }
         }
-        for (int y = 1; y < patchesPerWorld - 1; y++) {
-            if (heightmap.isBelowSeaLevel(0, y)) {
-                int index = y * patchesPerWorld; // x is 0
-                oceanPatches.set(index);
+        for (int y = 1; y < gridUnits - 1; y++) {
+            if (heightmap.getWrappedHeight(0, y) < seaLevel) {
+                int index = y * gridUnits;
+                oceanGrid.set(index);
                 queue.add(new int[]{0, y});
             }
-            if (heightmap.isBelowSeaLevel(patchesPerWorld - 1, y)) {
-                int index = y * patchesPerWorld + (patchesPerWorld - 1);
-                oceanPatches.set(index);
-                queue.add(new int[]{patchesPerWorld - 1, y});
+            if (heightmap.getWrappedHeight(gridUnits - 1, y) < seaLevel) {
+                int index = y * gridUnits + (gridUnits - 1);
+                oceanGrid.set(index);
+                queue.add(new int[]{gridUnits - 1, y});
             }
         }
 
+        int[][] orthogonalNeighbors = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         while (!queue.isEmpty()) {
             int[] current = queue.poll();
             int currX = current[0];
             int currY = current[1];
 
-            for (int dx = -1; dx <= 1; dx++) {
-                for (int dy = -1; dy <= 1; dy++) {
-                    if (dx == 0 && dy == 0) {
-                        continue;
-                    }
-                    int nx = currX + dx;
-                    int ny = currY + dy;
-                    if (nx >= 0 && nx < patchesPerWorld && ny >= 0 && ny < patchesPerWorld) {
-                        int index = ny * patchesPerWorld + nx;
-                        if (!oceanPatches.get(index) && heightmap.isBelowSeaLevel(nx, ny)) {
-                            oceanPatches.set(index);
-                            queue.add(new int[]{nx, ny});
-                        }
+            for (int[] offset : orthogonalNeighbors) {
+                int nx = currX + offset[0];
+                int ny = currY + offset[1];
+                if (nx >= 0 && nx < gridUnits && ny >= 0 && ny < gridUnits) {
+                    int index = ny * gridUnits + nx;
+                    if (!oceanGrid.get(index) && heightmap.getWrappedHeight(nx, ny) < seaLevel) {
+                        oceanGrid.set(index);
+                        queue.add(new int[]{nx, ny});
                     }
                 }
             }
         }
+
+        int patchesPerWorld = heightmap.getPatchesPerWorld();
+        int unitsPerPatch = heightmap.getGridUnitsPerPatch();
+        this.oceanPatches = new BitSet(patchesPerWorld * patchesPerWorld);
+        for (int py = 0; py < patchesPerWorld; py++) {
+            for (int px = 0; px < patchesPerWorld; px++) {
+                if (heightmap.isBelowSeaLevel(px, py)) {
+                    boolean connectedToOcean = false;
+                    for (int y = 0; y <= unitsPerPatch; y++) {
+                        for (int x = 0; x <= unitsPerPatch; x++) {
+                            int gx = px * unitsPerPatch + x;
+                            int gy = py * unitsPerPatch + y;
+                            if (oceanGrid.get(gy * gridUnits + gx)) {
+                                connectedToOcean = true;
+                                break;
+                            }
+                        }
+                        if (connectedToOcean) break;
+                    }
+                    if (connectedToOcean) {
+                        oceanPatches.set(py * patchesPerWorld + px);
+                    }
+                }
+            }
+        }
+
+        float[] oceanData = new float[gridUnits * gridUnits];
+        for (int i = 0; i < oceanData.length; i++) {
+            if (oceanGrid.get(i)) {
+                oceanData[i] = 1.0f;
+            }
+        }
+        this.oceanMaskTexture = new Texture(oceanData, gridUnits, gridUnits, GL30.GL_R8,
+                GL11.GL_LINEAR, GL11.GL_LINEAR, GL12.GL_CLAMP_TO_EDGE);
     }
 
 
@@ -262,37 +279,23 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
             waterShader.setUniform(waterShader.locHeightMap, 2);
             waterShader.setUniform(waterShader.locWorldSize, (float) heightMap.getMetersPerWorld());
 
-            float depthScale = switch (terrain) {
-                case NATIVE -> NATIVE_DEPTH_SCALE;
-                case VIKING -> VIKING_DEPTH_SCALE;
-            };
-            float minAlpha = switch (terrain) {
-                case NATIVE -> NATIVE_MIN_ALPHA;
-                case VIKING -> VIKING_MIN_ALPHA;
-            };
-            float maxAlpha = switch (terrain) {
-                case NATIVE -> NATIVE_MAX_ALPHA;
-                case VIKING -> VIKING_MAX_ALPHA;
-            };
-
-            waterShader.setUniform(waterShader.locDepthScale, depthScale);
-            waterShader.setUniform(waterShader.locMinAlpha, minAlpha);
-            waterShader.setUniform(waterShader.locMaxAlpha, maxAlpha);
             waterShader.setUniformColor3(waterShader.locSkyColor, sky.getSkyColor());
 
-            // Upload cloud parameters and textures for fake sky reflection
+            // Upload cloud parameters and textures for sky reflection
             waterShader.setUniform(waterShader.locInnerOffset, sky.getInnerOffset()[0], sky.getInnerOffset()[1]);
             waterShader.setUniform(waterShader.locOuterOffset, sky.getOuterOffset()[0], sky.getOuterOffset()[1]);
-            waterShader.setUniform(waterShader.locInnerCloudDensity, sky.getInnerCloudDensity());
-            waterShader.setUniform(waterShader.locOuterCloudDensity, sky.getOuterCloudDensity());
 
             context.setTexture(3, sky.getClouds()[0]);
             waterShader.setUniform(waterShader.locCloudTexture0, 3);
             context.setTexture(4, sky.getClouds()[1]);
             waterShader.setUniform(waterShader.locCloudTexture1, 4);
 
+            context.setTexture(5, oceanMaskTexture);
+            waterShader.setUniform(waterShader.locOceanMask, 5);
+
             // Render Sky Water (Infinite Plane)
             waterShader.setUniform(waterShader.locWaterHeight, 0.0f);
+            GL20.glVertexAttrib3f(4, 0.0f, 0.0f, 1.0f);
             skyWaterVao.bind();
             sky.getWaterIndices().drawElements(GL11.GL_TRIANGLES, sky.getWaterIndices().capacity(), 0);
             skyWaterVao.unbind();
@@ -300,10 +303,8 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
             // Render Instanced Water Patches. u_waterHeight = seaLevel.
             if (!visiblePatches.isEmpty()) {
                 waterShader.setUniform(waterShader.locWaterHeight, heightMap.getSeaLevelMeters());
-                oceanInstanceBuffer.clear();
-                inlandInstanceBuffer.clear();
-                int oceanCount = 0;
-                int inlandCount = 0;
+                instanceBuffer.clear();
+                int count = 0;
                 float patchSize = heightMap.getMetersPerPatch();
                 int patchesPerWorld = heightMap.getPatchesPerWorld();
 
@@ -313,24 +314,13 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
                     if (heightMap.isBelowSeaLevel(px, py)) {
                         float worldX = px * patchSize;
                         float worldY = py * patchSize;
-                        if (oceanPatches.get(py * patchesPerWorld + px)) {
-                            oceanInstanceBuffer = addInstance(oceanInstanceBuffer, worldX, worldY, 1.0f);
-                            oceanCount++;
-                        } else {
-                            inlandInstanceBuffer = addInstance(inlandInstanceBuffer, worldX, worldY, 0.0f);
-                            inlandCount++;
-                        }
+                        instanceBuffer = addInstance(instanceBuffer, worldX, worldY, 0.0f);
+                        count++;
                     }
                 }
 
-                if (oceanCount > 0) {
-                    waterShader.setUniform(waterShader.locMinAlpha, minAlpha);
-                    oceanInstanceVBO = uploadAndDraw(context, oceanCount, oceanInstanceBuffer, oceanInstanceVBO);
-                }
-
-                if (inlandCount > 0) {
-                    waterShader.setUniform(waterShader.locMinAlpha, maxAlpha);
-                    inlandInstanceVBO = uploadAndDraw(context, inlandCount, inlandInstanceBuffer, inlandInstanceVBO);
+                if (count > 0) {
+                    instanceVBO = uploadAndDraw(context, count, instanceBuffer, instanceVBO);
                 }
             }
 
@@ -409,11 +399,11 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
             FloatVBO vbo) {
         buffer.flip();
 
-        int requiredBytes = count * 3 * Float.BYTES;
-        if (vbo.capacity() < requiredBytes) {
+        int requiredFloats = count * 3;
+        if (vbo.capacity() < requiredFloats) {
             vbo.close();
             //noinspection resource
-            vbo = new FloatVBO(GL15.GL_STREAM_DRAW, Math.max(vbo.capacity() * 2, requiredBytes));
+            vbo = new FloatVBO(GL15.GL_STREAM_DRAW, Math.max(vbo.capacity() * 2, requiredFloats));
         }
 
         vbo.bind();
@@ -434,7 +424,7 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
         GL20.glDisableVertexAttribArray(offsetLoc);
 
         patchMesh.unbind();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        context.bindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
         return vbo;
     }
@@ -541,10 +531,10 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
 
     @Override
     public void close() {
+        oceanMaskTexture.close();
         skyWaterVao.close();
         patchMesh.delete();
-        oceanInstanceVBO.close();
-        inlandInstanceVBO.close();
+        instanceVBO.close();
         waterShader.close();
     }
 }

@@ -13,25 +13,21 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
     private interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURE_0 = "u_texture0"; // Base water texture
-        String TEXTURE_1 = "u_texture1"; // Detail water texture
+        String TEXTURE_1 = "u_texture1"; // Detail Voronoi texture
         String ENABLE_DETAIL = "u_enableDetail";
         String CAMERA_POS = "u_cameraPos";
         String WATER_HEIGHT = "u_waterHeight";
 
         String HEIGHT_MAP = "u_HeightMap";
         String WORLD_SIZE = "u_WorldSize";
-        String DEPTH_SCALE = "u_depthScale";
-        String MIN_ALPHA = "u_minAlpha";
-        String MAX_ALPHA = "u_maxAlpha";
         String SKY_COLOR = "u_skyColor";
+        String OCEAN_MASK = "u_oceanMask";
 
-        // Fake sky reflection uniforms
+        // Sky and cloud reflection uniforms
         String CLOUD_TEXTURE_0 = "u_cloudTexture0";
         String CLOUD_TEXTURE_1 = "u_cloudTexture1";
         String INNER_OFFSET = "u_innerOffset";
         String OUTER_OFFSET = "u_outerOffset";
-        String INNER_CLOUD_DENSITY = "u_innerCloudDensity";
-        String OUTER_CLOUD_DENSITY = "u_outerCloudDensity";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -43,6 +39,7 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                     uniform mat4 u_modelViewMatrix;
                     uniform float u_waterHeight;
                     uniform float u_WorldSize;
+                    uniform sampler2D u_oceanMask;
 
                     out VS_OUT {
                         vec2 texCoord0;
@@ -51,6 +48,8 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         float fogDist;
                         vec3 worldPos;
                         vec3 normal;
+                        float waveScale;
+                        float waveDispZ;
                     } vs_out;
 
                     const float PI = 3.14159265358979;
@@ -86,8 +85,8 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         vec3 disp = vec3(0.0);
                         vec3 normal = vec3(0.0, 0.0, 1.0);
 
-                        float waveScale = (u_waterHeight == 0.0) ? 1.0 : in_InstanceOffset.z;
-                        if (u_waveAmpSteep[0].x > 0.0001 && waveScale > 0.0) {
+                        float waveScale = (in_InstanceOffset.z > 0.5) ? 1.0 : texture(u_oceanMask, (baseXY + 1.0) / u_WorldSize).r;
+                        if (u_waveAmpSteep[0].x > 0.0001 && waveScale > 0.001) {
                             addGerstnerWave(0, baseXY, waveScale, disp, normal);
                             addGerstnerWave(1, baseXY, waveScale, disp, normal);
                             addGerstnerWave(2, baseXY, waveScale, disp, normal);
@@ -96,12 +95,15 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         vec3 worldPos = vec3(baseXY + disp.xy, baseZ + disp.z);
                         vs_out.worldPos = worldPos;
                         vs_out.normal   = normalize(normal);
+                        vs_out.waveScale = waveScale;
+                        vs_out.waveDispZ = disp.z;
 
                         vec4 viewPosition = u_modelViewMatrix * vec4(worldPos, 1.0);
                         gl_Position = u_projectionMatrix * viewPosition;
 
-                        vs_out.texCoord0 = (worldPos.xy * u_waterRepeatRate) + u_scrollOffsets.xy;
-                        vs_out.texCoord1 = (worldPos.xy * u_waterDetailRepeatRate) + u_scrollOffsets.zw;
+                        float flowScale = waveScale;
+                        vs_out.texCoord0 = (worldPos.xy * u_waterRepeatRate) + u_scrollOffsets.xy * flowScale;
+                        vs_out.texCoord1 = (worldPos.xy * u_waterDetailRepeatRate) + u_scrollOffsets.zw * flowScale;
                         vs_out.texCoordHeightmap = (worldPos.xy + 1.0) / u_WorldSize;
 
                         vs_out.fogDist = length(viewPosition.xyz);
@@ -117,19 +119,14 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                     uniform sampler2D u_HeightMap;
                     uniform bool u_enableDetail;
                     uniform vec3 u_cameraPos;
-                    uniform float u_depthScale;
-                    uniform float u_minAlpha;
-                    uniform float u_maxAlpha;
                     uniform float u_WorldSize;
                     uniform vec3 u_skyColor;
 
-                    // Fake sky reflection uniforms
+                    // Sky reflection uniforms
                     uniform sampler2D u_cloudTexture0;
                     uniform sampler2D u_cloudTexture1;
                     uniform vec2 u_innerOffset;
                     uniform vec2 u_outerOffset;
-                    uniform float u_innerCloudDensity;
-                    uniform float u_outerCloudDensity;
 
                     in VS_OUT {
                         vec2 texCoord0;
@@ -138,6 +135,8 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                         float fogDist;
                         vec3 worldPos;
                         vec3 normal;
+                        float waveScale;
+                        float waveDispZ;
                     } fs_in;
 
                     layout(location = 0) out vec4 out_FragColor;
@@ -146,36 +145,58 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                     void main() {
                         vec4 baseColor = texture(u_texture0, fs_in.texCoord0);
 
-                        // Transparency: use authored base texture alpha (0.5 Native, 0.6 Viking)
-                        // with a gentle shoreline contact fade to prevent hard geometric clipping
+                        // Gentle shoreline contact fade to prevent hard geometric clipping against terrain
                         vec2 closestPoint = clamp(fs_in.texCoordHeightmap.xy, 0.0, 1.0);
                         float terrainHeight = texture(u_HeightMap, closestPoint).r;
                         float distInMeters = distance(fs_in.texCoordHeightmap.xy, closestPoint) * u_WorldSize;
                         float depth = fs_in.worldPos.z - terrainHeight + distInMeters;
-                        float edgeFade = smoothstep(0.0, 0.08, depth);
+                        float edgeFade = smoothstep(0.0, 0.05, depth);
                         float finalAlpha = baseColor.a * edgeFade;
 
-                        vec3 normal = normalize(fs_in.normal);
+                        vec4 detail = texture(u_texture1, fs_in.texCoord1);
+
+                        // Surface normal driven purely by physical Gerstner waves
+                        vec3 normal = fs_in.normal;
+
                         vec3 lightDir = normalize(u_lightDirection.xyz);
                         vec3 viewDir = normalize(u_cameraPos - fs_in.worldPos);
                         vec3 halfDir = normalize(lightDir + viewDir);
 
-                        float specAngle = max(dot(normal, halfDir), 0.0);
-                        float specular = pow(specAngle, 64.0);
-
-                        float F0 = 0.02;
-                        float F = F0 + (1.0 - F0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
-
-                        vec3 reflectionColor = u_skyColor;
-                        vec3 waterColor = baseColor.rgb * 0.7;
-
-                        vec3 finalRGB = mix(waterColor, reflectionColor, F * 0.6);
-                        finalRGB += vec3(specular) * 0.5;
-
+                        // Base water color in linear HDR space with subtle optical variation
+                        vec3 waterColor = pow(baseColor.rgb, vec3(2.2));
                         if (u_enableDetail) {
-                            vec4 detail = texture(u_texture1, fs_in.texCoord1);
-                            finalRGB = mix(finalRGB, detail.rgb, detail.a * 0.5);
+                            waterColor = mix(waterColor, waterColor * detail.rgb, detail.a * 0.15);
                         }
+
+                        // Dynamic reflection vector sampling sky gradient and cloud decks
+                        vec3 reflectDir = reflect(-viewDir, normal);
+                        float horizonFactor = clamp(reflectDir.z, 0.0, 1.0);
+                        vec3 reflectedSky = mix(u_fogColor.rgb, u_skyColor, horizonFactor);
+
+                        if (reflectDir.z > 0.0) {
+                            vec2 reflectUV0 = reflectDir.xy * 0.15 + u_innerOffset;
+                            vec2 reflectUV1 = reflectDir.xy * 0.15 + u_outerOffset;
+                            float cloud0 = texture(u_cloudTexture0, reflectUV0).r;
+                            float cloud1 = texture(u_cloudTexture1, reflectUV1).r;
+                            float cloudFactor = clamp(reflectDir.z * 1.5, 0.0, 1.0);
+                            float cloudAlpha = (cloud0 * 0.20 + cloud1 * 0.12) * cloudFactor;
+                            reflectedSky = mix(reflectedSky, vec3(1.0), cloudAlpha);
+                        }
+
+                        // Restrained Fresnel reflection (F0 = 0.02, capped at <= 0.25 to prevent milky washout)
+                        float F0 = 0.02;
+                        float F = F0 + (1.0 - F0) * pow(clamp(1.0 - max(dot(normal, viewDir), 0.0), 0.0, 1.0), 5.0);
+                        float reflectionFactor = min(F * 0.40, 0.25);
+                        vec3 finalRGB = mix(waterColor, reflectedSky, reflectionFactor);
+
+                        // Directional sun specular glints under 70 degree sun
+                        float specAngle = max(dot(normal, halfDir), 0.0);
+                        float specular = pow(specAngle, 64.0) * 0.40;
+                        finalRGB += vec3(specular);
+
+                        // Additive Shoreline Surf Foam (breaking gently at the water's edge)
+                        float shoreFoam = (1.0 - smoothstep(0.0, 0.20, depth)) * fs_in.waveScale;
+                        finalRGB += vec3(0.92, 0.96, 1.0) * (shoreFoam * 0.50);
 
                         vec3 finalColor = applyFog(finalRGB, fs_in.fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, finalAlpha);
@@ -194,16 +215,12 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
     final int locWaterHeight;
     final int locHeightMap;
     final int locWorldSize;
-    final int locDepthScale;
-    final int locMinAlpha;
-    final int locMaxAlpha;
     final int locSkyColor;
+    final int locOceanMask;
     final int locCloudTexture0;
     final int locCloudTexture1;
     final int locInnerOffset;
     final int locOuterOffset;
-    final int locInnerCloudDensity;
-    final int locOuterCloudDensity;
 
     WaterShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -216,15 +233,11 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
         locWaterHeight = getUniformLocation(Uniforms.WATER_HEIGHT);
         locHeightMap = getUniformLocation(Uniforms.HEIGHT_MAP);
         locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
-        locDepthScale = getUniformLocation(Uniforms.DEPTH_SCALE);
-        locMinAlpha = getUniformLocation(Uniforms.MIN_ALPHA);
-        locMaxAlpha = getUniformLocation(Uniforms.MAX_ALPHA);
         locSkyColor = getUniformLocation(Uniforms.SKY_COLOR);
+        locOceanMask = getUniformLocation(Uniforms.OCEAN_MASK);
         locCloudTexture0 = getUniformLocation(Uniforms.CLOUD_TEXTURE_0);
         locCloudTexture1 = getUniformLocation(Uniforms.CLOUD_TEXTURE_1);
         locInnerOffset = getUniformLocation(Uniforms.INNER_OFFSET);
         locOuterOffset = getUniformLocation(Uniforms.OUTER_OFFSET);
-        locInnerCloudDensity = getUniformLocation(Uniforms.INNER_CLOUD_DENSITY);
-        locOuterCloudDensity = getUniformLocation(Uniforms.OUTER_CLOUD_DENSITY);
     }
 }
