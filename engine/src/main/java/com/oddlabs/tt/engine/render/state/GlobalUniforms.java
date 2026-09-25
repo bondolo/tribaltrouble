@@ -12,6 +12,12 @@ import java.nio.ByteBuffer;
  * Packs global uniform data into a ByteBuffer according to std140 layout.
  */
 public final class GlobalUniforms {
+    private static final float LEGACY_AMBIENT_LINEAR = Color.toLinear(0.65f);
+
+    // Near-noon 70-degree solar elevation with 225-degree southwest azimuth for competitive 360-degree symmetry
+    private static final float LIGHT_DIR_X = -0.2418448f;
+    private static final float LIGHT_DIR_Y = -0.2418448f;
+    private static final float LIGHT_DIR_Z = 0.9396926f;
 
     public void update(CameraState camera, float time, float seaLevel, @Nullable Water water,
             ByteBuffer buffer) {
@@ -76,21 +82,22 @@ public final class GlobalUniforms {
         buffer.position(176); // Ensure position before lighting params
 
         // 176: vec4 u_lightDirection (16)
-        buffer.putFloat(-0.70710677f);
-        buffer.putFloat(0.0f);
-        buffer.putFloat(0.70710677f);
+        buffer.putFloat(LIGHT_DIR_X);
+        buffer.putFloat(LIGHT_DIR_Y);
+        buffer.putFloat(LIGHT_DIR_Z);
         buffer.putFloat(1.0f);
 
-        // 192: vec4 u_globalAmbient (16) - Linearized (0.4, 0.4, 0.45)
-        buffer.putFloat(0.132866f);
-        buffer.putFloat(0.132866f);
-        buffer.putFloat(0.170656f);
+        // 192: vec4 u_globalAmbient (16) - Linearized legacy ambient 0.65f
+        float ambientLinear = LEGACY_AMBIENT_LINEAR;
+        buffer.putFloat(ambientLinear);
+        buffer.putFloat(ambientLinear);
+        buffer.putFloat(ambientLinear);
         buffer.putFloat(1.0f);
 
-        // 208: vec4 u_groundAmbient (16) - Linearized (0.15, 0.12, 0.1)
-        buffer.putFloat(0.019472f);
-        buffer.putFloat(0.012726f);
-        buffer.putFloat(0.008518f);
+        // 208: vec4 u_groundAmbient (16) - Linearized legacy ambient 0.65f
+        buffer.putFloat(ambientLinear);
+        buffer.putFloat(ambientLinear);
+        buffer.putFloat(ambientLinear);
         buffer.putFloat(1.0f);
 
         // 224: vec4 u_sunColor (16)

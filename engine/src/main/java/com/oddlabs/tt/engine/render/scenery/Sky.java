@@ -25,6 +25,7 @@ import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.LandscapeEnvironment;
 import com.oddlabs.tt.simulation.model.Terrain;
 import com.oddlabs.util.Color;
+import org.jspecify.annotations.NonNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -35,10 +36,8 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -46,40 +45,57 @@ import java.util.stream.IntStream;
  * Sky dome, clouds, and background water scenery renderer.
  */
 public final class Sky implements SceneRenderer, AutoCloseable {
-    private static final float[] SKYDOME_SPEED_OUTER = {0.2f, 0f};
-    private static final float[] SKYDOME_SPEED_INNER = {0.4f, 0f};
+    private record WindSpeeds(float[] outer, float[] inner) {
+        private static WindSpeeds fromPolar(float outerAngleDeg, float outerSpeed, float innerAngleDeg, float innerSpeed) {
+            float outerRad = (float) Math.toRadians(outerAngleDeg);
+            float innerRad = (float) Math.toRadians(innerAngleDeg);
+            return new WindSpeeds(
+                    new float[]{(float) Math.cos(outerRad) * outerSpeed, (float) Math.sin(outerRad) * outerSpeed},
+                    new float[]{(float) Math.cos(innerRad) * innerSpeed, (float) Math.sin(innerRad) * innerSpeed}
+            );
+        }
+    }
+
+    private static final Map<Terrain, WindSpeeds> CLOUD_WINDS = Map.of(
+            Terrain.NATIVE, WindSpeeds.fromPolar(230.0f, 0.20f, 245.0f, 0.38f),
+            Terrain.VIKING, WindSpeeds.fromPolar(185.0f, 0.20f, 200.0f, 0.38f)
+    );
     private static final float SKYDOME_HEIGHT = 0f;
-    private static final int SKYDOME_GRADIENT_LENGTH = 20;
     private static final int SKYDOME_DEFAULT_COLOR = 8;
-    private static final int FLOATS_PER_VERTEX = 13;
+    private static final int FLOATS_PER_VERTEX = 11;
     private static final int CLOUD_TEXTURE_SIZE = 512;
     private static final int CLOUD_INNER = 0;
     private static final int CLOUD_OUTER = 1;
 
-    private static final Map<Terrain, Color.Standard> SKYDOME_INITCOLOR = new EnumMap<>(Map.of(
-            Terrain.NATIVE, new Color.Standard(0xFF_E5_F2_FF),
-            Terrain.VIKING, new Color.Standard(0xFF_FF_E5_A5)
-    ));
+    private static final Map<Terrain, float[]> SKYDOME_INITCOLOR = Map.of(
+            Terrain.NATIVE, new float[]{0.90f, 0.95f, 1.0f},
+            Terrain.VIKING, new float[]{1.50f, 0.90f, 0.65f}
+    );
 
-    private static final Map<Terrain, Color.Linear> SKYDOME_INTENSITY = new EnumMap<>(Map.of(
-            Terrain.NATIVE, (Color.Linear) Color.Linear.WHITE,
-            Terrain.VIKING, new Color.Linear(1.5f, 1f, 1f, 1f)
-    ));
+    private static final Map<Terrain, float[]> SKYDOME_GRADIENT = Map.of(
+            Terrain.NATIVE, new float[]{0.75f, 0.825f, 0.95f},
+            Terrain.VIKING, new float[]{0.60f, 0.60f, 0.85f}
+    );
 
-    private static final Map<Terrain, Color.Standard> SKYDOME_GRADIENT = new EnumMap<>(Map.of(
-            Terrain.NATIVE, new Color.Standard(0xFF_BF_D2_F2),
-            Terrain.VIKING, new Color.Standard(0xFF_99_99_D8)
-    ));
+    private static final Map<Terrain, Color.Linear> TEX_ENV_COLOR = Map.of(
+            Terrain.NATIVE, new Color.Linear(Color.toLinear(0.95f), Color.toLinear(0.975f), Color.toLinear(1.0f), 1.0f),
+            Terrain.VIKING, new Color.Linear(Color.toLinear(1.0f), Color.toLinear(0.95f), Color.toLinear(0.8f), 1.0f)
+    );
 
-    private static final Map<Terrain, Color.Linear> TEX_ENV_COLOR = new EnumMap<>(Map.of(
-            Terrain.NATIVE, new Color.Standard(0xFF_F2_F8_FF).linear(),
-            Terrain.VIKING, new Color.Standard(0xFF_FF_F2_CC).linear()
-    ));
-
-    public static final Map<Terrain, Color.Linear> SEA_BOTTOM_COLOR = new EnumMap<>(Map.of(
+    public static final Map<Terrain, Color.Linear> SEA_BOTTOM_COLOR = Map.of(
             Terrain.NATIVE, new Color.Standard(0xFF_73_40_99).linear(),
             Terrain.VIKING, Color.Linear.BLACK
-    ));
+    );
+
+    private static final Map<Terrain, Color.Linear> CLOUD_SHADOW = Map.of(
+            Terrain.NATIVE, new Color.Linear(0.92f, 0.96f, 1.0f, 0.08f),
+            Terrain.VIKING, new Color.Linear(0.68f, 0.72f, 0.84f, 0.18f)
+    );
+
+    private static final Map<Terrain, Float> HORIZON_CLOUD_FADE = Map.of(
+            Terrain.NATIVE, 0.09f,
+            Terrain.VIKING, 0.045f
+    );
 
     private static final float SKYDOME_OUTER_UTILING = 8f;
     private static final float SKYDOME_OUTER_VTILING = 8f;
@@ -92,6 +108,11 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
     private final Color.Linear skyColor;
     private final Color.Linear seaBottomColor;
+    private final Color.@NonNull Linear cloudShadow;
+    private final float horizonCloudFade;
+    private final float originX;
+    private final float originY;
+    private final float originZ;
     private final ShortVBO[] strip_indices;
     private final ShortVBO fan_indices;
     private final FloatVBO water_vertices;
@@ -114,36 +135,12 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     // Cloud animation state
     private final float[] innerOffset = new float[2];
     private final float[] outerOffset = new float[2];
-
-    // Inner layer state
-    private float innerDirection = 0f;
-    private float innerSpeed = SKYDOME_SPEED_INNER[0] * 0.01f;
-    private float targetInnerDirection = innerDirection;
-    private float targetInnerSpeed = innerSpeed;
-    private float innerTimeSinceChange = 0f;
-    private float innerChangeInterval = 20f;
-
-    // Outer layer state
-    private float outerDirection = 0f;
-    private float outerSpeed = SKYDOME_SPEED_OUTER[0] * 0.01f;
-    private float targetOuterDirection = outerDirection;
-    private float targetOuterSpeed = outerSpeed;
-    private float outerTimeSinceChange = 0f;
-    private float outerChangeInterval = 25f;
-
-    // Cloud density state
-    private float innerCloudDensity = 0f;
-    private float targetInnerCloudDensity = 0f;
-    private float outerCloudDensity = 0f;
-    private float targetOuterCloudDensity = 0f;
-    private float densityTimeSinceChange = 0f;
-    private float densityChangeInterval = 60f;
-
-    private float lastTime = 0f;
+    private final float[] speedOuter;
+    private final float[] speedInner;
 
     public Sky(HeightMap heightMap, Terrain terrain, Texture detail,
             Texture detailNormal) {
-        this(heightMap, terrain, (float) (heightMap.getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 20, 20,
+        this(heightMap, terrain, (float) (heightMap.getMetersPerWorld() * Math.sqrt(2) / 2), 6000f, 32, 32,
                 SKYDOME_OUTER_UTILING, SKYDOME_OUTER_VTILING, SKYDOME_INNER_UTILING, SKYDOME_INNER_VTILING, heightMap
                         .getMetersPerWorld() / 2f,
                 heightMap.getMetersPerWorld() / 2f, SKYDOME_HEIGHT, detail, detailNormal);
@@ -154,12 +151,20 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             float inner_utile, float inner_vtile, float origin_x, float origin_y, float origin_z,
             Texture detail, Texture detailNormal) {
         this.terrain = terrain;
+        WindSpeeds wind = CLOUD_WINDS.get(terrain);
+        this.speedOuter = wind.outer();
+        this.speedInner = wind.inner();
         this.detail = detail;
         this.detailNormal = detailNormal;
         this.subdiv_axis = subdiv_axis;
         this.subdiv_height = subdiv_height;
         this.skyColor = TEX_ENV_COLOR.get(terrain);
         this.seaBottomColor = SEA_BOTTOM_COLOR.get(terrain);
+        this.cloudShadow = CLOUD_SHADOW.get(terrain);
+        this.horizonCloudFade = HORIZON_CLOUD_FADE.get(terrain);
+        this.originX = origin_x;
+        this.originY = origin_y;
+        this.originZ = origin_z;
         this.clouds = Resources.findResource(new CloudTextures(terrain));
 
         // Create interleaved VBO for the sky
@@ -218,15 +223,13 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         skyVAO.bind();
         sky_vbo.bind();
         GL20.glEnableVertexAttribArray(0); // Position
-        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, stride, 0);
-        GL20.glEnableVertexAttribArray(1); // Normal
-        GL20.glVertexAttribPointer(1, 3, GL11.GL_FLOAT, false, stride, 3 * Float.BYTES);
-        GL20.glEnableVertexAttribArray(2); // TexCoord0
-        GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, stride, 6 * Float.BYTES);
-        GL20.glEnableVertexAttribArray(4); // TexCoord1
-        GL20.glVertexAttribPointer(4, 2, GL11.GL_FLOAT, false, stride, 8 * Float.BYTES);
-        GL20.glEnableVertexAttribArray(3); // Color
-        GL20.glVertexAttribPointer(3, 3, GL11.GL_FLOAT, false, stride, 10 * Float.BYTES);
+        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, stride, 0L);
+        GL20.glEnableVertexAttribArray(1); // TexCoord0
+        GL20.glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, stride, 3L * Float.BYTES);
+        GL20.glEnableVertexAttribArray(2); // TexCoord1
+        GL20.glVertexAttribPointer(2, 2, GL11.GL_FLOAT, false, stride, 5L * Float.BYTES);
+        GL20.glEnableVertexAttribArray(3); // Color (rgb) & Elevation (a)
+        GL20.glVertexAttribPointer(3, 4, GL11.GL_FLOAT, false, stride, 7L * Float.BYTES);
         skyVAO.unbind();
 
         this.seaBottomVAO = new VertexArray();
@@ -244,9 +247,9 @@ public final class Sky implements SceneRenderer, AutoCloseable {
 
             skyShader.setUniform(skyShader.locModelViewMatrix, modelView.current());
             skyShader.setUniform(skyShader.locSkyColor, skyColor);
-
-            skyShader.setUniform(skyShader.locFogFadeStart, 0.0f);
-            skyShader.setUniform(skyShader.locFogFadeEnd, 0.1f);
+            skyShader.setUniform(skyShader.locDomeCenter, originX, originY, originZ);
+            skyShader.setUniform(skyShader.locCloudShadow, cloudShadow);
+            skyShader.setUniform(skyShader.locHorizonCloudFade, horizonCloudFade);
 
             context.setTexture(0, clouds[CLOUD_INNER]);
             skyShader.setUniform(skyShader.locTexture0, 0);
@@ -254,12 +257,14 @@ public final class Sky implements SceneRenderer, AutoCloseable {
             context.setTexture(1, clouds[CLOUD_OUTER]);
             skyShader.setUniform(skyShader.locTexture1, 1);
 
-            updateAnimation(currentTime);
+            float speedScale = 0.01f;
+            outerOffset[0] = speedOuter[0] * currentTime * speedScale;
+            outerOffset[1] = speedOuter[1] * currentTime * speedScale;
+            innerOffset[0] = speedInner[0] * currentTime * speedScale;
+            innerOffset[1] = speedInner[1] * currentTime * speedScale;
 
-            skyShader.setUniform(skyShader.locInnerOffset, innerOffset[0], innerOffset[1]);
             skyShader.setUniform(skyShader.locOuterOffset, outerOffset[0], outerOffset[1]);
-            skyShader.setUniform(skyShader.locInnerCloudDensity, innerCloudDensity);
-            skyShader.setUniform(skyShader.locOuterCloudDensity, outerCloudDensity);
+            skyShader.setUniform(skyShader.locInnerOffset, innerOffset[0], innerOffset[1]);
 
             skyVAO.bind();
 
@@ -277,57 +282,9 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     @Override
     public void render(RenderContext context, CameraState state, MatrixStack modelView,
             MatrixStack projection) {
-        render(context, state, modelView, projection, lastTime);
+        render(context, state, modelView, projection, 0.0f);
     }
 
-    private void updateAnimation(float currentTime) {
-        float dt = currentTime - lastTime;
-        if (dt < 0 || dt > 1.0f) dt = 0.016f;
-        lastTime = currentTime;
-
-        var random = ThreadLocalRandom.current();
-        innerTimeSinceChange += dt;
-        if (innerTimeSinceChange > innerChangeInterval) {
-            innerTimeSinceChange = 0f;
-            innerChangeInterval = 30f + (float) random.nextGaussian() * 10f;
-            float dirChange = (float) random.nextGaussian() * 10f;
-            targetInnerDirection += (float) Math.toRadians(dirChange);
-            float speedChange = innerSpeed * (float) random.nextGaussian() * 0.1f;
-            targetInnerSpeed = Math.clamp(targetInnerSpeed + speedChange, 0.002f, 0.008f);
-        }
-        innerDirection += (targetInnerDirection - innerDirection) * dt * 0.2f;
-        innerSpeed += (targetInnerSpeed - innerSpeed) * dt * 0.2f;
-
-        innerOffset[0] += (float) Math.cos(innerDirection) * innerSpeed * dt;
-        innerOffset[1] += (float) Math.sin(innerDirection) * innerSpeed * dt;
-
-        outerTimeSinceChange += dt;
-        if (outerTimeSinceChange > outerChangeInterval) {
-            outerTimeSinceChange = 0f;
-            outerChangeInterval = 40f + (float) random.nextGaussian() * 15f;
-            float dirChange = (float) random.nextGaussian() * 8f;
-            targetOuterDirection += (float) Math.toRadians(dirChange);
-            float speedChange = outerSpeed * (float) random.nextGaussian() * 0.1f;
-            targetOuterSpeed = Math.clamp(targetOuterSpeed + speedChange, 0.001f, 0.004f);
-        }
-        outerDirection += (targetOuterDirection - outerDirection) * dt * 0.1f;
-        outerSpeed += (targetOuterSpeed - outerSpeed) * dt * 0.1f;
-
-        outerOffset[0] += (float) Math.cos(outerDirection) * outerSpeed * dt;
-        outerOffset[1] += (float) Math.sin(outerDirection) * outerSpeed * dt;
-
-        densityTimeSinceChange += dt;
-        if (densityTimeSinceChange > densityChangeInterval) {
-            densityTimeSinceChange = 0f;
-            densityChangeInterval = random.nextFloat(60f, 120f);
-            float innerChange = (float) random.nextGaussian() * 0.1f;
-            targetInnerCloudDensity = Math.clamp(innerChange, -0.2f, 0.2f);
-            float outerChange = (float) random.nextGaussian() * 0.1f;
-            targetOuterCloudDensity = Math.clamp(outerChange, -0.2f, 0.2f);
-        }
-        innerCloudDensity += (targetInnerCloudDensity - innerCloudDensity) * dt * 0.05f;
-        outerCloudDensity += (targetOuterCloudDensity - outerCloudDensity) * dt * 0.05f;
-    }
 
     public void renderSeaBottom(RenderContext context, CameraState state,
             MatrixStack modelView, MatrixStack projection) {
@@ -392,11 +349,11 @@ public final class Sky implements SceneRenderer, AutoCloseable {
     }
 
     public float getInnerCloudDensity() {
-        return innerCloudDensity;
+        return 0f;
     }
 
     public float getOuterCloudDensity() {
-        return outerCloudDensity;
+        return 0f;
     }
 
     public Texture[] getClouds() {
@@ -413,70 +370,69 @@ public final class Sky implements SceneRenderer, AutoCloseable {
         float a_angle_inc = (float) Math.PI * 2 / subdiv_axis;
         float offset_angle = a_angle_inc / 2f;
 
-        Color.Standard skydome_gradient_const = SKYDOME_GRADIENT.get(terrain);
-        Color.Linear skydome_default_linear = new Color.Standard(
-                (float) Math.pow(skydome_gradient_const.r(), SKYDOME_DEFAULT_COLOR),
-                (float) Math.pow(skydome_gradient_const.g(), SKYDOME_DEFAULT_COLOR),
-                (float) Math.pow(skydome_gradient_const.b(), SKYDOME_DEFAULT_COLOR),
-                1.0f
-        ).linear();
+        float[] skydome_gradient_const = SKYDOME_GRADIENT.get(terrain);
+        float[] skydome_init_color = SKYDOME_INITCOLOR.get(terrain);
 
-        Color.Linear[] skydome_gradient = new Color.Linear[SKYDOME_GRADIENT_LENGTH];
-        Color.Linear initialLinear = new Color.Linear(SKYDOME_INITCOLOR.get(terrain));
-        skydome_gradient[0] = initialLinear;
+        float[] skydome_default_color = new float[]{
+                (float) Math.pow(skydome_gradient_const[0], SKYDOME_DEFAULT_COLOR),
+                (float) Math.pow(skydome_gradient_const[1], SKYDOME_DEFAULT_COLOR),
+                (float) Math.pow(skydome_gradient_const[2], SKYDOME_DEFAULT_COLOR)
+        };
 
-        float alpha;
-        Color.Linear prevLinear = initialLinear;
-        Color.Linear skydome_gradient_const_linear = new Color.Linear(skydome_gradient_const);
-        Color.Linear skydome_intensity = SKYDOME_INTENSITY.get(terrain);
-        for (int i = 1; i < SKYDOME_GRADIENT_LENGTH; i++) {
-            alpha = (float) i / (SKYDOME_GRADIENT_LENGTH - 1);
+        float[][] skydome_gradient = new float[subdiv_height][3];
+        skydome_gradient[0] = skydome_init_color.clone();
 
-            // Interpolation and multiplication happen in linear space
-            Color.Linear currentLinear = new Color.Linear(
-                    alpha * skydome_default_linear.r() + (1f - alpha) * prevLinear.r() * skydome_gradient_const_linear
-                            .r(),
-                    alpha * skydome_default_linear.g() + (1f - alpha) * prevLinear.g() * skydome_gradient_const_linear
-                            .g(),
-                    alpha * skydome_default_linear.b() + (1f - alpha) * prevLinear.b() * skydome_gradient_const_linear
-                            .b(),
-                    1.0f);
-
-            skydome_gradient[i] = new Color.Linear(currentLinear).mul(skydome_intensity);
-            prevLinear = currentLinear;
+        for (int i = 1; i < subdiv_height; i++) {
+            float alpha = (float) i / (subdiv_height - 1);
+            skydome_gradient[i] = new float[]{
+                    alpha * skydome_default_color[0] + (1f - alpha) * skydome_gradient[i - 1][0] * skydome_gradient_const[0],
+                    alpha * skydome_default_color[1] + (1f - alpha) * skydome_gradient[i - 1][1] * skydome_gradient_const[1],
+                    alpha * skydome_default_color[2] + (1f - alpha) * skydome_gradient[i - 1][2] * skydome_gradient_const[2]
+            };
         }
 
-        skydome_gradient[0] = new Color.Linear(initialLinear).mul(skydome_intensity);
-        skydome_default_linear.mul(skydome_intensity);
+        // Convert the computed sRGB/display gradient colors to linear HDR scene colors
+        Color.Linear[] skydome_gradient_linear = new Color.Linear[subdiv_height];
+        for (int i = 0; i < subdiv_height; i++) {
+            skydome_gradient_linear[i] = new Color.Linear(
+                    Color.toLinear(skydome_gradient[i][0]),
+                    Color.toLinear(skydome_gradient[i][1]),
+                    Color.toLinear(skydome_gradient[i][2]),
+                    1.0f
+            );
+        }
+        Color.Linear skydome_default_linear = new Color.Linear(
+                Color.toLinear(skydome_default_color[0]),
+                Color.toLinear(skydome_default_color[1]),
+                Color.toLinear(skydome_default_color[2]),
+                1.0f
+        );
 
         for (int i = 0; i < subdiv_height - 1; i++) {
             z = (float) Math.sin(h_angle_inc * i) * radius;
             r = (float) Math.cos(h_angle_inc * i) * radius;
             height_coeff = Math.abs(z) < 250f ? dome_height / 250f : dome_height / z;
+            float elevation = (float) i / (subdiv_height - 1);
 
             for (int j = 0; j < subdiv_axis; j++) {
                 x = (float) Math.cos(START_ANGLE + a_angle_inc * j + offset_angle * i) * r;
                 y = (float) Math.sin(START_ANGLE + a_angle_inc * j + offset_angle * i) * r;
 
                 buffer.put(x + origin_x).put(y + origin_y).put(z + origin_z); // Position
-                float inv_len = 1.0f / (float) Math.sqrt(x * x + y * y + z * z);
-                buffer.put(x * inv_len).put(y * inv_len).put(z * inv_len); // Normal
                 buffer.put(x * height_coeff / (radius * outer_utile) + 0.5f).put(y * height_coeff / (radius
                         * outer_vtile) + 0.5f); // TexCoord0
                 buffer.put(x * height_coeff / (radius * inner_utile) + 0.5f).put(y * height_coeff / (radius
                         * inner_vtile) + 0.5f); // TexCoord1
-                Color.Linear colorVal = i < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[i] : skydome_default_linear;
-                buffer.put(colorVal.r()).put(colorVal.g()).put(colorVal.b()); // Color
+                Color.Linear colorVal = skydome_gradient_linear[i];
+                buffer.put(colorVal.r()).put(colorVal.g()).put(colorVal.b()).put(elevation); // Color (rgb) & Elevation (a)
             }
         }
         buffer.put(origin_x).put(origin_y).put(radius + origin_z); // Position
-        buffer.put(0).put(0).put(1); // Normal
         buffer.put(0.5f).put(0.5f); // TexCoord0
         buffer.put(0.5f).put(0.5f); // TexCoord1
-        Color.Linear colorVal = subdiv_height - 1 < SKYDOME_GRADIENT_LENGTH ? skydome_gradient[subdiv_height - 1]
-                : skydome_default_linear;
-        buffer.put(colorVal.r()).put(colorVal.g()).put(colorVal.b()); // Color
+        buffer.put(skydome_default_linear.r()).put(skydome_default_linear.g()).put(skydome_default_linear.b()).put(1.0f); // Color & Elevation
     }
+
 
     private ShortVBO[] makeSkyStripIndices() {
         ShortVBO[] strip_indices = new ShortVBO[subdiv_height - 2];
