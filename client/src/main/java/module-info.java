@@ -7,6 +7,7 @@ module com.oddlabs.tt.client {
     requires transitive com.oddlabs.tt.window;
     requires transitive com.oddlabs.tt.audio;
     requires transitive com.oddlabs.tt.engine;
+    requires transitive com.oddlabs.tt.scenery;
     requires com.oddlabs.tt.effects;
     requires com.oddlabs.tt.gui;
     requires static org.jspecify;

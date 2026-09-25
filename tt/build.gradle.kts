@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":audio"))
     implementation(project(":audio-openal"))
     implementation(project(":engine"))
+    implementation(project(":scenery"))
     implementation(project(":effects"))
     implementation(project(":gui"))
     implementation(project(":client"))

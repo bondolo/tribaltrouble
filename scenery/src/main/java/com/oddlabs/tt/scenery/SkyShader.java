@@ -1,9 +1,12 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.scenery;
+
+import com.oddlabs.tt.engine.render.shader.Shader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
 /**
  * Renders the sky dome with two scrolling cloud layers.
  */
-public final class SkyShader extends ShaderProgram {
+final class SkyShader extends ShaderProgram {
 
     private interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
@@ -145,4 +148,3 @@ public final class SkyShader extends ShaderProgram {
         locHorizonCloudFade = getUniformLocation(Uniforms.HORIZON_CLOUD_FADE);
     }
 }
-

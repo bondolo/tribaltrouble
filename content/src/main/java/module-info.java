@@ -8,6 +8,7 @@ module com.oddlabs.tt.content {
     requires com.oddlabs.tt.input;
     requires com.oddlabs.tt.audio;
     requires com.oddlabs.tt.engine;
+    requires com.oddlabs.tt.scenery;
     requires com.oddlabs.tt.gui;
     requires com.oddlabs.tt.client;
     requires static org.jspecify;

@@ -1,7 +1,6 @@
 package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.tt.engine.render.CameraState;
-import com.oddlabs.tt.engine.render.scenery.Water;
 import com.oddlabs.tt.engine.render.shader.FogShader;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
@@ -19,7 +18,7 @@ public final class GlobalUniforms {
     private static final float LIGHT_DIR_Y = -0.2418448f;
     private static final float LIGHT_DIR_Z = 0.9396926f;
 
-    public void update(CameraState camera, float time, float seaLevel, @Nullable Water water,
+    public void update(CameraState camera, float time, float seaLevel, @Nullable WaterUniformsProvider water,
             ByteBuffer buffer) {
         buffer.clear();
 

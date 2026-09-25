@@ -18,7 +18,6 @@ module com.oddlabs.tt.engine {
     exports com.oddlabs.tt.engine.image;
     exports com.oddlabs.tt.engine.procedural;
     exports com.oddlabs.tt.engine.render;
-    exports com.oddlabs.tt.engine.render.scenery;
     exports com.oddlabs.tt.engine.render.shader;
     exports com.oddlabs.tt.engine.render.state;
     exports com.oddlabs.tt.engine.resource;

@@ -1,10 +1,16 @@
-package com.oddlabs.tt.engine.render;
+package com.oddlabs.tt.scenery;
 
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
-import com.oddlabs.tt.engine.render.scenery.Sky;
-import com.oddlabs.tt.engine.render.scenery.Water;
-import com.oddlabs.tt.engine.render.shader.LandscapeShader;
+import com.oddlabs.tt.engine.render.BoundingMode;
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.DebugFlags;
+import com.oddlabs.tt.engine.render.HeightMapVisual;
+import com.oddlabs.tt.engine.render.MatrixStack;
+import com.oddlabs.tt.engine.render.PatchMesh;
+import com.oddlabs.tt.engine.render.RenderTools;
+import com.oddlabs.tt.engine.render.SceneRenderer;
+import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
@@ -131,7 +137,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             shader.setUniform(shader.locWorldSize, (float) world.getHeightMap().getMetersPerWorld());
             shader.setUniform(shader.locDetailScale, LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
 
-            Color.Linear stdColor = Sky.SEA_BOTTOM_COLOR.get(world.getTerrainType());
+            Color.Linear stdColor = SeaBottom.SEA_BOTTOM_COLOR.get(world.getTerrainType());
             shader.setUniformColor3(shader.locSeaBottomColor, stdColor);
 
             context.setTexture(0, diffuseMap);

@@ -3,7 +3,7 @@ package com.oddlabs.tt.engine.render.shader;
 /**
  * Common lighting model shader contracts and functions.
  */
-interface LitShader extends Shader {
+public interface LitShader extends Shader {
     String PERTURB_NORMAL_FUNC = """
             mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv) {
                 // get edge vectors of the pixel triangle

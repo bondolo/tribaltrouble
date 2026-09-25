@@ -1,4 +1,4 @@
-package com.oddlabs.tt.engine.render.scenery;
+package com.oddlabs.tt.scenery;
 
 import com.oddlabs.procedural.Channel;
 import com.oddlabs.procedural.Layer;
@@ -10,11 +10,11 @@ import com.oddlabs.tt.engine.render.HeightMapVisual;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.PatchMesh;
 import com.oddlabs.tt.engine.render.Texture;
-import com.oddlabs.tt.engine.render.shader.WaterShader;
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
 import com.oddlabs.tt.engine.render.state.RenderContext;
+import com.oddlabs.tt.engine.render.state.WaterUniformsProvider;
 import com.oddlabs.tt.engine.resource.Resources;
 import com.oddlabs.tt.engine.vbo.FloatVBO;
 import com.oddlabs.tt.engine.vbo.VertexArray;
@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 /**
  * Water surface renderer for oceans and inland water.
  */
-public final class Water implements AutoCloseable {
+public final class Water implements WaterUniformsProvider, AutoCloseable {
     /** Depth scale (in meters) over which Native (Tropical) water alpha transitions. */
     private static final float NATIVE_DEPTH_SCALE = 3.0f;
     /** Minimum alpha (transparency) of Native water at the shoreline. */
@@ -225,7 +225,7 @@ public final class Water implements AutoCloseable {
         }
     }
 
-    public WaterShader getShader() {
+    WaterShader getShader() {
         return waterShader;
     }
 
@@ -446,6 +446,7 @@ public final class Water implements AutoCloseable {
         return oceanPatches;
     }
 
+    @Override
     public void putGlobalUniforms(java.nio.ByteBuffer buffer, boolean enableWaves) {
         // u_waveDirLength[3] (each element is a vec4 aligned to 16 bytes)
         for (int i = 0; i < WAVE_COUNT; i++) {

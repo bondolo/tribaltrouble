@@ -18,12 +18,7 @@ dependencies {
     api(project(":common"))
     api(project(":simulation"))
     api(project(":procedural"))
-    api(project(":net"))
-    api(project(":window"))
-    api(project(":audio"))
     api(project(":engine"))
-    api(project(":scenery"))
-    implementation(project(":effects"))
-    implementation(project(":gui"))
+    api(libs.joml)
     compileOnlyApi(libs.jspecify)
 }

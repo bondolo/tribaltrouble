@@ -1,9 +1,14 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.scenery;
+
+import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.engine.render.shader.LitShader;
+import com.oddlabs.tt.engine.render.shader.Shader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
 /**
  * Renders water surfaces with dynamic wave animation, depth-based alpha blending, and sky reflections.
  */
-public final class WaterShader extends ShaderProgram implements FogShader, LitShader {
+final class WaterShader extends ShaderProgram implements FogShader, LitShader {
 
     private interface Uniforms {
         String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
@@ -81,22 +86,8 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         vec3 disp = vec3(0.0);
                         vec3 normal = vec3(0.0, 0.0, 1.0);
 
-                        // If amplitude is 0, waves are effectively disabled for that channel
-                        if (u_waveAmpSteep[0].x > 0.0001 && in_InstanceOffset.z > 0.0) {
-                            float distToEdgeX = min(baseXY.x, u_WorldSize - baseXY.x);
-                            float distToEdgeY = min(baseXY.y, u_WorldSize - baseXY.y);
-                            float distToEdge = min(distToEdgeX, distToEdgeY);
-
-                            float waveScale;
-                            if (u_waterHeight == 0.0) {
-                                float edgeFade = clamp(-distToEdge / 16.0, 0.0, 1.0);
-                                float distanceFade = clamp(in_Position.z / u_fogParams.w, 0.0, 1.0);
-                                waveScale = edgeFade * distanceFade;
-                            } else {
-                                waveScale = clamp(distToEdge / 16.0, 0.0, 1.0);
-                            }
-                            waveScale *= in_InstanceOffset.z;
-
+                        float waveScale = (u_waterHeight == 0.0) ? 1.0 : in_InstanceOffset.z;
+                        if (u_waveAmpSteep[0].x > 0.0001 && waveScale > 0.0) {
                             addGerstnerWave(0, baseXY, waveScale, disp, normal);
                             addGerstnerWave(1, baseXY, waveScale, disp, normal);
                             addGerstnerWave(2, baseXY, waveScale, disp, normal);
@@ -170,16 +161,23 @@ public final class WaterShader extends ShaderProgram implements FogShader, LitSh
                         vec3 halfDir = normalize(lightDir + viewDir);
 
                         float specAngle = max(dot(normal, halfDir), 0.0);
-                        float specular = pow(specAngle, 128.0) * 0.10;
+                        float specular = pow(specAngle, 64.0);
 
-                        vec3 waterColor = baseColor.rgb;
+                        float F0 = 0.02;
+                        float F = F0 + (1.0 - F0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
+
+                        vec3 reflectionColor = u_skyColor;
+                        vec3 waterColor = baseColor.rgb * 0.7;
+
+                        vec3 finalRGB = mix(waterColor, reflectionColor, F * 0.6);
+                        finalRGB += vec3(specular) * 0.5;
+
                         if (u_enableDetail) {
                             vec4 detail = texture(u_texture1, fs_in.texCoord1);
-                            waterColor = mix(waterColor, detail.rgb, detail.a);
+                            finalRGB = mix(finalRGB, detail.rgb, detail.a * 0.5);
                         }
 
-                        waterColor += vec3(specular);
-                        vec3 finalColor = applyFog(waterColor, fs_in.fogDist, gl_FragCoord.xy);
+                        vec3 finalColor = applyFog(finalRGB, fs_in.fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, finalAlpha);
 
                         // Write water marker to mask buffer (alpha = 0.1)

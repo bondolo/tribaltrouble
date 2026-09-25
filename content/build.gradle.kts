@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":input"))
     implementation(project(":audio"))
     implementation(project(":engine"))
+    implementation(project(":scenery"))
     implementation(project(":gui"))
     implementation(project(":client"))
     compileOnlyApi(libs.jspecify)

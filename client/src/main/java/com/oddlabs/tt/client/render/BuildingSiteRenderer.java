@@ -3,6 +3,7 @@ package com.oddlabs.tt.client.render;
 import com.oddlabs.tt.engine.render.*;
 import com.oddlabs.tt.engine.render.state.RenderContext;
 import com.oddlabs.tt.engine.image.GLIntImage;
+import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.util.Color;
 import org.lwjgl.opengl.GL11;

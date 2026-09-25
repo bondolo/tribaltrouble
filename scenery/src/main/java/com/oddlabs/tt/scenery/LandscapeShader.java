@@ -1,9 +1,13 @@
-package com.oddlabs.tt.engine.render.shader;
+package com.oddlabs.tt.scenery;
+
+import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.engine.render.shader.LitShader;
+import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 
 /**
  * Renders the dynamic 3D landscape with terrain texturing, normal mapping, and lighting.
  */
-public final class LandscapeShader extends ShaderProgram implements FogShader, LitShader {
+final class LandscapeShader extends ShaderProgram implements FogShader, LitShader {
 
     private interface Uniforms {
         String HEIGHT_MAP = "u_HeightMap";
