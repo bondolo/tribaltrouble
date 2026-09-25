@@ -11,6 +11,10 @@ import com.oddlabs.tt.engine.util.DebugRender;
  */
 public final class RenderTools {
 
+    public static final int ALL_PLANES_MASK = 0x3F;
+    public static final int FRUSTUM_OUTSIDE = -1;
+    public static final int FRUSTUM_INSIDE = 0;
+
     public enum FrustumIntersection {
         ALL_OUTSIDE,
         INTERSECTING,
@@ -35,37 +39,60 @@ public final class RenderTools {
         stack.translate(x, y, z).rotate(angle, 0f, 0f, 1f);
     }
 
-    public static FrustumIntersection inFrustum(BoundingBox box, float[][] frustum) {
-        boolean all_corners_in_all_planes = true;
+    /**
+     * Tests a bounding box against a subset of frustum planes specified by a bitmask.
+     *
+     * @param box the bounding box to test
+     * @param frustum 6-plane frustum array [6][4]
+     * @param planeMask bitmask of active planes to test (bits 0 to 5)
+     * @return {@link #FRUSTUM_OUTSIDE} (-1) if box is completely outside any tested plane;
+     *         {@link #FRUSTUM_INSIDE} (0) if box is completely inside all tested planes;
+     *         otherwise a non-zero bitmask containing only the planes that clip this box.
+     */
+    public static int testFrustum(BoundingBox box, float[][] frustum, int planeMask) {
+        if (planeMask == FRUSTUM_INSIDE) {
+            return FRUSTUM_INSIDE;
+        }
+        int nextMask = 0;
+        int activePlanes = planeMask;
+        while (activePlanes != 0) {
+            int f = Integer.numberOfTrailingZeros(activePlanes);
+            int planeBit = 1 << f;
+            activePlanes &= ~planeBit;
 
-        for (int f = 0; f < 6; f++) {
-            float planeA = frustum[f][0];
-            float planeB = frustum[f][1];
-            float planeC = frustum[f][2];
-            float planeD = frustum[f][3];
+            float[] plane = frustum[f];
+            float planeA = plane[0];
+            float planeB = plane[1];
+            float planeC = plane[2];
+            float planeD = plane[3];
 
-            // P-vertex: corner with the maximum signed distance along the plane normal
-            float px = planeA >= 0 ? box.bmax_x : box.bmin_x;
-            float py = planeB >= 0 ? box.bmax_y : box.bmin_y;
-            float pz = planeC >= 0 ? box.bmax_z : box.bmin_z;
+            // P-vertex: corner with maximum signed distance along plane normal
+            float px = planeA >= 0f ? box.bmax_x : box.bmin_x;
+            float py = planeB >= 0f ? box.bmax_y : box.bmin_y;
+            float pz = planeC >= 0f ? box.bmax_z : box.bmin_z;
 
-            if (planeA * px + planeB * py + planeC * pz + planeD <= 0) {
-                return FrustumIntersection.ALL_OUTSIDE;
+            if (planeA * px + planeB * py + planeC * pz + planeD <= 0f) {
+                return FRUSTUM_OUTSIDE;
             }
 
-            // N-vertex: corner with the minimum signed distance along the plane normal
-            if (all_corners_in_all_planes) {
-                float nx = planeA >= 0 ? box.bmin_x : box.bmax_x;
-                float ny = planeB >= 0 ? box.bmin_y : box.bmax_y;
-                float nz = planeC >= 0 ? box.bmin_z : box.bmax_z;
+            // N-vertex: corner with minimum signed distance along plane normal
+            float nx = planeA >= 0f ? box.bmin_x : box.bmax_x;
+            float ny = planeB >= 0f ? box.bmin_y : box.bmax_y;
+            float nz = planeC >= 0f ? box.bmin_z : box.bmax_z;
 
-                if (planeA * nx + planeB * ny + planeC * nz + planeD <= 0) {
-                    all_corners_in_all_planes = false;
-                }
+            if (planeA * nx + planeB * ny + planeC * nz + planeD <= 0f) {
+                nextMask |= planeBit;
             }
         }
+        return nextMask;
+    }
 
-        return all_corners_in_all_planes ? FrustumIntersection.ALL_INSIDE : FrustumIntersection.INTERSECTING;
+    public static FrustumIntersection inFrustum(BoundingBox box, float[][] frustum) {
+        int mask = testFrustum(box, frustum, ALL_PLANES_MASK);
+        if (mask == FRUSTUM_OUTSIDE) {
+            return FrustumIntersection.ALL_OUTSIDE;
+        }
+        return mask == FRUSTUM_INSIDE ? FrustumIntersection.ALL_INSIDE : FrustumIntersection.INTERSECTING;
     }
 
     public static float getEyeDistanceSquared(BoundingBox box, float camera_x, float camera_y,

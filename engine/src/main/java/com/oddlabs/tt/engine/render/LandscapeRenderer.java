@@ -92,26 +92,29 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
 
     private void doPrepareAll(CameraState camera, final boolean visible_override, Collection<
             LandscapeLeaf> result) {
-        traverse(world.getPatchRoot(), camera, visible_override, result);
+        traverse(world.getPatchRoot(), camera,
+                visible_override ? RenderTools.FRUSTUM_INSIDE : RenderTools.ALL_PLANES_MASK, result);
     }
 
-    private void traverse(AbstractPatchGroup node, CameraState camera, boolean visible_override,
+    private void traverse(AbstractPatchGroup node, CameraState camera, int planeMask,
             Collection<LandscapeLeaf> result) {
         switch (node) {
             case PatchGroup group -> {
-                RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
-                if (visible_override || (frustum_state = RenderTools.inFrustum(group, camera.getFrustum()))
-                        != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-                    boolean next_visible_override = visible_override || frustum_state
-                            == RenderTools.FrustumIntersection.ALL_INSIDE;
-                    for (AbstractPatchGroup child : group.children()) {
-                        traverse(child, camera, next_visible_override, result);
+                int nextPlaneMask = planeMask;
+                if (planeMask != RenderTools.FRUSTUM_INSIDE) {
+                    nextPlaneMask = RenderTools.testFrustum(group, camera.getFrustum(), planeMask);
+                    if (nextPlaneMask == RenderTools.FRUSTUM_OUTSIDE) {
+                        return;
                     }
+                }
+                for (AbstractPatchGroup child : group.children()) {
+                    traverse(child, camera, nextPlaneMask, result);
                 }
             }
             case LandscapeLeaf leaf -> {
-                if (visible_override || RenderTools.inFrustum(leaf, camera.getFrustum())
-                        != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
+                if (planeMask == RenderTools.FRUSTUM_INSIDE
+                        || RenderTools.testFrustum(leaf, camera.getFrustum(), planeMask)
+                                != RenderTools.FRUSTUM_OUTSIDE) {
                     result.add(leaf);
                 }
             }

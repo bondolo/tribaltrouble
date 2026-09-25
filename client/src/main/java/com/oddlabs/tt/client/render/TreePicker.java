@@ -150,39 +150,42 @@ class TreePicker {
     }
 
     public final void visit(AbstractTreeGroup node) {
-        visit(node, camera.inNoDetailMode());
+        visit(node, camera.inNoDetailMode() ? RenderTools.FRUSTUM_INSIDE : RenderTools.ALL_PLANES_MASK);
     }
 
-    private void visit(AbstractTreeGroup node, boolean visible_override) {
-        RenderTools.FrustumIntersection frustum_state = RenderTools.FrustumIntersection.ALL_OUTSIDE;
-        if (visible_override || (frustum_state = RenderTools.inFrustum(node, camera.getFrustum()))
-                != RenderTools.FrustumIntersection.ALL_OUTSIDE) {
-            boolean next_visible_override = visible_override
-                    || frustum_state == RenderTools.FrustumIntersection.ALL_INSIDE;
-
-            switch (node) {
-                case TreeGroup group -> {
-                    for (AbstractTreeGroup child : group.children()) {
-                        visit(child, next_visible_override);
-                    }
-                }
-                case TreeLeaf leaf -> {
-                    for (TreeSupply tree : leaf.getTrees()) {
-                        visitTree(tree, next_visible_override);
-                    }
-                }
-                case TreeSupply tree -> visitTree(tree, next_visible_override);
+    private void visit(AbstractTreeGroup node, int planeMask) {
+        int nextPlaneMask = planeMask;
+        if (planeMask != RenderTools.FRUSTUM_INSIDE) {
+            nextPlaneMask = RenderTools.testFrustum(node, camera.getFrustum(), planeMask);
+            if (nextPlaneMask == RenderTools.FRUSTUM_OUTSIDE) {
+                return;
             }
+        }
+
+        switch (node) {
+            case TreeGroup group -> {
+                for (AbstractTreeGroup child : group.children()) {
+                    visit(child, nextPlaneMask);
+                }
+            }
+            case TreeLeaf leaf -> {
+                for (TreeSupply tree : leaf.getTrees()) {
+                    visitTree(tree, nextPlaneMask);
+                }
+            }
+            case TreeSupply tree -> visitTree(tree, nextPlaneMask);
         }
     }
 
-    private boolean pickingInFrustum(TreeSupply tree_supply, float[][] frustum) {
+    private boolean pickingInFrustum(TreeSupply tree_supply, float[][] frustum, int planeMask) {
         float heightScale = trees.get(tree_supply.getTreeType()).heightScale();
-        picking_selection_box.setBounds(-SELECTION_RADIUS + tree_supply.getPositionX(), SELECTION_RADIUS + tree_supply
-                .getPositionX(), -SELECTION_RADIUS + tree_supply.getPositionY(), SELECTION_RADIUS + tree_supply
-                        .getPositionY(), tree_supply.bmin_z, tree_supply.bmin_z + (tree_supply.bmax_z
-                                - tree_supply.bmin_z) * heightScale);
-        return RenderTools.inFrustum(picking_selection_box, frustum) != RenderTools.FrustumIntersection.ALL_OUTSIDE;
+        picking_selection_box.setBounds(-SELECTION_RADIUS + tree_supply.getPositionX(),
+                SELECTION_RADIUS + tree_supply.getPositionX(),
+                -SELECTION_RADIUS + tree_supply.getPositionY(),
+                SELECTION_RADIUS + tree_supply.getPositionY(),
+                tree_supply.bmin_z,
+                tree_supply.bmin_z + (tree_supply.bmax_z - tree_supply.bmin_z) * heightScale);
+        return RenderTools.testFrustum(picking_selection_box, frustum, planeMask) != RenderTools.FRUSTUM_OUTSIDE;
     }
 
     private void addToRenderList(TreeSupply tree, CameraState camera) {
@@ -198,16 +201,19 @@ class TreePicker {
         return render_state;
     }
 
-    private void visitTree(TreeSupply tree_supply, boolean visible_override) {
+    private void visitTree(TreeSupply tree_supply, int planeMask) {
         if (tree_supply.isEmpty() && !isFalling(tree_supply))
             return;
 
         boolean in_view;
-        if (isPicking())
-            in_view = !tree_supply.isDead() && (visible_override || pickingInFrustum(tree_supply, camera.getFrustum()));
-        else
-            in_view = visible_override || RenderTools.inFrustum(tree_supply, camera.getFrustum())
-                    != RenderTools.FrustumIntersection.ALL_OUTSIDE;
+        if (planeMask == RenderTools.FRUSTUM_INSIDE) {
+            in_view = !isPicking() || !tree_supply.isDead();
+        } else if (isPicking()) {
+            in_view = !tree_supply.isDead() && pickingInFrustum(tree_supply, camera.getFrustum(), planeMask);
+        } else {
+            in_view = RenderTools.testFrustum(tree_supply, camera.getFrustum(), planeMask)
+                    != RenderTools.FRUSTUM_OUTSIDE;
+        }
         if (in_view) {
             addToRenderList(tree_supply, camera);
         }
