@@ -127,7 +127,16 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float depth = waterHeight - fs_in.height;
                         float wetness = clamp((depth + 0.10) / 0.30, 0.0, 1.0);
 
-                        // Compute view-space normal from heightmap slope
+                        // Seamless transition to SeaBottom at the world perimeter
+                        float distToEdgeX = min(fs_in.texCoordColormap.x, 1.0 - fs_in.texCoordColormap.x);
+                        float distToEdgeY = min(fs_in.texCoordColormap.y, 1.0 - fs_in.texCoordColormap.y);
+                        float distToEdge = min(distToEdgeX, distToEdgeY);
+                        float edgeBlend = smoothstep(0.0, 0.04, distToEdge);
+
+                        // Blend colormap diffuse to linear sea bottom color towards the world border
+                        diffuseColor.rgb = mix(u_SeaBottomColor, diffuseColor.rgb, edgeBlend);
+
+                        // Compute view-space normal from heightmap slope, flattening towards the boundary
                         float h_plus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(1, 0)).r;
                         float h_minus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(-1, 0)).r;
                         float h_plus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, 1)).r;
@@ -135,6 +144,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
 
                         // Calculate normal for specular highlights
                         vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
+                        worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
 
                         // Sample detail map using planar coordinates (matching legacy)
                         detailColor = texture(u_DetailMap, fs_in.texCoord1);
@@ -168,12 +178,13 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         specIntensity = mix(specIntensity, specIntensity * 2.0, fresnel * (1.0 - roughness));
 
                         float spec = pow(max(dot(normal, halfDir), 0.0), specExponent);
-                        vec3 specular = specIntensity * spec * vec3(1.0);
+                        vec3 specular = specIntensity * spec * vec3(1.0) * edgeBlend;
 
                         // Terrain lighting is fully baked into the colormap texture (BlendLighting sun highlights
                         // and shadowcasting). Avoiding redundant runtime Half-Lambert/ambient modulation preserves
                         // the vibrant legacy color aesthetic and prevents faceted heightmap creases.
-                        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.55, wetness);
+                        // Submerged wetness darkening transitions off at the world edge to match SeaBottom luminance.
+                        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.55, wetness * edgeBlend);
 
                         // --- Dynamic Shoreline "Wet Line" (Wash/Foam) ---
                         // Brighten the leading edge of the water to simulate foam and bubbles
@@ -181,6 +192,24 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb + vec3(0.15, 0.2, 0.25), wash * 0.6 * fs_in.waveScale);
 
                         vec3 litColor = diffuseColor.rgb + specular * 1.1;
+
+                        // --- Underwater Caustics ---
+                        float depthStatic = u_seaLevel - fs_in.height;
+                        if (depth > 0.0 && depthStatic > 0.0 && fs_in.waveScale > 0.01) {
+                            float causticsTime = u_waveTime * 0.05;
+                            vec2 uv1 = worldPos * 0.15 + vec2(causticsTime * 0.08, causticsTime * 0.05);
+                            vec2 uv2 = worldPos * 0.12 - vec2(causticsTime * 0.06, causticsTime * 0.10);
+
+                            float h1 = getWaveHeight(uv1);
+                            float h2 = getWaveHeight(uv2);
+
+                            float c = 1.0 - abs(h1 - h2);
+                            float caustic = pow(max(0.0, c), 16.0);
+
+                            float depthFade = smoothstep(0.0, 0.15, depth) * clamp(1.0 - depthStatic / 3.5, 0.0, 1.0);
+                            float causticFactor = caustic * depthFade * (1.0 - roughness * 0.4) * fs_in.waveScale;
+                            litColor *= (1.0 + causticFactor * 0.35);
+                        }
 
                         vec3 finalColor = applyFog(litColor, fs_in.fogDist, gl_FragCoord.xy);
                         out_FragColor = vec4(finalColor, 1.0);
