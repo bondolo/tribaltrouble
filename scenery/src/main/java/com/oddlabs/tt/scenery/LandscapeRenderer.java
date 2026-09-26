@@ -133,6 +133,7 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             // Set VTF Uniforms
             shader.setUniform(shader.locWorldSize, (float) world.getHeightMap().getMetersPerWorld());
             shader.setUniform(shader.locDetailScale, LandscapeConfig.LANDSCAPE_DETAIL_REPEAT_RATE);
+            shader.setUniform(shader.locDetailAlphaScale, state.inNoDetailMode() ? 0.0f : 1.0f);
 
             Color.Linear stdColor = SeaBottom.SEA_BOTTOM_COLOR.get(world.getTerrainType());
             shader.setUniformColor3(shader.locSeaBottomColor, stdColor);

@@ -19,12 +19,12 @@ import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.tt.procedural.landscape.StructureBlend;
 import com.oddlabs.tt.simulation.landscape.HeightMap;
 import com.oddlabs.tt.simulation.landscape.IslandConfig;
+import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
@@ -66,6 +66,7 @@ public final class LandscapeBaker {
                     uniform int u_Mode; // 0 = Blend, 1 = Light, 2 = Occlusion
                     uniform float u_TextureScale;
                     uniform float u_WorldSize;
+                    uniform float u_AlphaPower;
                     uniform vec3 u_Color;
 
                     in vec2 v_texCoord;
@@ -77,27 +78,22 @@ public final class LandscapeBaker {
                         vec4 baseDiff = texture(u_BaseDiffuse, v_texCoord);
                         vec4 baseNorm = texture(u_BaseNormal, v_texCoord);
                         float alpha = texture(u_AlphaMap, v_texCoord).r;
+                        if (alpha > 0.0 && u_AlphaPower != 1.0) {
+                            alpha = pow(alpha, u_AlphaPower);
+                        }
 
                         if (u_Mode == 0) { // Structure Blend
                             vec2 coord = v_texCoord * u_TextureScale;
                             vec4 layerDiff = texture(u_LayerDiffuse, coord);
                             vec4 layerNorm = texture(u_LayerNormal, coord);
 
-                            // IMPORTANT: To match legacy visual look, we must blend in sRGB space.
-                            // Samples are already de-gammaed by hardware to Linear.
-                            vec3 srgbBase = pow(baseDiff.rgb, vec3(1.0 / 2.2));
-                            vec3 srgbLayer = pow(layerDiff.rgb, vec3(1.0 / 2.2));
-                            vec3 srgbMixed = mix(srgbBase, srgbLayer, alpha);
-
-                            // Convert back to linear for the HDR output
-                            out_Diffuse = vec4(pow(srgbMixed, vec3(2.2)), mix(baseDiff.a, layerDiff.a, alpha));
+                            out_Diffuse = mix(baseDiff, layerDiff, alpha);
                             out_Normal = mix(baseNorm, layerNorm, alpha);
                         } else if (u_Mode == 1) { // Lighting Blend
-                            out_Diffuse = baseDiff + vec4(u_Color * alpha, 0.0);
+                            out_Diffuse = vec4(baseDiff.rgb * (vec3(1.0) + u_Color * alpha), baseDiff.a);
                             out_Normal = baseNorm;
                         } else { // Occlusion Blend (u_Mode == 2)
-                            vec3 occluded = baseDiff.rgb * mix(vec3(1.0), u_Color, alpha);
-                            out_Diffuse = vec4(occluded, baseDiff.a);
+                            out_Diffuse = vec4(baseDiff.rgb * mix(vec3(1.0), u_Color, alpha), baseDiff.a);
                             out_Normal = baseNorm;
                         }
                     }
@@ -195,13 +191,12 @@ public final class LandscapeBaker {
     }
 
     private static Texture createAlphaMap(GLByteImage alpha_image) {
-        GLImage[] mipmaps = alpha_image.buildMipMaps(0, 1.0f, true, false);
-        return new Texture(mipmaps, GL30.GL_R8, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, GL11.GL_REPEAT,
-                GL11.GL_REPEAT);
+        return new Texture(new GLByteImage[]{alpha_image}, GL30.GL_R8, GL11.GL_LINEAR, GL11.GL_LINEAR,
+                GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
     private static Texture createStructureMap(GLIntImage structure_image) {
-        return new Texture(new GLIntImage[]{structure_image}, GL21.GL_SRGB8, GL11.GL_LINEAR, GL11.GL_LINEAR,
+        return new Texture(new GLIntImage[]{structure_image}, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
                 GL11.GL_REPEAT, GL11.GL_REPEAT);
     }
 
@@ -217,7 +212,7 @@ public final class LandscapeBaker {
         List<Texture> tempTextures = new ArrayList<>();
 
         for (int i = 0; i < 2; i++) {
-            diffuse[i] = new Texture(colormapSize, colormapSize, GL21.GL_SRGB8_ALPHA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
+            diffuse[i] = new Texture(colormapSize, colormapSize, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
                     GL11.GL_REPEAT);
             checkGLError("After diffuse texture " + i);
             normal[i] = new Texture(colormapSize, colormapSize, GL11.GL_RGBA8, GL11.GL_LINEAR, GL11.GL_LINEAR,
@@ -240,9 +235,6 @@ public final class LandscapeBaker {
 
                 try (var _ = shader.use()) {
                     checkGLError("After shader use");
-                    // Enable hardware sRGB support for diffuse attachment
-                    boolean wasSrgb = GL11.glIsEnabled(GL30.GL_FRAMEBUFFER_SRGB);
-                    GL11.glEnable(GL30.GL_FRAMEBUFFER_SRGB);
 
                     shader.setUniform("u_BaseDiffuse", 0);
                     shader.setUniform("u_LayerDiffuse", 1);
@@ -256,7 +248,20 @@ public final class LandscapeBaker {
                     IntBuffer drawBuffers = stack.mallocInt(2);
                     drawBuffers.put(GL30.GL_COLOR_ATTACHMENT0).put(GL30.GL_COLOR_ATTACHMENT1).flip();
 
-                    boolean needsClear = true;
+                    // Pre-clear both ping-pong pairs (diffuse to transparent, normal to neutral 0.5, 0.5, 1.0)
+                    GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo.getHandle());
+                    GL11.glViewport(0, 0, colormapSize, colormapSize);
+                    float[] normalClear = {0.5f, 0.5f, 1.0f, 0.0f};
+                    for (int i = 0; i < 2; i++) {
+                        fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT0, diffuse[i]);
+                        fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT1, normal[i]);
+                        GL30.glDrawBuffers(drawBuffers);
+                        fbo.checkStatus();
+                        GL11.glClearColor(0, 0, 0, 0);
+                        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+                        GL30.glClearBufferfv(GL30.GL_COLOR, 1, normalClear);
+                    }
+
                     for (BlendInfo info : blendInfos) {
                         int src = current;
                         int dst = 1 - current;
@@ -267,17 +272,6 @@ public final class LandscapeBaker {
                         fbo.attachTexture(GL30.GL_COLOR_ATTACHMENT1, normal[dst]);
                         GL30.glDrawBuffers(drawBuffers);
                         fbo.checkStatus();
-
-                        if (needsClear) {
-                            // Initialize diffuse to transparent and normal to neutral (0.5, 0.5, 1.0)
-                            GL11.glClearColor(0, 0, 0, 0);
-                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT); // Attachment 0
-
-                            // Attachment 1 (Normal) needs neutral normal
-                            float[] normalClear = {0.5f, 0.5f, 1.0f, 0.0f};
-                            GL30.glClearBufferfv(GL30.GL_COLOR, 1, normalClear);
-                            needsClear = false;
-                        }
 
                         Texture alphaMap = createAlphaMap(new GLByteImage(info.getAlphaChannel()));
                         tempTextures.add(alphaMap);
@@ -294,6 +288,7 @@ public final class LandscapeBaker {
                         switch (info) {
                             case StructureBlend sb -> {
                                 shader.setUniform("u_Mode", 0);
+                                shader.setUniform("u_AlphaPower", sb.getAlphaPower());
                                 Texture structMap = createStructureMap(new GLIntImage(sb.getStructureLayer()));
                                 Texture normMap = createNormalMap(new GLIntImage(sb.getNormalLayer()));
                                 tempTextures.add(structMap);
@@ -305,11 +300,15 @@ public final class LandscapeBaker {
                             }
                             case BlendLighting bl -> {
                                 shader.setUniform("u_Mode", 1);
-                                shader.setUniformColor3("u_Color", bl.getColor());
+                                shader.setUniform("u_AlphaPower", 1.0f);
+                                Color std = new Color.Standard(bl.getColor());
+                                shader.setUniform("u_Color", std.r(), std.g(), std.b());
                             }
                             case BlendOcclusion bo -> {
                                 shader.setUniform("u_Mode", 2);
-                                shader.setUniformColor3("u_Color", bo.getColor());
+                                shader.setUniform("u_AlphaPower", 1.0f);
+                                Color std = new Color.Standard(bo.getColor());
+                                shader.setUniform("u_Color", std.r(), std.g(), std.b());
                             }
                             default -> {
                             }
@@ -318,7 +317,6 @@ public final class LandscapeBaker {
                         quad.render();
                         current = dst; // Flip
                     }
-                    if (!wasSrgb) GL11.glDisable(GL30.GL_FRAMEBUFFER_SRGB);
                 }
 
                 GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);

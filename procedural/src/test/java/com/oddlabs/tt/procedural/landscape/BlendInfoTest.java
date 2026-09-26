@@ -21,6 +21,10 @@ final class BlendInfoTest {
         assertSame(structure, blend.getStructureLayer());
         assertSame(normal, blend.getNormalLayer());
         assertSame(alpha, blend.getAlphaChannel());
+        assertEquals(1.0f, blend.getAlphaPower());
+
+        StructureBlend customBlend = new StructureBlend(structure, normal, alpha, 0.85f);
+        assertEquals(0.85f, customBlend.getAlphaPower());
     }
 
     @Test

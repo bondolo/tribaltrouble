@@ -17,6 +17,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
         String DETAIL_NORMAL_MAP = "u_DetailNormalMap";
         String WORLD_SIZE = "u_WorldSize";
         String DETAIL_SCALE = "u_DetailScale";
+        String DETAIL_ALPHA_SCALE = "u_DetailAlphaScale";
         String SEA_BOTTOM_COLOR = "u_SeaBottomColor";
         String OCEAN_MASK = "u_oceanMask";
     }
@@ -74,6 +75,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                     uniform vec3 u_SeaBottomColor;
                     uniform float u_WorldSize;
                     uniform float u_DetailScale;
+                    uniform float u_DetailAlphaScale;
 
                     in VS_OUT {
                         vec2 texCoord0;
@@ -106,6 +108,10 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                             waveZ += waveAmplitude * sin(phase);
                         }
                         return waveZ;
+                    }
+
+                    vec3 toLinear(vec3 c) {
+                        return mix(c / 12.92, pow((c + vec3(0.055)) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
                     }
 
                     void main() {
@@ -141,6 +147,15 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float distToEdge = min(distToEdgeX, distToEdgeY);
                         float edgeBlend = smoothstep(0.0, 0.04, distToEdge);
 
+                        // Sample detail map using planar coordinates (matching legacy)
+                        detailColor = texture(u_DetailMap, fs_in.texCoord1);
+
+                        // Decal blending in display/sRGB space matching legacy GL_DECAL contract.
+                        // Blending in sRGB prevents linear saturation wash-out, and using raw detailColor.a
+                        // preserves the natural trilinear mipmap distance fadeout without crumpled paper creases.
+                        vec3 srgbMixed = mix(diffuseColor.rgb, detailColor.rgb, detailColor.a * u_DetailAlphaScale);
+                        diffuseColor.rgb = toLinear(srgbMixed);
+
                         // Blend colormap diffuse to linear sea bottom color towards the world border,
                         // strictly on deep ocean floor (prevents shores/promontories from turning purple).
                         float submerge = smoothstep(3.5, 5.5, depthStatic);
@@ -155,16 +170,6 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         // Calculate normal for specular highlights
                         vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
                         worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
-
-                        // Sample detail map using planar coordinates (matching legacy)
-                        detailColor = texture(u_DetailMap, fs_in.texCoord1);
-
-                        // Decal blending in display/sRGB space matching legacy GL_DECAL contract.
-                        // Blending in sRGB prevents linear saturation wash-out, and using raw detailColor.a
-                        // preserves the natural trilinear mipmap distance fadeout without crumpled paper creases.
-                        vec3 srgbDiffuse = pow(diffuseColor.rgb, vec3(1.0 / 2.2));
-                        vec3 srgbMixed = mix(srgbDiffuse, detailColor.rgb, detailColor.a);
-                        diffuseColor.rgb = pow(srgbMixed, vec3(2.2));
 
                         vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
                         vec3 normal = viewNormal;
@@ -234,6 +239,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
     final int locDetailNormalMap;
     final int locWorldSize;
     final int locDetailScale;
+    final int locDetailAlphaScale;
     final int locSeaBottomColor;
     final int locOceanMask;
 
@@ -247,6 +253,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
         locDetailNormalMap = getUniformLocation(Uniforms.DETAIL_NORMAL_MAP);
         locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
         locDetailScale = getUniformLocation(Uniforms.DETAIL_SCALE);
+        locDetailAlphaScale = getUniformLocation(Uniforms.DETAIL_ALPHA_SCALE);
         locSeaBottomColor = getUniformLocation(Uniforms.SEA_BOTTOM_COLOR);
         locOceanMask = getUniformLocation(Uniforms.OCEAN_MASK);
     }

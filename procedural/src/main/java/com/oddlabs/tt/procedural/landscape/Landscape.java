@@ -45,7 +45,7 @@ public final class Landscape {
     // Viking terrain colors (RGB)
     private static final Color VIKING_GRAVEL_COLOR = new Color.Standard(0xFF_B3_8C_66);
     private static final Color VIKING_SOIL_COLOR = new Color.Standard(0xFF_A6_80_59);
-    private static final Color VIKING_GRASS_COLOR = new Color.Standard(0xFF_33_73_00); // Same as native, but gets color-shifted
+    private static final Color VIKING_GRASS_COLOR = new Color.Standard(0xFF_0E_73_00); // Saturated green matching legacy baseline
     private static final Color VIKING_SNOW_COLOR = new Color.Standard(0xFF_F2_F2_F2);
     private static final Color VIKING_CLIFF_GRASS_TINT = new Color.Standard(0xFF_33_73_00);
 
@@ -241,15 +241,28 @@ public final class Landscape {
         if (DEBUG) access.toLayer().saveAsPNG("access_connected");
 
         // create blend infos
-        blend_infos = new BlendInfo[]{
-                new StructureBlend(layers[0].diffuse(), layers[0].normal(), new Channel(1, 1).fill(1f)),
-                new StructureBlend(layers[1].diffuse(), layers[1].normal(), alpha_maps[0]),
-                new StructureBlend(layers[2].diffuse(), layers[2].normal(), alpha_maps[1]),
-                new StructureBlend(layers[3].diffuse(), layers[3].normal(), alpha_maps[2]),
-                new StructureBlend(layers[4].diffuse(), layers[4].normal(), alpha_maps[3]),
-                new BlendLighting(alpha_maps[4], BLEND_LIGHTING_COLOR),
-                new StructureBlend(layers[5].diffuse(), layers[5].normal(), alpha_maps[5]),
-                new StructureBlend(layers[6].diffuse(), layers[6].normal(), alpha_maps[6])
+        float grassAlphaPower = 0.70f;
+        blend_infos = switch (terrain) {
+            case NATIVE -> new BlendInfo[]{
+                    new StructureBlend(layers[0].diffuse(), layers[0].normal(), new Channel(1, 1).fill(1f)),
+                    new StructureBlend(layers[1].diffuse(), layers[1].normal(), alpha_maps[0]),
+                    new StructureBlend(layers[2].diffuse(), layers[2].normal(), alpha_maps[1]),
+                    new StructureBlend(layers[3].diffuse(), layers[3].normal(), alpha_maps[2]),
+                    new StructureBlend(layers[4].diffuse(), layers[4].normal(), alpha_maps[3], grassAlphaPower),
+                    new BlendLighting(alpha_maps[4], BLEND_LIGHTING_COLOR),
+                    new StructureBlend(layers[5].diffuse(), layers[5].normal(), alpha_maps[5]),
+                    new StructureBlend(layers[6].diffuse(), layers[6].normal(), alpha_maps[6])
+            };
+            case VIKING -> new BlendInfo[]{
+                    new StructureBlend(layers[0].diffuse(), layers[0].normal(), new Channel(1, 1).fill(1f)),
+                    new StructureBlend(layers[1].diffuse(), layers[1].normal(), alpha_maps[0]),
+                    new StructureBlend(layers[2].diffuse(), layers[2].normal(), alpha_maps[1]),
+                    new StructureBlend(layers[3].diffuse(), layers[3].normal(), alpha_maps[2], grassAlphaPower),
+                    new StructureBlend(layers[4].diffuse(), layers[4].normal(), alpha_maps[3]),
+                    new BlendLighting(alpha_maps[4], BLEND_LIGHTING_COLOR),
+                    new StructureBlend(layers[5].diffuse(), layers[5].normal(), alpha_maps[5]),
+                    new StructureBlend(layers[6].diffuse(), layers[6].normal(), alpha_maps[6])
+            };
         };
     }
 

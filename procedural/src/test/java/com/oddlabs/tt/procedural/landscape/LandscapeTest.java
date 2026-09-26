@@ -49,4 +49,22 @@ final class LandscapeTest {
         assertNotNull(Landscape.getDustColor(Terrain.VIKING));
         assertNotNull(Landscape.getDustColor(Terrain.NATIVE));
     }
+
+    @Test
+    void testLandscapeGenerationVikingIsland1() {
+        IslandConfig config = new IslandConfig(
+                Terrain.VIKING,
+                256,
+                0.75f,
+                1.0f,
+                0.5f,
+                1
+        );
+        Landscape landscape = new Landscape(1, config, 0.5f, 5, 0.5f);
+        BlendInfo[] blendInfos = landscape.getBlendInfos();
+        assertEquals(8, blendInfos.length);
+        assertTrue(blendInfos[3] instanceof StructureBlend);
+        StructureBlend grassBlend = (StructureBlend) blendInfos[3];
+        assertEquals(0.70f, grassBlend.getAlphaPower(), 0.001f);
+    }
 }
