@@ -2,6 +2,7 @@ package com.oddlabs.tt.engine.render.state;
 
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.shader.FogShader;
+import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
 import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
@@ -12,11 +13,6 @@ import java.nio.ByteBuffer;
  */
 public final class GlobalUniforms {
     private static final float LEGACY_AMBIENT_LINEAR = Color.toLinear(0.65f);
-
-    // Near-noon 70-degree solar elevation with 225-degree southwest azimuth for competitive 360-degree symmetry
-    private static final float LIGHT_DIR_X = -0.2418448f;
-    private static final float LIGHT_DIR_Y = -0.2418448f;
-    private static final float LIGHT_DIR_Z = 0.9396926f;
 
     public void update(CameraState camera, float time, float seaLevel, @Nullable WaterUniformsProvider water,
             ByteBuffer buffer) {
@@ -81,9 +77,9 @@ public final class GlobalUniforms {
         buffer.position(176); // Ensure position before lighting params
 
         // 176: vec4 u_lightDirection (16)
-        buffer.putFloat(LIGHT_DIR_X);
-        buffer.putFloat(LIGHT_DIR_Y);
-        buffer.putFloat(LIGHT_DIR_Z);
+        buffer.putFloat(LandscapeConfig.LIGHT_DIR_X);
+        buffer.putFloat(LandscapeConfig.LIGHT_DIR_Y);
+        buffer.putFloat(LandscapeConfig.LIGHT_DIR_Z);
         buffer.putFloat(1.0f);
 
         // 192: vec4 u_globalAmbient (16) - Linearized legacy ambient 0.65f

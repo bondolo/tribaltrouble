@@ -770,12 +770,11 @@ public final class Landscape {
         // generate shadow and highlight alpha
         shadow = new Channel(unit_grids_per_world, unit_grids_per_world);
         highlight = new Channel(unit_grids_per_world, unit_grids_per_world);
-        float lx = 1;
-        float lz = 1;
-        float lnorm = 1f / (float) Math.sqrt(lx * lx + lz * lz);
-        lx = lx * lnorm;
-        lz = lz * lnorm;
-        float threshold = (float) Math.sqrt(0.5f);
+        // Sun vector derived from canonical light direction
+        float lx = -LandscapeConfig.LIGHT_DIR_X;
+        float ly = -LandscapeConfig.LIGHT_DIR_Y;
+        float lz = LandscapeConfig.LIGHT_DIR_Z;
+        float threshold = lz;
         float nz = 2f * meters_per_height_unit / height_scale;
         float nzlz = nz * lz;
         float nz2 = nz * nz;
@@ -783,7 +782,7 @@ public final class Landscape {
             for (int x = 0; x < unit_grids_per_world; x++) {
                 float nx = height.getPixelWrap(x + 1, y) - height.getPixelWrap(x - 1, y);
                 float ny = height.getPixelWrap(x, y + 1) - height.getPixelWrap(x, y - 1);
-                float light = (nx * lx + nzlz) / ((float) Math.sqrt(nx * nx + ny * ny + nz2)); // Can use Math here - calculation is not game state affecting
+                float light = (nx * lx + ny * ly + nzlz) / ((float) Math.sqrt(nx * nx + ny * ny + nz2)); // Can use Math here - calculation is not game state affecting
                 if (light > threshold) {
                     highlight.putPixel(x, y, light);
                     shadow.putPixel(x, y, threshold);
@@ -797,14 +796,15 @@ public final class Landscape {
         shadow.invert().dynamicRange(0f, 0.75f);
         ProgressListener.progress(1 / 14f);
 
-        // generate shadowcasting
+        // generate shadowcasting along Southwest-to-Northeast solar direction
         Channel shadowcast = new Channel(unit_grids_per_world, unit_grids_per_world);
-        float val = 0;
-        float peak = 0;
-        float descent = 8f / unit_grids_per_world;
-        for (int y = 0; y < unit_grids_per_world; y++) {
-            for (int x = 0; x < unit_grids_per_world; x++) {
-                val = height.getPixel(x, y);
+        // Descent rate scaled by tan(70 deg) relative to diagonal step size
+        float descent = (8f / unit_grids_per_world) * (lz / (lx * (float) Math.sqrt(2.0)));
+        for (int start = 0; start < unit_grids_per_world; start++) {
+            // Raymarch starting along South border (x = start, y = 0)
+            float peak = 0;
+            for (int x = start, y = 0; x < unit_grids_per_world && y < unit_grids_per_world; x++, y++) {
+                float val = height.getPixel(x, y);
                 peak = peak - descent;
                 if (peak > val) {
                     shadowcast.putPixel(x, y, 1f);
@@ -812,7 +812,19 @@ public final class Landscape {
                     peak = val;
                 }
             }
-            peak = 0;
+            // Raymarch starting along West border (x = 0, y = start) (start > 0 to avoid repeating (0,0))
+            if (start > 0) {
+                peak = 0;
+                for (int x = 0, y = start; x < unit_grids_per_world && y < unit_grids_per_world; x++, y++) {
+                    float val = height.getPixel(x, y);
+                    peak = peak - descent;
+                    if (peak > val) {
+                        shadowcast.putPixel(x, y, 1f);
+                    } else {
+                        peak = val;
+                    }
+                }
+            }
         }
         shadow.channelBrightest(shadowcast.smooth(1).brightness(0.67f));
         if (DEBUG) shadow.toLayer().saveAsPNG("alpha_shadow");
@@ -877,9 +889,11 @@ public final class Landscape {
 
     // generate snow alpha
     private static Channel generateSnowAlpha(Channel height, Channel cliff_alpha) {
-        Channel snow_alpha = height.copy().dynamicRange(0.5f, 0.6f, 0f, 1f);
+        Channel snow_alpha = height.copy().dynamicRange(0.54f, 0.62f, 0f, 1f);
         snow_alpha.channelSubtract(cliff_alpha);
         snow_alpha.smooth(1).smooth(1);
+        // Gate fractional snow alpha with the altitude mask to eliminate downslope bleeding into lowland valleys
+        snow_alpha.channelMultiply(height.copy().dynamicRange(0.52f, 0.60f, 0f, 1f));
 
         return snow_alpha;
     }

@@ -167,11 +167,25 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float h_plus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, 1)).r;
                         float h_minus_y = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(0, -1)).r;
 
-                        // Calculate normal for specular highlights
+                        // Calculate base normal for specular highlights
                         vec3 worldNormal = normalize(vec3(h_minus_x - h_plus_x, h_minus_y - h_plus_y, 64.0));
                         worldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), worldNormal, edgeBlend));
 
-                        vec3 viewNormal = normalize((u_viewMatrix * vec4(worldNormal, 0.0)).xyz);
+                        // Sample baked tangent normal map (Unit 1) and detail normal map (Unit 4)
+                        vec4 bakedNormSample = texture(u_NormalMap, fs_in.texCoordColormap);
+                        vec3 bakedTangentNorm = bakedNormSample.rgb * 2.0 - vec3(1.0);
+                        float bakedSpec = bakedNormSample.a;
+
+                        vec4 detailNormSample = texture(u_DetailNormalMap, fs_in.texCoord1);
+                        vec3 detailTangentNorm = (detailNormSample.rgb - vec3(0.5)) * 2.0;
+
+                        // Tangent normal dampening under water (simulates smooth water-film surface tension)
+                        float normalDampening = mix(1.0, 0.15, wetness);
+                        vec2 microPerturb = (bakedTangentNorm.xy * 0.35 + detailTangentNorm.xy * 0.15 * detailColor.a) * normalDampening;
+                        vec3 perturbedWorldNormal = normalize(worldNormal + vec3(microPerturb, 0.0));
+                        perturbedWorldNormal = normalize(mix(vec3(0.0, 0.0, 1.0), perturbedWorldNormal, edgeBlend));
+
+                        vec3 viewNormal = normalize((u_viewMatrix * vec4(perturbedWorldNormal, 0.0)).xyz);
                         vec3 normal = viewNormal;
 
                         // Dynamic specular (Blinn-Phong) & rim lighting
@@ -194,6 +208,21 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
 
                         float spec = pow(max(dot(normal, halfDir), 0.0), specExponent);
                         vec3 specular = specIntensity * spec * vec3(1.0) * edgeBlend;
+
+                        // --- Mountain Snow Crystalline Vibrancy ---
+                        // Snow caps have high albedo (r > 0.7, g > 0.7, b > 0.7) and low roughness (0.05)
+                        float isSnow = step(0.70, diffuseColor.r) * step(0.70, diffuseColor.g) * step(0.70, diffuseColor.b) * (1.0 - step(0.10, roughness));
+                        if (isSnow > 0.5 && edgeBlend > 0.5) {
+                            // Crystalline micro-specular sparkle on sunward snow slopes
+                            float snowSunDot = max(0.0, dot(normal, halfDir));
+                            float snowSparkle = pow(snowSunDot, 64.0) * (0.8 + 0.4 * detailNormSample.r);
+                            specular += vec3(0.12) * snowSparkle * (1.0 - wetness);
+
+                            // Soft cool-slate ambient shading in recessed mountain crevices
+                            float crevice = clamp(1.0 - bakedTangentNorm.z, 0.0, 1.0);
+                            vec3 coolSlate = vec3(0.65, 0.72, 0.85);
+                            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * coolSlate, crevice * 0.25);
+                        }
 
                         // Terrain lighting is fully baked into the colormap texture (BlendLighting sun highlights
                         // and shadowcasting). Avoiding redundant runtime Half-Lambert/ambient modulation preserves
