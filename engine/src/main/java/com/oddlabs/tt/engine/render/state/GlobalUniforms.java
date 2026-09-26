@@ -3,7 +3,6 @@ package com.oddlabs.tt.engine.render.state;
 import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.engine.render.shader.FogShader;
 import com.oddlabs.tt.procedural.landscape.LandscapeConfig;
-import com.oddlabs.util.Color;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.ByteBuffer;
@@ -12,8 +11,6 @@ import java.nio.ByteBuffer;
  * Packs global uniform data into a ByteBuffer according to std140 layout.
  */
 public final class GlobalUniforms {
-    private static final float LEGACY_AMBIENT_LINEAR = Color.toLinear(0.65f);
-
     public void update(CameraState camera, float time, float seaLevel, @Nullable WaterUniformsProvider water,
             ByteBuffer buffer) {
         buffer.clear();
@@ -83,23 +80,22 @@ public final class GlobalUniforms {
         buffer.putFloat(1.0f);
 
         // 192: vec4 u_globalAmbient (16) - Linearized legacy ambient 0.65f
-        float ambientLinear = LEGACY_AMBIENT_LINEAR;
-        buffer.putFloat(ambientLinear);
-        buffer.putFloat(ambientLinear);
-        buffer.putFloat(ambientLinear);
-        buffer.putFloat(1.0f);
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.r());
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.g());
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.b());
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.a());
 
         // 208: vec4 u_groundAmbient (16) - Linearized legacy ambient 0.65f
-        buffer.putFloat(ambientLinear);
-        buffer.putFloat(ambientLinear);
-        buffer.putFloat(ambientLinear);
-        buffer.putFloat(1.0f);
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.r());
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.g());
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.b());
+        buffer.putFloat(LandscapeConfig.AMBIENT_LIGHT.a());
 
         // 224: vec4 u_sunColor (16)
-        buffer.putFloat(1.0f);
-        buffer.putFloat(1.0f);
-        buffer.putFloat(1.0f);
-        buffer.putFloat(1.0f);
+        buffer.putFloat(LandscapeConfig.SUN_COLOR.r());
+        buffer.putFloat(LandscapeConfig.SUN_COLOR.g());
+        buffer.putFloat(LandscapeConfig.SUN_COLOR.b());
+        buffer.putFloat(LandscapeConfig.SUN_COLOR.a());
 
         buffer.position(240); // Ensure position before water params
 

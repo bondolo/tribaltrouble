@@ -1,5 +1,6 @@
 package com.oddlabs.tt.procedural.landscape;
 
+import com.oddlabs.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -23,6 +24,9 @@ public final class LandscapeConfig {
     public static final float WATER_DETAIL_REPEAT_RATE = 0.01f;
     public static final int LANDSCAPE_DETAIL_FADEOUT_BASE_LEVEL = 2;
     public static final float LANDSCAPE_DETAIL_FADEOUT_FACTOR = 0.75f;
+
+    public static final Color.Linear AMBIENT_LIGHT = new Color.Standard(0.65f, 1.0f).linear();
+    public static final Color.Linear SUN_COLOR = new Color.Standard(1.0f, 1.0f).linear();
 
     /**
      * Solar elevation angle in degrees (near-noon 70 degrees for 360-degree multiplayer symmetry).
