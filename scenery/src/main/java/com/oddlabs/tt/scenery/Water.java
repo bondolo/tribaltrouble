@@ -433,6 +433,10 @@ public final class Water implements WaterUniformsProvider, AutoCloseable {
         return oceanPatches;
     }
 
+    public Texture getOceanMaskTexture() {
+        return oceanMaskTexture;
+    }
+
     @Override
     public void putGlobalUniforms(java.nio.ByteBuffer buffer, boolean enableWaves) {
         // u_waveDirLength[3] (each element is a vec4 aligned to 16 bytes)

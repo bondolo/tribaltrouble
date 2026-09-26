@@ -145,13 +145,12 @@ final class WaterShader extends ShaderProgram implements FogShader, LitShader {
                     void main() {
                         vec4 baseColor = texture(u_texture0, fs_in.texCoord0);
 
-                        // Gentle shoreline contact fade to prevent hard geometric clipping against terrain
+                        // Soft shoreline alpha ramp to dissolve hard 2m triangle mesh intersection stairsteps
                         vec2 closestPoint = clamp(fs_in.texCoordHeightmap.xy, 0.0, 1.0);
                         float terrainHeight = texture(u_HeightMap, closestPoint).r;
-                        float distInMeters = distance(fs_in.texCoordHeightmap.xy, closestPoint) * u_WorldSize;
-                        float depth = fs_in.worldPos.z - terrainHeight + distInMeters;
-                        float edgeFade = smoothstep(0.0, 0.05, depth);
-                        float finalAlpha = baseColor.a * edgeFade;
+                        float depth = fs_in.worldPos.z - terrainHeight;
+                        float shoreFade = smoothstep(0.0, 0.15, depth);
+                        float finalAlpha = baseColor.a * shoreFade;
 
                         vec4 detail = texture(u_texture1, fs_in.texCoord1);
 

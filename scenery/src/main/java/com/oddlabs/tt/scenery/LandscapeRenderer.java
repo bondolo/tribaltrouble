@@ -152,6 +152,12 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
             context.setTexture(4, detailNormalMap);
             shader.setUniform(shader.locDetailNormalMap, 4);
 
+            Water activeWater = water;
+            if (activeWater != null) {
+                context.setTexture(5, activeWater.getOceanMaskTexture());
+                shader.setUniform(shader.locOceanMask, 5);
+            }
+
             if (DebugFlags.draw_landscape && !render_list.isEmpty()) {
                 int instanceCount = render_list.size();
                 int requiredFloats = instanceCount * 3;
@@ -167,7 +173,6 @@ public final class LandscapeRenderer implements SceneRenderer, Animated {
                 instanceBuffer.clear();
                 float patchSize = world.getHeightMap().getMetersPerPatch();
                 int patchesPerWorld = world.getHeightMap().getPatchesPerWorld();
-                Water activeWater = water;
                 BitSet activeOceanPatches = activeWater != null ? activeWater.getOceanPatches() : null;
                 for (LandscapeLeaf leaf : render_list) {
                     int px = leaf.getPatchX();

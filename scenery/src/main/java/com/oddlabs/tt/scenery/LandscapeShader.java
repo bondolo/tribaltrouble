@@ -18,6 +18,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
         String WORLD_SIZE = "u_WorldSize";
         String DETAIL_SCALE = "u_DetailScale";
         String SEA_BOTTOM_COLOR = "u_SeaBottomColor";
+        String OCEAN_MASK = "u_oceanMask";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -69,6 +70,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                     uniform sampler2D u_DetailMap;
                     uniform sampler2D u_DetailNormalMap;
                     uniform sampler2D u_HeightMap;
+                    uniform sampler2D u_oceanMask;
                     uniform vec3 u_SeaBottomColor;
                     uniform float u_WorldSize;
                     uniform float u_DetailScale;
@@ -116,16 +118,22 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         // Surface roughness metadata baked into diffuse alpha (1.0 = rough, 0.0 = smooth)
                         float roughness = diffuseColor.a;
 
+                        // Continuous ocean mask determines wave scale, wash, and caustics per fragment
+                        float waveScale = texture(u_oceanMask, fs_in.texCoordColormap).r;
+
                         // Reconstruct world position and calculate dynamic wetness factor
                         vec2 worldPos = fs_in.texCoordColormap * u_WorldSize;
-                        float waveHeight = getWaveHeight(worldPos) * fs_in.waveScale;
+                        float waveHeight = getWaveHeight(worldPos) * waveScale;
                         float u_seaLevel = u_fogParams.w;
 
-                        // Add a slow tide oscillation to the water height for the ocean wash effect
-                        float tide = sin(u_waveTime * 0.25) * 0.15 * fs_in.waveScale;
-                        float waterHeight = u_seaLevel + waveHeight + tide;
-                        float depth = waterHeight - fs_in.height;
-                        float wetness = clamp((depth + 0.10) / 0.30, 0.0, 1.0);
+                        // Sample heightmap texture directly for smooth pixel-accurate shoreline elevation
+                        // (prevents discrete 2m triangle mesh faceting from stairstepping the water edge)
+                        float pixelHeight = texture(u_HeightMap, fs_in.texCoord0).r;
+
+                        float waterHeight = u_seaLevel + waveHeight;
+                        float depth = waterHeight - pixelHeight;
+                        float depthStatic = u_seaLevel - pixelHeight;
+                        float wetness = smoothstep(0.0, 1.5, depth);
 
                         // Seamless transition to SeaBottom at the world perimeter
                         float distToEdgeX = min(fs_in.texCoordColormap.x, 1.0 - fs_in.texCoordColormap.x);
@@ -133,8 +141,10 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         float distToEdge = min(distToEdgeX, distToEdgeY);
                         float edgeBlend = smoothstep(0.0, 0.04, distToEdge);
 
-                        // Blend colormap diffuse to linear sea bottom color towards the world border
-                        diffuseColor.rgb = mix(u_SeaBottomColor, diffuseColor.rgb, edgeBlend);
+                        // Blend colormap diffuse to linear sea bottom color towards the world border,
+                        // strictly on deep ocean floor (prevents shores/promontories from turning purple).
+                        float submerge = smoothstep(3.5, 5.5, depthStatic);
+                        diffuseColor.rgb = mix(diffuseColor.rgb, u_SeaBottomColor, (1.0 - edgeBlend) * submerge);
 
                         // Compute view-space normal from heightmap slope, flattening towards the boundary
                         float h_plus_x = textureOffset(u_HeightMap, fs_in.texCoord0, ivec2(1, 0)).r;
@@ -186,16 +196,17 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                         // Submerged wetness darkening transitions off at the world edge to match SeaBottom luminance.
                         diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 0.55, wetness * edgeBlend);
 
-                        // --- Dynamic Shoreline "Wet Line" (Wash/Foam) ---
-                        // Brighten the leading edge of the water to simulate foam and bubbles
-                        float wash = smoothstep(0.0, 0.08, depth) * (1.0 - smoothstep(0.12, 0.25, depth));
-                        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb + vec3(0.15, 0.2, 0.25), wash * 0.6 * fs_in.waveScale);
+                        // --- Dynamic Shoreline Wash (Soft Seafoam) ---
+                        // Soft foam tint derived from ambient sky light and sunlight
+                        vec3 foamColor = mix(u_globalAmbient.rgb, u_sunColor.rgb, 0.35);
+                        float wash = smoothstep(0.0, 0.25, depth) * (1.0 - smoothstep(0.35, 0.85, depth));
+                        float washIntensity = wash * 0.30 * waveScale;
+                        diffuseColor.rgb = mix(diffuseColor.rgb, foamColor, washIntensity);
 
                         vec3 litColor = diffuseColor.rgb + specular * 1.1;
 
                         // --- Underwater Caustics ---
-                        float depthStatic = u_seaLevel - fs_in.height;
-                        if (depth > 0.0 && depthStatic > 0.0 && fs_in.waveScale > 0.01) {
+                        if (depth > 0.0 && depthStatic > 0.0 && waveScale > 0.01) {
                             float causticsTime = u_waveTime * 0.05;
                             vec2 uv1 = worldPos * 0.15 + vec2(causticsTime * 0.08, causticsTime * 0.05);
                             vec2 uv2 = worldPos * 0.12 - vec2(causticsTime * 0.06, causticsTime * 0.10);
@@ -206,8 +217,8 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                             float c = 1.0 - abs(h1 - h2);
                             float caustic = pow(max(0.0, c), 16.0);
 
-                            float depthFade = smoothstep(0.0, 0.15, depth) * clamp(1.0 - depthStatic / 3.5, 0.0, 1.0);
-                            float causticFactor = caustic * depthFade * (1.0 - roughness * 0.4) * fs_in.waveScale;
+                            float depthFade = smoothstep(0.0, 1.2, depth) * clamp(1.0 - depthStatic / 8.0, 0.0, 1.0);
+                            float causticFactor = caustic * depthFade * (1.0 - roughness * 0.4 * edgeBlend) * waveScale;
                             litColor *= (1.0 + causticFactor * 0.35);
                         }
 
@@ -224,6 +235,7 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
     final int locWorldSize;
     final int locDetailScale;
     final int locSeaBottomColor;
+    final int locOceanMask;
 
     LandscapeShader() {
         super(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -236,5 +248,6 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
         locWorldSize = getUniformLocation(Uniforms.WORLD_SIZE);
         locDetailScale = getUniformLocation(Uniforms.DETAIL_SCALE);
         locSeaBottomColor = getUniformLocation(Uniforms.SEA_BOTTOM_COLOR);
+        locOceanMask = getUniformLocation(Uniforms.OCEAN_MASK);
     }
 }
