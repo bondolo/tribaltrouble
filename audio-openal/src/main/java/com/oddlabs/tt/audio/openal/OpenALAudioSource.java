@@ -173,6 +173,9 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         assert buffer != AL10.AL_NONE;
         int sourceId = getSource();
         if (AL10.alIsSource(sourceId)) {
+            if (AL10.alGetSourcei(sourceId, AL11.AL_SOURCE_TYPE) == AL11.AL_STREAMING) {
+                detachBuffers(sourceId);
+            }
             AL10.alSourcei(sourceId, AL10.AL_BUFFER, audio.getBuffer());
             checkALError("alSourcei AL_BUFFER");
         }
@@ -183,7 +186,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         int sourceId = getSource();
         if (AL10.alIsSource(sourceId)) {
             assert al_buffers.remaining() > 0 : "al_buffers is empty";
-            if (AL10.alGetSourcei(sourceId, AL10.AL_BUFFERS_QUEUED) == 0) {
+            if (AL10.alGetSourcei(sourceId, AL11.AL_SOURCE_TYPE) != AL11.AL_STREAMING) {
                 AL10.alSourceStop(sourceId);
                 AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
                 checkALError("alSourcei AL_BUFFER AL_NONE before queue");

@@ -73,4 +73,6 @@ tasks.processResources {
 
 tasks.run.configure {
     classpath = files(layout.buildDirectory) + sourceSets.main.get().runtimeClasspath
+//    environment("ALSOFT_LOGLEVEL", "3")
+//    environment("ALSOFT_LOGFILE", "openal.log")
 }
