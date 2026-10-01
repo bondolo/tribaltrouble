@@ -224,6 +224,25 @@ final class LandscapeShader extends ShaderProgram implements FogShader, LitShade
                             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * coolSlate, crevice * 0.25);
                         }
 
+                        // --- Rock & Cliff Tactile Mineral Sheen ---
+                        // bakedSpec >= 0.25 identifies rock, cliff, and rubble materials.
+                        // Applies restrained mineral specular highlights, grazing cliff rim sheen, and subtle crevice depth.
+                        float isRock = smoothstep(0.20, 0.35, bakedSpec) * (1.0 - isSnow) * (1.0 - wetness);
+                        if (isRock > 0.01) {
+                            // Mineral roughness: broad, slightly rough specular facet highlights
+                            float rockDot = max(0.0, dot(normal, halfDir));
+                            float rockSpecHighlight = pow(rockDot, 28.0) * bakedSpec * 0.10;
+
+                            // Grazing rim light on cliff edges
+                            float rockRim = pow(clamp(1.0 - dot(normal, viewDir), 0.0, 1.0), 4.0) * bakedSpec * 0.06;
+
+                            // Subtle crevice depth in deep cracks between rock strata
+                            float rockCrevice = clamp(bakedTangentNorm.z, 0.75, 1.0);
+                            diffuseColor.rgb *= mix(1.0, rockCrevice, isRock * 0.30);
+
+                            specular += (vec3(rockSpecHighlight) + u_globalAmbient.rgb * rockRim) * isRock * edgeBlend;
+                        }
+
                         // Terrain lighting is fully baked into the colormap texture (BlendLighting sun highlights
                         // and shadowcasting). Avoiding redundant runtime Half-Lambert/ambient modulation preserves
                         // the vibrant legacy color aesthetic and prevents faceted heightmap creases.
