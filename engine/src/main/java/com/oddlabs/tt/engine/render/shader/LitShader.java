@@ -80,7 +80,12 @@ public interface LitShader extends Shader {
                 float spec = pow(max(dot(normal, halfDir), 0.0), 32.0);
                 vec3 specular = specularStrength * spec * vec3(1.0);
 
-                return clamp(ambient + diff * vec3(1.0) + specular, 0.0, 1.0);
+                // Stylized Cartoon Rim Highlight
+                float NdotV = max(dot(normal, viewDir), 0.0);
+                float rimTerm = pow(1.0 - NdotV, 4.0);
+                vec3 rimHighlight = rimTerm * 0.20 * u_sunColor.rgb;
+
+                return clamp(ambient + diff * vec3(1.0) + specular + rimHighlight, 0.0, 1.0);
             }
             """;
 }
