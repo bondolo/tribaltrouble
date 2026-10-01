@@ -145,7 +145,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
     @Override
     protected void cleanupAsync() throws Exception {
         synchronized (manager) {
-            if (manager.isClosed()) {
+            if (ALC10.alcGetCurrentContext() == 0) {
                 return;
             }
             if (source != null) {
@@ -155,6 +155,7 @@ final class OpenALQueuedAudioPlayer extends QueuedAudioPlayer<OpenALManager, Ope
             if (audio instanceof AutoCloseable toClose) {
                 toClose.close();
             }
+            manager.processCleanupTasks();
         }
     }
 }

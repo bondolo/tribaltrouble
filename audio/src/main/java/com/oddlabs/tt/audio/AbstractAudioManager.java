@@ -24,7 +24,6 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
 
     /** The interval (in seconds) between ambient sound proximity checks. */
     private static final float AMBIENT_UPDATE_INTERVAL = 0.1f;
-    private static final float DEFAULT_MUSIC_FADE_OUT = 1.2f;
 
     private final AudioSettings audioSettings;
     private final AnimationManager animationManager;
@@ -539,8 +538,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         if (enabled) {
             initMusicPlayer();
         } else if (currentMusicPlayer != null) {
-            currentMusicPlayer.stop(DEFAULT_MUSIC_FADE_OUT);
-            currentMusicPlayer = null;
+            stopMusic(DEFAULT_MUSIC_DECAY_RATE);
         }
     }
 
@@ -554,8 +552,7 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
         this.currentMusicAudio = musicAudio;
 
         if (currentMusicPlayer != null && audioSettings.play_music) {
-            currentMusicPlayer.stop(DEFAULT_MUSIC_FADE_OUT);
-            currentMusicPlayer = null;
+            stopMusic(DEFAULT_MUSIC_DECAY_RATE);
         }
         if (audioSettings.play_music) {
             if (musicTimer != null) {
@@ -573,6 +570,18 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     @Override
     public @Nullable AudioPlayer getMusicPlayer() {
         return currentMusicPlayer;
+    }
+
+    @Override
+    public void stopMusic() {
+        if (musicTimer != null) {
+            musicTimer.stop();
+            musicTimer = null;
+        }
+        if (currentMusicPlayer != null) {
+            currentMusicPlayer.stop();
+            currentMusicPlayer = null;
+        }
     }
 
     @Override
@@ -609,15 +618,19 @@ public abstract class AbstractAudioManager<AM extends AbstractAudioManager<AM, A
     }
 
     @Override
-    public synchronized void close() {
-        if (closed) return;
+    public void close() {
+        synchronized (this) {
+            if (closed) return;
+            closed = true;
+        }
         logger.info("AudioManager stopping music...");
-        stopMusic(DEFAULT_MUSIC_FADE_OUT);
+        stopMusic();
         logger.info("AudioManager stopping queued players...");
         queued_players.forEach(QueuedAudioPlayer::stop);
-        closed = true;
-        processCleanupTasks();
-        logger.info("AudioManager closed.");
+        synchronized (this) {
+            processCleanupTasks();
+            logger.info("AudioManager closed.");
+        }
     }
 
     private class AmbientAudioSource {

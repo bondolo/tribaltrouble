@@ -22,7 +22,7 @@ import java.util.function.DoubleSupplier;
 /**
  * Container for the 2D user interface
  */
-public final class GUI implements Animated {
+public final class GUI implements Animated, AutoCloseable {
     private final Skin skin;
     private final LocalInput localInput;
     private final Window window;
@@ -192,7 +192,19 @@ public final class GUI implements Animated {
     void switchRoot(GUIRoot gui_root, @Nullable UIRenderer renderer) {
         current_root.removeTree();
         current_root = gui_root;
+        if (this.renderer != null && this.renderer != renderer) {
+            this.renderer.close();
+        }
         this.renderer = renderer;
+    }
+
+    @Override
+    public void close() {
+        guiRenderer.close();
+        if (renderer != null) {
+            renderer.close();
+            renderer = null;
+        }
     }
 
     public GUIRoot getGUIRoot() {

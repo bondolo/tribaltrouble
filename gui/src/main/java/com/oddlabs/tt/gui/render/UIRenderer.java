@@ -11,7 +11,13 @@ import java.util.function.Consumer;
 /**
  * Interface for rendering the 3D scene underneath the 2D user interface.
  */
-public interface UIRenderer {
+public interface UIRenderer extends AutoCloseable {
+    /**
+     * Closes the renderer and releases any underlying graphics resources.
+     */
+    @Override
+    default void close() {
+    }
     /**
      * Renders the 3D scene.
      *

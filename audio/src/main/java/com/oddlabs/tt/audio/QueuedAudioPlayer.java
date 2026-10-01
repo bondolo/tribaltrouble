@@ -6,6 +6,7 @@ import org.lwjgl.BufferUtils;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ShortBuffer;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,18 +26,20 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
      * We can't use audioParams.sound() because we handle buffering ourselves (for now).
      */
     protected volatile @Nullable Audio audio;
+    private final @Nullable Thread refillerThread;
 
     protected QueuedAudioPlayer(AM manager, @Nullable AS source, float x, float y, float z,
             AudioParameters params) {
         super(manager, source, x, y, z, params);
         if (!isPlaying() || this.source == null) {
+            this.refillerThread = null;
             return;
         }
 
         // Queued audio does not loop via source setting, it loops internally during buffer refill
         source.setLooping(false);
 
-        Thread.startVirtualThread(() -> refiller(params.audio().getURL()));
+        this.refillerThread = Thread.startVirtualThread(() -> refiller(params.audio().getURL()));
     }
 
     private void refiller(URL source) {
@@ -127,13 +130,26 @@ public abstract class QueuedAudioPlayer<AM extends AbstractAudioManager<AM, AS>,
 
     @Override
     public QueuedAudioPlayer<AM, AS> stop() {
-        if (manager.removeQueuedPlayer(this)) {
-            super.stop(); // Sets playing = false and stops the source.
-            synchronized (this) {
-                notifyAll(); // Wake up refiller thread immediately so it can clean up
-            }
+        manager.removeQueuedPlayer(this);
+        super.stop(); // Sets playing = false and stops the source.
+        synchronized (this) {
+            notifyAll(); // Wake up refiller thread immediately so it can clean up
         }
+        awaitCompletion();
 
         return this;
+    }
+
+    /**
+     * Waits for the background refiller thread to finish and run its cleanup, if it is still running.
+     */
+    private void awaitCompletion() {
+        if (refillerThread != null && Thread.currentThread() != refillerThread) {
+            try {
+                refillerThread.join(TimeUnit.SECONDS.toMillis(1));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }

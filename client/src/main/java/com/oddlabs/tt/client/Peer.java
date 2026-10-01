@@ -371,8 +371,9 @@ public final class Peer implements AutoCloseable {
     }
 
     private void runSession(ClientStartup startup, Instant startTime) {
-        ClientStartup.Session session = startup.init(this, true);
-        runMainLoop(session, startTime);
+        try (ClientStartup.Session session = startup.init(this, true)) {
+            runMainLoop(session, startTime);
+        }
     }
 
     private void runMainLoop(ClientStartup.Session session, Instant startTime) {

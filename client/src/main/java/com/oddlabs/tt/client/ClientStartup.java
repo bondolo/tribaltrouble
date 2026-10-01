@@ -14,7 +14,11 @@ public interface ClientStartup {
      * @param gui the active GUI
      * @param loadTask optional background runnable to execute after the first frame
      */
-    record Session(GUI gui, @Nullable Runnable loadTask) {
+    record Session(GUI gui, @Nullable Runnable loadTask) implements AutoCloseable {
+        @Override
+        public void close() {
+            gui.close();
+        }
     }
 
     /**

@@ -105,15 +105,12 @@ final class EFXManager implements AutoCloseable {
         try {
             // Create Auxiliary Effect Slot
             effectSlot = alGenAuxiliaryEffectSlots();
-            OpenALManager.checkALError("alGenAuxiliaryEffectSlots");
 
             // Create Effect
             reverbEffect = alGenEffects();
-            OpenALManager.checkALError("alGenEffects");
 
             // Configure slot
             alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, 1);
-            OpenALManager.checkALError("alAuxiliaryEffectSloti SEND_AUTO");
 
             supported = true;
             logger.info("OpenAL EFX initialized successfully.");
@@ -149,8 +146,6 @@ final class EFXManager implements AutoCloseable {
         }
 
         alEffecti(reverbEffect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
-        // We don't check errors for every param for performance, but we check here.
-        OpenALManager.checkALError("alEffecti AL_EFFECT_TYPE");
 
         ReverbSnapshot sFrom = ReverbSnapshot.get(from);
         ReverbSnapshot sTo = ReverbSnapshot.get(to);
@@ -160,7 +155,6 @@ final class EFXManager implements AutoCloseable {
 
         // Bind effect to slot
         alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_EFFECT, reverbEffect);
-        OpenALManager.checkALError("alAuxiliaryEffectSloti AL_EFFECTSLOT_EFFECT");
     }
 
     private void applySnapshot(ReverbSnapshot s) {

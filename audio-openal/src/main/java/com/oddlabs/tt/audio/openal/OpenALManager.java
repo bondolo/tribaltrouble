@@ -46,7 +46,6 @@ import static org.lwjgl.openal.SOFTHRTF.alcResetDeviceSOFT;
  * Audio Manager implementation using OpenAL
  */
 final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudioSource> {
-    private static final boolean DEBUG = Boolean.getBoolean("com.oddlabs.tt.developer");
     private static final Logger logger = Logger.getLogger(OpenALManager.class.getName());
     private static final int MAX_NUM_SOURCES = 32;
 
@@ -91,7 +90,6 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
         logger.info("OpenAL vendor: " + AL10.alGetString(AL10.AL_VENDOR));
         logger.info("OpenAL renderer: " + AL10.alGetString(AL10.AL_RENDERER));
         AL10.alDistanceModel(AL11.AL_INVERSE_DISTANCE_CLAMPED);
-        checkALError("alDistanceModel");
     }
 
     private static ALData initAL(boolean headphoneMode) {
@@ -180,7 +178,7 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
         if (isHRTFSupported()) {
             int[] attrs = {ALC_HRTF_SOFT, enabled ? ALC_TRUE : ALC_FALSE, 0};
             if (!alcResetDeviceSOFT(data.device, attrs)) {
-                logger.warning("Failed to reset device for HRTF change: " + errorToString(AL10.alGetError()));
+                logger.warning("Failed to reset device for HRTF change");
             }
         } else {
             logger.warning("ALC_SOFT_HRTF not supported");
@@ -193,7 +191,6 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
     public OpenALManager setMasterGain(float gain) {
         super.setMasterGain(gain);
         AL10.alListenerf(AL10.AL_GAIN, gain);
-        checkALError("alListenerf AL_GAIN");
         return this;
     }
 
@@ -206,7 +203,6 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
             fb.put(up.x()).put(up.y()).put(up.z());
             fb.flip();
             AL10.alListenerfv(AL10.AL_ORIENTATION, fb);
-            checkALError("alListenerfv AL_ORIENTATION");
         }
         return this;
     }
@@ -215,7 +211,6 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
     public OpenALManager setListenerPosition(float x, float y, float z) {
         super.setListenerPosition(x, y, z);
         AL10.alListener3f(AL10.AL_POSITION, x, y, z);
-        checkALError("alListener3f AL_POSITION");
         return this;
     }
 
@@ -249,7 +244,7 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
     }
 
     @Override
-    public synchronized void close() {
+    public void close() {
         if (isClosed()) return;
         if (!ALC10.alcMakeContextCurrent(data.context)) {
             logger.warning("Failed to make OpenAL context current for shutdown: " + data.context);
@@ -257,17 +252,19 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
         try {
             processCleanupTasks();
             super.close();
-            logger.info("AudioManager closing sources...");
-            for (OpenALAudioSource source : sources) {
-                try {
-                    source.close();
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "Error closing audio source", e);
+            synchronized (this) {
+                logger.info("AudioManager closing sources...");
+                for (OpenALAudioSource source : sources) {
+                    try {
+                        source.close();
+                    } catch (Exception e) {
+                        logger.log(Level.WARNING, "Error closing audio source", e);
+                    }
                 }
+                Arrays.fill(sources, null);
+                processCleanupTasks();
+                efxManager.close();
             }
-            Arrays.fill(sources, null);
-            processCleanupTasks();
-            efxManager.close();
         } finally {
             data.close();
         }
@@ -285,37 +282,5 @@ final class OpenALManager extends AbstractAudioManager<OpenALManager, OpenALAudi
     @Override
     public void setReverb(ReverbType from, ReverbType to, float factor) {
         efxManager.setReverb(from, to, factor);
-    }
-
-    /**
-     * Checks for OpenAL errors and logs them
-     *
-     * @param message A descriptive message for the context of the OpenAL call.
-     */
-    public static void checkALError(String message) {
-        if (DEBUG) {
-            long context = ALC10.alcGetCurrentContext();
-            if (context != 0) {
-                int error = AL10.alGetError();
-                if (error != AL10.AL_NO_ERROR) {
-                    logger.log(Level.WARNING, "OpenAL Error (" + message + ") [Context: " + context + "]: "
-                            + errorToString(error), new Throwable("stacktrace"));
-                }
-            } else {
-                logger.log(Level.WARNING, "OpenAL Error (" + message + "): no current context");
-            }
-        }
-    }
-
-    private static String errorToString(int error) {
-        return switch (error) {
-            case AL10.AL_NO_ERROR -> "AL_NO_ERROR";
-            case AL10.AL_INVALID_NAME -> "AL_INVALID_NAME";
-            case AL10.AL_INVALID_ENUM -> "AL_INVALID_ENUM";
-            case AL10.AL_INVALID_VALUE -> "AL_INVALID_VALUE";
-            case AL10.AL_INVALID_OPERATION -> "AL_INVALID_OPERATION";
-            case AL10.AL_OUT_OF_MEMORY -> "AL_OUT_OF_MEMORY";
-            default -> "Unknown OpenAL Error: " + error;
-        };
     }
 }

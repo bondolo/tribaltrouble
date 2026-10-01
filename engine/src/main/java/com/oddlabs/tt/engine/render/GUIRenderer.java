@@ -25,7 +25,7 @@ import java.util.Deque;
  * Renders 2D GUI elements using a shader-based multi-texture batching system.
  * Supports multi-texturing to batch draw calls across different textures.
  */
-public final class GUIRenderer {
+public final class GUIRenderer implements AutoCloseable {
     private static final int MAX_QUADS = 2048;
     private static final int VERTICES_PER_QUAD = 4;
     private static final int INDICES_PER_QUAD = 6;
@@ -40,6 +40,7 @@ public final class GUIRenderer {
 
     private final VertexArray vao;
     private final int vbo;
+    private final int ibo;
     private final ByteBuffer vertexBuffer;
 
     // Texture batching state
@@ -70,7 +71,7 @@ public final class GUIRenderer {
 
         this.vao = new VertexArray();
         this.vbo = GL15.glGenBuffers();
-        int ibo = GL15.glGenBuffers();
+        this.ibo = GL15.glGenBuffers();
         this.vertexBuffer = BufferUtils.createByteBuffer(MAX_QUADS * VERTICES_PER_QUAD * layout.getStride());
 
         setupBuffers(ibo);
@@ -330,5 +331,13 @@ public final class GUIRenderer {
 
     public MatrixStack getMatrixStack() {
         return matrixStack;
+    }
+
+    @Override
+    public void close() {
+        shader.close();
+        vao.close();
+        GL15.glDeleteBuffers(vbo);
+        GL15.glDeleteBuffers(ibo);
     }
 }

@@ -138,6 +138,8 @@ public final class FBO extends NativeResource<FBO.Buffer> {
             return;
         }
 
+        detachAttachments();
+
         if (colorTexture != null) {
             colorTexture.close();
             // Re-create color texture with new dimensions
@@ -185,13 +187,35 @@ public final class FBO extends NativeResource<FBO.Buffer> {
     }
 
     public void detachAll() {
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, getHandle());
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, 0, 0);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL11.GL_TEXTURE_2D, 0, 0);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, 0, 0);
+        detachAttachments();
         colorTexture = null;
         maskTexture = null;
         depthTexture = null;
+    }
+
+    private void detachAttachments() {
+        if (colorTexture != null || maskTexture != null || depthTexture != null
+                || colorRbo != 0 || maskRbo != 0 || depthRbo != 0) {
+            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, getHandle());
+            if (colorTexture != null) {
+                GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, 0, 0);
+            }
+            if (maskTexture != null) {
+                GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL11.GL_TEXTURE_2D, 0, 0);
+            }
+            if (depthTexture != null) {
+                GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, 0, 0);
+            }
+            if (colorRbo != 0) {
+                GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_RENDERBUFFER, 0);
+            }
+            if (maskRbo != 0) {
+                GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT1, GL30.GL_RENDERBUFFER, 0);
+            }
+            if (depthRbo != 0) {
+                GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER, 0);
+            }
+        }
     }
 
     public @Nullable Texture getColorTexture() {
@@ -272,6 +296,7 @@ public final class FBO extends NativeResource<FBO.Buffer> {
 
     @Override
     public void close() {
+        detachAttachments();
         super.close();
 
         if (colorRbo != 0) {

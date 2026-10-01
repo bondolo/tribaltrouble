@@ -9,22 +9,18 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.EXTEfx;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.logging.Logger;
 
-import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
 import static org.lwjgl.openal.EXTEfx.AL_AUXILIARY_SEND_FILTER;
 
 /**
  * OpenAL implementation of {@link AudioSource} managing a native OpenAL source.
  */
 final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> implements AudioSource {
-    private static final Logger logger = Logger.getLogger(OpenALAudioSource.class.getSimpleName());
 
     static final class Source extends NativeResource.NativeState {
 
@@ -32,7 +28,6 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
 
         Source() {
             sourceId = AL10.alGenSources();
-            checkALError("alGenSources");
         }
 
         @Override
@@ -47,31 +42,19 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
 
         @Override
         public void close() {
-            if (ALC10.alcGetCurrentContext() != 0) {
-                AL10.alGetError(); // Clear any sticky error from previous operations
-                // Check if the source is valid before trying to stop it
-                if (AL10.alIsSource(sourceId)) {
-                    // Stop the source before deleting it, to be safe
-                    AL10.alSourceStop(sourceId);
-                    checkALError("alSourceStop before deleting source");
+            // Stop the source before deleting it, to be safe
+            AL10.alSourceStop(sourceId);
 
-                    // Explicitly unqueue and detach any buffers (static or queued) from the source.
-                    detachBuffers(sourceId);
+            // Explicitly unqueue and detach any buffers (static or queued) from the source.
+            detachBuffers(sourceId);
 
-                    // Reset any auxiliary sends to free up effect slots
-                    AL11.alSource3i(sourceId, AL_AUXILIARY_SEND_FILTER, 0, 0, 0);
-                    checkALError("alSource3i AL_AUXILIARY_SEND_FILTER AL_NONE before deleting source");
+            // Reset any auxiliary sends to free up effect slots
+            AL11.alSource3i(sourceId, AL_AUXILIARY_SEND_FILTER, 0, 0, 0);
 
-                    // Detach the direct filter to free up the filter object
-                    AL10.alSourcei(sourceId, EXTEfx.AL_DIRECT_FILTER, EXTEfx.AL_FILTER_NULL);
-                    checkALError("alSourcei AL_DIRECT_FILTER AL_FILTER_NULL before deleting source");
+            // Detach the direct filter to free up the filter object
+            AL10.alSourcei(sourceId, EXTEfx.AL_DIRECT_FILTER, EXTEfx.AL_FILTER_NULL);
 
-                    AL10.alDeleteSources(sourceId);
-                    checkALError("alDeleteSources");
-                } else {
-                    logger.warning("Attempted to close invalid source");
-                }
-            }
+            AL10.alDeleteSources(sourceId);
         }
     }
 
@@ -101,13 +84,7 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
         try {
             stop();
             if (directFilter != null) {
-                if (ALC10.alcGetCurrentContext() != 0) {
-                    int sourceId = getSource();
-                    if (AL10.alIsSource(sourceId)) {
-                        AL10.alSourcei(sourceId, EXTEfx.AL_DIRECT_FILTER, EXTEfx.AL_FILTER_NULL);
-                        checkALError("alSourcei AL_DIRECT_FILTER AL_FILTER_NULL");
-                    }
-                }
+                AL10.alSourcei(getSource(), EXTEfx.AL_DIRECT_FILTER, EXTEfx.AL_FILTER_NULL);
             }
             super.close();
         } finally {
@@ -130,17 +107,13 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
 
     @Override
     public void setDirectFilterGainHF(float gainHF) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
         try {
             if (directFilter == null) {
                 directFilter = new OpenALFilter(manager::enqueueCleanup);
             }
             directFilter.setLowPassGainHF(gainHF);
             int sourceId = getSource();
-            if (AL10.alIsSource(sourceId)) {
-                AL10.alSourcei(sourceId, EXTEfx.AL_DIRECT_FILTER, directFilter.getFilterId());
-                checkALError("alSourcei AL_DIRECT_FILTER");
-            }
+            AL10.alSourcei(sourceId, EXTEfx.AL_DIRECT_FILTER, directFilter.getFilterId());
         } catch (Exception e) {
             // EFX not supported or an error creating the filter, ignore
         }
@@ -148,7 +121,6 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
 
     @Override
     public State getState() {
-        if (ALC10.alcGetCurrentContext() == 0) return State.STOPPED;
         return switch (getSourceState()) {
             case AL10.AL_INITIAL -> State.INITIAL;
             case AL10.AL_PLAYING -> State.PLAYING;
@@ -168,252 +140,137 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
     }
 
     void setAudio(OpenALAudio audio) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
         int buffer = audio.getBuffer();
         assert buffer != AL10.AL_NONE;
         int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            if (AL10.alGetSourcei(sourceId, AL11.AL_SOURCE_TYPE) == AL11.AL_STREAMING) {
-                detachBuffers(sourceId);
-            }
-            AL10.alSourcei(sourceId, AL10.AL_BUFFER, audio.getBuffer());
-            checkALError("alSourcei AL_BUFFER");
+        if (AL10.alGetSourcei(sourceId, AL11.AL_SOURCE_TYPE) == AL11.AL_STREAMING) {
+            detachBuffers(sourceId);
         }
+        AL10.alSourcei(sourceId, AL10.AL_BUFFER, audio.getBuffer());
     }
 
     void queue(IntBuffer al_buffers) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
         int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            assert al_buffers.remaining() > 0 : "al_buffers is empty";
-            if (AL10.alGetSourcei(sourceId, AL11.AL_SOURCE_TYPE) != AL11.AL_STREAMING) {
-                AL10.alSourceStop(sourceId);
-                AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
-                checkALError("alSourcei AL_BUFFER AL_NONE before queue");
-            }
-            AL10.alSourceQueueBuffers(sourceId, al_buffers);
-            checkALError("alSourceQueueBuffers");
+        assert al_buffers.remaining() > 0 : "al_buffers is empty";
+        if (AL10.alGetSourcei(sourceId, AL11.AL_SOURCE_TYPE) != AL11.AL_STREAMING) {
+            AL10.alSourceStop(sourceId);
+            AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
         }
+        AL10.alSourceQueueBuffers(sourceId, al_buffers);
     }
 
     int processed() {
-        if (ALC10.alcGetCurrentContext() == 0) return 0;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            int processed = AL10.alGetSourcei(sourceId, AL10.AL_BUFFERS_PROCESSED);
-            checkALError("alGetSourcei AL_BUFFERS_PROCESSED");
-            return processed;
-        }
-        return 0;
+        return AL10.alGetSourcei(getSource(), AL10.AL_BUFFERS_PROCESSED);
     }
 
     void unqueued(IntBuffer al_buffers) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourceUnqueueBuffers(sourceId, al_buffers);
-        }
+        AL10.alSourceUnqueueBuffers(getSource(), al_buffers);
     }
 
     @Override
     public void setPitch(float pitch) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcef(sourceId, AL10.AL_PITCH, pitch);
-            checkALError("alSourcef AL_PITCH");
-        }
+        AL10.alSourcef(getSource(), AL10.AL_PITCH, pitch);
     }
 
     @Override
     public void setGain(float gain) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcef(sourceId, AL10.AL_GAIN, gain);
-            checkALError("alSourcef AL_GAIN");
-        }
+        AL10.alSourcef(getSource(), AL10.AL_GAIN, gain);
     }
 
     @Override
     public void setMinGain(float gain) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcef(sourceId, AL10.AL_MIN_GAIN, gain);
-            checkALError("alSourcef AL_MIN_GAIN");
-        }
+        AL10.alSourcef(getSource(), AL10.AL_MIN_GAIN, gain);
     }
 
     @Override
     public void setMaxGain(float gain) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcef(sourceId, AL10.AL_MAX_GAIN, gain);
-            checkALError("alSourcef AL_MAX_GAIN");
-        }
+        AL10.alSourcef(getSource(), AL10.AL_MAX_GAIN, gain);
     }
 
     @Override
     public void setRolloff(float rolloff) {
         this.rolloff = rolloff;
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcef(sourceId, AL10.AL_ROLLOFF_FACTOR, rolloff);
-            checkALError("alSourcef AL_ROLLOFF_FACTOR");
-        }
+        AL10.alSourcef(getSource(), AL10.AL_ROLLOFF_FACTOR, rolloff);
     }
 
     @Override
     public void setDistance(float distance) {
         this.reference_distance = distance;
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcef(sourceId, AL10.AL_REFERENCE_DISTANCE, distance);
-            checkALError("alSourcef AL_REFERENCE_DISTANCE");
-        }
+        AL10.alSourcef(getSource(), AL10.AL_REFERENCE_DISTANCE, distance);
     }
 
     @Override
     public void setPosition(float x, float y, float z) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSource3f(sourceId, AL10.AL_POSITION, x, y, z);
-            checkALError("alSource3f AL_POSITION");
-        }
+        AL10.alSource3f(getSource(), AL10.AL_POSITION, x, y, z);
     }
 
     @Override
     public void setRelative(boolean relative) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcei(sourceId, AL10.AL_SOURCE_RELATIVE, relative ? AL10.AL_TRUE : AL10.AL_FALSE);
-        }
+        AL10.alSourcei(getSource(), AL10.AL_SOURCE_RELATIVE, relative ? AL10.AL_TRUE : AL10.AL_FALSE);
     }
 
     @Override
     public void setLooping(boolean looping) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL10.alSourcei(sourceId, AL10.AL_LOOPING, looping ? AL10.AL_TRUE : AL10.AL_FALSE);
-        }
+        AL10.alSourcei(getSource(), AL10.AL_LOOPING, looping ? AL10.AL_TRUE : AL10.AL_FALSE);
     }
 
     @Override
     public void stop() {
-        if (ALC10.alcGetCurrentContext() != 0) {
-            AL10.alGetError(); // clear any previous error
-            int sourceId = getSource();
-            if (AL10.alIsSource(sourceId)) {
-                if (AL10.alGetSourcei(sourceId, AL10.AL_SOURCE_STATE) == AL10.AL_PLAYING) {
-                    AL10.alSourcef(sourceId, AL10.AL_GAIN, 0f);
-                }
-                AL10.alSourcei(sourceId, AL10.AL_LOOPING, AL10.AL_FALSE);
-                AL10.alSourceStop(sourceId);
-                checkALError("alSourceStop");
-
-                AL10.alSourceRewind(sourceId);
-                checkALError("alSourceRewind");
-            }
+        int sourceId = getSource();
+        if (AL10.alGetSourcei(sourceId, AL10.AL_SOURCE_STATE) == AL10.AL_PLAYING) {
+            AL10.alSourcef(sourceId, AL10.AL_GAIN, 0f);
         }
+        AL10.alSourcei(sourceId, AL10.AL_LOOPING, AL10.AL_FALSE);
+        AL10.alSourceStop(sourceId);
+        AL10.alSourceRewind(sourceId);
     }
 
     static void detachBuffers(int sourceId) {
-        if (ALC10.alcGetCurrentContext() == 0 || !AL10.alIsSource(sourceId)) return;
-        int state = AL10.alGetSourcei(sourceId, AL10.AL_SOURCE_STATE);
-        if (state == AL10.AL_PLAYING || state == AL10.AL_PAUSED) {
-            AL10.alSourceStop(sourceId);
-            checkALError("alSourceStop in detachBuffers");
-        }
+        AL10.alSourceStop(sourceId);
         int processed = AL10.alGetSourcei(sourceId, AL10.AL_BUFFERS_PROCESSED);
         if (processed > 0) {
             try (var stack = MemoryStack.stackPush()) {
                 IntBuffer unqueueBuf = stack.mallocInt(processed);
                 AL10.alSourceUnqueueBuffers(sourceId, unqueueBuf);
-                checkALError("alSourceUnqueueBuffers in detachBuffers");
             }
         }
         AL10.alSourcei(sourceId, AL10.AL_BUFFER, AL10.AL_NONE);
-        checkALError("alSourcei AL_BUFFER AL_NONE in detachBuffers");
     }
 
     @Override
     public void pause() {
-        if (ALC10.alcGetCurrentContext() != 0) {
-            int sourceId = getSource();
-            if (AL10.alIsSource(sourceId)) {
-                AL10.alSourcePause(sourceId);
-                checkALError("alSourcePause");
-            }
-        }
+        AL10.alSourcePause(getSource());
     }
 
     @Override
     public void play() {
-        if (ALC10.alcGetCurrentContext() != 0) {
-            int sourceId = getSource();
-            if (AL10.alIsSource(sourceId)) {
-                // Only play if not already playing to avoid OpenAL source stealing/restarting
-                if (getState() != State.PLAYING) {
-                    AL10.alSourcePlay(sourceId);
-                    checkALError("alSourcePlay");
-                }
-            }
+        // Only play if not already playing to avoid OpenAL source stealing/restarting
+        if (getState() != State.PLAYING) {
+            AL10.alSourcePlay(getSource());
         }
     }
 
     @Override
     public void setBuffer(int bufferId) {
-        if (ALC10.alcGetCurrentContext() != 0) {
-            int sourceId = getSource();
-            if (AL10.alIsSource(sourceId)) {
-                AL10.alSourcei(sourceId, AL10.AL_BUFFER, bufferId);
-                checkALError("alSourcei AL_BUFFER");
-            }
-        }
+        AL10.alSourcei(getSource(), AL10.AL_BUFFER, bufferId);
     }
 
     @Override
     public void rewind() {
-        if (ALC10.alcGetCurrentContext() != 0) {
-            int sourceId = getSource();
-            if (AL10.alIsSource(sourceId)) {
-                AL10.alSourceRewind(sourceId);
-                checkALError("alSourceRewind");
-            }
-        }
+        AL10.alSourceRewind(getSource());
     }
 
     int getSourceState() {
-        if (ALC10.alcGetCurrentContext() == 0) return AL10.AL_STOPPED;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            int state = AL10.alGetSourcei(sourceId, AL10.AL_SOURCE_STATE);
-            checkALError("alGetSourcei AL_SOURCE_STATE");
-            return state;
-        }
-        return AL10.AL_STOPPED;
+        return AL10.alGetSourcei(getSource(), AL10.AL_SOURCE_STATE);
     }
 
     @Override
     public Vector3f getPosition() {
-        if (ALC10.alcGetCurrentContext() == 0) return new Vector3f();
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            try (var stack = MemoryStack.stackPush()) {
-                FloatBuffer positionBuffer = stack.mallocFloat(3);
-                AL10.alGetSourcefv(sourceId, AL10.AL_POSITION, positionBuffer);
-                checkALError("alGetSource AL_POSITION");
-                return new Vector3f(positionBuffer);
-            }
+        try (var stack = MemoryStack.stackPush()) {
+            FloatBuffer positionBuffer = stack.mallocFloat(3);
+            AL10.alGetSourcefv(getSource(), AL10.AL_POSITION, positionBuffer);
+            return new Vector3f(positionBuffer);
         }
-        return new Vector3f();
     }
 
     int getSource() {
@@ -439,11 +296,6 @@ final class OpenALAudioSource extends NativeResource<OpenALAudioSource.Source> i
 
     @Override
     public void setAuxiliarySend(int slotId, int filterId) {
-        if (ALC10.alcGetCurrentContext() == 0) return;
-        int sourceId = getSource();
-        if (AL10.alIsSource(sourceId)) {
-            AL11.alSource3i(sourceId, AL_AUXILIARY_SEND_FILTER, slotId, 0, filterId);
-            checkALError("alSource3i AL_AUXILIARY_SEND_FILTER");
-        }
+        AL11.alSource3i(getSource(), AL_AUXILIARY_SEND_FILTER, slotId, 0, filterId);
     }
 }

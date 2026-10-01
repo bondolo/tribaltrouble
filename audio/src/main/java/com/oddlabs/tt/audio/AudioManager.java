@@ -98,16 +98,22 @@ public interface AudioManager extends AudioImplementation, AutoCloseable {
     }
 
     /**
-     * Stops the current music track with the given fade-out rate.
+     * Default exponential decay rate for music fade-out (~2.5 seconds).
      */
-    default void stopMusic(float decayRate) {
+    float DEFAULT_MUSIC_DECAY_RATE = 1.2f;
+
+    /**
+     * Stops the current music track immediately.
+     */
+    default void stopMusic() {
     }
 
     /**
-     * Stops the current music track with default fade-out.
+     * Stops the current music track with the given fade-out rate.
+     *
+     * @param decayRate the rate of exponential decay (higher values result in a faster fade-out)
      */
-    default void stopMusic() {
-        stopMusic(1.2f);
+    default void stopMusic(float decayRate) {
     }
 
     /**

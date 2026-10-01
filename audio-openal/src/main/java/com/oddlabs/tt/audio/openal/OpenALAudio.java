@@ -13,8 +13,6 @@ import java.net.URL;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-import static com.oddlabs.tt.audio.openal.OpenALManager.checkALError;
-
 /**
  * OpenAL buffered audio
  */
@@ -25,15 +23,12 @@ final class OpenALAudio extends NativeResource<OpenALAudio.Buffers> implements A
         Buffers(int num_buffers) {
             al_buffers = BufferUtils.createIntBuffer(num_buffers);
             AL10.alGenBuffers(al_buffers);
-            checkALError("alGenBuffers " + num_buffers);
         }
 
         @Override
         public void close() {
             if (ALC10.alcGetCurrentContext() != 0 && al_buffers.limit() > 0) {
-                AL10.alGetError(); // Clear any sticky error from previous operations
                 AL10.alDeleteBuffers(al_buffers);
-                checkALError("alDeleteBuffers");
             }
             al_buffers.limit(0);
         }
