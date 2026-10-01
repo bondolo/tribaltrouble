@@ -193,9 +193,13 @@ final class DecalShader extends ShaderProgram implements FogShader {
                                 ringAlpha = baseSample.r;
                             }
 
+                            // Contact Ambient Occlusion: tight non-offset core directly under the unit's base
+                            float contactAlpha = exp(-dist * dist * 12.0) * 0.40;
+                            float combinedShadow = max(shadowAlpha, contactAlpha);
+
                             // Composition: Apply Ring OVER Shadow
                             float a_r = ringAlpha * 0.8 * fs_in.Color.a; // 80% opacity for selection rings
-                            float a_s = shadowAlpha * fs_in.ShadowOpacity;     // opacity scaled by shadow opacity
+                            float a_s = combinedShadow * fs_in.ShadowOpacity;     // opacity scaled by shadow opacity
 
                             float finalAlpha = a_r + a_s * (1.0 - a_r);
 

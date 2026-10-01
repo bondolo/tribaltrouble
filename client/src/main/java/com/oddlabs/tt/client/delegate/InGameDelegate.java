@@ -16,6 +16,7 @@ import com.oddlabs.tt.simulation.pathfinder.UnitGrid;
 import com.oddlabs.tt.engine.render.state.FogInfo;
 import com.oddlabs.tt.client.viewer.Cheat;
 import com.oddlabs.tt.client.viewer.WorldViewer;
+import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.simulation.player.AI;
 import org.jspecify.annotations.Nullable;
 
@@ -114,6 +115,12 @@ public abstract class InGameDelegate<C extends Camera> extends CameraDelegate<C>
             // F9 toggles fog
             FogInfo fog_info = getCamera().getState().getFog();
             fog_info.setEnabled(!fog_info.isEnabled());
+            return true;
+        }
+        if (actions.contains(GameAction.CHEAT_10)) {
+            // Option-F7 toggles shadows
+            cheat.draw_shadows = !cheat.draw_shadows;
+            DebugFlags.process_shadows = cheat.draw_shadows;
             return true;
         }
 

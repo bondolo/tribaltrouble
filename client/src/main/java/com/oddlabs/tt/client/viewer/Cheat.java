@@ -5,6 +5,7 @@ public final class Cheat {
     private boolean enabled = false;
     public boolean draw_trees = true;
     public boolean line_mode = false;
+    public boolean draw_shadows = true;
 
     public Cheat() {
         this(Boolean.getBoolean("com.oddlabs.tt.developer"));

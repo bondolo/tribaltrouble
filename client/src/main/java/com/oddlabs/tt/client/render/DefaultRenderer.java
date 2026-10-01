@@ -305,7 +305,7 @@ public final class DefaultRenderer implements UIRenderer, AutoCloseable {
             sonicBlastRenderer.prepare(renderState.getSonicBlastQueue());
         }
         sprite_sorter.distributeModels();
-        if (DebugFlags.process_shadows) {
+        if (DebugFlags.process_shadows && (cheat == null || cheat.draw_shadows)) {
             render_queues.renderShadows(context, (float) world.getHeightMap().getMetersPerWorld(),
                     landscape_renderer.getHeightMapVisual().getHeightTexture(), modelViewStack, projectionStack);
             if (DebugFlags.process_trees) {

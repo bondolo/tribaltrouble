@@ -105,15 +105,33 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     }
 
     public void renderShadows(SelectableShadowRenderer shadowRenderer) {
+        if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
+            return;
+        }
         getRenderLists().forEach((type, list) -> {
             Tree visual = getTrees().get(type);
             list.forEach(tree -> {
                 Float fallProgress = fallingTrees.get(tree);
                 if (fallProgress != null) {
-                    float scale = Math.max(0f, 1f - fallProgress);
-                    float opacity = 1.0f + 0.3f * fallProgress;
-                    shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, opacity));
-                } else {
+                    float p = fallProgress;
+                    float scale;
+                    float opacity;
+                    final float pHit = 0.65f;
+                    if (p <= pHit) {
+                        float u = p / pHit;
+                        float ramp = 1.0f - (1.0f - u) * (1.0f - u);
+                        opacity = 1.0f + 0.35f * ramp;
+                        scale = 1.0f - 0.15f * ramp;
+                    } else {
+                        float v = Math.min(1.0f, (p - pHit) / (1.0f - pHit));
+                        float fade = (1.0f - v) * (1.0f - v);
+                        opacity = 1.35f * fade;
+                        scale = 0.85f * fade;
+                    }
+                    if (scale > 0.001f && opacity > 0.001f) {
+                        shadowRenderer.addToShadowList(new TreeShadow(tree, visual, scale, opacity));
+                    }
+                } else if (!tree.isEmpty()) {
                     Float spawnProgress = spawningTrees.get(tree);
                     if (spawnProgress != null) {
                         float inv = 1f - spawnProgress;
