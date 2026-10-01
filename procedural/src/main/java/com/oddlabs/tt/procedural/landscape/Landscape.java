@@ -489,8 +489,7 @@ public final class Landscape {
         Layer snow = new Layer(empty.copy().fill(VIKING_SNOW_COLOR.r()), empty.copy().fill(VIKING_SNOW_COLOR.g()), empty
                 .copy().fill(VIKING_SNOW_COLOR.b()));
         Channel bump = snow_bump1.channelAdd(snow_bump2);
-        // Do not bump diffuse for snow to keep it pure and avoid greyness.
-        // snow.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
+        snow.bump(bump, size / 1024f, 0f, 0.1f, 1f, 1f, 1f, 0f, 0f, 0f);
         if (DEBUG) snow.saveAsPNG("structure_snow");
 
         return new StructureLayers(toLayerWithAlpha(snow, 0.05f), toNormalMapWithSpecular(bump, 0.2f, 0.8f, size));
@@ -893,7 +892,7 @@ public final class Landscape {
         snow_alpha.channelSubtract(cliff_alpha);
         snow_alpha.smooth(1).smooth(1);
         // Gate fractional snow alpha with the altitude mask to eliminate downslope bleeding into lowland valleys
-        snow_alpha.channelMultiply(height.copy().dynamicRange(0.52f, 0.60f, 0f, 1f));
+        snow_alpha.channelMultiply(height.copy().dynamicRange(0.55f, 0.62f, 0f, 1f));
 
         return snow_alpha;
     }
