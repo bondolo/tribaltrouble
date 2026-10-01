@@ -279,13 +279,8 @@ public final class Landscape {
 
         structures[1] = Landscape.genDirt(structure_size, noise8.copy(), noise256.copy(), voronoi32.copy());
 
-        Layer structure_rubble = Landscape.genRubble(structure_size, noise8.copy(), voronoi4.copy(), voronoi8.copy(),
-                voronoi16.copy(), structures[1].diffuse.copy()).diffuse; // Rubble uses dirt as base? Wait, check old code.
-        // Old code: Layer structure_rubble = Landscape.genRubble(..., structure_dirt.copy());
-        // genRubble logic: rubble.multiply(.9f).bump(...)
-        // I need to pass the base layer.
         structures[2] = Landscape.genRubble(structure_size, noise8.copy(), voronoi4.copy(), voronoi8.copy(), voronoi16
-                .copy(), structures[1].diffuse.copy());
+                .copy(), structures[1].diffuse().copy());
 
         structures[4] = Landscape.genGrass(structure_size, NATIVE_GRASS_COLOR, noise8.copy(), noise256.copy());
 
@@ -353,7 +348,7 @@ public final class Landscape {
     private static StructureLayers genSand(int size, Channel noise8, Channel noise256) {
         Channel empty = new Channel(size, size).fill(1f);
         Channel sand_bump1 = noise8.brightness(0.75f);
-        Channel sand_bump2 = noise256.brightness(0.15f);
+        Channel sand_bump2 = noise256.brightness(0.25f);
         Layer sand = new Layer(empty.copy().fill(NATIVE_SAND_COLOR.r()), empty.copy().fill(NATIVE_SAND_COLOR.g()), empty
                 .copy().fill(NATIVE_SAND_COLOR.b()));
         Channel bump = sand_bump1.channelAdd(sand_bump2);
