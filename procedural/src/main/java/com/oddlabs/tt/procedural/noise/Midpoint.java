@@ -48,7 +48,7 @@ public final class Midpoint {
                         v2 = channel.getPixel((x + block_size) % size, y);
                         v3 = channel.getPixel(x, (y + block_size) % size);
                         v4 = channel.getPixel((x + block_size) % size, (y + block_size) % size);
-                        v5 = 0.25f * (v1 + v2 + v3 + v4) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v5 = 0.25f * (v1 + v2 + v3 + v4) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x + block_size_half, y + block_size_half, v5);
                         y += block_size;
                     }
@@ -62,7 +62,7 @@ public final class Midpoint {
                         v2 = channel.getPixel(x + block_size, y);
                         v3 = channel.getPixel(x, y + block_size);
                         v4 = channel.getPixel(x + block_size, y + block_size);
-                        v5 = 0.25f * (v1 + v2 + v3 + v4) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v5 = 0.25f * (v1 + v2 + v3 + v4) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x + block_size_half, y + block_size_half, v5);
                         y += block_size;
                     }
@@ -76,7 +76,7 @@ public final class Midpoint {
                         v2 = channel.getPixel((x + block_size) % size, y);
                         v3 = channel.getPixel(x, (y + block_size) % size);
                         v4 = channel.getPixel((x + block_size) % size, (y + block_size) % size);
-                        v5 = 0.25f * (v1 + v2 + v3 + v4) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v5 = 0.25f * (v1 + v2 + v3 + v4) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x + block_size_half, y + block_size_half, v5);
                         y += block_size;
                     }
@@ -89,7 +89,7 @@ public final class Midpoint {
                         v2 = channel.getPixel((x + block_size) % size, y);
                         v3 = channel.getPixel(x, (y + block_size) % size);
                         v4 = channel.getPixel((x + block_size) % size, (y + block_size) % size);
-                        v5 = 0.25f * (v1 + v2 + v3 + v4) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v5 = 0.25f * (v1 + v2 + v3 + v4) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x + block_size_half, y + block_size_half, v5);
                     }
                     x += block_size;
@@ -105,8 +105,8 @@ public final class Midpoint {
                         v3 = channel.getPixel(x, (y + block_size) % size);
                         v6 = channel.getPixel(((x - block_size_half) + size) % size, (y + block_size_half) % size);
                         v7 = channel.getPixel((x + block_size_half) % size, ((y - block_size_half) + size) % size);
-                        v8 = 0.25f * (v1 + v3 + v5 + v6) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
-                        v9 = 0.25f * (v1 + v2 + v5 + v7) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v8 = 0.25f * (v1 + v3 + v5 + v6) + random.nextFloat() * amp - amp_half;
+                        v9 = 0.25f * (v1 + v2 + v5 + v7) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x, y + block_size_half, v8);
                         channel.putPixel(x + block_size_half, y, v9);
                         y += block_size;
@@ -123,8 +123,8 @@ public final class Midpoint {
                         v3 = channel.getPixel(x, y + block_size);
                         v6 = channel.getPixel(x - block_size_half, y + block_size_half);
                         v7 = channel.getPixel(x + block_size_half, y - block_size_half);
-                        v8 = 0.25f * (v1 + v3 + v5 + v6) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
-                        v9 = 0.25f * (v1 + v2 + v5 + v7) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v8 = 0.25f * (v1 + v3 + v5 + v6) + random.nextFloat() * amp - amp_half;
+                        v9 = 0.25f * (v1 + v2 + v5 + v7) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x, y + block_size_half, v8);
                         channel.putPixel(x + block_size_half, y, v9);
                         y += block_size;
@@ -141,8 +141,8 @@ public final class Midpoint {
                         v3 = channel.getPixel(x, (y + block_size) % size);
                         v6 = channel.getPixel(((x - block_size_half) + size) % size, (y + block_size_half) % size);
                         v7 = channel.getPixel((x + block_size_half) % size, ((y - block_size_half) + size) % size);
-                        v8 = 0.25f * (v1 + v3 + v5 + v6) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
-                        v9 = 0.25f * (v1 + v2 + v5 + v7) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v8 = 0.25f * (v1 + v3 + v5 + v6) + random.nextFloat() * amp - amp_half;
+                        v9 = 0.25f * (v1 + v2 + v5 + v7) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x, y + block_size_half, v8);
                         channel.putPixel(x + block_size_half, y, v9);
                         y += block_size;
@@ -158,8 +158,8 @@ public final class Midpoint {
                         v3 = channel.getPixel(x, (y + block_size) % size);
                         v6 = channel.getPixel(((x - block_size_half) + size) % size, (y + block_size_half) % size);
                         v7 = channel.getPixel((x + block_size_half) % size, ((y - block_size_half) + size) % size);
-                        v8 = 0.25f * (v1 + v3 + v5 + v6) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
-                        v9 = 0.25f * (v1 + v2 + v5 + v7) + (amp_half > 0f ? random.nextFloat(-amp_half, amp_half) : 0f);
+                        v8 = 0.25f * (v1 + v3 + v5 + v6) + random.nextFloat() * amp - amp_half;
+                        v9 = 0.25f * (v1 + v2 + v5 + v7) + random.nextFloat() * amp - amp_half;
                         channel.putPixel(x, y + block_size_half, v8);
                         channel.putPixel(x + block_size_half, y, v9);
                     }

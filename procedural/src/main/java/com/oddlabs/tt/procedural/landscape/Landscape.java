@@ -729,7 +729,7 @@ public final class Landscape {
     // * ALPHAS *
     // **********
     private Channel generateAlphas() {
-        int seed = this.seed;
+        int seed = DEFAULT_LANDSCAPE_SEED;
         Channel alpha0, alpha1, alpha2, alpha3;
         Channel grass_alpha = switch (terrain) {
             case NATIVE -> {
@@ -1067,7 +1067,7 @@ public final class Landscape {
                                 && supplies.getPixel(x - 1, y) > 0
                                 && supplies.getPixel(x + 1, y) > 0
                                 && supplies.getPixel(x, y - 1) > 0
-                                && supplies.getPixel(x, y + 1) > 0
+                                && supplies.getPixel(x, y - 1) > 0
                         ) {
                             place.putPixel(x, y, 1f);
                             // make node neighbourhood inaccessible

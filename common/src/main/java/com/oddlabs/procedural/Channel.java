@@ -626,12 +626,12 @@ public final class Channel {
         float width_ratio = (float) width / new_width;
         for (int y = 0; y < new_height; y++) {
             float y_coord = y * height_ratio - 0.5f;
-            int y_coord_lo = (int) Math.floor(y_coord);
+            int y_coord_lo = (int) y_coord;
             int y_coord_hi = y_coord_lo + 1;
             float y_diff = y_coord - y_coord_lo;
             for (int x = 0; x < new_width; x++) {
                 float x_coord = x * width_ratio - 0.5f;
-                int x_coord_lo = (int) Math.floor(x_coord);
+                int x_coord_lo = (int) x_coord;
                 int x_coord_hi = x_coord_lo + 1;
                 float x_diff = x_coord - x_coord_lo;
                 float val1 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_lo),
@@ -658,14 +658,14 @@ public final class Channel {
         float width_ratio = (float) width / new_width;
         for (int y = 0; y < new_height; y++) {
             float y_coord = y * height_ratio - 0.5f;
-            int y_coord_lo = (int) Math.floor(y_coord);
+            int y_coord_lo = (int) y_coord;
             int y_coord_lolo = y_coord_lo - 1;
             int y_coord_hi = y_coord_lo + 1;
             int y_coord_hihi = y_coord_hi + 1;
             float y_diff = y_coord - y_coord_lo;
             for (int x = 0; x < new_width; x++) {
                 float x_coord = x * width_ratio - 0.5f;
-                int x_coord_lo = (int) Math.floor(x_coord);
+                int x_coord_lo = (int) x_coord;
                 int x_coord_lolo = x_coord_lo - 1;
                 int x_coord_hi = x_coord_lo + 1;
                 int x_coord_hihi = x_coord_hi + 1;
@@ -712,14 +712,14 @@ public final class Channel {
         float width_ratio = (float) width / new_width;
         for (int y = 0; y < new_height; y++) {
             float y_coord = y * height_ratio - 0.5f;
-            int y_coord_lo = (int) Math.floor(y_coord);
+            int y_coord_lo = (int) y_coord;
             int y_coord_lolo = y_coord_lo - 1;
             int y_coord_hi = y_coord_lo + 1;
             int y_coord_hihi = y_coord_hi + 1;
             float y_diff = y_coord - y_coord_lo;
             for (int x = 0; x < new_width; x++) {
                 float x_coord = x * width_ratio - 0.5f;
-                int x_coord_lo = (int) Math.floor(x_coord);
+                int x_coord_lo = (int) x_coord;
                 int x_coord_lolo = x_coord_lo - 1;
                 int x_coord_hi = x_coord_lo + 1;
                 int x_coord_hihi = x_coord_hi + 1;
@@ -899,11 +899,11 @@ public final class Channel {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 float x_coord = x + width * channel1.getPixel(x, y);
-                int x_coord_lo = (int) Math.floor(x_coord);
+                int x_coord_lo = (int) x_coord;
                 int x_coord_hi = x_coord_lo + 1;
                 float x_frac = x_coord - x_coord_lo;
                 float y_coord = y + height * channel2.getPixel(x, y);
-                int y_coord_lo = (int) Math.floor(y_coord);
+                int y_coord_lo = (int) y_coord;
                 int y_coord_hi = y_coord_lo + 1;
                 float y_frac = y_coord - y_coord_lo;
                 float val1 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_lo), getPixelWrap(x_coord_hi,
@@ -922,11 +922,11 @@ public final class Channel {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 float x_coord = x + width * magnitude * (perturb.getPixel(x, y) - 0.5f);
-                int x_coord_lo = (int) Math.floor(x_coord);
+                int x_coord_lo = (int) x_coord;
                 int x_coord_hi = x_coord_lo + 1;
                 float x_frac = x_coord - x_coord_lo;
                 float y_coord = y + height * magnitude * (perturb.getPixel(y, x) - 0.5f);
-                int y_coord_lo = (int) Math.floor(y_coord);
+                int y_coord_lo = (int) y_coord;
                 int y_coord_hi = y_coord_lo + 1;
                 float y_frac = y_coord - y_coord_lo;
                 float val1 = Tools.interpolateLinear(getPixelWrap(x_coord_lo, y_coord_lo), getPixelWrap(x_coord_hi,
@@ -980,10 +980,40 @@ public final class Channel {
 
     public Channel smooth(int radius) {
         radius = Math.max(1, radius);
-        Channel filter = this.copy();
+        Channel filter = new Channel(width, height);
         float factor = 1f / ((2 * radius + 1) * (2 * radius + 1));
-        for (int i = 0; i < pixels.length; i++) {
-            filter.pixels[i] *= factor;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                filter.pixels[y * width + x] = factor * pixels[y * width + x];
+            }
+        }
+        for (int x = radius; x < width - radius; x++) {
+            int y = radius;
+            float sum = 0f;
+            for (int i = -radius; i <= radius; i++) {
+                for (int j = -radius; j <= radius; j++) {
+                    sum += filter.pixels[(y + i) * width + (x + j)];
+                }
+            }
+            for (y++; y < height - radius; y++) {
+                for (int j = -radius; j <= radius; j++) {
+                    sum -= filter.pixels[(y - radius - 1) * width + (x + j)];
+                    sum += filter.pixels[(y + radius) * width + (x + j)];
+                }
+                pixels[y * width + x] = sum;
+            }
+        }
+        return this;
+    }
+
+    public Channel smoothWrap(int radius) {
+        radius = Math.max(1, radius);
+        Channel filter = new Channel(width, height);
+        float factor = 1f / ((2 * radius + 1) * (2 * radius + 1));
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                filter.pixels[y * width + x] = factor * pixels[y * width + x];
+            }
         }
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -999,29 +1029,30 @@ public final class Channel {
         return this;
     }
 
-    public Channel smoothWrap(int radius) {
-        return smooth(radius);
-    }
-
     public Channel smooth(int radius, Channel mask) {
         radius = Math.max(1, radius);
-        Channel filter = this.copy();
+        Channel filter = new Channel(width, height);
         float factor = 1f / ((2 * radius + 1) * (2 * radius + 1));
-        for (int i = 0; i < pixels.length; i++) {
-            filter.pixels[i] *= factor;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                filter.pixels[y * width + x] = factor * pixels[y * width + x];
+            }
         }
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                float alpha = mask.getPixel(x, y);
-                if (alpha > 0) {
-                    float sum = 0f;
-                    for (int i = -radius; i <= radius; i++) {
-                        for (int j = -radius; j <= radius; j++) {
-                            sum += filter.getPixelWrap(x + j, y + i);
-                        }
-                    }
-                    pixels[y * width + x] = alpha * sum + (1f - alpha) * pixels[y * width + x];
+        for (int x = radius; x < width - radius; x++) {
+            int y = radius;
+            float sum = 0f;
+            for (int i = -radius; i <= radius; i++) {
+                for (int j = -radius; j <= radius; j++) {
+                    sum += filter.pixels[(y + i) * width + (x + j)];
                 }
+            }
+            for (y++; y < height - radius; y++) {
+                for (int j = -radius; j <= radius; j++) {
+                    sum -= filter.pixels[(y - radius - 1) * width + (x + j)];
+                    sum += filter.pixels[(y + radius) * width + (x + j)];
+                }
+                float alpha = mask.getPixel(x, y);
+                pixels[y * width + x] = alpha * sum + (1f - alpha) * pixels[y * width + x];
             }
         }
         return this;
