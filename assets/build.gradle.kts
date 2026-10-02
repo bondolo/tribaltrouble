@@ -206,7 +206,37 @@ val convertInterTightBlackFont = convertTexture("convertInterTightBlackFont",
     layout.buildDirectory.dir("font_png/black").map { it.file("intertight-black_28.png") }, "font", "-color", "-flip", "-format", "dds")
 convertInterTightBlackFont.configure { dependsOn(renderInterTightBlackFont) }
 
-// 4. Geometry
+// 4. Tree Normals & Materials
+val treeNormalsDir = layout.buildDirectory.dir("tree_normals")
+
+val generateTreeNormalMaps = tasks.register<JavaExec>("generateTreeNormalMaps") {
+    group = "build"
+    description = "Generates tangent normal maps with wood specular metadata for tree bark."
+    mainClass.set("com.oddlabs.imageutil.TreeNormalMapGenerator")
+    classpath = converter
+    jvmArgs("-esa", "-ea", "-Xmx512m", "-Djava.awt.headless=true", "--enable-native-access=ALL-UNNAMED")
+
+    val treesIn = file("textures/models/trees.png")
+    val treesOut = treeNormalsDir.get().file("trees_normal.png").asFile
+    val vikingTreesIn = file("textures/models/viking_trees.png")
+    val vikingTreesOut = treeNormalsDir.get().file("viking_trees_normal.png").asFile
+
+    inputs.files(treesIn, vikingTreesIn)
+    outputs.files(treesOut, vikingTreesOut)
+
+    args(treesIn.absolutePath, treesOut.absolutePath, "0.45",
+         vikingTreesIn.absolutePath, vikingTreesOut.absolutePath, "2.5")
+}
+
+val convertTreesNormal = convertTexture("convertTreesNormal",
+    treeNormalsDir.map { it.file("trees_normal.png") }, "models", "-data", "-flip", "-mipmaps", "-format", "dds")
+convertTreesNormal.configure { dependsOn(generateTreeNormalMaps) }
+
+val convertVikingTreesNormal = convertTexture("convertVikingTreesNormal",
+    treeNormalsDir.map { it.file("viking_trees_normal.png") }, "models", "-data", "-flip", "-mipmaps", "-format", "dds")
+convertVikingTreesNormal.configure { dependsOn(generateTreeNormalMaps) }
+
+// 5. Geometry
 val geometry = tasks.register<JavaExec>("geometry") {
     group = "build"
     description = "Converts XML geometry definitions to binary format."
@@ -223,7 +253,8 @@ val geometry = tasks.register<JavaExec>("geometry") {
 val textures = tasks.register("textures") {
     dependsOn(convertExternalModels, convertExternalDecals, 
               convertInterLightFont, convertInterTightBlackFont, 
-              convertGui, convertPixelPerfect)
+              convertGui, convertPixelPerfect,
+              convertTreesNormal, convertVikingTreesNormal)
 }
 
 tasks.processResources {

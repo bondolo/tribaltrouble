@@ -225,7 +225,7 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         Texture trunkTeam = trunkSprite.textures[0][Sprite.TEXTURE_TEAM];
         Texture trunkBump = trunkSprite.hasBumpMap(0) ? trunkSprite.textures[0][Sprite.TEXTURE_BUMP] : null;
 
-        var crownBatch = instancedSpriteRenderer.getBatch(crownList, crownTexture, crownTeam, crownBump, respond,
+        var crownBatch = instancedSpriteRenderer.getBatch(crownList, crownTexture, crownTeam, null, respond,
                 false, true, true);
         var trunkBatch = instancedSpriteRenderer.getBatch(trunkList, trunkTexture, trunkTeam, trunkBump, respond,
                 false, true, true);
