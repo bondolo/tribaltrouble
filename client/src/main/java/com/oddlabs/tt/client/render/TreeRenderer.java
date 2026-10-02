@@ -36,9 +36,10 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
     private static final Logger logger = Logger.getLogger(TreeRenderer.class.getName());
     private static final float TREE_FALL_DURATION = 3f;
     private static final float TREE_SPAWN_DURATION = 3f;
+    private static final float TREE_WAVE_SCALE = 0.035f;
 
     private final InstancedSpriteRenderer instancedSpriteRenderer;
-    private final WaveAnimation wave_animation = new WaveAnimation();
+    private final WaveAnimation wave_animation = new WaveAnimation(TREE_WAVE_SCALE);
     private final @Nullable Cheat cheat;
     private final Matrix4f tempMatrix = new Matrix4f();
     private final AnimationManager animationManager;

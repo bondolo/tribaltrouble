@@ -5,12 +5,19 @@ import com.oddlabs.tt.base.event.StateChecksum;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+/**
+ * Evaluates periodic wind sway rotation for vegetation.
+ */
 public final class WaveAnimation {
-    private static final float TREE_WAVE_SCALE = 0.035f;
-
+    private final float waveScale;
     private final Vector3f wave_dir = new Vector3f(0, 0, 1);
     private final Vector3f up_vec = new Vector3f(0, 0, 1);
     private final Vector3f rot_axis = new Vector3f(0, 0, 1);
+
+    public WaveAnimation(float waveScale) {
+        this.waveScale = waveScale;
+    }
+
     private float x;
     private float y;
     private float rot_angle = 0;
@@ -31,8 +38,8 @@ public final class WaveAnimation {
     }
 
     private void initWaveDir() {
-        x = TREE_WAVE_SCALE * 0.5f * (float) Math.cos(time * 0.001f);
-        y = TREE_WAVE_SCALE * (float) Math.sin(time * 0.001f);
+        x = waveScale * 0.5f * (float) Math.cos(time * 0.001f);
+        y = waveScale * (float) Math.sin(time * 0.001f);
         wave_dir.set(x, y, 1);
         wave_dir.normalize();
     }

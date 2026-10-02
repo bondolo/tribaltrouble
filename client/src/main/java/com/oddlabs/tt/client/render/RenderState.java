@@ -22,6 +22,7 @@ import com.oddlabs.tt.engine.render.LODObject;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.ModelState;
 import com.oddlabs.tt.engine.render.ModelVisitor;
+import com.oddlabs.tt.engine.render.WaveAnimation;
 import com.oddlabs.tt.engine.render.WhiteModelVisitor;
 import com.oddlabs.tt.engine.render.DebugFlags;
 import com.oddlabs.tt.engine.render.RenderQueues;
@@ -218,6 +219,7 @@ public final class RenderState implements SceneContext {
     }
 
     private float lastFrameTime = -1f;
+    private final WaveAnimation plantWaveAnimation = new WaveAnimation(PLANT_WAVE_SCALE);
 
     public void setup(boolean picking, CameraState camera_state) {
         setup(picking, camera_state, -1f);
@@ -251,6 +253,7 @@ public final class RenderState implements SceneContext {
         }
         if (!picking && currentTime >= 0f) {
             lastFrameTime = currentTime;
+            plantWaveAnimation.setTime(currentTime);
         }
         prepareTargetResponds();
         prepareEffects();
@@ -656,7 +659,9 @@ public final class RenderState implements SceneContext {
         }
     }
 
-    private static final float PLANTS_CUT_DIST = 200;
+    private static final float START_FADE_DIST = 120f;
+    private static final float PLANTS_CUT_DIST = 350f;
+    private static final float PLANT_WAVE_SCALE = 0.010f;
     private static final int PLANT_FADE_STEPS = 256;
     private static final Color.Linear[] PLANT_FADE_COLORS = new Color.Linear[PLANT_FADE_STEPS];
     static {
@@ -665,9 +670,7 @@ public final class RenderState implements SceneContext {
         }
     }
 
-    private static final ModelVisitor<Plants> plants_model_visitor = new WhiteModelVisitor<>() {
-        private static final float START_FADE_DIST = 100;
-
+    private final ModelVisitor<Plants> plants_model_visitor = new WhiteModelVisitor<>() {
         @Override
         public @Nullable SpriteKey getSpriteKey(ElementSceneContext<Plants> render_state) {
             Plants plants = render_state.getModel();
@@ -680,11 +683,13 @@ public final class RenderState implements SceneContext {
             float angle = (float) Math.atan2(plants.getDirectionY(), plants.getDirectionX());
             dest.translation(plants.getPositionX(), plants.getPositionY(), plants.getPositionZ())
                     .rotate(angle, 0f, 0f, 1f);
+            plantWaveAnimation.mulRotation(dest);
 
             float dist_squared = render_state.f;
             if (dist_squared > START_FADE_DIST * START_FADE_DIST) {
                 float camera_dist = (float) Math.sqrt(dist_squared);
-                float alpha = 1f - ((camera_dist - START_FADE_DIST) / (PLANTS_CUT_DIST - START_FADE_DIST));
+                float t = Math.clamp((camera_dist - START_FADE_DIST) / (PLANTS_CUT_DIST - START_FADE_DIST), 0f, 1f);
+                float alpha = 1f - (t * t * (3f - 2f * t));
                 int index = Math.clamp(Math.round(alpha * 255f), 0, 255);
                 render_state.setColor(PLANT_FADE_COLORS[index]);
             }

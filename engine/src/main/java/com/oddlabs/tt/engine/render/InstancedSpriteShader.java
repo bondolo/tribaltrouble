@@ -137,7 +137,7 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
 
                         vec4 finalColor;
                         if (u_replaceMode) {
-                            finalColor = base;
+                            finalColor = vec4(base.rgb, base.a * fs_in.color.a);
                         } else if (u_modulateColor) {
                             finalColor = fs_in.color * base;
                         } else {
@@ -177,7 +177,7 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
 
                         float edgeAlpha = finalColor.a;
                         if (u_alphaTestValue > 0.0) {
-                            edgeAlpha = clamp((finalColor.a - u_alphaTestValue) * 3.0, 0.0, 1.0);
+                            edgeAlpha = clamp((base.a - u_alphaTestValue) * 3.0, 0.0, 1.0) * fs_in.color.a;
                             if (edgeAlpha <= 0.0) discard;
                         }
 

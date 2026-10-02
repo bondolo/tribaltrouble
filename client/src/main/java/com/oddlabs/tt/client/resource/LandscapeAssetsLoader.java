@@ -39,13 +39,15 @@ public final class LandscapeAssetsLoader {
         plant_sprites.put(
                 Terrain.NATIVE, IntStream.rangeClosed(1, 4)
                         .mapToObj(i -> String.format("/geometry/misc/plant_%d.binsprite", i))
-                        .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, true, false, true, true, true))
+                        .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, false, false, true, false,
+                                true))
                         .map(queues::register)
                         .toArray(SpriteKey[]::new));
         plant_sprites.put(
                 Terrain.VIKING, IntStream.rangeClosed(1, 4)
                         .mapToObj(i -> String.format("/geometry/misc/viking_plant_%d.binsprite", i))
-                        .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, true, false, true, true, true))
+                        .map(rsrc -> new SpriteFile(rsrc, RenderConfig.NO_MIPMAP_CUTOFF, false, false, true, false,
+                                true))
                         .map(queues::register)
                         .toArray(SpriteKey[]::new));
         ProgressListener.progress(1f / num_progress);
