@@ -44,10 +44,10 @@ public final class IronProcedural {
         stain.bump(noise2.copy(), 8f, 0f, 1f, 1f, 1f, 1f, 0f, 0f, 0f);
         rock.layerBlend(stain);
 
-        Channel specular = new Channel(TEXTURE_SIZE, TEXTURE_SIZE).fill(0.65f).channelSubtract(rustAlpha)
+        Channel specular = new Channel(TEXTURE_SIZE, TEXTURE_SIZE).fill(0.20f).channelSubtract(rustAlpha)
                 .channelSubtract(stainAlpha).clip();
 
-        Layer normalMapLayer = rock_bump.toNormalMap(2.5f, specular);
+        Layer normalMapLayer = rock_bump.toNormalMap(0.5f, specular);
         return new IronLayers(rock, normalMapLayer);
     }
 }

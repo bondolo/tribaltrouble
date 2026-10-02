@@ -116,8 +116,19 @@ public final class Sprite {
                     || lowerName.contains("branch") || lowerName.contains("foliage") || lowerName.contains("bush");
             boolean isData = lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica")
                     || lowerName.contains("team");
-            return new Texture[]{Resources.findResource(TextureFile.forModel("/textures/models/" + texture_name,
-                    color_format, clampEdges, mipmap_cutoff, max_alpha, isData))};
+            Texture diffuse = Resources.findResource(TextureFile.forModel("/textures/models/" + texture_name,
+                    color_format, clampEdges, mipmap_cutoff, max_alpha, isData));
+
+            String normalPath = "/textures/models/" + texture_name + "_normal";
+            String bumpPath = "/textures/models/" + texture_name + "_bump";
+            String bumpLocation = TextureFile.exists(normalPath) ? normalPath
+                    : (TextureFile.exists(bumpPath) ? bumpPath : null);
+            if (bumpLocation != null) {
+                Texture normal = Resources.findResource(TextureFile.forModel(bumpLocation,
+                        TextureFile.Format.RGBA, clampEdges, mipmap_cutoff, false, true));
+                return new Texture[]{diffuse, normal};
+            }
+            return new Texture[]{diffuse};
         }
     }
 

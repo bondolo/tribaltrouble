@@ -43,8 +43,8 @@ cd tribaltrouble
 
 Requirements:
 
-- Java SDK 26 or later
-- Gradle 9.2+ (or use included wrapper)
+- Java SDK 27 or later
+- Gradle 9.7+ (or use included wrapper)
 - Basis Universal 2.10.0 (optional)
 
 Build and run the game:

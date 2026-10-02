@@ -65,7 +65,12 @@ public interface LitShader extends Shader {
     String FRAGMENT_LIGHT_DIR = "vec3 lightDir = normalize((u_viewMatrix * vec4(u_lightDirection.xyz, 0.0)).xyz);";
 
     String FRAGMENT_LIGHTING_FUNCTION = """
-            vec3 calculateLighting(vec3 normal, vec3 worldNormal, vec3 viewPos, float specularStrength) {
+            struct LightingResult {
+                vec3 diffuse;
+                vec3 specular;
+            };
+
+            LightingResult calculateLighting(vec3 normal, vec3 worldNormal, vec3 viewPos, float specularStrength) {
                 """ + FRAGMENT_LIGHT_DIR + """
 
                 // Standard Lambertian diffuse matching legacy
@@ -74,18 +79,20 @@ public interface LitShader extends Shader {
                 // Ambient matching legacy
                 vec3 ambient = u_globalAmbient.rgb;
 
-                // Specular (Blinn-Phong)
-                vec3 viewDir = normalize(-viewPos);
-                vec3 halfDir = normalize(lightDir + viewDir);
-                float spec = pow(max(dot(normal, halfDir), 0.0), 32.0);
-                vec3 specular = specularStrength * spec * vec3(1.0);
-
                 // Stylized Cartoon Rim Highlight
+                vec3 viewDir = normalize(-viewPos);
                 float NdotV = max(dot(normal, viewDir), 0.0);
                 float rimTerm = pow(1.0 - NdotV, 4.0);
                 vec3 rimHighlight = rimTerm * 0.20 * u_sunColor.rgb;
 
-                return clamp(ambient + diff * vec3(1.0) + specular + rimHighlight, 0.0, 1.0);
+                vec3 diffuse = clamp(ambient + diff * vec3(1.0) + rimHighlight, 0.0, 1.0);
+
+                // Specular (Blinn-Phong) - additive highlight for metallic surfaces
+                vec3 halfDir = normalize(lightDir + viewDir);
+                float spec = pow(max(dot(normal, halfDir), 0.0), 96.0);
+                vec3 specular = specularStrength * spec * u_sunColor.rgb * 0.35;
+
+                return LightingResult(diffuse, specular);
             }
             """;
 }

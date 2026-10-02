@@ -255,7 +255,8 @@ public final class TextureProcessor {
 
     private static Layer[] applyOperations(Iterator<String> args, Layer[] images,
             Path infile) {
-        UsageMode usageMode = inferUsageFromName(infile);
+        UsageMode inferred = inferUsageFromName(infile);
+        UsageMode usageMode = inferred;
         while (args.hasNext()) {
             String op = args.next();
             if ("-usage".equals(op) && args.hasNext()) {
@@ -263,7 +264,9 @@ public final class TextureProcessor {
                 if ("data".equals(value) || "linear".equals(value)) {
                     usageMode = UsageMode.DATA_LINEAR;
                 } else if ("color".equals(value) || "srgb".equals(value)) {
-                    usageMode = UsageMode.COLOR_SRGB;
+                    if (inferred != UsageMode.DATA_LINEAR) {
+                        usageMode = UsageMode.COLOR_SRGB;
+                    }
                 }
                 continue;
             }
@@ -272,7 +275,9 @@ public final class TextureProcessor {
                 continue;
             }
             if ("-color".equals(op)) {
-                usageMode = UsageMode.COLOR_SRGB;
+                if (inferred != UsageMode.DATA_LINEAR) {
+                    usageMode = UsageMode.COLOR_SRGB;
+                }
                 continue;
             }
             images = applyOperation(op, args, images, usageMode);
@@ -355,8 +360,11 @@ public final class TextureProcessor {
     }
 
     private static UsageMode determineMode(Path infile, List<String> operations) {
+        if (inferUsageFromName(infile) == UsageMode.DATA_LINEAR) {
+            return UsageMode.DATA_LINEAR;
+        }
         UsageMode usageMode = parseExplictMode(operations);
-        return usageMode != null ? usageMode : inferUsageFromName(infile);
+        return usageMode != null ? usageMode : UsageMode.COLOR_SRGB;
     }
 
     private static @Nullable UsageMode parseExplictMode(List<String> operations) {
@@ -384,8 +392,9 @@ public final class TextureProcessor {
     private static UsageMode inferUsageFromName(Path infile) {
         String lowerName = infile.getFileName().toString().toLowerCase(Locale.ROOT);
         return lowerName.contains("normal") || lowerName.contains("bump") || lowerName.contains("mica")
-                ? UsageMode.DATA_LINEAR
-                : UsageMode.COLOR_SRGB;
+                || lowerName.contains("data")
+                        ? UsageMode.DATA_LINEAR
+                        : UsageMode.COLOR_SRGB;
     }
 
     public static Layer loadFile(Path file) throws IOException {

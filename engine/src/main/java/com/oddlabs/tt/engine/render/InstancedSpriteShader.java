@@ -151,18 +151,21 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
                                 specularStrength = normalMapVal.a;
                             }
 
-                            vec3 lightIntensity = vec3(1.0);
+                            vec3 diffuseLight = vec3(1.0);
+                            vec3 specularLight = vec3(0.0);
                             if (u_enableLighting) {
-                                lightIntensity = calculateLighting(normal, fs_in.worldNormal, fs_in.viewPosition, specularStrength);
+                                LightingResult lit = calculateLighting(normal, fs_in.worldNormal, fs_in.viewPosition, specularStrength);
+                                diffuseLight = lit.diffuse;
+                                specularLight = lit.specular;
                             }
 
                             // fs_in.color is the instance color (e.g. material color)
-                            finalColor = vec4(fs_in.color.rgb * base.rgb * lightIntensity, fs_in.color.a * base.a);
+                            finalColor = vec4(fs_in.color.rgb * (base.rgb * diffuseLight) + specularLight, fs_in.color.a * base.a);
 
                             if (u_enableTeamColor) {
                                 vec4 tex1 = texture(u_texture1, fs_in.texCoord0);
                                 // Mix decal color
-                                vec3 mixedColor = mix(finalColor.rgb, fs_in.decalColor.rgb * lightIntensity, tex1.rgb);
+                                vec3 mixedColor = mix(finalColor.rgb, fs_in.decalColor.rgb * diffuseLight + specularLight, tex1.rgb);
                                 finalColor.rgb = mixedColor;
 
                                 // Write to Mask Buffer (Team Color)

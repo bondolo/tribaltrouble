@@ -217,6 +217,18 @@ public final class TextureFile extends File<Texture> {
         this.is_srgb = is_srgb;
     }
 
+    /**
+     * Checks if a texture asset exists at the specified location with any supported extension.
+     *
+     * @param location path to the texture asset without file extension
+     * @return true if the texture asset exists; false otherwise
+     */
+    public static boolean exists(String location) {
+        return Arrays.stream(EXTENSIONS)
+                .map(ext -> locate(location + ext))
+                .anyMatch(Optional::isPresent);
+    }
+
     private static URI locateTexture(String location) {
         return Arrays.stream(EXTENSIONS)
                 .map(ext -> locate(location + ext))

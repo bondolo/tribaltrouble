@@ -22,14 +22,10 @@ import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 /**
@@ -185,8 +181,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
             return;
         }
 
-        getRenderLists().forEach( (type, list) -> renderList(getTrees().get(type), list, false));
-        getRespondRenderLists().forEach( (type, list) -> {
+        getRenderLists().forEach((type, list) -> renderList(getTrees().get(type), list, false));
+        getRespondRenderLists().forEach((type, list) -> {
             if (!list.isEmpty()) renderList(getTrees().get(type), list, true);
         });
     }
@@ -244,7 +240,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         render_list.clear();
     }
 
-    public void debugRender(EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> render_lists, EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> respond_render_lists) {
+    public void debugRender(EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> render_lists, EnumMap<
+            AbstractTreeGroup.TreeType, List<TreeSupply>> respond_render_lists) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
             render_lists.values().forEach(list -> list.forEach(RenderTools::draw));
             respond_render_lists.values().forEach(list -> list.forEach(RenderTools::draw));

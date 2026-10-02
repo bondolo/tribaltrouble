@@ -20,7 +20,7 @@ public final class GeneratorIron extends TextureGenerator {
                 new Texture(new GLIntImage(layers.diffuse()), GL21.GL_SRGB8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                         GL11.GL_LINEAR,
                         GL11.GL_REPEAT, GL11.GL_REPEAT),
-                new Texture(new GLIntImage(layers.normalMap()), GL11.GL_RGB, GL11.GL_LINEAR_MIPMAP_LINEAR,
+                new Texture(new GLIntImage(layers.normalMap()), GL11.GL_RGBA8, GL11.GL_LINEAR_MIPMAP_LINEAR,
                         GL11.GL_LINEAR,
                         GL11.GL_REPEAT, GL11.GL_REPEAT)
         };
