@@ -166,13 +166,6 @@ final class InstancedSpriteShader extends ShaderProgram implements FogShader, Li
                                 vec4 tex1 = texture(u_texture1, fs_in.texCoord0);
                                 // Mix decal color
                                 vec3 mixedColor = mix(finalColor.rgb, fs_in.decalColor.rgb * diffuseLight + specularLight, tex1.rgb);
-
-                                // Cel-shaded team silhouette rim highlight for enhanced cartoon readability
-                                vec3 viewDir = normalize(-fs_in.viewPosition);
-                                float NdotV = max(dot(normal, viewDir), 0.0);
-                                float teamRim = smoothstep(0.45, 0.80, 1.0 - NdotV);
-                                mixedColor += fs_in.decalColor.rgb * (teamRim * 0.35);
-
                                 finalColor.rgb = mixedColor;
 
                                 // Write to Mask Buffer (Team Color)
