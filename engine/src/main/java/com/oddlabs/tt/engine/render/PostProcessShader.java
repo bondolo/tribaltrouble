@@ -165,9 +165,10 @@ final class PostProcessShader extends ShaderProgram {
 
                     void main() {
                         vec4 sceneColor = texture(u_sceneTexture, v_texCoord);
-                        vec4 mask = texture(u_maskTexture, v_texCoord);
-
                         vec3 finalColor = sceneColor.rgb;
+
+                        // Conditionally sample mask texture only when needed (high contrast or team stencil enabled)
+                        vec4 mask = (u_highContrast || u_teamStencil) ? texture(u_maskTexture, v_texCoord) : vec4(0.0);
 
                         // Apply Accessibility Filters (contrast, unsharp mask, and unit-protected color inversion)
                         float maskAlpha = mask.a;
