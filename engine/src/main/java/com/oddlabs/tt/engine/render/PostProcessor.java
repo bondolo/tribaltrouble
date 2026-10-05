@@ -1,6 +1,5 @@
 package com.oddlabs.tt.engine.render;
 
-
 import com.oddlabs.tt.engine.render.state.BlendMode;
 import com.oddlabs.tt.engine.render.state.CullMode;
 import com.oddlabs.tt.engine.render.state.DepthMode;
@@ -33,6 +32,9 @@ public final class PostProcessor implements AutoCloseable {
         this.currentWidth = width;
         this.currentHeight = height;
         this.shader = new PostProcessShader();
+        try (var _ = shader.use()) {
+            shader.updateDimensions(width, height);
+        }
         this.sceneFBO = FBO.createSceneFBO(width, height);
         this.samples = samples;
         this.msaaSceneFBO = null;
@@ -58,10 +60,20 @@ public final class PostProcessor implements AutoCloseable {
         return sceneFBO;
     }
 
+    /**
+     * Resizes internal framebuffers and updates shader viewport dimensions.
+     *
+     * @param width the new width in pixels
+     * @param height the new height in pixels
+     * @return {@code true} if dimensions changed; {@code false} otherwise
+     */
     public boolean resize(int width, int height) {
         if (this.currentWidth == width && this.currentHeight == height) return false;
         this.currentWidth = width;
         this.currentHeight = height;
+        try (var _ = shader.use()) {
+            shader.updateDimensions(width, height);
+        }
         sceneFBO.resize(width, height);
         if (!RenderContext.current().isMultisampleEnabled() && msaaSceneFBO != null) {
             msaaSceneFBO.close();
@@ -90,8 +102,14 @@ public final class PostProcessor implements AutoCloseable {
         getActiveSceneFBO().unbind();
     }
 
-    public void renderComposite(RenderContext context, Consumer<
-            RenderContext> guiRenderCallback) {
+    /**
+     * Resolves multisample buffers if enabled, composites post-processing effects onto the default framebuffer,
+     * and executes the 2D user interface render callback.
+     *
+     * @param context the active render context
+     * @param guiRenderCallback the callback responsible for rendering GUI elements on top of the composited scene
+     */
+    public void renderComposite(RenderContext context, Consumer<RenderContext> guiRenderCallback) {
         FBO activeSceneFBO = getActiveSceneFBO();
 
         // 1. If MSAA was used for 3D rendering, resolve activeSceneFBO to sceneFBO

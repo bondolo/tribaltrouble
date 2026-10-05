@@ -19,6 +19,7 @@ final class PostProcessShader extends ShaderProgram {
         String CONTRAST_BRIGHTNESS = "u_contrastBrightness";
         String CONTRAST_CLARITY = "u_contrastClarity";
         String TEAM_STENCIL = "u_teamStencil";
+        String TEXEL_SIZE = "u_texelSize";
     }
 
     private static final String VERTEX_SHADER = SHADER_HEADER +
@@ -44,6 +45,7 @@ final class PostProcessShader extends ShaderProgram {
                     uniform float u_contrastBrightness;
                     uniform float u_contrastClarity;
                     uniform bool u_teamStencil;
+                    uniform vec2 u_texelSize;
 
                     in vec2 v_texCoord;
                     layout(location = 0) out vec4 out_FragColor;
@@ -120,13 +122,12 @@ final class PostProcessShader extends ShaderProgram {
 
                         // 1. Edge Clarity (Unsharp Mask)
                         if (u_contrastClarity > 0.01) {
-                            vec2 texelSize = 1.0 / vec2(textureSize(u_sceneTexture, 0));
                             vec3 blurred = vec3(0.0);
                             // Simple 5-tap box filter for speed
-                            blurred += texture(u_sceneTexture, v_texCoord + vec2(texelSize.x, 0.0)).rgb;
-                            blurred += texture(u_sceneTexture, v_texCoord - vec2(texelSize.x, 0.0)).rgb;
-                            blurred += texture(u_sceneTexture, v_texCoord + vec2(0.0, texelSize.y)).rgb;
-                            blurred += texture(u_sceneTexture, v_texCoord - vec2(0.0, texelSize.y)).rgb;
+                            blurred += texture(u_sceneTexture, v_texCoord + vec2(u_texelSize.x, 0.0)).rgb;
+                            blurred += texture(u_sceneTexture, v_texCoord - vec2(u_texelSize.x, 0.0)).rgb;
+                            blurred += texture(u_sceneTexture, v_texCoord + vec2(0.0, u_texelSize.y)).rgb;
+                            blurred += texture(u_sceneTexture, v_texCoord - vec2(0.0, u_texelSize.y)).rgb;
                             blurred *= 0.25;
 
                             result += (result - blurred) * u_contrastClarity * 2.0;
@@ -181,7 +182,6 @@ final class PostProcessShader extends ShaderProgram {
                             if (mask.a > 0.9 && dot(mask.rgb, vec3(1.0)) > 0.01) {
                                 finalColor = mix(finalColor, mask.rgb, 0.2);
                             } else {
-                                vec2 texelSize = 1.0 / vec2(textureSize(u_maskTexture, 0));
                                 float maskCount = 0.0;
                                 vec3 accumulatedColor = vec3(0.0);
 
@@ -194,7 +194,7 @@ final class PostProcessShader extends ShaderProgram {
                                             continue;
                                         }
 
-                                        vec2 sampleUV = v_texCoord + vec2(x, y) * texelSize;
+                                        vec2 sampleUV = v_texCoord + vec2(x, y) * u_texelSize;
 
                                         // Gather Alpha channel (3) to quickly check for team units
                                         vec4 alphas = textureGather(u_maskTexture, sampleUV, 3);
@@ -242,6 +242,7 @@ final class PostProcessShader extends ShaderProgram {
     private final int locContrastBrightness;
     private final int locContrastClarity;
     private final int locTeamStencil;
+    private final int locTexelSize;
 
     private int lastCvdMode = -1;
     private float lastCvdIntensity = -1.0f;
@@ -266,6 +267,7 @@ final class PostProcessShader extends ShaderProgram {
         locContrastBrightness = getUniformLocation(Uniforms.CONTRAST_BRIGHTNESS);
         locContrastClarity = getUniformLocation(Uniforms.CONTRAST_CLARITY);
         locTeamStencil = getUniformLocation(Uniforms.TEAM_STENCIL);
+        locTexelSize = getUniformLocation(Uniforms.TEXEL_SIZE);
 
         try (var _ = use()) {
             setUniform(locSceneTexture, 0);
@@ -273,6 +275,21 @@ final class PostProcessShader extends ShaderProgram {
         }
     }
 
+    /**
+     * Updates the inverse viewport resolution uniform used for unsharp mask filtering and stencil outlines.
+     *
+     * @param width the viewport width in pixels
+     * @param height the viewport height in pixels
+     */
+    void updateDimensions(int width, int height) {
+        setUniform(locTexelSize, 1.0f / width, 1.0f / height);
+    }
+
+    /**
+     * Uploads accessibility and visual filter uniform values, uploading only parameters that have changed.
+     *
+     * @param settings the active accessibility settings
+     */
     void updateAccessibility(AccessibilitySettings settings) {
         if (!initialized || lastCvdMode != settings.cvd_mode) {
             setUniform(locCvdMode, settings.cvd_mode);
