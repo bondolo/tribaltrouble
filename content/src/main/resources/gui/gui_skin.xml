@@ -604,7 +604,7 @@
             </center>
         </box>
     </backgroundbox>
-    <group caption_left="20" caption_y="12" caption_offset="5">
+    <group caption_left="10" caption_y="12" caption_offset="5">
         <box left_offset="7" bottom_offset="7" top_offset="7" right_offset="7">
             <left_bottom>
                 <normal>
@@ -1410,7 +1410,7 @@
             </center>
         </box>
     </pulldown_item>
-    <pulldown_button arrow_offset_right="0" text_offset_left="10">
+    <pulldown_button arrow_offset_right="0" text_offset_left="5">
         <horizontal>
             <left>
                 <normal>
