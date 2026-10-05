@@ -9,13 +9,14 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+/** Floating tooltip box displaying descriptive text and optional icons. */
 public final class ToolTipBox extends TextField {
     static final float MAX_DELAY_SECONDS = 1.5f;
 
     private final Skin skin;
     private @Nullable List<IconQuad> icons;
 
-    public ToolTipBox(GUIRoot guiRoot) {
+    ToolTipBox(GUIRoot guiRoot) {
         super(guiRoot.getSkin().getEditFont(), 200);
         this.skin = guiRoot.getSkin();
     }

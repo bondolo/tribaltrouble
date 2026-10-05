@@ -2,8 +2,9 @@ package com.oddlabs.tt.gui;
 
 import com.oddlabs.tt.engine.render.ModeIconQuads;
 
-public record SliderData(Horizontal slider,
-                         ModeIconQuads button,
-                         int leftOffset,
-                         int rightOffset) {
+/** Configuration metrics and slider button icon for sliders. */
+record SliderData(Horizontal slider,
+                  ModeIconQuads button,
+                  int leftOffset,
+                  int rightOffset) {
 }

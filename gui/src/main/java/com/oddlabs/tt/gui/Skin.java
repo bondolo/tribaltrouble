@@ -296,7 +296,7 @@ public final class Skin {
                 getInt(node, "right_offset"));
     }
 
-    public SliderData getSliderData() {
+    SliderData getSliderData() {
         return slider_data;
     }
 
@@ -328,7 +328,7 @@ public final class Skin {
                 getFont(getNodeByName("pulldownfont", n)));
     }
 
-    public PulldownData getPulldownData() {
+    PulldownData getPulldownData() {
         return pulldown_data;
     }
 
@@ -353,7 +353,7 @@ public final class Skin {
                 getFont(getNodeByName("progressfont", n)));
     }
 
-    public ProgressBarData getProgressBarData() {
+    ProgressBarData getProgressBarData() {
         return progress_bar_data;
     }
 
@@ -457,7 +457,7 @@ public final class Skin {
                 getInt(node, "top_offset"));
     }
 
-    public ToolTipBoxInfo getToolTipInfo() {
+    ToolTipBoxInfo getToolTipInfo() {
         return tool_tip;
     }
 
