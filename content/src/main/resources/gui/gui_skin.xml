@@ -183,7 +183,7 @@
 	<headlinefont>/font/intertight-black_28.font</headlinefont>
 	<combofont>/font/inter-light_13.font</combofont>
 	<pulldownfont>/font/inter-light_13.font</pulldownfont>
-    <form spacing="5" section_spacing="25" caption_left="34" caption_y="12" close_right="22" close_top="10">
+    <form spacing="5" section_spacing="25" caption_left="17" caption_y="12" close_right="11" close_top="4">
         <box left_offset="6" bottom_offset="10" top_offset="24" right_offset="10">
             <left_bottom>
                 <normal>

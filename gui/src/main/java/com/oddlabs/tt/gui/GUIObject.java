@@ -72,7 +72,7 @@ public abstract class GUIObject extends Renderable<GUIObject> implements ToolTip
      */
     private boolean placed = false;
     /**
-     * placement "gravity"" for this control
+     * placement "gravity" for this control
      */
     private Origin origin = Origin.AT_START;
 
