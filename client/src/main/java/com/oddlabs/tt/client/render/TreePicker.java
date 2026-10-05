@@ -13,6 +13,7 @@ import com.oddlabs.tt.simulation.landscape.AbstractTreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeGroup;
 import com.oddlabs.tt.simulation.landscape.TreeLeaf;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,35 +23,34 @@ import java.util.Map;
 
 import static com.oddlabs.tt.simulation.landscape.AbstractTreeGroup.TreeType;
 
-
 /**
- * Base class that manages the culling, level-of-detail selection, and picking of trees.
+ * Manages the culling, level-of-detail selection, and picking of trees.
  */
-class TreePicker {
+sealed class TreePicker permits TreeRenderer {
     private static final int CROWN_MIPMAP_CUTOFF = RenderConfig.NO_MIPMAP_CUTOFF;
     private static final float SELECTION_RADIUS = 1.5f;
 
-    private final EnumMap<TreeType, List<TreeSupply>> render_lists = new EnumMap<>(
-            Map.of(
-                    TreeType.OAK, new ArrayList<>(), TreeType.PINE, new ArrayList<>(), TreeType.JUNGLE,
-                    new ArrayList<>(), TreeType.PALM, new ArrayList<>()
-            ));
-    private final EnumMap<TreeType, List<TreeSupply>> respond_render_lists = new EnumMap<>(
-            Map.of(
-                    TreeType.OAK, new ArrayList<>(), TreeType.PINE, new ArrayList<>(), TreeType.JUNGLE,
-                    new ArrayList<>(), TreeType.PALM, new ArrayList<>()
-            ));
+    private final EnumMap<TreeType, List<TreeSupply>> render_lists = createTreeListMap();
+    private final EnumMap<TreeType, List<TreeSupply>> respond_render_lists = createTreeListMap();
     private final BoundingBox picking_selection_box = new BoundingBox();
     private final SpriteSorter sprite_sorter;
     private final RenderStateCache<TreeRenderState> render_state_cache
             = new RenderStateCache<>(() -> new TreeRenderState(TreePicker.this));
     private final Map<TreeType, Tree> trees = loadTrees();
     private final RespondManager respond_manager;
-    private CameraState camera;
+    private @Nullable CameraState camera;
 
     TreePicker(SpriteSorter sprite_sorter, RespondManager respond_manager) {
         this.respond_manager = respond_manager;
         this.sprite_sorter = sprite_sorter;
+    }
+
+    private static EnumMap<TreeType, List<TreeSupply>> createTreeListMap() {
+        var map = new EnumMap<TreeType, List<TreeSupply>>(TreeType.class);
+        for (TreeType type : TreeType.values()) {
+            map.put(type, new ArrayList<>());
+        }
+        return map;
     }
 
     private static Map<TreeType, Tree> loadTrees() {
@@ -82,7 +82,7 @@ class TreePicker {
         return Collections.unmodifiableMap(trees);
     }
 
-    public static void initTreeBounds(AbstractTreeGroup root, Map<TreeType, Tree> visuals) {
+    static void initTreeBounds(AbstractTreeGroup root, Map<TreeType, Tree> visuals) {
         updateSuppliesRecursive(root, visuals);
         root.initBounds();
     }
@@ -96,18 +96,17 @@ class TreePicker {
             }
             case TreeLeaf leaf -> {
                 for (TreeSupply tree : leaf.getTrees()) {
-                    Tree visual = visuals.get(tree.getTreeType());
-                    if (visual != null) {
-                        tree.updateBounds(visual.modelBounds());
-                    }
+                    updateTreeBounds(tree, visuals);
                 }
             }
-            case TreeSupply tree -> {
-                Tree visual = visuals.get(tree.getTreeType());
-                if (visual != null) {
-                    tree.updateBounds(visual.modelBounds());
-                }
-            }
+            case TreeSupply tree -> updateTreeBounds(tree, visuals);
+        }
+    }
+
+    private static void updateTreeBounds(TreeSupply tree, Map<TreeType, Tree> visuals) {
+        Tree visual = visuals.get(tree.getTreeType());
+        if (visual != null) {
+            tree.updateBounds(visual.modelBounds());
         }
     }
 
@@ -115,23 +114,23 @@ class TreePicker {
         return trees;
     }
 
-    public final EnumMap<TreeType, List<TreeSupply>> getRenderLists() {
+    final EnumMap<TreeType, List<TreeSupply>> getRenderLists() {
         return render_lists;
     }
 
-    public final EnumMap<TreeType, List<TreeSupply>> getRespondRenderLists() {
+    final EnumMap<TreeType, List<TreeSupply>> getRespondRenderLists() {
         return respond_render_lists;
     }
 
-    public final void getAllPicks(List<TreeSupply> pick_list) {
-        render_lists.values().forEach(render_list -> {
-            pick_list.addAll(render_list);
-            render_list.clear();
-        });
-        respond_render_lists.values().forEach(respond_render_list -> {
-            pick_list.addAll(respond_render_list);
-            respond_render_list.clear();
-        });
+    final void getAllPicks(List<TreeSupply> pick_list) {
+        for (List<TreeSupply> list : render_lists.values()) {
+            pick_list.addAll(list);
+            list.clear();
+        }
+        for (List<TreeSupply> list : respond_render_lists.values()) {
+            pick_list.addAll(list);
+            list.clear();
+        }
     }
 
     private void addToHighDetailList(TreeType type, TreeSupply tree, boolean respond) {
@@ -144,18 +143,18 @@ class TreePicker {
                 tree_supply));
     }
 
-    public final void setup(CameraState camera_state) {
+    final void setup(CameraState camera_state) {
         this.camera = camera_state;
         render_state_cache.clear();
     }
 
-    public final void visit(AbstractTreeGroup node) {
-        visit(node, camera.inNoDetailMode() ? RenderTools.FRUSTUM_INSIDE : RenderTools.ALL_PLANES_MASK);
+    final void visit(AbstractTreeGroup node) {
+        visit(node, camera != null && camera.inNoDetailMode() ? RenderTools.FRUSTUM_INSIDE : RenderTools.ALL_PLANES_MASK);
     }
 
     private void visit(AbstractTreeGroup node, int planeMask) {
         int nextPlaneMask = planeMask;
-        if (planeMask != RenderTools.FRUSTUM_INSIDE) {
+        if (planeMask != RenderTools.FRUSTUM_INSIDE && camera != null) {
             nextPlaneMask = RenderTools.testFrustum(node, camera.getFrustum(), planeMask);
             if (nextPlaneMask == RenderTools.FRUSTUM_OUTSIDE) {
                 return;
@@ -208,13 +207,15 @@ class TreePicker {
         boolean in_view;
         if (planeMask == RenderTools.FRUSTUM_INSIDE) {
             in_view = !isPicking() || !tree_supply.isDead();
+        } else if (camera == null) {
+            in_view = false;
         } else if (isPicking()) {
             in_view = !tree_supply.isDead() && pickingInFrustum(tree_supply, camera.getFrustum(), planeMask);
         } else {
             in_view = RenderTools.testFrustum(tree_supply, camera.getFrustum(), planeMask)
                     != RenderTools.FRUSTUM_OUTSIDE;
         }
-        if (in_view) {
+        if (in_view && camera != null) {
             addToRenderList(tree_supply, camera);
         }
     }
@@ -227,7 +228,7 @@ class TreePicker {
         return true;
     }
 
-    final CameraState getCamera() {
+    final @Nullable CameraState getCamera() {
         return camera;
     }
 }

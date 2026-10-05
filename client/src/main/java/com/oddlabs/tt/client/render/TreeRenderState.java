@@ -1,11 +1,9 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
+import com.oddlabs.tt.engine.render.CameraState;
+import com.oddlabs.tt.engine.render.LODObject;
+import com.oddlabs.tt.engine.render.PolyDetail;
+import com.oddlabs.tt.engine.render.RenderTools;
 import com.oddlabs.tt.simulation.landscape.TreeSupply;
 
 /**
@@ -46,6 +44,7 @@ final class TreeRenderState implements LODObject {
     @Override
     public float getEyeDistanceSquared() {
         CameraState camera = tree_renderer.getCamera();
+        assert camera != null;
         return RenderTools.getEyeDistanceSquared(tree_supply, camera.getCurrentX(), camera.getCurrentY(), camera
                 .getCurrentZ());
     }

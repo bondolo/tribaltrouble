@@ -1,11 +1,5 @@
 package com.oddlabs.tt.client.render;
 
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.engine.render.*;
-
-import com.oddlabs.tt.effects.render.*;
-
 import com.oddlabs.tt.base.animation.Animated;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import org.jspecify.annotations.Nullable;
@@ -25,7 +19,6 @@ public final class RespondManager implements Animated {
     private final Map<Object, Timeout> respond_targets = new HashMap<>();
 
     private int current_id;
-
     private float time;
 
     public RespondManager(AnimationManager manager) {
@@ -39,9 +32,13 @@ public final class RespondManager implements Animated {
     }
 
     private void timeout() {
-        Timeout head_timeout;
-        while (!respond_timeouts.isEmpty() && (head_timeout = respond_timeouts.firstKey()).timeout <= time) {
-            removeResponder(head_timeout.target);
+        Map.Entry<Timeout, Object> entry;
+        while ((entry = respond_timeouts.firstEntry()) != null && entry.getKey().timeout <= time) {
+            respond_timeouts.pollFirstEntry();
+            respond_targets.remove(entry.getValue());
+            if (entry.getKey().stop_action != null) {
+                entry.getKey().stop_action.run();
+            }
         }
     }
 
@@ -49,11 +46,11 @@ public final class RespondManager implements Animated {
         addResponder(target, null);
     }
 
-    public void addResponder(Object target, Runnable stop_action) {
-        addResponder(SECONDS_PER_PICK_RESPOND, target, null);
+    public void addResponder(Object target, @Nullable Runnable stop_action) {
+        addResponder(SECONDS_PER_PICK_RESPOND, target, stop_action);
     }
 
-    private void addResponder(float respond_time, Object target, Runnable stop_action) {
+    private void addResponder(float respond_time, Object target, @Nullable Runnable stop_action) {
         removeResponder(target);
         Timeout timeout = new Timeout(time + respond_time, current_id++, target, stop_action);
         respond_targets.put(target, timeout);
@@ -64,21 +61,23 @@ public final class RespondManager implements Animated {
         Timeout timeout = respond_targets.remove(target);
         if (timeout != null) {
             respond_timeouts.remove(timeout);
-            if (timeout.stop_action != null)
+            if (timeout.stop_action != null) {
                 timeout.stop_action.run();
+            }
         }
     }
 
-    public boolean isResponding(Object target) {
-        if (respond_targets.isEmpty())
-            return false; // Quick exit in the common case of no responding targets
-        else
-            return isResponding(respond_targets.get(target));
+    boolean isResponding(Object target) {
+        if (respond_targets.isEmpty()) {
+            return false;
+        }
+        return isResponding(respond_targets.get(target));
     }
 
     private boolean isResponding(@Nullable Timeout timeout) {
-        if (timeout == null)
+        if (timeout == null) {
             return false;
+        }
         float time_diff = timeout.timeout - time;
         float blink = SECONDS_PER_PICK_RESPOND / 4f;
         return time_diff > 0 && (time_diff >= SECONDS_PER_PICK_RESPOND - blink || time_diff <= blink);
@@ -105,8 +104,8 @@ public final class RespondManager implements Animated {
 
         @Override
         public int compareTo(Timeout other) {
-            float diff = timeout - other.timeout;
-            return diff != 0f ? (int) diff : id - other.id;
+            int c = Float.compare(timeout, other.timeout);
+            return c != 0 ? c : Integer.compare(id, other.id);
         }
     }
 }

@@ -8,8 +8,8 @@ import com.oddlabs.tt.base.geom.BoundsProvider;
 /**
  * Visual element that appears as a target indicator when the user clicks on the landscape.
  */
-public final class LandscapeTargetRespond implements Animated, BoundsProvider {
-    public static final int SIZE = 128;
+final class LandscapeTargetRespond implements Animated, BoundsProvider {
+    static final int SIZE = 128;
     private static final float SECOND_PER_PICK_RESPOND = 1f / 3f;
 
     private final AnimationManager animation_manager;
@@ -19,7 +19,7 @@ public final class LandscapeTargetRespond implements Animated, BoundsProvider {
     private final BoundingBox[] boundsArray = new BoundingBox[]{bounds};
     private float time;
 
-    public LandscapeTargetRespond(AnimationManager animation_manager, float x, float y) {
+    LandscapeTargetRespond(AnimationManager animation_manager, float x, float y) {
         this.animation_manager = animation_manager;
         this.x = x;
         this.y = y;
@@ -29,11 +29,11 @@ public final class LandscapeTargetRespond implements Animated, BoundsProvider {
         animation_manager.registerAnimation(this);
     }
 
-    public float getPositionX() {
+    float getPositionX() {
         return x;
     }
 
-    public float getPositionY() {
+    float getPositionY() {
         return y;
     }
 
@@ -42,7 +42,7 @@ public final class LandscapeTargetRespond implements Animated, BoundsProvider {
         return boundsArray;
     }
 
-    public BoundingBox getBounds() {
+    BoundingBox getBounds() {
         return bounds;
     }
 
@@ -55,11 +55,11 @@ public final class LandscapeTargetRespond implements Animated, BoundsProvider {
         }
     }
 
-    public boolean isFinished() {
+    boolean isFinished() {
         return time <= 0;
     }
 
-    public float getProgress() {
+    float getProgress() {
         return time / SECOND_PER_PICK_RESPOND;
     }
 }
