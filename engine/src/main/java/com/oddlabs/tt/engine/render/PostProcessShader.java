@@ -131,12 +131,15 @@ final class PostProcessShader extends ShaderProgram {
                         const float pivot = 0.18;
                         float k = 1.0 + u_contrastIntensity * 4.0; // Boost range up to 5x
 
-                        // Rational Sigmoid: f(x) = x / (1 + |x|)
+                        // Normalized Rational Sigmoid preserving [0, 1] range:
+                        // Guarantees f(0.0) == 0.0 and f(1.0) == 1.0 while pivoting at middle gray.
+                        float minSig = (-pivot * k) / (1.0 + pivot * k);
+                        float maxSig = ((1.0 - pivot) * k) / (1.0 + (1.0 - pivot) * k);
                         vec3 centered = result - pivot;
-                        vec3 sigmoid = (centered * k) / (1.0 + abs(centered * k)) + pivot;
+                        vec3 rawSig = (centered * k) / (1.0 + abs(centered * k));
+                        vec3 sigmoid = (rawSig - minSig) / (maxSig - minSig);
 
-                        // Mix with original to ensure identity at u_contrastIntensity == 0
-                        // and to prevent the "white tinge" at low intensities.
+                        // Mix with original based on intensity
                         result = mix(result, sigmoid, u_contrastIntensity);
                         result = clamp(result, 0.0, 1.0);
 
@@ -172,9 +175,14 @@ final class PostProcessShader extends ShaderProgram {
                                 vec3 accumulatedColor = vec3(0.0);
 
                                 // Advanced Sampling: use textureGather to fetch 2x2 texel blocks per instruction.
-                                // 16 gathers cover an 8x8 area (radius 4). This replaces an 81-tap dense loop.
+                                // Prune diagonal corners (x^2 + y^2 > 18.0) to maintain an isotropic circular footprint
+                                // of radius 3.5 texels while reducing gather count from 16 to 12.
                                 for (float y = -3.5; y <= 3.5; y += 2.0) {
                                     for (float x = -3.5; x <= 3.5; x += 2.0) {
+                                        if (x * x + y * y > 18.0) {
+                                            continue;
+                                        }
+
                                         vec2 sampleUV = v_texCoord + vec2(x, y) * texelSize;
 
                                         // Gather Alpha channel (3) to quickly check for team units
