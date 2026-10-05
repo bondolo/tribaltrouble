@@ -26,14 +26,12 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Specialized renderer for forest elements, coordinating the efficient
  * drawing of crown and trunk sprite lists using hardware instancing.
  */
 final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRenderer, Animated {
-    private static final Logger logger = Logger.getLogger(TreeRenderer.class.getName());
     private static final float TREE_FALL_DURATION = 3f;
     private static final float TREE_SPAWN_DURATION = 3f;
     private static final float TREE_WAVE_SCALE = 0.035f;
@@ -88,12 +86,12 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
             }
         }
         if (!spawningTrees.isEmpty()) {
-            var eachSpawing = spawningTrees.entrySet().iterator();
-            while (eachSpawing.hasNext()) {
-                var entry = eachSpawing.next();
+            var eachSpawning = spawningTrees.entrySet().iterator();
+            while (eachSpawning.hasNext()) {
+                var entry = eachSpawning.next();
                 float progress = entry.getValue() + dt / TREE_SPAWN_DURATION;
                 if (entry.getKey().isEmpty() || progress >= 1.0f) {
-                    eachSpawing.remove();
+                    eachSpawning.remove();
                 } else {
                     entry.setValue(progress);
                 }
@@ -101,13 +99,13 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         }
     }
 
-    public void renderShadows(SelectableShadowRenderer shadowRenderer) {
+    void renderShadows(SelectableShadowRenderer shadowRenderer) {
         if (!DebugFlags.draw_trees || (cheat != null && !cheat.draw_trees)) {
             return;
         }
-        getRenderLists().forEach((type, list) -> {
-            Tree visual = getTrees().get(type);
-            list.forEach(tree -> {
+        for (var entry : getRenderLists().entrySet()) {
+            Tree visual = getTrees().get(entry.getKey());
+            for (TreeSupply tree : entry.getValue()) {
                 Float fallProgress = fallingTrees.get(tree);
                 if (fallProgress != null) {
                     float p = fallProgress;
@@ -138,8 +136,8 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
                         shadowRenderer.addToShadowList(new TreeShadow(tree, visual, 1.0f, 1.0f));
                     }
                 }
-            });
-        });
+            }
+        }
     }
 
     private record TreeShadow(TreeSupply tree, Tree visual, float scale, float opacityMultiplier) implements
@@ -182,15 +180,27 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
             return;
         }
 
-        getRenderLists().forEach((type, list) -> renderList(getTrees().get(type), list, false));
-        getRespondRenderLists().forEach((type, list) -> {
-            if (!list.isEmpty()) renderList(getTrees().get(type), list, true);
-        });
+        for (var entry : getRenderLists().entrySet()) {
+            List<TreeSupply> list = entry.getValue();
+            if (!list.isEmpty()) {
+                renderList(getTrees().get(entry.getKey()), list, false);
+            }
+        }
+        for (var entry : getRespondRenderLists().entrySet()) {
+            List<TreeSupply> list = entry.getValue();
+            if (!list.isEmpty()) {
+                renderList(getTrees().get(entry.getKey()), list, true);
+            }
+        }
     }
 
     private void clearLists() {
-        getRenderLists().values().forEach(List::clear);
-        getRespondRenderLists().values().forEach(List::clear);
+        for (List<TreeSupply> list : getRenderLists().values()) {
+            list.clear();
+        }
+        for (List<TreeSupply> list : getRespondRenderLists().values()) {
+            list.clear();
+        }
     }
 
     private void prepareMatrix(TreeSupply tree) {
@@ -241,11 +251,19 @@ final class TreeRenderer extends TreePicker implements AutoCloseable, SceneRende
         render_list.clear();
     }
 
-    public void debugRender(EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> render_lists, EnumMap<
+    void debugRender(EnumMap<AbstractTreeGroup.TreeType, List<TreeSupply>> render_lists, EnumMap<
             AbstractTreeGroup.TreeType, List<TreeSupply>> respond_render_lists) {
         if (DebugFlags.isBoundsEnabled(BoundingMode.PLAYERS)) {
-            render_lists.values().forEach(list -> list.forEach(RenderTools::draw));
-            respond_render_lists.values().forEach(list -> list.forEach(RenderTools::draw));
+            for (List<TreeSupply> list : render_lists.values()) {
+                for (TreeSupply tree : list) {
+                    RenderTools.draw(tree);
+                }
+            }
+            for (List<TreeSupply> list : respond_render_lists.values()) {
+                for (TreeSupply tree : list) {
+                    RenderTools.draw(tree);
+                }
+            }
         }
     }
 
