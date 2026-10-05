@@ -233,6 +233,15 @@ public final class LWJGL3Window implements Window {
     private int cachedHeight = SerializableDisplayMode.MIN_HEIGHT;
     private int cachedLogicalWidth = SerializableDisplayMode.MIN_WIDTH;
     private int cachedLogicalHeight = SerializableDisplayMode.MIN_HEIGHT;
+    private long cachedWindowFlags;
+
+    private void updateCachedWindowFlags() {
+        if (windowHandle != MemoryUtil.NULL) {
+            cachedWindowFlags = SDL_GetWindowFlags(windowHandle);
+        } else {
+            cachedWindowFlags = 0;
+        }
+    }
 
     public LWJGL3Window() {
         this(new WindowSettings());
@@ -382,6 +391,7 @@ public final class LWJGL3Window implements Window {
             }
         }
         updateCachedDimensions();
+        updateCachedWindowFlags();
         this.active = true;
         this.iconified = false;
     }
@@ -463,6 +473,7 @@ public final class LWJGL3Window implements Window {
             SDL_DestroyWindow(windowHandle);
             windowHandle = MemoryUtil.NULL;
         }
+        cachedWindowFlags = 0;
     }
 
     @Override
@@ -616,6 +627,7 @@ public final class LWJGL3Window implements Window {
                 }
             }
         }
+        updateCachedWindowFlags();
     }
 
     @Override
@@ -636,8 +648,7 @@ public final class LWJGL3Window implements Window {
     @Override
     public boolean isActive() {
         if (windowHandle != MemoryUtil.NULL) {
-            long flags = SDL_GetWindowFlags(windowHandle);
-            return (flags & SDL_WINDOW_INPUT_FOCUS) != 0 || active;
+            return (cachedWindowFlags & SDL_WINDOW_INPUT_FOCUS) != 0 || active;
         }
         return active;
     }
@@ -645,22 +656,19 @@ public final class LWJGL3Window implements Window {
     @Override
     public boolean isVisible() {
         if (windowHandle == MemoryUtil.NULL) return false;
-        long flags = SDL_GetWindowFlags(windowHandle);
-        return (flags & SDL_WINDOW_HIDDEN) == 0;
+        return (cachedWindowFlags & SDL_WINDOW_HIDDEN) == 0;
     }
 
     @Override
     public boolean isIconified() {
         if (windowHandle == MemoryUtil.NULL) return false;
-        long flags = SDL_GetWindowFlags(windowHandle);
-        return (flags & SDL_WINDOW_MINIMIZED) != 0 || iconified;
+        return (cachedWindowFlags & SDL_WINDOW_MINIMIZED) != 0 || iconified;
     }
 
     @Override
     public boolean isMaximized() {
         if (windowHandle == MemoryUtil.NULL) return false;
-        long flags = SDL_GetWindowFlags(windowHandle);
-        return (flags & SDL_WINDOW_MAXIMIZED) != 0;
+        return (cachedWindowFlags & SDL_WINDOW_MAXIMIZED) != 0;
     }
 
     @Override

@@ -48,11 +48,14 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
     // @GuardedBy("this")
     private final Deque<KeyEvent> keyEvents = new ArrayDeque<>();
     private @Nullable KeyEvent currentKeyEvent;
+    private @Nullable ByteBuffer keyboardState;
 
     // Mouse State
     private final Deque<MouseEvent> mouseEvents = new ArrayDeque<>();
     private @Nullable MouseEvent currentMouseEvent;
-    private double mouseX, mouseY;
+    private double mouseX;
+    private double mouseY;
+    private int mouseButtonMask;
     private int lastPhysicalX = Integer.MIN_VALUE;
     private int lastPhysicalY = Integer.MIN_VALUE;
 
@@ -108,6 +111,7 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
         }
         window.setEventListener(this);
         SDL_StartTextInput(windowHandle);
+        this.keyboardState = SDL_GetKeyboardState();
     }
 
     public void processEvent(SDL_Event event) {
@@ -177,6 +181,13 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
                     case 2 -> 2; // SDL_BUTTON_MIDDLE -> Middle
                     default -> sdlButton - 1;
                 };
+                if (button >= 0 && button < 32) {
+                    if (pressed) {
+                        mouseButtonMask |= (1 << button);
+                    } else {
+                        mouseButtonMask &= ~(1 << button);
+                    }
+                }
                 synchronized (mouseEvents) {
                     mouseEvents.add(new MouseEvent(button, pressed, (int) mouseX, (int) mouseY, 0, 0));
                 }
@@ -241,8 +252,12 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
 
     @Override
     public boolean isKeyDown(int keyCode) {
-        ByteBuffer state = SDL_GetKeyboardState();
-        return state != null && state.get(keyCode) != 0;
+        ByteBuffer state = this.keyboardState;
+        if (state == null) {
+            state = SDL_GetKeyboardState();
+            this.keyboardState = state;
+        }
+        return state != null && keyCode >= 0 && keyCode < state.limit() && state.get(keyCode) != 0;
     }
 
     @Override
@@ -305,14 +320,10 @@ public final class LWJGL3InputProvider implements InputProvider<Long>, WindowEve
 
     @Override
     public boolean isButtonDown(int button) {
-        int sdlButton = switch (button) {
-            case 0 -> 1; // Left
-            case 1 -> 3; // Right
-            case 2 -> 2; // Middle
-            default -> button + 1;
-        };
-        int mask = SDL_GetMouseState(null, null);
-        return (mask & (1 << (sdlButton - 1))) != 0;
+        if (button >= 0 && button < 32) {
+            return (mouseButtonMask & (1 << button)) != 0;
+        }
+        return false;
     }
 
     @Override

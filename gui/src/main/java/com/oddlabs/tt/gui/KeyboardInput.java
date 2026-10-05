@@ -130,15 +130,17 @@ public final class KeyboardInput {
         Deterministic deterministic = localInput.getDeterministic();
         boolean result = false;
         input.pollKeyboard();
-        // Update modifiers from raw state to handle lost events or initial state
-        left_shift_down = input.isKeyDown(Key.LSHIFT.getSdlCode());
-        right_shift_down = input.isKeyDown(Key.RSHIFT.getSdlCode());
-        left_control_down = input.isKeyDown(Key.LCONTROL.getSdlCode());
-        right_control_down = input.isKeyDown(Key.RCONTROL.getSdlCode());
-        left_alt_down = input.isKeyDown(Key.LALT.getSdlCode());
-        right_alt_down = input.isKeyDown(Key.RALT.getSdlCode());
-        left_meta_down = input.isKeyDown(Key.LSUPER.getSdlCode());
-        right_meta_down = input.isKeyDown(Key.RSUPER.getSdlCode());
+        if (!deterministic.isPlayback()) {
+            // Update modifiers from raw state to handle lost events or initial state
+            left_shift_down = input.isKeyDown(Key.LSHIFT.getSdlCode());
+            right_shift_down = input.isKeyDown(Key.RSHIFT.getSdlCode());
+            left_control_down = input.isKeyDown(Key.LCONTROL.getSdlCode());
+            right_control_down = input.isKeyDown(Key.RCONTROL.getSdlCode());
+            left_alt_down = input.isKeyDown(Key.LALT.getSdlCode());
+            right_alt_down = input.isKeyDown(Key.RALT.getSdlCode());
+            left_meta_down = input.isKeyDown(Key.LSUPER.getSdlCode());
+            right_meta_down = input.isKeyDown(Key.RSUPER.getSdlCode());
+        }
 
         while (deterministic.log(input.nextKeyboardEvent())) {
             result = true;
