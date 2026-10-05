@@ -3,6 +3,7 @@ package com.oddlabs.tt.engine.render;
 import com.oddlabs.tt.engine.render.shader.Shader;
 import com.oddlabs.tt.engine.render.shader.ShaderProgram;
 import com.oddlabs.tt.engine.render.shader.VertexAttribute;
+import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -16,7 +17,6 @@ final class GUIShader extends ShaderProgram {
     private static final String VERTEX_SHADER = SHADER_HEADER +
             """
                     uniform mat4 u_projectionMatrix;
-                    uniform mat4 u_modelViewMatrix;
 
                     layout(location = 0) in vec3 in_Position;
                     layout(location = 3) in vec4 in_Color;
@@ -30,8 +30,7 @@ final class GUIShader extends ShaderProgram {
                     } vs_out;
 
                     void main() {
-                        vec4 pos = u_modelViewMatrix * vec4(in_Position, 1.0);
-                        gl_Position = u_projectionMatrix * pos;
+                        gl_Position = u_projectionMatrix * vec4(in_Position, 1.0);
                         vs_out.Color = in_Color;
                         vs_out.TexCoord = in_TexCoord;
                         vs_out.TexIndex = int(in_TexIndex);
@@ -81,9 +80,10 @@ final class GUIShader extends ShaderProgram {
                     }
                     """;
 
+    private static final int[] TEXTURE_UNITS = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
+
     private interface Uniforms {
         String PROJECTION_MATRIX = Shader.Uniforms.PROJECTION_MATRIX;
-        String MODEL_VIEW_MATRIX = Shader.Uniforms.MODEL_VIEW_MATRIX;
         String TEXTURES = "u_textures";
     }
 
@@ -137,15 +137,20 @@ final class GUIShader extends ShaderProgram {
         }
     }
 
-    final int locProjectionMatrix;
-    final int locModelViewMatrix;
-    final int locTextures;
+    private final int locProjectionMatrix;
 
     GUIShader() {
         super(GUIShader.VERTEX_SHADER, GUIShader.FRAGMENT_SHADER);
         link();
         locProjectionMatrix = getUniformLocation(Uniforms.PROJECTION_MATRIX);
-        locModelViewMatrix = getUniformLocation(Uniforms.MODEL_VIEW_MATRIX);
-        locTextures = getUniformLocation(Uniforms.TEXTURES);
+        int locTextures = getUniformLocation(Uniforms.TEXTURES);
+
+        try (var _ = use()) {
+            setUniform(locTextures, TEXTURE_UNITS);
+        }
+    }
+
+    void setProjectionMatrix(Matrix4fc matrix) {
+        setUniform(locProjectionMatrix, matrix);
     }
 }

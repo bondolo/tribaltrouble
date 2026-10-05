@@ -8,7 +8,6 @@ import com.oddlabs.tt.engine.util.GLUtils;
 import com.oddlabs.tt.engine.vbo.VertexArray;
 import com.oddlabs.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -29,8 +28,6 @@ public final class GUIRenderer implements AutoCloseable {
     private static final int VERTICES_PER_QUAD = 4;
     private static final int INDICES_PER_QUAD = 6;
     private static final int MAX_TEXTURES = 8;
-    private static final Matrix4fc IDENTITY_MATRIX = new Matrix4f();
-    private static final int[] TEXTURE_UNITS = new int[]{0, 1, 2, 3, 4, 5, 6, 7};
 
     private record ScissorRect(int x, int y, int width, int height) {
     }
@@ -131,8 +128,7 @@ public final class GUIRenderer implements AutoCloseable {
                 CullMode.NONE)) {
 
             projectionMatrix.identity().ortho(0, width, 0, height, -1, 1);
-            shader.setUniform(shader.locProjectionMatrix, projectionMatrix);
-            shader.setUniform(shader.locTextures, TEXTURE_UNITS);
+            shader.setProjectionMatrix(projectionMatrix);
 
             matrixStack.clear();
             modulationStack.clear();
@@ -282,8 +278,6 @@ public final class GUIRenderer implements AutoCloseable {
 
     public void flush() {
         if (quadCount == 0) return;
-
-        shader.setUniform(shader.locModelViewMatrix, IDENTITY_MATRIX);
 
         // Bind all active textures and unbind unused units in the sampler array to avoid conflicts
         for (int i = 0; i < textureCount; i++) {
