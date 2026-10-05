@@ -27,6 +27,7 @@ import com.oddlabs.tt.base.geom.BoundingBox;
 import com.oddlabs.tt.simulation.player.Player;
 import com.oddlabs.tt.simulation.player.PlayerInterface;
 import com.oddlabs.tt.engine.util.DebugRender;
+import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.simulation.model.Target;
 import com.oddlabs.tt.gui.ToolTip;
 import com.oddlabs.tt.client.viewer.Selection;
@@ -102,6 +103,7 @@ public final class Picker implements Updatable<TimerAnimation> {
     private final AnimationManager manager;
     private final TimerAnimation tool_tip_timer;
     private final LandscapeRenderer landscape_renderer;
+    private final @Nullable GUIIcons icons;
     private final ElementRenderer<?> element_renderer;
     private final TreePicker tree_renderer;
     private final RenderQueues render_queues;
@@ -142,6 +144,12 @@ public final class Picker implements Updatable<TimerAnimation> {
     public Picker(AnimationManager manager, Player local_player, GUIRoot gui_root,
             RenderQueues render_queues, LandscapeRenderer landscape_renderer, Selection selection,
             AudioImplementation audio) {
+        this(manager, local_player, gui_root, render_queues, landscape_renderer, selection, audio, null);
+    }
+
+    public Picker(AnimationManager manager, Player local_player, GUIRoot gui_root,
+            RenderQueues render_queues, LandscapeRenderer landscape_renderer, Selection selection,
+            AudioImplementation audio, @Nullable GUIIcons icons) {
         this.manager = manager;
         this.tool_tip_timer = new TimerAnimation(manager, this, TOOL_TIP_DELAY);
         this.local_player = local_player;
@@ -154,6 +162,7 @@ public final class Picker implements Updatable<TimerAnimation> {
         this.tree_renderer = new TreePicker(sprite_sorter, respond_manager);
         TreePicker.initTreeBounds(local_player.getWorld().getTreeRoot(), tree_renderer.getTrees());
         this.landscape_renderer = landscape_renderer;
+        this.icons = icons;
     }
 
     public RespondManager getRespondManager() {
@@ -550,7 +559,7 @@ public final class Picker implements Updatable<TimerAnimation> {
                     render_tool_tip = false;
             }
             current_hovered = new_current_hovered;
-            current_tooltip = new_tip ? new ToolTipAdapter((ModelToolTip) current_hovered, local_player) : null;
+            current_tooltip = (new_tip && icons != null) ? new ToolTipAdapter((ModelToolTip) current_hovered, local_player, icons) : null;
         }
     }
 

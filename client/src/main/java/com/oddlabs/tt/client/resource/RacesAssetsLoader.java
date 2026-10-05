@@ -2,7 +2,6 @@ package com.oddlabs.tt.client.resource;
 
 import com.oddlabs.tt.audio.AudioParameters;
 import com.oddlabs.tt.base.util.ProgressListener;
-import com.oddlabs.tt.client.gui.GUIIcons;
 import com.oddlabs.tt.client.render.SelectableShadowRenderer;
 import com.oddlabs.tt.engine.font.ColorGraphemeGenerator;
 import com.oddlabs.tt.engine.procedural.GeneratorHalos;
@@ -10,7 +9,6 @@ import com.oddlabs.tt.engine.procedural.GeneratorLightning;
 import com.oddlabs.tt.engine.procedural.GeneratorPoison;
 import com.oddlabs.tt.engine.procedural.GeneratorSmoke;
 import com.oddlabs.tt.engine.render.DecalRenderer;
-import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
 import com.oddlabs.tt.engine.render.ShadowListKey;
@@ -290,7 +288,6 @@ public final class RacesAssetsLoader {
         AssetRegistry.getInstance().registerUnit(Race.NATIVES, UnitType.CHIEFTAIN, nChieftainSprite);
 
         ProgressListener.progress(1f / num_progress);
-        GUIIcons icons = GUIIcons.getIcons();
         SpriteKey native_rally_point = queues.register(
                 new SpriteFile("/geometry/natives/rally_point.binsprite", RenderConfig.NO_MIPMAP_CUTOFF, true, true,
                         true, false));
@@ -373,28 +370,15 @@ public final class RacesAssetsLoader {
                 queues.registerTexture(new ColorGraphemeGenerator("🔨"), 0)
         );
 
-        SpriteKey tree_status_sprite = registerIconSprite(queues, icons.getTreeStatusIcon());
-        SpriteKey rock_status_sprite = registerIconSprite(queues, icons.getRockStatusIcon());
-        SpriteKey iron_status_sprite = registerIconSprite(queues, icons.getIronStatusIcon());
-        SpriteKey rubber_status_sprite = registerIconSprite(queues, icons.getRubberStatusIcon());
-
         AssetRegistry ar = AssetRegistry.getInstance();
         ar.registerEmoji(EmojiType.GRAVESTONE, gravestone_emoji_sprite);
         ar.registerEmoji(EmojiType.REPAIR_SAW, saw_emoji_sprite);
         ar.registerEmoji(EmojiType.REPAIR_HAMMER, hammer_emoji_sprite);
         ar.registerChickenCluckSprites(chicken_emoji_sprites);
-        ar.registerEmoji(EmojiType.HARVEST_WOOD, tree_status_sprite);
-        ar.registerEmoji(EmojiType.HARVEST_ROCK, rock_status_sprite);
-        ar.registerEmoji(EmojiType.HARVEST_IRON, iron_status_sprite);
-        ar.registerEmoji(EmojiType.HARVEST_RUBBER, rubber_status_sprite);
 
         ProgressListener.progress(1f / num_progress);
         ProgressListener.progress(1f / num_progress);
 
         return new RaceData();
-    }
-
-    private static SpriteKey registerIconSprite(RenderQueues queues, IconQuad icon) {
-        return queues.registerQuadSprite(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2(), icon.getTexture());
     }
 }

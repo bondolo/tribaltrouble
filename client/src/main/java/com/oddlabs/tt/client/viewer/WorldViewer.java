@@ -26,9 +26,11 @@ import com.oddlabs.tt.engine.render.CameraState;
 import com.oddlabs.tt.client.render.LandscapeBaker;
 import com.oddlabs.tt.scenery.LandscapeRenderer;
 import com.oddlabs.tt.client.resource.LandscapeAssetsLoader;
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.engine.render.MatrixStack;
 import com.oddlabs.tt.engine.render.RenderConfig;
 import com.oddlabs.tt.engine.render.RenderQueues;
+import com.oddlabs.tt.engine.render.SpriteKey;
 import com.oddlabs.tt.engine.render.Texture;
 import com.oddlabs.tt.procedural.landscape.GeneratedLandscapeData;
 import com.oddlabs.tt.client.render.VisualSoundAccessory;
@@ -93,6 +95,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     private final Peer engine;
     private final GameCamera camera;
+    private final GUIIcons icons;
     private final ActionButtonPanel panel;
     private final SelectionDelegate delegate;
     private final PeerHub peerhub;
@@ -126,8 +129,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
         this.cheat = new Cheat(!ingame_info.isMultiplayer());
         this.audioManager = engine.getAudioManager();
         this.animation_manager_local = new AnimationManager();
+        this.icons = new GUIIcons();
         final CameraState camera_state = new CameraState();
-        this.notification_manager = new NotificationManager(gui_root, audioManager);
+        this.notification_manager = new NotificationManager(gui_root, audioManager, icons.getNotifyArrow(),
+                icons.getNotifyArrowHeadX(), icons.getNotifyArrowHeadY());
         MatrixStack modelViewStack = new MatrixStack();
         MatrixStack projectionStack = new MatrixStack();
         RenderQueues render_queues = new RenderQueues();
@@ -136,6 +141,7 @@ public final class WorldViewer implements Animated, AutoCloseable {
                 () -> new LandscapeAssetsLoader(render_queues));
         RaceData races_resources = ProgressListener.subTask(0.35f,
                 () -> RacesAssetsLoader.load(render_queues));
+        registerHarvestEmojis(render_queues, icons);
         boolean[] initialized = new boolean[]{false};
         NotificationListener listener = new NotificationListener() {
             @Override
@@ -314,13 +320,13 @@ public final class WorldViewer implements Animated, AutoCloseable {
         engine.setPathfindCountSupplier(world.getUnitGrid()::getAndResetPathfindCount);
         landscape_renderer = new LandscapeRenderer(world, world_info, animation_manager_local);
         this.picker = new Picker(animation_manager_local, local_player, gui_root, render_queues, landscape_renderer,
-                selection, audioManager);
+                selection, audioManager, icons);
         this.renderer = new DefaultRenderer(cheat, local_player, render_queues,
                 world_info, landscape_renderer, picker,
                 selection, modelViewStack, projectionStack, audioManager, engine.getSettings(),
                 gui_root.getWidth(), gui_root.getHeight());
         this.gui_root = gui_root;
-        this.gui_root.setCheatIcon(GUIIcons.getIcons().getCheatIcon());
+        this.gui_root.setCheatIcon(icons.getCheatIcon());
         this.chat_listener = message -> {
             var infoPrinter = gui_root.getInfoPrinter();
             switch (message.type()) {
@@ -362,6 +368,10 @@ public final class WorldViewer implements Animated, AutoCloseable {
 
     public Peer getEngine() {
         return engine;
+    }
+
+    public GUIIcons getIcons() {
+        return icons;
     }
 
     public AudioManager getAudioManager() {
@@ -581,5 +591,17 @@ public final class WorldViewer implements Animated, AutoCloseable {
         AssetRegistry.getInstance().getEmojiSprite(emoji)
                 .map(sprite -> new VisualSoundAccessory(sprite, emoji.getDuration(), audioDistance))
                 .ifPresent(accessory -> renderer.getRenderState().addAccessory(model, accessory));
+    }
+
+    private static void registerHarvestEmojis(RenderQueues queues, GUIIcons icons) {
+        AssetRegistry ar = AssetRegistry.getInstance();
+        ar.registerEmoji(EmojiType.HARVEST_WOOD, registerIconSprite(queues, icons.getTreeStatusIcon()));
+        ar.registerEmoji(EmojiType.HARVEST_ROCK, registerIconSprite(queues, icons.getRockStatusIcon()));
+        ar.registerEmoji(EmojiType.HARVEST_IRON, registerIconSprite(queues, icons.getIronStatusIcon()));
+        ar.registerEmoji(EmojiType.HARVEST_RUBBER, registerIconSprite(queues, icons.getRubberStatusIcon()));
+    }
+
+    private static SpriteKey registerIconSprite(RenderQueues queues, IconQuad icon) {
+        return queues.registerQuadSprite(icon.getU1(), icon.getV1(), icon.getU2(), icon.getV2(), icon.getTexture());
     }
 }

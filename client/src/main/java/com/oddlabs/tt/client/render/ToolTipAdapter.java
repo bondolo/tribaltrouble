@@ -27,10 +27,12 @@ import java.util.Objects;
 public final class ToolTipAdapter implements ToolTip {
     private final ModelToolTip model;
     private final Player local_player;
+    private final GUIIcons icons;
 
-    public ToolTipAdapter(ModelToolTip model, Player local_player) {
+    public ToolTipAdapter(ModelToolTip model, Player local_player, GUIIcons icons) {
         this.local_player = local_player;
         this.model = model;
+        this.icons = icons;
     }
 
     private void visitPlayer(ToolTipBox tool_tip, Player player) {
@@ -65,14 +67,14 @@ public final class ToolTipAdapter implements ToolTip {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com.oddlabs.tt.content." + supply
                 .getClass().getSimpleName());
         tool_tip.append(com.oddlabs.tt.base.util.Utils.getBundleString(bundle, "name"));
-        tool_tip.append(GUIIcons.getIcons().getToolTipIcon(supply.getSupplyType()));
+        tool_tip.append(icons.getToolTipIcon(supply.getSupplyType()));
     }
 
     private void visitBuilding(ToolTipBox tool_tip, Building building) {
         visitSelectable(tool_tip, building);
         tool_tip.append(building.getTemplate().getName());
         var health = (float) building.getHitPoints() / building.getTemplate().getMaxHitPoints();
-        var watch = List.of(GUIIcons.getIcons().getWatch(health));
+        var watch = List.of(icons.getWatch(health));
         tool_tip.append(watch);
     }
 
@@ -83,12 +85,9 @@ public final class ToolTipAdapter implements ToolTip {
         Controller c = unit.getPrimaryController();
         if (unit.getAbilities().hasAbilities(Abilities.MAGIC)) {
             var health = (float) unit.getHitPoints() / unit.getTemplate().getMaxHitPoints();
-            tool_tip.append(List.of(GUIIcons.getIcons().getWatch(health)));
+            tool_tip.append(List.of(icons.getWatch(health)));
         } else if (unit.getOwner() == local_player && c instanceof GatherController<?> gc) {
-            tool_tip.append(GUIIcons.getIcons().getToolTipIcon(gc.getSupplyType()));
+            tool_tip.append(icons.getToolTipIcon(gc.getSupplyType()));
         }
-        /*      if (getCurrentBehaviour() instanceof WalkBehaviour)
-        		((WalkBehaviour)getCurrentBehaviour()).appendToolTip(tool_tip);*/
-
     }
 }

@@ -64,6 +64,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(ActionButtonPanel.class.getName());
     private final ActionControllerStack controllerStack = new ActionControllerStack();
+    private final GUIIcons icons;
     private final Group unit_group;
     private final Group peon_group;
     private final Group chieftain_group;
@@ -78,18 +79,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
     private final Group transport_group;
     private final NonFocusIconButton tower_attack_button;
     private final NonFocusIconButton tower_exit_button;
-    //	private boolean tower_exit_button_disabled;
     private final NonFocusIconButton move_button;
     private final NonFocusIconButton attack_button;
     private final NonFocusIconButton gather_repair_button;
     private final NonFocusIconButton quarters_button;
-    //	private boolean quarters_button_disabled;
     private final RechargeButton magic1_button;
     private final RechargeButton magic2_button;
     private final NonFocusIconButton armory_button;
-    //	private boolean armory_button_disabled;
     private final NonFocusIconButton tower_button;
-    //	private boolean tower_button_disabled;
     private final NonFocusIconButton harvest_button;
     private final NonFocusIconButton build_button;
     private final NonFocusIconButton army_button;
@@ -140,7 +137,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         this.viewer = viewer;
         this.camera = camera;
         controllerStack.addListener(this::onControllerChanged);
-        GUIIcons icons = GUIIcons.getIcons();
+        this.icons = viewer.getIcons();
 
         var race_icons = switch (viewer.getLocalPlayer().getRaceInfo().getRaceType()) {
             case Race.VIKINGS -> icons.getVikingIcons();
@@ -223,14 +220,14 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         MagicType magic1Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(0);
         magic1_button = new RechargeButton(
                 guiRoot, player_interface, race_icons.magic1Icon(), GameAction.MAGIC_1,
-                () -> getMagicTooltip(magic1Type), magic1Type
+                () -> getMagicTooltip(magic1Type), magic1Type, icons
         );
         chieftain_group.addChild(magic1_button);
         bindAction(magic1_button, UnitActionController.class, u -> u.executeMagic(0));
         MagicType magic2Type = viewer.getLocalPlayer().getRaceInfo().getMagicType(1);
         magic2_button = new RechargeButton(
                 guiRoot, player_interface, race_icons.magic2Icon(), GameAction.MAGIC_2,
-                () -> getMagicTooltip(magic2Type), magic2Type
+                () -> getMagicTooltip(magic2Type), magic2Type, icons
         );
         chieftain_group.addChild(magic2_button);
         bindAction(magic2_button, UnitActionController.class, u -> u.executeMagic(1));
@@ -290,7 +287,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
         status_group.compileCanvas(5, 5, 5, 5);
 
         quarters_unit_status = new WatchStatusIcon(font, label_width, race_icons.unitStatusIcon(), i18n(
-                "units_tip"));
+                "units_tip"), icons);
         quarters_status_group.addChild(quarters_unit_status);
         quarters_unit_status.place();
         quarters_status_group.compileCanvas(5, 5, 5, 5);
@@ -301,7 +298,7 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
                 List.of(race_icons.unitStatusIcon()), GameAction.TRAIN_PEON, GameAction.TRAIN_PEON_DEC
         );
         quarters_group.addChild(quarters_peon_button);
-        quarters_chieftain_button = new ChieftainButton(viewer, player_interface, race_icons.chieftainIcon());
+        quarters_chieftain_button = new ChieftainButton(viewer, player_interface, race_icons.chieftainIcon(), icons);
         quarters_group.addChild(quarters_chieftain_button);
         bindAction(quarters_chieftain_button, QuartersActionController.class,
                 QuartersActionController::executeTrainChieftain);
@@ -404,19 +401,19 @@ public final class ActionButtonPanel extends GUIObject implements Animated, Acti
 
         build_weapon_rock_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRockIcon(),
-                i18n("build_rock_tip"), GUIIcons.toIconList(Building.COST_ROCK_WEAPON),
+                i18n("build_rock_tip"), icons.toIconList(Building.COST_ROCK_WEAPON),
                 GameAction.RES_ROCK, GameAction.RES_ROCK_DEC
         );
         build_group.addChild(build_weapon_rock_button);
         build_weapon_iron_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponIronIcon(),
-                i18n("build_iron_tip"), GUIIcons.toIconList(Building.COST_IRON_WEAPON),
+                i18n("build_iron_tip"), icons.toIconList(Building.COST_IRON_WEAPON),
                 GameAction.RES_IRON, GameAction.RES_IRON_DEC
         );
         build_group.addChild(build_weapon_iron_button);
         build_weapon_rubber_button = new BuildSpinner(
                 viewer, player_interface, race_icons.buildWeaponRubberIcon(),
-                i18n("build_chicken_tip"), GUIIcons.toIconList(Building.COST_RUBBER_WEAPON),
+                i18n("build_chicken_tip"), icons.toIconList(Building.COST_RUBBER_WEAPON),
                 GameAction.RES_CHICKEN, GameAction.RES_CHICKEN_DEC
         );
         build_group.addChild(build_weapon_rubber_button);

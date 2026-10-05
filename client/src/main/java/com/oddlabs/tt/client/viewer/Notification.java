@@ -33,7 +33,8 @@ public class Notification implements Updatable<TimerAnimation> {
         this.manager = manager;
         this.timer = new TimerAnimation(animation_manager, this, ACTIVE_SECONDS);
         timer.start();
-        this.arrow = new Arrow(heightMap, gui_root, center_x, center_y, color, show_always);
+        this.arrow = new Arrow(heightMap, gui_root, center_x, center_y, color, show_always,
+                manager.getArrowQuad(), manager.getArrowHeadX(), manager.getArrowHeadY());
         gui_root.addChild(arrow);
         audio.newAudio(0f, 0f, 0f, params);
     }

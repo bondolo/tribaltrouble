@@ -23,15 +23,21 @@ public final class Arrow extends GUIObject {
     private final Color.Linear color;
     private final boolean show_always;
     private final GUIRoot gui_root;
+    private final IconQuad arrowQuad;
+    private final int headX;
+    private final int headY;
 
     public Arrow(LandscapeEnvironment landscape, GUIRoot gui_root, float target_x, float target_y,
-            Color color, boolean show_always) {
+            Color color, boolean show_always, IconQuad arrowQuad, int headX, int headY) {
         this.gui_root = gui_root;
         this.target_x = target_x;
         this.target_y = target_y;
         this.target_z = landscape.getHeight(target_x, target_y);
         this.color = color instanceof Color.Linear linear ? linear : new Color.Linear(color);
         this.show_always = show_always;
+        this.arrowQuad = arrowQuad;
+        this.headX = headX;
+        this.headY = headY;
         displayChangedNotify(gui_root.getWidth(), gui_root.getHeight());
     }
 
@@ -85,9 +91,6 @@ public final class Arrow extends GUIObject {
         boolean inNoDetail = gui_root.getDelegate() instanceof CameraDelegate<?> cam && cam.getCamera().getState()
                 .inNoDetailMode();
         if (show_always || inNoDetail || t < real_t) {
-            var data = GUIIcons.getIcons().getNotifyArrowData();
-            float head_x = data.headX();
-            float head_y = data.headY();
             renderer.getMatrixStack().push();
             renderer.getMatrixStack().translate(screen_width / 2f + dx * t, screen_height / 2f + dy * t, 0f);
             renderer.getMatrixStack().rotate(angle, 0f, 0f, 1f);
@@ -96,8 +99,7 @@ public final class Arrow extends GUIObject {
             if (val > 1f)
                 val = 2f - val;
             val = COLOR_DELTA * val;
-            IconQuad arrow = data.arrow();
-            renderer.drawIcon(arrow, -head_x, -head_y, color.alpha(1f - val));
+            renderer.drawIcon(arrowQuad, -headX, -headY, color.alpha(1f - val));
             renderer.getMatrixStack().pop();
         }
     }

@@ -158,7 +158,7 @@ public abstract class IconSpinner extends GUIObject {
         renderer.drawIcon(icon_quad.quad(skinMode), x, y);
 
         if (text_count > 0) {
-            var watchQuad = GUIIcons.getIcons().getWatch(getProgress());
+            var watchQuad = viewer.getIcons().getWatch(getProgress());
             renderer.drawIcon(watchQuad, getWidth() - watchQuad.getWidth(), getHeight() - watchQuad.getHeight());
         }
     }

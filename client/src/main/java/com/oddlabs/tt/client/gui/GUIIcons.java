@@ -38,8 +38,6 @@ public final class GUIIcons {
     private static final int WATCH_RIM_WIDTH = 2;
     private static final int WATCH_SHADOW_OFFSET = 2;
 
-    private static final GUIIcons ICONS = new GUIIcons("/gui/icons.xml");
-
     private final ModeIconQuads harvest_icon;
     private final ModeIconQuads tree_icon;
     private final ModeIconQuads rock_icon;
@@ -58,11 +56,11 @@ public final class GUIIcons {
 
     private final Map<SupplyType, List<IconQuad>> tool_tip_icons;
 
-    public static GUIIcons getIcons() {
-        return ICONS;
+    public GUIIcons() {
+        this("/gui/icons.xml");
     }
 
-    private GUIIcons(String xml_file) {
+    public GUIIcons(String xml_file) {
         IconAtlas atlas = IconAtlas.load(xml_file, new GUIErrorHandler());
 
         harvest_icon = atlas.getNamedIconQuads("harvest_icon");
@@ -88,10 +86,9 @@ public final class GUIIcons {
                 SupplyType.RUBBER, List.of(rubber_status_icon)));
     }
 
-    public static List<IconQuad> toIconList(Cost cost) {
-        var icons = getIcons();
+    public List<IconQuad> toIconList(Cost cost) {
         return cost.costs().entrySet().stream()
-                .flatMap(entry -> Stream.generate(() -> getIconQuad(icons, entry.getKey())).limit(entry.getValue()))
+                .flatMap(entry -> Stream.generate(() -> getIconQuad(this, entry.getKey())).limit(entry.getValue()))
                 .toList();
     }
 
@@ -317,7 +314,15 @@ public final class GUIIcons {
         return infinite;
     }
 
-    public final NotifyArrowData getNotifyArrowData() {
-        return notify_arrow_data;
+    public final IconQuad getNotifyArrow() {
+        return notify_arrow_data.arrow();
+    }
+
+    public final int getNotifyArrowHeadX() {
+        return notify_arrow_data.headX();
+    }
+
+    public final int getNotifyArrowHeadY() {
+        return notify_arrow_data.headY();
     }
 }

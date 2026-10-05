@@ -13,14 +13,16 @@ import org.jspecify.annotations.Nullable;
 /** Non-focusable icon button that trains a chieftain. */
 public final class ChieftainButton extends NonFocusIconButton {
     private final PlayerInterface player_interface;
+    private final GUIIcons icons;
     private @Nullable Building current_building;
 
     public ChieftainButton(WorldViewer viewer, PlayerInterface player_interface,
-            ModeIconQuads icon) {
+            ModeIconQuads icon, GUIIcons icons) {
         super(viewer.getGUIRoot(), icon, GameAction.TRAIN_CHIEFTAIN, () -> ActionButtonPanel.i18n(
                 "train_chieftain_tip", viewer.getInputManager().getBindingString(
                         GameAction.TRAIN_CHIEFTAIN)));
         this.player_interface = player_interface;
+        this.icons = icons;
         setCanFocus(true);
     }
 
@@ -35,10 +37,10 @@ public final class ChieftainButton extends NonFocusIconButton {
     }
 
     @Override
-    protected final void postRender(GUIRenderer renderer) {
+    protected void postRender(GUIRenderer renderer) {
         if (current_building.isAlive() && current_building.getChieftainContainer()
                 .map(c -> c.isTraining()).orElse(false)) {
-            var watchQuad = GUIIcons.getIcons().getWatch(getProgress());
+            var watchQuad = icons.getWatch(getProgress());
             renderer.drawIcon(watchQuad, getWidth() - watchQuad.getWidth(), getHeight() - watchQuad.getHeight());
         }
     }

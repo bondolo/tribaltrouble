@@ -13,10 +13,12 @@ import com.oddlabs.tt.engine.font.Font;
  */
 public final class WatchStatusIcon extends StatusIcon {
     private static final Color.Linear COLOR = Color.Linear.WHITE.alpha(0.75f);
+    private final GUIIcons icons;
     private Building building;
 
-    public WatchStatusIcon(Font font, int label_width, IconQuad icon, String tooltip) {
+    public WatchStatusIcon(Font font, int label_width, IconQuad icon, String tooltip, GUIIcons icons) {
         super(font, label_width, icon, tooltip);
+        this.icons = icons;
     }
 
     public void setUnitContainerBuilding(Building building) {
@@ -29,7 +31,7 @@ public final class WatchStatusIcon extends StatusIcon {
         if (!building.isDead() && !building.getChieftainContainer().orElseThrow().isTraining() && building.getOwner()
                 .getUnitCountContainer().getNumSupplies() < building.getOwner().getWorld().getMaxUnitCount()) {
             float progress = ((ReproduceUnitContainer) (building.getUnitContainer().orElseThrow())).getBuildProgress();
-            var watch = GUIIcons.getIcons().getWatch(progress);
+            var watch = icons.getWatch(progress);
             int x = getWidth() - watch.getWidth();
             int y = (getHeight() - watch.getHeight()) / 2;
             x -= 5; // visual HAX

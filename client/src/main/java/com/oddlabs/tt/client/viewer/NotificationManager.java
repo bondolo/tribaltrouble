@@ -4,6 +4,7 @@ import com.oddlabs.tt.client.resource.AssetRegistry;
 import com.oddlabs.tt.base.animation.AnimationManager;
 import com.oddlabs.tt.gui.GUIRoot;
 import com.oddlabs.tt.audio.AudioImplementation;
+import com.oddlabs.tt.engine.render.IconQuad;
 import com.oddlabs.tt.net.BeaconListener;
 import com.oddlabs.tt.simulation.model.Selectable;
 import com.oddlabs.tt.simulation.player.Player;
@@ -22,11 +23,29 @@ public final class NotificationManager implements BeaconListener {
     private final Deque<Notification> notifies = new ArrayDeque<>();
     private final GUIRoot gui_root;
     private final AudioImplementation audio;
+    private final IconQuad arrowQuad;
+    private final int arrowHeadX;
+    private final int arrowHeadY;
     private @Nullable Notification latest_notification = null;
 
-    public NotificationManager(GUIRoot gui_root, AudioImplementation audio) {
+    public NotificationManager(GUIRoot gui_root, AudioImplementation audio, IconQuad arrowQuad, int arrowHeadX, int arrowHeadY) {
         this.gui_root = gui_root;
         this.audio = audio;
+        this.arrowQuad = arrowQuad;
+        this.arrowHeadX = arrowHeadX;
+        this.arrowHeadY = arrowHeadY;
+    }
+
+    public IconQuad getArrowQuad() {
+        return arrowQuad;
+    }
+
+    public int getArrowHeadX() {
+        return arrowHeadX;
+    }
+
+    public int getArrowHeadY() {
+        return arrowHeadY;
     }
 
     public @Nullable Notification getLatestNotification() {

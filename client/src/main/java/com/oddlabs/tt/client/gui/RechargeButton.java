@@ -20,13 +20,15 @@ import java.util.function.Supplier;
 public final class RechargeButton extends NonFocusIconButton {
     private final PlayerInterface player_interface;
     private final MagicType magic_type;
+    private final GUIIcons icons;
     private Unit unit;
 
     public RechargeButton(GUIRoot guiRoot, PlayerInterface player_interface, ModeIconQuads icon,
-            @Nullable GameAction action, Supplier<String> tool_tip, MagicType magic_type) {
+            @Nullable GameAction action, Supplier<String> tool_tip, MagicType magic_type, GUIIcons icons) {
         super(guiRoot, icon, action, tool_tip);
         this.player_interface = player_interface;
         this.magic_type = magic_type;
+        this.icons = icons;
         setCanFocus(true);
         var normal = icon.quad(ModeIconQuads.Mode.NORMAL);
         setDim(normal.getWidth(), normal.getHeight());
@@ -46,7 +48,7 @@ public final class RechargeButton extends NonFocusIconButton {
     protected final void postRender(GUIRenderer renderer) {
         float progress = unit.getMagicProgress(magic_type);
         if (!unit.isDead() && progress < 1f) {
-            IconQuad watchQuad = GUIIcons.getIcons().getWatch(progress);
+            IconQuad watchQuad = icons.getWatch(progress);
             renderer.drawIcon(watchQuad, getWidth() - watchQuad.getWidth(), getHeight() - watchQuad.getHeight());
         }
     }
